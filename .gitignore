@@ -1,0 +1,8 @@
+bin/
+build/
+doc/
+beagleClient/
+.metadata/
+PluginRoutingInterfaceTCP/
+pulseaudio-0.9.22/
+dbusInterfaces/tcpMessages.h

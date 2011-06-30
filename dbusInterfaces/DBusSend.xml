@@ -1,0 +1,39 @@
+<node>  
+	<interface name="org.genivi.pulse">          
+	<method name="connect">      
+		<arg name="sourceID" type="i" direction="in" />      
+		<arg name="sinkID" type="i" direction="in" /> 
+		<arg name="connectionID" type="i" direction="in" />
+		<arg name="answer" type="i" direction="out"/>
+	</method>
+	<method name="disconnect">      
+		<arg name="connectionID" type="i" direction="in" />      
+		<arg name="answer" type="i" direction="out"/>
+	</method>
+	<method name="setSinkVolume">      
+		<arg name="volume" type="i" direction="in" /> 
+		<arg name="sinkID" type="i" direction="in" />      
+		<arg name="answer" type="i" direction="out"/>
+	</method>
+	<method name="setSourceVolume">      
+		<arg name="volume" type="i" direction="in" /> 
+		<arg name="sourceID" type="i" direction="in" />      
+		<arg name="answer" type="i" direction="out"/>
+	</method>
+	<method name="muteSink">      
+		<arg name="sinkID" type="i" direction="in" />     
+		<arg name="answer" type="i" direction="out"/>
+	</method>
+	<method name="muteSource">      
+		<arg name="sourceID" type="i" direction="in" />     
+		<arg name="answer" type="i" direction="out"/>
+	</method>
+	<method name="unmuteSink">      
+		<arg name="sinkID" type="i" direction="in" />     
+		<arg name="answer" type="i" direction="out"/>
+	</method>
+	<method name="unmuteSource">      
+		<arg name="sourceID" type="i" direction="in" />     
+		<arg name="answer" type="i" direction="out"/>
+	</method>
+</node>

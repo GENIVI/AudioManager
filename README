@@ -1,0 +1,219 @@
+GENIVI AUDIOMANAGER
+
+Copyright (C) 2011, BMW AG
+
+Datum  20.05.2011
+author Christian Müller (christian.ei.mueller@bmw.de)
+
+***********************************************************************************************************
+LICENSE
+***********************************************************************************************************
+
+GNU Lesser General Public License, version 2.1, with special exception (GENIVI clause)
+Copyright (C) 2011, BMW AG – Christian Müller  Christian.ei.mueller@bmw.de
+
+This program is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License, version 2.1, as published by the Free Software Foundation.
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License, version 2.1, for more details.
+You should have received a copy of the GNU Lesser General Public License, version 2.1, along with this program; if not, see <http://www.gnu.org/licenses/lgpl-2.1.html>.
+Note that the copyright holders assume that the GNU Lesser General Public License, version 2.1, may also be applicable to programs even in cases in which the program is not a library in the technical sense.
+Linking AudioManager statically or dynamically with other modules is making a combined work based on AudioManager. You may license such other modules under the GNU Lesser General Public License, version 2.1. If you do not want to license your linked modules under the GNU Lesser General Public License, version 2.1, you may use the program under the following exception.
+As a special exception, the copyright holders of AudioManager give you permission to combine AudioManager with software programs or libraries that are released under any license unless such a combination is not permitted by the license of such a software program or library. You may copy and distribute such a system following the terms of the GNU Lesser General Public License, version 2.1, including this special exception, for AudioManager and the licenses of the other code concerned.
+Note that people who make modified versions of AudioManager are not obligated to grant this special exception for their modified versions; it is their choice whether to do so. The GNU Lesser General Public License, version 2.1, gives permission to release a modified version without this exception; this exception also makes it possible to release a modified version which carries forward this exception.
+
+Version 0.2
+
+***********************************************************************************************************
+COMPILE PROGRAMS
+*********************************************************************************************************
+
+You will need some packages in order to comile the GENIVI AudioManager Proof of Concept, these are:
+-QT4
+-automotive-dlt
+-jack
+-jackeq
+-jack control
+-dbus
+-glib >=2.0
+-gstreamer-base-0.10
+-gstreamer-plugins-base-0.10
+-gstreamer-plugins
+-gstreamer0.10-pulseaudio
+-gstreamer0.10-plugins-good
+-phonon
+-phonon-backend-gstreamer
+-doxygen
+
+More details in the CMake Files CmakeList.txt in the projects
+
+on the top level of the folder you just received, there is a shall script "cmaker.sh" which can be invoked with a lot of different parameters. Invoking it with:
+
+sh cmaker.sh all all
+
+will create all neccessary folders and compile all plugins and applications except the PulseAudio Plugin.
+
+after the script finished, you should have:
+
+a /bin folder which contains: 
+	AudioGui  
+	AudioManager  
+	Bild1.png  
+	PlayerGui
+
+a /build folder which has all build objects (erase that if you need a clean build)
+
+a /doc folder which contains subfolders with the doxygen documentation:
+	AudioGui  
+	AudioManager  
+	DBusPlugin  
+	JackPlugin  
+	PlayerGUI  
+	PluginTest
+
+***********************************************************************************************************
+COMPILE PULSEAUDIO
+***********************************************************************************************************
+
+For the pulseaudio plugin, you will need to do the following steps:
+
+- if you have pulseaudio installed (e.g. you have vanilla ubuntu), remove it with the package manager 
+
+	apt-get purge pulseaudio
+
+- remove all packages of modules as well (there can be only one server of course)
+- download the source code from pulseaudio
+
+	wget http://freedesktop.org/software/pulseaudio/releases/pulseaudio-0.9.22.tar.gz
+
+- patch was developed and tested with verisopn 0.9.22 but newer versions could do as well and unpack it
+
+	tar xvf pulseaudio-0.9.22.tar.gz
+
+- cd into the unpacked pulseaudio directory:
+
+	cd pulseaudio-0.9.22
+
+- copy the patchfile into the pulseaudio directory
+
+	cp ../genivipulseaudio.patch .
+
+-apply the patchfile genivipulseaudio.patch with 
+
+	patch -p1 -i genivipulseaudio.patch 
+
+- what follows is the normal compiling process of pulseaudio, first bootstrap:
+
+	./bootstrap.sh
+
+- then configure
+	
+	./configure.sh
+
+- check the output, the summary file should look similar to this:
+
+    Have X11:                      no
+    Enable OSS Output:             yes
+    Enable OSS Wrapper:            yes
+    Enable Alsa:                   yes
+    Enable Solaris:                no
+    Enable GLib 2.0:               yes
+    Enable Gtk+ 2.0:               yes
+    Enable GConf:                  no
+    Enable Avahi:                  yes
+    Enable Jack:                   yes
+    Enable Async DNS:              no
+    Enable LIRC:                   no
+    Enable HAL:                    no
+    Enable udev:                   yes
+    Enable HAL->udev compat:       yes
+    Enable BlueZ:                  no
+    Enable TCP Wrappers:           no
+    Enable libsamplerate:          yes
+    Enable IPv6:                   yes
+    Enable OpenSSL (for Airtunes): no
+    Enable tdb:                    no
+    Enable gdbm:                   no
+    Enable simple database:        yes
+    Enable Genivi support 	   yes
+    System User:                   pulse
+    System Group:                  pulse
+    Access Group:                  pulse-access
+    Enable per-user EsounD socket: yes
+    Force preopen:                 no
+    Preopened modules:             all
+
+    at least we should have alsa, Jack, udev, libsamplerate, Genivi, Glib 2.0 .... if not install missing packages and start again
+
+- ok, lets go with
+
+	make -j4 all
+
+To adjust to your system, you can modify the file "Genivi.conf" witch can be found in pulseaudio-0.9.22/src. Here you can define the sources and sinks
+that are presented to the audiomanager by the routingadaptor in the pulseaudio genivi module.
+
+
+***********************************************************************************************************
+START 
+***********************************************************************************************************
+
+First we need to start Jack. This can be done via very easy via 
+
+	qjackctl
+
+if you cannot install it via packagemanager, you can dowload it here: http://qjackctl.sourceforge.net/
+
+Since we deinstalled pulse, jack will grab the hardwarecontrols if it is started, that is contra productive, so we make sure that the server runs virtual. Within
+qjackctl, you can select the settings tab and take as driver "dummy", or you start jackd with the following command:
+
+	/usr/bin/jackd -T -P62 -t1000 -m -ddummy -r44100 -p256
+
+or write this command in your home into the .jackdrc file
+
+If you want to have the same as the demo in Dublin, start now the jack equalizer (if you don't have: http://jackeq.sourceforge.net/ or packagemanager)
+
+	/usr/bin/jackeq
+
+Now it's time to start pulseaudio, since we need to start it with a special configuration, get into the pulseaudio directory and run
+
+	src/pulseaudio -n -F src/default.pa -p $(pwd)/src/.libs/ -vvvv
+
+The next step is to start the DLT server
+
+	dlt-daemon
+
+And a dlt client if you want to see something.
+Then get into the /bin directory of the workspace where the binaries where created and run in the following order:
+
+	./AudioManager
+
+This starts the audiomanager, you should already get some output on the DLT
+
+	./AudioGui
+
+starts the Test GUI, you can now connect and disconnect already, changing volumes works via double click on the sinks
+
+	./PLayerGui player youraudiofile.mp3 
+
+starts the player application, please choose cool music.
+To test Traffic announcements, you need to create a folder on the workspace, same level as bin, called "music" and put an mp3 in there. please rename it to "ta.mp3", this file
+is taken to play the traffic announcement.
+
+	./PlayerGui ta
+
+Same for navigation, the file needs to have the name "music/navi.mp3"
+
+	./PLayerGui navigation 
+
+
+***********************************************************************************************************	
+
+                                 _..-------++._
+                             _.-'/ |      _||  \"--._
+                       __.--'`._/_\j_____/_||___\    `----.
+                  _.--'_____    |          \     _____    /
+                _j    /,---.\   |        =o |   /,---.\   |_
+               [__]==// .-. \\==`===========/==// .-. \\=[__]
+                 `-._|\ `-' /|___\_________/___|\ `-' /|_.'     
+                       `---'                     `---'
+
+
+

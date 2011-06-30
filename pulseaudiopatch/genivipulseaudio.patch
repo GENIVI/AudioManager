@@ -1,0 +1,1749 @@
+diff -crBN pulseaudio-0.9.22/configure.ac pulseaudio-0.9.22-patched/configure.ac
+*** pulseaudio-0.9.22/configure.ac	2010-11-26 01:45:43.000000000 +0100
+--- pulseaudio-0.9.22-patched/configure.ac	2011-06-30 15:16:20.224520001 +0200
+***************
+*** 1273,1279 ****
+  AC_SUBST(HAVE_OPENSSL)
+  AM_CONDITIONAL([HAVE_OPENSSL], [test "x$HAVE_OPENSSL" = x1])
+  
+! ### Build and Install man pages ###
+  AC_ARG_ENABLE(manpages,
+          AS_HELP_STRING([--disable-manpages],[Disable building and installation of man pages]),
+  [case "${enableval}" in
+--- 1273,1300 ----
+  AC_SUBST(HAVE_OPENSSL)
+  AM_CONDITIONAL([HAVE_OPENSSL], [test "x$HAVE_OPENSSL" = x1])
+  
+! #### GENIVI support ####
+! AC_ARG_ENABLE([genivi],
+!         AC_HELP_STRING([--disable-genivi],[Disable optional genivi module support]),
+!         [
+!             case "${enableval}" in
+!                 yes) genivi=yes ;;
+!                 no) genivi=no ;;
+!                 *) AC_MSG_ERROR(bad value ${enableval} for --disable-genivi) ;;
+!             esac
+!         ],
+!         [genivi=yes])
+! 
+! if test "x${genivi}" != xno && test "x$HAVE_DBUS" = x1; then
+!     AC_DEFINE([GENIVI], 1, [Have GENIVI module.])
+!     GENIVI=1
+! else
+!     GENIVI=0
+! fi
+! 
+! AM_CONDITIONAL([GENIVI], [test "x$GENIVI" = x1])
+! 
+! ## Build and Install man pages ###
+  AC_ARG_ENABLE(manpages,
+          AS_HELP_STRING([--disable-manpages],[Disable building and installation of man pages]),
+  [case "${enableval}" in
+***************
+*** 1525,1530 ****
+--- 1546,1556 ----
+     ENABLE_PER_USER_ESOUND_SOCKET=yes
+  fi
+  
++ ENABLE_GENIVI_SUPPORT=no
++ if test "x$GENIVI" = "x1" ; then
++    ENABLE_GENIVI_SUPPORT=yes
++ fi
++ 
+  echo "
+   ---{ $PACKAGE_NAME $VERSION }---
+  
+***************
+*** 1560,1566 ****
+      Enable tdb:                    ${ENABLE_TDB}
+      Enable gdbm:                   ${ENABLE_GDBM}
+      Enable simple database:        ${ENABLE_SIMPLEDB}
+! 
+      System User:                   ${PA_SYSTEM_USER}
+      System Group:                  ${PA_SYSTEM_GROUP}
+      Access Group:                  ${PA_ACCESS_GROUP}
+--- 1586,1592 ----
+      Enable tdb:                    ${ENABLE_TDB}
+      Enable gdbm:                   ${ENABLE_GDBM}
+      Enable simple database:        ${ENABLE_SIMPLEDB}
+!     Enable Genivi support 	   ${ENABLE_GENIVI_SUPPORT}
+      System User:                   ${PA_SYSTEM_USER}
+      System Group:                  ${PA_SYSTEM_GROUP}
+      Access Group:                  ${PA_ACCESS_GROUP}
+diff -crBN pulseaudio-0.9.22/HOWTO testing pulseaudio-0.9.22-patched/HOWTO testing
+*** pulseaudio-0.9.22/HOWTO testing	1970-01-01 01:00:00.000000000 +0100
+--- pulseaudio-0.9.22-patched/HOWTO testing	2011-06-30 15:16:20.224520001 +0200
+***************
+*** 0 ****
+--- 1,24 ----
++ HOWTO testing
++ 
++  Created on: Mar 24, 2011
++      Author: blacky
++ 
++ In order to test the pulseaudio server, this figured the best way to do that:
++ 
++ first, deinstall pulse audio with apt-get for example
++ 
++ unpack pulseaudio, 
++ add modified modules, 
++ patch configure.ac, 
++ patch src/Makefile.am
++ 
++ change src/default.pa
++ 
++ run /bootstrap
++ run /configure
++ 
++ to start from commandline with log output, do
++ 
++ src/pulseaudio -n -F src/default.pa -p $(pwd)/src/.libs/ -vvvv
++ 
++ in the directory of pulse
+diff -crBN pulseaudio-0.9.22/src/Genivi.conf pulseaudio-0.9.22-patched/src/Genivi.conf
+*** pulseaudio-0.9.22/src/Genivi.conf	1970-01-01 01:00:00.000000000 +0100
+--- pulseaudio-0.9.22-patched/src/Genivi.conf	2011-06-30 15:16:20.224520001 +0200
+***************
+*** 0 ****
+--- 1,12 ----
++ Source:Rhythmbox,default
++ Source:Totem Movie Player,default
++ Source:navigation,nav
++ Source:player,default
++ Source:radio,rad
++ Source:ta,ta
++ Source:rtp,default
++ Sink:tunnel,default
++ Sink:alsa_usb,default
++ Sink:alsa_intern,default
++ Gateway:gw_Pulse_Jack,jack_out,PulseAudio JACK Sink,JACK,gw_out
++ Gateway:gw_Jack_Pulse,PulseAudio JACK Source,jack_in,JACK,gw_in
+diff -crBN pulseaudio-0.9.22/src/Makefile.am pulseaudio-0.9.22-patched/src/Makefile.am
+*** pulseaudio-0.9.22/src/Makefile.am	2010-11-26 01:45:43.000000000 +0100
+--- pulseaudio-0.9.22-patched/src/Makefile.am	2011-06-30 15:16:20.228520001 +0200
+***************
+*** 1576,1581 ****
+--- 1576,1590 ----
+  module_always_sink_la_LIBADD = $(AM_LIBADD) libpulsecore-@PA_MAJORMINORMICRO@.la libpulsecommon-@PA_MAJORMINORMICRO@.la libpulse.la
+  module_always_sink_la_CFLAGS = $(AM_CFLAGS)
+  
++ # Genivi module
++ if GENIVI
++ modlibexec_LTLIBRARIES += module-genivi.la
++ module_genivi_la_SOURCES = modules/module-genivi.c
++ module_genivi_la_LDFLAGS = $(MODULE_LDFLAGS)
++ module_genivi_la_LIBADD = $(AM_LIBADD) $(DBUS_LIBS) libpulsecore-@PA_MAJORMINORMICRO@.la libpulsecommon-@PA_MAJORMINORMICRO@.la libpulse.la
++ module_genivi_la_CFLAGS = $(AM_CFLAGS) $(DBUS_CFLAGS)
++ endif
++ 
+  # Rescue streams module
+  module_rescue_streams_la_SOURCES = modules/module-rescue-streams.c
+  module_rescue_streams_la_LDFLAGS = $(MODULE_LDFLAGS)
+diff -crBN pulseaudio-0.9.22/src/modules/module-genivi.c pulseaudio-0.9.22-patched/src/modules/module-genivi.c
+*** pulseaudio-0.9.22/src/modules/module-genivi.c	1970-01-01 01:00:00.000000000 +0100
+--- pulseaudio-0.9.22-patched/src/modules/module-genivi.c	2011-06-30 15:16:20.232519999 +0200
+***************
+*** 0 ****
+--- 1,1503 ----
++ /***
++ To be done
++ ***/
++ 
++ 
++ #ifdef HAVE_CONFIG_H
++ #include <config.h>
++ #endif
++ 
++ #include <stdio.h>
++ #include <stdlib.h>
++ #include <string.h>
++ #include <unistd.h>
++ 
++ #include <pulse/xmalloc.h>
++ #include <pulse/util.h>
++ #include <pulse/i18n.h>
++ #include <pulse/utf8.h>
++ 
++ #include <pulsecore/sink.h>
++ #include <pulsecore/llist.h>
++ #include <pulsecore/source.h>
++ #include <pulsecore/core-util.h>
++ #include <pulsecore/log.h>
++ #include <pulsecore/modargs.h>
++ #include <pulsecore/dbus-shared.h>
++ #include <pulsecore/endianmacros.h>
++ #include <pulsecore/namereg.h>
++ #include <pulsecore/mime-type.h>
++ #include <pulsecore/strbuf.h>
++ #include <pulsecore/protocol-http.h>
++ #include <pulsecore/parseaddr.h>
++ 
++ //#include "module-genivi-symdef.h"
++ 
++ #define ROUTING_INTERFACE_TARGET "com.Genivi.routinginterface"
++ #define ROUTING_REGISTER_PATH "/Hello"
++ #define ROUTING_INTERFACE_NAME "com.genivi.routing"
++ #define R_REGISTER_SOURCE "registerSource"
++ #define R_REGISTER_DOMAIN "registerDomain"
++ #define R_REGISTER_SINK "registerSink"
++ #define R_REGISTER_GATEWAY "registerGateway"
++ #define R_PEEK_DOMAIN "peekDomain"
++ 
++ PA_MODULE_AUTHOR("Christian Mueller");
++ PA_MODULE_DESCRIPTION(_("Routing the Genivi way"));
++ PA_MODULE_VERSION(PACKAGE_VERSION);
++ PA_MODULE_LOAD_ONCE(TRUE);
++ PA_MODULE_USAGE("Hello");
++ 
++ #define SERVICE_NAME "org.genivi.pulse"
++ #define OBJECT_ROOT "/org/genivi/pulse"
++ #define OBJECT_PATH "/pulse"
++ #define OBJECT_PULSE "/org/genivi/pulse/pulse"
++ 
++ #define THIS_DOMAIN "PULSE"
++ 
++ #define ROOT_INTROSPECT_XML												\
++ DBUS_INTROSPECT_1_0_XML_DOCTYPE_DECL_NODE								\
++ "<node>"																\
++ "<interface name='org.freedesktop.DBus.Introspectable'>"				\
++ "<method name='Introspect'>"											\
++ "	<arg name='xml_data' type='s' direction='out'/>"					\
++ "</method>"							      								\
++ "</interface>"															\
++ "<node name='pulse'>"													\
++ "</node>"																\
++ 
++ #define PULSE_INTROSPECT_XML											\
++ DBUS_INTROSPECT_1_0_XML_DOCTYPE_DECL_NODE								\
++ "<node name='pulse'>"													\
++ "	<interface name='"SERVICE_NAME"'>"		 							\
++ "	<method name='connect'>"      										\
++ "		<arg name='sourceID' type='i' direction='in' />"      			\
++ "		<arg name='sinkID' type='i' direction='in' />" 					\
++ "		<arg name='connectionID' type='i' direction='in' />"			\
++ "		<arg name='answer' type='i' direction='out'/>"					\
++ "	</method>"    														\
++ "	<method name='disconnect'>"											\
++ "		<arg name='connectionID' type='i' direction='in' />"      		\
++ "		<arg name='answer' type='i' direction='out'/>"					\
++ "	</method>"															\
++ "	<method name='setSinkVolume'>"										\
++ "		<arg name='volume' type='i' direction='in' />"					\
++ "		<arg name='sinkID' type='i' direction='in' />"					\
++ "		<arg name='answer' type='i' direction='out'/>"					\
++ "   </method>"															\
++ "	<method name='setSourceVolume'>"	  								\
++ "		<arg name='volume' type='i' direction='in' />"					\
++ "		<arg name='sourceID' type='i' direction='in' />"				\
++ "		<arg name='answer' type='i' direction='out'/>"					\
++ "	</method>"															\
++ "	<method name='muteSink'>"      										\
++ "		<arg name='sinkID' type='i' direction='in' />"     				\
++ "		<arg name='answer' type='i' direction='out'/>"					\
++ "	</method>"															\
++ "	<method name='muteSource'>"      									\
++ "		<arg name='sourceID' type='i' direction='in' />"     			\
++ "		<arg name='answer' type='i' direction='out'/>"					\
++ "	</method>"															\
++ "	<method name='unmuteSink'>"      									\
++ "		<arg name='sinkID' type='i' direction='in' />"     				\
++ "		<arg name='answer' type='i' direction='out'/>"					\
++ "	</method>"															\
++ "	<method name='unmuteSource'>"      									\
++ "		<arg name='sourceID' type='i' direction='in' />"     			\
++ "		<arg name='answer' type='i' direction='out'/>"					\
++ "	</method>"															\
++ "</interface>"															\
++ "<interface name='org.freedesktop.DBus.Introspectable'>"				\
++ "<method name='Introspect'>"											\
++ "	<arg name='xml_data' type='s' direction='out'/>"					\
++ "</method>"							      								\
++ "</interface>"															\
++ "</node>"
++ 
++ static const char* const valid_modargs[] = {
++     "file_name",
++     NULL
++ };
++ 
++ struct genSink {
++ 	PA_LLIST_FIELDS(struct genSink);
++ 	char* name;
++ 	pa_sink* sink;
++ 	int ID;
++ };
++ 
++ struct genSource {
++ 	PA_LLIST_FIELDS(struct genSource);
++ 	char* name;
++ 	pa_source* source;
++ 	pa_sink* linked_sink;
++ 	int ID;
++ };
++ 
++ struct genModule {
++ 	PA_LLIST_FIELDS(struct genModule);
++ 	struct genSource* source;
++ 	struct genSink* sinks;
++ };
++ 
++ struct genGateways {
++ 	PA_LLIST_FIELDS(struct genGateways);
++ 	char* source;
++ 	char* sinks;
++ 	int sinkID;
++ 	int sourceID;
++ 	int ID;
++ };
++ 
++ struct genConnections {
++ 	PA_LLIST_FIELDS(struct genConnections);
++ 	int ID;
++ 	struct genSink* Sink;
++ 	struct genSource* Source;
++ };
++ 
++ typedef enum  {
++ 				gw_in=0,
++ 				gw_out
++ }gwDirection_t;
++ 
++ struct clientGateWays {
++ 	PA_LLIST_FIELDS(struct clientGateWays);
++ 	char name[30];
++ 	char sink_name[30];
++ 	char source_name[30];
++ 	char domain_name[30];
++ 	gwDirection_t direction;
++ };
++ 
++ struct clientSource {
++ 	PA_LLIST_FIELDS(struct clientSource);
++ 	char name[30];
++ 	char Audioclass[30];
++ };
++ 
++ struct clientSink {
++ 	PA_LLIST_FIELDS(struct clientSink);
++ 	char name[30];
++ 	char Audioclass[30];
++ };
++ 
++ struct userdata {
++     char* name;
++     pa_dbus_connection *bus;
++     pa_core *core;
++     PA_LLIST_HEAD(struct genSink, listSinks);
++     PA_LLIST_HEAD(struct genSource, listSources);
++     PA_LLIST_HEAD(struct genModule, listModules);
++     PA_LLIST_HEAD(struct genGateways, listGateways);
++     PA_LLIST_HEAD(struct genConnections, listConnections);
++     PA_LLIST_HEAD(struct clientSink, listClientSinks);
++     PA_LLIST_HEAD(struct clientSource, listClientSources);
++     PA_LLIST_HEAD(struct clientGateWays, listCLientGateways);
++ };
++ 
++ //<node>
++ //	<interface name="com.genivi.routing">
++ //	<method name="registerSource">
++ //		<arg name="name" type="s" direction="in" />
++ //		<arg name="audioclass" type="s" direction="in" />
++ //		<arg name="domain" type="s" direction="in"/>
++ //		<arg name="assigned_adress" type="i" direction="out"/>
++ //	</method>
++ //	<method name="registerDomain">
++ //		<arg name="name" type="s" direction="in" />
++ //		<arg name="node" type="s" direction="in" />
++ //		<arg name="earlymode" type="b" direction="in"/>
++ //		<arg name="assigned_adress" type="i" direction="out"/>
++ //	</method>
++ //	<method name="registerSink">
++ //		<arg name="name" type="s" direction="in" />
++ //		<arg name="sinkclass" type="s" direction="in" />
++ //		<arg name="domain" type="s" direction="in"/>
++ //		<arg name="assigned_adress" type="i" direction="out"/>
++ //	</method>
++ //	<method name="registerGateway">
++ //		<arg name="name" type=s->name;"s" direction="in" />
++ //		<arg name="sink" type="s" direction="in" />
++ //		<arg name="source" type="s" direction="in" />
++ //		<arg name="domainSource" type="s" direction="in"/>
++ //		<arg name="domainSink" type="s" direction="in"/>
++ //		<arg name="controlDomain" type="s" direction="in"/>loadConfigFile
++ //		<arg name="assigned_adress" type="i" direction="out"/>int RegisterSource(const char* name,const char* audioclass, const char* Domain, void* userdata);
++ //	</method>
++ //	<signal name="SystemReady"/>
++ //</node>
++ 
++ //all these functions can be called @ the routinginterface
++ int registerSource(const char* name,const char* audioclass, const char* domain, void* userdata);
++ int registerDomain(const char* name,const char* node, pa_bool_t earlymode, void* userdata);
++ int registerSink(const char* name, const char* sinkclass, const char* domain, void* userdata);
++ int registerGateway(const char* name, const char* sink, const char* source, const char* domainSource, const char* domainSink, const char* controlDomain, void* userdata);
++ int peekDomain(const char* name, void* userdata);
++ 
++ //all these functions can be called from the routinginterface
++ void DbusHandleConnect(pa_core* c,DBusMessage *m, void* userdata);
++ void DbusHandleDisconnect(pa_core* c,DBusMessage *m, void* userdata);
++ void DbusHandleSetSourceVolume(pa_core* c,DBusMessage *m, void* userdata);
++ void DbusHandleSetSinkVolume(pa_core* c,DBusMessage *m, void* userdata);
++ void DbusHandleMuteSource(pa_core* c,DBusMessage *m, void* userdata);
++ void DbusHandleMuteSink(pa_core* c,DBusMessage *m, void* userdata);
++ void DbusHandleUmuteSource(pa_core* c,DBusMessage *m, void* userdata);
++ void DbusHandleUmuteSink(pa_core* c,DBusMessage *m, void* userdata);
++ 
++ void intialRegistration(pa_core* c,void* userdata);
++ 
++ /** This function loads a configuration file with sources and sinks into
++  * 	the structures.
++  * @param filename the filename. Must be given absolute.
++  */
++ void loadConfigFile(const char* filename,void* userdata);
++ 
++ int registerSource(const char* name,const char* audioclass, const char* domain, void* userdata) {
++ 	struct userdata *u = userdata;
++ 
++ 	DBusConnection* conn=pa_dbus_connection_get(u->bus);
++  	DBusMessage* msg;
++    	DBusMessageIter args;
++    	DBusPendingCall* pending;
++     int retval;
++ 
++ 	pa_assert_se(msg = dbus_message_new_method_call(
++ 			ROUTING_INTERFACE_TARGET, // target for the method call
++ 			ROUTING_REGISTER_PATH, // path to call on
++         	ROUTING_INTERFACE_NAME, // interface to call on
++         	R_REGISTER_SOURCE)); // method name
++    
++ 	if (NULL == msg) { 
++       		pa_log("Message Null");
++       		exit(1);
++    	}
++ 
++ 	// append arguments
++ 	pa_assert_se(dbus_message_append_args (	msg,
++ 			 	 	 	 	 	DBUS_TYPE_STRING, &name,
++ 			 	 	 	 	 	DBUS_TYPE_STRING, &audioclass,
++ 			 	 	 	 	 	DBUS_TYPE_STRING, &domain,
++ 			 	 	 	 	 	DBUS_TYPE_INVALID));
++    	// send message and get a handle for a reply
++    	if (!dbus_connection_send_with_reply (conn, msg, &pending, -1)) { // -1 is default timeout
++       		pa_log( "Out Of Memory!\n");
++       		exit(1);
++   	}
++    	if (NULL == pending) {
++       		pa_log("Pending Call Null\n");
++       		exit(1);
++    	}
++    	//force message out, if queue did not react
++ 	dbus_connection_flush(conn);
++ 
++     pa_log("Send out RegisterSource");
++ 
++     // free message
++     dbus_message_unref(msg);
++ 
++     // block until we recieve a reply
++     dbus_pending_call_block(pending);
++ 
++     // get the reply message
++     msg = dbus_pending_call_steal_reply(pending);
++     if (NULL == msg) {
++     	 pa_log("Reply Null\n");
++        exit(1);
++     }
++     // free the pending message handle
++     dbus_pending_call_unref(pending);
++ 
++     // read the parameters
++     if (!dbus_message_iter_init(msg, &args))
++     	 pa_log("Message has no arguments!\n");
++     else
++     	 dbus_message_iter_get_basic(&args, &retval);
++ 
++     pa_log("Got Reply: %i\n", retval);
++ 
++     // free reply and close connection
++     dbus_message_unref(msg);
++ 	return retval;
++ }
++ 
++ int registerDomain(const char* name,const char* node, pa_bool_t earlymode, void* userdata) {
++ 	struct userdata *u = userdata;
++ 
++ 	DBusConnection* conn=pa_dbus_connection_get(u->bus);
++  	DBusMessage* msg;
++    	DBusMessageIter args;
++    	DBusPendingCall* pending;
++     int retval, ibool=0;
++ 
++     if (earlymode==TRUE) {
++     	ibool=1;
++     }
++ 
++     pa_assert_se(msg = dbus_message_new_method_call(
++ 			ROUTING_INTERFACE_TARGET, // target for the method call
++ 			ROUTING_REGISTER_PATH, // path to call on
++         	ROUTING_INTERFACE_NAME, // interface to call on
++         	R_REGISTER_DOMAIN)); // method name
++    
++ 	if (NULL == msg) { 
++       		pa_log("Message Null");
++       		exit(1);
++    	}
++ 
++ 	// append arguments
++ 	pa_assert_se(dbus_message_append_args (	msg,
++ 			 	 	 	 	 	DBUS_TYPE_STRING, &name,
++ 			 	 	 	 	 	DBUS_TYPE_STRING, &node,
++ 			 	 	 	 	 	DBUS_TYPE_BOOLEAN, &ibool,
++ 			 	 	 	 	 	DBUS_TYPE_INVALID));
++ 
++     pa_log("send message\n");
++    	// send message and get a handle for a reply
++    	if (!dbus_connection_send_with_reply (conn, msg, &pending, -1)) { // -1 is default timeout
++       		pa_log( "Out Of Memory!\n");
++       		exit(1);
++   	}
++    	if (NULL == pending) {
++       		pa_log("Pending Call Null\n");
++       		exit(1);
++    	}
++    	//force message out, if queue did not react
++ 	dbus_connection_flush(conn);
++ 
++     pa_log("Send out %s",R_REGISTER_DOMAIN);
++ 
++     // free message
++     dbus_message_unref(msg);
++ 
++     // block until we recieve a reply
++     dbus_pending_call_block(pending);
++ 
++     // get the reply message
++     msg = dbus_pending_call_steal_reply(pending);
++     if (NULL == msg) {
++     	 pa_log("Reply Null\n");
++        exit(1);
++     }
++     // free the pending message handle
++     dbus_pending_call_unref(pending);
++ 
++     // read the parameters
++     if (!dbus_message_iter_init(msg, &args))
++     	 pa_log("Message has no arguments!\n");
++     else
++     	 dbus_message_iter_get_basic(&args, &retval);
++     pa_log("Got Reply: %i\n", retval);
++ 
++     // free reply and close connection
++     dbus_message_unref(msg);
++ 	return retval;
++ }
++ int registerSink(const char* name, const char* sinkclass, const char* domain, void* userdata) {
++ 	struct userdata *u = userdata;
++ 
++ 	DBusConnection* conn=pa_dbus_connection_get(u->bus);
++ 	DBusMessage* msg;
++ 	DBusMessageIter args;
++ 	DBusPendingCall* pending;
++ 	int retval=0;
++ 
++ 	pa_assert_se(msg = dbus_message_new_method_call(
++ 			ROUTING_INTERFACE_TARGET, // target for the method call
++ 			ROUTING_REGISTER_PATH, // path to call on
++ 			ROUTING_INTERFACE_NAME, // interface to call on
++ 			R_REGISTER_SINK)); // method name
++ 
++ 	if (NULL == msg) {
++ 			pa_log("Message Null");
++ 			exit(1);
++ 	}
++ 	pa_log("Sink %s",name);
++ 	// append arguments
++ 	pa_assert_se(dbus_message_append_args (	msg,
++ 			 	 	 	 	 	DBUS_TYPE_STRING, &name,
++ 			 	 	 	 	 	DBUS_TYPE_STRING, &sinkclass,
++ 			 	 	 	 	 	DBUS_TYPE_STRING, &domain,
++ 			 	 	 	 	 	DBUS_TYPE_INVALID));
++ 
++ 	pa_log("send message\n");
++ 	// send message and get a handle for a reply
++ 	if (!dbus_connection_send_with_reply (conn, msg, &pending, -1)) { // -1 is default timeout
++ 			pa_log( "Out Of Memory!\n");
++ 			exit(1);
++ 	}
++ 	if (NULL == pending) {
++ 			pa_log("Pending Call Null\n");
++ 			exit(1);
++ 	}
++ 	//force message out, if queue did not react
++ 	dbus_connection_flush(conn);
++ 
++ 	pa_log("Send out %s",R_REGISTER_SINK);
++ 
++ 	// free message
++ 	dbus_message_unref(msg);
++ 
++ 	// block until we recieve a reply
++ 	dbus_pending_call_block(pending);
++ 
++ 	// get the reply message
++ 	msg = dbus_pending_call_steal_reply(pending);
++ 	if (NULL == msg) {
++ 		 pa_log("Reply Null\n");
++ 	   exit(1);
++ 	}
++ 	// free the pending message handle
++ 	dbus_pending_call_unref(pending);
++ 
++ 	// read the parameters
++ 	if (!dbus_message_iter_init(msg, &args))
++ 		 pa_log("Message has no arguments!\n");
++ 	else
++ 		 dbus_message_iter_get_basic(&args, &retval);
++ 
++ 	pa_log("Got Reply: %i\n", retval);
++ 
++ 	// free reply and close connection
++ 	dbus_message_unref(msg);
++ 	return retval;
++ }
++ int registerGateway(const char* name, const char* sink, const char* source, const char* domainSource, const char* domainSink, const char* controlDomain, void* userdata) {
++ 	struct userdata *u = userdata;
++ 
++ 	DBusConnection* conn=pa_dbus_connection_get(u->bus);
++ 	DBusMessage* msg;
++ 	DBusMessageIter args;
++ 	DBusPendingCall* pending;
++ 	int retval=0;
++ 
++ 	pa_assert_se(msg = dbus_message_new_method_call(
++ 			ROUTING_INTERFACE_TARGET, // target for the method call
++ 			ROUTING_REGISTER_PATH, // path to call on
++ 			ROUTING_INTERFACE_NAME, // interface to call on
++ 			R_REGISTER_GATEWAY)); // method name
++ 
++ 	if (NULL == msg) {
++ 			pa_log("Message Null");
++ 			exit(1);
++ 	}
++ 
++ 	// append arguments
++ 	pa_assert_se(dbus_message_append_args (	msg,
++ 								DBUS_TYPE_STRING, &name,
++ 								DBUS_TYPE_STRING, &sink,
++ 								DBUS_TYPE_STRING, &source,
++ 								DBUS_TYPE_STRING, &domainSource,
++ 								DBUS_TYPE_STRING, &domainSink,
++ 								DBUS_TYPE_STRING, &controlDomain,
++ 								DBUS_TYPE_INVALID));
++ 
++ 	// send message and get a handle for a reply
++ 	if (!dbus_connection_send_with_reply (conn, msg, &pending, -1)) { // -1 is default timeout
++ 			pa_log( "Out Of Memory!\n");
++ 			exit(1);
++ 	}
++ 	if (NULL == pending) {
++ 			pa_log("Pending Call Null\n");
++ 			exit(1);
++ 	}
++ 	//force message out, if queue did not react
++ 	dbus_connection_flush(conn);
++ 
++ 	pa_log("Send out %s",R_REGISTER_GATEWAY);
++ 
++ 	// free message
++ 	dbus_message_unref(msg);
++ 
++ 	// block until we recieve a reply
++ 	dbus_pending_call_block(pending);
++ 
++ 	// get the reply message
++ 	msg = dbus_pending_call_steal_reply(pending);
++ 	if (NULL == msg) {
++ 		 pa_log("Reply Null\n");
++ 	   exit(1);
++ 	}
++ 	// free the pending message handle
++ 	dbus_pending_call_unref(pending);
++ 
++ 	// read the parameters
++ 	if (!dbus_message_iter_init(msg, &args))
++ 		 pa_log("Message has no arguments!\n");
++ 	else
++ 		 dbus_message_iter_get_basic(&args, &retval);
++ 
++ 	pa_log("Got Reply: %i\n", retval);
++ 
++ 	// free reply and close connection
++ 	dbus_message_unref(msg);
++ 	return retval;
++ }
++ int peekDomain(const char* name, void* userdata) {
++ 	struct userdata *u = userdata;
++ 
++ 	DBusConnection* conn=pa_dbus_connection_get(u->bus);
++ 	DBusMessage* msg;
++ 	DBusMessageIter args;
++ 	DBusPendingCall* pending;
++ 	int retval=0;
++ 
++ 	pa_assert_se(msg = dbus_message_new_method_call(
++ 			ROUTING_INTERFACE_TARGET, // target for the method call
++ 			ROUTING_REGISTER_PATH, // path to call on
++ 			ROUTING_INTERFACE_NAME, // interface to call on
++ 			R_PEEK_DOMAIN)); // method name
++ 
++ 	if (NULL == msg) {
++ 			pa_log("Message Null");
++ 			exit(1);
++ 	}
++ 
++ 	// append arguments
++ 	pa_assert_se(dbus_message_append_args (	msg,
++ 								DBUS_TYPE_STRING, &name,
++ 								DBUS_TYPE_INVALID));
++ 
++ 	// send message and get a handle for a reply
++ 	if (!dbus_connection_send_with_reply (conn, msg, &pending, -1)) { // -1 is default timeout
++ 			pa_log( "Out Of Memory!\n");
++ 			exit(1);
++ 	}
++ 	if (NULL == pending) {
++ 			pa_log("Pending Call Null\n");
++ 			exit(1);
++ 	}
++ 	//force message out, if queue did not react
++ 	dbus_connection_flush(conn);
++ 
++ 	pa_log("Send out %s",R_PEEK_DOMAIN);
++ 
++ 	// free message
++ 	dbus_message_unref(msg);
++ 
++ 	// block until we recieve a reply
++ 	dbus_pending_call_block(pending);
++ 
++ 	// get the reply message
++ 	msg = dbus_pending_call_steal_reply(pending);
++ 	if (NULL == msg) {
++ 		 pa_log("Reply Null\n");
++ 	   exit(1);
++ 	}
++ 	// free the pending message handle
++ 	dbus_pending_call_unref(pending);
++ 
++ 	// read the parameters
++ 	if (!dbus_message_iter_init(msg, &args))
++ 		 pa_log("Message has no arguments!\n");
++ 	else
++ 		 dbus_message_iter_get_basic(&args, &retval);
++ 
++ 	pa_log("Got Reply: %i\n", retval);
++ 
++ 	// free reply and close connection
++ 	dbus_message_unref(msg);
++ 	return retval;
++ }
++ 
++ void DbusHandleConnect(pa_core* c,DBusMessage *m, void* userdata) {
++     struct userdata *u = userdata;
++     DBusMessage *r = NULL;
++     DBusMessageIter args;
++     int connect_source = 0;
++     int connect_sink = 0;
++     int32_t connect_ID;
++ 
++ 	if (!dbus_message_iter_init(m, &args)) {
++ 		pa_log("connect message had no args");
++ 	}
++ 	dbus_message_iter_get_basic(&args, &connect_source);
++ 	dbus_message_iter_next(&args);
++ 	dbus_message_iter_get_basic(&args, &connect_sink);
++ 	dbus_message_iter_next(&args);
++ 	dbus_message_iter_get_basic(&args, &connect_ID);
++ 	pa_log("Connect was called. Shall connect %d to %d, conn ID %d",connect_source,connect_sink,connect_ID);
++ 
++     struct genSink* Sink=NULL;
++     PA_LLIST_FOREACH(Sink,u->listSinks) {
++     	pa_log("Sink name %s, sink ID %d",Sink->name,Sink->ID);
++     	if (Sink->ID==connect_sink) {
++     		pa_log("found matching sink : %s!",Sink->name);
++     		break;
++     	}
++     }
++ 
++     //for this Sink, there shall be a new Source Linked
++     struct genSource* Source=NULL;
++     PA_LLIST_FOREACH(Source,u->listSources) {
++     	if (Source->ID==connect_source) {
++     		pa_log("found matching source : %s!",Source->name);
++     		Source->linked_sink=Sink->sink;
++     		break;
++     	}
++     }
++     //ok Sink input for this client exists -> move it !!!!
++ 	pa_sink_input* s;
++ 	uint32_t idx, idx2, idx3;
++ 	PA_IDXSET_FOREACH(s, u->core->sink_inputs, idx) {
++ 		char* app_name=pa_proplist_gets(s->proplist,PA_PROP_APPLICATION_NAME);
++ 		if (app_name) {
++ 			if (strcmp(app_name,Source->name)==0) {
++ 				pa_log("move it!!!!!!");
++ 				pa_sink_input_move_to(s,Sink->sink,TRUE);
++ 			}
++ 		}
++ 	}
++ 
++ 	pa_source* so;
++ 	pa_source_output* so_out;
++ 	PA_IDXSET_FOREACH(so, u->core->sources, idx) {
++ 		char* name=so->name;
++ 		if (strcmp(name,Source->name)==0) {
++ 			pa_log("found to be a real source, taking module-loop %s",Sink->sink->name);
++ 			PA_IDXSET_FOREACH(s, u->core->sink_inputs, idx2) {
++ 				char* client=s->module->name;
++ 				if (strcmp(client,"module-loopback")==0) {
++ 					pa_log("want to move to %s",Sink->sink->name);
++ 					pa_sink_input_move_to(s,Sink->sink,TRUE);
++ 				}
++ 			}
++ 			PA_IDXSET_FOREACH(so_out, u->core->source_outputs, idx3) {
++ 				char* client=so_out->module->name;
++ 				if (strcmp(client,"module-loopback")==0) {
++ 					pa_source_output_move_to(so_out,so,TRUE);
++ 				}
++ 			}
++ 		}
++ 	}
++ 
++ 	struct genConnections* gConnect=NULL;
++ 	gConnect= pa_xnew0(struct genConnections, 1);
++ 	gConnect->ID=connect_ID;
++ 	gConnect->Sink=Sink;
++ 	gConnect->Source=Source;
++ 	PA_LLIST_PREPEND(struct genConnections,u->listConnections,gConnect);
++ 	pa_assert_se(r = dbus_message_new_method_return(m));
++ 	dbus_message_append_args(	r,
++ 								DBUS_TYPE_INT32, &connect_ID,
++ 	                            DBUS_TYPE_INVALID);
++     pa_assert_se(dbus_connection_send(pa_dbus_connection_get(u->bus), r, NULL));
++     dbus_message_unref(r);
++ 	
++ }
++ 
++ void DBusHandleDisconnect(pa_core* c,DBusMessage *m, void* userdata) {
++     struct userdata *u = userdata;
++     DBusMessage *r = NULL;
++     DBusMessageIter args;
++     int32_t connectID = 0;
++ 
++ 	if (!dbus_message_iter_init(m, &args)) {
++ 		pa_log("disconnect message had no args");
++ 	}
++ 	dbus_message_iter_get_basic(&args, &connectID);
++ 	pa_log("Disconnect was called. Shall disconnect ID %d ",connectID);
++ 
++     struct genConnections* Connect=NULL;
++     PA_LLIST_FOREACH(Connect,u->listConnections) {
++     	if (Connect->ID==connectID) {
++     		pa_log("found connection!");
++     		break;
++     	}
++     }
++ 
++     Connect->Source->linked_sink=NULL;
++     //pa_sink_detach(Connect->Sink->sink);
++     pa_sink_input* s;
++     uint32_t idx=0,idx2=0;
++ 	PA_IDXSET_FOREACH(s, Connect->Sink->sink->inputs, idx) {
++ 		char* app_name=s->sink->name;
++ 		pa_log("name %s %s",app_name,Connect->Sink->name);
++ 		if (strcmp(app_name,Connect->Sink->name)==0) {
++ 			char* module_name=s->module->name;
++ 			pa_log("module name %s",module_name);
++ 			if(module_name && strcmp(module_name,"module-loopback")==0) {
++ 				pa_sink* nu;
++ 				PA_IDXSET_FOREACH(nu, u->core->sinks, idx2) {
++ 					char* name=nu->name;
++ 					if (strcmp(name,"null")==0) {
++ 						pa_sink_input_move_to(s,nu,TRUE);
++ 						break;
++ 					}
++ 				}
++ 			} else {
++ 
++ 				char* app_name=pa_proplist_gets(s->proplist,PA_PROP_APPLICATION_NAME);
++ 				if (strcmp(app_name,Connect->Source->name)==0) {
++ 					pa_sink_input_kill(s);
++ 				}
++ 			}
++ 		}
++ 	}
++     PA_LLIST_REMOVE(struct genConnections, u->listConnections,Connect);
++ 
++ 	pa_assert_se(r = dbus_message_new_method_return(m));
++ 	dbus_message_append_args(	r,
++ 								DBUS_TYPE_INT32, &connectID,
++ 	                            DBUS_TYPE_INVALID);
++     pa_assert_se(dbus_connection_send(pa_dbus_connection_get(u->bus), r, NULL));
++     dbus_message_unref(r);
++ 
++     //TODO handle errors
++ 
++ }
++ 
++ void DbusHandleSetSourceVolume(pa_core* c,DBusMessage *m, void* userdata) {
++     struct userdata *u = userdata;
++     DBusMessage *r = NULL;
++     DBusMessageIter args;
++     int volume = 0, sourceID=0;
++     int32_t vol32;
++ 
++ 	if (!dbus_message_iter_init(m, &args)) {
++ 		pa_log("SourceVolume message had no args");
++ 	}
++ 	dbus_message_iter_get_basic(&args, &volume);
++ 	dbus_message_iter_next(&args);
++ 	dbus_message_iter_get_basic(&args, &sourceID);
++ 	pa_log("SourceVolume was called shall set %d to %d ",sourceID, volume);
++ 
++     struct genSource* Source=NULL;
++     PA_LLIST_FOREACH(Source,u->listSources) {
++     	if (Source->ID==sourceID) {
++     		pa_log("found matching source : %s!",Source->name);
++     		break;
++     	}
++     }
++     pa_cvolume cvol;
++     pa_cvolume_set(&cvol, 1, volume);
++     pa_sink_input* si;
++     int idx=0;
++     PA_IDXSET_FOREACH(si, Source->linked_sink->inputs, idx) {
++     	char* app_name=pa_proplist_gets(si->proplist,PA_PROP_APPLICATION_NAME);
++     	if (strcmp(app_name,Source->name)==0) {
++     		pa_sink_input_set_volume(si, &cvol, TRUE, TRUE);
++     	}
++     }
++ 
++ 
++     vol32=(int32_t)volume;
++ 	pa_assert_se(r = dbus_message_new_method_return(m));
++ 	dbus_message_append_args(	r,
++ 								DBUS_TYPE_INT32, &vol32,
++ 	                            DBUS_TYPE_INVALID);
++     pa_assert_se(dbus_connection_send(pa_dbus_connection_get(u->bus), r, NULL));
++     dbus_message_unref(r);
++ }
++ 
++ void DbusHandleSetSinkVolume(pa_core* c,DBusMessage *m, void* userdata) {
++     struct userdata *u = userdata;
++     DBusMessage *r = NULL;
++     DBusMessageIter args;
++     int volume = 0, sinkID=0;
++     int32_t vol32;
++ 
++ 	if (!dbus_message_iter_init(m, &args)) {
++ 		pa_log("SinkVolume message had no args");
++ 	}
++ 	dbus_message_iter_get_basic(&args, &volume);
++ 	dbus_message_iter_next(&args);
++ 	dbus_message_iter_get_basic(&args, &sinkID);
++ 	pa_log("SinkVolume was called shall set %d to %d ",sinkID, volume);
++ 
++     struct genSink* Sink=NULL;
++     PA_LLIST_FOREACH(Sink,u->listSinks) {
++     	if (Sink->ID==sinkID) {
++     		pa_log("found matching source : %s!",Sink->name);
++     		break;
++     	}
++     }
++     pa_cvolume cvol=Sink->sink->real_volume;
++ 
++ 
++     for (int i=0;i<=cvol.channels;i++) {
++     	cvol.values[i]=(pa_volume_t)volume;
++     }
++ 
++     pa_sink_set_volume(Sink->sink,&cvol,TRUE,TRUE);
++ 
++     vol32=(int32_t) volume;
++ 	pa_assert_se(r = dbus_message_new_method_return(m));
++ 	dbus_message_append_args(	r,
++ 								DBUS_TYPE_INT32, &vol32,
++ 	                            DBUS_TYPE_INVALID);
++     pa_assert_se(dbus_connection_send(pa_dbus_connection_get(u->bus), r, NULL));
++     dbus_message_unref(r);
++ }
++ 
++ void DbusHandleMuteSource(pa_core* c,DBusMessage *m, void* userdata) {
++     struct userdata *u = userdata;
++     DBusMessage *r = NULL;
++     DBusMessageIter args;
++     int SourceID=0;
++     int32_t vol32;
++ 
++ 	if (!dbus_message_iter_init(m, &args)) {
++ 		pa_log("MuteSource message had no args");
++ 	}
++ 	dbus_message_iter_get_basic(&args, &SourceID);
++ 	pa_log("MuteSource was called shall mute %d ",SourceID);
++ 
++     struct genSource* Source=NULL;
++     PA_LLIST_FOREACH(Source,u->listSources) {
++     	if (Source->ID==SourceID) {
++     		pa_log("found matching source : %s!",Source->name);
++     		break;
++     	}
++     }
++ 
++     pa_sink_input* si;
++     int idx=0;
++     PA_IDXSET_FOREACH(si, Source->linked_sink->inputs, idx) {
++     	char* app_name=pa_proplist_gets(si->proplist,PA_PROP_APPLICATION_NAME);
++     	if (strcmp(app_name,Source->name)==0) {
++     		pa_sink_input_set_mute(si,TRUE,TRUE);
++     	}
++     }
++ 
++     vol32=(int32_t) 1;
++ 	pa_assert_se(r = dbus_message_new_method_return(m));
++ 	dbus_message_append_args(	r,
++ 								DBUS_TYPE_INT32, &vol32,
++ 	                            DBUS_TYPE_INVALID);
++     pa_assert_se(dbus_connection_send(pa_dbus_connection_get(u->bus), r, NULL));
++     dbus_message_unref(r);
++ }
++ 
++ void DbusHandleMuteSink(pa_core* c,DBusMessage *m, void* userdata) {
++     struct userdata *u = userdata;
++     DBusMessage *r = NULL;
++     DBusMessageIter args;
++     int SinkID=0;
++     int32_t vol32;
++ 
++ 	if (!dbus_message_iter_init(m, &args)) {
++ 		pa_log("MuteSource message had no args");
++ 	}
++ 	dbus_message_iter_get_basic(&args, &SinkID);
++ 	pa_log("MuteSink was called shall mute %d ",SinkID);
++ 
++     struct genSink* Sink=NULL;
++     PA_LLIST_FOREACH(Sink,u->listSinks) {
++     	if (Sink->ID==SinkID) {
++     		pa_log("found matching source : %s!",Sink->name);
++     		break;
++     	}
++     }
++ 
++     pa_sink_set_mute(Sink->sink,TRUE,TRUE);
++ 
++     vol32=(int32_t) 1;
++ 	pa_assert_se(r = dbus_message_new_method_return(m));
++ 	dbus_message_append_args(	r,
++ 								DBUS_TYPE_INT32, &vol32,
++ 	                            DBUS_TYPE_INVALID);
++     pa_assert_se(dbus_connection_send(pa_dbus_connection_get(u->bus), r, NULL));
++     dbus_message_unref(r);
++ }
++ 
++ void DbusHandleUmuteSource(pa_core* c,DBusMessage *m, void* userdata) {
++     struct userdata *u = userdata;
++     DBusMessage *r = NULL;
++     DBusMessageIter args;
++     int SourceID=0;
++     int32_t vol32;
++ 
++ 	if (!dbus_message_iter_init(m, &args)) {
++ 		pa_log("MuteSource message had no args");
++ 	}
++ 	dbus_message_iter_get_basic(&args, &SourceID);
++ 	pa_log("MuteSource was called shall mute %d ",SourceID);
++ 
++     struct genSource* Source=NULL;
++     PA_LLIST_FOREACH(Source,u->listSources) {
++     	if (Source->ID==SourceID) {
++     		pa_log("found matching source : %s!",Source->name);
++     		break;
++     	}
++     }
++ 
++     pa_sink_input* si;
++     int idx=0;
++     PA_IDXSET_FOREACH(si, Source->linked_sink->inputs, idx) {
++     	char* app_name=pa_proplist_gets(si->proplist,PA_PROP_APPLICATION_NAME);
++     	if (strcmp(app_name,Source->name)==0) {
++     		pa_sink_input_set_mute(si,FALSE,TRUE);
++     	}
++     }
++ 
++     vol32=(int32_t) 1;
++ 	pa_assert_se(r = dbus_message_new_method_return(m));
++ 	dbus_message_append_args(	r,
++ 								DBUS_TYPE_INT32, &vol32,
++ 	                            DBUS_TYPE_INVALID);
++     pa_assert_se(dbus_connection_send(pa_dbus_connection_get(u->bus), r, NULL));
++     dbus_message_unref(r);
++ }
++ 
++ void DbusHandleUmuteSink(pa_core* c,DBusMessage *m, void* userdata) {
++     struct userdata *u = userdata;
++     DBusMessage *r = NULL;
++     DBusMessageIter args;
++     int SinkID=0;
++     int32_t vol32;
++ 
++ 	if (!dbus_message_iter_init(m, &args)) {
++ 		pa_log("MuteSource message had no args");
++ 	}
++ 	dbus_message_iter_get_basic(&args, &SinkID);
++ 	pa_log("MuteSink was called shall mute %d ",SinkID);
++ 
++     struct genSink* Sink=NULL;
++     PA_LLIST_FOREACH(Sink,u->listSinks) {
++     	if (Sink->ID==SinkID) {
++     		pa_log("found matching source : %s!",Sink->name);
++     		break;
++     	}
++     }
++ 
++     pa_sink_set_mute(Sink->sink,FALSE,TRUE);
++ 
++     vol32=(int32_t) 1;
++ 	pa_assert_se(r = dbus_message_new_method_return(m));
++ 	dbus_message_append_args(	r,
++ 								DBUS_TYPE_INT32, &vol32,
++ 	                            DBUS_TYPE_INVALID);
++     pa_assert_se(dbus_connection_send(pa_dbus_connection_get(u->bus), r, NULL));
++     dbus_message_unref(r);
++ 
++ }
++ 
++ void intialRegistration(pa_core* c,void* userdata) {
++ 	struct userdata *u = userdata;
++ 	//first we register the Domain
++ 	const char * name=THIS_DOMAIN;
++ 	const char * node="pulsePlugin";
++ 	pa_bool_t earlymode=FALSE;
++ 	int k=registerDomain(name,node,earlymode,u);
++ 
++ 	pa_sink* s;
++ 	uint32_t idx_=0;
++ 	//this is not neccessary -> just nicer names...
++ 	PA_IDXSET_FOREACH(s, u->core->sinks, idx_) {
++ 		if (strcmp(s->name,"alsa_output.usb-0ccd_USB_Audio-00-Aureon51MkII.analog-stereo")==0) {
++ 			strcpy(s->name,"alsa_usb");
++ 		}
++ 		if (strcmp(s->name,"alsa_output.default")==0) {
++ 			strcpy(s->name,"alsa_intern");
++ 		}
++ 	}
++ 
++ 	//get all current sinks and register them
++ //	pa_sink* s;
++ //	uint32_t idx;
++ //	int handle=0;
++ //	pa_bool_t is_gw=FALSE;
++ //	PA_IDXSET_FOREACH(s, u->core->sinks, idx) {
++ //		is_gw=FALSE;
++ //		for (int i=0;i <= sizeof(gatewayList)/sizeof(gateWays_t)-1;i++) {
++ //			if (strcmp(s->name,gatewayList[i].sink_name)==0) {
++ //				handle=registerGateway(gatewayList[i].name,gatewayList[i].sink_name,gatewayList[i].source_name,gatewayList[i].domain_name,THIS_DOMAIN,THIS_DOMAIN,u);
++ //				if (handle>0) {
++ //					is_gw=TRUE;
++ //
++ //					struct genGateways* gWay=NULL;
++ //					gWay= pa_xnew0(struct genGateways, 1);
++ //
++ //					struct genSink* Sink=NULL;
++ //					Sink = pa_xnew0(struct genSink, 1);
++ //
++ //					Sink->sink=NULL;
++ //					gWay->ID=handle;
++ //
++ //					handle=0;
++ //					handle=registerSink(gatewayList[i].sink_name,"default",THIS_DOMAIN,u);
++ //					if (handle>0){
++ //						Sink->sink=s;
++ //						Sink->ID=handle;
++ //						Sink->name=s->name;
++ //
++ //						gWay->sinks=s->name;
++ //						gWay->sinkID=handle;
++ //						gWay->source=gatewayList[i].source_name;
++ //						gWay->sourceIis_gw=FALSE;D=registerSource(gatewayList[i].source_name,"default",gatewayList[i].domain_name,u);
++ //
++ //
++ //						PA_LLIST_PREPEND(struct genGateways,u->listGateways,gWay);
++ //						PA_LLIST_PREPEND(struct genSink,u->listSinks,Sink);
++ //					} else {
++ //						pa_log("Sink register failed");
++ //						break;
++ //					}
++ //				} else {
++ //					pa_log("GW register failed");
++ //				}
++ //			}
++ //		}
++ //		if ((strcmp(s->name,"null") ==0) && !is_gw) {
++ //				pa_log ("found null sink"); 				//do nothing, no worth it
++ //		} else if (!is_gw){
++ //				handle=0;
++ //				handle=registerSink(s->name,"default",THIS_DOMAIN,u);
++ //				if (handle>0) {
++ //
++ //					struct genSink* Sit[i].name) {nk=NULL;
++ //
++ //					Sink = pa_xnew0(struct genSink, 1);
++ //					Sink->sink=NULL;
++ //					Sink->sink=s;
++ //					Sink->ID=handle;
++ //					Sink->name=	pa_sink* s;
++ //					PA_LLIST_PREPEND(struct genSink,u->listSinks,Sink);
++ //				} else {
++ //					pa_log("Sink register failed");
++ //				}
++ //		}
++ //	}
++ //
++ //	pa_source* so;
++ //	handle=0;
++ //	//get all current sources and register them
++ //	PA_IDXSET_FOREACH(so, u->core->sources, idx) {
++ //		pa_log("Source %s",so->name);
++ //		is_gw=FALSE;
++ //		for (int i=0;i <= sizeof(gatewayList)/sizeof(gateWays_t)-1;i++) {
++ //			if (strcmp(so->name,gatewayList[i].source_name)==0) {
++ //				handle=registerGateway(gatewayList[i].name,gatewayList[i].sink_name,gatewayList[i].source_name,THIS_DOMAIN,gatewayList[i].domain_name,THIS_DOMAIN,u);
++ //				if (handle>0) {
++ //					is_gw=TRUE;
++ //
++ //					struct genGateways* gWay=NULL;
++ //					gWay= pa_xnew0(struct genGateways, 1);
++ //
++ //					struct genSource* Source=NULL;
++ //					Source= pa_xnew(struct genSource, 1);
++ //
++ //					Source->linked_sink=NULL;
++ //					Source->source=NULL;
++ //
++ //					gWay->ID=handle;
++ //
++ //					handle=0;
++ //					handle = registerSource(gatewayintialRegistrationList[i].source_name,"default",THIS_DOMAIN,u);
++ //					if (handle>0) {
++ //						Source->source=so;
++ //						Source->ID=handle;
++ //						Source->name=so->name;
++ //
++ //						gWay->source=so->name;
++ //						gWay->sinkID=registerSink(gatewayList[i].sink_name,"default",gatewayList[i].domain_name,u);
++ //						gWay->sinks=gatewayList[i].sink_name;
++ //						gWay->sourceID=handle;
++ //
++ //
++ //						PA_LLIST_PREPEND(struct genGateways,u->listGateways,gWay);
++ //						PA_LLIST_PREPEND(struct genSink,u->listSources,Source);
++ //					} else {
++ //						pa_log("GW Sink register failed");
++ //						break;
++ //					}
++ //				} else {
++ //					pa_log("GW register failed");
++ //				}
++ //			}
++ //		}
++ //		if ((strcmp(so->name,"null.monitor") ==0) && !is_gw) {
++ //				pa_log ("found null source"); 							//do nothing, no worth it
++ //		} else if (!is_gw){
++ //			handle=0;
++ //			handle=registerSource(so->name,"default",THIS_DOMAIN,u);
++ //			if (handle>0) {
++ //				struct genSource* Source=NULL;
++ //				Source = pa_xnew0(struct genSource, 1);
++ //				Source->linked_sink=NULL;
++ //				Source->source=NULL;
++ //
++ //				Source->source=so;
++ //				Source->ID=handle;
++ //				Source->name=so->name;
++ //				PA_LLIST_PREPEND(struct genSource,u->listSources,Source);
++ //			} else {
++ //				pa_log("Source register failed");
++ //			}
++ //		}
++ //	}
++ 
++ 	//Real stuff is over, now we start faking Sources
++ 	struct clientSource* clSource=NULL;
++ 	PA_LLIST_FOREACH(clSource,u->listClientSources) {
++ 		int handle=0;
++ 		handle=registerSource(clSource->name,clSource->Audioclass,THIS_DOMAIN,u);
++ 		if (handle>0) {
++ 			struct genSource* Source=NULL;
++ 			Source = pa_xnew0(struct genSource, 1);
++ 			Source->linked_sink=NULL;
++ 			Source->source=NULL;
++ 
++ 			Source->name=clSource->name;
++ 			Source->ID=handle;
++ 			struct genSink* Sink=NULL;
++ 			PA_LLIST_FOREACH(Sink,u->listSinks) {
++ 				if (Sink->sink->index==0) {
++ 					pa_log("Attaching sink");
++ 					Source->linked_sink=Sink->sink;
++ 				}
++ 			}
++ 
++ 			PA_LLIST_PREPEND(struct genSource,u->listSources,Source);
++ 		} else {
++ 			pa_log("Source register failed");
++ 		}
++ 	}
++ 
++ 	struct clientSink* clSink=NULL;
++ 	pa_sink* cs;
++ 	uint32_t idx_s=0;
++ 	PA_LLIST_FOREACH(clSink,u->listClientSinks) {
++ 		int handle=0;
++ 		handle=registerSink(clSink->name,clSink->Audioclass,THIS_DOMAIN,u);
++ 		if (handle>0) {
++ 			struct genSink* Sink=NULL;
++ 			Sink = pa_xnew0(struct genSink, 1);
++ 			Sink->name=clSink->name;
++ 			Sink->ID=handle;
++ 			idx_s=0;
++ 			PA_IDXSET_FOREACH(cs, u->core->sinks, idx_s) {
++ 				if (strcmp(cs->name,Sink->name)==0) {
++ 					Sink->sink=cs;
++ 				}
++ 			}
++ 			PA_LLIST_PREPEND(struct genSink,u->listSinks,Sink);
++ 		} else {
++ 			pa_log("Source register failed");
++ 		}
++ 	}
++ 
++ 	struct clientGateWays* clGateway=NULL;
++ 	pa_source* so;
++ 	pa_sink* si;
++ 	uint32_t idx;
++ 	int handle=0;
++ 	PA_LLIST_FOREACH(clGateway,u->listCLientGateways) {
++ 		//make a difference according to the type of gateway:
++ 		if (clGateway->direction==gw_out) {
++ 			handle=registerGateway(clGateway->name,clGateway->sink_name,clGateway->source_name,clGateway->domain_name,THIS_DOMAIN,THIS_DOMAIN,u);
++ 			if (handle>0) {
++ 
++ 				struct genGateways* gWay=NULL;
++ 				gWay= pa_xnew0(struct genGateways, 1);
++ 				struct genSink* Sink=NULL;
++ 				Sink= pa_xnew(struct genSink, 1);
++ 				Sink->sink=NULL;
++ 				gWay->ID=handle;
++ 
++ 				handle=0;
++ 				handle = registerSink(clGateway->sink_name,"default",THIS_DOMAIN,u);
++ 				if (handle>0) {
++ 					PA_IDXSET_FOREACH(si, u->core->sinks, idx) {
++ 						if (strcmp(si->name,clGateway->sink_name)==0) {
++ 							pa_log("match sink! %s",clGateway->sink_name);
++ 							Sink->sink=si;
++ 							Sink->ID=handle;
++ 							Sink->name=si->name;
++ 							gWay->sinks=si->name;
++ 						}
++ 					}
++ 					gWay->sourceID=registerSource(clGateway->source_name,"default",clGateway->domain_name,u);
++ 					gWay->source=clGateway->source_name;
++ 					gWay->sinkID=handle;
++ 
++ 					PA_LLIST_PREPEND(struct genGateways,u->listGateways,gWay);
++ 					PA_LLIST_PREPEND(struct genSink,u->listSinks,Sink);
++ 
++ 				} else {
++ 					pa_log("GW Sink register failed");
++ 					break;
++ 				}
++ 			} else {
++ 				pa_log("GW register failed");
++ 			}
++ 		} else {
++ 			handle=registerGateway(clGateway->name,clGateway->sink_name,clGateway->source_name,THIS_DOMAIN,clGateway->domain_name,THIS_DOMAIN,u);
++ 			if (handle>0) {
++ 
++ 				struct genGateways* gWay=NULL;
++ 				gWay= pa_xnew0(struct genGateways, 1);
++ 
++ 				struct genSource* Source=NULL;
++ 				Source= pa_xnew(struct genSource, 1);
++ 				Source->linked_sink=NULL;
++ 				Source->source=NULL;
++ 				gWay->ID=handle;
++ 
++ 				handle=0;
++ 				handle = registerSource(clGateway->source_name,"default",THIS_DOMAIN,u);
++ 				if (handle>0) {
++ 					PA_IDXSET_FOREACH(so, u->core->sources, idx) {
++ 						if (strcmp(so->name,clGateway->source_name)==0) {
++ 							Source->source=so;
++ 							Source->ID=handle;
++ 							Source->name=so->name;
++ 							gWay->source=so->name;
++ 						}
++ 					}
++ 					gWay->sinkID=registerSink(clGateway->sink_name,"default",clGateway->domain_name,u);
++ 					gWay->sinks=clGateway->sink_name;
++ 					gWay->sourceID=handle;
++ 
++ 					PA_LLIST_PREPEND(struct genGateways,u->listGateways,gWay);
++ 					PA_LLIST_PREPEND(struct genSource,u->listSources,Source);
++ 
++ 				} else {
++ 					pa_log("GW Sink register failed");
++ 					break;
++ 				}
++ 			} else {
++ 				pa_log("GW register failed");
++ 			}
++ 		}
++ 	}
++ }
++ 
++ static pa_hook_result_t newSinkInput_cb(pa_core *c, pa_sink_input_new_data *s, void* userdata) {
++     struct userdata *u = userdata;
++ 
++     //TODO: ok, one day the pure matching of application names should be changed to grap Process IDs.
++     //But for now, we hook on the name
++ 
++     pa_assert(c);
++     pa_assert(s);
++     pa_assert(u);
++ 
++     // There's no point in doing anything if the core is shut down anyway
++     if (c->state == PA_CORE_SHUTDOWN)
++         return PA_HOOK_OK;
++ 
++     //Do we know the client?
++     char* client=pa_proplist_gets(s->proplist,PA_PROP_APPLICATION_NAME);
++     struct genSource* Source=NULL;
++     pa_log("Callback called %s",client);
++ 
++     PA_LLIST_FOREACH(Source,u->listSources) {
++     	if (strcmp(Source->name,client)==0) {
++     		if (Source->linked_sink) {
++         		pa_log("Client %s %s",Source->name,Source->linked_sink->name);
++     			s->sink=Source->linked_sink;
++     		}
++     	}
++     }
++     return PA_HOOK_OK;
++ }
++ 
++ static DBusHandlerResult signal_handler (DBusConnection *c, DBusMessage *m, void *userdata) {
++ 	struct userdata *u = userdata;
++ 	const char *path;
++ 
++ 	pa_log("message handler called\n");
++ 	pa_assert(u);
++ 	path = dbus_message_get_path(m);
++ 	if (pa_streq(path, OBJECT_PATH)) {
++ 		if (dbus_message_is_method_call(m, SERVICE_NAME, "connect")) {
++ 			pa_log("Connect called");
++ 			DbusHandleConnect(c, m, u);
++ 		} else if (dbus_message_is_method_call(m, SERVICE_NAME, "disconnect")) {
++ 			pa_log("Disconnect called");
++ 			DBusHandleDisconnect(c, m, u);
++ 		} else if (dbus_message_is_method_call(m, SERVICE_NAME, "setSourceVolume")) {
++ 			pa_log("setSourceVolume called");
++ 			DbusHandleSetSourceVolume(c, m, u);
++ 		} else if (dbus_message_is_method_call(m, SERVICE_NAME, "setSinkVolume")) {
++ 			pa_log("setSinkVolume called");
++ 			DbusHandleSetSinkVolume(c, m, u);
++ 		} else if (dbus_message_is_method_call(m, SERVICE_NAME, "muteSource")) {
++ 			pa_log("muteSource called");
++ 			DbusHandleMuteSource(c, m, u);
++ 		} else if (dbus_message_is_method_call(m, SERVICE_NAME, "muteSink")) {
++ 			pa_log("muteSink called");
++ 			DbusHandleMuteSink(c, m, u);
++ 		} else if (dbus_message_is_method_call(m, SERVICE_NAME, "unmuteSink")) {
++ 			pa_log("unmuteSink called");
++ 			DbusHandleUmuteSink(c, m, u);
++ 		} else if (dbus_message_is_method_call(m, SERVICE_NAME, "unmuteSource")) {
++ 			pa_log("unmuteSource called");
++ 			DbusHandleUmuteSource(c, m, u);
++ 		} else if (dbus_message_is_method_call(m, "org.freedesktop.DBus.Introspectable", "Introspect")) {
++ 			const char *xml = PULSE_INTROSPECT_XML;
++ 			pa_log(xml);
++ 			DBusMessage *r = NULL;
++ 			pa_assert_se(r = dbus_message_new_method_return(m));
++ 			pa_assert_se(dbus_message_append_args(
++ 								   r,
++ 								   DBUS_TYPE_STRING, &xml,
++ 								   DBUS_TYPE_INVALID));
++ 			pa_assert_se(dbus_connection_send(pa_dbus_connection_get(u->bus), r, NULL));
++ 			dbus_message_unref(r);
++ 		}
++ 	}   else if (dbus_message_is_method_call(m, "org.freedesktop.DBus.Introspectable", "Introspect")) {
++ 		const char *xml = ROOT_INTROSPECT_XML;
++ 		pa_log(xml);
++ 		DBusMessage *r = NULL;
++ 		pa_assert_se(r = dbus_message_new_method_return(m));
++ 		pa_assert_se(dbus_message_append_args(
++ 							   r,
++ 							   DBUS_TYPE_STRING, &xml,
++ 							   DBUS_TYPE_INVALID));
++ 		pa_assert_se(dbus_connection_send(pa_dbus_connection_get(u->bus), r, NULL));
++ 		dbus_message_unref(r);
++ 	}
++ 
++    	if (dbus_message_is_signal(m, ROUTING_INTERFACE_NAME, "signal_systemReady")) {
++    	    	pa_log("Received Signal signal_systemReady");
++    	    	intialRegistration(c,u);
++    	}
++ 	return DBUS_HANDLER_RESULT_HANDLED;
++ }
++ 
++ void loadConfigFile(const char* filename, void* userdata) {
++ 	struct userdata *u = userdata;
++ 	FILE* f=NULL;
++ 	char* ret;
++ 	if (filename) {
++ 
++         if (!(f = fopen(filename, "r"))) {
++             pa_log(_("Failed to open file '%s'"), filename);
++             goto finish;
++         }
++ 
++         while (!feof(f)) {
++             char l[4096];
++ 
++             if (!fgets(l, sizeof(l), f)) {
++                 if (feof(f))
++                     break;
++             goto finish;
++             }
++ 
++             char* pointer=(char*)l;
++             int len = strlen(pointer);
++             if( pointer[len-1] == '\n' )
++             	pointer[len-1] = 0;
++             char* type=strsep(&pointer,":");
++             if (strcmp(type,"Source")==0) {
++             	ret=strsep(&pointer,",");
++             	struct clientSource* clSource=NULL;
++             	clSource= pa_xnew0(struct clientSource, 1);
++             	strcpy(clSource->name,ret);
++             	strcpy(clSource->Audioclass,pointer);
++             	PA_LLIST_PREPEND(struct clientSource,u->listClientSources,clSource);
++             } else if (strcmp(type,"Sink")==0)  {
++            		ret=strsep(&pointer,",");
++             	struct clientSink* clSink=NULL;
++             	clSink= pa_xnew0(struct clientSink, 1);
++             	strcpy(clSink->name,ret);
++             	strcpy(clSink->Audioclass,pointer);
++             	PA_LLIST_PREPEND(struct clientSink,u->listClientSinks,clSink);
++             } else if (strcmp(type,"Gateway")==0)  {
++             	struct clientGateWays* clGateway=NULL;
++             	clGateway= pa_xnew0(struct clientGateWays, 1);
++            		ret=strsep(&pointer,",");
++ 				strcpy(clGateway->name,ret);
++ 				ret=strsep(&pointer,",");
++ 				strcpy(clGateway->sink_name,ret);
++ 				ret=strsep(&pointer,",");
++ 				strcpy(clGateway->source_name,ret);
++ 				ret=strsep(&pointer,",");
++ 				strcpy(clGateway->domain_name,ret);
++ 				ret=strsep(&pointer,",");
++ 				if (strcmp(ret,"gw_out")==0) {
++ 					clGateway->direction=gw_out;
++ 				} else if (strcmp(ret,"gw_in")==0) {
++ 					clGateway->direction=gw_in;
++ 				}
++             	PA_LLIST_PREPEND(struct clientGateWays,u->listCLientGateways,clGateway);
++             }
++         }
++     }
++ 	finish:
++ 	    if (f) fclose(f);
++ }
++ 
++ int pa__init(pa_module*m) {
++     pa_modargs *ma = NULL;
++     const char* file_name;
++ 	pa_log("Started module Genivi !!!!!!*********************************");
++ 	pa_assert(m);
++ 	DBusError error;
++     static const DBusObjectPathVTable vtable_root = {
++         	.message_function = signal_handler,
++     };
++ 
++     if (!(ma = pa_modargs_new(m->argument, valid_modargs))) {
++         pa_log("Failed to parse module arguments.");
++         goto fail;
++     }
++ 
++     file_name= pa_modargs_get_value(ma, "file_name", NULL);
++     pa_log("filename %s",file_name);
++ 
++ 	//userdata is used to pass data around in the different callbacks
++ 	struct userdata *u;
++ 
++ 	dbus_error_init(&error);
++ 
++ 	m->userdata = u = pa_xnew(struct userdata, 1);
++ 	u->core=m->core;
++ 	pa_hook_connect(&m->core->hooks[PA_CORE_HOOK_SINK_INPUT_NEW], PA_HOOK_EARLY, (pa_hook_cb_t) newSinkInput_cb, u);
++ 
++ 	if (!(u->bus = pa_dbus_bus_get(m->core, DBUS_BUS_SESSION, &error))) {
++ 		pa_log("Failed to get session bus connection: %s", error.message);
++ 	goto fail;
++ 	}
++ 
++ 	//initialize the Linked Lists which hold our data
++ 	PA_LLIST_HEAD_INIT(struct genSink,u->listSinks);
++ 	PA_LLIST_HEAD_INIT(struct genSource,u->listSources);
++ 	PA_LLIST_HEAD_INIT(struct genModule,u->listModules);
++ 	PA_LLIST_HEAD_INIT(struct genGateways,u->listGateways);
++ 	PA_LLIST_HEAD_INIT(struct genConnections,u->listConnections);
++ 	PA_LLIST_HEAD_INIT(struct clientSink,u->listClientSinks);
++ 	PA_LLIST_HEAD_INIT(struct clientSource,u->listClientSources);
++ 	PA_LLIST_HEAD_INIT(struct clientGateWays,u->listCLientGateways);
++ 
++     loadConfigFile(file_name,u);
++ 
++ 	//Register signalhandler for signals coming from Routing interface
++ 	dbus_bus_add_match(pa_dbus_connection_get(u->bus), "type=\'signal\',interface=\'com.genivi.routing\'",NULL);
++ 	dbus_connection_add_filter (pa_dbus_connection_get(u->bus), signal_handler, u, NULL);
++ 	dbus_connection_flush(pa_dbus_connection_get(u->bus));
++ 
++ 	pa_assert_se(dbus_connection_register_object_path(pa_dbus_connection_get(u->bus), OBJECT_ROOT, &vtable_root, u));
++ 
++ 	if (dbus_bus_request_name(pa_dbus_connection_get(u->bus), SERVICE_NAME, DBUS_NAME_FLAG_DO_NOT_QUEUE, &error) != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER) {
++         	pa_log("Failed to request service name " SERVICE_NAME ": %s", error.message);
++         	goto fail;
++     }
++ 
++ 
++ 	//intialRegistration(u->core,u);
++ 
++ 	//int d=registerSource(name, node, name,u);
++ 
++ 	//TODO:
++ 	//the loopback module is loaded via the default file because loading it here fails with segfault.
++ 
++ 
++ 
++ 
++ 
++ 	return 0;
++ fail:
++     pa__done(m);
++ 
++     dbus_error_free(&error);
++ 
++     return -1;
++ }
++ 
++ void pa__done(pa_module*m) {
++ }
+diff -crBN pulseaudio-0.9.22/src/modules/module-genivi-symdef.h pulseaudio-0.9.22-patched/src/modules/module-genivi-symdef.h
+*** pulseaudio-0.9.22/src/modules/module-genivi-symdef.h	1970-01-01 01:00:00.000000000 +0100
+--- pulseaudio-0.9.22-patched/src/modules/module-genivi-symdef.h	2011-06-30 15:16:20.232519999 +0200
+***************
+*** 0 ****
+--- 1,21 ----
++ #ifndef foomodulegenivifoo
++ #define foomodulegenivifoo
++ 
++ #include <pulsecore/core.h>
++ #include <pulsecore/module.h>
++ #include <pulsecore/macro.h>
++ 
++ #define pa__init module_always_sink_LTX_pa__init
++ #define pa__done module_always_sink_LTX_pa__done
++ #define pa__get_author module_always_sink_LTX_pa__get_author
++ #define pa__get_description module_always_sink_LTX_pa__get_description
++ #define pa__get_usage module_always_sink_LTX_pa__get_usage
++ #define pa__get_version module_always_sink_LTX_pa__get_version
++ #define pa__get_deprecated module_always_sink_LTX_pa__get_deprecated
++ #define pa__load_once module_always_sink_LTX_pa__load_once
++ #define pa__get_n_used module_always_sink_LTX_pa__get_n_used
++ 
++ int pa__init(pa_module*m);
++ void pa__done(pa_module*m);
++ 
++ #endif
+diff -crBN pulseaudio-0.9.22/src/SourceList.conf pulseaudio-0.9.22-patched/src/SourceList.conf
+*** pulseaudio-0.9.22/src/SourceList.conf	1970-01-01 01:00:00.000000000 +0100
+--- pulseaudio-0.9.22-patched/src/SourceList.conf	2011-06-30 15:16:20.232519999 +0200
+***************
+*** 0 ****
+--- 1,6 ----
++ Rhythmbox,default
++ Totem Movie Player,default
++ navigation,nav
++ player,default
++ radio,rad
++ ta,ta
+diff -crBN pulseaudio-0.9.22/src/test.pa pulseaudio-0.9.22-patched/src/test.pa
+*** pulseaudio-0.9.22/src/test.pa	1970-01-01 01:00:00.000000000 +0100
+--- pulseaudio-0.9.22-patched/src/test.pa	2011-06-30 15:16:20.232519999 +0200
+***************
+*** 0 ****
+--- 1,54 ----
++ #!/usr/local/bin/pulseaudio -nF
++ #
++ # This file is part of PulseAudio.
++ #
++ # PulseAudio is free software; you can redistribute it and/or modify it
++ # under the terms of the GNU Lesser General Public License as published by
++ # the Free Software Foundation; either version 2 of the License, or
++ # (at your option) any later version.
++ #
++ # PulseAudio is distributed in the hope that it will be useful, but
++ # WITHOUT ANY WARRANTY; without even the implied warranty of
++ # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ # General Public License for more details.
++ #
++ # You should have received a copy of the GNU Lesser General Public License
++ # along with PulseAudio; if not, write to the Free Software Foundation,
++ # Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
++ 
++ # This startup script is used only if PulseAudio is started per-user
++ # (i.e. not in system mode)
++ 
++ .nofail
++ 
++ ### Load something into the sample cache
++ #load-sample-lazy x11-bell /usr/share/sounds/gtk-events/activate.wav
++ #load-sample-lazy pulse-hotplug /usr/share/sounds/startup3.wav
++ #load-sample-lazy pulse-coldplug /usr/share/sounds/startup3.wav
++ #load-sample-lazy pulse-access /usr/share/sounds/generic.wav
++ 
++ .fail
++ 
++ 
++ ### Load audio drivers statically (it's probably better to not load
++ ### these drivers manually, but instead use module-hal-detect --
++ ### see below -- for doing this automatically)
++ load-module module-alsa-sink
++ load-module module-alsa-source
++ load-module module-null-sink
++ load-module module-pipe-sink
++ load-module module-native-protocol-tcp
++ load-module module-loopback
++ load-module module-jack-source
++ load-module module-jack-sink
++ load-module module-tunnel-sink sink_name=tunnel server=10.253.201.82
++ load-module module-genivi file_name=/home/blacky/workspace/pulseaudio-0.9.22/src/Genivi.conf
++ #load-module module-null-sink sink_name="rtp"
++ #load-module module-rtp-send source="rtp.monitor" destination="224.0.0.56" port="5004"
++ 
++ 
++ load-module module-udev-detect
++ 
++ ### Make some devices default
++ set-default-sink null
++ set-default-source null-monitor
