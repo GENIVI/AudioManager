@@ -26,11 +26,9 @@
 #include "DBusCommandInterface.h"
 #include "DBusCommand.h"
 
-
 DBusCommandInterface::DBusCommandInterface(QObject* parent) {
-	(void)parent;
-	REGISTER_METATYPES
-}
+	(void) parent;
+REGISTER_METATYPES}
 
 void DBusCommandInterface::startupInterface() {
 	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Startup of DBUS Command interface"));
@@ -39,7 +37,11 @@ void DBusCommandInterface::startupInterface() {
 	QDBusConnection connection = QDBusConnection::sessionBus();
 	connection.registerService(QString(SERVICEINTERFACE));
 	if (connection.isConnected()) {
-		if (connection.registerObject("/Control", this, (QDBusConnection::ExportAdaptors | QDBusConnection::ExportAllSignals))) {
+		if (connection.registerObject(
+				"/Control",
+				this,
+				(QDBusConnection::ExportAdaptors
+						| QDBusConnection::ExportAllSignals))) {
 			DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Registered DBUS Command interface succsessfully"));
 		} else {
 			DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("Failed to register DBUS Command interface succsessfully"));
@@ -48,7 +50,7 @@ void DBusCommandInterface::startupInterface() {
 }
 
 int DBusCommandInterface::connect(int Source_ID, int Sink_ID) {
-	if(m_core->UserConnect(Source_ID, Sink_ID)==GEN_OK) {
+	if (m_core->UserConnect(Source_ID, Sink_ID) == GEN_OK) {
 		return 1;
 	}
 	return -1;
@@ -64,11 +66,12 @@ int DBusCommandInterface::disconnect(int Source_ID, int Sink_ID) {
 	}
 }
 
-int DBusCommandInterface::interruptRequest(const QString &SourceName, const QString &SinkName) {
-	source_t sourceID=m_core->returnSourceIDfromName(SourceName);
-	sink_t sinkID=m_core->returnSinkIDfromName(SinkName);
-	genInt_t intID=-1;
-	m_core->interruptRequest(sourceID,sinkID,&intID);
+int DBusCommandInterface::interruptRequest(const QString &SourceName,
+		const QString &SinkName) {
+	source_t sourceID = m_core->returnSourceIDfromName(SourceName);
+	sink_t sinkID = m_core->returnSinkIDfromName(SinkName);
+	genInt_t intID = -1;
+	m_core->interruptRequest(sourceID, sinkID, &intID);
 	return intID;
 }
 
@@ -77,15 +80,18 @@ int DBusCommandInterface::interruptResume(int InterruptID) {
 	return 1;
 }
 
-
-
 void DBusCommandInterface::registerAudioManagerCore(AudioManagerCore* core) {
 	m_core = core;
-	QObject::connect((const QObject*) m_core, SIGNAL(signal_connectionChanged()), (const QObject*) this, SLOT(slot_connectionChanged()));
-	QObject::connect((const QObject*) m_core, SIGNAL(signal_numberOfSinksChanged()), (const QObject*) this, SLOT(slot_numberOfSinksChanged()));
-	QObject::connect((const QObject*) m_core, SIGNAL(signal_numberOfSourcesChanged()), (const QObject*) this, SLOT(slot_numberOfSourcesChanged()));
+	QObject::connect((const QObject*) m_core,
+			SIGNAL(signal_connectionChanged()), (const QObject*) this,
+			SLOT(slot_connectionChanged()));
+	QObject::connect((const QObject*) m_core,
+			SIGNAL(signal_numberOfSinksChanged()), (const QObject*) this,
+			SLOT(slot_numberOfSinksChanged()));
+	QObject::connect((const QObject*) m_core,
+			SIGNAL(signal_numberOfSourcesChanged()), (const QObject*) this,
+			SLOT(slot_numberOfSourcesChanged()));
 }
-
 
 void DBusCommandInterface::slot_connectionChanged() {
 	emit signal_connectionChanged();
@@ -98,12 +104,11 @@ void DBusCommandInterface::slot_numberOfSourcesChanged() {
 }
 
 int DBusCommandInterface::setVolume(int SinkID, int Volume) {
-	if (m_core->UserSetVolume(SinkID,Volume)==GEN_OK) {
+	if (m_core->UserSetVolume(SinkID, Volume) == GEN_OK) {
 		return 1;
 	}
 	return -1;
 }
-
 
 QList<SourceType> DBusCommandInterface::getListSources() {
 	return m_core->getListSources();

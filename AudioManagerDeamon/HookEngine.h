@@ -34,29 +34,30 @@ class Queue;
 /**These define the different types of Hooks available in the system
  *
  */
-typedef enum genHook{
-	HOOK_DOMAIN_REGISTER,  		//!< HOOK_DOMAIN_REGISTER
-	HOOK_DOMAIN_DEREGISTER,		//!< HOOK_DOMAIN_DEREGISTER
-	HOOK_SOURCE_REGISTER,  		//!< HOOK_SOURCE_REGISTER
-	HOOK_SOURCE_DEREGISTER,		//!< HOOK_SOURCE_DEREGISTER
-	HOOK_SINK_REGISTER,    		//!< HOOK_SINK_REGISTER
-	HOOK_SINK_DEREGISTER,  		//!< HOOK_SINK_DEREGISTER
-	HOOK_GATEWAY_REGISTER, 		//!< HOOK_GATEWAY_REGISTER
-	HOOK_GATEWAY_DERGISTER,		//!< HOOK_GATEWAY_DERGISTER
-	HOOK_SYSTEM_READY,      	//!< HOOK_SYSTEM_READY
-	HOOK_SYSTEM_DOWN,			//!< HOOK_SYSTEM_DOWN
-	HOOK_USER_CONNECTION_REQUEST,	//!< HOOK_USER_CONNECTION_REQUEST
-	HOOK_USER_DISCONNECTION_REQUEST,	//!< HOOK_USER_DISCONNECTION_REQUEST
-	HOOK_CONNECTION_REQUEST,   	//!< HOOK_CONNECTION_REQUEST
-	HOOK_DISCONNECTION_REQUEST,	//!< HOOK_DISCONNECTION_REQUEST
-	HOOK_ROUTING_REQUEST,      	//!< HOOK_ROUTING_REQUEST
-	HOOK_ROUTING_COMPLETE,     	//!< HOOK_ROUTING_COMPLETE
-	HOOK_VOLUME_CHANGE,    		//!< HOOK_VOLUME_CHANGE
-	HOOK_MUTE_SOURCE,      		//!< HOOK_MUTE_SOURCEDataBaseHandler
-	HOOK_UNMUTE_SOURCE,			//!< HOOK_UNMUTE_SOURCE
-	HOOK_MUTE_SINK,				//!< HOOK_MUTE_SINK
-	HOOK_UNMUTE_SINK,           //!< HOOK_UNMUTE_SINK
-	HOOK_INTERRUPT_REQUEST		//!< HOOK_INTERRUPT_REQUEST
+typedef enum genHook {
+	HOOK_DOMAIN_REGISTER, //!< HOOK_DOMAIN_REGISTER
+	HOOK_DOMAIN_DEREGISTER, //!< HOOK_DOMAIN_DEREGISTER
+	HOOK_SOURCE_REGISTER, //!< HOOK_SOURCE_REGISTER
+	HOOK_SOURCE_DEREGISTER, //!< HOOK_SOURCE_DEREGISTER
+	HOOK_SINK_REGISTER, //!< HOOK_SINK_REGISTER
+	HOOK_SINK_DEREGISTER, //!< HOOK_SINK_DEREGISTER
+	HOOK_GATEWAY_REGISTER, //!< HOOK_GATEWAY_REGISTER
+	HOOK_GATEWAY_DERGISTER, //!< HOOK_GATEWAY_DERGISTER
+	HOOK_SYSTEM_READY, //!< HOOK_SYSTEM_READY
+	HOOK_SYSTEM_DOWN, //!< HOOK_SYSTEM_DOWN
+	HOOK_USER_CONNECTION_REQUEST, //!< HOOK_USER_CONNECTION_REQUEST
+	HOOK_USER_DISCONNECTION_REQUEST, //!< HOOK_USER_DISCONNECTION_REQUEST
+	HOOK_CONNECTION_REQUEST, //!< HOOK_CONNECTION_REQUEST
+	HOOK_DISCONNECTION_REQUEST, //!< HOOK_DISCONNECTION_REQUEST
+	HOOK_ROUTING_REQUEST, //!< HOOK_ROUTING_REQUEST
+	HOOK_ROUTING_COMPLETE, //!< HOOK_ROUTING_COMPLETE
+	HOOK_VOLUME_CHANGE, //!< HOOK_VOLUME_CHANGE
+	HOOK_MUTE_SOURCE, //!< HOOK_MUTE_SOURCEDataBaseHandler
+	HOOK_UNMUTE_SOURCE, //!< HOOK_UNMUTE_SOURCE
+	HOOK_MUTE_SINK, //!< HOOK_MUTE_SINK
+	HOOK_UNMUTE_SINK, //!< HOOK_UNMUTE_SINK
+	HOOK_INTERRUPT_REQUEST
+//!< HOOK_INTERRUPT_REQUEST
 } genHook_t;
 
 class HookHandler;
@@ -102,28 +103,134 @@ public:
 
 	void registerAudioManagerCore(AudioManagerCore* core);
 
-	virtual genHookResult_t hookDomainRegister (char* Name, domain_t ID) {(void)Name; (void)ID; return HOOK_UNUSED;};
-	virtual genHookResult_t hookDomainDeregister (domain_t ID) {(void) ID; return HOOK_UNUSED;};
-	virtual genHookResult_t hookSinkRegister (char* Name, sink_t ID) {(void)Name; (void) ID; return HOOK_UNUSED;};
-	virtual genHookResult_t hookSinkDeregister (sink_t ID) {(void) ID; return HOOK_UNUSED;};
-	virtual genHookResult_t hookSourceRegister (char* Name, source_t ID) {(void)Name; (void) ID; return HOOK_UNUSED;};
-	virtual genHookResult_t hookSourceDeregister (source_t ID) {(void)ID; return HOOK_UNUSED;};
-	virtual genHookResult_t hookGatewayRegister (char* Name, gateway_t ID) {(void)Name; (void) ID; return HOOK_UNUSED;};
-	virtual genHookResult_t hookGatewayDeregister (gateway_t ID) {(void) ID; return HOOK_UNUSED;};
-	virtual genHookResult_t hookSystemReady (void) {return HOOK_UNUSED;};
-	virtual genHookResult_t hookSystemDown (void) {return HOOK_UNUSED;};
-	virtual genHookResult_t hookUserConnectionRequest (Queue* queue,source_t SourceID, sink_t SinkID) {(void) queue; (void)SourceID; (void)SinkID; return HOOK_UNUSED;};
-	virtual genHookResult_t hookUserDisconnectionRequest (Queue* queue, connection_t connID) {(void)queue; (void) connID; return HOOK_UNUSED;};
-	virtual genHookResult_t hookConnectionRequest (source_t SourceID, sink_t SinkID) {(void)SourceID; (void)SinkID; return HOOK_UNUSED;};
-	virtual genHookResult_t hookDisconnectionRequest (connection_t ID) {(void) ID; return HOOK_UNUSED;};
-	virtual genHookResult_t hookRoutingRequest (bool onlyfree,source_t source, sink_t sink,QList<genRoute_t>* ReturnList) {(void)onlyfree; (void)source;(void)sink; (void)ReturnList; return HOOK_UNUSED;};
-	virtual genHookResult_t hookRoutingComplete (genRoute_t route) {(void)route; return HOOK_UNUSED;};
-	virtual genHookResult_t hookVolumeChange (volume_t newVolume, sink_t SinkID) {(void)newVolume; (void)SinkID; return HOOK_UNUSED;};
-	virtual genHookResult_t hookMuteSource (source_t ID) {(void) ID; return HOOK_UNUSED;};
-	virtual genHookResult_t hookUnmuteSource (source_t ID) {(void) ID; return HOOK_UNUSED;};
-	virtual genHookResult_t hookMuteSink (sink_t ID) {(void) ID; return HOOK_UNUSED;};
-	virtual genHookResult_t hookUnmuteSink (sink_t ID) {(void) ID; return HOOK_UNUSED;};
-	virtual genHookResult_t hookInterruptRequest (Queue* queue, source_t interruptSource, sink_t sink, genInt_t* interruptID) {(void)queue; (void) interruptSource; (void)sink; (void)interruptID; return HOOK_UNUSED;};
+	virtual genHookResult_t hookDomainRegister(char* Name, domain_t ID) {
+		(void) Name;
+		(void) ID;
+		return HOOK_UNUSED;
+	}
+	;
+	virtual genHookResult_t hookDomainDeregister(domain_t ID) {
+		(void) ID;
+		return HOOK_UNUSED;
+	}
+	;
+	virtual genHookResult_t hookSinkRegister(char* Name, sink_t ID) {
+		(void) Name;
+		(void) ID;
+		return HOOK_UNUSED;
+	}
+	;
+	virtual genHookResult_t hookSinkDeregister(sink_t ID) {
+		(void) ID;
+		return HOOK_UNUSED;
+	}
+	;
+	virtual genHookResult_t hookSourceRegister(char* Name, source_t ID) {
+		(void) Name;
+		(void) ID;
+		return HOOK_UNUSED;
+	}
+	;
+	virtual genHookResult_t hookSourceDeregister(source_t ID) {
+		(void) ID;
+		return HOOK_UNUSED;
+	}
+	;
+	virtual genHookResult_t hookGatewayRegister(char* Name, gateway_t ID) {
+		(void) Name;
+		(void) ID;
+		return HOOK_UNUSED;
+	}
+	;
+	virtual genHookResult_t hookGatewayDeregister(gateway_t ID) {
+		(void) ID;
+		return HOOK_UNUSED;
+	}
+	;
+	virtual genHookResult_t hookSystemReady(void) {
+		return HOOK_UNUSED;
+	}
+	;
+	virtual genHookResult_t hookSystemDown(void) {
+		return HOOK_UNUSED;
+	}
+	;
+	virtual genHookResult_t hookUserConnectionRequest(Queue* queue,
+			source_t SourceID, sink_t SinkID) {
+		(void) queue;
+		(void) SourceID;
+		(void) SinkID;
+		return HOOK_UNUSED;
+	}
+	;
+	virtual genHookResult_t hookUserDisconnectionRequest(Queue* queue,
+			connection_t connID) {
+		(void) queue;
+		(void) connID;
+		return HOOK_UNUSED;
+	}
+	;
+	virtual genHookResult_t hookConnectionRequest(source_t SourceID,
+			sink_t SinkID) {
+		(void) SourceID;
+		(void) SinkID;
+		return HOOK_UNUSED;
+	}
+	;
+	virtual genHookResult_t hookDisconnectionRequest(connection_t ID) {
+		(void) ID;
+		return HOOK_UNUSED;
+	}
+	;
+	virtual genHookResult_t hookRoutingRequest(bool onlyfree, source_t source,
+			sink_t sink, QList<genRoute_t>* ReturnList) {
+		(void) onlyfree;
+		(void) source;
+		(void) sink;
+		(void) ReturnList;
+		return HOOK_UNUSED;
+	}
+	;
+	virtual genHookResult_t hookRoutingComplete(genRoute_t route) {
+		(void) route;
+		return HOOK_UNUSED;
+	}
+	;
+	virtual genHookResult_t hookVolumeChange(volume_t newVolume, sink_t SinkID) {
+		(void) newVolume;
+		(void) SinkID;
+		return HOOK_UNUSED;
+	}
+	;
+	virtual genHookResult_t hookMuteSource(source_t ID) {
+		(void) ID;
+		return HOOK_UNUSED;
+	}
+	;
+	virtual genHookResult_t hookUnmuteSource(source_t ID) {
+		(void) ID;
+		return HOOK_UNUSED;
+	}
+	;
+	virtual genHookResult_t hookMuteSink(sink_t ID) {
+		(void) ID;
+		return HOOK_UNUSED;
+	}
+	;
+	virtual genHookResult_t hookUnmuteSink(sink_t ID) {
+		(void) ID;
+		return HOOK_UNUSED;
+	}
+	;
+	virtual genHookResult_t hookInterruptRequest(Queue* queue,
+			source_t interruptSource, sink_t sink, genInt_t* interruptID) {
+		(void) queue;
+		(void) interruptSource;
+		(void) sink;
+		(void) interruptID;
+		return HOOK_UNUSED;
+	}
+	;
 
 protected:
 	HookHandler* m_hookhandler;
@@ -150,7 +257,8 @@ public:
 	 * @param hookClass This is a pointer to the Class registering the hook. Usually this.
 	 * @return GEN_OK on success
 	 */
-	genError_t registerHook(hookprio_t prio, genHook_t hookType, BaseHook* hookClass);
+	genError_t registerHook(hookprio_t prio, genHook_t hookType,
+			BaseHook* hookClass);
 
 	void registerAudioManagerCore(AudioManagerCore* core);
 
@@ -158,41 +266,45 @@ public:
 	 * of registered hooks and call them after the priorities.
 	 */
 
-	genError_t fireHookDomainRegister (char* Name, domain_t ID);
-	genError_t fireHookDomainDeregister (domain_t ID);
-	genError_t fireHookSinkRegister (char* Name, sink_t ID);
-	genError_t fireHookSinkDeregister (sink_t ID);
-	genError_t fireHookSourceRegister (char* Name, source_t ID);
-	genError_t fireHookSourceDeregister (source_t ID);
-	genError_t fireHookGatewayRegister (char* Name, gateway_t ID);
-	genError_t fireHookGatewayDeregister (gateway_t ID);
-	genError_t fireHookSystemReady (void);
-	genError_t fireHookSystemDown (void);
-	genError_t fireHookConnectionRequest (source_t SourceID, sink_t SinkID);
-	genError_t fireHookDisconnectionRequest (connection_t ID);
-	genError_t fireHookUserConnectionRequest (Queue* queue,source_t SourceID, sink_t SinkID);
-	genError_t fireHookUserDisconnectionRequest (Queue* queue, connection_t connID);
-	genError_t fireHookRoutingRequest (bool onlyfree, source_t SourceID, sink_t SinkID, QList<genRoute_t>* ReturnList);
-	genError_t fireHookRoutingComplete (genRoute_t route);
-	genError_t fireHookVolumeChange (volume_t newVolume, sink_t SinkID);
-	genError_t fireHookMuteSource (source_t ID);
-	genError_t fireHookUnmuteSource (source_t ID);
-	genError_t fireHookMuteSink (sink_t ID);
-	genError_t fireHookUnmuteSink (sink_t ID);
-	genError_t fireHookInterruptRequest (Queue* queue, source_t interruptSource, sink_t sink, genInt_t* interruptID);
+	genError_t fireHookDomainRegister(char* Name, domain_t ID);
+	genError_t fireHookDomainDeregister(domain_t ID);
+	genError_t fireHookSinkRegister(char* Name, sink_t ID);
+	genError_t fireHookSinkDeregister(sink_t ID);
+	genError_t fireHookSourceRegister(char* Name, source_t ID);
+	genError_t fireHookSourceDeregister(source_t ID);
+	genError_t fireHookGatewayRegister(char* Name, gateway_t ID);
+	genError_t fireHookGatewayDeregister(gateway_t ID);
+	genError_t fireHookSystemReady(void);
+	genError_t fireHookSystemDown(void);
+	genError_t fireHookConnectionRequest(source_t SourceID, sink_t SinkID);
+	genError_t fireHookDisconnectionRequest(connection_t ID);
+	genError_t fireHookUserConnectionRequest(Queue* queue, source_t SourceID,
+			sink_t SinkID);
+	genError_t fireHookUserDisconnectionRequest(Queue* queue,
+			connection_t connID);
+	genError_t fireHookRoutingRequest(bool onlyfree, source_t SourceID,
+			sink_t SinkID, QList<genRoute_t>* ReturnList);
+	genError_t fireHookRoutingComplete(genRoute_t route);
+	genError_t fireHookVolumeChange(volume_t newVolume, sink_t SinkID);
+	genError_t fireHookMuteSource(source_t ID);
+	genError_t fireHookUnmuteSource(source_t ID);
+	genError_t fireHookMuteSink(sink_t ID);
+	genError_t fireHookUnmuteSink(sink_t ID);
+	genError_t fireHookInterruptRequest(Queue* queue, source_t interruptSource,
+			sink_t sink, genInt_t* interruptID);
 
 private:
 	/**Struct for managing the hookLists
 	 * This struct holds the pointer to the instance of the hook to be called and the priority after that the list ist sorted.
 	 *
 	 */
-	 struct prioList {
+	struct prioList {
 		BaseHook* hook;
 		hookprio_t prio;
 	};
 
 	QList<prioList> m_domainRegisterList;
-	QList<prioList>	m_domainDeregisterList;
+	QList<prioList> m_domainDeregisterList;
 	QList<prioList> m_sinkRegisterList;
 	QList<prioList> m_sinkDeregisterList;
 	QList<prioList> m_sourceRegisterList;
@@ -220,12 +332,14 @@ private:
 /**Factory class for plugin. Needs just to return an instance of the class that the plugin implements.
  *
  */
-class  HookPluginFactory {
+class HookPluginFactory {
 public:
-	virtual ~HookPluginFactory() {}
-    virtual BaseHook* returnInstance()=0;
+	virtual ~HookPluginFactory() {
+	}
+	virtual BaseHook* returnInstance()=0;
 };
 
-Q_DECLARE_INTERFACE(HookPluginFactory,"HookPluginFactory/1.0");
+Q_DECLARE_INTERFACE(HookPluginFactory,"HookPluginFactory/1.0")
+;
 
 #endif /* HOOKENGINE_H_ */

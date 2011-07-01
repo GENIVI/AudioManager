@@ -33,13 +33,11 @@
 
 #define BUS_NAME "DBUS"
 
-
 /**Implementation of the interface
  *
  */
-class RoutingSend: public RoutingSendInterface
-{
-Q_OBJECT
+class RoutingSend: public RoutingSendInterface {
+	Q_OBJECT
 public:
 	RoutingSend();
 	void startup_interface(RoutingReceiveInterface * audioman);
@@ -53,7 +51,6 @@ public:
 	bool unmuteSource(source_t sourceID);
 	bool unmuteSink(sink_t sinkID);
 
-
 public slots:
 	virtual void slot_system_ready();
 
@@ -66,10 +63,10 @@ private:
 
 //That is the actual implementation of the Factory Class returning the real sendInterface
 
-class SampleRoutingInterfaceFactory: public QObject, public RoutingInterfaceFactory
-{
-Q_OBJECT
-Q_INTERFACES(RoutingInterfaceFactory)
+class SampleRoutingInterfaceFactory: public QObject,
+		public RoutingInterfaceFactory {
+	Q_OBJECT
+	Q_INTERFACES(RoutingInterfaceFactory)
 public:
 	RoutingSendInterface* returnInstance();
 };

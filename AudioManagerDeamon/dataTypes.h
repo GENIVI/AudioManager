@@ -31,21 +31,23 @@ typedef int sinkClass_t;
 /**Global defined error Type
  *
  */
-typedef enum genError{
-	GEN_OK,       	//!< GEN_OK
-	GEN_UNKNOWN, 	//!< GEN_UNKNOWN
-	GEN_OUTOFRANGE,	//!< GEN_OUTOFRANGE
-	GEN_NOTUSED,		//!< GEN_NOTUSED
-	GEN_DATABASE_ERROR //!< GEN_DATABASE_ERROR
-}genError_t;
+typedef enum genError {
+	GEN_OK, //!< GEN_OK
+	GEN_UNKNOWN, //!< GEN_UNKNOWN
+	GEN_OUTOFRANGE, //!< GEN_OUTOFRANGE
+	GEN_NOTUSED, //!< GEN_NOTUSED
+	GEN_DATABASE_ERROR
+//!< GEN_DATABASE_ERROR
+} genError_t;
 
 /** the resulttype for the hooks
  *
  */
-typedef enum genHookResult{
+typedef enum genHookResult {
 	HOOK_OK, //!< HOOK_OK
 	HOOK_STOP,//!< HOOK_STOP
-	HOOK_UNUSED //!< HOOK_UNUSED
+	HOOK_UNUSED
+//!< HOOK_UNUSED
 } genHookResult_t;
 
 /** This represents one "hopp" in the route
@@ -85,7 +87,5 @@ public:
 	bool mixed;
 	QList<source_t> listInterrruptedSources;
 };
-
-
 
 #endif /* DATATYPES_H_ */

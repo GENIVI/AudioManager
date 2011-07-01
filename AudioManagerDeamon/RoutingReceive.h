@@ -36,11 +36,12 @@ class DataBaseHandler;
 class RoutingReceiver: public QObject, public RoutingReceiveInterface {
 Q_OBJECT
 public:
-	void register_Databasehandler(DataBaseHandler* handler_);					//is used to register the Database handler
+	void register_Databasehandler(DataBaseHandler* handler_); //is used to register the Database handler
 
 	int registerDomain(char* name, char* busname, char* node, bool earlymode);
-	int registerGateway(char* name, char* sink, char* source, char *domainSource, char* domainSink, char* controlDomain);
-	int registerSink(char* name,char* sinkclass, char* domain);
+	int registerGateway(char* name, char* sink, char* source,
+			char *domainSource, char* domainSink, char* controlDomain);
+	int registerSink(char* name, char* sinkclass, char* domain);
 	int registerSource(char* name, char* audioclass, char* domain);
 	int peekDomain(char* name);
 	void ackConnect(genHandle_t handle, genError_t error);

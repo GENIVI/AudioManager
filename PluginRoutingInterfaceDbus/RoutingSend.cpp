@@ -22,18 +22,18 @@
  * Note that people who make modified versions of AudioManager are not obligated to grant this special exception for their modified versions; it is their choice whether to do so. The GNU Lesser General Public License, version 2.1, gives permission to release a modified version without this exception; this exception also makes it possible to release a modified version which carries forward this exception.
  */
 
-
 #include "RoutingSend.h"
 #include "DBusInterface.h"
 using namespace std;
 
-DLT_DECLARE_CONTEXT(DBusPlugin);
+DLT_DECLARE_CONTEXT( DBusPlugin);
 
 RoutingSend::RoutingSend() :
-	m_connection(QDBusConnection::sessionBus()), m_sender("org.genivi.pulse", "/pulse", m_connection) {
-	DLT_REGISTER_APP("DBusPlugin","DBusPlugin");
-	DLT_REGISTER_CONTEXT(DBusPlugin,"Main","Main Context");
-	DLT_LOG(DBusPlugin,DLT_LOG_INFO, DLT_STRING("The DBus Plugin is started"));
+	m_connection(QDBusConnection::sessionBus()),
+			m_sender("org.genivi.pulse", "/pulse", m_connection) {
+	DLT_REGISTER_APP("DBusPlugin", "DBusPlugin");
+	DLT_REGISTER_CONTEXT(DBusPlugin, "Main", "Main Context");
+	DLT_LOG(DBusPlugin, DLT_LOG_INFO, DLT_STRING("The DBus Plugin is started"));
 }
 
 void RoutingSend::startup_interface(RoutingReceiveInterface* audioman) {
@@ -41,7 +41,7 @@ void RoutingSend::startup_interface(RoutingReceiveInterface* audioman) {
 
 	DBusInterface* dbInterface = new DBusInterface;
 	receiver = dbInterface;
-	DLT_LOG(DBusPlugin,DLT_LOG_INFO, DLT_STRING("DBus Interface started "));
+	DLT_LOG(DBusPlugin, DLT_LOG_INFO, DLT_STRING("DBus Interface started "));
 
 	new DBusInterfaceAdaptor(dbInterface);
 	//	sender = new DBusSend();
@@ -50,11 +50,16 @@ void RoutingSend::startup_interface(RoutingReceiveInterface* audioman) {
 	QString Servicename = "com.Genivi.routinginterface";
 	m_connection.registerService(Servicename);
 	if (m_connection.isConnected()) {
-		if (m_connection.registerObject("/Hello", dbInterface,
-				(QDBusConnection::ExportAdaptors | QDBusConnection::ExportAllSignals))) {
-			DLT_LOG(DBusPlugin,DLT_LOG_INFO, DLT_STRING("Registered DBus succsessfully"));
+		if (m_connection.registerObject(
+				"/Hello",
+				dbInterface,
+				(QDBusConnection::ExportAdaptors
+						| QDBusConnection::ExportAllSignals))) {
+			DLT_LOG(DBusPlugin, DLT_LOG_INFO,
+					DLT_STRING("Registered DBus succsessfully"));
 		} else {
-			DLT_LOG(DBusPlugin,DLT_LOG_ERROR, DLT_STRING("Registered DBus succsessfully"));
+			DLT_LOG(DBusPlugin, DLT_LOG_ERROR,
+					DLT_STRING("Registered DBus succsessfully"));
 		}
 	}
 
@@ -65,55 +70,57 @@ void RoutingSend::return_BusName(char* BusName) {
 	strcpy(BusName, BUS_NAME);
 }
 
-connection_t RoutingSend::connect(source_t source, sink_t sink, connection_t connID) {
-	QDBusPendingReply<int> pendingCall = m_sender.connect((int)source, (int)sink, (int)connID);
+connection_t RoutingSend::connect(source_t source, sink_t sink,
+		connection_t connID) {
+	QDBusPendingReply<int> pendingCall = m_sender.connect((int) source,
+			(int) sink, (int) connID);
 	pendingCall.waitForFinished();
-	return (connection_t)pendingCall.value();
+	return (connection_t) pendingCall.value();
 }
 
 void RoutingSend::slot_system_ready() {
-	DLT_LOG(DBusPlugin,DLT_LOG_INFO, DLT_STRING("DBus Plugin ready"));
+	DLT_LOG(DBusPlugin, DLT_LOG_INFO, DLT_STRING("DBus Plugin ready"));
 	receiver->emitSystemReady();
 }
 
 bool RoutingSend::disconnect(connection_t connectionID) {
-	if (m_sender.disconnect((int)connectionID)<0) {
+	if (m_sender.disconnect((int) connectionID) < 0) {
 		return true;
 	}
 	return false;
 }
 
 volume_t RoutingSend::setSinkVolume(volume_t volume, sink_t sink) {
-	return (volume_t) m_sender.setSinkVolume((int)volume,(int)sink);
+	return (volume_t) m_sender.setSinkVolume((int) volume, (int) sink);
 }
 
 volume_t RoutingSend::setSourceVolume(volume_t volume, source_t source) {
-	return (volume_t) m_sender.setSourceVolume((int)volume,(int)source);
+	return (volume_t) m_sender.setSourceVolume((int) volume, (int) source);
 }
 
 bool RoutingSend::muteSource(source_t sourceID) {
-	if (m_sender.muteSource((int)sourceID)<0) {
+	if (m_sender.muteSource((int) sourceID) < 0) {
 		return true;
 	}
 	return false;
 }
 
 bool RoutingSend::muteSink(sink_t sinkID) {
-	if (m_sender.muteSink((int)sinkID)<0) {
+	if (m_sender.muteSink((int) sinkID) < 0) {
 		return true;
 	}
 	return false;
 }
 
 bool RoutingSend::unmuteSource(source_t sourceID) {
-	if (m_sender.unmuteSource((int)sourceID)<0) {
+	if (m_sender.unmuteSource((int) sourceID) < 0) {
 		return true;
 	}
 	return false;
 }
 
 bool RoutingSend::unmuteSink(sink_t sinkID) {
-	if (m_sender.unmuteSink((int)sinkID)<0) {
+	if (m_sender.unmuteSink((int) sinkID) < 0) {
 		return true;
 	}
 	return false;

@@ -29,48 +29,54 @@
 
 using namespace std;
 
-DBusInterface::DBusInterface(QObject* parent){
-
+DBusInterface::DBusInterface(QObject* parent) {
+	(void) parent;
 }
 
 void DBusInterface::setReceiverInterface(RoutingReceiveInterface* r_interface) {
-	audiomanager=r_interface;
+	audiomanager = r_interface;
 }
 
 int DBusInterface::peekDomain(const QString &name) {
-	QByteArray b_name  = name.toAscii();
-	char * c_name    = b_name.data();
+	QByteArray b_name = name.toAscii();
+	char * c_name = b_name.data();
 	return audiomanager->peekDomain(c_name);
 }
 
-int DBusInterface::registerSource(const QString &name, const QString &audioclass, const QString &domain) {
-	QByteArray b_name  = name.toAscii();
-	QByteArray b_audioclass  = audioclass.toAscii();
-	QByteArray b_domain  = domain.toAscii();
-	char * c_name    = b_name.data();
+int DBusInterface::registerSource(const QString &name,
+		const QString &audioclass, const QString &domain) {
+	QByteArray b_name = name.toAscii();
+	QByteArray b_audioclass = audioclass.toAscii();
+	QByteArray b_domain = domain.toAscii();
+	char * c_name = b_name.data();
 	char * c_audioclass = b_audioclass.data();
 	char * c_domain = b_domain.data();
-	return audiomanager->registerSource(c_name,c_audioclass,c_domain);
+	return audiomanager->registerSource(c_name, c_audioclass, c_domain);
 }
-int DBusInterface::registerSink(const QString &name, const QString &sinkclass, const QString &domain) {
-	QByteArray b_name  = name.toAscii();
-	QByteArray b_sinkclass  = sinkclass.toAscii();
-	QByteArray b_domain  = domain.toAscii();
-	char * c_name    = b_name.data();
+int DBusInterface::registerSink(const QString &name, const QString &sinkclass,
+		const QString &domain) {
+	QByteArray b_name = name.toAscii();
+	QByteArray b_sinkclass = sinkclass.toAscii();
+	QByteArray b_domain = domain.toAscii();
+	char * c_name = b_name.data();
 	char * c_sinkclass = b_sinkclass.data();
 	char * c_domain = b_domain.data();
-	return audiomanager->registerSink(c_name,c_sinkclass,c_domain);
+	return audiomanager->registerSink(c_name, c_sinkclass, c_domain);
 }
-int DBusInterface::registerDomain(const QString &name, const QString &node, bool earlymode) {
-	QByteArray b_name  = name.toAscii();
-	QByteArray b_nodeame  = node.toAscii();
-	char* c_name= b_name.data();
-	char* c_nodename=b_nodeame.data();
+int DBusInterface::registerDomain(const QString &name, const QString &node,
+		bool earlymode) {
+	QByteArray b_name = name.toAscii();
+	QByteArray b_nodeame = node.toAscii();
+	char* c_name = b_name.data();
+	char* c_nodename = b_nodeame.data();
 	char c_busname[20];
-	strcpy(c_busname,BUS_NAME);
-	return audiomanager->registerDomain(c_name,c_busname,c_nodename,earlymode);
+	strcpy(c_busname, BUS_NAME);
+	return audiomanager->registerDomain(c_name, c_busname, c_nodename,
+			earlymode);
 }
-int DBusInterface::registerGateway(const QString &name, const QString &sink, const QString &source, const QString &domainSource, const QString &domainSink, const QString &controlDomain) {
+int DBusInterface::registerGateway(const QString &name, const QString &sink,
+		const QString &source, const QString &domainSource,
+		const QString &domainSink, const QString &controlDomain) {
 	QByteArray b_name = name.toAscii();
 	QByteArray b_sink = sink.toAscii();
 	QByteArray b_source = source.toAscii();
@@ -83,7 +89,8 @@ int DBusInterface::registerGateway(const QString &name, const QString &sink, con
 	char* c_domainSource = b_domainSource.data();
 	char* c_domainSink = b_domainSink.data();
 	char* c_controlDomain = b_controlDomain.data();
-	return audiomanager->registerGateway(c_name,c_sink,c_source,c_domainSource,c_domainSink,c_controlDomain);
+	return audiomanager->registerGateway(c_name, c_sink, c_source,
+			c_domainSource, c_domainSink, c_controlDomain);
 }
 void DBusInterface::emitSystemReady() {
 	emit signal_systemReady();

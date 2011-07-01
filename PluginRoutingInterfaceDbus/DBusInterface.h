@@ -28,7 +28,7 @@
 #include "DBusInterfaceAdaptor.h"
 #include "routinginterface.h"
 
-class DBusInterface : public QObject {
+class DBusInterface: public QObject {
 	Q_OBJECT
 public:
 	DBusInterface(QObject *parent = 0);
@@ -37,12 +37,17 @@ public:
 
 public Q_SLOTS: // METHODS
 	int peekDomain(const QString &name);
-    int registerDomain(const QString &name, const QString &node, bool earlymode);
-    int registerGateway(const QString &name, const QString &sink, const QString &source, const QString &domainSource, const QString &domainSink, const QString &controlDomain);
-    int registerSink(const QString &name, const QString &sinkclass, const QString &domain);
-    int registerSource(const QString &name, const QString &audioclass, const QString &domain);
+	int
+	registerDomain(const QString &name, const QString &node, bool earlymode);
+	int registerGateway(const QString &name, const QString &sink,
+			const QString &source, const QString &domainSource,
+			const QString &domainSink, const QString &controlDomain);
+	int registerSink(const QString &name, const QString &sinkclass,
+			const QString &domain);
+	int registerSource(const QString &name, const QString &audioclass,
+			const QString &domain);
 Q_SIGNALS: // SIGNALS
-    void signal_systemReady();
+	void signal_systemReady();
 
 private:
 	RoutingReceiveInterface* audiomanager;

@@ -70,59 +70,83 @@ bool DataBaseHandler::delete_data(QString table) {
 bool DataBaseHandler::create_tables() {
 
 	QSqlQuery query;
-	QString command = "CREATE TABLE " + QString(DOMAIN_TABLE) + " (ID INTEGER NOT NULL, DomainName VARCHAR(50), BusName VARCHAR(50), NodeName VARCHAR(50), EarlyMode BOOL, PRIMARY KEY(ID));";
+	QString
+			command =
+					"CREATE TABLE " + QString(DOMAIN_TABLE)
+							+ " (ID INTEGER NOT NULL, DomainName VARCHAR(50), BusName VARCHAR(50), NodeName VARCHAR(50), EarlyMode BOOL, PRIMARY KEY(ID));";
 	if (query.exec(command) != true) {
 		DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("Databasehandler: Could not create table"), DLT_STRING(DOMAIN_TABLE));
 		return false;
 	}
 
-	command = "CREATE TABLE " + QString(SOURCE_CLASS_TABLE) + " (ID INTEGER NOT NULL, ClassName VARCHAR(50), VolumeOffset INTEGER, IsInterrupt BOOL, IsMixed BOOL, PRIMARY KEY(ID));";
+	command
+			= "CREATE TABLE " + QString(SOURCE_CLASS_TABLE)
+					+ " (ID INTEGER NOT NULL, ClassName VARCHAR(50), VolumeOffset INTEGER, IsInterrupt BOOL, IsMixed BOOL, PRIMARY KEY(ID));";
 	if (query.exec(command) != true) {
 		DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("Databasehandler: Could not create table"), DLT_STRING(SOURCE_CLASS_TABLE));
 		return false;
 	}
 
-	command = "CREATE TABLE " + QString(SINK_CLASS_TABLE) + " (ID INTEGER NOT NULL, ClassName VARCHAR(50), PRIMARY KEY(ID));";
+	command = "CREATE TABLE " + QString(SINK_CLASS_TABLE)
+			+ " (ID INTEGER NOT NULL, ClassName VARCHAR(50), PRIMARY KEY(ID));";
 	if (query.exec(command) != true) {
 		DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("Databasehandler: Could not create table"), DLT_STRING(SINK_CLASS_TABLE));
 		return false;
 	}
 
-	command = "CREATE TABLE " + QString(SOURCE_TABLE) + " (ID INTEGER NOT NULL, Name VARCHAR(50), Class_ID INTEGER, Domain_ID INTEGER, IsGateway BOOL, PRIMARY KEY(ID), FOREIGN KEY (Domain_ID) REFERENCES " + DOMAIN_TABLE
-			+ "(ID), FOREIGN KEY (Class_ID) REFERENCES " + SOURCE_CLASS_TABLE + "(ID));";
+	command
+			= "CREATE TABLE " + QString(SOURCE_TABLE)
+					+ " (ID INTEGER NOT NULL, Name VARCHAR(50), Class_ID INTEGER, Domain_ID INTEGER, IsGateway BOOL, PRIMARY KEY(ID), FOREIGN KEY (Domain_ID) REFERENCES "
+					+ DOMAIN_TABLE + "(ID), FOREIGN KEY (Class_ID) REFERENCES "
+					+ SOURCE_CLASS_TABLE + "(ID));";
 	if (query.exec(command) != true) {
 		DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("Databasehandler: Could not create table"), DLT_STRING(SOURCE_TABLE));
 		return false;
 	}
 
-	command = "CREATE TABLE " + QString(SINK_TABLE) + " (ID INTEGER NOT NULL, Name VARCHAR(50), Class_ID INTEGER, Domain_ID INTEGER, IsGateway BOOL, PRIMARY KEY(ID), FOREIGN KEY (DOMAIN_ID) REFERENCES " + DOMAIN_TABLE
-			+ "(ID), FOREIGN KEY (Class_ID) REFERENCES " + SOURCE_CLASS_TABLE + "(ID));";
+	command
+			= "CREATE TABLE " + QString(SINK_TABLE)
+					+ " (ID INTEGER NOT NULL, Name VARCHAR(50), Class_ID INTEGER, Domain_ID INTEGER, IsGateway BOOL, PRIMARY KEY(ID), FOREIGN KEY (DOMAIN_ID) REFERENCES "
+					+ DOMAIN_TABLE + "(ID), FOREIGN KEY (Class_ID) REFERENCES "
+					+ SOURCE_CLASS_TABLE + "(ID));";
 	if (query.exec(command) != true) {
 		DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("Databasehandler: Could not create table"), DLT_STRING(SOURCE_CLASS_TABLE));
 		return false;
 	}
 
-	command = "CREATE TABLE " + QString(GATEWAY_TABLE)
-			+ " (ID INTEGER NOT NULL, Name VARCHAR(50), Sink_ID INTEGER, Source_ID INTEGER, DomainSource_ID INTEGER, DomainSink_ID INTEGER, ControlDomain_ID Integer, IsBlocked BOOL, PRIMARY KEY(ID), FOREIGN KEY (Sink_ID) REFERENCES " + SINK_TABLE
-			+ "(ID), FOREIGN KEY (Source_ID) REFERENCES " + SOURCE_TABLE + "(ID),FOREIGN KEY (DomainSource_ID) REFERENCES " + DOMAIN_TABLE + "(ID),FOREIGN KEY (DomainSink_ID) REFERENCES " + DOMAIN_TABLE + "(ID));";
+	command
+			= "CREATE TABLE " + QString(GATEWAY_TABLE)
+					+ " (ID INTEGER NOT NULL, Name VARCHAR(50), Sink_ID INTEGER, Source_ID INTEGER, DomainSource_ID INTEGER, DomainSink_ID INTEGER, ControlDomain_ID Integer, IsBlocked BOOL, PRIMARY KEY(ID), FOREIGN KEY (Sink_ID) REFERENCES "
+					+ SINK_TABLE + "(ID), FOREIGN KEY (Source_ID) REFERENCES "
+					+ SOURCE_TABLE
+					+ "(ID),FOREIGN KEY (DomainSource_ID) REFERENCES "
+					+ DOMAIN_TABLE
+					+ "(ID),FOREIGN KEY (DomainSink_ID) REFERENCES "
+					+ DOMAIN_TABLE + "(ID));";
 	if (query.exec(command) != true) {
 		DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("Databasehandler: Could not create table"), DLT_STRING(GATEWAY_TABLE));
 		return false;
 	}
 
-	command = "CREATE TABLE " + QString(CONNECTION_TABLE) + " (ID INTEGER NOT NULL, Source_ID INTEGER, Sink_ID INTEGER, PRIMARY KEY(ID));";
+	command
+			= "CREATE TABLE " + QString(CONNECTION_TABLE)
+					+ " (ID INTEGER NOT NULL, Source_ID INTEGER, Sink_ID INTEGER, PRIMARY KEY(ID));";
 	if (query.exec(command) != true) {
 		DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("Databasehandler: Could not create table"), DLT_STRING(CONNECTION_TABLE));
 		return false;
 	}
 
-	command = "CREATE TABLE " + QString(INTERRUPT_TABLE) + " (ID INTEGER NOT NULL, Source_ID INTEGER, Sink_ID INTEGER, Connection_ID INTEGER, mixed BOOL, listInterrruptedSources INTEGER, PRIMARY KEY(ID));";
+	command
+			= "CREATE TABLE " + QString(INTERRUPT_TABLE)
+					+ " (ID INTEGER NOT NULL, Source_ID INTEGER, Sink_ID INTEGER, Connection_ID INTEGER, mixed BOOL, listInterrruptedSources INTEGER, PRIMARY KEY(ID));";
 	if (query.exec(command) != true) {
 		DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("Databasehandler: Could not create table"), DLT_STRING(INTERRUPT_TABLE));
 		return false;
 	}
 
-	command = "CREATE TABLE " + QString(MAIN_TABLE) + " (ID INTEGER NOT NULL, Source_ID INTEGER, Sink_ID INTEGER, route INTEGER, PRIMARY KEY(ID));";
+	command
+			= "CREATE TABLE " + QString(MAIN_TABLE)
+					+ " (ID INTEGER NOT NULL, Source_ID INTEGER, Sink_ID INTEGER, route INTEGER, PRIMARY KEY(ID));";
 	if (query.exec(command) != true) {
 		DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("Databasehandler: Could not create table"), DLT_STRING(MAIN_TABLE));
 		return false;
@@ -132,24 +156,31 @@ bool DataBaseHandler::create_tables() {
 
 }
 
-domain_t DataBaseHandler::insert_into_Domains_table(QString DomainName, QString BusName, QString NodeName, bool EarlyMode) {
+domain_t DataBaseHandler::insert_into_Domains_table(QString DomainName,
+		QString BusName, QString NodeName, bool EarlyMode) {
 	QSqlQuery query;
 	QString _EarlyMode = "false";
 	if (EarlyMode) {
 		_EarlyMode = "true";
 	}
 
-	QString command = "SELECT BusName,ID FROM " + QString(DOMAIN_TABLE) + " WHERE DomainName=\"" + DomainName + "\";";
+	QString command = "SELECT BusName,ID FROM " + QString(DOMAIN_TABLE)
+			+ " WHERE DomainName=\"" + DomainName + "\";";
 
 	if (query.exec(command) == true) {
 		if (query.next()) {
 			if (!query.value(0).toString().isEmpty()) {
 				return query.value(1).toInt();
 			} else {
-				command = "UPDATE " + QString(DOMAIN_TABLE) + "SET Busname=" + BusName + " Nodename=" + NodeName + " EarlyMode=" + _EarlyMode + " WHERE DomainName=" + DomainName;
+				command = "UPDATE " + QString(DOMAIN_TABLE) + "SET Busname="
+						+ BusName + " Nodename=" + NodeName + " EarlyMode="
+						+ _EarlyMode + " WHERE DomainName=" + DomainName;
 			}
 		} else {
-			command = "INSERT INTO " + QString(DOMAIN_TABLE) + " (DomainName, BusName, NodeName, EarlyMode) VALUES (\"" + DomainName + "\",\"" + BusName + "\",\"" + NodeName + "\",\"" + _EarlyMode + "\")";
+			command = "INSERT INTO " + QString(DOMAIN_TABLE)
+					+ " (DomainName, BusName, NodeName, EarlyMode) VALUES (\""
+					+ DomainName + "\",\"" + BusName + "\",\"" + NodeName
+					+ "\",\"" + _EarlyMode + "\")";
 		}
 	}
 
@@ -159,7 +190,9 @@ domain_t DataBaseHandler::insert_into_Domains_table(QString DomainName, QString 
 		return get_Domain_ID_from_Name(DomainName);
 	}
 }
-sourceClass_t DataBaseHandler::insert_into_Source_Class_table(QString ClassName, volume_t VolumeOffset, bool IsInterrupt, bool IsMixed) {
+sourceClass_t DataBaseHandler::insert_into_Source_Class_table(
+		QString ClassName, volume_t VolumeOffset, bool IsInterrupt,
+		bool IsMixed) {
 	QSqlQuery query;
 	QString _IsInterrupt = "false";
 	QString _IsMixed = "false";
@@ -171,7 +204,8 @@ sourceClass_t DataBaseHandler::insert_into_Source_Class_table(QString ClassName,
 		_IsMixed = "true";
 	}
 
-	QString command = "SELECT ID FROM " + QString(SOURCE_CLASS_TABLE) + " WHERE ClassName=\"" + ClassName + "\";";
+	QString command = "SELECT ID FROM " + QString(SOURCE_CLASS_TABLE)
+			+ " WHERE ClassName=\"" + ClassName + "\";";
 
 	if (query.exec(command) == true) {
 		if (query.next()) {
@@ -179,7 +213,10 @@ sourceClass_t DataBaseHandler::insert_into_Source_Class_table(QString ClassName,
 		}
 	}
 
-	command = "INSERT INTO " + QString(SOURCE_CLASS_TABLE) + " (ClassName, VolumeOffset, IsInterrupt, IsMixed) VALUES (\"" + ClassName + "\"," + QString::number(VolumeOffset) + ",\"" + _IsInterrupt + "\",\"" + _IsMixed + "\")";
+	command = "INSERT INTO " + QString(SOURCE_CLASS_TABLE)
+			+ " (ClassName, VolumeOffset, IsInterrupt, IsMixed) VALUES (\""
+			+ ClassName + "\"," + QString::number(VolumeOffset) + ",\""
+			+ _IsInterrupt + "\",\"" + _IsMixed + "\")";
 
 	if (query.exec(command) != true) {
 		return -1;
@@ -191,7 +228,8 @@ sourceClass_t DataBaseHandler::insert_into_Source_Class_table(QString ClassName,
 sink_t DataBaseHandler::insert_into_Sink_Class_table(QString ClassName) {
 	QSqlQuery query;
 
-	QString command = "SELECT ID FROM " + QString(SINK_CLASS_TABLE) + " WHERE ClassName=\"" + ClassName + "\";";
+	QString command = "SELECT ID FROM " + QString(SINK_CLASS_TABLE)
+			+ " WHERE ClassName=\"" + ClassName + "\";";
 
 	if (query.exec(command) == true) {
 		if (query.next()) {
@@ -199,7 +237,8 @@ sink_t DataBaseHandler::insert_into_Sink_Class_table(QString ClassName) {
 		}
 	}
 
-	command = "INSERT INTO " + QString(SINK_CLASS_TABLE) + " (ClassName) VALUES (\"" + ClassName + "\")";
+	command = "INSERT INTO " + QString(SINK_CLASS_TABLE)
+			+ " (ClassName) VALUES (\"" + ClassName + "\")";
 
 	if (query.exec(command) != true) {
 		return -1;
@@ -208,7 +247,8 @@ sink_t DataBaseHandler::insert_into_Sink_Class_table(QString ClassName) {
 	}
 }
 
-source_t DataBaseHandler::insert_into_Source_table(QString Name, sourceClass_t Class_ID, domain_t Domain_ID, bool IsGateway) {
+source_t DataBaseHandler::insert_into_Source_table(QString Name,
+		sourceClass_t Class_ID, domain_t Domain_ID, bool IsGateway) {
 	QSqlQuery query;
 	QString _IsGateway = "false";
 
@@ -216,7 +256,8 @@ source_t DataBaseHandler::insert_into_Source_table(QString Name, sourceClass_t C
 		_IsGateway = "true";
 	}
 
-	QString command = "SELECT ID FROM " + QString(SOURCE_TABLE) + " WHERE Name=\"" + Name + "\";";
+	QString command = "SELECT ID FROM " + QString(SOURCE_TABLE)
+			+ " WHERE Name=\"" + Name + "\";";
 
 	if (query.exec(command) == true) {
 		if (query.next()) {
@@ -224,7 +265,10 @@ source_t DataBaseHandler::insert_into_Source_table(QString Name, sourceClass_t C
 		}
 	}
 
-	command = "INSERT INTO " + QString(SOURCE_TABLE) + " (Name, Class_ID, Domain_ID, IsGateway) VALUES (\"" + Name + "\"," + QString::number(Class_ID) + ",\"" + QString::number(Domain_ID) + "\",\"" + _IsGateway + "\")";
+	command = "INSERT INTO " + QString(SOURCE_TABLE)
+			+ " (Name, Class_ID, Domain_ID, IsGateway) VALUES (\"" + Name
+			+ "\"," + QString::number(Class_ID) + ",\"" + QString::number(
+			Domain_ID) + "\",\"" + _IsGateway + "\")";
 
 	if (query.exec(command) != true) {
 		return -1;
@@ -234,7 +278,8 @@ source_t DataBaseHandler::insert_into_Source_table(QString Name, sourceClass_t C
 	}
 }
 
-sink_t  DataBaseHandler::insert_into_Sink_table(QString Name, sinkClass_t Class_ID, domain_t Domain_ID, bool IsGateway) {
+sink_t DataBaseHandler::insert_into_Sink_table(QString Name,
+		sinkClass_t Class_ID, domain_t Domain_ID, bool IsGateway) {
 	QSqlQuery query;
 	QString _IsGateway = "false";
 
@@ -242,7 +287,8 @@ sink_t  DataBaseHandler::insert_into_Sink_table(QString Name, sinkClass_t Class_
 		_IsGateway = "true";
 	}
 
-	QString command = "SELECT ID FROM " + QString(SINK_TABLE) + " WHERE Name=\"" + Name + "\";";
+	QString command = "SELECT ID FROM " + QString(SINK_TABLE)
+			+ " WHERE Name=\"" + Name + "\";";
 
 	if (query.exec(command) == true) {
 		if (query.next()) {
@@ -250,7 +296,10 @@ sink_t  DataBaseHandler::insert_into_Sink_table(QString Name, sinkClass_t Class_
 		}
 	}
 
-	command = "INSERT INTO " + QString(SINK_TABLE) + " (Name, Class_ID, Domain_ID, IsGateway) VALUES (\"" + Name + "\"," + QString::number(Class_ID) + ",\"" + QString::number(Domain_ID) + "\",\"" + _IsGateway + "\")";
+	command = "INSERT INTO " + QString(SINK_TABLE)
+			+ " (Name, Class_ID, Domain_ID, IsGateway) VALUES (\"" + Name
+			+ "\"," + QString::number(Class_ID) + ",\"" + QString::number(
+			Domain_ID) + "\",\"" + _IsGateway + "\")";
 
 	if (query.exec(command) != true) {
 		return -1;
@@ -260,9 +309,12 @@ sink_t  DataBaseHandler::insert_into_Sink_table(QString Name, sinkClass_t Class_
 	}
 }
 
-gateway_t DataBaseHandler::insert_into_Gatway_table(QString Name, sink_t Sink_ID, source_t Source_ID, domain_t DomainSource_ID, domain_t DomainSink_ID, domain_t ControlDomain_ID) {
+gateway_t DataBaseHandler::insert_into_Gatway_table(QString Name,
+		sink_t Sink_ID, source_t Source_ID, domain_t DomainSource_ID,
+		domain_t DomainSink_ID, domain_t ControlDomain_ID) {
 	QSqlQuery query;
-	QString command = "SELECT ID FROM " + QString(GATEWAY_TABLE) + " WHERE Name=\"" + Name + "\";";
+	QString command = "SELECT ID FROM " + QString(GATEWAY_TABLE)
+			+ " WHERE Name=\"" + Name + "\";";
 
 	if (query.exec(command) == true) {
 		if (query.next()) {
@@ -270,8 +322,13 @@ gateway_t DataBaseHandler::insert_into_Gatway_table(QString Name, sink_t Sink_ID
 		}
 	}
 
-	command = "INSERT INTO " + QString(GATEWAY_TABLE) + " (Name, Sink_ID, Source_ID, DomainSource_ID, DomainSink_ID, ControlDomain_ID, IsBlocked) VALUES (\"" + Name + "\"," + QString::number(Sink_ID) + "," + QString::number(Source_ID) + ","
-			+ QString::number(DomainSource_ID) + "," + QString::number(DomainSink_ID) + "," + QString::number(ControlDomain_ID) + ",\"false\")";
+	command
+			= "INSERT INTO " + QString(GATEWAY_TABLE)
+					+ " (Name, Sink_ID, Source_ID, DomainSource_ID, DomainSink_ID, ControlDomain_ID, IsBlocked) VALUES (\""
+					+ Name + "\"," + QString::number(Sink_ID) + ","
+					+ QString::number(Source_ID) + "," + QString::number(
+					DomainSource_ID) + "," + QString::number(DomainSink_ID)
+					+ "," + QString::number(ControlDomain_ID) + ",\"false\")";
 	if (query.exec(command) != true) {
 		return -1;
 	} else {
@@ -281,10 +338,11 @@ gateway_t DataBaseHandler::insert_into_Gatway_table(QString Name, sink_t Sink_ID
 
 genInt_t DataBaseHandler::reserveInterrupt(sink_t Sink_ID, source_t Source_ID) {
 	QSqlQuery query;
-	query.prepare("INSERT INTO " + QString(INTERRUPT_TABLE) + "(Source_ID, Sink_ID)"
-				  " VALUES(:Source_ID, :Sink_ID)");
-	query.bindValue(":Source_ID",Source_ID);
-	query.bindValue(":Sink_ID",Sink_ID);
+	query.prepare(
+			"INSERT INTO " + QString(INTERRUPT_TABLE) + "(Source_ID, Sink_ID)"
+				" VALUES(:Source_ID, :Sink_ID)");
+	query.bindValue(":Source_ID", Source_ID);
+	query.bindValue(":Sink_ID", Sink_ID);
 	if (query.exec() != true) {
 		return -1;
 	} else {
@@ -292,7 +350,9 @@ genInt_t DataBaseHandler::reserveInterrupt(sink_t Sink_ID, source_t Source_ID) {
 	}
 }
 
-genError_t DataBaseHandler::updateInterrupt(const genInt_t intID, connection_t connID, bool mixed, QList<source_t> listInterrruptedSources) {
+genError_t DataBaseHandler::updateInterrupt(const genInt_t intID,
+		connection_t connID, bool mixed,
+		QList<source_t> listInterrruptedSources) {
 	QSqlQuery query;
 	QString _mixed = "false";
 
@@ -301,13 +361,15 @@ genError_t DataBaseHandler::updateInterrupt(const genInt_t intID, connection_t c
 	}
 
 	//This information is not handy to be stored directly in the database. So we put it on the heap and store the pointer to it.
-	QList<source_t>* pointer =new QList<source_t>(listInterrruptedSources);
+	QList<source_t>* pointer = new QList<source_t> (listInterrruptedSources);
 
-	query.prepare("UPDATE " + QString(INTERRUPT_TABLE) + " SET Connection_ID=:Connection_ID, mixed=:mixed ,listInterrruptedSources=:listInterrruptedSources WHERE ID=:id");
-	query.bindValue(":Connection_ID",connID);
-	query.bindValue(":mixed",_mixed);
-	query.bindValue(":listInterrruptedSources",int(pointer));
-	query.bindValue(":id",intID);
+	query.prepare(
+			"UPDATE " + QString(INTERRUPT_TABLE)
+					+ " SET Connection_ID=:Connection_ID, mixed=:mixed ,listInterrruptedSources=:listInterrruptedSources WHERE ID=:id");
+	query.bindValue(":Connection_ID", connID);
+	query.bindValue(":mixed", _mixed);
+	query.bindValue(":listInterrruptedSources", int(pointer));
+	query.bindValue(":id", intID);
 	if (query.exec() != true) {
 		return GEN_DATABASE_ERROR;
 	} else {
@@ -315,9 +377,16 @@ genError_t DataBaseHandler::updateInterrupt(const genInt_t intID, connection_t c
 	}
 }
 
-genError_t  DataBaseHandler::getInterruptDatafromID(const genInt_t intID, connection_t* return_connID, sink_t* return_Sink_ID, source_t* return_Source_ID, bool* return_mixed, QList<source_t>** return_listInterrruptedSources) {
+genError_t DataBaseHandler::getInterruptDatafromID(const genInt_t intID,
+		connection_t* return_connID, sink_t* return_Sink_ID,
+		source_t* return_Source_ID, bool* return_mixed,
+		QList<source_t>** return_listInterrruptedSources) {
 	QSqlQuery query;
-	QString command = "SELECT Connection_ID, Sink_ID, Source_ID, mixed, listInterrruptedSources FROM " + QString(INTERRUPT_TABLE) + " WHERE ID=" + QString::number(intID) + ";";
+	QString
+			command =
+					"SELECT Connection_ID, Sink_ID, Source_ID, mixed, listInterrruptedSources FROM "
+							+ QString(INTERRUPT_TABLE) + " WHERE ID="
+							+ QString::number(intID) + ";";
 
 	if (query.exec(command) != true) {
 		return GEN_DATABASE_ERROR;
@@ -327,7 +396,8 @@ genError_t  DataBaseHandler::getInterruptDatafromID(const genInt_t intID, connec
 			*return_Sink_ID = query.value(1).toInt();
 			*return_Source_ID = query.value(2).toInt();
 			*return_mixed = query.value(3).toBool();
-			*return_listInterrruptedSources=reinterpret_cast<QList<source_t>*>(query.value(4).toInt());
+			*return_listInterrruptedSources
+					= reinterpret_cast<QList<source_t>*> (query.value(4).toInt());
 			return GEN_OK;
 		} else {
 			return GEN_UNKNOWN;
@@ -337,13 +407,15 @@ genError_t  DataBaseHandler::getInterruptDatafromID(const genInt_t intID, connec
 
 genError_t DataBaseHandler::removeInterrupt(const genInt_t intID) {
 	QSqlQuery query;
-	QString command = "SELECT listInterrruptedSources FROM " + QString(INTERRUPT_TABLE) + " WHERE ID=" + QString::number(intID) + ";";
+	QString command = "SELECT listInterrruptedSources FROM " + QString(
+			INTERRUPT_TABLE) + " WHERE ID=" + QString::number(intID) + ";";
 	if (query.exec(command) != true) {
 		return GEN_DATABASE_ERROR;
 	} else {
 		if (query.next()) {
-			delete reinterpret_cast<QList<source_t>*>(query.value(0).toInt());
-			command = "DELETE FROM " + QString(INTERRUPT_TABLE) + " WHERE ID=\"" + QString::number(intID) + "\";";
+			delete reinterpret_cast<QList<source_t>*> (query.value(0).toInt());
+			command = "DELETE FROM " + QString(INTERRUPT_TABLE)
+					+ " WHERE ID=\"" + QString::number(intID) + "\";";
 			if (query.exec(command) != true) {
 				return GEN_DATABASE_ERROR;
 			} else {
@@ -357,12 +429,14 @@ genError_t DataBaseHandler::removeInterrupt(const genInt_t intID) {
 domain_t DataBaseHandler::peek_Domain_ID(QString DomainName) {
 	QSqlQuery query;
 
-	QString command = "SELECT ID FROM " + QString(DOMAIN_TABLE) + " WHERE DomainName=\"" + DomainName + "\";";
+	QString command = "SELECT ID FROM " + QString(DOMAIN_TABLE)
+			+ " WHERE DomainName=\"" + DomainName + "\";";
 
 	if (query.next()) {
 		return query.value(0).toInt();
 	} else {
-		command = "INSERT INTO " + QString(DOMAIN_TABLE) + " (DomainName) VALUES (\"" + DomainName + "\")";
+		command = "INSERT INTO " + QString(DOMAIN_TABLE)
+				+ " (DomainName) VALUES (\"" + DomainName + "\")";
 	}
 
 	if (query.exec(command) != true) {
@@ -374,7 +448,8 @@ domain_t DataBaseHandler::peek_Domain_ID(QString DomainName) {
 
 domain_t DataBaseHandler::get_Domain_ID_from_Source_ID(source_t Source_ID) {
 	QSqlQuery query;
-	QString command = "SELECT Domain_ID FROM " + QString(SOURCE_TABLE) + " WHERE ID=" + QString::number(Source_ID) + ";";
+	QString command = "SELECT Domain_ID FROM " + QString(SOURCE_TABLE)
+			+ " WHERE ID=" + QString::number(Source_ID) + ";";
 
 	if (query.exec(command) != true) {
 		return -1;
@@ -386,7 +461,8 @@ domain_t DataBaseHandler::get_Domain_ID_from_Source_ID(source_t Source_ID) {
 
 domain_t DataBaseHandler::get_Domain_ID_from_Sink_ID(sink_t Sink_ID) {
 	QSqlQuery query;
-	QString command = "SELECT Domain_ID FROM " + QString(SINK_TABLE) + " WHERE ID=" + QString::number(Sink_ID) + ";";
+	QString command = "SELECT Domain_ID FROM " + QString(SINK_TABLE)
+			+ " WHERE ID=" + QString::number(Sink_ID) + ";";
 
 	if (query.exec(command) != true) {
 		return -1;
@@ -398,7 +474,8 @@ domain_t DataBaseHandler::get_Domain_ID_from_Sink_ID(sink_t Sink_ID) {
 
 source_t DataBaseHandler::get_Source_ID_from_Name(QString name) {
 	QSqlQuery query;
-	QString command = "SELECT ID FROM " + QString(SOURCE_TABLE) + " WHERE Name=\"" + name + "\";";
+	QString command = "SELECT ID FROM " + QString(SOURCE_TABLE)
+			+ " WHERE Name=\"" + name + "\";";
 
 	if (query.exec(command) != true) {
 		return -1;
@@ -413,7 +490,8 @@ source_t DataBaseHandler::get_Source_ID_from_Name(QString name) {
 
 sourceClass_t DataBaseHandler::get_Source_Class_ID_from_Name(QString name) {
 	QSqlQuery query;
-	QString command = "SELECT ID FROM " + QString(SOURCE_CLASS_TABLE) + " WHERE ClassName=\"" + name + "\";";
+	QString command = "SELECT ID FROM " + QString(SOURCE_CLASS_TABLE)
+			+ " WHERE ClassName=\"" + name + "\";";
 	if (query.exec(command) != true) {
 		return -1;
 	} else {
@@ -427,7 +505,8 @@ sourceClass_t DataBaseHandler::get_Source_Class_ID_from_Name(QString name) {
 
 domain_t DataBaseHandler::get_Domain_ID_from_Name(QString name) {
 	QSqlQuery query;
-	QString command = "SELECT ID FROM " + QString(DOMAIN_TABLE) + " WHERE DomainName=\"" + name + "\";";
+	QString command = "SELECT ID FROM " + QString(DOMAIN_TABLE)
+			+ " WHERE DomainName=\"" + name + "\";";
 
 	if (query.exec(command) != true) {
 		return -1;
@@ -440,9 +519,12 @@ domain_t DataBaseHandler::get_Domain_ID_from_Name(QString name) {
 	}
 }
 
-gateway_t DataBaseHandler::get_Gateway_ID_with_Domain_ID(domain_t startDomain_ID, domain_t targetDomain_ID) {
+gateway_t DataBaseHandler::get_Gateway_ID_with_Domain_ID(
+		domain_t startDomain_ID, domain_t targetDomain_ID) {
 	QSqlQuery query;
-	QString command = "SELECT ID FROM " + QString(GATEWAY_TABLE) + " WHERE DomainSource_ID=" + QString::number(startDomain_ID) + " AND DomainSink_ID=" + QString::number(targetDomain_ID) + ";";
+	QString command = "SELECT ID FROM " + QString(GATEWAY_TABLE)
+			+ " WHERE DomainSource_ID=" + QString::number(startDomain_ID)
+			+ " AND DomainSink_ID=" + QString::number(targetDomain_ID) + ";";
 
 	if (query.exec(command) != true) {
 		return -1;
@@ -455,9 +537,13 @@ gateway_t DataBaseHandler::get_Gateway_ID_with_Domain_ID(domain_t startDomain_ID
 	}
 }
 
-genError_t DataBaseHandler::get_Gateway_Source_Sink_Domain_ID_from_ID(gateway_t Gateway_ID,source_t* return_Source_ID,sink_t* return_Sink_ID,domain_t* return_ControlDomain_ID) {
+genError_t DataBaseHandler::get_Gateway_Source_Sink_Domain_ID_from_ID(
+		gateway_t Gateway_ID, source_t* return_Source_ID,
+		sink_t* return_Sink_ID, domain_t* return_ControlDomain_ID) {
 	QSqlQuery query;
-	QString command = "SELECT Source_ID, Sink_ID, ControlDomain_ID FROM " + QString(GATEWAY_TABLE) + " WHERE ID=" + QString::number(Gateway_ID) + ";";
+	QString command = "SELECT Source_ID, Sink_ID, ControlDomain_ID FROM "
+			+ QString(GATEWAY_TABLE) + " WHERE ID=" + QString::number(
+			Gateway_ID) + ";";
 
 	if (query.exec(command) != true) {
 		return GEN_DATABASE_ERROR;
@@ -473,7 +559,8 @@ genError_t DataBaseHandler::get_Gateway_Source_Sink_Domain_ID_from_ID(gateway_t 
 	}
 }
 
-void DataBaseHandler::get_Domain_ID_Tree(bool onlyfree, RoutingTree* Tree, QList<RoutingTreeItem*>* allItems) {
+void DataBaseHandler::get_Domain_ID_Tree(bool onlyfree, RoutingTree* Tree,
+		QList<RoutingTreeItem*>* allItems) {
 	QSqlQuery query;
 	int RootID = Tree->returnRootDomainID();
 	RoutingTreeItem *parent = Tree->returnRootItem();
@@ -484,14 +571,18 @@ void DataBaseHandler::get_Domain_ID_Tree(bool onlyfree, RoutingTree* Tree, QList
 		_onlyfree = "true";
 	}
 
-	query.prepare("SELECT ID,DomainSource_ID FROM " + QString(GATEWAY_TABLE) + " WHERE DomainSink_ID=:id AND IsBlocked=:flag;");
+	query.prepare(
+			"SELECT ID,DomainSource_ID FROM " + QString(GATEWAY_TABLE)
+					+ " WHERE DomainSink_ID=:id AND IsBlocked=:flag;");
 
 	do {
 		query.bindValue(":id", RootID);
 		query.bindValue(":flag", _onlyfree);
 		query.exec();
 		while (query.next()) {
-			allItems->append(Tree->insertItem(query.value(1).toInt(), query.value(0).toInt(), parent));
+			allItems->append(
+					Tree->insertItem(query.value(1).toInt(),
+							query.value(0).toInt(), parent));
 		}
 		parent = allItems->value(i);
 		RootID = parent->returnDomainID();
@@ -501,7 +592,8 @@ void DataBaseHandler::get_Domain_ID_Tree(bool onlyfree, RoutingTree* Tree, QList
 
 QString DataBaseHandler::get_Bus_from_Domain_ID(domain_t Domain_ID) {
 	QSqlQuery query;
-	QString command = "SELECT BusName FROM " + QString(DOMAIN_TABLE) + " WHERE ID=" + QString::number(Domain_ID) + ";";
+	QString command = "SELECT BusName FROM " + QString(DOMAIN_TABLE)
+			+ " WHERE ID=" + QString::number(Domain_ID) + ";";
 
 	if (query.exec(command) != true) {
 		return NULL;
@@ -513,14 +605,16 @@ QString DataBaseHandler::get_Bus_from_Domain_ID(domain_t Domain_ID) {
 
 domain_t DataBaseHandler::get_Domain_ID_from_Connection_ID(connection_t ID) {
 	QSqlQuery query;
-	QString command = "SELECT Source_ID FROM " + QString(CONNECTION_TABLE) + " WHERE ID=" + QString::number(ID) + ";";
+	QString command = "SELECT Source_ID FROM " + QString(CONNECTION_TABLE)
+			+ " WHERE ID=" + QString::number(ID) + ";";
 
 	if (query.exec(command) != true) {
 		return -1;
 	}
 	query.next();
 	int SourceID = query.value(0).toInt();
-	command = "SELECT Domain_ID FROM " + QString(SOURCE_TABLE) + " WHERE ID=" + QString::number(SourceID) + ";";
+	command = "SELECT Domain_ID FROM " + QString(SOURCE_TABLE) + " WHERE ID="
+			+ QString::number(SourceID) + ";";
 	if (query.exec(command) != true) {
 		return -1;
 	} else {
@@ -532,7 +626,8 @@ domain_t DataBaseHandler::get_Domain_ID_from_Connection_ID(connection_t ID) {
 void DataBaseHandler::getListofSources(QList<SourceType>* SourceList) {
 	QSqlQuery query;
 	SourceType sType;
-	QString command = "SELECT ID,NAME FROM " + QString(SOURCE_TABLE) + " WHERE isGateway=\"false\";";
+	QString command = "SELECT ID,NAME FROM " + QString(SOURCE_TABLE)
+			+ " WHERE isGateway=\"false\";";
 	if (query.exec(command) != true) {
 
 	} else {
@@ -559,10 +654,12 @@ void DataBaseHandler::getListofSinks(QList<SinkType>* SinkList) {
 	}
 }
 
-void DataBaseHandler::getListofConnections(QList<ConnectionType>* ConnectionList) {
+void DataBaseHandler::getListofConnections(
+		QList<ConnectionType>* ConnectionList) {
 	QSqlQuery query;
 	ConnectionType sType;
-	QString command = "SELECT Source_ID,Sink_ID FROM " + QString(CONNECTION_TABLE) + ";";
+	QString command = "SELECT Source_ID,Sink_ID FROM " + QString(
+			CONNECTION_TABLE) + ";";
 	if (query.exec(command) != true) {
 
 	} else {
@@ -574,17 +671,19 @@ void DataBaseHandler::getListofConnections(QList<ConnectionType>* ConnectionList
 	}
 }
 
-bool DataBaseHandler::is_source_Mixed(source_t source){
+bool DataBaseHandler::is_source_Mixed(source_t source) {
 	QSqlQuery query;
 	int classID = 0;
 
-	QString command = "SELECT Class_ID FROM " + QString(SOURCE_TABLE) + " WHERE ID=\"" + QString::number(source) + "\";";
+	QString command = "SELECT Class_ID FROM " + QString(SOURCE_TABLE)
+			+ " WHERE ID=\"" + QString::number(source) + "\";";
 	if (query.exec(command) == true) {
 		if (query.next()) {
 			classID = query.value(0).toInt();
 		}
 	}
-	command = "SELECT isMixed FROM " + QString(SOURCE_CLASS_TABLE) + " WHERE ID=\"" + QString::number(classID) + "\";";
+	command = "SELECT isMixed FROM " + QString(SOURCE_CLASS_TABLE)
+			+ " WHERE ID=\"" + QString::number(classID) + "\";";
 
 	if (query.exec(command) == true) {
 		if (query.next()) {
@@ -598,7 +697,8 @@ bool DataBaseHandler::is_source_Mixed(source_t source){
 
 sink_t DataBaseHandler::get_Sink_ID_from_Name(QString name) {
 	QSqlQuery query;
-	QString command = "SELECT ID FROM " + QString(SINK_TABLE) + " WHERE Name=\"" + name + "\";";
+	QString command = "SELECT ID FROM " + QString(SINK_TABLE)
+			+ " WHERE Name=\"" + name + "\";";
 
 	if (query.exec(command) != true) {
 		return -1;
@@ -611,11 +711,13 @@ sink_t DataBaseHandler::get_Sink_ID_from_Name(QString name) {
 	}
 }
 
-connection_t DataBaseHandler::getConnectionID(source_t SourceID,sink_t SinkID) {
+connection_t DataBaseHandler::getConnectionID(source_t SourceID, sink_t SinkID) {
 	QSqlQuery query;
-	query.prepare("SELECT ID FROM " + QString(MAIN_TABLE) + " WHERE Source_ID=:sourceID AND Sink_ID=:sinkID");
-	query.bindValue(":sourceID",SourceID);
-	query.bindValue(":sinkID",SinkID);
+	query.prepare(
+			"SELECT ID FROM " + QString(MAIN_TABLE)
+					+ " WHERE Source_ID=:sourceID AND Sink_ID=:sinkID");
+	query.bindValue(":sourceID", SourceID);
+	query.bindValue(":sinkID", SinkID);
 	if (query.exec() != true) {
 		return -1;
 	} else {
@@ -627,9 +729,11 @@ connection_t DataBaseHandler::getConnectionID(source_t SourceID,sink_t SinkID) {
 	}
 }
 
-connection_t DataBaseHandler::insertConnection(source_t SourceID,sink_t SinkID) {
+connection_t DataBaseHandler::insertConnection(source_t SourceID, sink_t SinkID) {
 	QSqlQuery query;
-	QString command = "INSERT INTO " + QString(CONNECTION_TABLE) + " (Source_ID, Sink_ID) VALUES (" + QString::number(SourceID) + "," + QString::number(SinkID) + ");";
+	QString command = "INSERT INTO " + QString(CONNECTION_TABLE)
+			+ " (Source_ID, Sink_ID) VALUES (" + QString::number(SourceID)
+			+ "," + QString::number(SinkID) + ");";
 	if (query.exec(command) != true) {
 		return -1;
 	} else {
@@ -639,7 +743,8 @@ connection_t DataBaseHandler::insertConnection(source_t SourceID,sink_t SinkID) 
 
 genError_t DataBaseHandler::removeConnection(connection_t ConnectionID) {
 	QSqlQuery query;
-	QString command = "DELETE FROM " + QString(CONNECTION_TABLE) + " WHERE ID=\"" + QString::number(ConnectionID) + "\";";
+	QString command = "DELETE FROM " + QString(CONNECTION_TABLE)
+			+ " WHERE ID=\"" + QString::number(ConnectionID) + "\";";
 	if (query.exec(command) != true) {
 		return GEN_DATABASE_ERROR;
 	} else {
@@ -647,12 +752,13 @@ genError_t DataBaseHandler::removeConnection(connection_t ConnectionID) {
 	}
 }
 
-connection_t DataBaseHandler::reserveMainConnection(source_t source,sink_t sink) {
+connection_t DataBaseHandler::reserveMainConnection(source_t source,
+		sink_t sink) {
 	QSqlQuery query;
 	query.prepare("INSERT INTO " + QString(MAIN_TABLE) + "(Source_ID, Sink_ID)"
-				  " VALUES(:Source_ID, :Sink_ID)");
-	query.bindValue(":Source_ID",source);
-	query.bindValue(":Sink_ID",sink);
+		" VALUES(:Source_ID, :Sink_ID)");
+	query.bindValue(":Source_ID", source);
+	query.bindValue(":Sink_ID", sink);
 	if (query.exec() != true) {
 		return -1;
 	} else {
@@ -660,15 +766,18 @@ connection_t DataBaseHandler::reserveMainConnection(source_t source,sink_t sink)
 	}
 }
 
-genError_t DataBaseHandler::updateMainConnection(connection_t connID, genRoute_t route) {
+genError_t DataBaseHandler::updateMainConnection(connection_t connID,
+		genRoute_t route) {
 	QSqlQuery query;
 
 	//This information is not handy to be stored directly in the database. So we put it on the heap and store the pointer to it.
-	genRoute_t* routeheap =new genRoute_t(route);
+	genRoute_t* routeheap = new genRoute_t(route);
 
-	query.prepare("UPDATE " + QString(MAIN_TABLE) + " SET route=:route WHERE ID=:connID");
-	query.bindValue(":connID",connID);
-	query.bindValue(":route",int(routeheap));
+	query.prepare(
+			"UPDATE " + QString(MAIN_TABLE)
+					+ " SET route=:route WHERE ID=:connID");
+	query.bindValue(":connID", connID);
+	query.bindValue(":route", int(routeheap));
 	if (query.exec() != true) {
 		return GEN_DATABASE_ERROR;
 	} else {
@@ -676,9 +785,12 @@ genError_t DataBaseHandler::updateMainConnection(connection_t connID, genRoute_t
 	}
 }
 
-genError_t DataBaseHandler::getMainConnectionDatafromID(const connection_t connID, sink_t* return_sinkID,source_t* return_sourceID,genRoute_t** return_route) {
+genError_t DataBaseHandler::getMainConnectionDatafromID(
+		const connection_t connID, sink_t* return_sinkID,
+		source_t* return_sourceID, genRoute_t** return_route) {
 	QSqlQuery query;
-	QString command = "SELECT Sink_ID, Source_ID, route FROM " + QString(MAIN_TABLE) + " WHERE ID=" + QString::number(connID) + ";";
+	QString command = "SELECT Sink_ID, Source_ID, route FROM " + QString(
+			MAIN_TABLE) + " WHERE ID=" + QString::number(connID) + ";";
 
 	if (query.exec(command) != true) {
 		return GEN_DATABASE_ERROR;
@@ -686,7 +798,8 @@ genError_t DataBaseHandler::getMainConnectionDatafromID(const connection_t connI
 		if (query.next()) {
 			*return_sinkID = query.value(0).toInt();
 			*return_sourceID = query.value(1).toInt();
-			*return_route=reinterpret_cast<genRoute_t*>(query.value(2).toInt());
+			*return_route
+					= reinterpret_cast<genRoute_t*> (query.value(2).toInt());
 			return GEN_OK;
 		} else {
 			return GEN_UNKNOWN;
@@ -694,11 +807,14 @@ genError_t DataBaseHandler::getMainConnectionDatafromID(const connection_t connI
 	}
 }
 
-connection_t DataBaseHandler::returnMainconnectionIDforSinkSourceID (sink_t sink, source_t source) {
+connection_t DataBaseHandler::returnMainconnectionIDforSinkSourceID(
+		sink_t sink, source_t source) {
 	QSqlQuery query;
-	query.prepare("SELECT ID FROM " + QString(MAIN_TABLE) + " WHERE Sink_ID=:sinkID AND Source_ID=:SourceID");
-	query.bindValue(":SinkID",sink);
-	query.bindValue(":SourceID",source);
+	query.prepare(
+			"SELECT ID FROM " + QString(MAIN_TABLE)
+					+ " WHERE Sink_ID=:sinkID AND Source_ID=:SourceID");
+	query.bindValue(":SinkID", sink);
+	query.bindValue(":SourceID", source);
 
 	if (query.exec() != true) {
 		return -1;
@@ -710,15 +826,17 @@ connection_t DataBaseHandler::returnMainconnectionIDforSinkSourceID (sink_t sink
 	return -1;
 }
 
-QList<source_t> DataBaseHandler::getSourceIDsForSinkID (sink_t sink) {
+QList<source_t> DataBaseHandler::getSourceIDsForSinkID(sink_t sink) {
 	QList<source_t> list;
 	QSqlQuery query;
-	query.prepare( "SELECT Source_ID FROM " + QString(MAIN_TABLE) + " WHERE Sink_ID=:sinkID");
-	query.bindValue(":sinkID",sink);
+	query.prepare(
+			"SELECT Source_ID FROM " + QString(MAIN_TABLE)
+					+ " WHERE Sink_ID=:sinkID");
+	query.bindValue(":sinkID", sink);
 	if (query.exec() == true) {
 		DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("query good"));
-		while(query.next()) {
-			int p=query.value(0).toInt();
+		while (query.next()) {
+			int p = query.value(0).toInt();
 			DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("SourceID"), DLT_INT(p));
 			list.append(query.value(0).toInt());
 		}
@@ -729,7 +847,8 @@ QList<source_t> DataBaseHandler::getSourceIDsForSinkID (sink_t sink) {
 QList<ConnectionType> DataBaseHandler::getListAllMainConnections() {
 	QList<ConnectionType> connectionList;
 	QSqlQuery query;
-	QString command = "SELECT Sink_ID, Source_ID, route FROM " + QString(MAIN_TABLE) + ";";
+	QString command = "SELECT Sink_ID, Source_ID, route FROM " + QString(
+			MAIN_TABLE) + ";";
 
 	if (query.exec(command) != true) {
 
@@ -746,13 +865,15 @@ QList<ConnectionType> DataBaseHandler::getListAllMainConnections() {
 
 genError_t DataBaseHandler::removeMainConnection(connection_t connID) {
 	QSqlQuery query;
-	QString command = "SELECT route FROM " + QString(MAIN_TABLE) + " WHERE ID=" + QString::number(connID) + ";";
+	QString command = "SELECT route FROM " + QString(MAIN_TABLE) + " WHERE ID="
+			+ QString::number(connID) + ";";
 	if (query.exec(command) != true) {
 		return GEN_DATABASE_ERROR;
 	} else {
 		if (query.next()) {
-			delete reinterpret_cast<genRoute_t*>(query.value(0).toInt());
-			command = "DELETE FROM " + QString(MAIN_TABLE) + " WHERE ID=\"" + QString::number(connID) + "\";";
+			delete reinterpret_cast<genRoute_t*> (query.value(0).toInt());
+			command = "DELETE FROM " + QString(MAIN_TABLE) + " WHERE ID=\""
+					+ QString::number(connID) + "\";";
 			if (query.exec(command) != true) {
 				return GEN_DATABASE_ERROR;
 			} else {

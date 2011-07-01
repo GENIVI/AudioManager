@@ -31,17 +31,22 @@
 #include "DataBaseHandler.h"
 #include "Router.h"
 
-Router::Router() {}
+Router::Router() {
+}
 
-Router::~Router() {}
+Router::~Router() {
+}
 
 void Router::registerDatabasehandler(DataBaseHandler* db_handler) {
 	m_dbHandler = db_handler;
 }
 
-bool Router::get_Route_from_Source_ID_to_Sink_ID(const bool onlyfree,const source_t Source_ID,const sink_t Sink_ID, QList<genRoute_t>* ReturnList) {
+bool Router::get_Route_from_Source_ID_to_Sink_ID(const bool onlyfree,
+		const source_t Source_ID, const sink_t Sink_ID,
+		QList<genRoute_t>* ReturnList) {
 
-	domain_t Source_Domain = m_dbHandler->get_Domain_ID_from_Source_ID(Source_ID); //first find out in which domains the source and sink are
+	domain_t Source_Domain = m_dbHandler->get_Domain_ID_from_Source_ID(
+			Source_ID); //first find out in which domains the source and sink are
 	domain_t Sink_Domain = m_dbHandler->get_Domain_ID_from_Sink_ID(Sink_ID);
 
 	if (Source_Domain == -1 || Sink_Domain == -1) {
@@ -79,7 +84,9 @@ bool Router::get_Route_from_Source_ID_to_Sink_ID(const bool onlyfree,const sourc
 
 			//go throught the gatewayids and get more information
 			for (int i = 0; i < gwids.length(); i++) {
-				m_dbHandler->get_Gateway_Source_Sink_Domain_ID_from_ID(gwids.value(i), &ReturnSource, &ReturnSink, &ReturnDomain);
+				m_dbHandler->get_Gateway_Source_Sink_Domain_ID_from_ID(
+						gwids.value(i), &ReturnSource, &ReturnSink,
+						&ReturnDomain);
 				//first routing pair is source to ReturnSink of course;
 				if (i == 0) {
 					element.source = Source_ID;
@@ -108,7 +115,8 @@ bool Router::get_Route_from_Source_ID_to_Sink_ID(const bool onlyfree,const sourc
 	//TODO: return actual status !
 }
 
-RoutingTreeItem::RoutingTreeItem (const domain_t Domain_Id, const gateway_t Gateway_Id, RoutingTreeItem *parent) {
+RoutingTreeItem::RoutingTreeItem(const domain_t Domain_Id,
+		const gateway_t Gateway_Id, RoutingTreeItem *parent) {
 	parentItem = parent;
 	m_domainID = Domain_Id;
 	m_gatewayID = Gateway_Id;
@@ -142,10 +150,13 @@ RoutingTree::RoutingTree(const domain_t Root_ID) :
 	m_rootItem(RoutingTreeItem(Root_ID)) {
 }
 
-RoutingTree::~RoutingTree() {}
+RoutingTree::~RoutingTree() {
+}
 
-RoutingTreeItem* RoutingTree::insertItem(const domain_t Domain_ID, const gateway_t Gateway_ID, RoutingTreeItem *parentItem) {
-	RoutingTreeItem *newTree = new RoutingTreeItem(Domain_ID, Gateway_ID, parentItem);
+RoutingTreeItem* RoutingTree::insertItem(const domain_t Domain_ID,
+		const gateway_t Gateway_ID, RoutingTreeItem *parentItem) {
+	RoutingTreeItem *newTree = new RoutingTreeItem(Domain_ID, Gateway_ID,
+			parentItem);
 	parentItem->appendChild(newTree);
 	m_allChildList.append(newTree);
 	return newTree;
@@ -170,30 +181,27 @@ RoutingTreeItem* RoutingTree::returnRootItem() {
 	return &m_rootItem;
 }
 
-Bushandler::Bushandler() {
-}
-
-Bushandler::~Bushandler() {
-}
-
-
 void Bushandler::load_Bus_plugins() {
 	RoutingSendInterface *b = NULL;
 	char BusName[40];
 	Bus newBus;
-	foreach (QObject *plugin, QPluginLoader::staticInstances()) {
-		strcpy(BusName, "");
-		RoutingInterfaceFactory* busInterfaceFactory = qobject_cast<RoutingInterfaceFactory *> (plugin);
-		if (busInterfaceFactory) {
-			b = busInterfaceFactory->returnInstance();
-			b->return_BusName(BusName);
-			newBus.Name = QString(BusName);
-			newBus.sendInterface = b;
-			Busses.append(newBus);
-			QObject::connect((const QObject*) this, SIGNAL (signal_system_ready(void)), (const QObject*) b, SLOT(slot_system_ready(void)));
-			DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Bushandler:Found new bus interface"), DLT_STRING(newBus.Name.toAscii()));
+	foreach (QObject *plugin, QPluginLoader::staticInstances())
+		{
+			strcpy(BusName, "");
+			RoutingInterfaceFactory* busInterfaceFactory = qobject_cast<
+					RoutingInterfaceFactory *> (plugin);
+			if (busInterfaceFactory) {
+				b = busInterfaceFactory->returnInstance();
+				b->return_BusName(BusName);
+				newBus.Name = QString(BusName);
+				newBus.sendInterface = b;
+				Busses.append(newBus);
+				QObject::connect((const QObject*) this,
+						SIGNAL (signal_system_ready(void)), (const QObject*) b,
+						SLOT(slot_system_ready(void)));
+				DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Bushandler:Found new bus interface"), DLT_STRING(newBus.Name.toAscii()));
+			}
 		}
-	}
 }
 
 void Bushandler::StartupInterfaces() {
@@ -216,5 +224,6 @@ RoutingSendInterface* Bushandler::getInterfaceforBus(QString bus) {
 				return b.sendInterface;
 			}
 		}
+	return NULL;
 }
 

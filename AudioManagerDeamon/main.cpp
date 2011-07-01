@@ -22,30 +22,23 @@
  *
  *
  */
-
 /**
  * \file The main file of the AudioManager
  */
-
 #include <QtCore>
 #include <QCoreApplication>
-
 #include "audioManagerIncludes.h"
-
 /**
  * \todo: write some documentation about Plugin mechanism
  *
  */
-
 //put here all plugins you want to use with the Routing Interface
 Q_IMPORT_PLUGIN(RoutingPlugin)
 Q_IMPORT_PLUGIN(RoutingJackPlugin)
-
 //put here all plugins that you want to use with the hooks. No more modification needed (besides adoption of the CMakeList) !
 Q_IMPORT_PLUGIN(TestPlugin)
-
-DLT_DECLARE_CONTEXT(AudioManager);
-
+DLT_DECLARE_CONTEXT(AudioManager)
+;
 
 int main(int argc, char *argv[]) {
 	QCoreApplication a(argc, argv);
@@ -84,8 +77,7 @@ int main(int argc, char *argv[]) {
 
 	/**
 	 * \todo: we do not have to knock down the database whole the time - this can be done different
-	 */
-	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("create tables for database"));
+	 */DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("create tables for database"));
 	dhandler.create_tables();
 
 	/**

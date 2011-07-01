@@ -31,7 +31,6 @@
 class DataBaseHandler;
 class RoutingReceiver;
 
-
 /**calculates routes from sinks to sources
  *  navigation for audio
  */
@@ -54,7 +53,9 @@ public:
 	 * @param ReturnList buffer for the answer.
 	 * @return returns true on success
 	 */
-	bool get_Route_from_Source_ID_to_Sink_ID(const bool onlyfree, const source_t Source_ID, const sink_t Sink_ID, QList<genRoute_t>* ReturnList);
+	bool get_Route_from_Source_ID_to_Sink_ID(const bool onlyfree,
+			const source_t Source_ID, const sink_t Sink_ID,
+			QList<genRoute_t>* ReturnList);
 
 private:
 	DataBaseHandler* m_dbHandler;
@@ -74,7 +75,8 @@ public:
 	 * @param Gateway_Id the gateway ID that connects the domains
 	 * @param parent pointer to the parent item in the tree
 	 */
-	RoutingTreeItem(const domain_t Domain_Id, const gateway_t Gateway_Id = 0, RoutingTreeItem *parent = 0);
+	RoutingTreeItem(const domain_t Domain_Id, const gateway_t Gateway_Id = 0,
+			RoutingTreeItem *parent = 0);
 
 	/**appends a child from the same type to the tree
 	 *
@@ -107,10 +109,10 @@ public:
 	RoutingTreeItem* return_Parent();
 
 private:
-	QList<RoutingTreeItem*> childItems; 	//!< List of all child items
-	domain_t m_domainID;					//!< the domain ID of the item
-	gateway_t m_gatewayID;					//!< the gateway Id
-	RoutingTreeItem *parentItem;			//!< pointer to the parent item
+	QList<RoutingTreeItem*> childItems; //!< List of all child items
+	domain_t m_domainID; //!< the domain ID of the item
+	gateway_t m_gatewayID; //!< the gateway Id
+	RoutingTreeItem *parentItem; //!< pointer to the parent item
 };
 
 /**The routing tree iself
@@ -133,7 +135,8 @@ public:
 	 * @param parentItem pointer to the parent Item
 	 * @return returns a pointer to the new item
 	 */
-	RoutingTreeItem* insertItem(const domain_t Domain_ID, const gateway_t Gateway_ID, RoutingTreeItem* parentItem);
+	RoutingTreeItem* insertItem(const domain_t Domain_ID,
+			const gateway_t Gateway_ID, RoutingTreeItem* parentItem);
 
 	/**reverses the tree to get a route to the TargetItem
 	 *
@@ -142,7 +145,6 @@ public:
 	 * @return the length of the route.
 	 */
 	int getRoute(RoutingTreeItem* TargetItem, QList<gateway_t>* route);
-
 
 	/**returns the DomainId of the rootItem
 	 *
@@ -157,8 +159,8 @@ public:
 	RoutingTreeItem* returnRootItem(void);
 
 private:
-	RoutingTreeItem m_rootItem;							//!< pointer to root item
-	QList<RoutingTreeItem*> m_allChildList;				//!< list of all childs
+	RoutingTreeItem m_rootItem; //!< pointer to root item
+	QList<RoutingTreeItem*> m_allChildList; //!< list of all childs
 };
 
 /**This class is responsible for loading the RoutingInterface Plugins
@@ -168,8 +170,12 @@ private:
 class Bushandler: public QObject {
 Q_OBJECT
 public:
-	Bushandler();
-	virtual ~Bushandler();
+	Bushandler() {
+	}
+	;
+	virtual ~Bushandler() {
+	}
+	;
 
 	/**by calling this, all bus plugins are loaded
 	 *
@@ -209,8 +215,8 @@ private:
 		QString Name;
 	};
 
-	QList<Bus> Busses;							//!< list of all busses
-	RoutingReceiver* m_receiver;				//!< pointer to the routing receiver
+	QList<Bus> Busses; //!< list of all busses
+	RoutingReceiver* m_receiver; //!< pointer to the routing receiver
 };
 
 #endif /* ROUTER_H_ */

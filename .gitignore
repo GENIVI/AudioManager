@@ -6,3 +6,7 @@ beagleClient/
 PluginRoutingInterfaceTCP/
 pulseaudio-0.9.22/
 dbusInterfaces/tcpMessages.h
+.settings/
+*.cproject
+*.project
+.metadata/

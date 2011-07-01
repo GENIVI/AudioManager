@@ -77,24 +77,36 @@ bool RoutingSendJack::disconnect(connection_t connectionID) {
 }
 
 volume_t RoutingSendJack::setSinkVolume(volume_t volume, sink_t sink) {
+	(void)sink;
 	//TODO fill with life
+	return volume;
 }
 
 volume_t RoutingSendJack::setSourceVolume(volume_t volume, source_t source) {
+	(void)source;
 	//TODO fill with life
+	return volume;
 }
 
 bool RoutingSendJack::muteSource(source_t sourceID) {
+	(void)sourceID;
 	//TODO fill with life
+	return true;
 }
 bool RoutingSendJack::muteSink(sink_t sinkID) {
+	(void)sinkID;
 	//TODO fill with life
+	return true;
 }
 bool RoutingSendJack::unmuteSource(source_t sourceID) {
+	(void)sourceID;
 	//TODO fill with life
+	return true;
 }
 bool RoutingSendJack::unmuteSink(sink_t sinkID){
+	(void)sinkID;
 	//TODO fill with life
+	return true;
 }
 
 RoutingSendInterface* SampleRoutingInterfaceJackFactory::returnInstance(){

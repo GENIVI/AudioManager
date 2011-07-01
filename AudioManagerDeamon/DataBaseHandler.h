@@ -311,12 +311,18 @@ public:
 	bool delete_data(QString table);
 	bool create_tables();
 
-	domain_t insert_into_Domains_table(QString DomainName, QString BusName, QString NodeName, bool EarlyMode);
-	sourceClass_t insert_into_Source_Class_table(QString ClassName, volume_t VolumeOffset, bool IsInterrupt, bool IsMixed);
+	domain_t insert_into_Domains_table(QString DomainName, QString BusName,
+			QString NodeName, bool EarlyMode);
+	sourceClass_t insert_into_Source_Class_table(QString ClassName,
+			volume_t VolumeOffset, bool IsInterrupt, bool IsMixed);
 	sinkClass_t insert_into_Sink_Class_table(QString ClassName);
-	source_t insert_into_Source_table(QString Name, sourceClass_t Class_ID, domain_t Domain_ID, bool IsGateway);
-	sink_t insert_into_Sink_table(QString Name, sinkClass_t Class_ID, domain_t Domain_ID, bool IsGateway);
-	gateway_t insert_into_Gatway_table(QString Name, sink_t Sink_ID, source_t Source_ID, domain_t DomainSource_ID, domain_t DomainSink_ID, domain_t ControlDomain_ID);
+	source_t insert_into_Source_table(QString Name, sourceClass_t Class_ID,
+			domain_t Domain_ID, bool IsGateway);
+	sink_t insert_into_Sink_table(QString Name, sinkClass_t Class_ID,
+			domain_t Domain_ID, bool IsGateway);
+	gateway_t insert_into_Gatway_table(QString Name, sink_t Sink_ID,
+			source_t Source_ID, domain_t DomainSource_ID,
+			domain_t DomainSink_ID, domain_t ControlDomain_ID);
 
 	domain_t peek_Domain_ID(QString DomainName);
 	domain_t get_Domain_ID_from_Source_ID(source_t Source_ID);
@@ -331,9 +337,13 @@ public:
 
 	bool is_source_Mixed(source_t source);
 
-	gateway_t get_Gateway_ID_with_Domain_ID(domain_t startDomain_ID, domain_t targetDomain_ID);
-	genError_t get_Gateway_Source_Sink_Domain_ID_from_ID(gateway_t Gateway_ID, source_t* return_Source_ID, sink_t* return_Sink_ID, domain_t* return_ControlDomain_ID);
-	void get_Domain_ID_Tree(bool onlyfree, RoutingTree* Tree, QList<RoutingTreeItem*>* allItems);
+	gateway_t get_Gateway_ID_with_Domain_ID(domain_t startDomain_ID,
+			domain_t targetDomain_ID);
+	genError_t get_Gateway_Source_Sink_Domain_ID_from_ID(gateway_t Gateway_ID,
+			source_t* return_Source_ID, sink_t* return_Sink_ID,
+			domain_t* return_ControlDomain_ID);
+	void get_Domain_ID_Tree(bool onlyfree, RoutingTree* Tree,
+			QList<RoutingTreeItem*>* allItems);
 
 	void getListofSources(QList<SourceType>* SourceList);
 	void getListofSinks(QList<SinkType>* SinkList);
@@ -344,14 +354,21 @@ public:
 	genError_t removeConnection(connection_t ConnectionID);
 	connection_t reserveMainConnection(source_t source, sink_t sink);
 	genError_t updateMainConnection(connection_t connID, genRoute_t route);
-	genError_t getMainConnectionDatafromID(const connection_t connID, sink_t* return_sinkID, source_t* return_sourceID, genRoute_t** return_route);
-	connection_t returnMainconnectionIDforSinkSourceID(sink_t sink, source_t source);
+	genError_t getMainConnectionDatafromID(const connection_t connID,
+			sink_t* return_sinkID, source_t* return_sourceID,
+			genRoute_t** return_route);
+	connection_t returnMainconnectionIDforSinkSourceID(sink_t sink,
+			source_t source);
 	QList<source_t> getSourceIDsForSinkID(sink_t sink);
 	QList<ConnectionType> getListAllMainConnections();
 	genError_t removeMainConnection(connection_t connID);
 	genInt_t reserveInterrupt(sink_t Sink_ID, source_t Source_ID);
-	genError_t updateInterrupt(const genInt_t intID, connection_t connID, bool mixed, QList<source_t> listInterrruptedSources);
-	genError_t getInterruptDatafromID(const genInt_t intID, connection_t* return_connID, sink_t* return_Sink_ID, source_t* return_Source_ID, bool* return_mixed, QList<source_t>** return_listInterrruptedSources);
+	genError_t updateInterrupt(const genInt_t intID, connection_t connID,
+			bool mixed, QList<source_t> listInterrruptedSources);
+	genError_t getInterruptDatafromID(const genInt_t intID,
+			connection_t* return_connID, sink_t* return_Sink_ID,
+			source_t* return_Source_ID, bool* return_mixed,
+			QList<source_t>** return_listInterrruptedSources);
 	genError_t removeInterrupt(const genInt_t intID);
 
 signals:
