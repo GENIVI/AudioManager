@@ -27,7 +27,7 @@ INCLUDE_DIRECTORIES(
  	${CMAKE_CURRENT_BINARY_DIR}
  	${QT_INCLUDE_DIR} 
  	${DBUS_FOLDER}
-	../AudioManagerDeamon
+	../AudioManagerDaemon
 )
 
 # defines for QL Plugins

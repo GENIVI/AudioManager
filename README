@@ -175,7 +175,7 @@ If you want to have the same as the demo in Dublin, start now the jack equalizer
 
 Now it's time to start pulseaudio, since we need to start it with a special configuration, get into the pulseaudio directory and run
 
-	src/pulseaudio -n -F src/default.pa -p $(pwd)/src/.libs/ -vvvv
+	src/pulseaudio -n -F src/test.pa -p $(pwd)/src/.libs/ -vvvv
 
 The next step is to start the DLT server
 
