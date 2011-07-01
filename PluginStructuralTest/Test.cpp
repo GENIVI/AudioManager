@@ -149,20 +149,20 @@ genHookResult_t TestPlugin::hookInterruptRequest (Queue* queue, source_t interru
 	interrupt.SinkID=sink;
 	interrupt.ID=m_core->returnDatabaseHandler()->reserveInterrupt(sink,interruptSource);
 	*interruptID=interrupt.ID;
-	interrupt.listInterrruptedSources=m_core->returnDatabaseHandler()->getSourceIDsForSinkID(sink);
+	interrupt.listInterruptedSources=m_core->returnDatabaseHandler()->getSourceIDsForSinkID(sink);
 	interrupt.connID=m_core->returnDatabaseHandler()->reserveMainConnection(interruptSource,sink);
 	interrupt.mixed=m_core->returnDatabaseHandler()->is_source_Mixed(interruptSource);
 
 	if (interrupt.mixed) {
 		DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Add task to change the volume on interrupt"));
-		foreach(source_t sourceL,interrupt.listInterrruptedSources) {
+		foreach(source_t sourceL,interrupt.listInterruptedSources) {
 			DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Set volume change for source"),DLT_INT(sourceL));
 			TaskSetSourceVolume* volumetask=new TaskSetSourceVolume(m_core,INTERRUPT_VOLUME_LEVEL,sourceL);
 			queue->addTask(volumetask);
 		}
 	} else {
 		DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("Add task to switch off sources on interrupt"));
-		foreach(source_t sourceL,interrupt.listInterrruptedSources) {
+		foreach(source_t sourceL,interrupt.listInterruptedSources) {
 			TaskSetSourceMute* mutetask=new TaskSetSourceMute(m_core,sourceL);
 			queue->addTask(mutetask);
 		}
@@ -202,7 +202,7 @@ genHookResult_t TestPlugin::hookInterruptRequest (Queue* queue, source_t interru
 	TaskEnterUserConnect* enterConnect=new TaskEnterUserConnect(m_core,route,interrupt.connID);
 	queue->addTask(enterConnect);
 
-	TaskEnterInterrupt* enterInteruppt=new TaskEnterInterrupt(m_core,interrupt.ID,m_core->returnDatabaseHandler()->is_source_Mixed(interruptSource),interrupt.connID,interrupt.listInterrruptedSources);
+	TaskEnterInterrupt* enterInteruppt=new TaskEnterInterrupt(m_core,interrupt.ID,m_core->returnDatabaseHandler()->is_source_Mixed(interruptSource),interrupt.connID,interrupt.listInterruptedSources);
 	queue->addTask(enterInteruppt);
 
 	TaskInterruptWait* interruptWait=new TaskInterruptWait(m_core,interrupt.ID);
@@ -216,12 +216,12 @@ genHookResult_t TestPlugin::hookInterruptRequest (Queue* queue, source_t interru
 			queue->addTask(disconnect);
 	}
 	if (interrupt.mixed) {
-		foreach(source_t sourceL,interrupt.listInterrruptedSources) {
+		foreach(source_t sourceL,interrupt.listInterruptedSources) {
 			TaskSetSourceVolume* volumetask=new TaskSetSourceVolume(m_core,NORMAL_VOLUME_LEVEL,sourceL);
 			queue->addTask(volumetask);
 		}
 	} else {
-		foreach(source_t sourceL,interrupt.listInterrruptedSources) {
+		foreach(source_t sourceL,interrupt.listInterruptedSources) {
 			TaskSetSourceUnmute* unmutetask=new TaskSetSourceUnmute(m_core,sourceL);
 			queue->addTask(unmutetask);
 		}

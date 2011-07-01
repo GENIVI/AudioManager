@@ -85,7 +85,7 @@ public:
 	source_t sourceID;
 	sink_t SinkID;
 	bool mixed;
-	QList<source_t> listInterrruptedSources;
+	QList<source_t> listInterruptedSources;
 };
 
 #endif /* DATATYPES_H_ */

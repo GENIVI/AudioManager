@@ -138,7 +138,7 @@ bool DataBaseHandler::create_tables() {
 
 	command
 			= "CREATE TABLE " + QString(INTERRUPT_TABLE)
-					+ " (ID INTEGER NOT NULL, Source_ID INTEGER, Sink_ID INTEGER, Connection_ID INTEGER, mixed BOOL, listInterrruptedSources INTEGER, PRIMARY KEY(ID));";
+					+ " (ID INTEGER NOT NULL, Source_ID INTEGER, Sink_ID INTEGER, Connection_ID INTEGER, mixed BOOL, listInterruptedSources INTEGER, PRIMARY KEY(ID));";
 	if (query.exec(command) != true) {
 		DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("Databasehandler: Could not create table"), DLT_STRING(INTERRUPT_TABLE));
 		return false;
@@ -352,7 +352,7 @@ genInt_t DataBaseHandler::reserveInterrupt(sink_t Sink_ID, source_t Source_ID) {
 
 genError_t DataBaseHandler::updateInterrupt(const genInt_t intID,
 		connection_t connID, bool mixed,
-		QList<source_t> listInterrruptedSources) {
+		QList<source_t> listInterruptedSources) {
 	QSqlQuery query;
 	QString _mixed = "false";
 
@@ -361,14 +361,14 @@ genError_t DataBaseHandler::updateInterrupt(const genInt_t intID,
 	}
 
 	//This information is not handy to be stored directly in the database. So we put it on the heap and store the pointer to it.
-	QList<source_t>* pointer = new QList<source_t> (listInterrruptedSources);
+	QList<source_t>* pointer = new QList<source_t> (listInterruptedSources);
 
 	query.prepare(
 			"UPDATE " + QString(INTERRUPT_TABLE)
-					+ " SET Connection_ID=:Connection_ID, mixed=:mixed ,listInterrruptedSources=:listInterrruptedSources WHERE ID=:id");
+					+ " SET Connection_ID=:Connection_ID, mixed=:mixed ,listInterruptedSources=:listInterruptedSources WHERE ID=:id");
 	query.bindValue(":Connection_ID", connID);
 	query.bindValue(":mixed", _mixed);
-	query.bindValue(":listInterrruptedSources", int(pointer));
+	query.bindValue(":listInterruptedSources", int(pointer));
 	query.bindValue(":id", intID);
 	if (query.exec() != true) {
 		return GEN_DATABASE_ERROR;
@@ -380,11 +380,11 @@ genError_t DataBaseHandler::updateInterrupt(const genInt_t intID,
 genError_t DataBaseHandler::getInterruptDatafromID(const genInt_t intID,
 		connection_t* return_connID, sink_t* return_Sink_ID,
 		source_t* return_Source_ID, bool* return_mixed,
-		QList<source_t>** return_listInterrruptedSources) {
+		QList<source_t>** return_listInterruptedSources) {
 	QSqlQuery query;
 	QString
 			command =
-					"SELECT Connection_ID, Sink_ID, Source_ID, mixed, listInterrruptedSources FROM "
+					"SELECT Connection_ID, Sink_ID, Source_ID, mixed, listInterruptedSources FROM "
 							+ QString(INTERRUPT_TABLE) + " WHERE ID="
 							+ QString::number(intID) + ";";
 
@@ -396,7 +396,7 @@ genError_t DataBaseHandler::getInterruptDatafromID(const genInt_t intID,
 			*return_Sink_ID = query.value(1).toInt();
 			*return_Source_ID = query.value(2).toInt();
 			*return_mixed = query.value(3).toBool();
-			*return_listInterrruptedSources
+			*return_listInterruptedSources
 					= reinterpret_cast<QList<source_t>*> (query.value(4).toInt());
 			return GEN_OK;
 		} else {
@@ -407,7 +407,7 @@ genError_t DataBaseHandler::getInterruptDatafromID(const genInt_t intID,
 
 genError_t DataBaseHandler::removeInterrupt(const genInt_t intID) {
 	QSqlQuery query;
-	QString command = "SELECT listInterrruptedSources FROM " + QString(
+	QString command = "SELECT listInterruptedSources FROM " + QString(
 			INTERRUPT_TABLE) + " WHERE ID=" + QString::number(intID) + ";";
 	if (query.exec(command) != true) {
 		return GEN_DATABASE_ERROR;
