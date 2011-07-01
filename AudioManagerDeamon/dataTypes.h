@@ -73,7 +73,7 @@ public:
 /**This class describes the interrupt Type.
  * \var ID the ID of the Interrupt (unique)
  * \var connID the Connection ID that is used
- * \var sourceI the SourceID of the Interrupt
+ * \var sourceID the SourceID of the Interrupt
  * \var sinkID the sinkID of the interrupt
  * \var mixed true if interrupt is mixed into current audio
  * \var listInterruptSources the list of the interrupted sources.
