@@ -21,7 +21,7 @@ INCLUDE_DIRECTORIES(
 	${STD_INCLUDE_DIRS}
  	${CMAKE_CURRENT_BINARY_DIR}
 	${DBUS_FOLDER}
-	../AudioManagerDeamon
+	../AudioManagerDaemon
 )
 
 # add Qt modules here, the include will setup QT_LIBRARIES
