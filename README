@@ -211,7 +211,7 @@ Tips
 If you want to use the codebase with eclipse, define the main level of the git as workspace and import the projects as c++ makefile projects.
 Git is setup in a way that the settings are ignored when committing.
 To use make out of eclipse them, replace the default make command "make" with something like
-"make -j4 -C ../build/AudioManagerDeamon VERBOSE=1" (exchaning the name of the Project in respect to the plugin whatever. 
+"make -j4 -C ../build/AudioManagerDeamon VERBOSE=1" (exchanging the name of the Project in respect to the plugin whatever. 
 
 ***********************************************************************************************************	
 
