@@ -176,7 +176,7 @@ private:
  *
  * \fn void TaskInterruptWait::slot_interrupt_ready(genInt_t ID)
  * \brief slot that is called when the interrupt resumes
- * \param the interrupt ID of the interrupt that resumed
+ * \param ID the interrupt ID of the interrupt that resumed
  */
 class TaskInterruptWait: public Task {
 Q_OBJECT
@@ -206,7 +206,7 @@ private:
  * \fn void TaskSetVolume::setSink(sink_t sink)
  * \brief sets the sink
  *
- * \fn void TaskSetVolume::volume_t getVolume()
+ * \fn volume_t  TaskSetVolume::getVolume()
  * \brief returns the volume
  *
  * \fn sink_t TaskSetVolume::getSink()
@@ -243,15 +243,11 @@ private:
  *  * \fn void TaskSetSourceVolume::setVolume(volume_t newVolume)
  * \brief sets the volume
  *
- * \fn void TaskSetSourceVolume::setSink(sink_t sink)
+ * \fn void TaskSetSourceVolume::setSource (source_t source)
  * \brief sets the sink
  *
- * \fn void TaskSetSourceVolume::volume_t getVolume()
+ * \fn volume_t TaskSetSourceVolume::getVolume()
  * \brief returns the volume
- *
- * \fn sink_t TaskSetSourceVolume::getSink()
- * \brief returns the volume
- *
  */
 class TaskSetSourceVolume: public Task {
 Q_OBJECT
@@ -278,7 +274,7 @@ private:
  * \fn TaskWait::TaskWait(AudioManagerCore* core, int mseconds)
  * \brief constructor
  * \param core the pointer to the AudioManagerCore
- * \param newmseconds delay in milliseconds
+ * \param mseconds delay in milliseconds
  *
  * \fn void TaskWait::setTime(int mseconds)
  * \brief sets the time

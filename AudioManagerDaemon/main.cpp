@@ -22,11 +22,8 @@
  *
  *
  */
-/**
- * \file The main file of the AudioManager
- */
-#include <QtCore>
-#include <QCoreApplication>
+
+#include <QtCore/qcoreapplication.h>
 #include "audioManagerIncludes.h"
 /**
  * \todo: write some documentation about Plugin mechanism
@@ -37,8 +34,7 @@ Q_IMPORT_PLUGIN(RoutingPlugin)
 Q_IMPORT_PLUGIN(RoutingJackPlugin)
 //put here all plugins that you want to use with the hooks. No more modification needed (besides adoption of the CMakeList) !
 Q_IMPORT_PLUGIN(TestPlugin)
-DLT_DECLARE_CONTEXT(AudioManager)
-;
+DLT_DECLARE_CONTEXT(AudioManager);
 
 int main(int argc, char *argv[]) {
 	QCoreApplication a(argc, argv);

@@ -10,3 +10,4 @@ dbusInterfaces/tcpMessages.h
 *.cproject
 *.project
 .metadata/
+/music/navi.mp3

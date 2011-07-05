@@ -847,17 +847,18 @@ QList<source_t> DataBaseHandler::getSourceIDsForSinkID(sink_t sink) {
 QList<ConnectionType> DataBaseHandler::getListAllMainConnections() {
 	QList<ConnectionType> connectionList;
 	QSqlQuery query;
-	QString command = "SELECT Sink_ID, Source_ID, route FROM " + QString(
+	QString command = "SELECT Sink_ID, Source_ID FROM " + QString(
 			MAIN_TABLE) + ";";
 
 	if (query.exec(command) != true) {
 
 	} else {
-		if (query.next()) {
+		while (query.next()) {
 			ConnectionType temp;
 			temp.Sink_ID = query.value(0).toInt();
 			temp.Source_ID = query.value(1).toInt();
 			connectionList.append(temp);
+			DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Added Connection"), DLT_INT(temp.Sink_ID),DLT_INT(temp.Source_ID));
 		}
 	}
 	return connectionList;
