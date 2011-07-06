@@ -35,6 +35,9 @@ HookHandler::HookHandler() {
 }
 
 HookHandler::~HookHandler() {
+	foreach (BaseHook* hook,m_listofPlugins) {
+		hook->DeinitHook();
+	}
 }
 
 void BaseHook::registerAudioManagerCore(AudioManagerCore* core) {
@@ -46,13 +49,12 @@ genError_t BaseHook::registerHookEngine(HookHandler* engine) {
 	return GEN_OK;
 }
 
-genError_t HookHandler::registerHook(hookprio_t prio, genHook_t hookType,
-		BaseHook* hookClass) {
+genError_t HookHandler::registerHook(hookprio_t prio, genHook_t hookType, BaseHook* hookClass) {
 	prioList newEntry;
 	QList<prioList>* list;
 
 	if (prio < 0 || prio > 100) {
-		DLT_LOG(AudioManager,DLT_LOG_WARN, DLT_STRING("Register Hook: Priority out of range: "), DLT_INT(prio));
+		DLT_LOG( AudioManager, DLT_LOG_WARN, DLT_STRING("Register Hook: Priority out of range: "), DLT_INT(prio));
 		return GEN_OUTOFRANGE;
 	}
 
@@ -127,18 +129,17 @@ genError_t HookHandler::registerHook(hookprio_t prio, genHook_t hookType,
 		list = &m_interruptRequestList;
 		break;
 	default:
-		DLT_LOG(AudioManager,DLT_LOG_WARN, DLT_STRING("Trying to register unknown Hook "))
-		;
+		DLT_LOG(AudioManager, DLT_LOG_WARN, DLT_STRING("Trying to register unknown Hook "));
 		return GEN_OUTOFRANGE;
 	}
 
 	int index = 0;
 	foreach(prioList l,*list)
-		{
-			if (l.prio > prio) {
-				index++;
-			}
+	{
+		if (l.prio > prio) {
+			index++;
 		}
+	}
 	list->insert(index, newEntry);
 	//TODO test the sorting of the hooks with more than one plugin
 
@@ -147,209 +148,200 @@ genError_t HookHandler::registerHook(hookprio_t prio, genHook_t hookType,
 
 genError_t HookHandler::fireHookDomainRegister(char* Name, domain_t ID) {
 	foreach (prioList hook,m_domainRegisterList)
-		{
-			if (hook.hook->hookDomainRegister(Name, ID) == HOOK_STOP)
-				break;
-		}
+	{
+		if (hook.hook->hookDomainRegister(Name, ID) == HOOK_STOP)
+			break;
+	}
 	return GEN_OK;
 }
 
 genError_t HookHandler::fireHookDomainDeregister(domain_t ID) {
 	foreach (prioList hook,m_domainDeregisterList)
-		{
-			if (hook.hook->hookDomainDeregister(ID) == HOOK_STOP)
-				break;
-		}
+	{
+		if (hook.hook->hookDomainDeregister(ID) == HOOK_STOP)
+			break;
+	}
 	return GEN_OK;
 }
 
 genError_t HookHandler::fireHookSinkRegister(char* Name, sink_t ID) {
 	foreach (prioList hook,m_sinkRegisterList)
-		{
-			if (hook.hook->hookSinkRegister(Name, ID) == HOOK_STOP)
-				break;
-		}
+	{
+		if (hook.hook->hookSinkRegister(Name, ID) == HOOK_STOP)
+			break;
+	}
 	return GEN_OK;
 }
 
 genError_t HookHandler::fireHookSinkDeregister(sink_t ID) {
 	foreach (prioList hook,m_sinkDeregisterList)
-		{
-			if (hook.hook->hookSinkDeregister(ID) == HOOK_STOP)
-				break;
-		}
+	{
+		if (hook.hook->hookSinkDeregister(ID) == HOOK_STOP)
+			break;
+	}
 	return GEN_OK;
 }
 
 genError_t HookHandler::fireHookSourceRegister(char* Name, source_t ID) {
 	foreach (prioList hook,m_sourceRegisterList)
-		{
-			if (hook.hook->hookSinkRegister(Name, ID) == HOOK_STOP)
-				break;
-		}
+	{
+		if (hook.hook->hookSinkRegister(Name, ID) == HOOK_STOP)
+			break;
+	}
 	return GEN_OK;
 }
 
 genError_t HookHandler::fireHookSourceDeregister(source_t ID) {
 	foreach (prioList hook,m_sourceDeregisterList)
-		{
-			if (hook.hook->hookSourceDeregister(ID) == HOOK_STOP)
-				break;
-		}
+	{
+		if (hook.hook->hookSourceDeregister(ID) == HOOK_STOP)
+			break;
+	}
 	return GEN_OK;
 }
 
 genError_t HookHandler::fireHookGatewayRegister(char* Name, gateway_t ID) {
 	foreach (prioList hook,m_gatewayRegisterList)
-		{
-			if (hook.hook->hookGatewayRegister(Name, ID) == HOOK_STOP)
-				break;
-		}
+	{
+		if (hook.hook->hookGatewayRegister(Name, ID) == HOOK_STOP)
+			break;
+	}
 	return GEN_OK;
 }
 
 genError_t HookHandler::fireHookGatewayDeregister(gateway_t ID) {
 	foreach (prioList hook,m_gatewayDeregisterList)
-		{
-			if (hook.hook->hookGatewayDeregister(ID) == HOOK_STOP)
-				break;
-		}
+	{
+		if (hook.hook->hookGatewayDeregister(ID) == HOOK_STOP)
+			break;
+	}
 	return GEN_OK;
 }
 
 genError_t HookHandler::fireHookSystemReady(void) {
 	foreach (prioList hook,m_systemReadyList)
-		{
-			if (hook.hook->hookSystemReady() == HOOK_STOP)
-				break;
-		}
+	{
+		if (hook.hook->hookSystemReady() == HOOK_STOP)
+			break;
+	}
 	return GEN_OK;
 }
 
 genError_t HookHandler::fireHookSystemDown(void) {
 	foreach (prioList hook,m_systemDownList)
-		{
-			if (hook.hook->hookSystemDown() == HOOK_STOP)
-				break;
-		}
+	{
+		if (hook.hook->hookSystemDown() == HOOK_STOP)
+			break;
+	}
 	return GEN_OK;
 }
 
-genError_t HookHandler::fireHookConnectionRequest(source_t SourceID,
-		sink_t SinkID) {
+genError_t HookHandler::fireHookConnectionRequest(source_t SourceID, sink_t SinkID) {
 	foreach (prioList hook,m_connectionRequestList)
-		{
-			if (hook.hook->hookConnectionRequest(SourceID, SinkID) == HOOK_STOP)
-				break;
-		}
+	{
+		if (hook.hook->hookConnectionRequest(SourceID, SinkID) == HOOK_STOP)
+			break;
+	}
 	return GEN_OK;
 }
 
 genError_t HookHandler::fireHookDisconnectionRequest(connection_t ID) {
 	foreach (prioList hook,m_disconnectionReuestList)
-		{
-			if (hook.hook->hookDisconnectionRequest(ID) == HOOK_STOP)
-				break;
-		}
+	{
+		if (hook.hook->hookDisconnectionRequest(ID) == HOOK_STOP)
+			break;
+	}
 	return GEN_OK;
 }
 
-genError_t HookHandler::fireHookUserConnectionRequest(Queue* queue,
-		source_t SourceID, sink_t SinkID) {
+genError_t HookHandler::fireHookUserConnectionRequest(Queue* queue, source_t SourceID, sink_t SinkID) {
 	foreach (prioList hook,m_userConnectionRequestList)
-		{
-			if (hook.hook->hookUserConnectionRequest(queue, SourceID, SinkID)
-					== HOOK_STOP)
-				break;
-		}
+	{
+		if (hook.hook->hookUserConnectionRequest(queue, SourceID, SinkID) == HOOK_STOP)
+			break;
+	}
 	return GEN_OK;
 }
 
-genError_t HookHandler::fireHookUserDisconnectionRequest(Queue* queue,
-		connection_t connID) {
+genError_t HookHandler::fireHookUserDisconnectionRequest(Queue* queue, connection_t connID) {
 	foreach (prioList hook,m_userDisconnectionReuestList)
-		{
-			if (hook.hook->hookUserDisconnectionRequest(queue, connID)
-					== HOOK_STOP)
-				break;
-		}
+	{
+		if (hook.hook->hookUserDisconnectionRequest(queue, connID) == HOOK_STOP)
+			break;
+	}
 	return GEN_OK;
 }
 
-genError_t HookHandler::fireHookRoutingRequest(bool onlyfree, source_t source,
-		sink_t sink, QList<genRoute_t>* ReturnList) {
+genError_t HookHandler::fireHookRoutingRequest(bool onlyfree, source_t source, sink_t sink, QList<genRoute_t>* ReturnList) {
 	foreach (prioList hook,m_routingRequestList)
-		{
-			if (hook.hook->hookRoutingRequest(onlyfree, source, sink,
-					ReturnList) == HOOK_STOP)
-				break;
-		}
+	{
+		if (hook.hook->hookRoutingRequest(onlyfree, source, sink, ReturnList) == HOOK_STOP)
+			break;
+	}
 	return GEN_OK;
 }
 
 //todo change type
 genError_t HookHandler::fireHookRoutingComplete(genRoute_t route) {
 	foreach (prioList hook,m_routingCompleteList)
-		{
-			if (hook.hook->hookRoutingComplete(route) == HOOK_STOP)
-				break;
-		}
+	{
+		if (hook.hook->hookRoutingComplete(route) == HOOK_STOP)
+			break;
+	}
 	return GEN_OK;
 }
 
 genError_t HookHandler::fireHookVolumeChange(volume_t newVolume, sink_t SinkID) {
 	foreach (prioList hook,m_volumeChangeList)
-		{
-			if (hook.hook->hookVolumeChange(newVolume, SinkID) == HOOK_STOP)
-				break;
-		}
+	{
+		if (hook.hook->hookVolumeChange(newVolume, SinkID) == HOOK_STOP)
+			break;
+	}
 	return GEN_OK;
 }
 
 genError_t HookHandler::fireHookMuteSource(source_t ID) {
 	foreach (prioList hook,m_muteSourceList)
-		{
-			if (hook.hook->hookMuteSource(ID) == HOOK_STOP)
-				break;
-		}
+	{
+		if (hook.hook->hookMuteSource(ID) == HOOK_STOP)
+			break;
+	}
 	return GEN_OK;
 }
 
 genError_t HookHandler::fireHookUnmuteSource(source_t ID) {
 	foreach (prioList hook,m_unmuteSourceList)
-		{
-			if (hook.hook->hookUnmuteSource(ID) == HOOK_STOP)
-				break;
-		}
+	{
+		if (hook.hook->hookUnmuteSource(ID) == HOOK_STOP)
+			break;
+	}
 	return GEN_OK;
 }
 
 genError_t HookHandler::fireHookMuteSink(sink_t ID) {
 	foreach (prioList hook,m_muteSinkList)
-		{
-			if (hook.hook->hookMuteSink(ID) == HOOK_STOP)
-				break;
-		}
+	{
+		if (hook.hook->hookMuteSink(ID) == HOOK_STOP)
+			break;
+	}
 	return GEN_OK;
 }
 
 genError_t HookHandler::fireHookUnmuteSink(sink_t ID) {
 	foreach (prioList hook,m_unmuteSinkList)
-		{
-			if (hook.hook->hookUnmuteSink(ID) == HOOK_STOP)
-				break;
-		}
+	{
+		if (hook.hook->hookUnmuteSink(ID) == HOOK_STOP)
+			break;
+	}
 	return GEN_OK;
 }
 
-genError_t HookHandler::fireHookInterruptRequest(Queue* queue,
-		source_t interruptSource, sink_t sink, genInt_t* interruptID) {
+genError_t HookHandler::fireHookInterruptRequest(Queue* queue, source_t interruptSource, sink_t sink, genInt_t* interruptID) {
 	foreach (prioList hook,m_interruptRequestList)
-		{
-			if (hook.hook->hookInterruptRequest(queue, interruptSource, sink,
-					interruptID) == HOOK_STOP)
-				break;
-		}
+	{
+		if (hook.hook->hookInterruptRequest(queue, interruptSource, sink, interruptID) == HOOK_STOP)
+			break;
+	}
 	return GEN_OK;
 }
 
@@ -359,20 +351,19 @@ void HookHandler::registerAudioManagerCore(AudioManagerCore* core) {
 
 void HookHandler::loadHookPlugins() {
 	BaseHook *b = NULL;
-	foreach (QObject *plugin, QPluginLoader::staticInstances())
-		{
-			HookPluginFactory* HookPluginFactory_ = qobject_cast<
-					HookPluginFactory *> (plugin);
-			if (HookPluginFactory_) {
-				b = HookPluginFactory_->returnInstance();
-				b->registerHookEngine(this);
-				b->registerAudioManagerCore(m_core);
-				b->InitHook();
-				char pName[40];
-				if (b->returnPluginName(pName) == GEN_OK) {
-					DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Registered Hook Plugin:"), DLT_STRING(pName));
-				}
+	foreach (QObject *plugin, QPluginLoader::staticInstances()) {
+		HookPluginFactory* HookPluginFactory_ = qobject_cast<HookPluginFactory *>(plugin);
+		if (HookPluginFactory_) {
+			b = HookPluginFactory_->returnInstance();
+			b->registerHookEngine(this);
+			b->registerAudioManagerCore(m_core);
+			b->InitHook();
+			char pName[40];
+			if (b->returnPluginName(pName) == GEN_OK) {
+				DLT_LOG( AudioManager, DLT_LOG_INFO, DLT_STRING("Registered Hook Plugin:"), DLT_STRING(pName));
+				m_listofPlugins.append(b);
 			}
 		}
+	}
 }
 

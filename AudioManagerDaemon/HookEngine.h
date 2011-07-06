@@ -327,6 +327,7 @@ private:
 	QList<prioList> m_interruptRequestList;
 
 	AudioManagerCore* m_core;
+	QList<BaseHook*> m_listofPlugins;
 };
 
 /**Factory class for plugin. Needs just to return an instance of the class that the plugin implements.
