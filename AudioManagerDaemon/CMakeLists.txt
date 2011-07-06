@@ -20,6 +20,7 @@ set(EXECUTABLE_OUTPUT_PATH ../../bin/)
 set(DOC_OUTPUT_PATH ../../doc/)
 set(DBUS_FOLDER ${CMAKE_SOURCE_DIR}/../dbusInterfaces)
 set(DOC_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/../doc/AudioManager)
+set(DOCUMENT $ENV{gendoc})
 
 cmake_policy(SET CMP0015 NEW)
 
@@ -122,10 +123,12 @@ add_custom_command(
 #add a target to generate API documentation with Doxygen
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
+if(DOCUMENT)
   	configure_file(Doxyfile.in ${PROJECT_BINARY_DIR}/Doxyfile  @ONLY IMMEDIATE)
   	add_custom_target (Docs ALL 
   	COMMAND ${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/Doxyfile WORKING_DIRECTORY ${DOC_OUTPUT_PATH}
   	SOURCES ${PROJECT_BINARY_DIR}/Doxyfile)
+endif(DOCUMENT)
 endif(DOXYGEN_FOUND)
 
 

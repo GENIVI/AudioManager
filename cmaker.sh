@@ -213,14 +213,23 @@ all)
 	;;
 *)
 	echo ""
-	echo "		Usage: ./cmaker.sh {cmake|make|all} {all|main|plugins|target xxx}"
+	echo "		Usage: ./cmaker.sh {cmake|make|all} {all|main|plugins|target xxx} [document]"
 	echo "		xxx stands for the directory of the target to be build"
 	echo "		Output binaries are below \bin, builds are done in \build\xxx"
 	echo "		Script does only use Subdirectories beginning with upper Cases !"
+	echo "		document if this flag is present, the documentation will be created"
 	echo ""	
 	exit 1
 	;;
 esac
+echo "$3"
+doc="document"
+if [ "$3" = "$doc" ]
+then
+	export gendoc="ON"
+else 
+	export gendoc="OFF"
+fi 
 make_build
 case "$2" in
 all)
@@ -237,10 +246,11 @@ target)
 	;;
 *)
 	echo ""
-	echo "		Usage: ./cmaker.sh {cmake|make|all} {all|applications|plugins|target xxx}"
+	echo "		Usage: ./cmaker.sh {cmake|make|all} {all|applications|plugins|target xxx} [-document]"
 	echo "		xxx stands for the directory of the target to be build"
 	echo "		Output binaries are below \bin, builds are done in \build\xxx"
 	echo "		Script does only use Subdirectories beginning with upper Cases !"
+	echo "		document if this flag is present, the documentation will be created"
 	echo ""
 	exit 1
 	;;
