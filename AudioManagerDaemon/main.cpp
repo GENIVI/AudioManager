@@ -23,29 +23,25 @@
  *
  */
 
-#include <QtCore/qcoreapplication.h>
 #include "audioManagerIncludes.h"
 /**
  * \todo: write some documentation about Plugin mechanism
  *
  */
 //put here all plugins you want to use with the Routing Interface
-Q_IMPORT_PLUGIN(RoutingPlugin)
-Q_IMPORT_PLUGIN(RoutingJackPlugin)
+//Q_IMPORT_PLUGIN(RoutingPlugin)
+//Q_IMPORT_PLUGIN(RoutingJackPlugin)
 //put here all plugins that you want to use with the hooks. No more modification needed (besides adoption of the CMakeList) !
-Q_IMPORT_PLUGIN(TestPlugin)
+//Q_IMPORT_PLUGIN(TestPlugin)
 DLT_DECLARE_CONTEXT(AudioManager);
 
 int main(int argc, char *argv[]) {
-	QCoreApplication a(argc, argv);
 
 	//of course, we need some logging :-)
 	DLT_REGISTER_APP("AudioManagerDeamon","AudioManagerDeamon");
 	DLT_REGISTER_CONTEXT(AudioManager,"Main","Main Context");
 	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("The AudioManager is started "));
 
-	//add library path
-	a.addLibraryPath("../plugins");
 
 	//Here are our Main Classes
 	DataBaseHandler dhandler;
@@ -54,7 +50,7 @@ int main(int argc, char *argv[]) {
 	Router router;
 	HookHandler hookhandler;
 	AudioManagerCore core;
-	DBusCommandInterface commandIface;
+	//DBusCommandInterface commandIface;
 
 	//meet and greet: register all the classes @ each other
 	hookhandler.registerAudioManagerCore(&core);
@@ -63,11 +59,11 @@ int main(int argc, char *argv[]) {
 	core.registerRouter(&router);
 	core.registerHookEngine(&hookhandler);
 	core.registerReceiver(&breceiver);
-	core.registerCommandInterface(&commandIface);
+	//core.registerCommandInterface(&commandIface);
 	router.registerDatabasehandler(&dhandler);
 	//commandIface.registerDatabasehandler(&dhandler);
 
-	commandIface.registerAudioManagerCore(&core);
+	//commandIface.registerAudioManagerCore(&core);
 	breceiver.register_Databasehandler(&dhandler);
 	bushandler.registerReceiver(&breceiver);
 
@@ -91,9 +87,11 @@ int main(int argc, char *argv[]) {
 	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("load bus plugins"));
 	bushandler.load_Bus_plugins();
 	bushandler.StartupInterfaces();
-	commandIface.startupInterface();
+	//commandIface.startupInterface();
 	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Init phase is over, everything up and running"));
 
-	return a.exec();
+	while (1) {
+		sleep(2000);
+	}
 }
 

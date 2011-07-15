@@ -33,8 +33,8 @@ class DataBaseHandler;
 /**implementation of the interface
  *
  */
-class RoutingReceiver: public QObject, public RoutingReceiveInterface {
-Q_OBJECT
+class RoutingReceiver: public RoutingReceiveInterface {
+
 public:
 	void register_Databasehandler(DataBaseHandler* handler_); //is used to register the Database handler
 
@@ -46,7 +46,6 @@ public:
 	int peekDomain(char* name);
 	void ackConnect(genHandle_t handle, genError_t error);
 
-signals:
 	void signal_ackConnect(genHandle_t handle, genError_t error);
 
 private:

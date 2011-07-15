@@ -183,7 +183,7 @@ public:
 	}
 	;
 	virtual genHookResult_t hookRoutingRequest(bool onlyfree, source_t source,
-			sink_t sink, QList<genRoute_t>* ReturnList) {
+			sink_t sink, std::list<genRoute_t>* ReturnList) {
 		(void) onlyfree;
 		(void) source;
 		(void) sink;
@@ -282,8 +282,7 @@ public:
 			sink_t SinkID);
 	genError_t fireHookUserDisconnectionRequest(Queue* queue,
 			connection_t connID);
-	genError_t fireHookRoutingRequest(bool onlyfree, source_t SourceID,
-			sink_t SinkID, QList<genRoute_t>* ReturnList);
+	genError_t fireHookRoutingRequest(bool onlyfree, source_t SourceID, sink_t SinkID, std::list<genRoute_t>* ReturnList);
 	genError_t fireHookRoutingComplete(genRoute_t route);
 	genError_t fireHookVolumeChange(volume_t newVolume, sink_t SinkID);
 	genError_t fireHookMuteSource(source_t ID);
@@ -303,44 +302,31 @@ private:
 		hookprio_t prio;
 	};
 
-	QList<prioList> m_domainRegisterList;
-	QList<prioList> m_domainDeregisterList;
-	QList<prioList> m_sinkRegisterList;
-	QList<prioList> m_sinkDeregisterList;
-	QList<prioList> m_sourceRegisterList;
-	QList<prioList> m_sourceDeregisterList;
-	QList<prioList> m_gatewayRegisterList;
-	QList<prioList> m_gatewayDeregisterList;
-	QList<prioList> m_systemReadyList;
-	QList<prioList> m_systemDownList;
-	QList<prioList> m_connectionRequestList;
-	QList<prioList> m_disconnectionReuestList;
-	QList<prioList> m_userConnectionRequestList;
-	QList<prioList> m_userDisconnectionReuestList;
-	QList<prioList> m_routingRequestList;
-	QList<prioList> m_routingCompleteList;
-	QList<prioList> m_volumeChangeList;
-	QList<prioList> m_muteSourceList;
-	QList<prioList> m_unmuteSourceList;
-	QList<prioList> m_muteSinkList;
-	QList<prioList> m_unmuteSinkList;
-	QList<prioList> m_interruptRequestList;
+	std::list<prioList> m_domainRegisterList;
+	std::list<prioList> m_domainDeregisterList;
+	std::list<prioList> m_sinkRegisterList;
+	std::list<prioList> m_sinkDeregisterList;
+	std::list<prioList> m_sourceRegisterList;
+	std::list<prioList> m_sourceDeregisterList;
+	std::list<prioList> m_gatewayRegisterList;
+	std::list<prioList> m_gatewayDeregisterList;
+	std::list<prioList> m_systemReadyList;
+	std::list<prioList> m_systemDownList;
+	std::list<prioList> m_connectionRequestList;
+	std::list<prioList> m_disconnectionReuestList;
+	std::list<prioList> m_userConnectionRequestList;
+	std::list<prioList> m_userDisconnectionReuestList;
+	std::list<prioList> m_routingRequestList;
+	std::list<prioList> m_routingCompleteList;
+	std::list<prioList> m_volumeChangeList;
+	std::list<prioList> m_muteSourceList;
+	std::list<prioList> m_unmuteSourceList;
+	std::list<prioList> m_muteSinkList;
+	std::list<prioList> m_unmuteSinkList;
+	std::list<prioList> m_interruptRequestList;
 
 	AudioManagerCore* m_core;
-	QList<BaseHook*> m_listofPlugins;
+	std::list<BaseHook*> m_listofPlugins;
 };
-
-/**Factory class for plugin. Needs just to return an instance of the class that the plugin implements.
- *
- */
-class HookPluginFactory {
-public:
-	virtual ~HookPluginFactory() {
-	}
-	virtual BaseHook* returnInstance()=0;
-};
-
-Q_DECLARE_INTERFACE(HookPluginFactory,"HookPluginFactory/1.0")
-;
 
 #endif /* HOOKENGINE_H_ */

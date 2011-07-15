@@ -2,9 +2,9 @@
  *
  * Copyright (C) 2011, BMW AG
  *
- * PluginTest
+ * PluginHookStandard
  *
- * \file Test.cpp
+ * \file StandardHook.cpp
  *
  * \date 20.05.2011
  * \author Christian Müller (christian.ei.mueller@bmw.de)
@@ -22,13 +22,16 @@
  * Note that people who make modified versions of AudioManager are not obligated to grant this special exception for their modified versions; it is their choice whether to do so. The GNU Lesser General Public License, version 2.1, gives permission to release a modified version without this exception; this exception also makes it possible to release a modified version which carries forward this exception.
  */
 
-#include "Test.h"
+#include "StandardHook.h"
+#include <list>
+#include <stdio.h>
+#include <string.h>
 
-TestPlugin::TestPlugin() {}
+StandardHookPlugin::StandardHookPlugin() {}
 
-TestPlugin::~TestPlugin() {}
+StandardHookPlugin::~StandardHookPlugin() {}
 
-genError_t TestPlugin::InitHook(void) {
+genError_t StandardHookPlugin::InitHook(void) {
 	/**
 	 * This is the right place for init stuff that needs to be done. Make sure that all the  Hooks are registered here !
 	 */
@@ -43,32 +46,32 @@ genError_t TestPlugin::InitHook(void) {
 	return GEN_OK;
 }
 
-genError_t TestPlugin::returnPluginName(char* name) {
+genError_t StandardHookPlugin::returnPluginName(char* name) {
 	strcpy(name,"Test Plugin");
 	return GEN_OK;
 }
 
-genError_t TestPlugin::DeinitHook(void) {
+genError_t StandardHookPlugin::DeinitHook(void) {
 	return GEN_OK;
 
 }
 
-genHookResult_t TestPlugin::hookDomainRegister (char* Name, domain_t ID) {
+genHookResult_t StandardHookPlugin::hookDomainRegister (char* Name, domain_t ID) {
 	(void)Name;
 	(void)ID;
 	return HOOK_OK;
 }
 
-genHookResult_t TestPlugin::hookSinkRegister(char* Name, sink_t ID) {
+genHookResult_t StandardHookPlugin::hookSinkRegister(char* Name, sink_t ID) {
 	(void)Name;
 	(void)ID;
 	return HOOK_OK;
 }
 
-genHookResult_t TestPlugin::hookUserConnectionRequest (Queue* queue, source_t SourceID, sink_t SinkID) {
+genHookResult_t StandardHookPlugin::hookUserConnectionRequest (Queue* queue, source_t SourceID, sink_t SinkID) {
 	DataBaseHandler* handler=m_core->returnDatabaseHandler();
 	genRoute_t route;
-	QList<genRoutingElement_t> list;
+	std::list<genRoutingElement_t> list;
 
 	source_t domainSourceID = handler->get_Domain_ID_from_Source_ID(SourceID);
 	sink_t domainSinkID = handler->get_Domain_ID_from_Sink_ID(SinkID);
@@ -80,22 +83,22 @@ genHookResult_t TestPlugin::hookUserConnectionRequest (Queue* queue, source_t So
 		r.sink = SinkID;
 		r.source = SourceID;
 		r.Domain_ID = handler->get_Domain_ID_from_Source_ID(SourceID);
-		list.append(r);
+		list.push_back(r);
 		route.Sink_ID = SinkID;
 		route.Source_ID = SourceID;
 		route.route = list;
 	} else {
-		QList<genRoute_t> listofRoutes;
+		std::list<genRoute_t> listofRoutes;
 		m_core->getRoute(false,SourceID,SinkID,&listofRoutes);
 
-		if (listofRoutes.length() > 0) {
-			list = listofRoutes.first().route; //TODO these are all routes. Currently we take only the first
-			route= listofRoutes.first();
+		if (listofRoutes.size() > 0) {
+			list = listofRoutes.begin()->route; //TODO these are all routes. Currently we take only the first
+			route= listofRoutes.front();
 		}
 	}
 
-	foreach (genRoutingElement_t element, list) {
-			TaskConnect* connect=new TaskConnect(m_core, element.sink, element.source);
+	for (std::list<genRoutingElement_t>::iterator listIterator = list.begin(); listIterator != list.end(); listIterator++) {
+			TaskConnect* connect=new TaskConnect(m_core, listIterator->sink, listIterator->source);
 			queue->addTask(connect);
 	}
 
@@ -108,14 +111,14 @@ genHookResult_t TestPlugin::hookUserConnectionRequest (Queue* queue, source_t So
 	return HOOK_OK;
 }
 
-genHookResult_t TestPlugin::hookUserDisconnectionRequest  (Queue* queue,  connection_t connID) {
+genHookResult_t StandardHookPlugin::hookUserDisconnectionRequest  (Queue* queue,  connection_t connID) {
 
 	genRoute_t* route;
 	sink_t sink;
 	source_t source;
 	m_core->returnDatabaseHandler()->getMainConnectionDatafromID(connID,&sink,&source,&route);
-	foreach (genRoutingElement_t routingElement, route->route) {
-		connection_t connectionID = m_core->returnConnectionIDforSinkSource (routingElement.sink, routingElement.source);
+	for(std::list<genRoutingElement_t>::iterator routeIteration=route->route.begin();routeIteration !=route->route.end();routeIteration++) {
+		connection_t connectionID = m_core->returnConnectionIDforSinkSource (routeIteration->sink, routeIteration->source);
 		TaskDisconnect* disconnect=new TaskDisconnect(m_core,connectionID);
 		queue->addTask(disconnect);
 	}
@@ -128,7 +131,7 @@ genHookResult_t TestPlugin::hookUserDisconnectionRequest  (Queue* queue,  connec
 	return HOOK_OK;
 }
 
-genHookResult_t TestPlugin::hookVolumeChange (volume_t newVolume, sink_t SinkID) {
+genHookResult_t StandardHookPlugin::hookVolumeChange (volume_t newVolume, sink_t SinkID) {
 	Queue* volumeChange = new Queue(m_core,"Volume Change");
 	TaskSetVolume* volumeTask = new TaskSetVolume(m_core,newVolume,SinkID);
 	volumeChange->addTask(volumeTask);
@@ -136,14 +139,14 @@ genHookResult_t TestPlugin::hookVolumeChange (volume_t newVolume, sink_t SinkID)
 	return HOOK_OK;
 }
 
-genHookResult_t TestPlugin::hookRoutingRequest (bool onlyfree,source_t source, sink_t sink,QList<genRoute_t>* ReturnList) {
+genHookResult_t StandardHookPlugin::hookRoutingRequest (bool onlyfree,source_t source, sink_t sink,std::list<genRoute_t>* ReturnList) {
 	//Here could be a place to modify, the request, take care of restrictions etc...
 	Router* router=m_core->returnRouter();
 	router->get_Route_from_Source_ID_to_Sink_ID(onlyfree,source,sink,ReturnList);
 	return HOOK_OK;
 }
 
-genHookResult_t TestPlugin::hookInterruptRequest (Queue* queue, source_t interruptSource, sink_t sink, genInt_t* interruptID) {
+genHookResult_t StandardHookPlugin::hookInterruptRequest (Queue* queue, source_t interruptSource, sink_t sink, genInt_t* interruptID) {
 	interruptType_t interrupt;
 	interrupt.sourceID=interruptSource;
 	interrupt.SinkID=sink;
@@ -155,20 +158,20 @@ genHookResult_t TestPlugin::hookInterruptRequest (Queue* queue, source_t interru
 
 	if (interrupt.mixed) {
 		DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Add task to change the volume on interrupt"));
-		foreach(source_t sourceL,interrupt.listInterruptedSources) {
-			DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Set volume change for source"),DLT_INT(sourceL));
-			TaskSetSourceVolume* volumetask=new TaskSetSourceVolume(m_core,INTERRUPT_VOLUME_LEVEL,sourceL);
+		for(std::list<source_t>::iterator sourceL=interrupt.listInterruptedSources.begin(); sourceL !=interrupt.listInterruptedSources.end();sourceL++) {
+			DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Set volume change for source"),DLT_INT(*sourceL));
+			TaskSetSourceVolume* volumetask=new TaskSetSourceVolume(m_core,INTERRUPT_VOLUME_LEVEL,*sourceL);
 			queue->addTask(volumetask);
 		}
 	} else {
 		DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("Add task to switch off sources on interrupt"));
-		foreach(source_t sourceL,interrupt.listInterruptedSources) {
-			TaskSetSourceMute* mutetask=new TaskSetSourceMute(m_core,sourceL);
+		for(std::list<source_t>::iterator sourceL=interrupt.listInterruptedSources.begin();sourceL !=interrupt.listInterruptedSources.end();sourceL++) {
+			TaskSetSourceMute* mutetask=new TaskSetSourceMute(m_core,*sourceL);
 			queue->addTask(mutetask);
 		}
 	}
 	genRoute_t route;
-	QList<genRoutingElement_t> list;
+	std::list<genRoutingElement_t> list;
 
 	source_t domainSourceID = m_core->returnDatabaseHandler()->get_Domain_ID_from_Source_ID(interruptSource);
 	sink_t domainSinkID = m_core->returnDatabaseHandler()->get_Domain_ID_from_Sink_ID(sink);
@@ -179,23 +182,23 @@ genHookResult_t TestPlugin::hookInterruptRequest (Queue* queue, source_t interru
 		r.sink = sink;
 		r.source = interruptSource;
 		r.Domain_ID = domainSourceID;
-		list.append(r);
+		list.push_back(r);
 		route.Sink_ID = sink;
 		route.Source_ID = interruptSource;
 		route.len = 1;
 		route.route = list;
 	} else {
-		QList<genRoute_t> listofRoutes;
+		std::list<genRoute_t> listofRoutes;
 		m_core->getRoute(false,interruptSource,sink,&listofRoutes);
 
-		if (listofRoutes.length() > 0) {
-			list = listofRoutes.first().route; //TODO these are all routes. Currently we take only the first
-			route= listofRoutes.first();
+		if (listofRoutes.size() > 0) {
+			list = listofRoutes.front().route; //TODO these are all routes. Currently we take only the first
+			route= listofRoutes.front();
 		}
 	}
 
-	foreach (genRoutingElement_t element, list) {
-			TaskConnect* connect=new TaskConnect(m_core, element.sink, element.source);
+	for(std::list<genRoutingElement_t>::iterator element=list.begin();element!=list.end();element++) {
+			TaskConnect* connect=new TaskConnect(m_core, element->sink, element->source);
 			queue->addTask(connect);
 	}
 
@@ -211,18 +214,18 @@ genHookResult_t TestPlugin::hookInterruptRequest (Queue* queue, source_t interru
 	TaskEmitSignalConnect* emitConnect2=new TaskEmitSignalConnect(m_core);
 	queue->addTask(emitConnect2);
 
-	foreach (genRoutingElement_t element, list) {
-			TaskDisconnect* disconnect=new TaskDisconnect(m_core,m_core->returnDatabaseHandler()->getConnectionID(element.source,element.sink));
+	for (std::list<genRoutingElement_t>::iterator element=list.begin();element!=list.end();element++) {
+			TaskDisconnect* disconnect=new TaskDisconnect(m_core,m_core->returnDatabaseHandler()->getConnectionID(element->source,element->sink));
 			queue->addTask(disconnect);
 	}
 	if (interrupt.mixed) {
-		foreach(source_t sourceL,interrupt.listInterruptedSources) {
-			TaskSetSourceVolume* volumetask=new TaskSetSourceVolume(m_core,NORMAL_VOLUME_LEVEL,sourceL);
+		for(std::list<source_t>::iterator sourceL=interrupt.listInterruptedSources.begin(); sourceL!=interrupt.listInterruptedSources.end();sourceL++) {
+			TaskSetSourceVolume* volumetask=new TaskSetSourceVolume(m_core,NORMAL_VOLUME_LEVEL,*sourceL);
 			queue->addTask(volumetask);
 		}
 	} else {
-		foreach(source_t sourceL,interrupt.listInterruptedSources) {
-			TaskSetSourceUnmute* unmutetask=new TaskSetSourceUnmute(m_core,sourceL);
+		for(std::list<source_t>::iterator sourceL=interrupt.listInterruptedSources.begin();sourceL!=interrupt.listInterruptedSources.end();sourceL++) {
+			TaskSetSourceUnmute* unmutetask=new TaskSetSourceUnmute(m_core,*sourceL);
 			queue->addTask(unmutetask);
 		}
 	}
@@ -238,10 +241,4 @@ genHookResult_t TestPlugin::hookInterruptRequest (Queue* queue, source_t interru
 
 	return HOOK_OK;
 }
-
-BaseHook* TestHookPluginFactory::returnInstance() {
-	return new TestPlugin;
-}
-
-Q_EXPORT_PLUGIN2(TestPlugin, TestHookPluginFactory);
 

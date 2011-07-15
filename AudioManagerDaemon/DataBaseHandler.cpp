@@ -4,7 +4,9 @@
  * AudioManangerDeamon
  *
  * \file DataBaseHandler.cpp
- *
+ *	if (query.exec(command) != true) {
+
+	}
  * \date 20.05.2011
  * \author Christian Müller (christian.ei.mueller@bmw.de)
  *
@@ -24,21 +26,29 @@
  */
 
 #include "DataBaseHandler.h"
+#include <cstdlib>
+#include <fstream>
+#include <stdio.h>
+#include <cstring>
+#include <sstream>
+#include <sqlite3.h>
 
 DataBaseHandler::DataBaseHandler() {
 
 	//knock down database
-	QString path = (QDir::home().path());
+	m_path = "/home/blacky";
 
-	path.append(QDir::separator()).append(AUDIO_DATABASE);
-	path = QDir::toNativeSeparators(path);
+	m_path.append("/");
+	m_path.append(AUDIO_DATABASE);
 
-	QFile db_file(path);
-	if (db_file.exists()) {
-		db_file.remove();
+	std::ifstream infile(m_path.c_str());
+
+	if (infile) {
+		remove(m_path.c_str());
+		DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("Knocked down database"));
 	}
 	if (!this->open_database()) {
-		DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Problems with opening the database"));
+		DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("Problems with opening the database"));
 	}
 }
 
@@ -46,156 +56,107 @@ DataBaseHandler::~DataBaseHandler() {
 	this->close_database();
 }
 
-bool DataBaseHandler::open_database() {
-	m_database = QSqlDatabase::addDatabase("QSQLITE");
-	QString path = (QDir::home().path());
+bool DataBaseHandler::pQuery(std::string command) {
+	sqlite3_stmt* query;
+	if (sqlite3_exec(m_database,command.c_str(),NULL,&query,NULL)!= SQLITE_OK) {
+		DLT_LOG( AudioManager, DLT_LOG_ERROR, DLT_STRING("SQL Query failed:"), DLT_STRING(command.c_str()));
+		return false;
+	}
+	return true;
+}
 
-	path.append(QDir::separator()).append(AUDIO_DATABASE);
-	path = QDir::toNativeSeparators(path);
-	m_database.setDatabaseName(path);
-	return m_database.open();
+std::string DataBaseHandler::int2string(int i) {
+	std::stringstream out;
+	out << i;
+	return out.str();
+}
+
+bool DataBaseHandler::open_database() {
+	if (sqlite3_open_v2(m_path.c_str(), &m_database,SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX, NULL) == SQLITE_OK) {
+		return true;
+	} else {
+		return false;
+	}
 }
 
 void DataBaseHandler::close_database() {
-	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Closed Database"));
-	m_database.close();
+	DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("Closed Database"));
+	sqlite3_close(m_database);
 }
 
-bool DataBaseHandler::delete_data(QString table) {
-	QSqlQuery query;
-	QString comand = "DELETE FROM " + table;
-	return query.exec(comand);
+bool DataBaseHandler::delete_data(std::string table) {
+	std::string command = "DELETE FROM" + table;
+	if (!this->pQuery(command)) return false;
+	return true;
 }
 
 bool DataBaseHandler::create_tables() {
+	std::string command;
+	command="CREATE TABLE " + std::string(DOMAIN_TABLE) + " (ID INTEGER NOT NULL, DomainName VARCHAR(50), BusName VARCHAR(50), NodeName VARCHAR(50), EarlyMode BOOL, PRIMARY KEY(ID));";
+	if (!this->pQuery(command)) return false;
 
-	QSqlQuery query;
-	QString
-			command =
-					"CREATE TABLE " + QString(DOMAIN_TABLE)
-							+ " (ID INTEGER NOT NULL, DomainName VARCHAR(50), BusName VARCHAR(50), NodeName VARCHAR(50), EarlyMode BOOL, PRIMARY KEY(ID));";
-	if (query.exec(command) != true) {
-		DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("Databasehandler: Could not create table"), DLT_STRING(DOMAIN_TABLE));
-		return false;
-	}
+	command = "CREATE TABLE " + std::string(SOURCE_CLASS_TABLE) + " (ID INTEGER NOT NULL, ClassName VARCHAR(50), VolumeOffset INTEGER, IsInterrupt BOOL, IsMixed BOOL, PRIMARY KEY(ID));";
+	if (!this->pQuery(command)) return false;
 
-	command
-			= "CREATE TABLE " + QString(SOURCE_CLASS_TABLE)
-					+ " (ID INTEGER NOT NULL, ClassName VARCHAR(50), VolumeOffset INTEGER, IsInterrupt BOOL, IsMixed BOOL, PRIMARY KEY(ID));";
-	if (query.exec(command) != true) {
-		DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("Databasehandler: Could not create table"), DLT_STRING(SOURCE_CLASS_TABLE));
-		return false;
-	}
+	command = "CREATE TABLE " + std::string(SINK_CLASS_TABLE) + " (ID INTEGER NOT NULL, ClassName VARCHAR(50), PRIMARY KEY(ID));";
+	if (!this->pQuery(command)) return false;
 
-	command = "CREATE TABLE " + QString(SINK_CLASS_TABLE)
-			+ " (ID INTEGER NOT NULL, ClassName VARCHAR(50), PRIMARY KEY(ID));";
-	if (query.exec(command) != true) {
-		DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("Databasehandler: Could not create table"), DLT_STRING(SINK_CLASS_TABLE));
-		return false;
-	}
+	command = "CREATE TABLE " + std::string(SOURCE_TABLE) + " (ID INTEGER NOT NULL, Name VARCHAR(50), Class_ID INTEGER, Domain_ID INTEGER, IsGateway BOOL, PRIMARY KEY(ID), FOREIGN KEY (Domain_ID) REFERENCES " + DOMAIN_TABLE + "(ID), FOREIGN KEY (Class_ID) REFERENCES " + SOURCE_CLASS_TABLE + "(ID));";
+	if (!this->pQuery(command)) return false;
 
-	command
-			= "CREATE TABLE " + QString(SOURCE_TABLE)
-					+ " (ID INTEGER NOT NULL, Name VARCHAR(50), Class_ID INTEGER, Domain_ID INTEGER, IsGateway BOOL, PRIMARY KEY(ID), FOREIGN KEY (Domain_ID) REFERENCES "
-					+ DOMAIN_TABLE + "(ID), FOREIGN KEY (Class_ID) REFERENCES "
-					+ SOURCE_CLASS_TABLE + "(ID));";
-	if (query.exec(command) != true) {
-		DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("Databasehandler: Could not create table"), DLT_STRING(SOURCE_TABLE));
-		return false;
-	}
+	command = "CREATE TABLE " + std::string(SINK_TABLE) + " (ID INTEGER NOT NULL, Name VARCHAR(50), Class_ID INTEGER, Domain_ID INTEGER, IsGateway BOOL, PRIMARY KEY(ID), FOREIGN KEY (DOMAIN_ID) REFERENCES " + DOMAIN_TABLE + "(ID), FOREIGN KEY (Class_ID) REFERENCES " + SOURCE_CLASS_TABLE + "(ID));";
+	if (!this->pQuery(command)) return false;
 
-	command
-			= "CREATE TABLE " + QString(SINK_TABLE)
-					+ " (ID INTEGER NOT NULL, Name VARCHAR(50), Class_ID INTEGER, Domain_ID INTEGER, IsGateway BOOL, PRIMARY KEY(ID), FOREIGN KEY (DOMAIN_ID) REFERENCES "
-					+ DOMAIN_TABLE + "(ID), FOREIGN KEY (Class_ID) REFERENCES "
-					+ SOURCE_CLASS_TABLE + "(ID));";
-	if (query.exec(command) != true) {
-		DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("Databasehandler: Could not create table"), DLT_STRING(SOURCE_CLASS_TABLE));
-		return false;
-	}
+	command = "CREATE TABLE " + std::string(GATEWAY_TABLE) + " (ID INTEGER NOT NULL, Name VARCHAR(50), Sink_ID INTEGER, Source_ID INTEGER, DomainSource_ID INTEGER, DomainSink_ID INTEGER, ControlDomain_ID Integer, IsBlocked BOOL, PRIMARY KEY(ID), FOREIGN KEY (Sink_ID) REFERENCES " + SINK_TABLE + "(ID), FOREIGN KEY (Source_ID) REFERENCES " + SOURCE_TABLE + "(ID),FOREIGN KEY (DomainSource_ID) REFERENCES " + DOMAIN_TABLE + "(ID),FOREIGN KEY (DomainSink_ID) REFERENCES " + DOMAIN_TABLE + "(ID));";
+	if (!this->pQuery(command)) return false;
 
-	command
-			= "CREATE TABLE " + QString(GATEWAY_TABLE)
-					+ " (ID INTEGER NOT NULL, Name VARCHAR(50), Sink_ID INTEGER, Source_ID INTEGER, DomainSource_ID INTEGER, DomainSink_ID INTEGER, ControlDomain_ID Integer, IsBlocked BOOL, PRIMARY KEY(ID), FOREIGN KEY (Sink_ID) REFERENCES "
-					+ SINK_TABLE + "(ID), FOREIGN KEY (Source_ID) REFERENCES "
-					+ SOURCE_TABLE
-					+ "(ID),FOREIGN KEY (DomainSource_ID) REFERENCES "
-					+ DOMAIN_TABLE
-					+ "(ID),FOREIGN KEY (DomainSink_ID) REFERENCES "
-					+ DOMAIN_TABLE + "(ID));";
-	if (query.exec(command) != true) {
-		DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("Databasehandler: Could not create table"), DLT_STRING(GATEWAY_TABLE));
-		return false;
-	}
+	command = "CREATE TABLE " + std::string(CONNECTION_TABLE) + " (ID INTEGER NOT NULL, Source_ID INTEGER, Sink_ID INTEGER, PRIMARY KEY(ID));";
+	if (!this->pQuery(command)) return false;
 
-	command
-			= "CREATE TABLE " + QString(CONNECTION_TABLE)
-					+ " (ID INTEGER NOT NULL, Source_ID INTEGER, Sink_ID INTEGER, PRIMARY KEY(ID));";
-	if (query.exec(command) != true) {
-		DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("Databasehandler: Could not create table"), DLT_STRING(CONNECTION_TABLE));
-		return false;
-	}
+	command = "CREATE TABLE " + std::string(INTERRUPT_TABLE) + " (ID INTEGER NOT NULL, Source_ID INTEGER, Sink_ID INTEGER, Connection_ID INTEGER, mixed BOOL, listInterruptedSources INTEGER, PRIMARY KEY(ID));";
+	if (!this->pQuery(command)) return false;
 
-	command
-			= "CREATE TABLE " + QString(INTERRUPT_TABLE)
-					+ " (ID INTEGER NOT NULL, Source_ID INTEGER, Sink_ID INTEGER, Connection_ID INTEGER, mixed BOOL, listInterruptedSources INTEGER, PRIMARY KEY(ID));";
-	if (query.exec(command) != true) {
-		DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("Databasehandler: Could not create table"), DLT_STRING(INTERRUPT_TABLE));
-		return false;
-	}
-
-	command
-			= "CREATE TABLE " + QString(MAIN_TABLE)
-					+ " (ID INTEGER NOT NULL, Source_ID INTEGER, Sink_ID INTEGER, route INTEGER, PRIMARY KEY(ID));";
-	if (query.exec(command) != true) {
-		DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("Databasehandler: Could not create table"), DLT_STRING(MAIN_TABLE));
-		return false;
-	}
+	command = "CREATE TABLE " + std::string(MAIN_TABLE) + " (ID INTEGER NOT NULL, Source_ID INTEGER, Sink_ID INTEGER, route INTEGER, PRIMARY KEY(ID));";
+	if (!this->pQuery(command)) return false;
 
 	return true;
-
 }
 
-domain_t DataBaseHandler::insert_into_Domains_table(QString DomainName,
-		QString BusName, QString NodeName, bool EarlyMode) {
-	QSqlQuery query;
-	QString _EarlyMode = "false";
+domain_t DataBaseHandler::insert_into_Domains_table(std::string DomainName, std::string BusName, std::string NodeName, bool EarlyMode) {
+	sqlite3_stmt* query;
+	std::string _EarlyMode = "false";
 	if (EarlyMode) {
 		_EarlyMode = "true";
 	}
 
-	QString command = "SELECT BusName,ID FROM " + QString(DOMAIN_TABLE)
-			+ " WHERE DomainName=\"" + DomainName + "\";";
+	std::string command = "SELECT BusName,ID FROM " + std::string(DOMAIN_TABLE) + " WHERE DomainName='" + DomainName + "'";
 
-	if (query.exec(command) == true) {
-		if (query.next()) {
-			if (!query.value(0).toString().isEmpty()) {
-				return query.value(1).toInt();
+	if (sqlite3_exec(m_database,command.c_str(),NULL,&query,NULL)!= SQLITE_OK) {
+		if (sqlite3_step(query)==SQLITE_ROW) {
+			std::string name((const char*) sqlite3_column_text(query,0));
+			if (!name.empty()) {
+				return sqlite3_column_int(query,1);
 			} else {
-				command = "UPDATE " + QString(DOMAIN_TABLE) + "SET Busname="
-						+ BusName + " Nodename=" + NodeName + " EarlyMode="
-						+ _EarlyMode + " WHERE DomainName=" + DomainName;
+				command = "UPDATE " + std::string(DOMAIN_TABLE) + "SET Busname=" + BusName + " Nodename=" + NodeName + " EarlyMode=" + _EarlyMode + " WHERE DomainName=" + DomainName;
 			}
 		} else {
-			command = "INSERT INTO " + QString(DOMAIN_TABLE)
-					+ " (DomainName, BusName, NodeName, EarlyMode) VALUES (\""
-					+ DomainName + "\",\"" + BusName + "\",\"" + NodeName
-					+ "\",\"" + _EarlyMode + "\")";
+			command = "INSERT INTO " + std::string(DOMAIN_TABLE) + " (DomainName, BusName, NodeName, EarlyMode) VALUES ('" + DomainName + "','" + BusName + "'','" + NodeName + "','" + _EarlyMode + "')";
 		}
 	}
 
-	if (query.exec(command) != true) {
+	sqlite3_finalize(query);
+
+	if (!this->pQuery(command)) {
 		return -1;
 	} else {
 		return get_Domain_ID_from_Name(DomainName);
 	}
 }
-sourceClass_t DataBaseHandler::insert_into_Source_Class_table(
-		QString ClassName, volume_t VolumeOffset, bool IsInterrupt,
-		bool IsMixed) {
-	QSqlQuery query;
-	QString _IsInterrupt = "false";
-	QString _IsMixed = "false";
+
+sourceClass_t DataBaseHandler::insert_into_Source_Class_table(std::string ClassName, volume_t VolumeOffset, bool IsInterrupt, bool IsMixed) {
+	sqlite3_stmt* query;
+	std::string _IsInterrupt = "false";
+	std::string _IsMixed = "false";
 
 	if (IsInterrupt) {
 		_IsInterrupt = "true";
@@ -204,200 +165,166 @@ sourceClass_t DataBaseHandler::insert_into_Source_Class_table(
 		_IsMixed = "true";
 	}
 
-	QString command = "SELECT ID FROM " + QString(SOURCE_CLASS_TABLE)
-			+ " WHERE ClassName=\"" + ClassName + "\";";
+	std::string command = "SELECT ID FROM " + std::string(SOURCE_CLASS_TABLE) + " WHERE ClassName='" + ClassName + "';";
 
-	if (query.exec(command) == true) {
-		if (query.next()) {
-			return query.value(0).toInt();
+	if (SQexecute(command)) {
+		if (sqlite3_step(query)) {
+			return sqlite3_column_int(query,0);
 		}
 	}
 
-	command = "INSERT INTO " + QString(SOURCE_CLASS_TABLE)
-			+ " (ClassName, VolumeOffset, IsInterrupt, IsMixed) VALUES (\""
-			+ ClassName + "\"," + QString::number(VolumeOffset) + ",\""
-			+ _IsInterrupt + "\",\"" + _IsMixed + "\")";
+	command = "INSERT INTO " + std::string(SOURCE_CLASS_TABLE) + " (ClassName, VolumeOffset, IsInterrupt, IsMixed) VALUES ('" + ClassName + "'," + int2string(VolumeOffset) + ",'" + _IsInterrupt + "','" + _IsMixed + "')";
 
-	if (query.exec(command) != true) {
+	if (!this->pQuery(command)) {
 		return -1;
 	} else {
-		return query.lastInsertId().toInt();
+		return sqlite3_last_insert_rowid(m_database);
 	}
 }
 
-sink_t DataBaseHandler::insert_into_Sink_Class_table(QString ClassName) {
-	QSqlQuery query;
+sink_t DataBaseHandler::insert_into_Sink_Class_table(std::string ClassName) {
+	sqlite3_stmt* query;
 
-	QString command = "SELECT ID FROM " + QString(SINK_CLASS_TABLE)
-			+ " WHERE ClassName=\"" + ClassName + "\";";
+	std::string command = "SELECT ID FROM " + std::string(SINK_CLASS_TABLE) + " WHERE ClassName='" + ClassName + "';";
 
-	if (query.exec(command) == true) {
-		if (query.next()) {
-			return query.value(0).toInt();
+	if (SQexecute(command)) {
+		if (sqlite3_step(query)) {
+			return sqlite3_column_int(query,0);
 		}
 	}
 
-	command = "INSERT INTO " + QString(SINK_CLASS_TABLE)
-			+ " (ClassName) VALUES (\"" + ClassName + "\")";
+	command = "INSERT INTO " + std::string(SINK_CLASS_TABLE) + " (ClassName) VALUES ('" + ClassName + "')";
 
-	if (query.exec(command) != true) {
+	if (!this->pQuery(command)) {
 		return -1;
 	} else {
-		return query.lastInsertId().toInt();
+		return sqlite3_last_insert_rowid(m_database);
 	}
 }
 
-source_t DataBaseHandler::insert_into_Source_table(QString Name,
-		sourceClass_t Class_ID, domain_t Domain_ID, bool IsGateway) {
-	QSqlQuery query;
-	QString _IsGateway = "false";
+source_t DataBaseHandler::insert_into_Source_table(std::string Name, sourceClass_t Class_ID, domain_t Domain_ID, bool IsGateway) {
+	sqlite3_stmt* query;
+	std::string _IsGateway = "false";
 
 	if (IsGateway) {
 		_IsGateway = "true";
 	}
 
-	QString command = "SELECT ID FROM " + QString(SOURCE_TABLE)
-			+ " WHERE Name=\"" + Name + "\";";
+	std::string command = "SELECT ID FROM " + std::string(SOURCE_TABLE) + " WHERE Name='" + Name + "';";
 
-	if (query.exec(command) == true) {
-		if (query.next()) {
-			return query.value(0).toInt();
+	if (SQexecute(command)) {
+		if (sqlite3_step(query)) {
+			return sqlite3_column_int(query,0);
 		}
 	}
 
-	command = "INSERT INTO " + QString(SOURCE_TABLE)
-			+ " (Name, Class_ID, Domain_ID, IsGateway) VALUES (\"" + Name
-			+ "\"," + QString::number(Class_ID) + ",\"" + QString::number(
-			Domain_ID) + "\",\"" + _IsGateway + "\")";
+	command = "INSERT INTO " + std::string(SOURCE_TABLE) + " (Name, Class_ID, Domain_ID, IsGateway) VALUES ('" + Name + "'," + int2string(Class_ID) + ",'" + int2string(Domain_ID) + "','" + _IsGateway + "')";
 
-	if (query.exec(command) != true) {
+	if (sqlite3_step(query)) {
 		return -1;
 	} else {
-		emit signal_numberOfSourcesChanged();
-		return query.lastInsertId().toInt();
+		//emit signal_numberOfSourcesChanged();
+		return sqlite3_last_insert_rowid(m_database);
 	}
 }
 
-sink_t DataBaseHandler::insert_into_Sink_table(QString Name,
-		sinkClass_t Class_ID, domain_t Domain_ID, bool IsGateway) {
-	QSqlQuery query;
-	QString _IsGateway = "false";
+sink_t DataBaseHandler::insert_into_Sink_table(std::string Name, sinkClass_t Class_ID, domain_t Domain_ID, bool IsGateway) {
+	sqlite3_stmt* query;
+	std::string _IsGateway = "false";
 
 	if (IsGateway) {
 		_IsGateway = "true";
 	}
 
-	QString command = "SELECT ID FROM " + QString(SINK_TABLE)
-			+ " WHERE Name=\"" + Name + "\";";
+	std::string command = "SELECT ID FROM " + std::string(SINK_TABLE) + " WHERE Name='" + Name + "';";
 
-	if (query.exec(command) == true) {
-		if (query.next()) {
-			return query.value(0).toInt();
+	if (SQexecute(command)) {
+		if (sqlite3_step(query)) {
+			return sqlite3_column_int(query,0);
 		}
 	}
 
-	command = "INSERT INTO " + QString(SINK_TABLE)
-			+ " (Name, Class_ID, Domain_ID, IsGateway) VALUES (\"" + Name
-			+ "\"," + QString::number(Class_ID) + ",\"" + QString::number(
-			Domain_ID) + "\",\"" + _IsGateway + "\")";
+	command = "INSERT INTO " + std::string(SINK_TABLE) + " (Name, Class_ID, Domain_ID, IsGateway) VALUES ('" + Name + "'," + int2string(Class_ID) + ",'" + int2string(Domain_ID) + "','" + _IsGateway + "')";
 
-	if (query.exec(command) != true) {
+	if (!this->pQuery(command)) {
 		return -1;
 	} else {
-		emit signal_numberOfSinksChanged();
-		return query.lastInsertId().toInt();
+		return sqlite3_last_insert_rowid(m_database);
 	}
 }
 
-gateway_t DataBaseHandler::insert_into_Gatway_table(QString Name,
-		sink_t Sink_ID, source_t Source_ID, domain_t DomainSource_ID,
-		domain_t DomainSink_ID, domain_t ControlDomain_ID) {
-	QSqlQuery query;
-	QString command = "SELECT ID FROM " + QString(GATEWAY_TABLE)
-			+ " WHERE Name=\"" + Name + "\";";
+gateway_t DataBaseHandler::insert_into_Gatway_table(std::string Name, sink_t Sink_ID, source_t Source_ID, domain_t DomainSource_ID, domain_t DomainSink_ID, domain_t ControlDomain_ID) {
+	sqlite3_stmt* query;
+	std::string command = "SELECT ID FROM " + std::string(GATEWAY_TABLE) + " WHERE Name='" + Name + "';";
 
-	if (query.exec(command) == true) {
-		if (query.next()) {
-			return query.value(0).toInt();
+	if (SQexecute(command)) {
+		if (sqlite3_step(query)) {
+			return sqlite3_column_int(query,0);
 		}
 	}
 
-	command
-			= "INSERT INTO " + QString(GATEWAY_TABLE)
-					+ " (Name, Sink_ID, Source_ID, DomainSource_ID, DomainSink_ID, ControlDomain_ID, IsBlocked) VALUES (\""
-					+ Name + "\"," + QString::number(Sink_ID) + ","
-					+ QString::number(Source_ID) + "," + QString::number(
-					DomainSource_ID) + "," + QString::number(DomainSink_ID)
-					+ "," + QString::number(ControlDomain_ID) + ",\"false\")";
-	if (query.exec(command) != true) {
+	command = "INSERT INTO " + std::string(GATEWAY_TABLE) + " (Name, Sink_ID, Source_ID, DomainSource_ID, DomainSink_ID, ControlDomain_ID, IsBlocked) VALUES ('" + Name + "'," + int2string(Sink_ID) + "," + int2string(Source_ID) + "," + int2string(DomainSource_ID) + "," + int2string(DomainSink_ID) + "," + int2string(ControlDomain_ID) + ",'false')";
+
+	if (!this->pQuery(command)) {
 		return -1;
 	} else {
-		return query.lastInsertId().toInt();
+		return sqlite3_last_insert_rowid(m_database);
 	}
 }
 
 genInt_t DataBaseHandler::reserveInterrupt(sink_t Sink_ID, source_t Source_ID) {
-	QSqlQuery query;
-	query.prepare(
-			"INSERT INTO " + QString(INTERRUPT_TABLE) + "(Source_ID, Sink_ID)"
-				" VALUES(:Source_ID, :Sink_ID)");
-	query.bindValue(":Source_ID", Source_ID);
-	query.bindValue(":Sink_ID", Sink_ID);
-	if (query.exec() != true) {
+	sqlite3_stmt* query;
+	std::string command= "INSERT INTO " + std::string(INTERRUPT_TABLE) + "(Source_ID, Sink_ID) VALUES(:Source_ID, :Sink_ID)";
+	sqlite3_prepare_v2(m_database,command.c_str(),NULL,&query,NULL);
+	sqlite3_bind_int(query,0, Source_ID);
+	sqlite3_bind_int(query,1, Sink_ID);
+
+	if (!this->pQuery(command)) {
 		return -1;
 	} else {
-		return query.lastInsertId().toInt();
+		return sqlite3_last_insert_rowid(m_database);
 	}
 }
 
-genError_t DataBaseHandler::updateInterrupt(const genInt_t intID,
-		connection_t connID, bool mixed,
-		QList<source_t> listInterruptedSources) {
-	QSqlQuery query;
-	QString _mixed = "false";
+genError_t DataBaseHandler::updateInterrupt(const genInt_t intID, connection_t connID, bool mixed, std::list<source_t> listInterruptedSources) {
+	sqlite3_stmt* query;
+	std::string _mixed = "false";
 
 	if (mixed) {
 		_mixed = "true";
 	}
 
 	//This information is not handy to be stored directly in the database. So we put it on the heap and store the pointer to it.
-	QList<source_t>* pointer = new QList<source_t> (listInterruptedSources);
+	std::list<source_t>* pointer = new std::list<source_t>;
+	pointer=&listInterruptedSources;
 
-	query.prepare(
-			"UPDATE " + QString(INTERRUPT_TABLE)
-					+ " SET Connection_ID=:Connection_ID, mixed=:mixed ,listInterruptedSources=:listInterruptedSources WHERE ID=:id");
-	query.bindValue(":Connection_ID", connID);
-	query.bindValue(":mixed", _mixed);
-	query.bindValue(":listInterruptedSources", int(pointer));
-	query.bindValue(":id", intID);
-	if (query.exec() != true) {
+	std::string command="UPDATE " + std::string(INTERRUPT_TABLE) + " SET Connection_ID=:Connection_ID, mixed=:mixed ,listInterruptedSources=:listInterruptedSources WHERE ID=:id";
+	sqlite3_prepare_v2(m_database,command.c_str(),NULL,&query,NULL);
+	sqlite3_bind_int(query,0,connID);
+	sqlite3_bind_text(query,1,_mixed.c_str(),_mixed.size(),NULL);
+	sqlite3_bind_int(query,2,int(pointer));
+	sqlite3_bind_int(query,3,intID);
+
+	if (!this->pQuery(command)) {
 		return GEN_DATABASE_ERROR;
 	} else {
 		return GEN_OK;
 	}
 }
 
-genError_t DataBaseHandler::getInterruptDatafromID(const genInt_t intID,
-		connection_t* return_connID, sink_t* return_Sink_ID,
-		source_t* return_Source_ID, bool* return_mixed,
-		QList<source_t>** return_listInterruptedSources) {
-	QSqlQuery query;
-	QString
-			command =
-					"SELECT Connection_ID, Sink_ID, Source_ID, mixed, listInterruptedSources FROM "
-							+ QString(INTERRUPT_TABLE) + " WHERE ID="
-							+ QString::number(intID) + ";";
+genError_t DataBaseHandler::getInterruptDatafromID(const genInt_t intID, connection_t* return_connID, sink_t* return_Sink_ID, source_t* return_Source_ID, bool* return_mixed, std::list<source_t>** return_listInterruptedSources) {
+	sqlite3_stmt* query;
+	std::string command = "SELECT Connection_ID, Sink_ID, Source_ID, mixed, listInterruptedSources FROM " + std::string(INTERRUPT_TABLE) + " WHERE ID=" + int2string(intID) + ";";
 
-	if (query.exec(command) != true) {
+	if (SQexecute(command)!=true) {
 		return GEN_DATABASE_ERROR;
 	} else {
-		if (query.next()) {
-			*return_connID = query.value(0).toInt();
-			*return_Sink_ID = query.value(1).toInt();
-			*return_Source_ID = query.value(2).toInt();
-			*return_mixed = query.value(3).toBool();
-			*return_listInterruptedSources
-					= reinterpret_cast<QList<source_t>*> (query.value(4).toInt());
+		if (sqlite3_step(query)) {
+			*return_connID = sqlite3_column_int(query,0);
+			*return_Sink_ID = sqlite3_column_int(query,1);
+			*return_Source_ID = sqlite3_column_int(query,2);
+			*return_mixed = sqlite3_column_int(query,3);
+			*return_listInterruptedSources = reinterpret_cast<std::list<source_t>*>(sqlite3_column_int(query,4));
 			return GEN_OK;
 		} else {
 			return GEN_UNKNOWN;
@@ -406,17 +333,15 @@ genError_t DataBaseHandler::getInterruptDatafromID(const genInt_t intID,
 }
 
 genError_t DataBaseHandler::removeInterrupt(const genInt_t intID) {
-	QSqlQuery query;
-	QString command = "SELECT listInterruptedSources FROM " + QString(
-			INTERRUPT_TABLE) + " WHERE ID=" + QString::number(intID) + ";";
-	if (query.exec(command) != true) {
+	sqlite3_stmt* query;
+	std::string command = "SELECT listInterruptedSources FROM " + std::string(INTERRUPT_TABLE) + " WHERE ID=" + int2string(intID) + ";";
+	if (SQexecute(command) != true) {
 		return GEN_DATABASE_ERROR;
 	} else {
-		if (query.next()) {
-			delete reinterpret_cast<QList<source_t>*> (query.value(0).toInt());
-			command = "DELETE FROM " + QString(INTERRUPT_TABLE)
-					+ " WHERE ID=\"" + QString::number(intID) + "\";";
-			if (query.exec(command) != true) {
+		if (sqlite3_step(query)) {
+			delete reinterpret_cast<std::list<source_t>*>(sqlite3_column_int(query,0));
+			command = "DELETE FROM " + std::string(INTERRUPT_TABLE) + " WHERE ID='" + int2string(intID) + "';";
+			if (!this->pQuery(command)) {
 				return GEN_DATABASE_ERROR;
 			} else {
 				return GEN_OK;
@@ -426,132 +351,109 @@ genError_t DataBaseHandler::removeInterrupt(const genInt_t intID) {
 	return GEN_UNKNOWN;
 }
 
-domain_t DataBaseHandler::peek_Domain_ID(QString DomainName) {
-	QSqlQuery query;
+domain_t DataBaseHandler::peek_Domain_ID(std::string DomainName) {
+	sqlite3_stmt* query;
 
-	QString command = "SELECT ID FROM " + QString(DOMAIN_TABLE)
-			+ " WHERE DomainName=\"" + DomainName + "\";";
+	std::string command = "SELECT ID FROM " + std::string(DOMAIN_TABLE) + " WHERE DomainName='" + DomainName + "';";
 
-	if (query.next()) {
-		return query.value(0).toInt();
-	} else {
-		command = "INSERT INTO " + QString(DOMAIN_TABLE)
-				+ " (DomainName) VALUES (\"" + DomainName + "\")";
+	if (SQexecute(command)) {
+		if (sqlite3_step(query)) {
+			return sqlite3_column_int(query,0);
+		} else {
+			command = "INSERT INTO " + std::string(DOMAIN_TABLE) + " (DomainName) VALUES ('" + DomainName + "')";
+		}
 	}
 
-	if (query.exec(command) != true) {
+	if (!this->pQuery(command)) {
 		return -1;
 	} else {
-		return query.lastInsertId().toInt();
+		return sqlite3_last_insert_rowid(m_database);
 	}
 }
 
 domain_t DataBaseHandler::get_Domain_ID_from_Source_ID(source_t Source_ID) {
-	QSqlQuery query;
-	QString command = "SELECT Domain_ID FROM " + QString(SOURCE_TABLE)
-			+ " WHERE ID=" + QString::number(Source_ID) + ";";
+	sqlite3_stmt* query;
+	std::string command = "SELECT Domain_ID FROM " + std::string(SOURCE_TABLE) + " WHERE ID=" + int2string(Source_ID) + ";";
 
-	if (query.exec(command) != true) {
+	if (SQexecute(command)) {
 		return -1;
 	} else {
-		query.next();
-		return query.value(0).toInt();
+		sqlite3_step(query);
+		return sqlite3_column_int(query,0);
 	}
 }
 
 domain_t DataBaseHandler::get_Domain_ID_from_Sink_ID(sink_t Sink_ID) {
-	QSqlQuery query;
-	QString command = "SELECT Domain_ID FROM " + QString(SINK_TABLE)
-			+ " WHERE ID=" + QString::number(Sink_ID) + ";";
+	sqlite3_stmt* query;
+	std::string command = "SELECT Domain_ID FROM " + std::string(SINK_TABLE) + " WHERE ID=" + int2string(Sink_ID) + ";";
 
-	if (query.exec(command) != true) {
+	if (SQexecute(command)) {
 		return -1;
 	} else {
-		query.next();
-		return query.value(0).toInt();
+		sqlite3_step(query);
+		return sqlite3_column_int(query,0);
 	}
 }
 
-source_t DataBaseHandler::get_Source_ID_from_Name(QString name) {
-	QSqlQuery query;
-	QString command = "SELECT ID FROM " + QString(SOURCE_TABLE)
-			+ " WHERE Name=\"" + name + "\";";
+source_t DataBaseHandler::get_Source_ID_from_Name(std::string name) {
+	sqlite3_stmt* query;
+	std::string command = "SELECT ID FROM " + std::string(SOURCE_TABLE) + " WHERE Name='" + name + "';";
 
-	if (query.exec(command) != true) {
+	if (SQexecute(command)) {
 		return -1;
 	} else {
-		if (query.next()) {
-			return query.value(0).toInt();
-		} else {
-			return 0;
-		}
+		sqlite3_step(query);
+		return sqlite3_column_int(query,0);
 	}
 }
 
-sourceClass_t DataBaseHandler::get_Source_Class_ID_from_Name(QString name) {
-	QSqlQuery query;
-	QString command = "SELECT ID FROM " + QString(SOURCE_CLASS_TABLE)
-			+ " WHERE ClassName=\"" + name + "\";";
-	if (query.exec(command) != true) {
+sourceClass_t DataBaseHandler::get_Source_Class_ID_from_Name(std::string name) {
+	sqlite3_stmt* query;
+	std::string command = "SELECT ID FROM " + std::string(SOURCE_CLASS_TABLE) + " WHERE ClassName='" + name + "';";
+
+	if (SQexecute(command)) {
 		return -1;
 	} else {
-		if (query.next()) {
-			return query.value(0).toInt();
-		} else {
-			return 0;
-		}
+		sqlite3_step(query);
+		return sqlite3_column_int(query,0);
 	}
 }
 
-domain_t DataBaseHandler::get_Domain_ID_from_Name(QString name) {
-	QSqlQuery query;
-	QString command = "SELECT ID FROM " + QString(DOMAIN_TABLE)
-			+ " WHERE DomainName=\"" + name + "\";";
+domain_t DataBaseHandler::get_Domain_ID_from_Name(std::string name) {
+	sqlite3_stmt* query;
+	std::string command = "SELECT ID FROM " + std::string(DOMAIN_TABLE) + " WHERE DomainName='" + name + "';";
 
-	if (query.exec(command) != true) {
+	if (SQexecute(command)) {
 		return -1;
 	} else {
-		if (query.next()) {
-			return query.value(0).toInt();
-		} else {
-			return 0;
-		}
+		sqlite3_step(query);
+		return sqlite3_column_int(query,0);
 	}
 }
 
-gateway_t DataBaseHandler::get_Gateway_ID_with_Domain_ID(
-		domain_t startDomain_ID, domain_t targetDomain_ID) {
-	QSqlQuery query;
-	QString command = "SELECT ID FROM " + QString(GATEWAY_TABLE)
-			+ " WHERE DomainSource_ID=" + QString::number(startDomain_ID)
-			+ " AND DomainSink_ID=" + QString::number(targetDomain_ID) + ";";
+gateway_t DataBaseHandler::get_Gateway_ID_with_Domain_ID(domain_t startDomain_ID, domain_t targetDomain_ID) {
+	sqlite3_stmt* query;
+	std::string command = "SELECT ID FROM " + std::string(GATEWAY_TABLE) + " WHERE DomainSource_ID=" + int2string(startDomain_ID) + " AND DomainSink_ID=" + int2string(targetDomain_ID) + ";";
 
-	if (query.exec(command) != true) {
+	if (SQexecute(command)) {
 		return -1;
 	} else {
-		if (query.next()) {
-			return query.value(0).toInt();
-		} else {
-			return 0;
-		}
+		sqlite3_step(query);
+		return sqlite3_column_int(query,0);
 	}
 }
 
-genError_t DataBaseHandler::get_Gateway_Source_Sink_Domain_ID_from_ID(
-		gateway_t Gateway_ID, source_t* return_Source_ID,
-		sink_t* return_Sink_ID, domain_t* return_ControlDomain_ID) {
-	QSqlQuery query;
-	QString command = "SELECT Source_ID, Sink_ID, ControlDomain_ID FROM "
-			+ QString(GATEWAY_TABLE) + " WHERE ID=" + QString::number(
-			Gateway_ID) + ";";
+genError_t DataBaseHandler::get_Gateway_Source_Sink_Domain_ID_from_ID(gateway_t Gateway_ID, source_t* return_Source_ID, sink_t* return_Sink_ID, domain_t* return_ControlDomain_ID) {
+	sqlite3_stmt* query;
+	std::string command = "SELECT Source_ID, Sink_ID, ControlDomain_ID FROM " + std::string(GATEWAY_TABLE) + " WHERE ID=" + int2string(Gateway_ID) + ";";
 
-	if (query.exec(command) != true) {
+	if (SQexecute(command)) {
 		return GEN_DATABASE_ERROR;
 	} else {
-		if (query.next()) {
-			*return_Source_ID = query.value(0).toInt();
-			*return_Sink_ID = query.value(1).toInt();
-			*return_ControlDomain_ID = query.value(2).toInt();
+		if (sqlite3_step(query)) {
+			*return_Source_ID = sqlite3_column_int(query,0);
+			*return_Sink_ID = sqlite3_column_int(query,1);
+			*return_ControlDomain_ID = sqlite3_column_int(query,2);
 			return GEN_OK;
 		} else {
 			return GEN_UNKNOWN;
@@ -559,135 +461,120 @@ genError_t DataBaseHandler::get_Gateway_Source_Sink_Domain_ID_from_ID(
 	}
 }
 
-void DataBaseHandler::get_Domain_ID_Tree(bool onlyfree, RoutingTree* Tree,
-		QList<RoutingTreeItem*>* allItems) {
-	QSqlQuery query;
+void DataBaseHandler::get_Domain_ID_Tree(bool onlyfree, RoutingTree* Tree, std::list<RoutingTreeItem*>* allItems) {
+	sqlite3_stmt* query;
 	int RootID = Tree->returnRootDomainID();
 	RoutingTreeItem *parent = Tree->returnRootItem();
-	QString _onlyfree = "false";
-	int i = 0;
+	std::string _onlyfree = "false";
+	unsigned int i = 0;
 
 	if (onlyfree) {
 		_onlyfree = "true";
 	}
 
-	query.prepare(
-			"SELECT ID,DomainSource_ID FROM " + QString(GATEWAY_TABLE)
-					+ " WHERE DomainSink_ID=:id AND IsBlocked=:flag;");
+	std::string command="SELECT ID,DomainSource_ID FROM " + std::string(GATEWAY_TABLE) + " WHERE DomainSink_ID=:id AND IsBlocked=:flag;";
 
+	sqlite3_prepare_v2(m_database,command.c_str(),NULL,&query,NULL);
 	do {
-		query.bindValue(":id", RootID);
-		query.bindValue(":flag", _onlyfree);
-		query.exec();
-		while (query.next()) {
-			allItems->append(
-					Tree->insertItem(query.value(1).toInt(),
-							query.value(0).toInt(), parent));
+		sqlite3_bind_int(query,0,RootID);
+		sqlite3_bind_text(query,1,_onlyfree.c_str(),_onlyfree.size(),NULL);
+		while (sqlite3_step(query)) {
+			allItems->push_back(Tree->insertItem(sqlite3_column_int(query,1), sqlite3_column_int(query,0), parent));
 		}
-		parent = allItems->value(i);
-		RootID = parent->returnDomainID();
+		std::list<RoutingTreeItem*>::iterator it=allItems->begin();
+		std::advance(it,i);
+		RootID = (*it)->returnDomainID();
 		i++;
-	} while (allItems->length() > i);
+	} while (allItems->size() > i);
 }
 
-QString DataBaseHandler::get_Bus_from_Domain_ID(domain_t Domain_ID) {
-	QSqlQuery query;
-	QString command = "SELECT BusName FROM " + QString(DOMAIN_TABLE)
-			+ " WHERE ID=" + QString::number(Domain_ID) + ";";
+std::string DataBaseHandler::get_Bus_from_Domain_ID(domain_t Domain_ID) {
+	sqlite3_stmt* query;
+	std::string command = "SELECT BusName FROM " + std::string(DOMAIN_TABLE) + " WHERE ID=" + int2string(Domain_ID) + ";";
 
-	if (query.exec(command) != true) {
-		return NULL;
+	if (SQexecute(command)) {
+		return std::string("");
 	} else {
-		query.next();
-		return query.value(0).toString();
+		sqlite3_step(query);
+		return std::string((const char*)sqlite3_column_text(query,0));
 	}
 }
 
 domain_t DataBaseHandler::get_Domain_ID_from_Connection_ID(connection_t ID) {
-	QSqlQuery query;
-	QString command = "SELECT Source_ID FROM " + QString(CONNECTION_TABLE)
-			+ " WHERE ID=" + QString::number(ID) + ";";
+	sqlite3_stmt* query;
+	std::string command = "SELECT Source_ID FROM " + std::string(CONNECTION_TABLE) + " WHERE ID=" + int2string(ID) + ";";
 
-	if (query.exec(command) != true) {
+	if (SQexecute(command)) {
 		return -1;
 	}
-	query.next();
-	int SourceID = query.value(0).toInt();
-	command = "SELECT Domain_ID FROM " + QString(SOURCE_TABLE) + " WHERE ID="
-			+ QString::number(SourceID) + ";";
-	if (query.exec(command) != true) {
+
+	sqlite3_step(query);
+	int SourceID = sqlite3_column_int(query,0);
+	command = "SELECT Domain_ID FROM " + std::string(SOURCE_TABLE) + " WHERE ID=" + int2string(SourceID) + ";";
+
+	if (SQexecute(command)) {
 		return -1;
 	} else {
-		query.next();
-		return query.value(0).toInt();
+		sqlite3_step(query);
+		return sqlite3_column_int(query,0);
 	}
 }
 
-void DataBaseHandler::getListofSources(QList<SourceType>* SourceList) {
-	QSqlQuery query;
+void DataBaseHandler::getListofSources(std::list<SourceType>* SourceList) {
+	sqlite3_stmt* query;
 	SourceType sType;
-	QString command = "SELECT ID,NAME FROM " + QString(SOURCE_TABLE)
-			+ " WHERE isGateway=\"false\";";
-	if (query.exec(command) != true) {
-
-	} else {
-		while (query.next()) {
-			sType.ID = query.value(0).toInt();
-			sType.name = query.value(1).toString();
-			SourceList->append(sType);
+	std::string command = "SELECT ID,NAME FROM " + std::string(SOURCE_TABLE) + " WHERE isGateway='false';";
+	if (SQexecute(command)) {
+		while (sqlite3_step(query)) {
+			sType.ID = sqlite3_column_int(query,0);
+			sType.name = std::string((const char*)sqlite3_column_text(query,1));
+			SourceList->push_back(sType);
 		}
 	}
 }
 
-void DataBaseHandler::getListofSinks(QList<SinkType>* SinkList) {
-	QSqlQuery query;
+void DataBaseHandler::getListofSinks(std::list<SinkType>* SinkList) {
+	sqlite3_stmt* query;
 	SinkType sType;
-	QString command = "SELECT ID,NAME FROM " + QString(SINK_TABLE) + ";";
-	if (query.exec(command) != true) {
-
-	} else {
-		while (query.next()) {
-			sType.ID = query.value(0).toInt();
-			sType.name = query.value(1).toString();
-			SinkList->append(sType);
+	std::string command = "SELECT ID,NAME FROM " + std::string(SINK_TABLE) + ";";
+	if (SQexecute(command)) {
+		while (sqlite3_step(query)) {
+			sType.ID = sqlite3_column_int(query,0);
+			sType.name =  std::string((const char*)sqlite3_column_text(query,1));
+			SinkList->push_back(sType);
 		}
 	}
 }
 
-void DataBaseHandler::getListofConnections(
-		QList<ConnectionType>* ConnectionList) {
-	QSqlQuery query;
-	ConnectionType sType;
-	QString command = "SELECT Source_ID,Sink_ID FROM " + QString(
-			CONNECTION_TABLE) + ";";
-	if (query.exec(command) != true) {
-
-	} else {
-		while (query.next()) {
-			sType.Source_ID = query.value(0).toInt();
-			sType.Sink_ID = query.value(1).toInt();
-			ConnectionList->append(sType);
+void DataBaseHandler::getListofConnections(std::list<ConnectionType>* ConnectionList) {
+	sqlite3_stmt* query;
+	ConnectionType cType;
+	std::string command = "SELECT Source_ID,Sink_ID FROM " + std::string(CONNECTION_TABLE) + ";";
+	if (SQexecute(command)) {
+		while (sqlite3_step(query)) {
+			cType.Source_ID = sqlite3_column_int(query,0);
+			cType.Sink_ID =  sqlite3_column_int(query,1);
+			ConnectionList->push_back(cType);
 		}
 	}
 }
 
 bool DataBaseHandler::is_source_Mixed(source_t source) {
-	QSqlQuery query;
+	sqlite3_stmt* query;
 	int classID = 0;
 
-	QString command = "SELECT Class_ID FROM " + QString(SOURCE_TABLE)
-			+ " WHERE ID=\"" + QString::number(source) + "\";";
-	if (query.exec(command) == true) {
-		if (query.next()) {
-			classID = query.value(0).toInt();
+	std::string command = "SELECT Class_ID FROM " + std::string(SOURCE_TABLE) + " WHERE ID='" + int2string(source) + "';";
+	if (SQexecute(command)) {
+		if (sqlite3_step(query)) {
+			classID = sqlite3_column_int(query,0);
 		}
 	}
-	command = "SELECT isMixed FROM " + QString(SOURCE_CLASS_TABLE)
-			+ " WHERE ID=\"" + QString::number(classID) + "\";";
+	command = "SELECT isMixed FROM " + std::string(SOURCE_CLASS_TABLE) + " WHERE ID='" + int2string(classID) + "';";
 
-	if (query.exec(command) == true) {
-		if (query.next()) {
-			if (query.value(0).toString().compare("true") == 0) {
+	if (SQexecute(command)) {
+		if (sqlite3_step(query)) {
+			char* answer=(char*)sqlite3_column_text(query,0);
+			if (strcmp(answer,"true") == 0) {
 				return true;
 			}
 		}
@@ -695,111 +582,93 @@ bool DataBaseHandler::is_source_Mixed(source_t source) {
 	return false;
 }
 
-sink_t DataBaseHandler::get_Sink_ID_from_Name(QString name) {
-	QSqlQuery query;
-	QString command = "SELECT ID FROM " + QString(SINK_TABLE)
-			+ " WHERE Name=\"" + name + "\";";
+sink_t DataBaseHandler::get_Sink_ID_from_Name(std::string name) {
+	sqlite3_stmt* query;
+	std::string command = "SELECT ID FROM " + std::string(SINK_TABLE) + " WHERE Name='" + name + "';";
 
-	if (query.exec(command) != true) {
+	if (SQexecute(command)) {
 		return -1;
 	} else {
-		if (query.next()) {
-			return query.value(0).toInt();
-		} else {
-			return 0;
-		}
+		sqlite3_step(query);
+		return sqlite3_column_int(query,0);
 	}
 }
 
 connection_t DataBaseHandler::getConnectionID(source_t SourceID, sink_t SinkID) {
-	QSqlQuery query;
-	query.prepare(
-			"SELECT ID FROM " + QString(MAIN_TABLE)
-					+ " WHERE Source_ID=:sourceID AND Sink_ID=:sinkID");
-	query.bindValue(":sourceID", SourceID);
-	query.bindValue(":sinkID", SinkID);
-	if (query.exec() != true) {
+	sqlite3_stmt* query;
+	std::string command="SELECT ID FROM " + std::string(MAIN_TABLE) + " WHERE Source_ID=:sourceID AND Sink_ID=:sinkID";
+	sqlite3_prepare_v2(m_database,command.c_str(),NULL,&query,NULL);
+	sqlite3_bind_int(query,0,SourceID);
+	sqlite3_bind_int(query,1,SinkID);
+
+	if (SQexecute(command)) {
 		return -1;
 	} else {
-		if (query.next()) {
-			return query.value(0).toInt();
-		} else {
-			return -1;
-		}
+		sqlite3_step(query);
+		return sqlite3_column_int(query,0);
 	}
 }
 
 connection_t DataBaseHandler::insertConnection(source_t SourceID, sink_t SinkID) {
-	QSqlQuery query;
-	QString command = "INSERT INTO " + QString(CONNECTION_TABLE)
-			+ " (Source_ID, Sink_ID) VALUES (" + QString::number(SourceID)
-			+ "," + QString::number(SinkID) + ");";
-	if (query.exec(command) != true) {
+	std::string command = "INSERT INTO " + std::string(CONNECTION_TABLE) + " (Source_ID, Sink_ID) VALUES (" + int2string(SourceID) + "," + int2string(SinkID) + ");";
+	if (!this->pQuery(command)) {
 		return -1;
 	} else {
-		return query.lastInsertId().toInt();
+		return sqlite3_last_insert_rowid(m_database);
 	}
 }
 
 genError_t DataBaseHandler::removeConnection(connection_t ConnectionID) {
-	QSqlQuery query;
-	QString command = "DELETE FROM " + QString(CONNECTION_TABLE)
-			+ " WHERE ID=\"" + QString::number(ConnectionID) + "\";";
-	if (query.exec(command) != true) {
+	std::string command = "DELETE FROM " + std::string(CONNECTION_TABLE) + " WHERE ID='" + int2string(ConnectionID) + "';";
+	if (!this->pQuery(command)) {
 		return GEN_DATABASE_ERROR;
 	} else {
 		return GEN_OK;
 	}
 }
 
-connection_t DataBaseHandler::reserveMainConnection(source_t source,
-		sink_t sink) {
-	QSqlQuery query;
-	query.prepare("INSERT INTO " + QString(MAIN_TABLE) + "(Source_ID, Sink_ID)"
-		" VALUES(:Source_ID, :Sink_ID)");
-	query.bindValue(":Source_ID", source);
-	query.bindValue(":Sink_ID", sink);
-	if (query.exec() != true) {
+connection_t DataBaseHandler::reserveMainConnection(source_t source, sink_t sink) {
+	sqlite3_stmt* query;
+	std::string command = "INSERT INTO " + std::string(MAIN_TABLE) + "(Source_ID, Sink_ID) VALUES(:Source_ID, :Sink_ID)";
+	sqlite3_prepare_v2(m_database,command.c_str(),NULL,&query,NULL);
+	sqlite3_bind_int(query,0,source);
+	sqlite3_bind_int(query,1,sink);
+	if (!this->pQuery(command)) {
 		return -1;
 	} else {
-		return query.lastInsertId().toInt();
+		return sqlite3_last_insert_rowid(m_database);
 	}
 }
 
-genError_t DataBaseHandler::updateMainConnection(connection_t connID,
-		genRoute_t route) {
-	QSqlQuery query;
+genError_t DataBaseHandler::updateMainConnection(connection_t connID, genRoute_t route) {
+	sqlite3_stmt* query;
 
 	//This information is not handy to be stored directly in the database. So we put it on the heap and store the pointer to it.
 	genRoute_t* routeheap = new genRoute_t(route);
 
-	query.prepare(
-			"UPDATE " + QString(MAIN_TABLE)
-					+ " SET route=:route WHERE ID=:connID");
-	query.bindValue(":connID", connID);
-	query.bindValue(":route", int(routeheap));
-	if (query.exec() != true) {
+	std::string command = "UPDATE " + std::string(MAIN_TABLE) + " SET route=:route WHERE ID=:connID";
+	sqlite3_prepare_v2(m_database,command.c_str(),NULL,&query,NULL);
+	sqlite3_bind_int(query,0,connID);
+	sqlite3_bind_int(query,1,int(routeheap));
+
+	if (!this->pQuery(command)) {
 		return GEN_DATABASE_ERROR;
 	} else {
 		return GEN_OK;
 	}
 }
 
-genError_t DataBaseHandler::getMainConnectionDatafromID(
-		const connection_t connID, sink_t* return_sinkID,
-		source_t* return_sourceID, genRoute_t** return_route) {
-	QSqlQuery query;
-	QString command = "SELECT Sink_ID, Source_ID, route FROM " + QString(
-			MAIN_TABLE) + " WHERE ID=" + QString::number(connID) + ";";
+genError_t DataBaseHandler::getMainConnectionDatafromID(const connection_t connID, sink_t* return_sinkID, source_t* return_sourceID, genRoute_t** return_route) {
+	sqlite3_stmt* query;
+	std::string command = "SELECT Sink_ID, Source_ID, route FROM " + std::string(MAIN_TABLE) + " WHERE ID=" + int2string(connID) + ";";
 
-	if (query.exec(command) != true) {
+	if (SQexecute(command)) {
 		return GEN_DATABASE_ERROR;
 	} else {
-		if (query.next()) {
-			*return_sinkID = query.value(0).toInt();
-			*return_sourceID = query.value(1).toInt();
-			*return_route
-					= reinterpret_cast<genRoute_t*> (query.value(2).toInt());
+		if (sqlite3_step(query)) {
+			*return_sinkID = sqlite3_column_int(query,0);
+			*return_sourceID = sqlite3_column_int(query,1);
+			*return_route = reinterpret_cast<genRoute_t*>(sqlite3_column_int(query,2));
 			return GEN_OK;
 		} else {
 			return GEN_UNKNOWN;
@@ -807,75 +676,60 @@ genError_t DataBaseHandler::getMainConnectionDatafromID(
 	}
 }
 
-connection_t DataBaseHandler::returnMainconnectionIDforSinkSourceID(
-		sink_t sink, source_t source) {
-	QSqlQuery query;
-	query.prepare(
-			"SELECT ID FROM " + QString(MAIN_TABLE)
-					+ " WHERE Sink_ID=:sinkID AND Source_ID=:SourceID");
-	query.bindValue(":SinkID", sink);
-	query.bindValue(":SourceID", source);
+connection_t DataBaseHandler::returnMainconnectionIDforSinkSourceID(sink_t sink, source_t source) {
+	sqlite3_stmt* query;
+	std::string command="SELECT ID FROM " + std::string(MAIN_TABLE) + " WHERE Sink_ID=:sinkID AND Source_ID=:SourceID";
+	sqlite3_prepare_v2(m_database,command.c_str(),NULL,&query,NULL);
+	sqlite3_bind_int(query,0,sink);
+	sqlite3_bind_int(query,1,source);
 
-	if (query.exec() != true) {
+	if (SQexecute(command)) {
 		return -1;
 	} else {
-		if (query.next()) {
-			return query.value(0).toInt();
-		}
+		sqlite3_step(query);
+		return sqlite3_column_int(query,0);
 	}
-	return -1;
 }
 
-QList<source_t> DataBaseHandler::getSourceIDsForSinkID(sink_t sink) {
-	QList<source_t> list;
-	QSqlQuery query;
-	query.prepare(
-			"SELECT Source_ID FROM " + QString(MAIN_TABLE)
-					+ " WHERE Sink_ID=:sinkID");
-	query.bindValue(":sinkID", sink);
-	if (query.exec() == true) {
-		DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("query good"));
-		while (query.next()) {
-			int p = query.value(0).toInt();
-			DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("SourceID"), DLT_INT(p));
-			list.append(query.value(0).toInt());
+std::list<source_t> DataBaseHandler::getSourceIDsForSinkID(sink_t sink) {
+	std::list<source_t> list;
+	sqlite3_stmt* query;
+
+	std::string command="SELECT Source_ID FROM " + std::string(MAIN_TABLE) + " WHERE Sink_ID=" + int2string(sink);
+
+	if (SQexecute(command)) {
+		while (sqlite3_step(query)) {
+			list.push_back(sqlite3_column_int(query,0));
 		}
 	}
 	return list;
 }
 
-QList<ConnectionType> DataBaseHandler::getListAllMainConnections() {
-	QList<ConnectionType> connectionList;
-	QSqlQuery query;
-	QString command = "SELECT Sink_ID, Source_ID FROM " + QString(
-			MAIN_TABLE) + ";";
+std::list<ConnectionType> DataBaseHandler::getListAllMainConnections() {
+	std::list<ConnectionType> connectionList;
+	sqlite3_stmt* query;
+	std::string command = "SELECT Sink_ID, Source_ID FROM " + std::string(MAIN_TABLE) + ";";
 
-	if (query.exec(command) != true) {
-
-	} else {
-		while (query.next()) {
+	if (SQexecute(command)) {
+		while (sqlite3_step(query)) {
 			ConnectionType temp;
-			temp.Sink_ID = query.value(0).toInt();
-			temp.Source_ID = query.value(1).toInt();
-			connectionList.append(temp);
-			DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Added Connection"), DLT_INT(temp.Sink_ID),DLT_INT(temp.Source_ID));
+			temp.Sink_ID = sqlite3_column_int(query,0);
+			temp.Source_ID = sqlite3_column_int(query,1);
+			connectionList.push_back(temp);
+			DLT_LOG( AudioManager, DLT_LOG_INFO, DLT_STRING("Added Connection"), DLT_INT(temp.Sink_ID), DLT_INT(temp.Source_ID));
 		}
 	}
 	return connectionList;
 }
 
 genError_t DataBaseHandler::removeMainConnection(connection_t connID) {
-	QSqlQuery query;
-	QString command = "SELECT route FROM " + QString(MAIN_TABLE) + " WHERE ID="
-			+ QString::number(connID) + ";";
-	if (query.exec(command) != true) {
-		return GEN_DATABASE_ERROR;
-	} else {
-		if (query.next()) {
-			delete reinterpret_cast<genRoute_t*> (query.value(0).toInt());
-			command = "DELETE FROM " + QString(MAIN_TABLE) + " WHERE ID=\""
-					+ QString::number(connID) + "\";";
-			if (query.exec(command) != true) {
+	sqlite3_stmt* query;
+	std::string command = "SELECT route FROM " + std::string(MAIN_TABLE) + " WHERE ID=" + int2string(connID) + ";";
+	if (SQexecute(command)) {
+		if (sqlite3_step(query)) {
+			delete reinterpret_cast<genRoute_t*>(sqlite3_column_int(query,0));
+			command = "DELETE FROM " + std::string(MAIN_TABLE) + " WHERE ID='" + int2string(connID) + "';";
+			if (SQexecute(command)!=true) {
 				return GEN_DATABASE_ERROR;
 			} else {
 				return GEN_OK;

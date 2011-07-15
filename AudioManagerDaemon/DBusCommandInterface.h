@@ -27,7 +27,7 @@
 #define DBUSCOMMANDINTERFACE_H_
 
 #include "audioManagerIncludes.h"
-#include "DBusTypes.h"
+
 
 #define SERVICEINTERFACE "org.Genivi.ControllerInterface"
 
@@ -38,30 +38,27 @@ class AudioManagerCore;
  * It also implements some Application logic that needs to be triggered to execute the actions demanded by the HMI.
  * TODO: make a clear seperation between HMI Interface and Application Logic
  */
-class DBusCommandInterface: public QObject {
-Q_OBJECT
+class DBusCommandInterface  {
+
 public:
-	DBusCommandInterface(QObject *parent = 0);
+	DBusCommandInterface();
 	void registerAudioManagerCore(AudioManagerCore* core);
 	void startupInterface();
 
-public slots:
 	void slot_connectionChanged();
 	void slot_numberOfSinksChanged();
 	void slot_numberOfSourcesChanged();
 
-public Q_SLOTS:
 	// METHODS
 	int connect(int Source_ID, int Sink_ID);
 	int disconnect(int Source_ID, int Sink_ID);
-	QList<ConnectionType> getListConnections();
-	QList<SinkType> getListSinks();
-	QList<SourceType> getListSources();
-	int interruptRequest(const QString &SourceName, const QString &SinkName);
+	std::list<ConnectionType> getListConnections();
+	std::list<SinkType> getListSinks();
+	std::list<SourceType> getListSources();
+	int interruptRequest(const std::string &SourceName, const std::string &SinkName);
 	int interruptResume(int InterruptID);
 	int setVolume(int SinkID, int Volume);
 
-Q_SIGNALS: // SIGNALS
 	void signal_connectionChanged();
 	void signal_numberOfSinksChanged();
 	void signal_numberOfSourcesChanged();
@@ -69,7 +66,7 @@ Q_SIGNALS: // SIGNALS
 	void signal_interruptResume(genInt_t interruptID);
 
 private:
-	QList<int> getSourceIDsForSinkID(int SinkID);
+	std::list<int> getSourceIDsForSinkID(int SinkID);
 	AudioManagerCore* m_core;
 };
 

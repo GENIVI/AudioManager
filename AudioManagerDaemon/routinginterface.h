@@ -26,7 +26,6 @@
 #ifndef ROUTINGINTERFACE_H_
 #define ROUTINGINTERFACE_H_
 
-#include <QObject>
 #include "dataTypes.h"
 
 class RoutingSendInterface;
@@ -91,7 +90,7 @@ public:
 /** Routing Send sendInterface
  *  This class implements everything from Audiomanager -> RoutingAdapter
  */
-class RoutingSendInterface: public QObject {
+class RoutingSendInterface {
 public:
 	/** destructor*/
 	virtual ~RoutingSendInterface() {
@@ -171,7 +170,6 @@ public:
 	virtual bool unmuteSink(sink_t sinkID /**< SinkID to be unmuted */
 	)=0;
 
-public slots:
 	/** signal that tells the plugin that the system is ready. Is used to trigger a registration of Domains, etc..*/
 	void slot_system_ready();
 };
@@ -191,7 +189,5 @@ public:
 	virtual RoutingSendInterface* returnInstance()=0;
 };
 
-Q_DECLARE_INTERFACE(RoutingInterfaceFactory,"RoutingInterfaceFactory/1.0")
-;
 
 #endif /* ROUTINGINTERFACE_H_ */

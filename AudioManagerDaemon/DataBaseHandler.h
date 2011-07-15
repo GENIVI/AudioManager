@@ -26,6 +26,9 @@
 #ifndef DATABASEHANDLER_H_
 #define DATABASEHANDLER_H_
 
+#include <string>
+#include <sqlite3.h>
+
 #define AUDIO_DATABASE "audiomanagerDB.sqlite"
 
 #define DOMAIN_TABLE "Domains"
@@ -38,13 +41,7 @@
 #define INTERRUPT_TABLE "Interrupts"
 #define MAIN_TABLE "MainTable"
 
-#include <QtSql>
-#include <QString>
-#include <QObject>
-#include <QSqlDatabase>
-#include <QSqlError>
-#include <QFile>
-#include <qfile.h>
+#define SQexecute(command) sqlite3_exec(m_database,command.c_str(),NULL,&query,NULL)!= SQLITE_OK
 
 #include "audioManagerIncludes.h"
 
@@ -66,14 +63,14 @@ class RoutingTree;
  * \fn DataBaseHandler::close_database()
  * \brief closes the database
  *
- * \fn bool DataBaseHandler::delete_data(QString table)
+ * \fn bool DataBaseHandler::delete_data(std::string table)
  * \brief deletes the data of a complete table
  * \param table the name of the table to be deleted
  *
  * \fn bool DataBaseHandler::create_tables()
  * \brief creates all neccessary tables
  *
- * \fn domain_t DataBaseHandler::insert_into_Domains_table(QString DomainName, QString BusName, QString NodeName, bool EarlyMode)
+ * \fn domain_t DataBaseHandler::insert_into_Domains_table(std::string DomainName, std::string BusName, std::string NodeName, bool EarlyMode)
  * \brief inserts data into the domain table
  * \param DomainName the name to be inserted
  * \param BusName the name of the Bus that is used for the domain
@@ -81,7 +78,7 @@ class RoutingTree;
  * \param EarlyMode true if the domain is an early domain
  * \return the domain id (unique)
  *
- * \fn sourceClass_t DataBaseHandler::insert_into_Source_Class_table(QString ClassName, volume_t VolumeOffset, bool IsInterrupt, bool IsMixed)
+ * \fn sourceClass_t DataBaseHandler::insert_into_Source_Class_table(std::string ClassName, volume_t VolumeOffset, bool IsInterrupt, bool IsMixed)
  * \brief inserts data into the Source Class table
  * \param ClassName name of the class
  * \param VolumeOffset the volume offset of the class
@@ -89,12 +86,12 @@ class RoutingTree;
  * \param IsMixed true if it is mixed
  * \return the unique Class ID
  *
- * \fn sinkClass_t DataBaseHandler::insert_into_Sink_Class_table(QString ClassName)
+ * \fn sinkClass_t DataBaseHandler::insert_into_Sink_Class_table(std::string ClassName)
  * \brief enters new Sink Class in the Class Table
  * \param ClassName the name of the class
  * \return unique class ID
  *
- * \fn source_t DataBaseHandler::insert_into_Source_table(QString Name, sourceClass_t Class_ID, domain_t Domain_ID, bool IsGateway)
+ * \fn source_t DataBaseHandler::insert_into_Source_table(std::string Name, sourceClass_t Class_ID, domain_t Domain_ID, bool IsGateway)
  * \brief inserts a new source into the source table
  * \param Name the name of the source
  * \param Class_ID the class ID of the source
@@ -102,7 +99,7 @@ class RoutingTree;
  * \param IsGateway true if it is a gateway
  * \return returns a new source ID
  *
- * \fn sink_t DataBaseHandler::insert_into_Sink_table(QString Name, sinkClass_t Class_ID, domain_t Domain_ID, bool IsGateway)
+ * \fn sink_t DataBaseHandler::insert_into_Sink_table(std::string Name, sinkClass_t Class_ID, domain_t Domain_ID, bool IsGateway)
  * \brief inserts a new Sink into the table
  * \param Name the name of the sink
  * \param Class_ID the class ID
@@ -110,7 +107,7 @@ class RoutingTree;
  * \param IsGateway true if it is a gateway
  * \return the new Sink ID
  *
- * \fn gateway_t DataBaseHandler::insert_into_Gatway_table(QString Name, sink_t Sink_ID, source_t Source_ID, domain_t DomainSource_ID, domain_t DomainSink_ID, domain_t ControlDomain_ID)
+ * \fn gateway_t DataBaseHandler::insert_into_Gatway_table(std::string Name, sink_t Sink_ID, source_t Source_ID, domain_t DomainSource_ID, domain_t DomainSink_ID, domain_t ControlDomain_ID)
  * \brief inserts a gateway into the database
  * \param Name the name of the gateway
  * \param Sink_ID the sink id of the gateway
@@ -120,7 +117,7 @@ class RoutingTree;
  * \param ControlDomain_ID the domain which controls the gateway
  * \return the unique id of the gateway
  *
- * \fn domain_t DataBaseHandler::peek_Domain_ID(QString DomainName)
+ * \fn domain_t DataBaseHandler::peek_Domain_ID(std::string DomainName)
  * \brief reserves a domain ID but does not register it.
  * \details This function is used to register Gateways. The problem is that a gateway is registered from one domain that does not know if the other end of the gateway domain is already registered.
  * this can be solved via peeking a domain ID. By using this function the domain is only "reserved" not registered.
@@ -137,26 +134,26 @@ class RoutingTree;
  * \param Sink_ID the sink ID
  * \return the domain ID
  *
- * \fn source_t DataBaseHandler::get_Source_ID_from_Name(QString name)
+ * \fn source_t DataBaseHandler::get_Source_ID_from_Name(std::string name)
  * \brief returns the source ID from a name
  * \param name the name for witch the source ID shall be returned
  * \return the source ID
  *
- * \fn sourceClass_t DataBaseHandler::get_Source_Class_ID_from_Name(QString name)
+ * \fn sourceClass_t DataBaseHandler::get_Source_Class_ID_from_Name(std::string name)
  * \brief returns the source class ID from a given class name
  * \return the source class ID
  *
- * \fn domain_t DataBaseHandler::get_Domain_ID_from_Name(QString name)
+ * \fn domain_t DataBaseHandler::get_Domain_ID_from_Name(std::string name)
  * \brief returns the domain ID from given domain name
  * \param name the name
  * \return the domain ID
  *
- * \fn sink_t DataBaseHandler::get_Sink_ID_from_Name(QString name)
+ * \fn sink_t DataBaseHandler::get_Sink_ID_from_Name(std::string name)
  * \brief returns the Sink ID from a given name
  * \param name the name
  * \return the sink ID
  *
- * \fn QString DataBaseHandler::get_Bus_from_Domain_ID(domain_t Domain_ID)
+ * \fn std::string DataBaseHandler::get_Bus_from_Domain_ID(domain_t Domain_ID)
  * \brief returns the bus name for a given domain ID
  * \param Domain_ID the domain ID
  * \return the name of the bus
@@ -184,21 +181,21 @@ class RoutingTree;
  * \param return_Sink_ID call by reference Sink ID return value
  * \param return_ControlDomain_ID call by reference Control Domain ID return value
  *
- * \fn void DataBaseHandler::get_Domain_ID_Tree(bool onlyfree, RoutingTree* Tree, QList<RoutingTreeItem*>* allItems)
+ * \fn void DataBaseHandler::get_Domain_ID_Tree(bool onlyfree, RoutingTree* Tree, std::list<RoutingTreeItem*>* allItems)
  * \brief is used to create a Tree out of RoutingTreeItems. Used for routing algorithm
  * \param onlyfree if called with true then only routes via free gateways will be returned
  * \param Tree pointer the the Routing Tree
  * \param allItems pointer to a list of all Routing Tree Items as call by reference value
  *
- * \fn void DataBaseHandler::getListofSources(QList<SourceType>* SourceList)
+ * \fn void DataBaseHandler::getListofSources(std::list<SourceType>* SourceList)
  * \brief returns a list of all sources
  * \param SourceList call by reference pointer to return value
  *
- * \fn void DataBaseHandler::getListofSinks(QList<SinkType>* SinkList)
+ * \fn void DataBaseHandler::getListofSinks(std::list<SinkType>* SinkList)
  * \brief returns a list of all sinks
  * \param SinkList call by reference pointer to return value
  *
- * \fn void DataBaseHandler::getListofConnections(QList<ConnectionType>* ConnectionList)
+ * \fn void DataBaseHandler::getListofConnections(std::list<ConnectionType>* ConnectionList)
  * \brief returns a list of all connections
  * \param ConnectionList call by reference pointer to return value
  *
@@ -245,12 +242,12 @@ class RoutingTree;
  * \param source the source ID
  * \return the connection ID
  *
- * \fn QList<source_t> DataBaseHandler::getSourceIDsForSinkID (sink_t sink)
+ * \fn std::list<source_t> DataBaseHandler::getSourceIDsForSinkID (sink_t sink)
  * \brief returns the list of source IDs that are connected to a sink ID
  * \param sink the sink ID
  * \return a list of source IDs
  *
- * \fn QList<ConnectionType> DataBaseHandler::getListAllMainConnections()
+ * \fn std::list<ConnectionType> DataBaseHandler::getListAllMainConnections()
  * \brief returns a list of all mainconnections
  * \return a list of all connections
  *
@@ -266,7 +263,7 @@ class RoutingTree;
  * \param Source_ID the source ID
  * \return the interrupt ID
  *
- * \fn genError_t DataBaseHandler::updateInterrupt(const genInt_t intID,connection_t connID, bool mixed, QList<source_t> listInterrruptedSources)
+ * \fn genError_t DataBaseHandler::updateInterrupt(const genInt_t intID,connection_t connID, bool mixed, std::list<source_t> listInterrruptedSources)
  * \brief use this to enter the missing information into a reserved Interrupt into the database
  * \param intID the interrupt ID
  * \param connID the connection ID that is used
@@ -274,7 +271,7 @@ class RoutingTree;
  * \param listInterrruptedSources the list of interrupted sources. Used to restore the old state afterwards
  * \return GEN_OK on success
  *
- * \fn genError_t DataBaseHandler::getInterruptDatafromID(const genInt_t intID, connection_t* return_connID, sink_t* return_Sink_ID, source_t* return_Source_ID, bool* return_mixed, QList<source_t>** return_listInterrruptedSources)
+ * \fn genError_t DataBaseHandler::getInterruptDatafromID(const genInt_t intID, connection_t* return_connID, sink_t* return_Sink_ID, source_t* return_Source_ID, bool* return_mixed, std::list<source_t>** return_listInterrruptedSources)
  * \brief returns information about interrupts from the ID
  * \param intID the interrupt ID
  * \param return_connID pointer to call by reference connection ID
@@ -300,39 +297,39 @@ class RoutingTree;
  *
  */
 
-class DataBaseHandler: public QObject {
-Q_OBJECT
+class DataBaseHandler {
+
 public:
 	DataBaseHandler();
 	virtual ~DataBaseHandler();
 
 	bool open_database();
 	void close_database();
-	bool delete_data(QString table);
+	bool delete_data(std::string table);
 	bool create_tables();
 
-	domain_t insert_into_Domains_table(QString DomainName, QString BusName,
-			QString NodeName, bool EarlyMode);
-	sourceClass_t insert_into_Source_Class_table(QString ClassName,
+	domain_t insert_into_Domains_table(std::string DomainName, std::string BusName,
+			std::string NodeName, bool EarlyMode);
+	sourceClass_t insert_into_Source_Class_table(std::string ClassName,
 			volume_t VolumeOffset, bool IsInterrupt, bool IsMixed);
-	sinkClass_t insert_into_Sink_Class_table(QString ClassName);
-	source_t insert_into_Source_table(QString Name, sourceClass_t Class_ID,
+	sinkClass_t insert_into_Sink_Class_table(std::string ClassName);
+	source_t insert_into_Source_table(std::string Name, sourceClass_t Class_ID,
 			domain_t Domain_ID, bool IsGateway);
-	sink_t insert_into_Sink_table(QString Name, sinkClass_t Class_ID,
+	sink_t insert_into_Sink_table(std::string Name, sinkClass_t Class_ID,
 			domain_t Domain_ID, bool IsGateway);
-	gateway_t insert_into_Gatway_table(QString Name, sink_t Sink_ID,
+	gateway_t insert_into_Gatway_table(std::string Name, sink_t Sink_ID,
 			source_t Source_ID, domain_t DomainSource_ID,
 			domain_t DomainSink_ID, domain_t ControlDomain_ID);
 
-	domain_t peek_Domain_ID(QString DomainName);
+	domain_t peek_Domain_ID(std::string DomainName);
 	domain_t get_Domain_ID_from_Source_ID(source_t Source_ID);
 	domain_t get_Domain_ID_from_Sink_ID(sink_t Sink_ID);
 
-	source_t get_Source_ID_from_Name(QString name);
-	sourceClass_t get_Source_Class_ID_from_Name(QString name);
-	domain_t get_Domain_ID_from_Name(QString name);
-	sink_t get_Sink_ID_from_Name(QString name);
-	QString get_Bus_from_Domain_ID(domain_t Domain_ID);
+	source_t get_Source_ID_from_Name(std::string name);
+	sourceClass_t get_Source_Class_ID_from_Name(std::string name);
+	domain_t get_Domain_ID_from_Name(std::string name);
+	sink_t get_Sink_ID_from_Name(std::string name);
+	std::string get_Bus_from_Domain_ID(domain_t Domain_ID);
 	domain_t get_Domain_ID_from_Connection_ID(connection_t ID);
 
 	bool is_source_Mixed(source_t source);
@@ -343,11 +340,11 @@ public:
 			source_t* return_Source_ID, sink_t* return_Sink_ID,
 			domain_t* return_ControlDomain_ID);
 	void get_Domain_ID_Tree(bool onlyfree, RoutingTree* Tree,
-			QList<RoutingTreeItem*>* allItems);
+			std::list<RoutingTreeItem*>* allItems);
 
-	void getListofSources(QList<SourceType>* SourceList);
-	void getListofSinks(QList<SinkType>* SinkList);
-	void getListofConnections(QList<ConnectionType>* ConnectionList);
+	void getListofSources(std::list<SourceType>* SourceList);
+	void getListofSinks(std::list<SinkType>* SinkList);
+	void getListofConnections(std::list<ConnectionType>* ConnectionList);
 
 	connection_t getConnectionID(source_t SourceID, sink_t SinkID);
 	connection_t insertConnection(source_t SourceID, sink_t SinkID);
@@ -359,25 +356,27 @@ public:
 			genRoute_t** return_route);
 	connection_t returnMainconnectionIDforSinkSourceID(sink_t sink,
 			source_t source);
-	QList<source_t> getSourceIDsForSinkID(sink_t sink);
-	QList<ConnectionType> getListAllMainConnections();
+	std::list<source_t> getSourceIDsForSinkID(sink_t sink);
+	std::list<ConnectionType> getListAllMainConnections();
 	genError_t removeMainConnection(connection_t connID);
 	genInt_t reserveInterrupt(sink_t Sink_ID, source_t Source_ID);
 	genError_t updateInterrupt(const genInt_t intID, connection_t connID,
-			bool mixed, QList<source_t> listInterrruptedSources);
+			bool mixed, std::list<source_t> listInterrruptedSources);
 	genError_t getInterruptDatafromID(const genInt_t intID,
 			connection_t* return_connID, sink_t* return_Sink_ID,
 			source_t* return_Source_ID, bool* return_mixed,
-			QList<source_t>** return_listInterrruptedSources);
+			std::list<source_t>** return_listInterrruptedSources);
 	genError_t removeInterrupt(const genInt_t intID);
 
-signals:
 	void signal_connectionChanged();
 	void signal_numberOfSinksChanged();
 	void signal_numberOfSourcesChanged();
 
 private:
-	QSqlDatabase m_database; //!< pointer to database
+	bool pQuery(std::string command);
+	std::string int2string(int i);
+	sqlite3 *m_database; //!< pointer to database
+	std::string m_path;
 };
 
 #endif /* DATABASEHANDLER_H_ */

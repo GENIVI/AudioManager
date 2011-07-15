@@ -23,8 +23,6 @@
  *
  */
 
-#include <qstring.h>
-#include <QMutableListIterator>
 #include <iostream>
 #include <stdio.h>
 
@@ -43,7 +41,7 @@ void Router::registerDatabasehandler(DataBaseHandler* db_handler) {
 
 bool Router::get_Route_from_Source_ID_to_Sink_ID(const bool onlyfree,
 		const source_t Source_ID, const sink_t Sink_ID,
-		QList<genRoute_t>* ReturnList) {
+		std::list<genRoute_t>* ReturnList) {
 
 	domain_t Source_Domain = m_dbHandler->get_Domain_ID_from_Source_ID(
 			Source_ID); //first find out in which domains the source and sink are
@@ -54,11 +52,11 @@ bool Router::get_Route_from_Source_ID_to_Sink_ID(const bool onlyfree,
 	} //if source or sink does not exists, exit here
 
 	RoutingTree routingtree(Source_Domain); //Build up a Tree from the Source_Domain to every other domain.
-	QList<RoutingTreeItem*> flattree; //This list is the flat tree
-	QList<RoutingTreeItem*> matchtree; //This List holds all TreeItems which have the right Domain Sink IDs
-	QList<gateway_t> gwids; //holds all gateway ids of the route
+	std::list<RoutingTreeItem*> flattree; //This list is the flat tree
+	std::list<RoutingTreeItem*> matchtree; //This List holds all TreeItems which have the right Domain Sink IDs
+	std::list<gateway_t> gwids; //holds all gateway ids of the route
 	genRoutingElement_t element;
-	QList<genRoutingElement_t> actualRoutingElement;//intermediate list of current routing pairs
+	std::list<genRoutingElement_t> actualRoutingElement;//intermediate list of current routing pairs
 	genRoute_t actualRoute; //holds the actual Route
 	source_t ReturnSource = 0;
 	sink_t ReturnSink = 0;
@@ -69,46 +67,46 @@ bool Router::get_Route_from_Source_ID_to_Sink_ID(const bool onlyfree,
 	m_dbHandler->get_Domain_ID_Tree(onlyfree, &routingtree, &flattree); //Build up the tree out of the database as
 
 	//we go through the returned flattree and look for our sink, after that flattree holds only treeItems that match
-	foreach (RoutingTreeItem* rTree,flattree)
-		{
-			if (rTree->returnDomainID() == Sink_Domain) {
-				matchtree.append(rTree);
-			}
+	for(std::list<RoutingTreeItem*>::iterator rTree=flattree.begin();rTree!=flattree.end();rTree++) {
+		RoutingTreeItem *p=*rTree;
+		if (p->returnDomainID() == Sink_Domain) {
+			matchtree.push_back(*rTree);
 		}
+	}
 
 	//No we need to trace back the routes for each entry in matchtree
-	foreach (RoutingTreeItem* match, matchtree)
+	for(std::list<RoutingTreeItem*>::iterator match=matchtree.begin(); match!=matchtree.end(); match++)
 		{
 			//getting the route for the actual item
-			actualRoute.len = routingtree.getRoute(match, &gwids); //This gives only the Gateway IDs we need more
+			actualRoute.len = routingtree.getRoute(*match, &gwids); //This gives only the Gateway IDs we need more
 
 			//go throught the gatewayids and get more information
-			for (int i = 0; i < gwids.length(); i++) {
-				m_dbHandler->get_Gateway_Source_Sink_Domain_ID_from_ID(
-						gwids.value(i), &ReturnSource, &ReturnSink,
-						&ReturnDomain);
+			for (std::list<gateway_t>::iterator i=gwids.begin(); i!=gwids.end();i++) {
+				m_dbHandler->get_Gateway_Source_Sink_Domain_ID_from_ID(*i, &ReturnSource, &ReturnSink,&ReturnDomain);
 				//first routing pair is source to ReturnSink of course;
-				if (i == 0) {
-					element.source = Source_ID;
-					element.sink = ReturnSink;
-					element.Domain_ID = Source_Domain;
-				} else {
-					element.source = LastSource;
-					element.sink = ReturnSink;
-					element.Domain_ID = ReturnDomain;
-				}
-				actualRoutingElement.append(element);
+//				if (i == 0) {
+//					element.source = Source_ID;
+//					element.sink = ReturnSink;
+//					element.Domain_ID = Source_Domain;
+//				}
+//
+//				else {
+//					element.source = LastSource;
+//					element.sink = ReturnSink;
+//					element.Domain_ID = ReturnDomain;
+//				}
+				actualRoutingElement.push_back(element);
 				LastSource = ReturnSource;
 			}
 			element.source = LastSource;
 			element.sink = Sink_ID;
 			element.Domain_ID = Sink_Domain;
-			actualRoutingElement.append(element);
+			actualRoutingElement.push_back(element);
 
 			actualRoute.Source_ID = Source_ID;
 			actualRoute.Sink_ID = Sink_ID;
 			actualRoute.route = actualRoutingElement;
-			ReturnList->append(actualRoute);
+			ReturnList->push_back(actualRoute);
 		}
 
 	return true;
@@ -127,11 +125,13 @@ RoutingTreeItem::RoutingTreeItem() {
 }
 
 RoutingTreeItem::~RoutingTreeItem() {
-	qDeleteAll(childItems);
+	for (std::list<RoutingTreeItem*>::iterator i=childItems.begin();i!=childItems.end();i++) {
+		delete *i;
+	}
 }
 
 void RoutingTreeItem::appendChild(RoutingTreeItem *item) {
-	childItems.append(item);
+	childItems.push_back(item);
 }
 
 RoutingTreeItem *RoutingTreeItem::return_Parent() {
@@ -158,15 +158,15 @@ RoutingTreeItem* RoutingTree::insertItem(const domain_t Domain_ID,
 	RoutingTreeItem *newTree = new RoutingTreeItem(Domain_ID, Gateway_ID,
 			parentItem);
 	parentItem->appendChild(newTree);
-	m_allChildList.append(newTree);
+	m_allChildList.push_back(newTree);
 	return newTree;
 }
 
-int RoutingTree::getRoute(RoutingTreeItem* Targetitem, QList<gateway_t>* route) {
+int RoutingTree::getRoute(RoutingTreeItem* Targetitem, std::list<gateway_t>* route) {
 	int hopps = 0;
 	RoutingTreeItem *parentItem = Targetitem;
 	while (parentItem != &m_rootItem) {
-		route->prepend(parentItem->returnGatewayID());
+		route->push_front(parentItem->returnGatewayID());
 		hopps++;
 		parentItem = parentItem->return_Parent();
 	}
@@ -185,45 +185,45 @@ void Bushandler::load_Bus_plugins() {
 	RoutingSendInterface *b = NULL;
 	char BusName[40];
 	Bus newBus;
-	foreach (QObject *plugin, QPluginLoader::staticInstances())
-		{
-			strcpy(BusName, "");
-			RoutingInterfaceFactory* busInterfaceFactory = qobject_cast<
-					RoutingInterfaceFactory *> (plugin);
-			if (busInterfaceFactory) {
-				b = busInterfaceFactory->returnInstance();
-				b->return_BusName(BusName);
-				newBus.Name = QString(BusName);
-				newBus.sendInterface = b;
-				Busses.append(newBus);
-				QObject::connect((const QObject*) this,
-						SIGNAL (signal_system_ready(void)), (const QObject*) b,
-						SLOT(slot_system_ready(void)));
-				DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Bushandler:Found new bus interface"), DLT_STRING(newBus.Name.toAscii()));
-			}
-		}
+//	foreach (QObject *plugin, QPluginLoader::staticInstances())
+//		{
+//			strcpy(BusName, "");
+//			RoutingInterfaceFactory* busInterfaceFactory = qobject_cast<
+//					RoutingInterfaceFactory *> (plugin);
+//			if (busInterfaceFactory) {
+//				b = busInterfaceFactory->returnInstance();
+//				b->return_BusName(BusName);
+//				newBus.Name = QString(BusName);
+//				newBus.sendInterface = b;
+//				Busses.append(newBus);
+//				QObject::connect((const QObject*) this,
+//						SIGNAL (signal_system_ready(void)), (const QObject*) b,
+//						SLOT(slot_system_ready(void)));
+//				DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Bushandler:Found new bus interface"), DLT_STRING(newBus.Name.toAscii()));
+//			}
+//		}
 }
 
 void Bushandler::StartupInterfaces() {
-	foreach (Bus bus, Busses)
-		{
-			bus.sendInterface->startup_interface(m_receiver);
-			DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Bushandler:Started Interface"), DLT_STRING(bus.Name.toAscii()));
-		}
-	emit signal_system_ready();
+//	foreach (Bus bus, Busses)
+//		{
+//			bus.sendInterface->startup_interface(m_receiver);
+//			DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Bushandler:Started Interface"), DLT_STRING(bus.Name.toAscii()));
+//		}
+//	emit signal_system_ready();
 }
 
 void Bushandler::registerReceiver(RoutingReceiver * receiver) {
 	m_receiver = receiver;
 }
 
-RoutingSendInterface* Bushandler::getInterfaceforBus(QString bus) {
-	foreach (Bus b, Busses)
-		{
-			if (b.Name.compare(bus) == 0) {
-				return b.sendInterface;
-			}
-		}
-	return NULL;
+RoutingSendInterface* Bushandler::getInterfaceforBus(std::string bus) {
+//	foreach (Bus b, Busses)
+//		{
+//			if (b.Name.compare(bus) == 0) {
+//				return b.sendInterface;
+//			}
+//		}
+//	return NULL;
 }
 

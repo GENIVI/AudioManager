@@ -55,7 +55,7 @@ public:
 	 */
 	bool get_Route_from_Source_ID_to_Sink_ID(const bool onlyfree,
 			const source_t Source_ID, const sink_t Sink_ID,
-			QList<genRoute_t>* ReturnList);
+			std::list<genRoute_t>* ReturnList);
 
 private:
 	DataBaseHandler* m_dbHandler;
@@ -88,13 +88,13 @@ public:
 	 *
 	 * @param ChildItems buffer for the child items
 	 */
-	void returnChildItems(QList<RoutingTreeItem*> ChildItems);
+	void returnChildItems(std::list<RoutingTreeItem*> ChildItems);
 
 	/**returns the domain ID
 	 *
 	 * @return the domain ID
 	 */
-	domain_t returnDomainID(void);
+	domain_t returnDomainID();
 
 	/**returns the gateway ID
 	 *
@@ -109,7 +109,7 @@ public:
 	RoutingTreeItem* return_Parent();
 
 private:
-	QList<RoutingTreeItem*> childItems; //!< List of all child items
+	std::list<RoutingTreeItem*> childItems; //!< List of all child items
 	domain_t m_domainID; //!< the domain ID of the item
 	gateway_t m_gatewayID; //!< the gateway Id
 	RoutingTreeItem *parentItem; //!< pointer to the parent item
@@ -144,7 +144,7 @@ public:
 	 * @param route pointer to a list of gateway IDs that need to be connected
 	 * @return the length of the route.
 	 */
-	int getRoute(RoutingTreeItem* TargetItem, QList<gateway_t>* route);
+	int getRoute(RoutingTreeItem* TargetItem, std::list<gateway_t>* route);
 
 	/**returns the DomainId of the rootItem
 	 *
@@ -160,15 +160,15 @@ public:
 
 private:
 	RoutingTreeItem m_rootItem; //!< pointer to root item
-	QList<RoutingTreeItem*> m_allChildList; //!< list of all childs
+	std::list<RoutingTreeItem*> m_allChildList; //!< list of all childs
 };
 
 /**This class is responsible for loading the RoutingInterface Plugins
  * In order to let a plugin be loaded by the BusManager, just add it in main.cpp  like this
  * @code Q_IMPORT_PLUGIN(RoutingPlugin) @code
  */
-class Bushandler: public QObject {
-Q_OBJECT
+class Bushandler {
+
 public:
 	Bushandler() {
 	}
@@ -198,9 +198,8 @@ public:
 	 * @param bus the name of the bus
 	 * @return pointer to the interface
 	 */
-	RoutingSendInterface* getInterfaceforBus(QString bus);
+	RoutingSendInterface* getInterfaceforBus(std::string bus);
 
-signals:
 	/**This signal informs the plugins that the AudioManager is ready to register Domains Sinks and Sources
 	 *
 	 */
@@ -212,10 +211,10 @@ private:
 	 */
 	struct Bus {
 		RoutingSendInterface* sendInterface;
-		QString Name;
+		std::string Name;
 	};
 
-	QList<Bus> Busses; //!< list of all busses
+	std::list<Bus> Busses; //!< list of all busses
 	RoutingReceiver* m_receiver; //!< pointer to the routing receiver
 };
 

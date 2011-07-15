@@ -44,18 +44,21 @@ TaskAsyncConnect::~TaskAsyncConnect() {
 }
 
 void TaskAsyncConnect::executeTask(Queue* queue) {
-	QObject::connect((const QObject*) this, SIGNAL(signal_nextTask()),
-			(const QObject*) queue, SLOT(slot_nextTask()));
-	QObject::connect((const QObject*) m_core->returnReceiver(),
-			SIGNAL(signal_ackConnect(genHandle_t, genError_t)),
-			(const QObject*) this,
-			SLOT(slot_connect_finished(genHandle_t, genError_t)));
-	m_timer = new QTimer();
-	m_timer->setSingleShot(true);
-	QObject::connect(m_timer, SIGNAL(timeout()), (const QObject*) this,
-			SLOT(slot_timeout()));
-	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Started Connect"));
-	m_timer->start(CONNECT_TIMEOUT);
+	/**
+	 * \todo remove signals and slots, change to non QT timers
+	 */
+//	QObject::connect((const QObject*) this, SIGNAL(signal_nextTask()),
+//			(const QObject*) queue, SLOT(slot_nextTask()));
+//	QObject::connect((const QObject*) m_core->returnReceiver(),
+//			SIGNAL(signal_ackConnect(genHandle_t, genError_t)),
+//			(const QObject*) this,
+//			SLOT(slot_connect_finished(genHandle_t, genError_t)));
+//	m_timer = new QTimer();
+//	m_timer->setSingleShot(true);
+//	QObject::connect(m_timer, SIGNAL(timeout()), (const QObject*) this,
+//			SLOT(slot_timeout()));
+//	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Started Connect"));
+//	m_timer->start(CONNECT_TIMEOUT);
 	m_core->connect(m_ParamSource, m_ParamSink, &m_handle);
 }
 
@@ -77,15 +80,15 @@ source_t TaskAsyncConnect::getSource() {
 
 void TaskAsyncConnect::slot_connect_finished(genHandle_t handle,
 		genError_t error) {
-	if (handle == m_handle && error == GEN_OK) {
-		m_timer->stop();
-		delete m_timer;
-		m_timer = NULL;
-		DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Connect returned"));
-		emit signal_nextTask();
-	} else {
-		DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Somethings wrong with the connection"));
-	}
+//	if (handle == m_handle && error == GEN_OK) {
+//		m_timer->stop();
+//		delete m_timer;
+//		m_timer = NULL;
+//		DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Connect returned"));
+//		emit signal_nextTask();
+//	} else {
+//		DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Somethings wrong with the connection"));
+//	}
 }
 
 /**
@@ -103,11 +106,11 @@ TaskConnect::~TaskConnect() {
 }
 
 void TaskConnect::executeTask(Queue* queue) {
-	QObject::connect((const QObject*) this, SIGNAL(signal_nextTask()),
-			(const QObject*) queue, SLOT(slot_nextTask()));
-	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Started Syncronous Connect"));
+//	QObject::connect((const QObject*) this, SIGNAL(signal_nextTask()),
+//			(const QObject*) queue, SLOT(slot_nextTask()));
+//	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Started Syncronous Connect"));
 	m_core->connect(m_ParamSource, m_ParamSink);
-	emit signal_nextTask();
+	//emit signal_nextTask();
 }
 
 TaskDisconnect::TaskDisconnect(AudioManagerCore* core, connection_t ID) :
@@ -118,10 +121,10 @@ TaskDisconnect::~TaskDisconnect() {
 }
 
 void TaskDisconnect::executeTask(Queue* queue) {
-	QObject::connect((const QObject*) this, SIGNAL(signal_nextTask()),
-			(const QObject*) queue, SLOT(slot_nextTask()));
+//	QObject::connect((const QObject*) this, SIGNAL(signal_nextTask()),
+//			(const QObject*) queue, SLOT(slot_nextTask()));
 	m_core->disconnect(m_ParamConnectionID);
-	emit signal_nextTask();
+//	emit signal_nextTask();
 }
 
 TaskInterruptWait::TaskInterruptWait(AudioManagerCore* core,
@@ -134,16 +137,16 @@ TaskInterruptWait::~TaskInterruptWait() {
 }
 
 void TaskInterruptWait::executeTask(Queue* queue) {
-	QObject::connect((const QObject*) this, SIGNAL(signal_nextTask()),
-			(const QObject*) queue, SLOT(slot_nextTask()));
-	QObject::connect((const QObject*) m_core->returnCommandInterface(),
-			SIGNAL(signal_interruptResume(genInt_t)), (const QObject*) this,
-			SLOT(slot_interrupt_ready(genInt_t)));
+//	QObject::connect((const QObject*) this, SIGNAL(signal_nextTask()),
+//			(const QObject*) queue, SLOT(slot_nextTask()));
+//	QObject::connect((const QObject*) m_core->returnCommandInterface(),
+//			SIGNAL(signal_interruptResume(genInt_t)), (const QObject*) this,
+//			SLOT(slot_interrupt_ready(genInt_t)));
 }
 
 void TaskInterruptWait::slot_interrupt_ready(genInt_t ID) {
 	if (ID == m_interruptID) {
-		emit signal_nextTask();
+		//emit signal_nextTask();
 	}
 }
 
@@ -173,11 +176,11 @@ sink_t TaskSetVolume::getSink() {
 }
 
 void TaskSetVolume::executeTask(Queue* queue) {
-	QObject::connect((const QObject*) this, SIGNAL(signal_nextTask()),
-			(const QObject*) queue, SLOT(slot_nextTask()));
-	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Started Changed Volume"));
+//	QObject::connect((const QObject*) this, SIGNAL(signal_nextTask()),
+//			(const QObject*) queue, SLOT(slot_nextTask()));
+//	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Started Changed Volume"));
 	m_core->setVolume(m_sink, m_volume);
-	emit signal_nextTask();
+//	emit signal_nextTask();
 }
 
 TaskSetSourceVolume::TaskSetSourceVolume(AudioManagerCore* core,
@@ -206,11 +209,11 @@ source_t TaskSetSourceVolume::getSource() {
 }
 
 void TaskSetSourceVolume::executeTask(Queue* queue) {
-	QObject::connect((const QObject*) this, SIGNAL(signal_nextTask()),
-			(const QObject*) queue, SLOT(slot_nextTask()));
+//	QObject::connect((const QObject*) this, SIGNAL(signal_nextTask()),
+//			(const QObject*) queue, SLOT(slot_nextTask()));
 	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Started Changed Source Volume"));
 	m_core->setSourceVolume(m_source, m_volume);
-	emit signal_nextTask();
+//	emit signal_nextTask();
 }
 
 TaskWait::TaskWait(AudioManagerCore* core, int mseconds) :
@@ -229,20 +232,20 @@ int TaskWait::getTime() {
 }
 
 void TaskWait::executeTask(Queue* queue) {
-	QObject::connect((const QObject*) this, SIGNAL(signal_nextTask()),
-			(const QObject*) queue, SLOT(slot_nextTask()));
-	m_timer = new QTimer();
-	m_timer->setSingleShot(true);
-	QObject::connect(m_timer, SIGNAL(timeout()), (const QObject*) this,
-			SLOT(slot_timeIsup()));
+//	QObject::connect((const QObject*) this, SIGNAL(signal_nextTask()),
+//			(const QObject*) queue, SLOT(slot_nextTask()));
+//	m_timer = new QTimer();
+//	m_timer->setSingleShot(true);
+//	QObject::connect(m_timer, SIGNAL(timeout()), (const QObject*) this,
+//			SLOT(slot_timeIsup()));
 	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Start Sleep "));
-	m_timer->start(m_ParamMSeconds);
+//	m_timer->start(m_ParamMSeconds);
 }
 
 void TaskWait::slot_timeIsup() {
 	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Stop Sleep "));
-	m_timer->stop();
-	emit signal_nextTask();
+//	m_timer->stop();
+//	emit signal_nextTask();
 }
 
 TaskEnterUserConnect::TaskEnterUserConnect(AudioManagerCore* core,
@@ -263,11 +266,11 @@ genRoute_t TaskEnterUserConnect::returnConnection() {
 }
 
 void TaskEnterUserConnect::executeTask(Queue* queue) {
-	QObject::connect((const QObject*) this, SIGNAL(signal_nextTask()),
-			(const QObject*) queue, SLOT(slot_nextTask()));
+//	QObject::connect((const QObject*) this, SIGNAL(signal_nextTask()),
+//			(const QObject*) queue, SLOT(slot_nextTask()));
 	m_core->returnDatabaseHandler()->updateMainConnection(m_connectionID,
 			m_route);
-	emit signal_nextTask();
+//	emit signal_nextTask();
 }
 
 TaskRemoveUserConnect::TaskRemoveUserConnect(AudioManagerCore* core,
@@ -288,14 +291,14 @@ connection_t TaskRemoveUserConnect::returnConnectionID() {
 }
 
 void TaskRemoveUserConnect::executeTask(Queue* queue) {
-	QObject::connect((const QObject*) this, SIGNAL(signal_nextTask()),
-			(const QObject*) queue, SLOT(slot_nextTask()));
+//	QObject::connect((const QObject*) this, SIGNAL(signal_nextTask()),
+//			(const QObject*) queue, SLOT(slot_nextTask()));
 	m_core->returnDatabaseHandler()->removeMainConnection(m_connectionID);
-	emit signal_nextTask();
+//	emit signal_nextTask();
 }
 
 TaskEnterInterrupt::TaskEnterInterrupt(AudioManagerCore* core, genInt_t ID,
-		bool mixed, connection_t connID, QList<source_t> listInterruptedSources) :
+		bool mixed, connection_t connID, std::list<source_t> listInterruptedSources) :
 	Task(core), m_intID(ID), m_mixed(mixed), m_connectionID(connID),
 			m_interruptedSourcesList(listInterruptedSources) {
 }
@@ -304,11 +307,11 @@ TaskEnterInterrupt::~TaskEnterInterrupt() {
 }
 
 void TaskEnterInterrupt::executeTask(Queue* queue) {
-	QObject::connect((const QObject*) this, SIGNAL(signal_nextTask()),
-			(const QObject*) queue, SLOT(slot_nextTask()));
+//	QObject::connect((const QObject*) this, SIGNAL(signal_nextTask()),
+//			(const QObject*) queue, SLOT(slot_nextTask()));
 	m_core->returnDatabaseHandler()->updateInterrupt(m_intID, m_connectionID,
 			m_mixed, m_interruptedSourcesList);
-	emit signal_nextTask();
+//	emit signal_nextTask();
 }
 
 TaskRemoveInterrupt::TaskRemoveInterrupt(AudioManagerCore* core, genInt_t ID) :
@@ -319,10 +322,10 @@ TaskRemoveInterrupt::~TaskRemoveInterrupt() {
 }
 
 void TaskRemoveInterrupt::executeTask(Queue* queue) {
-	QObject::connect((const QObject*) this, SIGNAL(signal_nextTask()),
-			(const QObject*) queue, SLOT(slot_nextTask()));
+//	QObject::connect((const QObject*) this, SIGNAL(signal_nextTask()),
+//			(const QObject*) queue, SLOT(slot_nextTask()));
 	m_core->returnDatabaseHandler()->removeInterrupt(m_intID);
-	emit signal_nextTask();
+//	emit signal_nextTask();
 }
 
 TaskSetSourceMute::TaskSetSourceMute(AudioManagerCore* core, source_t source) :
@@ -333,10 +336,10 @@ TaskSetSourceMute::~TaskSetSourceMute() {
 }
 
 void TaskSetSourceMute::executeTask(Queue* queue) {
-	QObject::connect((const QObject*) this, SIGNAL(signal_nextTask()),
-			(const QObject*) queue, SLOT(slot_nextTask()));
+//	QObject::connect((const QObject*) this, SIGNAL(signal_nextTask()),
+//			(const QObject*) queue, SLOT(slot_nextTask()));
 	m_core->setSourceMute(m_source);
-	emit signal_nextTask();
+//	emit signal_nextTask();
 }
 
 TaskSetSourceUnmute::TaskSetSourceUnmute(AudioManagerCore* core,
@@ -348,10 +351,10 @@ TaskSetSourceUnmute::~TaskSetSourceUnmute() {
 }
 
 void TaskSetSourceUnmute::executeTask(Queue* queue) {
-	QObject::connect((const QObject*) this, SIGNAL(signal_nextTask()),
-			(const QObject*) queue, SLOT(slot_nextTask()));
+//	QObject::connect((const QObject*) this, SIGNAL(signal_nextTask()),
+//			(const QObject*) queue, SLOT(slot_nextTask()));
 	m_core->setSourceUnMute(m_source);
-	emit signal_nextTask();
+//	emit signal_nextTask();
 }
 
 TaskEmitSignalConnect::TaskEmitSignalConnect(AudioManagerCore* core) :
@@ -362,28 +365,28 @@ TaskEmitSignalConnect::~TaskEmitSignalConnect() {
 }
 
 void TaskEmitSignalConnect::executeTask(Queue* queue) {
-	QObject::connect((const QObject*) this, SIGNAL(signal_nextTask()),
-			(const QObject*) queue, SLOT(slot_nextTask()));
+//	QObject::connect((const QObject*) this, SIGNAL(signal_nextTask()),
+//			(const QObject*) queue, SLOT(slot_nextTask()));
 	m_core->emitSignalConnect();
-	emit signal_nextTask();
+//	emit signal_nextTask();
 }
 
-Queue::Queue(AudioManagerCore* core, QString name) :
-	m_core(core), m_currentIndex(0), m_name(name), m_taskList(QList<Task*> ()) {
+Queue::Queue(AudioManagerCore* core, std::string name) :
+	m_core(core), m_currentIndex(0), m_name(name), m_taskList(std::list<Task*> ()) {
 	m_core->addQueue(this);
 }
 
 Queue::~Queue() {
 	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("shoot all tasks"));
-	foreach (Task* task, m_taskList) {
-		delete task;
-	}
+//	foreach (Task* task, m_taskList) {
+//		delete task;
+//	}
 	m_core->removeQueue(this);
 }
 
 void Queue::run() {
-	if (m_taskList.isEmpty() == false) {
-		Task* task = m_taskList.first();
+	if (m_taskList.empty() == false) {
+		Task* task = m_taskList.front();
 		DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Started to execute Task"));
 		task->executeTask(this);
 	} else {
@@ -394,44 +397,44 @@ void Queue::run() {
 
 void Queue::slot_nextTask() {
 	m_currentIndex++;
-	if (m_currentIndex < m_taskList.length()) {
-		DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Task "),DLT_INT(m_currentIndex),DLT_STRING(" out of ") ,DLT_INT(m_taskList.length()));
-		m_taskList.at(m_currentIndex)->executeTask(this);
-	} else {
-		DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Finished all Tasks"));
-		this->~Queue();
-	}
+//	if (m_currentIndex < m_taskList.size()) {
+//		//m_currentIndex->executeTask(*this);
+//	} else {
+//		DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Finished all Tasks"));
+//		this->~Queue();
+//	}
 }
 
 void Queue::addTask(Task* task) {
-	m_taskList.append(task);
+	m_taskList.push_back(task);
 }
 
 genError_t Queue::removeTask(Task* task) {
-	if (m_taskList.removeAll(task) > 0) {
-		return GEN_OK;
-	}
+//	if (m_taskList.remove(task) > 0) {
+//		return GEN_OK;
+//	}
 	return GEN_OUTOFRANGE;
 	void addQueue(Queue* queue);
 
 }
 
-QList<Task*> Queue::getTaskList() {
+std::list<Task*> Queue::getTaskList() {
 	return m_taskList;
 }
 
-QString Queue::returnName() {
+std::string Queue::returnName() {
 	return m_name;
 }
 
 AudioManagerCore::AudioManagerCore() :
-	m_queueList(QList<Queue*> ()) {
+	m_queueList(std::list<Queue*> ()) {
 }
 
 AudioManagerCore::~AudioManagerCore() {
 	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("delete all running queues"));
-	foreach (Queue* queue, m_queueList) {
-		delete queue;
+	std::list<Queue*>::iterator qIterator;
+	for(qIterator=m_queueList.begin();qIterator!=m_queueList.end();qIterator++) {
+		delete *qIterator;
 	}
 }
 
@@ -496,24 +499,24 @@ genError_t AudioManagerCore::UserSetVolume(sink_t sink, volume_t volume) {
 	return GEN_OK;
 }
 
-QList<ConnectionType> AudioManagerCore::getListConnections() {
+std::list<ConnectionType> AudioManagerCore::getListConnections() {
 	return m_databaseHandler->getListAllMainConnections();
 }
 
-QList<SinkType> AudioManagerCore::getListSinks() {
-	QList<SinkType> sinkList;
+std::list<SinkType> AudioManagerCore::getListSinks() {
+	std::list<SinkType> sinkList;
 	m_databaseHandler->getListofSinks(&sinkList);
 	return sinkList;
 }
 
-QList<SourceType> AudioManagerCore::getListSources() {
-	QList<SourceType> sourceList;
+std::list<SourceType> AudioManagerCore::getListSources() {
+	std::list<SourceType> sourceList;
 	m_databaseHandler->getListofSources(&sourceList);
 	return sourceList;
 }
 
 void AudioManagerCore::emitSignalConnect() {
-	emit signal_connectionChanged();
+//	emit signal_connecionChanged();
 }
 
 genError_t AudioManagerCore::connect(source_t source, sink_t sink,
@@ -593,7 +596,7 @@ genError_t AudioManagerCore::setSourceUnMute(source_t source) {
 }
 
 genError_t AudioManagerCore::getRoute(const bool onlyfree,
-		const source_t source, const sink_t sink, QList<genRoute_t>* ReturnList) {
+		const source_t source, const sink_t sink, std::list<genRoute_t>* ReturnList) {
 	m_hookHandler->fireHookRoutingRequest(onlyfree, source, sink, ReturnList);
 	return GEN_OK;
 }
@@ -604,22 +607,22 @@ connection_t AudioManagerCore::returnConnectionIDforSinkSource(sink_t sink,
 }
 
 genError_t AudioManagerCore::removeQueue(Queue* queue) {
-	if (m_queueList.removeAll(queue)) {
-		return GEN_OK;
-	} else {
-		return GEN_OUTOFRANGE;
-	}
+//	if (m_queueList.remove(*queue)) {
+//		return GEN_OK;
+//	} else {
+//		return GEN_OUTOFRANGE;
+//	}
 }
 
-source_t AudioManagerCore::returnSourceIDfromName(const QString name) {
+source_t AudioManagerCore::returnSourceIDfromName(const std::string name) {
 	return m_databaseHandler->get_Source_ID_from_Name(name);
 }
 
-sink_t AudioManagerCore::returnSinkIDfromName(const QString name) {
+sink_t AudioManagerCore::returnSinkIDfromName(const std::string name) {
 	return m_databaseHandler->get_Sink_ID_from_Name(name);
 }
 
 void AudioManagerCore::addQueue(Queue* queue) {
-	m_queueList.append(queue);
+	m_queueList.push_back(queue);
 }
 

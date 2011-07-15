@@ -29,90 +29,80 @@ void RoutingReceiver::register_Databasehandler(DataBaseHandler* handler_) {
 	handler = handler_;
 }
 
-int RoutingReceiver::registerDomain(char* name, char* busname, char* node,
-		bool earlymode) {
-	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Domain Registered: "), DLT_STRING(name));
-	return handler->insert_into_Domains_table(QString(name), QString(busname),
-			QString(node), earlymode);
+int RoutingReceiver::registerDomain(char* name, char* busname, char* node, bool earlymode) {
+	DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("Domain Registered: "), DLT_STRING(name));
+	return handler->insert_into_Domains_table(std::string(name), std::string(busname), std::string(node), earlymode);
 }
 
 int RoutingReceiver::registerSource(char* name, char* audioclass, char* domain) {
-	int id_class = handler->get_Source_Class_ID_from_Name(QString(audioclass));
-	int id_domain = handler->get_Domain_ID_from_Name(QString(domain));
+	int id_class = handler->get_Source_Class_ID_from_Name(std::string(audioclass));
+	int id_domain = handler->get_Domain_ID_from_Name(std::string(domain));
 
 	if (id_class == 0) {
-		DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("Class unknown: "), DLT_STRING(audioclass));
+		DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("Class unknown: "), DLT_STRING(audioclass));
 		return -1;
 	} else if (id_class == -1) {
-		DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("Database Error: "));
+		DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("Database Error: "));
 		return -1;
 	}
 	if (id_domain == 0) {
-		DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("Domain unknown: "));
+		DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("Domain unknown: "));
 		return -1;
 	} else if (id_class == -1) {
-		DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("Database Error: "));
+		DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("Database Error: "));
 		return -1;
 	}
 
-	return handler->insert_into_Source_table(QString(name), id_class,
-			id_domain, false);
+	return handler->insert_into_Source_table(std::string(name), id_class, id_domain, false);
 }
 int RoutingReceiver::registerSink(char* name, char* sinkclass, char* domain) {
 	//TODO: Integrate Sink Classes
 	(void) sinkclass;
 	int id_sinkclass = 1;
-	int id_domain = handler->get_Domain_ID_from_Name(QString(domain));
+	int id_domain = handler->get_Domain_ID_from_Name(std::string(domain));
 
 	if (id_domain == 0) {
-		DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("Domain unknown: "));
+		DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("Domain unknown: "));
 		return -1;
 	}
 
-	return handler->insert_into_Sink_table(QString(name), id_sinkclass,
-			id_domain, false);
+	return handler->insert_into_Sink_table(std::string(name), id_sinkclass, id_domain, false);
 }
-int RoutingReceiver::registerGateway(char* name, char* sink, char* source,
-		char *domainSource, char* domainSink, char* controlDomain) {
+int RoutingReceiver::registerGateway(char* name, char* sink, char* source, char *domainSource, char* domainSink, char* controlDomain) {
 
-	int domainSourceID =
-			handler->get_Domain_ID_from_Name(QString(domainSource));
+	int domainSourceID = handler->get_Domain_ID_from_Name(std::string(domainSource));
 	if (domainSourceID == 0) {
-		domainSourceID = handler->peek_Domain_ID(QString(domainSource));
+		domainSourceID = handler->peek_Domain_ID(std::string(domainSource));
 	}
-	int domainSinkID = handler->get_Domain_ID_from_Name(QString(domainSink));
+	int domainSinkID = handler->get_Domain_ID_from_Name(std::string(domainSink));
 	if (domainSinkID == 0) {
-		domainSinkID = handler->peek_Domain_ID(QString(domainSink));
+		domainSinkID = handler->peek_Domain_ID(std::string(domainSink));
 	}
-	int domainControlID = handler->get_Domain_ID_from_Name(
-			QString(controlDomain));
+	int domainControlID = handler->get_Domain_ID_from_Name(std::string(controlDomain));
 
 	if (domainSourceID == 0) {
-		DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("Domain Source unknown: "));
+		DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("Domain Source unknown: "));
 		return -1;
 	}
 	if (domainSink == 0) {
-		DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("Domain Sink unknown: "));
+		DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("Domain Sink unknown: "));
 		return -1;
 	}
 	if (domainControlID == 0) {
-		DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("Domain Control unknown: "));
+		DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("Domain Control unknown: "));
 		return -1;
 	}
 
-	int sourceId = handler->insert_into_Source_table(QString(source), 0,
-			domainSourceID, true);
-	int sinkID = handler->insert_into_Sink_table(QString(sink), 0,
-			domainSinkID, true);
-	return handler->insert_into_Gatway_table(QString(name), sinkID, sourceId,
-			domainSourceID, domainSinkID, domainControlID);
+	int sourceId = handler->insert_into_Source_table(std::string(source), 0, domainSourceID, true);
+	int sinkID = handler->insert_into_Sink_table(std::string(sink), 0, domainSinkID, true);
+	return handler->insert_into_Gatway_table(std::string(name), sinkID, sourceId, domainSourceID, domainSinkID, domainControlID);
 
 }
 
 int RoutingReceiver::peekDomain(char* name) {
-	return handler->peek_Domain_ID(QString(name));
+	return handler->peek_Domain_ID(std::string(name));
 }
 
 void RoutingReceiver::ackConnect(genHandle_t handle, genError_t error) {
-	emit signal_ackConnect(handle, error);
+	//emit signal_ackConnect(handle, error);
 }

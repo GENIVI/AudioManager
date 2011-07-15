@@ -13,7 +13,8 @@
 #ifndef DATATYPES_H_
 #define DATATYPES_H_
 
-#include <qlist.h>
+#include <list>
+#include <string>
 
 typedef int source_t;
 typedef int sink_t;
@@ -67,7 +68,7 @@ public:
 	int len;
 	source_t Source_ID;
 	sink_t Sink_ID;
-	QList<genRoutingElement_t> route;
+	std::list<genRoutingElement_t> route;
 };
 
 /**This class describes the interrupt Type.
@@ -85,7 +86,25 @@ public:
 	source_t sourceID;
 	sink_t SinkID;
 	bool mixed;
-	QList<source_t> listInterruptedSources;
+	std::list<source_t> listInterruptedSources;
+};
+
+class SinkType {
+public:
+	std::string name;
+	sink_t ID;
+};
+
+class SourceType {
+public:
+	std::string name;
+	source_t ID;
+};
+
+class ConnectionType {
+public:
+	source_t Source_ID;
+	sink_t Sink_ID;
 };
 
 #endif /* DATATYPES_H_ */
