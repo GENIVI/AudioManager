@@ -10,8 +10,6 @@ set(LIBRARY_OUTPUT_PATH ../plugins)
 set(DOC_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/../doc/PluginHookStandard)
 set(DOCUMENT $ENV{gendoc})
 
-cmake_policy(SET CMP0015 NEW)
-
 file(MAKE_DIRECTORY ${DOC_OUTPUT_PATH})
 
 INCLUDE_DIRECTORIES(

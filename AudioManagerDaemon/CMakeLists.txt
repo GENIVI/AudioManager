@@ -22,8 +22,6 @@ set(DBUS_FOLDER ${CMAKE_SOURCE_DIR}/../dbusInterfaces)
 set(DOC_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/../doc/AudioManager)
 set(DOCUMENT $ENV{gendoc})
 
-cmake_policy(SET CMP0015 NEW)
-
 file(MAKE_DIRECTORY ${DOC_OUTPUT_PATH})
 
 FIND_PACKAGE(PkgConfig)

@@ -36,10 +36,11 @@
 DataBaseHandler::DataBaseHandler() {
 
 	//knock down database
-	m_path = "/home/blacky";
+	m_path = "/tmp";
 
 	m_path.append("/");
 	m_path.append(AUDIO_DATABASE);
+	DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("Database path:"), DLT_STRING(m_path.c_str()));
 
 	std::ifstream infile(m_path.c_str());
 
