@@ -23,7 +23,11 @@
  *
  */
 
+
 #include "AudioManagerCore.h"
+#include <dirent.h>
+#include <dlfcn.h>
+#include <libgen.h>
 
 Task::Task() {
 }
@@ -625,4 +629,41 @@ sink_t AudioManagerCore::returnSinkIDfromName(const std::string name) {
 void AudioManagerCore::addQueue(Queue* queue) {
 	m_queueList.push_back(queue);
 }
+
+std::list<std::string> AudioManagerCore::getSharedLibrariesFromDirectory(std::string dirName) {
+
+	std::list<std::string> fileList;
+	// open directory
+    DIR *directory = opendir(dirName.c_str());
+    if (!directory)
+    {
+    	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Error opening directory "),DLT_STRING(dirName.c_str()));
+        return fileList;
+    }
+
+    // iterate content of directory
+    struct dirent *itemInDirectory = 0;
+    while ((itemInDirectory = readdir(directory)))
+    {
+        unsigned char entryType = itemInDirectory->d_type;
+        std::string entryName = itemInDirectory->d_name;
+
+        bool regularFile = (entryType == DT_REG);
+        bool sharedLibExtension = ("so" == entryName.substr(entryName.find_last_of(".") + 1));
+
+        if (regularFile && sharedLibExtension)
+        {
+        	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("PluginSearch adding file "),DLT_STRING(entryName.c_str()));
+            fileList.push_back(dirName + "/" + entryName);
+        }
+        else
+        {
+        	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("PluginSearch ignoring file "),DLT_STRING(entryName.c_str()));
+        }
+    }
+
+    closedir(directory);
+    return fileList;
+}
+
 

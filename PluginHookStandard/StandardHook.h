@@ -54,11 +54,11 @@ public:
 
 };
 
-extern "C" BaseHook* StandardHookPluginFactory() {
+extern "C" BaseHook* PluginHookStandardFactory() {
     return new StandardHookPlugin();
 }
 
-extern "C" void destroyStandardHookPlugin(StandardHookPlugin* hook) {
+extern "C" void destroyPluginHookStandard(StandardHookPlugin* hook) {
     delete hook;
 }
 

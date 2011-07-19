@@ -27,10 +27,9 @@ SET(PLUGIN_STANDARD_HOOKS_SRCS_CXX
 )
 
 add_library(PluginHookStandard SHARED ${PLUGIN_STANDARD_HOOKS_SRCS_CXX})
-add_library(PluginHookStandard ${PLUGIN_STANDARD_HOOKS_SRCS_CXX})
+add_library(PluginHookStandardStatic ${PLUGIN_STANDARD_HOOKS_SRCS_CXX})
 
-TARGET_LINK_LIBRARIES(PluginHookStandard 
-)
+#TARGET_LINK_LIBRARIES(PluginHookStandard)
 
 #add a target to generate API documentation with Doxygen
 find_package(Doxygen)

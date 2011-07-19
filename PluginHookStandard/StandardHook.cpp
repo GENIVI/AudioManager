@@ -47,7 +47,7 @@ genError_t StandardHookPlugin::InitHook(void) {
 }
 
 genError_t StandardHookPlugin::returnPluginName(char* name) {
-	strcpy(name,"Test Plugin");
+	strcpy(name,"Standard Plugin");
 	return GEN_OK;
 }
 

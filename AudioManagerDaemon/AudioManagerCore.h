@@ -610,6 +610,9 @@ public:
 	void signal_numberOfSinksChanged();
 	void signal_numberOfSourcesChanged();
 
+	std::list<std::string> getSharedLibrariesFromDirectory(std::string dirName);
+	template<class T>T* getCreateFunction(std::string libname);
+
 private:
 	DataBaseHandler* m_databaseHandler; //!< pointer to the DataBasehandler Class
 	Router* m_router; //!< pointer to the Router Class

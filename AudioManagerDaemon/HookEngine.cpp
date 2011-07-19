@@ -25,6 +25,65 @@
 
 #include "HookEngine.h"
 
+/**
+ * this path needs to be adjusted to whatever is suitable on the system
+ */
+const char* hookPluginDirectories[] = { "/home/blacky/new_workspace/AudioManager/build/plugins"};
+uint hookPluginDirectoriesCount = sizeof(hookPluginDirectories) / sizeof(hookPluginDirectories[0]);
+
+#include <dirent.h>
+#include <dlfcn.h>
+#include <libgen.h>
+#include <unistd.h>
+
+template<class T>T* getCreateFunction(std::string libname) {
+
+	// cut off directories
+	char* fileWithPath = const_cast<char*>(libname.c_str());
+	std::string libFileName = basename(fileWithPath);
+
+	// cut off "lib" in front and cut off .so end"
+	std::string createFunctionName = libFileName.substr(3, libFileName.length() - 6) + "Factory";
+	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Lib entry point name "),DLT_STRING(createFunctionName.c_str()));
+
+	// open library#include <unistd.h>
+	void *libraryHandle;
+	dlerror(); // Clear any existing error
+	libraryHandle = dlopen(libname.c_str(), RTLD_NOW /*LAZY*/);
+	const char* dlopen_error = dlerror();
+	if (!libraryHandle || dlopen_error)
+	{
+		DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("dlopen failed"),DLT_STRING(dlopen_error));
+		return 0;
+	}
+
+	// get entry point from shared lib
+	dlerror(); // Clear any existing error
+	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("loading external function with name"),DLT_STRING(createFunctionName.c_str()));
+
+	union
+	{
+		void* voidPointer;
+		T* typedPointer;
+	} functionPointer;
+
+	// Note: direct cast is not allowed by ISO C++. e.g.
+	// T* createFunction = reinterpret_cast<T*>(dlsym(libraryHandle, createFunctionName.c_str()));
+	// compiler warning: "forbids casting between pointer-to-function and pointer-to-object"
+
+	functionPointer.voidPointer = dlsym(libraryHandle, createFunctionName.c_str());
+	T* createFunction = functionPointer.typedPointer;
+
+	const char* dlsym_error = dlerror();
+	if (!createFunction || dlsym_error)
+	{
+		DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Failed to load shared lib entry point"),DLT_STRING(dlsym_error));
+	}
+
+	return createFunction;
+}
+
+
 BaseHook::BaseHook() {
 }
 
@@ -329,21 +388,49 @@ void HookHandler::registerAudioManagerCore(AudioManagerCore* core) {
 }
 
 void HookHandler::loadHookPlugins() {
-	BaseHook *b = NULL;
-//	foreach(QObject * plugin, QPluginLoader::staticInstances())
-//	{
-//		HookPluginFactory* HookPluginFactory_ = qobject_cast<HookPluginFactory *>(plugin);
-//		if (HookPluginFactory_) {
-//			b = HookPluginFactory_->returnInstance();
-//			b->registerHookEngine(this);
-//			b->registerAudioManagerCore(m_core);
-//			b->InitHook();
-//			char pName[40];
-//			if (b->returnPluginName(pName) == GEN_OK) {
-//				DLT_LOG( AudioManager, DLT_LOG_INFO, DLT_STRING("Registered Hook Plugin:"), DLT_STRING(pName));
-//				m_listofPlugins.append(b);
-//			}
-//		}
-//	}
+
+	std::list<std::string> sharedLibraryNameList;
+
+    // search communicator plugins in configured directories
+    for (uint dirIndex = 0; dirIndex < hookPluginDirectoriesCount; ++dirIndex) {
+        const char* directoryName = hookPluginDirectories[dirIndex];
+        DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Searching for HookPlugins in"),DLT_STRING(directoryName));
+        std::list<std::string> newList=m_core->getSharedLibrariesFromDirectory(directoryName);
+        sharedLibraryNameList.insert(sharedLibraryNameList.end(),newList.begin(),newList.end());
+    }
+
+
+    // iterate all communicator plugins and start them
+    std::list<std::string>::iterator iter = sharedLibraryNameList.begin();
+    std::list<std::string>::iterator iterEnd = sharedLibraryNameList.end();
+
+    for (; iter != iterEnd; ++iter)
+    {
+    	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Loading Hook plugin"),DLT_STRING(iter->c_str()));
+
+        BaseHook* (*createFunc)();
+        createFunc = getCreateFunction<BaseHook*()>(*iter);
+
+        if (!createFunc) {
+            DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Entry point of Communicator not found"));
+            continue;
+        }
+
+        BaseHook* HookPlugin = createFunc();
+
+        if (!HookPlugin) {
+        	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("HookPlugin initialization failed. Entry Function not callable"));
+            continue;
+        }
+
+		HookPlugin->registerHookEngine(this);
+		HookPlugin->registerAudioManagerCore(m_core);
+		HookPlugin->InitHook();
+		char pName[40];
+		HookPlugin->returnPluginName(pName);
+		DLT_LOG( AudioManager, DLT_LOG_INFO, DLT_STRING("Registered Hook Plugin:"), DLT_STRING(pName));
+        m_listofPlugins.push_back(HookPlugin);
+    }
+
 }
 

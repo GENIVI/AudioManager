@@ -42,7 +42,6 @@ SET(AUDIOMAN_SRCS_CXX
     main.cpp
     DBusCommandInterface.cpp
     HookEngine.cpp
-    PluginHandler.cpp
 )
 
 INCLUDE_DIRECTORIES(
