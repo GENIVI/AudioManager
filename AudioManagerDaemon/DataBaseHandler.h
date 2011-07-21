@@ -41,7 +41,7 @@
 #define INTERRUPT_TABLE "Interrupts"
 #define MAIN_TABLE "MainTable"
 
-#define SQexecute(command) sqlite3_exec(m_database,command.c_str(),NULL,&query,NULL)!= SQLITE_OK
+#define SQexecute(command) sqlite3_prepare_v2(m_database,command.c_str(),-1,&query,NULL)== SQLITE_OK
 
 #include "audioManagerIncludes.h"
 

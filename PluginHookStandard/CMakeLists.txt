@@ -2,13 +2,13 @@ cmake_minimum_required(VERSION 2.6)
 
 PROJECT(PluginHookStandard)
 
-set(CMAKE_CXX_FLAGS "-g -pipe -fPIC -Wall -W -D_REENTRANT")
-
 set(STD_INCLUDE_DIRS "/usr/include")
 set(EXECUTABLE_OUTPUT_PATH ../../bin/)
-set(LIBRARY_OUTPUT_PATH ../plugins)
+set(LIBRARY_OUTPUT_PATH ../plugins/hook)
 set(DOC_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/../doc/PluginHookStandard)
 set(DOCUMENT $ENV{gendoc})
+FIND_PACKAGE(PkgConfig)
+pkg_check_modules(DLT REQUIRED automotive-dlt)
 
 file(MAKE_DIRECTORY ${DOC_OUTPUT_PATH})
 
@@ -25,9 +25,11 @@ SET(PLUGIN_STANDARD_HOOKS_SRCS_CXX
 )
 
 add_library(PluginHookStandard SHARED ${PLUGIN_STANDARD_HOOKS_SRCS_CXX})
-add_library(PluginHookStandardStatic ${PLUGIN_STANDARD_HOOKS_SRCS_CXX})
 
-#TARGET_LINK_LIBRARIES(PluginHookStandard)
+TARGET_LINK_LIBRARIES(PluginHookStandard 
+	${DLT_LIBRARIES}
+)
+
 
 #add a target to generate API documentation with Doxygen
 find_package(Doxygen)

@@ -24,17 +24,12 @@
  */
 
 #include "HookEngine.h"
-
-/**
- * this path needs to be adjusted to whatever is suitable on the system
- */
-const char* hookPluginDirectories[] = { "/home/blacky/new_workspace/AudioManager/build/plugins"};
-uint hookPluginDirectoriesCount = sizeof(hookPluginDirectories) / sizeof(hookPluginDirectories[0]);
-
 #include <dirent.h>
 #include <dlfcn.h>
 #include <libgen.h>
 #include <unistd.h>
+
+DLT_DECLARE_CONTEXT(AudioManager);
 
 template<class T>T* getCreateFunction(std::string libname) {
 
@@ -83,6 +78,11 @@ template<class T>T* getCreateFunction(std::string libname) {
 	return createFunction;
 }
 
+/**
+ * this path needs to be adjusted to whatever is suitable on the system
+ */
+const char* hookPluginDirectories[] = { "/home/christian/workspace/gitserver/build/plugins/hook"};
+uint hookPluginDirectoriesCount = sizeof(hookPluginDirectories) / sizeof(hookPluginDirectories[0]);
 
 BaseHook::BaseHook() {
 }

@@ -92,9 +92,11 @@ public:
  */
 class RoutingSendInterface {
 public:
+
+	RoutingSendInterface();
+
 	/** destructor*/
-	virtual ~RoutingSendInterface() {
-	}
+	virtual ~RoutingSendInterface();
 
 	/** starts up the interface. In the implementations, here is the best place for
 	 * init routines.
@@ -171,23 +173,7 @@ public:
 	)=0;
 
 	/** signal that tells the plugin that the system is ready. Is used to trigger a registration of Domains, etc..*/
-	void slot_system_ready();
+	virtual void system_ready()=0;
 };
-
-/** Routing sendInterface Factory.
- * This is used for the Qt Plugin mechanism. The factory creates and returns a pointer to the
- * RoutingSendInterface.
- */
-class RoutingInterfaceFactory {
-public:
-	virtual ~RoutingInterfaceFactory() {
-	}
-
-	/** returns an Instance of RoutingSendInterface.
-	 * \return pointer to the instance.
-	 */
-	virtual RoutingSendInterface* returnInstance()=0;
-};
-
 
 #endif /* ROUTINGINTERFACE_H_ */

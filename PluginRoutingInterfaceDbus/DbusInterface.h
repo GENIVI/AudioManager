@@ -4,7 +4,7 @@
  *
  * PluginDBus
  *
- * \file DBusInterface.h
+ * \file RoutingSend.h
  *
  * \date 20.05.2011
  * \author Christian Müller (christian.ei.mueller@bmw.de)
@@ -22,35 +22,41 @@
  * Note that people who make modified versions of AudioManager are not obligated to grant this special exception for their modified versions; it is their choice whether to do so. The GNU Lesser General Public License, version 2.1, gives permission to release a modified version without this exception; this exception also makes it possible to release a modified version which carries forward this exception.
  */
 
-#ifndef DBUSINTERFACE_H_
-#define DBUSINTERFACE_H_
+#ifndef BUS_INTERFACE_H_
+#define BUS_INTERFACE_H_
 
-#include "DBusInterfaceAdaptor.h"
+#include "headers.h"
 #include "routinginterface.h"
 
-class DBusInterface: public QObject {
-	Q_OBJECT
-public:
-	DBusInterface(QObject *parent = 0);
-	void setReceiverInterface(RoutingReceiveInterface* r_interface);
-	void emitSystemReady();
+/**Implementation of the interface
+ *
+ */
+class DbusInterface: public RoutingSendInterface {
 
-public Q_SLOTS: // METHODS
-	int peekDomain(const QString &name);
-	int
-	registerDomain(const QString &name, const QString &node, bool earlymode);
-	int registerGateway(const QString &name, const QString &sink,
-			const QString &source, const QString &domainSource,
-			const QString &domainSink, const QString &controlDomain);
-	int registerSink(const QString &name, const QString &sinkclass,
-			const QString &domain);
-	int registerSource(const QString &name, const QString &audioclass,
-			const QString &domain);
-Q_SIGNALS: // SIGNALS
-	void signal_systemReady();
+public:
+	DbusInterface();
+	virtual ~DbusInterface();
+
+    void startup_interface(RoutingReceiveInterface * audioman);
+	void return_BusName(char * BusName);
+	connection_t connect(source_t source, sink_t sink, connection_t connID);
+	bool disconnect(connection_t connectionID);
+	volume_t setSinkVolume(volume_t volume, sink_t sink);
+	volume_t setSourceVolume(volume_t volume, source_t source);
+	bool muteSource(source_t sourceID);
+	bool muteSink(sink_t sinkID);
+	bool unmuteSource(source_t sourceID);
+	bool unmuteSink(sink_t sinkID);
+	void system_ready();
 
 private:
-	RoutingReceiveInterface* audiomanager;
+	RoutingReceiveInterface *m_audioman;
+	AudioManagerInterface* m_DbusInterface;
+	DBusConnection* m_conn;
+	char* m_busname;
+	char* m_path;
+
 };
 
-#endif /* DBUSINTERFACE_H_ */
+
+#endif /* BUS_INTERFACE_H_ */

@@ -54,12 +54,4 @@ public:
 
 };
 
-extern "C" BaseHook* PluginHookStandardFactory() {
-    return new StandardHookPlugin();
-}
-
-extern "C" void destroyPluginHookStandard(StandardHookPlugin* hook) {
-    delete hook;
-}
-
 #endif /* TEST_H_ */

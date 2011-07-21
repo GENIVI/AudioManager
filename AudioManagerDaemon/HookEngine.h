@@ -74,6 +74,9 @@ class BaseHook {
 public:
 	BaseHook();
 	virtual ~BaseHook();
+
+	void registerAudioManagerCore(AudioManagerCore* core);
+
 	/**This function is used to register the HookHandler in the plugin.
 	 *
 	 * @param engine pointer to the instance of the HookHandler
@@ -100,8 +103,6 @@ public:
 	 *  @return GEN_OK on success
 	 */
 	virtual genError_t returnPluginName(char* PluginName)=0;
-
-	void registerAudioManagerCore(AudioManagerCore* core);
 
 	virtual genHookResult_t hookDomainRegister(char* Name, domain_t ID) {
 		(void) Name;

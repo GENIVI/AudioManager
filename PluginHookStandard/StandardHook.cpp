@@ -242,3 +242,12 @@ genHookResult_t StandardHookPlugin::hookInterruptRequest (Queue* queue, source_t
 	return HOOK_OK;
 }
 
+extern "C" BaseHook* PluginHookStandardFactory() {
+    return new StandardHookPlugin();
+}
+
+extern "C" void destroyPluginHookStandard(StandardHookPlugin* hook) {
+    delete hook;
+}
+
+

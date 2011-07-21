@@ -169,7 +169,7 @@ sourceClass_t DataBaseHandler::insert_into_Source_Class_table(std::string ClassN
 	std::string command = "SELECT ID FROM " + std::string(SOURCE_CLASS_TABLE) + " WHERE ClassName='" + ClassName + "';";
 
 	if (SQexecute(command)) {
-		if (sqlite3_step(query)) {
+		if (sqlite3_step(query)==SQLITE_ROW) {
 			return sqlite3_column_int(query,0);
 		}
 	}
@@ -214,14 +214,14 @@ source_t DataBaseHandler::insert_into_Source_table(std::string Name, sourceClass
 	std::string command = "SELECT ID FROM " + std::string(SOURCE_TABLE) + " WHERE Name='" + Name + "';";
 
 	if (SQexecute(command)) {
-		if (sqlite3_step(query)) {
+		if (sqlite3_step(query)==SQLITE_ROW) {
 			return sqlite3_column_int(query,0);
 		}
 	}
 
 	command = "INSERT INTO " + std::string(SOURCE_TABLE) + " (Name, Class_ID, Domain_ID, IsGateway) VALUES ('" + Name + "'," + int2string(Class_ID) + ",'" + int2string(Domain_ID) + "','" + _IsGateway + "')";
 
-	if (sqlite3_step(query)) {
+	if (this->pQuery(command)!=true) {
 		return -1;
 	} else {
 		//emit signal_numberOfSourcesChanged();
@@ -240,7 +240,7 @@ sink_t DataBaseHandler::insert_into_Sink_table(std::string Name, sinkClass_t Cla
 	std::string command = "SELECT ID FROM " + std::string(SINK_TABLE) + " WHERE Name='" + Name + "';";
 
 	if (SQexecute(command)) {
-		if (sqlite3_step(query)) {
+		if (sqlite3_step(query)==SQLITE_ROW) {
 			return sqlite3_column_int(query,0);
 		}
 	}
@@ -259,7 +259,7 @@ gateway_t DataBaseHandler::insert_into_Gatway_table(std::string Name, sink_t Sin
 	std::string command = "SELECT ID FROM " + std::string(GATEWAY_TABLE) + " WHERE Name='" + Name + "';";
 
 	if (SQexecute(command)) {
-		if (sqlite3_step(query)) {
+		if (sqlite3_step(query)==SQLITE_ROW) {
 			return sqlite3_column_int(query,0);
 		}
 	}
@@ -320,7 +320,7 @@ genError_t DataBaseHandler::getInterruptDatafromID(const genInt_t intID, connect
 	if (SQexecute(command)!=true) {
 		return GEN_DATABASE_ERROR;
 	} else {
-		if (sqlite3_step(query)) {
+		if (sqlite3_step(query)==SQLITE_ROW) {
 			*return_connID = sqlite3_column_int(query,0);
 			*return_Sink_ID = sqlite3_column_int(query,1);
 			*return_Source_ID = sqlite3_column_int(query,2);
@@ -339,7 +339,7 @@ genError_t DataBaseHandler::removeInterrupt(const genInt_t intID) {
 	if (SQexecute(command) != true) {
 		return GEN_DATABASE_ERROR;
 	} else {
-		if (sqlite3_step(query)) {
+		if (sqlite3_step(query)==SQLITE_ROW) {
 			delete reinterpret_cast<std::list<source_t>*>(sqlite3_column_int(query,0));
 			command = "DELETE FROM " + std::string(INTERRUPT_TABLE) + " WHERE ID='" + int2string(intID) + "';";
 			if (!this->pQuery(command)) {
@@ -358,7 +358,7 @@ domain_t DataBaseHandler::peek_Domain_ID(std::string DomainName) {
 	std::string command = "SELECT ID FROM " + std::string(DOMAIN_TABLE) + " WHERE DomainName='" + DomainName + "';";
 
 	if (SQexecute(command)) {
-		if (sqlite3_step(query)) {
+		if (sqlite3_step(query)==SQLITE_ROW) {
 			return sqlite3_column_int(query,0);
 		} else {
 			command = "INSERT INTO " + std::string(DOMAIN_TABLE) + " (DomainName) VALUES ('" + DomainName + "')";
@@ -411,12 +411,16 @@ source_t DataBaseHandler::get_Source_ID_from_Name(std::string name) {
 sourceClass_t DataBaseHandler::get_Source_Class_ID_from_Name(std::string name) {
 	sqlite3_stmt* query;
 	std::string command = "SELECT ID FROM " + std::string(SOURCE_CLASS_TABLE) + " WHERE ClassName='" + name + "';";
-
-	if (SQexecute(command)) {
+	int p=0;
+	if (SQexecute(command)!=true) {
 		return -1;
 	} else {
-		sqlite3_step(query);
-		return sqlite3_column_int(query,0);
+		p=sqlite3_step(query);
+		if (p==SQLITE_ROW) {
+			return sqlite3_column_int(query,0);
+		} else {
+			p=p+1;
+		}
 	}
 }
 
@@ -424,7 +428,7 @@ domain_t DataBaseHandler::get_Domain_ID_from_Name(std::string name) {
 	sqlite3_stmt* query;
 	std::string command = "SELECT ID FROM " + std::string(DOMAIN_TABLE) + " WHERE DomainName='" + name + "';";
 
-	if (SQexecute(command)) {
+	if (SQexecute(command)!=true) {
 		return -1;
 	} else {
 		sqlite3_step(query);

@@ -13,6 +13,8 @@ cmake_minimum_required(VERSION 2.6)
 
 PROJECT(AudioManagerDeamon)
 
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Xlinker -export-dynamic")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
 set(CMAKE_CXX_FLAGS "-g -pipe -g -Wall -W -D_REENTRANT")
 
 set(STD_INCLUDE_DIRS "/usr/include")
@@ -27,8 +29,6 @@ file(MAKE_DIRECTORY ${DOC_OUTPUT_PATH})
 FIND_PACKAGE(PkgConfig)
 pkg_check_modules(SQLITE REQUIRED sqlite3)
 pkg_check_modules(DLT REQUIRED automotive-dlt)
-pkg_check_modules(JACK REQUIRED jack)
-
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR} ${STD_INCLUDE_DIRS})
 
 #all source files go here
@@ -40,46 +40,25 @@ SET(AUDIOMAN_SRCS_CXX
     main.cpp
     DBusCommandInterface.cpp
     HookEngine.cpp
+    routinginterface.cpp
 )
 
 INCLUDE_DIRECTORIES(
 	include
 	${CMAKE_SOURCE_DIR} 
 	${STD_INCLUDE_DIRS}
-	${JACK_INCLUDE_DIRS}
 	${CMAKE_CURRENT_BINARY_DIR}
-	${DBUS_FOLDER}
 	${DLT_INCLUDE_DIRS}
+	${DBUS_INCLUDE_DIR}
+	${DBUS_ARCH_INCLUDE_DIR}
 )
 
-LINK_DIRECTORIES(
-	${LINK_DIRECTORIES}
-	${PULSE_LIBRARY_DIRS}
-	${JACK_LIBRARY_DIRS}
-	${DBUS_FOLDER}
-	${PROJECT_BINARY_DIR}/../plugins
-)
 
 ADD_EXECUTABLE(AudioManager ${AUDIOMAN_SRCS_CXX})
 
 TARGET_LINK_LIBRARIES(AudioManager 
 	${SQLITE_LIBRARIES}
 	${DLT_LIBRARIES}
-)
-
-add_custom_command(
-	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} 
-	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/DBusCommand_.h ${CMAKE_CURRENT_BINARY_DIR}/DBusCommand.cpp
-	COMMAND qdbusxml2cpp ARGS -c DBusCommand -a DBusCommand.h:DBusCommand.cpp ${DBUS_FOLDER}/DBusAudioManager.xml
-	MAIN_DEPENDENCY ${DBUS_FOLDER}/DBusAudioManager.xml
-)
-
-
-add_custom_command(
-	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/DBusCommand.h
-	COMMAND sed ARGS -i  '1i \#include \"../../dbusInterfaces/DBusTypes.h\"' DBusCommand.h
-	MAIN_DEPENDENCY ${CMAKE_CURRENT_BINARY_DIR}/DBusCommand_.h
 )
 
 #add a target to generate API documentation with Doxygen

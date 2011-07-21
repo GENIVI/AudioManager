@@ -4,7 +4,7 @@
  *
  * PluginDBus
  *
- * \file RoutingSend.h
+ * \file DBusInterface.h
  *
  * \date 20.05.2011
  * \author Christian Müller (christian.ei.mueller@bmw.de)
@@ -22,53 +22,32 @@
  * Note that people who make modified versions of AudioManager are not obligated to grant this special exception for their modified versions; it is their choice whether to do so. The GNU Lesser General Public License, version 2.1, gives permission to release a modified version without this exception; this exception also makes it possible to release a modified version which carries forward this exception.
  */
 
-#ifndef BUS_INTERFACE_H_
-#define BUS_INTERFACE_H_
+#ifndef DBUSINTERFACE_H_
+#define DBUSINTERFACE_H_
 
-#include "routinginterface.h"
-#include "DBusInterface.h"
-#include "DBusSend.h"
-#include "dlt/dlt.h"
-#include <qplugin.h>
+#include "headers.h"
 
-#define BUS_NAME "DBUS"
+class AudioManagerInterface {
 
-/**Implementation of the interface
- *
- */
-class RoutingSend: public RoutingSendInterface {
-	Q_OBJECT
 public:
-	RoutingSend();
-	void startup_interface(RoutingReceiveInterface * audioman);
-	void return_BusName(char * BusName);
-	connection_t connect(source_t source, sink_t sink, connection_t connID);
-	bool disconnect(connection_t connectionID);
-	volume_t setSinkVolume(volume_t volume, sink_t sink);
-	volume_t setSourceVolume(volume_t volume, source_t source);
-	bool muteSource(source_t sourceID);
-	bool muteSink(sink_t sinkID);
-	bool unmuteSource(source_t sourceID);
-	bool unmuteSink(sink_t sinkID);
+	AudioManagerInterface(RoutingReceiveInterface* r_interface);
 
-public slots:
-	virtual void slot_system_ready();
+	bool startup_interface();
+    void stop();
+
+    void peekDomain(DBusConnection* conn, DBusMessage* msg);
+	void registerDomain(const char* &name, const char* &node, bool earlymode);
+	void registerGateway(const char* &name, const char* &sink, const char* &source, const char* &domainSource, const char* &domainSink, const char* &controlDomain);
+	void registerSink(const char* &name, const char* &sinkclass, const char* &domain);
+	void registerSource(DBusConnection* conn, DBusMessage* msg);
+	void emit_systemReady();
 
 private:
-	RoutingReceiveInterface *audiomanager;
-	DBusInterface* receiver;
-	QDBusConnection m_connection;
-	DBusSend m_sender;
+	static void* run(void * threadid);
+    pthread_t m_currentThread;
+    static AudioManagerInterface* m_reference;
+	RoutingReceiveInterface* m_audioman;
+	bool m_running;
 };
 
-//That is the actual implementation of the Factory Class returning the real sendInterface
-
-class SampleRoutingInterfaceFactory: public QObject,
-		public RoutingInterfaceFactory {
-	Q_OBJECT
-	Q_INTERFACES(RoutingInterfaceFactory)
-public:
-	RoutingSendInterface* returnInstance();
-};
-
-#endif /* BUS_INTERFACE_H_ */
+#endif /* DBUSINTERFACE_H_ */

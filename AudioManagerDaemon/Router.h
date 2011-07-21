@@ -30,6 +30,7 @@
 
 class DataBaseHandler;
 class RoutingReceiver;
+class AudioManagerCore;
 
 /**calculates routes from sinks to sources
  *  navigation for audio
@@ -188,6 +189,8 @@ public:
 	 */
 	void registerReceiver(RoutingReceiver* Receiver);
 
+	void registerCore (AudioManagerCore* core);
+
 	/**By calling this function the plugins are called to startup.
 	 * Init functions etc are done by the plugins in this phase
 	 */
@@ -216,6 +219,7 @@ private:
 
 	std::list<Bus> Busses; //!< list of all busses
 	RoutingReceiver* m_receiver; //!< pointer to the routing receiver
+	AudioManagerCore* m_core;
 };
 
 #endif /* ROUTER_H_ */

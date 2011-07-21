@@ -25,9 +25,16 @@
 
 #include <iostream>
 #include <stdio.h>
+#include <dirent.h>
+#include <dlfcn.h>
+#include <libgen.h>
+#include <unistd.h>
+#include <string>
 
-#include "DataBaseHandler.h"
-#include "Router.h"
+#include "audioManagerIncludes.h"
+
+const char* routingPluginDirectories[] = { "/home/christian/workspace/gitserver/build/plugins/routing"};
+uint routingPluginDirectoriesCount = sizeof(routingPluginDirectories) / sizeof(routingPluginDirectories[0]);
 
 Router::Router() {
 }
@@ -181,27 +188,99 @@ RoutingTreeItem* RoutingTree::returnRootItem() {
 	return &m_rootItem;
 }
 
+template<class T>T* getCreateFunction(std::string libname) {
+
+	// cut off directories
+	char* fileWithPath = const_cast<char*>(libname.c_str());
+	std::string libFileName = basename(fileWithPath);
+
+	// cut off "lib" in front and cut off .so end"
+	std::string createFunctionName = libFileName.substr(3, libFileName.length() - 6) + "Factory";
+	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Lib entry point name "),DLT_STRING(createFunctionName.c_str()));
+
+	// open library
+	void *libraryHandle;
+	dlerror(); // Clear any existing error
+	libraryHandle = dlopen(libname.c_str(), RTLD_NOW /*LAZY*/);
+	const char* dlopen_error = dlerror();
+	if (!libraryHandle || dlopen_error)
+	{
+		DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("dlopen failed"),DLT_STRING(dlopen_error));
+		return 0;
+	}
+
+	// get entry point from shared lib
+	dlerror(); // Clear any existing error
+	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("loading external function with name"),DLT_STRING(createFunctionName.c_str()));
+
+	union
+	{
+		void* voidPointer;
+		T* typedPointer;
+	} functionPointer;
+
+	// Note: direct cast is not allowed by ISO C++. e.g.
+	// T* createFunction = reinterpret_cast<T*>(dlsym(libraryHandle, createFunctionName.c_str()));
+	// compiler warning: "forbids casting between pointer-to-function and pointer-to-object"
+
+	functionPointer.voidPointer = dlsym(libraryHandle, createFunctionName.c_str());
+	T* createFunction = functionPointer.typedPointer;
+
+	const char* dlsym_error = dlerror();
+	if (!createFunction || dlsym_error)
+	{
+		DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Failed to load shared lib entry point"),DLT_STRING(dlsym_error));
+	}
+
+	return createFunction;
+}
+
+
 void Bushandler::load_Bus_plugins() {
-	RoutingSendInterface *b = NULL;
-	char BusName[40];
-	Bus newBus;
-//	foreach (QObject *plugin, QPluginLoader::staticInstances())
-//		{
-//			strcpy(BusName, "");
-//			RoutingInterfaceFactory* busInterfaceFactory = qobject_cast<
-//					RoutingInterfaceFactory *> (plugin);
-//			if (busInterfaceFactory) {
-//				b = busInterfaceFactory->returnInstance();
-//				b->return_BusName(BusName);
-//				newBus.Name = QString(BusName);
-//				newBus.sendInterface = b;
-//				Busses.append(newBus);
-//				QObject::connect((const QObject*) this,
-//						SIGNAL (signal_system_ready(void)), (const QObject*) b,
-//						SLOT(slot_system_ready(void)));
-//				DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Bushandler:Found new bus interface"), DLT_STRING(newBus.Name.toAscii()));
-//			}
-//		}
+	std::list<std::string> sharedLibraryNameList;
+
+	for (uint dirIndex = 0; dirIndex < routingPluginDirectoriesCount; ++dirIndex) {
+        const char* directoryName = routingPluginDirectories[dirIndex];
+        DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Searching for Routing in"),DLT_STRING(directoryName));
+        std::list<std::string> newList=m_core->getSharedLibrariesFromDirectory(directoryName);
+        sharedLibraryNameList.insert(sharedLibraryNameList.end(),newList.begin(),newList.end());
+    }
+
+
+    // iterate all communicator plugins and start them
+    std::list<std::string>::iterator iter = sharedLibraryNameList.begin();
+    std::list<std::string>::iterator iterEnd = sharedLibraryNameList.end();
+
+    for (; iter != iterEnd; ++iter)
+    {
+    	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Loading Routing plugin"),DLT_STRING(iter->c_str()));
+
+    	RoutingSendInterface* (*createFunc)();
+        createFunc = getCreateFunction<RoutingSendInterface*()>(*iter);
+
+        if (!createFunc) {
+            DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Entry point of Communicator not found"));
+            continue;
+        }
+
+        DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Hello"));
+        RoutingSendInterface* RoutingPlugin = createFunc();
+
+
+        if (!RoutingPlugin) {
+        	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("RoutingPlugin initialization failed. Entry Function not callable"));
+            continue;
+        }
+
+        Bus newBus;
+    	char BusName[40];
+        RoutingPlugin->return_BusName(BusName);
+        newBus.Name=std::string(BusName);
+        newBus.sendInterface=RoutingPlugin;
+        RoutingPlugin->startup_interface(m_receiver);
+		DLT_LOG( AudioManager, DLT_LOG_INFO, DLT_STRING("Registered Routing Plugin:"), DLT_STRING(BusName));
+        Busses.push_back(newBus);
+    }
 }
 
 void Bushandler::StartupInterfaces() {
@@ -215,6 +294,10 @@ void Bushandler::StartupInterfaces() {
 
 void Bushandler::registerReceiver(RoutingReceiver * receiver) {
 	m_receiver = receiver;
+}
+
+void Bushandler::registerCore (AudioManagerCore* core) {
+	m_core=core;
 }
 
 RoutingSendInterface* Bushandler::getInterfaceforBus(std::string bus) {
