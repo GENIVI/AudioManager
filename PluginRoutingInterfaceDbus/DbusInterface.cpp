@@ -78,7 +78,7 @@ connection_t DbusInterface::connect(source_t source, sink_t sink, connection_t c
 }
 
 void DbusInterface::system_ready() {
-	DLT_LOG(DBusPlugin, DLT_LOG_INFO, DLT_STRING("DBus Plugin ready"));
+	DLT_LOG(DBusPlugin, DLT_LOG_INFO, DLT_STRING("DBus Plugin got ready"));
 	m_DbusInterface->emit_systemReady();
 }
 

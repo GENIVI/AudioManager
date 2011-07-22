@@ -36,9 +36,9 @@ public:
     void stop();
 
     void peekDomain(DBusConnection* conn, DBusMessage* msg);
-	void registerDomain(const char* &name, const char* &node, bool earlymode);
-	void registerGateway(const char* &name, const char* &sink, const char* &source, const char* &domainSource, const char* &domainSink, const char* &controlDomain);
-	void registerSink(const char* &name, const char* &sinkclass, const char* &domain);
+	void registerDomain(DBusConnection* conn, DBusMessage* msg);
+	void registerGateway(DBusConnection* conn, DBusMessage* msg);
+	void registerSink(DBusConnection* conn, DBusMessage* msg);
 	void registerSource(DBusConnection* conn, DBusMessage* msg);
 	void emit_systemReady();
 

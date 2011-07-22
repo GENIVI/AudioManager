@@ -22,10 +22,8 @@
 using std::stringstream;
 
 
-
-
-DBUSIntrospection::DBUSIntrospection(MethodTable* methodTable)
-: m_methodTable(methodTable)
+DBUSIntrospection::DBUSIntrospection(MethodTable* methodTable, SignalTable* signalTable)
+: m_methodTable(methodTable), m_signalTable(signalTable)
 {
     generateString();
 }
@@ -35,7 +33,7 @@ void DBUSIntrospection::generateString()
 	DLT_LOG(DBusPlugin,DLT_LOG_ERROR, DLT_STRING("Generating instrospection data!"));
 
     addHeader();
-    openNode(DBUS_SERVICE_PREFIX);
+    openNode("");
     openInterface("org.freedesktop.DBus.Introspectable");
     openMethod("Introspect");
     addArgument("data", "out", "s");
@@ -52,10 +50,18 @@ void DBUSIntrospection::generateString()
         ++index;
     }
 
+    index=0;
+    if (m_signalTable) {
+        while (strcmp(m_signalTable[index].name, "") != 0)
+        {
+            SignalTable entry = m_signalTable[index];
+            addEntry(entry);
+            ++index;
+        }
+    }
     closeInterface();
-
     closeNode();
-    //LOG_DEBUG("DBUSCommunicator", "generated introspection data");
+
 }
 
 void DBUSIntrospection::addHeader(void)
@@ -78,6 +84,10 @@ void DBUSIntrospection::openInterface(string interfacename)
 void DBUSIntrospection::openMethod(string methodname)
 {
     m_introspectionString << "<method name=\"" << methodname << "\">  \n";
+}
+
+void DBUSIntrospection::addSignal(string signalname) {
+	m_introspectionString<<"<signal name=\"" << signalname << "\">  \n";
 }
 
 void DBUSIntrospection::addArgument(string argname, string direction, string type)
@@ -139,6 +149,28 @@ void DBUSIntrospection::addEntry(MethodTable entry)
     }
 
     closeMethod();
+}
+
+void DBUSIntrospection::addEntry(SignalTable entry)
+{
+    string methodName = entry.name;
+    string parameterArray = entry.signature;
+
+    addSignal(methodName);
+
+    for(uint parameterIndex = 0; parameterIndex < parameterArray.length(); ++parameterIndex)
+    {
+        switch (parameterArray.at(parameterIndex))
+        {
+            case 'a':
+                parameterIndex++;
+                addArgument("", "in", "a" + parameterArray.at(parameterIndex));
+                break;
+            default:
+                addArgument("param", "in", parameterArray.substr(parameterIndex,1));
+                break;
+        }
+    }
 }
 
 void DBUSIntrospection::process(DBusConnection* conn, DBusMessage* msg)

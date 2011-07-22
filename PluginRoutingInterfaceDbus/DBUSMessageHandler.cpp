@@ -23,7 +23,7 @@ DBUSMessageHandler::DBUSMessageHandler()
     	DLT_LOG(DBusPlugin,DLT_LOG_INFO, DLT_STRING("DBUSCommunicator Connection is null"));
         exit(1);
     }
-    int ret = dbus_bus_request_name(m_pConnection, DBUS_SERVICE_PREFIX, DBUS_NAME_FLAG_REPLACE_EXISTING, &m_err);
+    int ret = dbus_bus_request_name(m_pConnection,DBUS_SERVICE_PREFIX, DBUS_NAME_FLAG_REPLACE_EXISTING, &m_err);
     if (dbus_error_is_set(&m_err))
     {
     	DLT_LOG(DBusPlugin,DLT_LOG_INFO, DLT_STRING("DBUSCommunicator Name Error"),DLT_STRING(m_err.message));

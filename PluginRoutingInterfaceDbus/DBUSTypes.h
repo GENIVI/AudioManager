@@ -33,4 +33,9 @@ struct MethodTable
     CallBackMethod function;
 };
 
+struct SignalTable {
+	const char* name;
+	const char* signature;
+};
+
 #endif // _DBUSTYPES_H_

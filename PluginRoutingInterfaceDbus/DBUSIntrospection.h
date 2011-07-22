@@ -32,7 +32,7 @@ using std::string;
 class DBUSIntrospection
 {
 public:
-    DBUSIntrospection(MethodTable* table);
+    DBUSIntrospection(MethodTable* table, SignalTable* stable);
     void process(DBusConnection* conn, DBusMessage* msg);
 
 private:
@@ -41,6 +41,7 @@ private:
     void addHeader(void);
     void addArgument(string argname, string direction, string type);
     void addEntry(MethodTable entry);
+    void addEntry(SignalTable entry);
 
     void openNode(string nodename);
     void closeNode(void);
@@ -51,10 +52,13 @@ private:
     void openMethod(string methodname);
     void closeMethod(void);
 
+    void addSignal(string signalname);
+
 
 private:
     stringstream m_introspectionString;
     MethodTable* m_methodTable;
+    SignalTable* m_signalTable;
 };
 
 

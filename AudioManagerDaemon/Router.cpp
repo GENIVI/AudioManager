@@ -284,12 +284,14 @@ void Bushandler::load_Bus_plugins() {
 }
 
 void Bushandler::StartupInterfaces() {
-//	foreach (Bus bus, Busses)
-//		{
-//			bus.sendInterface->startup_interface(m_receiver);
-//			DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Bushandler:Started Interface"), DLT_STRING(bus.Name.toAscii()));
-//		}
-//	emit signal_system_ready();
+	std::list<Bus>::iterator busIter;
+	std::list<Bus>::iterator busStart=Busses.begin();
+	std::list<Bus>::iterator busEnd=Busses.end();
+
+	for (busIter=busStart;busIter!=busEnd;busIter++) {
+		busIter->sendInterface->system_ready();
+		DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Bushandler:Started Interface"), DLT_STRING(busIter->Name.c_str()));
+	}
 }
 
 void Bushandler::registerReceiver(RoutingReceiver * receiver) {

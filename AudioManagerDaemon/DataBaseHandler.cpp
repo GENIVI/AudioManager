@@ -132,7 +132,7 @@ domain_t DataBaseHandler::insert_into_Domains_table(std::string DomainName, std:
 
 	std::string command = "SELECT BusName,ID FROM " + std::string(DOMAIN_TABLE) + " WHERE DomainName='" + DomainName + "'";
 
-	if (sqlite3_exec(m_database,command.c_str(),NULL,&query,NULL)!= SQLITE_OK) {
+	if (SQexecute(command)) {
 		if (sqlite3_step(query)==SQLITE_ROW) {
 			std::string name((const char*) sqlite3_column_text(query,0));
 			if (!name.empty()) {
@@ -141,7 +141,7 @@ domain_t DataBaseHandler::insert_into_Domains_table(std::string DomainName, std:
 				command = "UPDATE " + std::string(DOMAIN_TABLE) + "SET Busname=" + BusName + " Nodename=" + NodeName + " EarlyMode=" + _EarlyMode + " WHERE DomainName=" + DomainName;
 			}
 		} else {
-			command = "INSERT INTO " + std::string(DOMAIN_TABLE) + " (DomainName, BusName, NodeName, EarlyMode) VALUES ('" + DomainName + "','" + BusName + "'','" + NodeName + "','" + _EarlyMode + "')";
+			command = "INSERT INTO " + std::string(DOMAIN_TABLE) + " (DomainName, BusName, NodeName, EarlyMode) VALUES ('" + DomainName + "','" + BusName + "','" + NodeName + "','" + _EarlyMode + "')";
 		}
 	}
 
