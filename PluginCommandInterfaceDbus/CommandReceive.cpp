@@ -30,45 +30,50 @@
 #include <signal.h>
 #include <errno.h>
 
-class AudioManagerInterface;
+class CommandReceive;
 
 
-AudioManagerInterface* AudioManagerInterface::m_reference = NULL;
+CommandReceive* CommandReceive::m_reference = NULL;
 
 static DBUSMessageHandler* g_pDbusMessage;
 
 static MethodTable manager_methods[] =
 {
-	{ "peekDomain",        "s",    "u",     &AudioManagerInterface::peekDomain },
-	{ "registerSource",    "sss",  "u",     &AudioManagerInterface::registerSource },
-	{ "registerSink",      "sss",    "u",  	&AudioManagerInterface::registerSink },
-	{ "registerDomain",    "sssb",   "u",  	&AudioManagerInterface::registerDomain },
-	{ "registerGateway",      "sssss",    "u",  	&AudioManagerInterface::registerGateway },
+	{ "connect",        		"uu",    	"u",    	&CommandReceive::connect },
+	{ "disconnect",    			"uu",  		"u",    	&CommandReceive::disconnect },
+	{ "getListConnections",     "",    		"a{ii}",  	&CommandReceive::getListConnections },
+	{ "getListSinks",    		"",   		"a{si}",  	&CommandReceive::getListSinks },
+	{ "getListSources",      	"",    		"a{si}",  	&CommandReceive::getListSources },
+	{ "interruptRequest",      	"ss",    	"u",  		&CommandReceive::interruptRequest },
+	{ "interruptResume",    	"s",   		"u",  		&CommandReceive::interruptResume },
+	{ "setVolume",      		"ss",	    "u",  		&CommandReceive::setVolume },
 	{ "",                  "",      "",     NULL }
 };
 
 static SignalTable manager_signals[] = {
-	{ "signal_systemReady",  	""},
+	{ "signal_connectionChanged",  	""},
+	{ "signal_numberOfSinksChanged",  	""},
+	{ "signal_numberOfSourcesChanged",  	""},
 	{ "",                  		""}
 };
 
 
-AudioManagerInterface::AudioManagerInterface(RoutingReceiveInterface* r_interface) : m_audioman(r_interface),m_running(false) {
+CommandReceive::CommandReceive(RoutingReceiveInterface* r_interface) : m_audioman(r_interface),m_running(false) {
 }
 
-bool AudioManagerInterface::startup_interface()
+bool CommandReceive::startup_interface()
 {
 	DLT_LOG(DBusPlugin, DLT_LOG_INFO, DLT_STRING("Starting up dbus connector"));
 
     g_pDbusMessage = new DBUSMessageHandler();
 	DLT_LOG(DBusPlugin,DLT_LOG_INFO, DLT_STRING("create thread"));
     this->m_running = true;
-    pthread_create(&m_currentThread, NULL, AudioManagerInterface::run, this);
+    pthread_create(&m_currentThread, NULL, CommandReceive::run, this);
 	DLT_LOG(DBusPlugin, DLT_LOG_INFO, DLT_STRING("Started dbus connector"));
     return true;
 }
 
-void AudioManagerInterface::stop()
+void CommandReceive::stop()
 
 {
 	DLT_LOG(DBusPlugin, DLT_LOG_INFO, DLT_STRING("Stopped dbus connector"));
@@ -77,83 +82,61 @@ void AudioManagerInterface::stop()
     delete g_pDbusMessage;
 }
 
-void AudioManagerInterface::peekDomain(DBusConnection* conn, DBusMessage* msg) {
+void CommandReceive::connect(DBusConnection* conn, DBusMessage* msg) {
 	(void)conn; // TODO: remove, only prevents warning
 	g_pDbusMessage->initReceive(msg);
-	char* name = g_pDbusMessage->getString();
-	domain_t domain = m_audioman->peekDomain(name);
+	source_t source = g_pDbusMessage->getUInt();
+	sink_t sink = g_pDbusMessage->getUInt();
+	connection_t connect=m_audioman->connect(source, sink);
 	g_pDbusMessage->initReply(msg);
-	g_pDbusMessage->appendUInt(domain);
-	g_pDbusMessage->closeReply();
-}
-
-void AudioManagerInterface::registerSource(DBusConnection* conn, DBusMessage* msg) {
-	(void)conn; // TODO: remove, only prevents warning
-	g_pDbusMessage->initReceive(msg);
-	char* name = g_pDbusMessage->getString();
-	char* audioclass = g_pDbusMessage->getString();
-	char* domain = g_pDbusMessage->getString();
-	source_t source=m_audioman->registerSource(name, audioclass, domain);
-	g_pDbusMessage->initReply(msg);
-	g_pDbusMessage->appendUInt(source);
-	g_pDbusMessage->closeReply();
-}
-void AudioManagerInterface::registerSink(DBusConnection* conn, DBusMessage* msg) {
-	(void)conn; // TODO: remove, only prevents warning
-	g_pDbusMessage->initReceive(msg);
-	char* name = g_pDbusMessage->getString();
-	char* audioclass = g_pDbusMessage->getString();
-	char* domain = g_pDbusMessage->getString();
-	sink_t sink=m_audioman->registerSink(name, audioclass, domain);
-	g_pDbusMessage->initReply(msg);
-	g_pDbusMessage->appendUInt(sink);
-	g_pDbusMessage->closeReply();
-}
-
-void AudioManagerInterface::registerDomain(DBusConnection* conn, DBusMessage* msg) {
-	char busname[40];
-	strcpy(busname, BUS_NAME);
-	(void)conn; // TODO: remove, only prevents warning
-	g_pDbusMessage->initReceive(msg);
-	char* name = g_pDbusMessage->getString();
-	char* node = g_pDbusMessage->getString();
-	bool earlymode = g_pDbusMessage->getString();
-	domain_t domain=m_audioman->registerDomain(name, busname, node, earlymode);
-	g_pDbusMessage->initReply(msg);
-	g_pDbusMessage->appendUInt(domain);
+	g_pDbusMessage->appendUInt(connect);
 	g_pDbusMessage->closeReply();
 
 }
-void AudioManagerInterface::registerGateway(DBusConnection* conn, DBusMessage* msg) {
+void CommandReceive::disconnect(DBusConnection* conn, DBusMessage* msg) {
 	(void)conn; // TODO: remove, only prevents warning
 	g_pDbusMessage->initReceive(msg);
-	char* name = g_pDbusMessage->getString();
-	char* sink = g_pDbusMessage->getString();
-	char* source = g_pDbusMessage->getString();
-	char* domainSource = g_pDbusMessage->getString();
-	char* domainSink = g_pDbusMessage->getString();
-	char* controlDomain = g_pDbusMessage->getString();
-	domain_t domain=m_audioman->registerGateway(name, sink, source, domainSource, domainSink, controlDomain);
+	source_t source = g_pDbusMessage->getUInt();
+	sink_t sink = g_pDbusMessage->getUInt();
+	connection_t connect=m_audioman->disconnect(source, sink);
 	g_pDbusMessage->initReply(msg);
-	g_pDbusMessage->appendUInt(domain);
+	g_pDbusMessage->appendUInt(connect);
 	g_pDbusMessage->closeReply();
-	emit_systemReady();
-}
-void AudioManagerInterface::emit_systemReady() {
-	DBusMessage* msg;
-	DBusConnection* conn = g_pDbusMessage->getConnection();
-	dbus_uint32_t serial = 0;
-	msg =dbus_message_new_signal("/org/genivi/audiomanager/RoutingInterface",DBUS_SERVICE_PREFIX,"signal_systemReady");
-	if (!dbus_connection_send(conn, msg, &serial)) {
-		DLT_LOG(DBusPlugin, DLT_LOG_INFO, DLT_STRING("error while sending signal system ready on dbus"));
-	}
-	dbus_connection_flush(conn);
 }
 
-void* AudioManagerInterface::run(void * arg)
+void CommandReceive::getListConnections(DBusConnection* conn, DBusMessage* msg) {
+	(void)conn; // TODO: remove, only prevents warning
+	std::list<ConnectionType> list=m_audioman->getListConnections();
+	g_pDbusMessage->initReply(msg);
+	g_pDbusMessage->appendArrayOfStringString()
+	g_pDbusMessage->closeReply();
+
+}
+
+void CommandReceive::getListSinks(DBusConnection* conn, DBusMessage* msg) {
+
+}
+
+void CommandReceive::getListSources(DBusConnection* conn, DBusMessage* msg) {
+
+}
+
+void CommandReceive::interruptRequest(DBusConnection* conn, DBusMessage* msg) {
+
+}
+
+void CommandReceive::interruptResume(DBusConnection* conn, DBusMessage* msg) {
+
+}
+
+void CommandReceive::setVolume(DBusConnection* conn, DBusMessage* msg) {
+
+}
+
+void* CommandReceive::run(void * arg)
 {
 	DLT_LOG(DBusPlugin, DLT_LOG_INFO, DLT_STRING("Main loop running"));
-    m_reference = (AudioManagerInterface*) arg;
+    m_reference = (CommandReceive*) arg;
     DBusMessage* msg = 0;
     DBusConnection* conn = g_pDbusMessage->getConnection();
     while (m_reference->m_running && dbus_connection_read_write_dispatch(conn, -1))

@@ -1,11 +1,9 @@
 /**
- * Copyright (C) 2011, BMW AG
+ * \mainpage
+ * \image html "Bild1.png"
+ * Copyright Copyright (C) 2011, BMW AG
  *
- * AudioManangerDeamon
- *
- * \file DBusCommandInterface.h
- *
- * \date 20.05.2011
+ * \date 22.06.2011
  * \author Christian Müller (christian.ei.mueller@bmw.de)
  *
  * \section License
@@ -20,54 +18,17 @@
  * As a special exception, the copyright holders of AudioManager give you permission to combine AudioManager with software programs or libraries that are released under any license unless such a combination is not permitted by the license of such a software program or library. You may copy and distribute such a system following the terms of the GNU Lesser General Public License, version 2.1, including this special exception, for AudioManager and the licenses of the other code concerned.
  * Note that people who make modified versions of AudioManager are not obligated to grant this special exception for their modified versions; it is their choice whether to do so. The GNU Lesser General Public License, version 2.1, gives permission to release a modified version without this exception; this exception also makes it possible to release a modified version which carries forward this exception.
  *
+ * \section About About PluginInterfaceDBus
+ * This plugin for the Genivi AudioManager serves as interface for DBus.
  *
+ * \section Info More information
+ * can be found at <https://collab.genivi.org/wiki/display/genivi/GENIVI+Home>
+ *
+ * \todo enhance Interface
  */
 
-#ifndef DBUSCOMMANDINTERFACE_H_
-#define DBUSCOMMANDINTERFACE_H_
-
-#include "audioManagerIncludes.h"
+#ifndef MAINPAGE_H_
+#define MAINPAGE_H_
 
 
-#define SERVICEINTERFACE "org.Genivi.ControllerInterface"
-
-class AudioManagerCore;
-
-/**The interface towards the HMI
- * This class is copied from DBusCommand.h which is generated out of DBusAudioManager.xml. It handles the communication towards the HMI.
- * It also implements some Application logic that needs to be triggered to execute the actions demanded by the HMI.
- * TODO: make a clear seperation between HMI Interface and Application Logic
- */
-class DBusCommandInterface  {
-
-public:
-	DBusCommandInterface();
-	void registerAudioManagerCore(AudioManagerCore* core);
-	void startupInterface();
-
-	void slot_connectionChanged();
-	void slot_numberOfSinksChanged();
-	void slot_numberOfSourcesChanged();
-
-	// METHODS
-	int connect(int Source_ID, int Sink_ID);
-	int disconnect(int Source_ID, int Sink_ID);
-	std::list<ConnectionType> getListConnections();
-	std::list<SinkType> getListSinks();
-	std::list<SourceType> getListSources();
-	int interruptRequest(const std::string &SourceName, const std::string &SinkName);
-	int interruptResume(int InterruptID);
-	int setVolume(int SinkID, int Volume);
-
-	void signal_connectionChanged();
-	void signal_numberOfSinksChanged();
-	void signal_numberOfSourcesChanged();
-
-	void signal_interruptResume(genInt_t interruptID);
-
-private:
-	std::list<int> getSourceIDsForSinkID(int SinkID);
-	AudioManagerCore* m_core;
-};
-
-#endif /* DBUSCOMMANDINTERFACE_H_ */
+#endif /* MAINPAGE_H_ */

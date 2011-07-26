@@ -30,6 +30,16 @@ public:
     DBUSMessageHandler();
     ~DBUSMessageHandler();
 
+    struct stringAndUInt {
+    	std::string string;
+    	unsigned int integer;
+    };
+
+    struct stringString {
+    	std::string string1;
+    	std::string string2;
+    };
+
     void setConnection(DBusConnection* conn);
     DBusConnection* getConnection();
 
@@ -52,7 +62,8 @@ public:
     void appendBool(dbus_bool_t toAppend);
     void appendDouble(double toAppend);
     void appendArrayOfUInt(unsigned int length, unsigned int *IDs);
-
+    void appendArrayOfStringUInt(std::list<stringAndUInt> list);
+    void appendArrayOfStringString(std::list<stringString> list);
     void sendSignal(const char* name,const char* signal);
 
 private:
@@ -73,11 +84,5 @@ inline DBusConnection* DBUSMessageHandler::getConnection()
 {
     return m_pConnection;
 }
-
-void DBUSMessageHandler::appendArrayOfStringString(std::list<stringString> list)
-{
-}
-
-
 
 #endif // _DBUSMESSAGEWRAPPER_H_

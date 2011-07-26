@@ -35,48 +35,28 @@ class RoutingSendInterface;
  */
 class RoutingReceiveInterface {
 public:
-	/** destructor*/
-	virtual ~RoutingReceiveInterface() {
-	}
-
-	/** Registers a Domain at the Audiomanager.
-	 *  \return a unique ID of the domain	*/
-	virtual domain_t registerDomain(char* name, /**< the name of the domain. Must be unique in the system*/
-	char* busname, /**< the name of the bus that is used laster to talk to the domain*/
-	char* node, /**< the nonde of the bus*/
-	bool earlymode /**< true if the domain is in earlymode*/
-	)=0;
+	/**
+	 * What happens now?
+	 */
+	virtual domain_t registerDomain(char* name, char* busname, char* node, bool earlymode) =0;
 
 	/** Registers a Gateway at the Audiomanager
 	 * \return a unique ID of the gateway	*/
-	virtual gateway_t registerGateway(char* name, /**< the name of the gateway. Should be unique in the system*/
-	char* sink, /**< the name of the sink (on the emitting side)*/
-	char* source, /**< the name of the source (on the receiving side)*/
-	char *domainSource, /**< the domain of the source*/
-	char* domainSink, /**< the domain of the sink*/
-	char* controlDomain /**< the controlling domain*/
-	)=0;
+	virtual gateway_t registerGateway(char* name, char* sink, char* source, char* domainSource, char* domainSink, char* controlDomain) =0;
 
 	/** registers a Sink at the Audiomanager
 	 * \return a unique ID of the sink.*/
-	virtual sink_t registerSink(char* name, /**< the name of the sink to be registered. Sink names must be unique within a Domain*/
-	char* sinkclass, /**< the name of the class. Must be valid otherwise registration fails*/
-	char* domain /**< the domain name of the sink*/
-	)=0;
+	virtual sink_t registerSink(char* name, char* sinkclass, char* domain) =0;
 
 	/** registers a Source at the Audiomanager *
 	 * \return unique ID of the source	*/
-	virtual source_t registerSource(char* name, /**< the name of the source to be registered. Source names must be unique wihin the Domain*/
-	char* audioclass, /**< the name of the class. If not existend, default will be used.*/
-	char* domain /**< the domain of the sink*/
-	)=0;
+	virtual source_t registerSource(char* name, char* audioclass, char* domain) =0;
 
 	/** just get the ID of a domain without registering it. This is used to register Gateways.
 	 * During the time of registration it is unclear if the other Domain already exists. This function will either
 	 * return the already existing ID or reserve an ID with is then used later when the domain is registered. *
 	 * \return the unique Id of the domain.	*/
-	virtual domain_t peekDomain(char* name /**< the name of the domain*/
-	)=0;
+	virtual domain_t peekDomain(char* name) =0;
 
 	/**Acknowledgement of a connect. This function shall be called when a connect event is finished
 	 *
@@ -84,6 +64,10 @@ public:
 	 * @param error	reads GEN_OK on success, other errors in case of problems
 	 */
 	virtual void ackConnect(genHandle_t handle, genError_t error)=0;
+	/**
+	 * Just check me out I am the comment
+	 */
+	virtual void ackDisconnect(genHandle_t handle, genError_t error);
 
 };
 
@@ -92,8 +76,6 @@ public:
  */
 class RoutingSendInterface {
 public:
-
-	RoutingSendInterface();
 
 	/** destructor*/
 	virtual ~RoutingSendInterface();
@@ -107,73 +89,68 @@ public:
 	/** connect a source to a sink
 	 *  \return the unique ID of the connection.
 	 */
-	virtual connection_t connect(source_t source, /**< the ID of the source*/
-	sink_t sink, /**< the ID of the sink*/
-	connection_t con_ID /**< the ID of the connection*/
-	)=0;
+	virtual genError_t connect(source_t source, sink_t sink, connection_t con_ID) =0;
 
 	/** disconnect a connection
 	 * 	\return true on success
 	 */
-	virtual bool disconnect(connection_t connection_ID /**< the ID of the connection*/
-	)=0;
+	virtual genError_t disconnect(connection_t connection_ID) =0;
 
 	/** this method is used to retrieve the busname during startup of the plugin.
 	 * 	Needs to be implemented
 	 */
-	virtual void return_BusName(char* BusName /**< pointer to the Busname that needs to be returned*/
-	)=0;
+	virtual void return_BusName(char* BusName) =0;
 
 	/** this method is used to set the volume of a sink
 	 *  \return returns the new value or -1 on error or impossible.
 	 *  It is not mandatory that a Plugin implements this feature.
 	 */
-	virtual volume_t setSinkVolume(volume_t volume, /**< new volume */
-	sink_t sinkID /**< sinkID to change */
-	)=0;
+	virtual genError_t setSinkVolume(volume_t volume, sink_t sinkID) =0;
 
 	/** this method is used to set the volume of a source
 	 *  \return returns the new value or -1 on error or impossible.
 	 *  It is not mandatory that a Plugin implements this feature.
 	 */
-	virtual volume_t setSourceVolume(volume_t volume, /**< new volume */
-	source_t sourceID /**< sourceID to change */
-	)=0;
+	virtual genError_t setSourceVolume(volume_t volume, source_t sourceID) =0;
 
 	/** this method is used to mute a source
 	 *
 	 * \return true if succeeded
 	 * \todo add error codes to answers
 	 */
-	virtual bool muteSource(source_t sourceID /**< SourceID to be muted */
-	)=0;
+	virtual genError_t muteSource(source_t sourceID) =0;
 
 	/** this method is used to mute a sink
 	 *
 	 * \return true if succeeded
 	 * \todo add error codes to answers
 	 */
-	virtual bool muteSink(sink_t sinkID /**< SinkID to be muted */
-	)=0;
+	virtual genError_t muteSink(sink_t sinkID) =0;
 
 	/** this method is used to unmute a source
 	 *
 	 * \return true if succeeded
 	 * \todo add error codes to answers
 	 */
-	virtual bool unmuteSource(source_t sourceID /**< SourceID to be unmuted */
-	)=0;
+	virtual genError_t unmuteSource(source_t sourceID) =0;
 
 	/** this method is used to unmute a sink
 	 *
 	 * \return true if succeeded
 	 * \todo add error codes to answers
 	 */
-	virtual bool unmuteSink(sink_t sinkID /**< SinkID to be unmuted */
-	)=0;
+	virtual genError_t unmuteSink(sink_t sinkID) =0;
 
 	/** signal that tells the plugin that the system is ready. Is used to trigger a registration of Domains, etc..*/
 	virtual void system_ready()=0;
+	/**
+	 * connect a source to a sink \return the unique ID of the connection.
+	 */
+	virtual genError_t asyncConnect(source_t source, sink_t sink, connection_t con_ID) =0;
+	/**
+	 * disconnect a connection \return true on success
+	 */
+	virtual genError_t asyncDisconnect(connection_t connection_ID) =0;
 };
 
 #endif /* ROUTINGINTERFACE_H_ */

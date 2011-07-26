@@ -35,12 +35,11 @@ INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR} ${STD_INCLUDE_DIRS})
 SET(AUDIOMAN_SRCS_CXX
 	AudioManagerCore.cpp
     RoutingReceive.cpp
+    CommandReceive.cpp
     Router.cpp 
     DataBaseHandler.cpp
     main.cpp
-    DBusCommandInterface.cpp
     HookEngine.cpp
-    routinginterface.cpp
 )
 
 INCLUDE_DIRECTORIES(

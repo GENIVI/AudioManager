@@ -39,14 +39,16 @@ public:
 
     void startup_interface(RoutingReceiveInterface * audioman);
 	void return_BusName(char * BusName);
-	connection_t connect(source_t source, sink_t sink, connection_t connID);
-	bool disconnect(connection_t connectionID);
-	volume_t setSinkVolume(volume_t volume, sink_t sink);
-	volume_t setSourceVolume(volume_t volume, source_t source);
-	bool muteSource(source_t sourceID);
-	bool muteSink(sink_t sinkID);
-	bool unmuteSource(source_t sourceID);
-	bool unmuteSink(sink_t sinkID);
+	genError_t connect(source_t source, sink_t sink, connection_t connID);
+	genError_t disconnect(connection_t connectionID);
+	genError_t setSinkVolume(volume_t volume, sink_t sink);
+	genError_t setSourceVolume(volume_t volume, source_t source);
+	genError_t muteSource(source_t sourceID);
+	genError_t muteSink(sink_t sinkID);
+	genError_t unmuteSource(source_t sourceID);
+	genError_t unmuteSink(sink_t sinkID);
+	genError_t asyncConnect(source_t source, sink_t sink, connection_t con_ID);
+	virtual genError_t asyncDisconnect(connection_t connection_ID);
 	void system_ready();
 
 private:

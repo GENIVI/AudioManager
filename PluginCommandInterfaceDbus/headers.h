@@ -19,10 +19,10 @@
 
 
 #define BUS_NAME "DBUS"
-#define DBUS_BUSNAME "org.genivi.command"
+#define DBUS_BUSNAME "org.genivi.pulse"
 #define DBUS_PATH "/pulse"
 
-const char DBUS_SERVICE_PREFIX[] = "org.genivi.audiomanagerCommand\0";
+const char DBUS_SERVICE_PREFIX[] = "org.genivi.audiomanagerRouting\0";
 
 DLT_IMPORT_CONTEXT(DBusPlugin);
 

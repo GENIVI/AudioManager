@@ -454,7 +454,7 @@ RoutingReceiver* AudioManagerCore::returnReceiver() {
 	return m_receiver;
 }
 
-DBusCommandInterface* AudioManagerCore::returnCommandInterface() {
+CommandInterface* AudioManagerCore::returnCommandInterface() {
 	return m_command;
 }
 
@@ -478,7 +478,7 @@ void AudioManagerCore::registerReceiver(RoutingReceiver* receiver) {
 	m_receiver = receiver;
 }
 
-void AudioManagerCore::registerCommandInterface(DBusCommandInterface* command) {
+void AudioManagerCore::registerCommandInterface(CommandInterface* command) {
 	m_command = command;
 }
 

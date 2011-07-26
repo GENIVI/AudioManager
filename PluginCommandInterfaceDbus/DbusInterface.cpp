@@ -48,7 +48,7 @@ DbusInterface::~DbusInterface() {
 
 void DbusInterface::startup_interface(RoutingReceiveInterface* audioman) {
 	m_audioman = audioman;
-	m_DbusInterface = new AudioManagerInterface(audioman);
+	m_DbusInterface = new CommandReceive(audioman);
 	m_DbusInterface->startup_interface();
 
 	DBusError err;

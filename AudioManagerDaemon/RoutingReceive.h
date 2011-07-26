@@ -36,11 +36,11 @@ class DataBaseHandler;
 class RoutingReceiver: public RoutingReceiveInterface {
 
 public:
+	virtual ~RoutingReceiver() {}
 	void register_Databasehandler(DataBaseHandler* handler_); //is used to register the Database handler
 
 	int registerDomain(char* name, char* busname, char* node, bool earlymode);
-	int registerGateway(char* name, char* sink, char* source,
-			char *domainSource, char* domainSink, char* controlDomain);
+	int registerGateway(char* name, char* sink, char* source, char *domainSource, char* domainSink, char* controlDomain);
 	int registerSink(char* name, char* sinkclass, char* domain);
 	int registerSource(char* name, char* audioclass, char* domain);
 	int peekDomain(char* name);

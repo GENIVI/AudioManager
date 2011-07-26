@@ -39,7 +39,7 @@ class AudioManagerCore;
 class Queue;
 class Router;
 class Bushandler;
-class DBusCommandInterface;
+class CommandInterface;
 
 /**
  * \class Task
@@ -594,14 +594,14 @@ public:
 	Router* returnRouter();
 	DataBaseHandler* returnDatabaseHandler();
 	RoutingReceiver* returnReceiver();
-	DBusCommandInterface* returnCommandInterface();
+	CommandInterface* returnCommandInterface();
 
 	void registerDatabasehandler(DataBaseHandler * handler);
 	void registerRouter(Router* router);
 	void registerBushandler(Bushandler* handler);
 	void registerHookEngine(HookHandler* handler);
 	void registerReceiver(RoutingReceiver* receiver);
-	void registerCommandInterface(DBusCommandInterface* command);
+	void registerCommandInterface(CommandInterface* command);
 
 	void addQueue(Queue* queue);
 	genError_t removeQueue(Queue* queue);
@@ -619,7 +619,7 @@ private:
 	Bushandler* m_busHandler; //!< pointer to the Bushandler Class
 	HookHandler* m_hookHandler; //!< pointer to the HookHandler CLass
 	RoutingReceiver* m_receiver; //!< pointer to the Routing receiver Class
-	DBusCommandInterface* m_command; //!< pointer to the command Interface Class
+	CommandInterface* m_command; //!< pointer to the command Interface Class
 
 	std::list<Queue*> m_queueList; //!< List of pointers to all running queues
 };

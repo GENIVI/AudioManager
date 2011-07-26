@@ -263,7 +263,6 @@ void Bushandler::load_Bus_plugins() {
             continue;
         }
 
-        DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Hello"));
         RoutingSendInterface* RoutingPlugin = createFunc();
 
 
@@ -303,12 +302,20 @@ void Bushandler::registerCore (AudioManagerCore* core) {
 }
 
 RoutingSendInterface* Bushandler::getInterfaceforBus(std::string bus) {
-//	foreach (Bus b, Busses)
-//		{
-//			if (b.Name.compare(bus) == 0) {
-//				return b.sendInterface;
-//			}
-//		}
-//	return NULL;
+	/**
+	 * \todo this could be done more nicer and faster with a hash lookup or so.. worht it??
+	 */
+	std::list<Bus>::iterator busIter;
+	std::list<Bus>::iterator busStart=Busses.begin();
+	std::list<Bus>::iterator busEnd=Busses.end();
+
+	for (busIter=busStart;busIter!=busEnd;busIter++) {
+		{
+			if (busIter->Name.compare(bus) == 0) {
+				return busIter->sendInterface;
+			}
+		}
+	}
+	return NULL;
 }
 

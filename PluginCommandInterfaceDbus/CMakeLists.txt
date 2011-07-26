@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.6)
 
-PROJECT(PluginCommandInterfaceDbus)
+PROJECT(PluginRoutingInterfaceDbus)
 
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Xlinker -export-dynamic")
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
@@ -38,13 +38,13 @@ SET(PLUGINDBUS_SRCS_CXX
     DbusInterface.cpp 
     DBUSIntrospection.cpp
     DBUSMessageHandler.cpp
-    AudiomanagerInterface.cpp
+    CommandReceive.cpp
     DbusSend.cpp
 )
 
-add_library(PluginCommandInterfaceDbus SHARED ${PLUGINDBUS_SRCS_CXX})
+add_library(PluginRoutingInterfaceDbus SHARED ${PLUGINDBUS_SRCS_CXX})
 
-TARGET_LINK_LIBRARIES(PluginCommandInterfaceDbus 
+TARGET_LINK_LIBRARIES(PluginRoutingInterfaceDbus 
 	${DLT_LIBRARIES}
 	${DBUS_LIBRARY}
 	${CMAKE_THREAD_LIBS_INIT}
