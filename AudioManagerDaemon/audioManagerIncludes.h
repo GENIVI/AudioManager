@@ -27,16 +27,21 @@
 #ifndef AUDIOMANAGERINCLUDES_H_
 #define AUDIOMANAGERINCLUDES_H_
 
+#define WITH_DBUS 1
+
 #include "dlt/dlt.h"
+DLT_IMPORT_CONTEXT(AudioManager)
+
 #include "dataTypes.h"
 #include "routinginterface.h"
+#include "commandInterface.h"
 #include "DataBaseHandler.h"
 #include "RoutingReceive.h"
 #include "Router.h"
 #include "HookEngine.h"
 #include "AudioManagerCore.h"
-//#include "DBusCommandInterface.h"
-
-DLT_IMPORT_CONTEXT(AudioManager)
+#include "pluginTemplate.h"
+#include "CommandHandler.h"
+#include "CommandReceive.h"
 
 #endif /* AUDIOMANAGERINCLUDES_H_ */

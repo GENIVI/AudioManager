@@ -21,9 +21,7 @@
 
 #include "headers.h"
 
-class CommandReceive;
-
-typedef void (CommandReceive::*CallBackMethod)(DBusConnection *connection, DBusMessage *message);
+typedef void (CommandDbusReceive::*CallBackMethod)(DBusConnection *connection, DBusMessage *message);
 
 struct MethodTable
 {

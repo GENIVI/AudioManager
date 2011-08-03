@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.6)
 
-PROJECT(PluginCommandInterfaceDbus)
+PROJECT(PluginRoutingInterfaceDbus)
 
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Xlinker -export-dynamic")
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
@@ -12,7 +12,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}")
 set(STD_INCLUDE_DIRS "/usr/include")
 set(EXECUTABLE_OUTPUT_PATH ../../bin/)
 set(LIBRARY_OUTPUT_PATH ../plugins/routing)
-set(DOC_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/../doc/DBusPlugin)
+set(DOC_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/../doc/RoutingDBusPlugin)
 
 find_package (Threads)
 FIND_PACKAGE(DBUS REQUIRED)
@@ -35,16 +35,16 @@ INCLUDE_DIRECTORIES(
 
 # all source files go here
 SET(PLUGINDBUS_SRCS_CXX
+	AudiomanagerInterface.cpp
     DbusInterface.cpp 
     DBUSIntrospection.cpp
     DBUSMessageHandler.cpp
-    AudiomanagerInterface.cpp
     DbusSend.cpp
 )
 
-add_library(PluginCommandInterfaceDbus SHARED ${PLUGINDBUS_SRCS_CXX})
+add_library(PluginRoutingInterfaceDbus SHARED ${PLUGINDBUS_SRCS_CXX})
 
-TARGET_LINK_LIBRARIES(PluginCommandInterfaceDbus 
+TARGET_LINK_LIBRARIES(PluginRoutingInterfaceDbus 
 	${DLT_LIBRARIES}
 	${DBUS_LIBRARY}
 	${CMAKE_THREAD_LIBS_INIT}

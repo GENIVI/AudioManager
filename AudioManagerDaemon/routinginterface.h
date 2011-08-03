@@ -29,12 +29,14 @@
 #include "dataTypes.h"
 
 class RoutingSendInterface;
+class dbusRoothandler;
 
 /** Routing Receive sendInterface description.
  * This class implements everything from RoutingAdapter -> Audiomanager
  */
 class RoutingReceiveInterface {
 public:
+
 	/**
 	 * What happens now?
 	 */
@@ -67,7 +69,7 @@ public:
 	/**
 	 * Just check me out I am the comment
 	 */
-	virtual void ackDisconnect(genHandle_t handle, genError_t error);
+	virtual void ackDisconnect(genHandle_t handle, genError_t error)=0;
 
 };
 
@@ -77,13 +79,10 @@ public:
 class RoutingSendInterface {
 public:
 
-	/** destructor*/
-	virtual ~RoutingSendInterface();
-
 	/** starts up the interface. In the implementations, here is the best place for
 	 * init routines.
 	 */
-	virtual void startup_interface(RoutingReceiveInterface * action /**< hands over the handle to the receive object. */
+	virtual void startup_interface(RoutingReceiveInterface * action,  dbusRoothandler* dbushandler
 	)=0;
 
 	/** connect a source to a sink
@@ -141,16 +140,16 @@ public:
 	 */
 	virtual genError_t unmuteSink(sink_t sinkID) =0;
 
-	/** signal that tells the plugin that the system is ready. Is used to trigger a registration of Domains, etc..*/
-	virtual void system_ready()=0;
 	/**
 	 * connect a source to a sink \return the unique ID of the connection.
 	 */
-	virtual genError_t asyncConnect(source_t source, sink_t sink, connection_t con_ID) =0;
+//	virtual genError_t asyncConnect(source_t source, sink_t sink, connection_t con_ID) =0;
 	/**
 	 * disconnect a connection \return true on success
 	 */
-	virtual genError_t asyncDisconnect(connection_t connection_ID) =0;
+//	virtual genError_t asyncDisconnect(connection_t connection_ID) =0;
+	/** signal that tells the plugin that the system is ready. Is used to trigger a registration of Domains, etc..*/
+	virtual void system_ready()=0;
 };
 
 #endif /* ROUTINGINTERFACE_H_ */

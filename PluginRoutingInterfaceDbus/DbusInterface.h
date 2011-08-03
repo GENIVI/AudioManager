@@ -28,6 +28,8 @@
 #include "headers.h"
 #include "routinginterface.h"
 
+class RoutingSendInterface;
+
 /**Implementation of the interface
  *
  */
@@ -37,7 +39,7 @@ public:
 	DbusInterface();
 	virtual ~DbusInterface();
 
-    void startup_interface(RoutingReceiveInterface * audioman);
+    void startup_interface(RoutingReceiveInterface * audioman, dbusRoothandler* dbushandler);
 	void return_BusName(char * BusName);
 	genError_t connect(source_t source, sink_t sink, connection_t connID);
 	genError_t disconnect(connection_t connectionID);
@@ -47,14 +49,15 @@ public:
 	genError_t muteSink(sink_t sinkID);
 	genError_t unmuteSource(source_t sourceID);
 	genError_t unmuteSink(sink_t sinkID);
-	genError_t asyncConnect(source_t source, sink_t sink, connection_t con_ID);
-	virtual genError_t asyncDisconnect(connection_t connection_ID);
+//	genError_t asyncConnect(source_t source, sink_t sink, connection_t con_ID);
+//	genError_t asyncDisconnect(connection_t connection_ID);
 	void system_ready();
 
 private:
 	RoutingReceiveInterface *m_audioman;
 	AudioManagerInterface* m_DbusInterface;
 	DBusConnection* m_conn;
+	dbusRoothandler* m_rootHandler;
 	char* m_busname;
 	char* m_path;
 

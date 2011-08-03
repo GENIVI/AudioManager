@@ -595,6 +595,7 @@ public:
 	DataBaseHandler* returnDatabaseHandler();
 	RoutingReceiver* returnReceiver();
 	CommandInterface* returnCommandInterface();
+	dbusRoothandler* returnDbusHandler();
 
 	void registerDatabasehandler(DataBaseHandler * handler);
 	void registerRouter(Router* router);
@@ -602,6 +603,7 @@ public:
 	void registerHookEngine(HookHandler* handler);
 	void registerReceiver(RoutingReceiver* receiver);
 	void registerCommandInterface(CommandInterface* command);
+	void registerDbusRootHandler(dbusRoothandler* handler);
 
 	void addQueue(Queue* queue);
 	genError_t removeQueue(Queue* queue);
@@ -619,6 +621,7 @@ private:
 	Bushandler* m_busHandler; //!< pointer to the Bushandler Class
 	HookHandler* m_hookHandler; //!< pointer to the HookHandler CLass
 	RoutingReceiver* m_receiver; //!< pointer to the Routing receiver Class
+	dbusRoothandler* m_dbusHandler;
 	CommandInterface* m_command; //!< pointer to the command Interface Class
 
 	std::list<Queue*> m_queueList; //!< List of pointers to all running queues

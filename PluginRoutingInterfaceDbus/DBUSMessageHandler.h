@@ -27,7 +27,7 @@
 class DBUSMessageHandler
 {
 public:
-    DBUSMessageHandler();
+	DBUSMessageHandler(DBusObjectPathVTable* vtable, DBusConnection* conn, void* reference);
     ~DBUSMessageHandler();
 
     void setConnection(DBusConnection* conn);
@@ -53,7 +53,7 @@ public:
     void appendDouble(double toAppend);
     void appendArrayOfUInt(unsigned int length, unsigned int *IDs);
 
-    void sendSignal(const char* name,const char* signal);
+    void sendSignal(const char* signalname);
 
 private:
     DBusMessageIter m_MessageIter;
@@ -72,10 +72,6 @@ inline void DBUSMessageHandler::setConnection(DBusConnection* conn)
 inline DBusConnection* DBUSMessageHandler::getConnection()
 {
     return m_pConnection;
-}
-
-void DBUSMessageHandler::appendArrayOfStringString(std::list<stringString> list)
-{
 }
 
 

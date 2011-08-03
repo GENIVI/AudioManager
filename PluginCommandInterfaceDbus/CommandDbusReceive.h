@@ -27,11 +27,15 @@
 
 #include "headers.h"
 
-class CommandReceive {
+class CommandDbusReceive {
 
 public:
-	CommandReceive(CommandReceiveInterface* r_interface);
+	CommandDbusReceive(CommandReceiveInterface* r_interface);
 
+	bool startup_interface();
+	void stop();
+
+	static DBusHandlerResult receive_callback (DBusConnection *connection,DBusMessage *message,void *user_data);
 	void connect(DBusConnection* conn, DBusMessage* msg);
 	void disconnect(DBusConnection* conn, DBusMessage* msg);
 	void getListConnections(DBusConnection* conn, DBusMessage* msg);
@@ -41,10 +45,14 @@ public:
 	void interruptResume(DBusConnection* conn, DBusMessage* msg);
 	void setVolume(DBusConnection* conn, DBusMessage* msg);
 
+	void emitSignalConnectionsChanged();
+	void emitSignalNumberofSinksChanged();
+	void emitSignalNumberofSourcesChanged();
+
 private:
 	static void* run(void * threadid);
     pthread_t m_currentThread;
-    static CommandReceive* m_reference;
+    static CommandDbusReceive* m_reference;
     CommandReceiveInterface* m_audioman;
 	bool m_running;
 };

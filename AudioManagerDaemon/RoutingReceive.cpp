@@ -106,3 +106,21 @@ int RoutingReceiver::peekDomain(char* name) {
 void RoutingReceiver::ackConnect(genHandle_t handle, genError_t error) {
 	//emit signal_ackConnect(handle, error);
 }
+
+RoutingReceiver::RoutingReceiver()
+{
+}
+
+void RoutingReceiver::ackDisconnect(genHandle_t handle, genError_t error)
+{
+}
+
+
+
+void RoutingReceiver::signal_ackConnect(genHandle_t handle, genError_t error)
+{
+}
+
+
+
+

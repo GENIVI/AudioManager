@@ -17,6 +17,9 @@ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Xlinker -export-dynamic")
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
 set(CMAKE_CXX_FLAGS "-g -pipe -g -Wall -W -D_REENTRANT")
 
+##todo only when dbus needed!
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}")
+
 set(STD_INCLUDE_DIRS "/usr/include")
 set(EXECUTABLE_OUTPUT_PATH ../../bin/)
 set(DOC_OUTPUT_PATH ../../doc/)
@@ -29,17 +32,23 @@ file(MAKE_DIRECTORY ${DOC_OUTPUT_PATH})
 FIND_PACKAGE(PkgConfig)
 pkg_check_modules(SQLITE REQUIRED sqlite3)
 pkg_check_modules(DLT REQUIRED automotive-dlt)
+
+##todo: only when dbus is reuqired !
+find_package (Threads)
+FIND_PACKAGE(DBUS REQUIRED)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR} ${STD_INCLUDE_DIRS})
 
 #all source files go here
 SET(AUDIOMAN_SRCS_CXX
-	AudioManagerCore.cpp
-    RoutingReceive.cpp
-    CommandReceive.cpp
-    Router.cpp 
-    DataBaseHandler.cpp
     main.cpp
+	AudioManagerCore.cpp
+	CommandHandler.cpp
+    CommandReceive.cpp
+    DataBaseHandler.cpp
     HookEngine.cpp
+    Router.cpp 
+    RoutingReceive.cpp
+    dbusRoothandler.cpp
 )
 
 INCLUDE_DIRECTORIES(
@@ -55,9 +64,12 @@ INCLUDE_DIRECTORIES(
 
 ADD_EXECUTABLE(AudioManager ${AUDIOMAN_SRCS_CXX})
 
+##todo only when dbus is required
 TARGET_LINK_LIBRARIES(AudioManager 
 	${SQLITE_LIBRARIES}
 	${DLT_LIBRARIES}
+	${DBUS_LIBRARY}
+	${CMAKE_THREAD_LIBS_INIT}
 )
 
 #add a target to generate API documentation with Doxygen

@@ -3,37 +3,19 @@
 #include "headers.h"
 #include <stdlib.h>
 
-DBUSMessageHandler::DBUSMessageHandler()
+DBUSMessageHandler::DBUSMessageHandler(DBusObjectPathVTable* vtable, DBusConnection* conn, void* reference)
 : m_MessageIter()
 , m_pReply(0)
 , m_serial(0)
-, m_pConnection(0)
+, m_pConnection(conn)
 {
     dbus_error_init(&m_err);
 
-    // connect to the bus and check for errors
-    m_pConnection = dbus_bus_get(DBUS_BUS_SESSION, &m_err);
-    if (dbus_error_is_set(&m_err))
-    {
-    	DLT_LOG(DBusPlugin,DLT_LOG_INFO, DLT_STRING("DBUSCommunicator Connection error"));
-        dbus_error_free(&m_err);
-    }
-    if (NULL == m_pConnection)
-    {
-    	DLT_LOG(DBusPlugin,DLT_LOG_INFO, DLT_STRING("DBUSCommunicator Connection is null"));
-        exit(1);
-    }
-    int ret = dbus_bus_request_name(m_pConnection,DBUS_SERVICE_PREFIX, DBUS_NAME_FLAG_REPLACE_EXISTING, &m_err);
-    if (dbus_error_is_set(&m_err))
-    {
-    	DLT_LOG(DBusPlugin,DLT_LOG_INFO, DLT_STRING("DBUSCommunicator Name Error"),DLT_STRING(m_err.message));
-        dbus_error_free(&m_err);
-    }
-    if (DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER != ret)
-    {
-    	DLT_LOG(DBusPlugin,DLT_LOG_INFO, DLT_STRING("DBUSCommunicatorNot Primary Owner"), DLT_INT(ret));
-        exit(1);
-    }
+    string nodeString =std::string(DBUS_SERVICE_ROOT)+"/"+std::string(MY_NODE);
+	dbus_bool_t b=dbus_connection_register_object_path(m_pConnection, nodeString.c_str(), vtable, reference);
+	if(!b) {
+		DLT_LOG(DBusPlugin, DLT_LOG_INFO, DLT_STRING("Registering of node"), DLT_STRING(MY_NODE),DLT_STRING("failed"));
+	}
 }
 
 DBUSMessageHandler::~DBUSMessageHandler()
@@ -45,14 +27,14 @@ DBUSMessageHandler::~DBUSMessageHandler()
     {
     	DLT_LOG(DBusPlugin,DLT_LOG_ERROR, DLT_STRING("there was an dbus error"));
     }
-    dbus_bus_name_has_owner(m_pConnection, DBUS_SERVICE_PREFIX, &err);
+    dbus_bus_name_has_owner(m_pConnection, DBUS_SERVICE_SERVICE, &err);
     errorset = dbus_error_is_set(&err);
     if (errorset)
     {
     	DLT_LOG(DBusPlugin,DLT_LOG_ERROR, DLT_STRING("there was an dbus error"));
     }
     dbus_error_init(&err);
-    dbus_bus_release_name(m_pConnection, DBUS_SERVICE_PREFIX, &err);
+    dbus_bus_release_name(m_pConnection, DBUS_SERVICE_SERVICE, &err);
 }
 
 void DBUSMessageHandler::initReceive(DBusMessage* msg)
@@ -283,12 +265,11 @@ void DBUSMessageHandler::appendArrayOfUInt(unsigned int length, unsigned int *ID
     dbus_message_iter_close_container(&m_MessageIter, &arrayIter);
 }
 
-void DBUSMessageHandler::sendSignal(const char* name, const char* signal) {
+void DBUSMessageHandler::sendSignal(const char* signalname) {
 	dbus_uint32_t serial = 0;
 	DBusMessage* msg;
-	DBusMessageIter args;
 
-	msg = dbus_message_new_signal(DBUS_SERVICE_PREFIX, signal, name);
+	msg =dbus_message_new_signal(DBUS_SERVICE_ROOT,DBUS_SERVICE_SERVICE,signalname);
 
 	if (NULL == msg)
 	{

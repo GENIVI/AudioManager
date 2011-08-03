@@ -7,16 +7,21 @@
 
 #include "CommandReceive.h"
 
-CommandReceive::CommandReceive(AudioManagerCore* core) : m_core(core) {
 
+CommandReceive::CommandReceive(){
 }
 
 CommandReceive::~CommandReceive() {
 
 }
 
+void CommandReceive::registerAudiomanagerCore(AudioManagerCore *core){
+	m_core=core;
+}
+
+
 connection_t CommandReceive::connect(source_t source, sink_t sink) {
-	DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("Connect"));
+	DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("Connect"));
 	if (m_core->UserConnect(source, sink) == GEN_OK) {
 		return 1;
 	}
@@ -27,9 +32,7 @@ connection_t CommandReceive::connect(source_t source, sink_t sink) {
 	 */
 }
 
-
-
-connection_t CommandReceive::disconnect(source_t source, source_t sink){
+connection_t CommandReceive::disconnect(source_t source, source_t sink) {
 
 	genRoute_t ReturnRoute;
 	if (int value=m_core->returnDatabaseHandler()->returnMainconnectionIDforSinkSourceID(sink,source)>0) {
@@ -43,31 +46,24 @@ connection_t CommandReceive::disconnect(source_t source, source_t sink){
 	 */
 }
 
-
-
-std::list<ConnectionType> CommandReceive::getListConnections(){
+std::list<ConnectionType> CommandReceive::getListConnections() {
 	return m_core->getListConnections();
 }
 
-
-
-std::list<SinkType> CommandReceive::getListSinks(){
+std::list<SinkType> CommandReceive::getListSinks() {
 	return m_core->getListSinks();
 }
-
-
 
 std::list<SourceType> CommandReceive::getListSources() {
 	return m_core->getListSources();
 }
 
-
-
-genInt_t CommandReceive::interruptRequest(const std::string & SourceName, const std::string & SinkName) {
+genInt_t CommandReceive::interruptRequest(const std::string & SourceName,
+		const std::string & SinkName) {
 	source_t sourceID = m_core->returnSourceIDfromName(SourceName);
 	sink_t sinkID = m_core->returnSinkIDfromName(SinkName);
 	genInt_t intID = -1;
-	if (m_core->interruptRequest(sourceID, sinkID, &intID)==GEN_OK) {
+	if (m_core->interruptRequest(sourceID, sinkID, &intID) == GEN_OK) {
 		return intID;
 	}
 
@@ -78,9 +74,7 @@ genInt_t CommandReceive::interruptRequest(const std::string & SourceName, const 
 	 */
 }
 
-
-
-interrupt_t CommandReceive::interruptResume(interrupt_t interrupt){
+interrupt_t CommandReceive::interruptResume(interrupt_t interrupt) {
 	/**
 	 * \todo here a callback mechanism needs to be installed....
 	 */
@@ -88,14 +82,13 @@ interrupt_t CommandReceive::interruptResume(interrupt_t interrupt){
 	return 1;
 }
 
-
-
 volume_t CommandReceive::setVolume(sink_t sink, volume_t volume) {
 	if (m_core->UserSetVolume(sink, volume) == GEN_OK) {
 		return 1;
 	}
 	return -1;
 }
+
 
 
 

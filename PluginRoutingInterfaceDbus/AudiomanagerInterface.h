@@ -26,14 +26,18 @@
 #define DBUSINTERFACE_H_
 
 #include "headers.h"
+#include "DBUSIntrospection.h"
+
+class DBUSIntrospection;
 
 class AudioManagerInterface {
 
 public:
-	AudioManagerInterface(RoutingReceiveInterface* r_interface);
+	AudioManagerInterface(RoutingReceiveInterface* r_interface,dbusRoothandler* roothandler);
 
 	bool startup_interface();
     void stop();
+    static DBusHandlerResult receive_callback (DBusConnection *,DBusMessage *,void *);
 
     void peekDomain(DBusConnection* conn, DBusMessage* msg);
 	void registerDomain(DBusConnection* conn, DBusMessage* msg);
@@ -43,11 +47,10 @@ public:
 	void emit_systemReady();
 
 private:
-	static void* run(void * threadid);
-    pthread_t m_currentThread;
     static AudioManagerInterface* m_reference;
 	RoutingReceiveInterface* m_audioman;
-	bool m_running;
+	DBUSIntrospection* m_Introspection;
+	dbusRoothandler* m_roothandler;
 };
 
 #endif /* DBUSINTERFACE_H_ */

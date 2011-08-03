@@ -19,11 +19,14 @@
 #include "DBUSIntrospection.h"
 #include <string.h>
 #include <sstream>
+
+DLT_IMPORT_CONTEXT(DBusCommandPlugin);
+
 using std::stringstream;
 
 
-DBUSIntrospection::DBUSIntrospection(MethodTable* methodTable, SignalTable* signalTable)
-: m_methodTable(methodTable), m_signalTable(signalTable)
+DBUSIntrospection::DBUSIntrospection(MethodTable* methodTable, SignalTable* signalTable,std::string nodename)
+: m_methodTable(methodTable), m_signalTable(signalTable), m_nodename(nodename)
 {
     generateString();
 }
@@ -33,13 +36,13 @@ void DBUSIntrospection::generateString()
 	DLT_LOG(DBusPlugin,DLT_LOG_ERROR, DLT_STRING("Generating instrospection data!"));
 
     addHeader();
-    openNode("");
+    openNode(m_nodename);
     openInterface("org.freedesktop.DBus.Introspectable");
     openMethod("Introspect");
     addArgument("data", "out", "s");
     closeMethod();
     closeInterface();
-    openInterface(DBUS_SERVICE_PREFIX);
+    openInterface(DBUS_SERVICE_SERVICE);
 
     int index = 0;
 
@@ -87,7 +90,7 @@ void DBUSIntrospection::openMethod(string methodname)
 }
 
 void DBUSIntrospection::addSignal(string signalname) {
-	m_introspectionString<<"<signal name=\"" << signalname << "\">  \n";
+	m_introspectionString<<"<signal name=\"" << signalname << "\"/>  \n";
 }
 
 void DBUSIntrospection::addArgument(string argname, string direction, string type)

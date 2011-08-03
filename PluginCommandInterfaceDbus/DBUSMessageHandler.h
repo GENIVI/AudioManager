@@ -30,16 +30,6 @@ public:
     DBUSMessageHandler();
     ~DBUSMessageHandler();
 
-    struct stringAndUInt {
-    	std::string string;
-    	unsigned int integer;
-    };
-
-    struct stringString {
-    	std::string string1;
-    	std::string string2;
-    };
-
     void setConnection(DBusConnection* conn);
     DBusConnection* getConnection();
 
@@ -57,14 +47,16 @@ public:
     void getArrayOfUInt(int* length, unsigned int** array);
     void getArrayOfString(std::vector<std::string>* uniforms);
 
-    void appendUInt(dbus_uint32_t toAppend);
-    void appendByte(char toAppend);
-    void appendBool(dbus_bool_t toAppend);
-    void appendDouble(double toAppend);
-    void appendArrayOfUInt(unsigned int length, unsigned int *IDs);
-    void appendArrayOfStringUInt(std::list<stringAndUInt> list);
-    void appendArrayOfStringString(std::list<stringString> list);
-    void sendSignal(const char* name,const char* signal);
+    void append(dbus_uint32_t toAppend);
+    void append(char toAppend);
+    void append(bool toAppend);
+    void append(double toAppend);
+    void append(unsigned int length, unsigned int *IDs);
+    void append(std::list<SourceType> list);
+    void append(std::list<ConnectionType> list);
+    void append(std::list<SinkType> list);
+
+    void sendSignal(const char* signalname);
 
 private:
     DBusMessageIter m_MessageIter;

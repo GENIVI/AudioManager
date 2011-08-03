@@ -11,6 +11,7 @@
 #include <dbus/dbus.h>
 #include <dlt/dlt.h>
 #include "routinginterface.h"
+#include "dbusRoothandler.h"
 #include "AudiomanagerInterface.h"
 #include "DbusSend.h"
 #include "DBUSMessageHandler.h"
@@ -22,7 +23,8 @@
 #define DBUS_BUSNAME "org.genivi.command"
 #define DBUS_PATH "/pulse"
 
-const char DBUS_SERVICE_PREFIX[] = "org.genivi.audiomanagerCommand\0";
+
+const char MY_NODE[]="routinginterface\0";
 
 DLT_IMPORT_CONTEXT(DBusPlugin);
 

@@ -28,6 +28,11 @@
 #include "headers.h"
 #include "commandInterface.h"
 
+#define SIG_CONNECTION_CHANGED "signal_connectionChanged"
+#define SIG_NUM_SINKS_CHANGED "signal_numberOfSinksChanged"
+#define SIG_NUM_SOURCES_CHANGED "signal_numberOfSourcesChanged"
+
+
 /**Implementation of the interface
  *
  */
@@ -39,8 +44,15 @@ public:
 	void cbConnectionChanged();
 	void cbNumberOfSinksChanged();
 	void cbNumberOfSourcesChanged();
+	void startupInterface(CommandReceiveInterface* iface);
+	void stop();
 
 private:
+	CommandReceiveInterface *m_audioman;
+	CommandDbusReceive* m_DbusInterface;
+	DBusConnection* m_conn;
+	char* m_busname;
+	char* m_path;
 
 };
 

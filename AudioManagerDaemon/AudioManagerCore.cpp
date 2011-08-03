@@ -431,7 +431,7 @@ std::string Queue::returnName() {
 }
 
 AudioManagerCore::AudioManagerCore() :
-	m_queueList(std::list<Queue*> ()) {
+	m_queueList(std::list<Queue*> ()),m_dbusHandler(0) {
 }
 
 AudioManagerCore::~AudioManagerCore() {
@@ -665,5 +665,17 @@ std::list<std::string> AudioManagerCore::getSharedLibrariesFromDirectory(std::st
     closedir(directory);
     return fileList;
 }
+
+void AudioManagerCore::registerDbusRootHandler(dbusRoothandler* handler){
+	m_dbusHandler=handler;
+}
+
+dbusRoothandler* AudioManagerCore::returnDbusHandler(){
+	return m_dbusHandler;
+}
+
+
+
+
 
 

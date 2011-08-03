@@ -38,7 +38,7 @@ DLT_DECLARE_CONTEXT(DBusPlugin)
 DbusInterface::DbusInterface(): m_busname(DBUS_BUSNAME), m_path(DBUS_PATH) {
 
 	DLT_REGISTER_APP("DBusPlugin", "DBusPlugin");
-	DLT_REGISTER_CONTEXT(DBusPlugin, "Plugin", "Dbus Plugin");
+	DLT_REGISTER_CONTEXT(DBusPlugin, "DPlugin", "Dbus Plugin");
 	DLT_LOG(DBusPlugin, DLT_LOG_INFO, DLT_STRING("The DBus Plugin is started"));
 }
 
@@ -46,11 +46,12 @@ DbusInterface::~DbusInterface() {
 	delete m_DbusInterface;
 }
 
-void DbusInterface::startup_interface(RoutingReceiveInterface* audioman) {
+void DbusInterface::startup_interface(RoutingReceiveInterface* audioman,dbusRoothandler* dbushandler) {
 	m_audioman = audioman;
-	m_DbusInterface = new AudioManagerInterface(audioman);
+	m_rootHandler = dbushandler;
+	m_DbusInterface = new AudioManagerInterface(audioman,dbushandler);
 	m_DbusInterface->startup_interface();
-
+	m_rootHandler->registerNode(MY_NODE);
 	DBusError err;
     dbus_error_init(&err);
 
@@ -164,17 +165,19 @@ genError_t DbusInterface::unmuteSink(sink_t sinkID) {
 	 */
 }
 
-genError_t DbusInterface::asyncConnect(source_t source, sink_t sink, connection_t con_ID) {
-	/**
-	 * \todo implement
-	 */
-}
-
-genError_t DbusInterface::asyncDisconnect(connection_t connection_ID){
-	/**
-	 * \todo implement
-	 */
-}
+//genError_t DbusInterface::asyncConnect(source_t source, sink_t sink, connection_t con_ID) {
+//	/**
+//	 * \todo implement
+//	 */
+//	return GEN_OK;
+//}
+//
+//genError_t DbusInterface::asyncDisconnect(connection_t connection_ID){
+//	/**
+//	 * \todo implement
+//	 */
+//	return GEN_OK;
+//}
 
 //That is the actual implementation of the Factory Class returning the real sendInterface
 

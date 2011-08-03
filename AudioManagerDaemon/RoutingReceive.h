@@ -36,6 +36,7 @@ class DataBaseHandler;
 class RoutingReceiver: public RoutingReceiveInterface {
 
 public:
+	RoutingReceiver();
 	virtual ~RoutingReceiver() {}
 	void register_Databasehandler(DataBaseHandler* handler_); //is used to register the Database handler
 
@@ -45,6 +46,7 @@ public:
 	int registerSource(char* name, char* audioclass, char* domain);
 	int peekDomain(char* name);
 	void ackConnect(genHandle_t handle, genError_t error);
+	void ackDisconnect(genHandle_t handle, genError_t error);
 
 	void signal_ackConnect(genHandle_t handle, genError_t error);
 

@@ -11,10 +11,17 @@
 #include "commandInterface.h"
 #include "audioManagerIncludes.h"
 
-class CommandReceive : CommandReceiveInterface {
+class CommandReceiveInterface;
+
+class CommandReceive : public CommandReceiveInterface {
 public:
-	CommandReceive(AudioManagerCore* core);
+	CommandReceive();
 	virtual ~CommandReceive();
+
+	void registerAudiomanagerCore(AudioManagerCore* core);
+
+	void startupInterface();
+	void stop();
 	connection_t connect(source_t source, sink_t sink);
 	connection_t disconnect(source_t source, source_t sink);
 	std::list<ConnectionType> getListConnections();

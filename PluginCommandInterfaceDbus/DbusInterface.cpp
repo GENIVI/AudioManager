@@ -33,22 +33,22 @@
 #include <string>
 #include <sstream>
 
-DLT_DECLARE_CONTEXT(DBusPlugin)
+DLT_DECLARE_CONTEXT(DBusCommandPlugin)
 
-DbusInterface::DbusInterface(): m_busname(DBUS_BUSNAME), m_path(DBUS_PATH) {
+DbusCommandInterface::DbusCommandInterface() : m_busname(DBUS_BUSNAME), m_path(DBUS_PATH) {
 
-	DLT_REGISTER_APP("DBusPlugin", "DBusPlugin");
-	DLT_REGISTER_CONTEXT(DBusPlugin, "Plugin", "Dbus Plugin");
-	DLT_LOG(DBusPlugin, DLT_LOG_INFO, DLT_STRING("The DBus Plugin is started"));
+	DLT_REGISTER_APP("DBusCommandPlugin", "DBusCommandPlugin");
+	DLT_REGISTER_CONTEXT(DBusCommandPlugin, "PluginCommand", "DBusCommandPlugin");
+	DLT_LOG(DBusCommandPlugin, DLT_LOG_INFO, DLT_STRING("The DBusCommandPluginis started"));
 }
 
-DbusInterface::~DbusInterface() {
+DbusCommandInterface::~DbusCommandInterface() {
 	delete m_DbusInterface;
 }
 
-void DbusInterface::startup_interface(RoutingReceiveInterface* audioman) {
-	m_audioman = audioman;
-	m_DbusInterface = new CommandReceive(audioman);
+void DbusCommandInterface::startupInterface(CommandReceiveInterface* iface) {
+	m_audioman = iface;
+	m_DbusInterface = new CommandDbusReceive(iface);
 	m_DbusInterface->startup_interface();
 
 	DBusError err;
@@ -56,134 +56,47 @@ void DbusInterface::startup_interface(RoutingReceiveInterface* audioman) {
 
     m_conn = dbus_bus_get(DBUS_BUS_SESSION, &err);
 	if (dbus_error_is_set(&err)) {
-		DLT_LOG(DBusPlugin, DLT_LOG_INFO, DLT_STRING("Could not connect to DBUS for sending, Error: "), DLT_STRING(err.message));
+		DLT_LOG(DBusCommandPlugin, DLT_LOG_INFO, DLT_STRING("Could not connect to DBUS for sending, Error: "), DLT_STRING(err.message));
 	    dbus_error_free(&err);
 	}
 
-	DLT_LOG(DBusPlugin, DLT_LOG_INFO, DLT_STRING("DBus Interface started "));
+	DLT_LOG(DBusCommandPlugin, DLT_LOG_INFO, DLT_STRING("DBus Interface started "));
 }
 
-void DbusInterface::return_BusName(char* BusName) {
-	strcpy(BusName, BUS_NAME);
+
+
+void DbusCommandInterface::stop(){
 }
 
-genError_t DbusInterface::connect(source_t source, sink_t sink, connection_t connID) {
-	int reply;
-	DbusSend send = DbusSend(m_conn,"PULSE",(const char*)m_busname,(const char*)m_path, "connect");
-	send.appendInteger(source);
-	send.appendInteger(sink);
-	send.appendInteger(connID);
-	send.sendReply(&reply);
-	return GEN_OK;
-	/**
-	 * \todo always OK...
-	 */
+
+
+void DbusCommandInterface::cbConnectionChanged(){
+	m_DbusInterface->emitSignalConnectionsChanged();
 }
 
-void DbusInterface::system_ready() {
-	DLT_LOG(DBusPlugin, DLT_LOG_INFO, DLT_STRING("DBus Plugin got ready"));
-	m_DbusInterface->emit_systemReady();
+
+
+void DbusCommandInterface::cbNumberOfSinksChanged(){
+	m_DbusInterface->emitSignalNumberofSinksChanged();
 }
 
-genError_t DbusInterface::disconnect(connection_t connectionID) {
-	bool reply;
-	DbusSend send = DbusSend(m_conn,"PULSE",(const char*)m_busname,(const char*)m_path,"disconnect");
-	send.appendInteger(connectionID);
-	send.sendReply(&reply);
-	return GEN_OK;
-	/**
-	 * \todo always OK...
-	 */
+
+
+void DbusCommandInterface::cbNumberOfSourcesChanged(){
+	m_DbusInterface->emitSignalNumberofSourcesChanged();
 }
 
-genError_t DbusInterface::setSinkVolume(volume_t volume, sink_t sink) {
-	int reply;
-	DbusSend send = DbusSend(m_conn,"PULSE",(const char*)m_busname,(const char*)m_path,"setSinkVolume");
-	send.appendInteger(volume);
-	send.appendInteger(sink);
-	send.sendReply(&reply);
-	return GEN_OK;
-	/**
-	 * \todo always OK...
-	 */
-}
-
-genError_t DbusInterface::setSourceVolume(volume_t volume, source_t source) {
-	int reply;
-	DbusSend send = DbusSend(m_conn,"PULSE",(const char*)m_busname,(const char*)m_path,"setSourceVolume");
-	send.appendInteger(volume);
-	send.appendInteger(source);
-	send.sendReply(&reply);
-	return GEN_OK;
-	/**
-	 * \todo always OK...
-	 */
-}
-
-genError_t DbusInterface::muteSource(source_t sourceID) {
-	bool reply;
-	DbusSend send = DbusSend(m_conn,"PULSE",(const char*)m_busname,(const char*)m_path,"muteSource");
-	send.appendInteger(sourceID);
-	send.sendReply(&reply);
-	return GEN_OK;
-	/**
-	 * \todo always OK...
-	 */
-}
-
-genError_t DbusInterface::muteSink(sink_t sinkID) {
-	bool reply;
-	DbusSend send = DbusSend(m_conn,"PULSE",(const char*)m_busname,(const char*)m_path,"muteSink");
-	send.appendInteger(sinkID);
-	send.sendReply(&reply);
-	return GEN_OK;
-	/**
-	 * \todo always OK...
-	 */
-}
-
-genError_t DbusInterface::unmuteSource(source_t sourceID) {
-	bool reply;
-	DbusSend send = DbusSend(m_conn,"PULSE",(const char*)m_busname,(const char*)m_path,"unmuteSource");
-	send.appendInteger(sourceID);
-	send.sendReply(&reply);
-	return GEN_OK;
-	/**
-	 * \todo always OK...
-	 */
-}
-
-genError_t DbusInterface::unmuteSink(sink_t sinkID) {
-	bool reply;
-	DbusSend send = DbusSend(m_conn,"PULSE",(const char*)m_busname,(const char*)m_path,"unmuteSink");
-	send.appendInteger(sinkID);
-	send.sendReply(&reply);
-	return GEN_OK;
-	/**
-	 * \todo always OK...
-	 */
-}
-
-genError_t DbusInterface::asyncConnect(source_t source, sink_t sink, connection_t con_ID) {
-	/**
-	 * \todo implement
-	 */
-}
-
-genError_t DbusInterface::asyncDisconnect(connection_t connection_ID){
-	/**
-	 * \todo implement
-	 */
-}
 
 //That is the actual implementation of the Factory Class returning the real sendInterface
 
-extern "C" RoutingSendInterface* PluginRoutingInterfaceDbusFactory() {
-    return new DbusInterface();
+extern "C" CommandSendInterface* PluginCommandInterfaceDbusFactory() {
+    return new DbusCommandInterface();
 }
 
-extern "C" void destroyRoutingPluginInterfaceDbus(RoutingSendInterface* iface) {
+extern "C" void destroyRoutingPluginInterfaceDbus(DbusCommandInterface* iface) {
     delete iface;
 }
+
+
 
 

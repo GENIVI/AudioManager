@@ -43,7 +43,6 @@ class CommandSendInterface;
 class CommandReceiveInterface  {
 
 public:
-	virtual void startupInterface()=0;
 	virtual connection_t connect(source_t source, sink_t sink)=0;
 	virtual connection_t disconnect(source_t source, source_t sink)=0;
 	virtual std::list<ConnectionType> getListConnections()=0;
@@ -56,7 +55,8 @@ public:
 
 class CommandSendInterface {
 public:
-
+	virtual void startupInterface(CommandReceiveInterface * action)=0;
+	virtual void stop()=0;
 	/**
 	 * Callback that is called when the number of connections change
 	 */

@@ -24,6 +24,10 @@
  */
 
 #include "audioManagerIncludes.h"
+
+#ifdef WITH_DBUS
+#include "dbusRoothandler.h"
+#endif
 /**
  * \todo: write some documentation about Plugin mechanism
  *
@@ -38,28 +42,33 @@ int main(int argc, char *argv[]) {
 
 
 	//Here are our Main Classes
+	AudioManagerCore core;
 	DataBaseHandler dhandler;
 	RoutingReceiver breceiver;
+	CommandReceive creceiver;
 	Bushandler bushandler;
 	Router router;
 	HookHandler hookhandler;
-	AudioManagerCore core;
-	//DBusCommandInterface commandIface;
+	CommandHandler chandler(&core);
+	dbusRoothandler dbushandler;
 
 	//meet and greet: register all the classes @ each other
 	hookhandler.registerAudioManagerCore(&core);
+	creceiver.registerAudiomanagerCore(&core);
 	core.registerBushandler(&bushandler);
 	core.registerDatabasehandler(&dhandler);
 	core.registerRouter(&router);
 	core.registerHookEngine(&hookhandler);
 	core.registerReceiver(&breceiver);
-	//core.registerCommandInterface(&commandIface);
+	core.registerDbusRootHandler(&dbushandler);
+	//core.registerCommandInterfa email whenever you are availce(&commandIface);
 	router.registerDatabasehandler(&dhandler);
 	//commandIface.registerDatabasehandler(&dhandler);
 
-	//commandIface.registerAudioManagerCore(&core);
+	chandler.registerReceiver(&creceiver);
 	breceiver.register_Databasehandler(&dhandler);
 	bushandler.registerReceiver(&breceiver);
+	bushandler.registerCore(&core);
 
 	/**
 	 * \todo: we do not have to knock down the database whole the time - this can be done different
@@ -82,11 +91,14 @@ int main(int argc, char *argv[]) {
 	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("load bus plugins"));
 	bushandler.load_Bus_plugins();
 	bushandler.StartupInterfaces();
-	//commandIface.startupInterface();
+//	chandler.loadPlugins();
 	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Init phase is over, everything up and running"));
 
-	while (1) {
-		sleep(2000);
-	}
+	DBusConnection* con=dbushandler.returnConnection();
+
+	while (dbus_connection_read_write_dispatch(con, -1))
+	    {
+	    	DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("Dispatching Dbus message..."));
+	    }
 }
 

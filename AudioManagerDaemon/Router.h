@@ -171,12 +171,8 @@ private:
 class Bushandler {
 
 public:
-	Bushandler() {
-	}
-	;
-	virtual ~Bushandler() {
-	}
-	;
+	Bushandler() {};
+	virtual ~Bushandler() {};
 
 	/**by calling this, all bus plugins are loaded
 	 *
