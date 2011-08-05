@@ -55,7 +55,7 @@ public:
 
 class CommandSendInterface {
 public:
-	virtual void startupInterface(CommandReceiveInterface * action)=0;
+	virtual void startupInterface(CommandReceiveInterface * action,  dbusRoothandler* dbushandler)=0;
 	virtual void stop()=0;
 	/**
 	 * Callback that is called when the number of connections change

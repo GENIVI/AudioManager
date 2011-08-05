@@ -15,9 +15,7 @@
 #include "AudiomanagerInterface.h"
 #include "DbusSend.h"
 #include "DBUSMessageHandler.h"
-#include "DBUSIntrospection.h"
 #include "DbusInterface.h"
-
 
 #define BUS_NAME "DBUS"
 #define DBUS_BUSNAME "org.genivi.command"

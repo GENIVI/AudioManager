@@ -37,7 +37,6 @@ INCLUDE_DIRECTORIES(
 SET(PLUGINDBUS_SRCS_CXX
 	CommandDbusReceive.cpp
     DbusInterface.cpp 
-    DBUSIntrospection.cpp
     DBUSMessageHandler.cpp
     DbusSend.cpp
 )

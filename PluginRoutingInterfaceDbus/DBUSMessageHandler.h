@@ -21,8 +21,32 @@
 #define _DBUSMESSAGEHANDLER_H_
 
 #include <vector>
+#include <sstream>
+using std::stringstream;
+
 #include <string>
+using std::string;
+
 #include "headers.h"
+#include <dbus/dbus.h>
+
+#define DLT_CONTEXT DBusPlugin
+
+typedef void (AudioManagerInterface::*CallBackMethod)(DBusConnection *connection, DBusMessage *message);
+
+struct MethodTable
+{
+    const char *name;
+    const char *signature;
+    const char *reply;
+    CallBackMethod function;
+};
+
+struct SignalTable {
+	const char* name;
+	const char* signature;
+};
+
 
 class DBUSMessageHandler
 {
@@ -30,14 +54,10 @@ public:
 	DBUSMessageHandler(DBusObjectPathVTable* vtable, DBusConnection* conn, void* reference);
     ~DBUSMessageHandler();
 
-    void setConnection(DBusConnection* conn);
-    DBusConnection* getConnection();
-
     void initReceive(DBusMessage* msg);
     void initReply(DBusMessage* msg);
     void closeReply();
     void ReplyError(DBusMessage* msg, const char* errorname, const char* errorMsg);
-
 
     dbus_uint32_t getUInt();
     char getByte();
@@ -47,11 +67,14 @@ public:
     void getArrayOfUInt(int* length, unsigned int** array);
     void getArrayOfString(std::vector<std::string>* uniforms);
 
-    void appendUInt(dbus_uint32_t toAppend);
-    void appendByte(char toAppend);
-    void appendBool(dbus_bool_t toAppend);
-    void appendDouble(double toAppend);
-    void appendArrayOfUInt(unsigned int length, unsigned int *IDs);
+    void append(dbus_uint32_t toAppend);
+    void append(char toAppend);
+    void append(bool toAppend);
+    void append(double toAppend);
+    void append(unsigned int length, unsigned int *IDs);
+    void append(std::list<SourceType> list);
+    void append(std::list<ConnectionType> list);
+    void append(std::list<SinkType> list);
 
     void sendSignal(const char* signalname);
 
@@ -63,17 +86,38 @@ private:
     DBusError m_err;
 };
 
-
-inline void DBUSMessageHandler::setConnection(DBusConnection* conn)
+class DBUSIntrospection
 {
-    m_pConnection = conn;
-}
+public:
+    DBUSIntrospection(MethodTable* table, SignalTable* stable,std::string nodename);
+    void process(DBusConnection* conn, DBusMessage* msg);
 
-inline DBusConnection* DBUSMessageHandler::getConnection()
-{
-    return m_pConnection;
-}
+private:
+    void generateString(void);
 
+    void addHeader(void);
+    void addArgument(string argname, string direction, string type);
+    void addSignalArgument(string argname, string type);
+    void addEntry(MethodTable entry);
+    void addEntry(SignalTable entry);
 
+    void openNode(string nodename);
+    void closeNode(void);
+
+    void openInterface(string interfacename);
+    void closeInterface(void);
+
+    void openMethod(string methodname);
+    void closeMethod(void);
+
+    void openSignal(string signalname);
+    void closeSignal(void);
+
+private:
+    stringstream m_introspectionString;
+    MethodTable* m_methodTable;
+    SignalTable* m_signalTable;
+    std::string m_nodename;
+};
 
 #endif // _DBUSMESSAGEWRAPPER_H_

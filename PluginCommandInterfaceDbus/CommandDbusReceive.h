@@ -27,15 +27,17 @@
 
 #include "headers.h"
 
+class DBUSIntrospection;
+
 class CommandDbusReceive {
 
 public:
-	CommandDbusReceive(CommandReceiveInterface* r_interface);
+	CommandDbusReceive(CommandReceiveInterface* r_interface, dbusRoothandler* roothandler);
 
 	bool startup_interface();
 	void stop();
+    static DBusHandlerResult receive_callback (DBusConnection *,DBusMessage *,void *);
 
-	static DBusHandlerResult receive_callback (DBusConnection *connection,DBusMessage *message,void *user_data);
 	void connect(DBusConnection* conn, DBusMessage* msg);
 	void disconnect(DBusConnection* conn, DBusMessage* msg);
 	void getListConnections(DBusConnection* conn, DBusMessage* msg);
@@ -50,11 +52,10 @@ public:
 	void emitSignalNumberofSourcesChanged();
 
 private:
-	static void* run(void * threadid);
-    pthread_t m_currentThread;
     static CommandDbusReceive* m_reference;
     CommandReceiveInterface* m_audioman;
-	bool m_running;
+	DBUSIntrospection* m_Introspection;
+    dbusRoothandler* m_roothandler;
 };
 
 #endif /* DBUSINTERFACE_H_ */

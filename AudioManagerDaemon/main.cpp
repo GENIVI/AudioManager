@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
 	core.registerHookEngine(&hookhandler);
 	core.registerReceiver(&breceiver);
 	core.registerDbusRootHandler(&dbushandler);
-	//core.registerCommandInterfa email whenever you are availce(&commandIface);
+//	core.registerCommandInterface(&commandIface);
 	router.registerDatabasehandler(&dhandler);
 	//commandIface.registerDatabasehandler(&dhandler);
 
@@ -91,7 +91,7 @@ int main(int argc, char *argv[]) {
 	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("load bus plugins"));
 	bushandler.load_Bus_plugins();
 	bushandler.StartupInterfaces();
-//	chandler.loadPlugins();
+	chandler.loadPlugins();
 	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Init phase is over, everything up and running"));
 
 	DBusConnection* con=dbushandler.returnConnection();

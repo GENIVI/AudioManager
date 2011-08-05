@@ -15,17 +15,11 @@
 #include "commandInterface.h"
 #include "DbusSend.h"
 #include "DBUSMessageHandler.h"
-#include "DBUSIntrospection.h"
+#include "dbusRoothandler.h"
 #include "DbusInterface.h"
-#include "DBUSTypes.h"
 
 
-#define BUS_NAME "DBUS"
-#define DBUS_BUSNAME "org.genivi.pulse"
-#define DBUS_PATH "/pulse"
-
-const char DBUS_SERVICE_PREFIX[] = "org.bla.audiomanagerCommand\0";
-const char DBUS_SERVICE_PREFIX_PATH[] = "/org/bla/audiomanagerCommand\0";
+const char MY_NODE[]="commandinterface\0";
 
 DLT_IMPORT_CONTEXT(DBusCommandPlugin);
 

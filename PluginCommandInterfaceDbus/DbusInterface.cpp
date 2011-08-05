@@ -35,7 +35,7 @@
 
 DLT_DECLARE_CONTEXT(DBusCommandPlugin)
 
-DbusCommandInterface::DbusCommandInterface() : m_busname(DBUS_BUSNAME), m_path(DBUS_PATH) {
+DbusCommandInterface::DbusCommandInterface() {
 
 	DLT_REGISTER_APP("DBusCommandPlugin", "DBusCommandPlugin");
 	DLT_REGISTER_CONTEXT(DBusCommandPlugin, "PluginCommand", "DBusCommandPlugin");
@@ -46,10 +46,12 @@ DbusCommandInterface::~DbusCommandInterface() {
 	delete m_DbusInterface;
 }
 
-void DbusCommandInterface::startupInterface(CommandReceiveInterface* iface) {
+void DbusCommandInterface::startupInterface(CommandReceiveInterface* iface,  dbusRoothandler* dbushandler) {
 	m_audioman = iface;
-	m_DbusInterface = new CommandDbusReceive(iface);
+	m_rootHandler = dbushandler;
+	m_DbusInterface = new CommandDbusReceive(iface,dbushandler);
 	m_DbusInterface->startup_interface();
+	m_rootHandler->registerNode(MY_NODE);
 
 	DBusError err;
     dbus_error_init(&err);

@@ -26,7 +26,6 @@
 #define DBUSINTERFACE_H_
 
 #include "headers.h"
-#include "DBUSIntrospection.h"
 
 class DBUSIntrospection;
 

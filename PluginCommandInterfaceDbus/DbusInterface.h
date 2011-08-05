@@ -44,15 +44,14 @@ public:
 	void cbConnectionChanged();
 	void cbNumberOfSinksChanged();
 	void cbNumberOfSourcesChanged();
-	void startupInterface(CommandReceiveInterface* iface);
+	void startupInterface(CommandReceiveInterface* iface,dbusRoothandler* dbushandler);
 	void stop();
 
 private:
 	CommandReceiveInterface *m_audioman;
 	CommandDbusReceive* m_DbusInterface;
 	DBusConnection* m_conn;
-	char* m_busname;
-	char* m_path;
+	dbusRoothandler* m_rootHandler;
 
 };
 

@@ -43,9 +43,9 @@ static MethodTable manager_methods[] =
 {
 	{ "connect",        		"uu",    	"u",    	&CommandDbusReceive::connect },
 	{ "disconnect",    			"uu",  		"u",    	&CommandDbusReceive::disconnect },
-	{ "getListConnections",     "",    		"a{ii}",  	&CommandDbusReceive::getListConnections },
-	{ "getListSinks",    		"",   		"a{si}",  	&CommandDbusReceive::getListSinks },
-	{ "getListSources",      	"",    		"a{si}",  	&CommandDbusReceive::getListSources },
+	{ "getListConnections",     "",    		"a(ii)",  	&CommandDbusReceive::getListConnections },
+	{ "getListSinks",    		"",   		"a(si)",  	&CommandDbusReceive::getListSinks },
+	{ "getListSources",   	   	"",    		"a(si)",  	&CommandDbusReceive::getListSources },
 	{ "interruptRequest",      	"ss",    	"u",  		&CommandDbusReceive::interruptRequest },
 	{ "interruptResume",    	"s",   		"u",  		&CommandDbusReceive::interruptResume },
 	{ "setVolume",      		"ss",	    "u",  		&CommandDbusReceive::setVolume },
@@ -59,25 +59,24 @@ static SignalTable manager_signals[] = {
 	{ "",                  		""}
 };
 
+static DBusObjectPathVTable vtable =
+{
+	NULL,CommandDbusReceive::receive_callback,NULL, NULL, NULL, NULL
+};
 
-CommandDbusReceive::CommandDbusReceive(CommandReceiveInterface* r_interface): m_audioman(r_interface),m_running(false) {
+
+
+CommandDbusReceive::CommandDbusReceive(CommandReceiveInterface* r_interface, dbusRoothandler* roothandler): m_audioman(r_interface),m_Introspection(new DBUSIntrospection(manager_methods, manager_signals,std::string(MY_NODE))),m_roothandler(roothandler) {
 }
 
 bool CommandDbusReceive::startup_interface() {
 	DLT_LOG(DBusCommandPlugin, DLT_LOG_INFO, DLT_STRING("Starting up dbus connector"));
-
-    g_pDbusMessage = new DBUSMessageHandler();
-	DLT_LOG(DBusCommandPlugin,DLT_LOG_INFO, DLT_STRING("create thread"));
-    this->m_running = true;
-    pthread_create(&m_currentThread, NULL, CommandDbusReceive::run, this);
-	DLT_LOG(DBusCommandPlugin, DLT_LOG_INFO, DLT_STRING("Started dbus connector"));
+    g_pDbusMessage = new DBUSMessageHandler(&vtable,m_roothandler->returnConnection(),this);
     return true;
 }
 
 void CommandDbusReceive::stop() {
 	DLT_LOG(DBusCommandPlugin, DLT_LOG_INFO, DLT_STRING("Stopped dbus communication"));
-    this->m_running = false;
-    pthread_join(m_currentThread, NULL);
     delete g_pDbusMessage;
 }
 
@@ -175,52 +174,34 @@ void CommandDbusReceive::emitSignalNumberofSourcesChanged() {
 }
 
 DBusHandlerResult CommandDbusReceive::receive_callback (DBusConnection *conn,DBusMessage *msg,void *user_data) {
-	(void) user_data;
+	m_reference=(CommandDbusReceive*) user_data;
 	DLT_LOG(DBusCommandPlugin, DLT_LOG_INFO, DLT_STRING("message received"));
 
-	const char *member = dbus_message_get_member(msg);
-	const char *iface = dbus_message_get_interface(msg);
+    string nodeString =std::string(DBUS_SERVICE_ROOT)+"/"+std::string(MY_NODE);
+
+	if (dbus_message_is_method_call(msg, DBUS_INTERFACE_INTROSPECTABLE, "Introspect")) {
+		m_reference->m_Introspection->process(conn,msg);
+		return DBUS_HANDLER_RESULT_HANDLED;
+	}
+
 	bool found=false;
 	int i = 0;
 
-	if (dbus_message_is_method_call(msg, DBUS_INTERFACE_INTROSPECTABLE, "Introspect")) {
-		DBUSIntrospection introspectionString(manager_methods,manager_signals);
-		introspectionString.process(conn, msg); 'a'
-		g_pDbusMessage->setConnection(conn);
-		dbus_connection_pop_message(conn);
-		return DBUS_HANDLER_RESULT_HANDLED;
-	} else if (strcmp(DBUS_SERVICE_PREFIX,iface)==0) {
-
-		while (!found && strcmp(manager_methods[i].name, "") != 0) {
-			if (strcmp(manager_methods[i].name, member) == 0)
-			{
-				MethodTable entry = manager_methods[i];
-				DLT_LOG(DBusCommandPlugin, DLT_LOG_INFO, DLT_STRING("got call for method:"),DLT_STRING(entry.name));
-				CallBackMethod m = entry.function;
-				(m_reference->*m)(conn, msg);
-				found = true;
-			}
-			i++;
+	const char *n = dbus_message_get_member(msg);
+	DLT_LOG(DBusCommandPlugin, DLT_LOG_INFO, DLT_STRING("got call for method:"),DLT_STRING(n));
+	while (!found && strcmp(manager_methods[i].name, "") != 0) {
+		if (dbus_message_is_method_call(msg,DBUS_SERVICE_SERVICE,manager_methods[i].name)) {
+			MethodTable entry = manager_methods[i];
+			DLT_LOG(DBusCommandPlugin, DLT_LOG_INFO, DLT_STRING("got call for method:"),DLT_STRING(entry.name));
+			CallBackMethod m = entry.function;
+			(m_reference->*m)(conn, msg);
+			found=true;
+			return DBUS_HANDLER_RESULT_HANDLED;
 		}
-		return DBUS_HANDLER_RESULT_HANDLED;
-	} else {
-		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+		i++;
 	}
+
+	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
-void* CommandDbusReceive::run(void * arg)
-{
-	DLT_LOG(DBusCommandPlugin, DLT_LOG_INFO, DLT_STRING("Main loop running"));
-    m_reference = (CommandDbusReceive*) arg;
-    DBusConnection* conn = g_pDbusMessage->getConnection();
-    if (!dbus_connection_add_filter(conn, (DBusHandleMessageFunction)&m_reference->receive_callback, NULL,NULL)) {
-    	DLT_LOG(DBusCommandPlugin, DLT_LOG_INFO, DLT_STRING("failing filter thread"));
-    }
-    while (m_reference->m_running && dbus_connection_read_write_dispatch(conn, -1))
-    {
-    	DLT_LOG(DBusCommandPlugin, DLT_LOG_INFO, DLT_STRING("Dispatching Most message..."));
-    }
-
-	DLT_LOG(DBusCommandPlugin, DLT_LOG_INFO, DLT_STRING("Stopping thread"));
-}
 

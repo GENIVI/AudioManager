@@ -39,12 +39,12 @@ static DBUSMessageHandler* g_pDbusMessage;
 
 static MethodTable manager_methods[] =
 {
-	{ "peekDomain",        "s",    "u",     &AudioManagerInterface::peekDomain },
-	{ "registerSource",    "sss",  "u",     &AudioManagerInterface::registerSource },
-	{ "registerSink",      "sss",    "u",  	&AudioManagerInterface::registerSink },
-	{ "registerDomain",    "sssb",   "u",  	&AudioManagerInterface::registerDomain },
-	{ "registerGateway",      "sssss",    "u",  	&AudioManagerInterface::registerGateway },
-	{ "",                  "",      "",     NULL }
+	{ "peekDomain",        "s",    		"u",     	&AudioManagerInterface::peekDomain },
+	{ "registerSource",    "sss",  		"u",     	&AudioManagerInterface::registerSource },
+	{ "registerSink",      "sss",    	"u",  		&AudioManagerInterface::registerSink },
+	{ "registerDomain",    "sssb",   	"u",  		&AudioManagerInterface::registerDomain },
+	{ "registerGateway",   "sssss",    	"u",  		&AudioManagerInterface::registerGateway },
+	{ "",                  "",      	"",     NULL }
 };
 
 static SignalTable manager_signals[] = {
@@ -52,7 +52,7 @@ static SignalTable manager_signals[] = {
 	{ "",                  		""}
 };
 
-static DBusObjectPathVTable _vtable =
+static DBusObjectPathVTable vtable =
 {
 	NULL,AudioManagerInterface::receive_callback,NULL, NULL, NULL, NULL
 };
@@ -65,14 +65,11 @@ AudioManagerInterface::AudioManagerInterface(RoutingReceiveInterface* r_interfac
 bool AudioManagerInterface::startup_interface()
 {
 	DLT_LOG(DBusPlugin, DLT_LOG_INFO, DLT_STRING("Starting up dbus connector"));
-
-    g_pDbusMessage = new DBUSMessageHandler(&_vtable,m_roothandler->returnConnection(),this);
-
+    g_pDbusMessage = new DBUSMessageHandler(&vtable,m_roothandler->returnConnection(),this);
     return true;
 }
 
 void AudioManagerInterface::stop()
-
 {
 	DLT_LOG(DBusPlugin, DLT_LOG_INFO, DLT_STRING("Stopped dbus connector"));
     delete g_pDbusMessage;
@@ -84,7 +81,7 @@ void AudioManagerInterface::peekDomain(DBusConnection* conn, DBusMessage* msg) {
 	char* name = g_pDbusMessage->getString();
 	domain_t domain = m_audioman->peekDomain(name);
 	g_pDbusMessage->initReply(msg);
-	g_pDbusMessage->appendUInt(domain);
+	g_pDbusMessage->append((dbus_uint32_t)domain);
 	g_pDbusMessage->closeReply();
 }
 
@@ -96,7 +93,7 @@ void AudioManagerInterface::registerSource(DBusConnection* conn, DBusMessage* ms
 	char* domain = g_pDbusMessage->getString();
 	source_t source=m_audioman->registerSource(name, audioclass, domain);
 	g_pDbusMessage->initReply(msg);
-	g_pDbusMessage->appendUInt(source);
+	g_pDbusMessage->append((dbus_uint32_t)source);
 	g_pDbusMessage->closeReply();
 }
 void AudioManagerInterface::registerSink(DBusConnection* conn, DBusMessage* msg) {
@@ -107,7 +104,7 @@ void AudioManagerInterface::registerSink(DBusConnection* conn, DBusMessage* msg)
 	char* domain = g_pDbusMessage->getString();
 	sink_t sink=m_audioman->registerSink(name, audioclass, domain);
 	g_pDbusMessage->initReply(msg);
-	g_pDbusMessage->appendUInt(sink);
+	g_pDbusMessage->append((dbus_uint32_t)sink);
 	g_pDbusMessage->closeReply();
 }
 
@@ -121,7 +118,7 @@ void AudioManagerInterface::registerDomain(DBusConnection* conn, DBusMessage* ms
 	bool earlymode = g_pDbusMessage->getString();
 	domain_t domain=m_reference->m_audioman->registerDomain(name, busname, node, earlymode);
 	g_pDbusMessage->initReply(msg);
-	g_pDbusMessage->appendUInt(domain);
+	g_pDbusMessage->append((dbus_uint32_t)domain);
 	g_pDbusMessage->closeReply();
 
 }
@@ -136,7 +133,7 @@ void AudioManagerInterface::registerGateway(DBusConnection* conn, DBusMessage* m
 	char* controlDomain = g_pDbusMessage->getString();
 	domain_t domain=m_audioman->registerGateway(name, sink, source, domainSource, domainSink, controlDomain);
 	g_pDbusMessage->initReply(msg);
-	g_pDbusMessage->appendUInt(domain);
+	g_pDbusMessage->append((dbus_uint32_t)domain);
 	g_pDbusMessage->closeReply();
 	emit_systemReady();
 }

@@ -60,7 +60,7 @@ void CommandHandler::loadPlugins(){
         }
 
 
-        CommandPlugin->startupInterface(m_receiver);
+        CommandPlugin->startupInterface(m_receiver,m_core->returnDbusHandler());
 		DLT_LOG( AudioManager, DLT_LOG_INFO, DLT_STRING("Registered Routing Plugin"));
         m_interfaceList.push_back(CommandPlugin);
     }
