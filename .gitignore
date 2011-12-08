@@ -11,3 +11,4 @@ dbusInterfaces/tcpMessages.h
 *.project
 .metadata/
 /music/navi.mp3
+/test

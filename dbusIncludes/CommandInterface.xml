@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE node PUBLIC
+  "-//freedesktop//DTD D-Bus Object Introspection 1.0//EN"
+  "http://standards.freedesktop.org/dbus/1.0/introspect.dtd">
+
+<node>
+     <interface name="org.genivi.audiomanager.CommandInterface">
+
+        <method name="Connect">
+            <arg type="q" name="sourceID" direction="in"/>
+            <arg type="q" name="sinkID" direction="in"/>
+            <arg type="n" name="result" direction="out"/> <!-- method return code (am_Error_e) -->
+            <arg type="q" name="mainConnectionID" direction="out"/>
+        </method>
+
+        <method name="Disconnect">
+            <arg type="q" name="mainConnectionID" direction="in"/>
+            <arg type="n" name="result" direction="out"/> <!-- method return code (am_Error_e) -->
+        </method>
+
+        <method name="SetVolume">
+            <arg type="q" name="sinkID" direction="in"/>
+            <arg type="n" name="volume" direction="in"/>
+            <arg type="n" name="result" direction="out"/> <!-- method return code (am_Error_e) -->
+        </method>
+
+        <method name="VolumeStep">
+            <arg type="q" name="sinkID" direction="in"/>
+            <arg type="n" name="volumeStep" direction="in"/>
+            <arg type="n" name="result" direction="out"/> <!-- method return code (am_Error_e) -->
+        </method>
+
+        <method name="SetSinkMuteState">
+            <arg type="q" name="sinkID" direction="in"/>
+            <arg type="n" name="muteState" direction="in"/>
+            <arg type="n" name="result" direction="out"/> <!-- method return code (am_Error_e) -->
+        </method>
+
+        <method name="SetMainSinkSoundProperty">
+            <arg type="q" name="sinkID" direction="in"/>
+            <arg type="(nn)" name="soundProperty" direction="in"/>
+            <arg type="n" name="result" direction="out"/> <!-- method return code (am_Error_e) -->
+        </method>
+
+        <method name="SetMainSourceSoundProperty">
+            <arg type="q" name="sourceID" direction="in"/>
+            <arg type="(nn)" name="soundProperty" direction="in"/>
+            <arg type="n" name="result" direction="out"/> <!-- method return code (am_Error_e) -->
+        </method>
+
+        <method name="SetSystemProperty">
+            <arg type="(nn)" name="property" direction="in"/>
+            <arg type="n" name="result" direction="out"/> <!-- method return code (am_Error_e) -->
+        </method>
+
+        <method name="GetListMainConnections">
+            <arg type="n" name="result" direction="out"/> <!-- method return code (am_Error_e) -->
+            <arg type="a(nnnqq)" name="listConnections" direction="out"/> <!-- am_mainConnectionID_t mainConnectionID; am_sourceID_t sourceID; am_sinkID_t sinkID; am_timeSync_t delay; am_ConnectionState_e connectionState; -->
+        </method>
+
+        <method name="GetListMainSinks">
+            <arg type="n" name="result" direction="out"/> <!-- method return code (am_Error_e) -->
+            <arg type="a(qs(nn)nnq)" name="listMainSinks" direction="out"/> <!-- am_sinkID_t sinkID; std::string name; am_Availability_s availability; am_mainVolume_t volume; am_MuteState_e muteState; am_sinkClass_t sinkClassID; -->
+        </method>
+
+        <method name="GetListMainSources">
+            <arg type="n" name="result" direction="out"/> <!-- method return code (am_Error_e) -->
+            <arg type="a(qs(nn)q)" name="listMainSources" direction="out"/> <!-- am_sourceID_t sourceID; std::string name; am_Availability_s availability; am_sourceClass_t sourceClassID; -->
+        </method>
+
+        <method name="GetListMainSinkSoundProperties">
+            <arg type="q" name="sinkID" direction="in"/> 
+            <arg type="n" name="result" direction="out"/> <!-- method return code (am_Error_e) -->
+            <arg type="a(nn)" name="listSoundProperties" direction="out"/> <!-- am_MainSoundPropertyType_e type; int16_t value; -->
+        </method>
+
+        <method name="GetListMainSourceSoundProperties">
+            <arg type="q" name="sourceID" direction="in"/>
+            <arg type="n" name="result" direction="out"/> <!-- method return code (am_Error_e) -->
+            <arg type="a(nn)" name="listSourceProperties" direction="out"/> <!-- am_MainSoundPropertyType_e type; int16_t value; -->
+        </method>
+
+        <method name="GetListSourceClasses">
+            <arg type="n" name="result" direction="out"/> <!-- method return code (am_Error_e) -->
+            <arg type="a(qsa(nn))" name="listSourceClasses" direction="out"/> <!-- am_sourceClass_t SourceClassID; std::string name; std::vector<am_ClassProperty_s> listClassProperties; -->
+        </method>
+
+        <method name="GetListSinkClasses">
+            <arg type="n" name="result" direction="out"/> <!-- method return code (am_Error_e) -->
+            <arg type="a(qsa(nn))" name="listSinkClasses" direction="out"/> <!-- am_sourceClass_t SinkClassID; std::string name; std::vector<am_ClassProperty_s> listClassProperties; -->
+        </method>
+
+        <method name="GetListSystemProperties">
+            <arg type="n" name="result" direction="out"/> <!-- method return code (am_Error_e) -->
+            <arg type="a(nn)" name="listSystemProperties" direction="in"/> <!-- am_SystemProperty_e type; int16_t value; -->
+        </method>
+
+        <method name="GetTimingInformation">
+            <arg type="q" name="mainConnectionID" direction="in"/>
+            <arg type="n" name="result" direction="out"/> <!-- method return code (am_Error_e) -->
+            <arg type="n" name="delay" direction="out"/>
+        </method>
+
+        <signal name="NumberOfMainConnectionsChanged">
+        </signal>
+
+	<signal name="SinkAdded">
+            	<arg type="(qs(nn)nnq)" name="newSink" direction="out"/>
+        </signal>
+		
+	<signal name="SinkRemoved">
+		<arg type="q" name="removedSinkID" direction="out"/>
+        </signal>
+
+	<signal name="SourceAdded">
+            	<arg type="(qs(nn)q)" name="newSource" direction="out"/>
+        </signal>
+		
+	<signal name="SourceRemoved">
+		<arg type="q" name="removedSourceID" direction="out"/>
+        </signal>
+
+        <signal name="NumberOfSinkClassesChanged">
+        </signal>
+
+        <signal name="NumberOfSourceClassesChanged">
+        </signal>
+
+        <signal name="MainConnectionStateChanged">
+            <arg type="q" name="connectionID" direction="out"/>
+            <arg type="n" name="connectionState" direction="out"/>
+        </signal>
+
+        <signal name="MainSinkSoundPropertyChanged">
+            <arg type="q" name="sinkID" direction="out"/>
+            <arg type="(nn)" name="SoundProperty" direction="out"/>
+        </signal>
+
+        <signal name="MainSourceSoundPropertyChanged">
+            <arg type="q" name="sourceID" direction="out"/>
+            <arg type="(nn)" name="SoundProperty" direction="out"/>
+        </signal>
+
+        <signal name="SinkAvailabilityChanged">
+            <arg type="q" name="sinkID" direction="out"/>
+            <arg type="(nn)" name="availability" direction="out"/>
+        </signal>
+
+        <signal name="SourceAvailabilityChanged">
+            <arg type="q" name="sourceID" direction="out"/>
+            <arg type="(nn)" name="availability" direction="out"/>
+        </signal>
+
+        <signal name="VolumeChanged">
+            <arg type="q" name="sinkID" direction="out"/>
+            <arg type="n" name="volume" direction="out"/>
+        </signal>
+
+        <signal name="SinkMuteStateChanged">
+            <arg type="q" name="sinkID" direction="out"/>
+            <arg type="n" name="muteState" direction="out"/>
+        </signal>
+
+            <signal name="SystemPropertyChanged">
+            <arg type="(nn)" name="SystemProperty" direction="out"/>
+        </signal>
+
+        <signal name="TimingInformationChanged">
+            <arg type="q" name="mainConnection" direction="out"/>
+            <arg type="n" name="time" direction="out"/>
+        </signal>
+
+    </interface>
+</node>

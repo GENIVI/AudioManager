@@ -21,6 +21,7 @@ BUILD_DIRECTORY="build"
 PLUGINS_DIRECTORY="plugins"
 DOC_DIRECTORY="doc"
 BIN_DIRECTORY="bin"
+TEST_DIRECTORY="test"
 ACTION=$1
 ABS=`exec pwd`
 APPLICATION_LIST=$(find . -maxdepth 1 -type d \( -name "[A-Z]*" -a  -not \( -name "Plugin*" \) \) )
@@ -38,6 +39,15 @@ make_build ()
 		cd ..
 	fi
 
+	TEST=$ABS"/"$TEST_DIRECTORY
+	if [ ! -d "${TEST}" ]; 
+	then
+		echo "create Bin Dir: $TEST_DIRECTORY"
+		mkdir $TEST_DIRECTORY
+		cd $TEST_DIRECTORY
+		cd ..
+	fi
+
 	ABSOLUTE=$ABS"/"$BUILD_DIRECTORY
 	if [ ! -d "${ABSOLUTE}" ]; 
 	then
@@ -50,7 +60,6 @@ make_build ()
 		echo "create Build Dir: $PLUGINS_DIRECTORY"
 		mkdir $PLUGINS_DIRECTORY
 	fi
-
 }
 # does cmake for list in $1
 do_cmake_plugin ()
