@@ -12,13 +12,10 @@
 
 using namespace am;
 
-class ControlLoader {
+class ControlSender : private ControlSendInterface {
 public:
-	ControlLoader();
-	virtual ~ControlLoader();
-	ControlSendInterface* returnControl();
-private:
-	ControlSendInterface* mControler;
+	ControlSender();
+	virtual ~ControlSender();
 };
 
 #endif /* CONTROLLOADER_H_ */

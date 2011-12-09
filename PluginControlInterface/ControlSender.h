@@ -12,10 +12,10 @@
 
 using namespace am;
 
-class ControlSender: public ControlSendInterface {
+class ControlSenderPlugin: public ControlSendInterface {
 public:
-	ControlSender();
-	virtual ~ControlSender();
+	ControlSenderPlugin();
+	virtual ~ControlSenderPlugin();
 	am_Error_e startupController(ControlReceiveInterface* controlreceiveinterface) ;
 	am_Error_e stopController() ;
 	void hookAllPluginsLoaded() ;

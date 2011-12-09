@@ -421,6 +421,39 @@ void databaseTest::createMainConnectionSetup()
 	ASSERT_EQ(true,equal);
 }
 
+TEST_F(databaseTest,changeConnectionTimingInformationCheckMainConnection)
+{
+	am_Connection_s connection;
+	am_connectionID_t connectionID;
+	std::vector<am_Connection_s> connectionList;
+	std::vector<am_MainConnectionType_s> mainList;
+	createConnection(connection);
+	createMainConnectionSetup();
+	ASSERT_EQ(-E_OK,pDatabaseHandler.getListVisibleMainConnections(mainList));
+	ASSERT_EQ(mainList[0].delay,-1);
+	ASSERT_EQ(E_OK,pDatabaseHandler.getListConnections(connectionList));
+	std::vector<am_Connection_s>::iterator iteratorConnectionList=connectionList.begin();
+	for(;iteratorConnectionList<connectionList.end();++iteratorConnectionList)
+	{
+		ASSERT_EQ(E_OK,pDatabaseHandler.changeConnectionTimingInformation(iteratorConnectionList->sinkID,24));
+	}
+	ASSERT_EQ(E_OK,pDatabaseHandler.getListVisibleMainConnections(mainList));
+	ASSERT_NE(mainList[0].delay,-1);
+}
+
+TEST_F(databaseTest,changeConnectionTimingInformation)
+{
+	am_Connection_s connection;
+	am_connectionID_t connectionID;
+	std::vector<am_Connection_s> connectionList;
+	createConnection(connection);
+
+	ASSERT_EQ(E_OK,pDatabaseHandler.enterConnectionDB(connection,connectionID));
+	ASSERT_EQ(E_OK,pDatabaseHandler.changeConnectionTimingInformation(connectionID,24));
+	ASSERT_EQ(E_OK,pDatabaseHandler.getListConnections(connectionList));
+	ASSERT_TRUE(connectionList[0].delay==24);
+}
+
 TEST_F(databaseTest,getSinkClassOfSink)
 {
 	std::vector<am_SinkClass_s> sinkClassList;

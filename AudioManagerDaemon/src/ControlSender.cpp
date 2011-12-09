@@ -5,11 +5,11 @@
  *      Author: christian
  */
 
-#include "ControlLoader.h"
+#include "ControlSender.h"
 #include "pluginTemplate.h"
 #include <string>
 
-ControlLoader::ControlLoader()
+ControlSender::ControlSender()
 {
 	ControlSendInterface* (*createFunc)();
 	std::string libPath="/home/christian/workspace/gitserver/build/plugins/control/libPluginControlInterface.so";
@@ -29,13 +29,13 @@ ControlLoader::ControlLoader()
 
 
 
-ControlLoader::~ControlLoader()
+ControlSender::~ControlSender()
 {
 }
 
 
 
-ControlSendInterface *ControlLoader::returnControl()
+ControlSendInterface *ControlSender::returnControl()
 {
 	return mControler;
 }

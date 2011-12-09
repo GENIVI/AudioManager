@@ -2801,7 +2801,7 @@ am_Error_e DatabaseHandler::changeConnectionTimingInformation(const am_connectio
 {
 	assert(connectionID!=0);
 
-	sqlite3_stmt* query=NULL;
+	sqlite3_stmt *query=NULL, *queryMainConnections;
 	int eCode=0;
 	std::string command= "UPDATE " + std::string(CONNECTION_TABLE) + " set delay=? WHERE connectionID=?";
 
@@ -2811,18 +2811,96 @@ am_Error_e DatabaseHandler::changeConnectionTimingInformation(const am_connectio
 
 	if((eCode=sqlite3_step(query))!=SQLITE_DONE)
 	{
-		DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::enterConnectionDB SQLITE Step error code:"),DLT_INT(eCode));
+		DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeConnectionTimingInformation SQLITE Step error code:"),DLT_INT(eCode));
 		return E_DATABASE_ERROR;
 	}
 
 	if((eCode=sqlite3_finalize(query))!=SQLITE_OK)
 	{
-		DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::enterConnectionDB SQLITE Finalize error code:"),DLT_INT(eCode));
+		DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeConnectionTimingInformation SQLITE Finalize error code:"),DLT_INT(eCode));
 		return E_DATABASE_ERROR;
 	}
 
-	//todo: add DLT Info Message here
+	//now we need to find all mainConnections that use the changed connection and update their timing
+	am_mainConnectionID_t mainConnectionID;
+	am_timeSync_t tempDelay=0;
+	am_Error_e error;
+	command= "SELECT mainConnectionID FROM " + std::string(MAINCONNECTION_TABLE);
+	sqlite3_prepare_v2(mDatabase,command.c_str(),-1,&queryMainConnections,NULL);
+
+	while((eCode=sqlite3_step(queryMainConnections))==SQLITE_ROW)
+	{
+		mainConnectionID=sqlite3_column_int(queryMainConnections,0);
+		if(connectionPartofMainConnection(connectionID,mainConnectionID))
+		{
+			tempDelay=calculateMainConnectionDelay(mainConnectionID);
+			if ((error=changeDelayMainConnection(tempDelay,mainConnectionID))!= E_OK)
+			{
+				return error;
+			}
+		}
+	}
+
+	if(eCode!=SQLITE_DONE)
+	{
+		DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeConnectionTimingInformation SQLITE error code:"),DLT_INT(eCode));
+		return E_DATABASE_ERROR;
+	}
+
+	if((eCode=sqlite3_finalize(queryMainConnections))!=SQLITE_OK)
+	{
+		DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeConnectionTimingInformation SQLITE Finalize error code:"),DLT_INT(eCode));
+		return E_DATABASE_ERROR;
+	}
+
 	return E_OK;
+}
+
+bool DatabaseHandler::connectionPartofMainConnection(const am_connectionID_t connectionID, const am_mainConnectionID_t mainConnectionID) const
+{
+	sqlite3_stmt* query=NULL;
+	std::string command = "SELECT connectionID FROM MainConnectionRoute"+ int2string(mainConnectionID)+ " WHERE connectionID=" + int2string(connectionID);
+	int eCode=0;
+	bool returnVal=true;
+	sqlite3_prepare_v2(mDatabase,command.c_str(),-1,&query,NULL);
+	if ((eCode=sqlite3_step(query))==SQLITE_DONE) returnVal=false;
+	else if (eCode!=SQLITE_ROW)
+	{
+		returnVal=false;
+		DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::connectionPartofMainConnection database error!:"), DLT_INT(eCode))
+	}
+	sqlite3_finalize(query);
+	return returnVal;
+}
+
+am_timeSync_t DatabaseHandler::calculateMainConnectionDelay(const am_mainConnectionID_t mainConnectionID) const
+{
+	assert (mainConnectionID!=0);
+	sqlite3_stmt* query=NULL;
+	std::string command = "SELECT delay FROM MainConnectionRoute"+ int2string(mainConnectionID);
+	int eCode=0;
+	am_timeSync_t delay=0;
+	sqlite3_prepare_v2(mDatabase,command.c_str(),-1,&query,NULL);
+	while((eCode=sqlite3_step(query))==SQLITE_ROW)
+	{
+		int16_t temp_delay=sqlite3_column_int(query,0);
+		if (temp_delay!=-1 && delay!=-1) delay+=temp_delay;
+		else delay=-1;
+	}
+	if((eCode=sqlite3_step(query))!=SQLITE_DONE)
+	{
+		DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::calculateMainConnectionDelay SQLITE Step error code:"),DLT_INT(eCode));
+		return E_DATABASE_ERROR;
+	}
+
+	if((eCode=sqlite3_finalize(query))!=SQLITE_OK)
+	{
+		DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::calculateMainConnectionDelay SQLITE Finalize error code:"),DLT_INT(eCode));
+		return E_DATABASE_ERROR;
+	}
+
+	if (delay==0) delay=-1;
+	return delay;
 }
 
 void DatabaseHandler::createTables()

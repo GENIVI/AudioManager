@@ -137,10 +137,12 @@ public:
 	bool existSourceClass(const am_sourceClass_t sourceClassID) const;
 
 private:
+	am_timeSync_t calculateMainConnectionDelay(const am_mainConnectionID_t mainConnectionID) const;
+	bool connectionPartofMainConnection(const am_connectionID_t connectionID,const am_mainConnectionID_t mainConnectionID) const;
 	bool sqQuery(const std::string& query);
 	bool openDatabase();
 	void createTables();
-	sqlite3 *mDatabase; //!< pointer to database
+	sqlite3 *mDatabase;
 	std::string mPath;
 	bool mFirstStaticSink;
 	bool mFirstStaticSource;

@@ -68,7 +68,7 @@ am_Error_e CommandReceiver::setSystemProperty(const am_SystemProperty_s & proper
 
 am_Error_e CommandReceiver::getListMainConnections(std::vector<am_MainConnectionType_s> & listConnections) const
 {
-	mDatabaseHandler->getListVisibleMainConnections(listConnections);
+	return mDatabaseHandler->getListVisibleMainConnections(listConnections);
 
 }
 
@@ -76,48 +76,56 @@ am_Error_e CommandReceiver::getListMainConnections(std::vector<am_MainConnection
 
 am_Error_e CommandReceiver::getListMainSinks(std::vector<am_SinkType_s>& listMainSinks) const
 {
+	return mDatabaseHandler->getListMainSinks(listMainSinks);
 }
 
 
 
 am_Error_e CommandReceiver::getListMainSources(std::vector<am_SourceType_s>& listMainSources) const
 {
+	return mDatabaseHandler->getListMainSources(listMainSources);
 }
 
 
 
 am_Error_e CommandReceiver::getListMainSinkSoundProperties(const am_sinkID_t sinkID, std::vector<am_MainSoundProperty_s> & listSoundProperties) const
 {
+	return mDatabaseHandler->getListMainSinkSoundProperties(sinkID,listSoundProperties);
 }
 
 
 
 am_Error_e CommandReceiver::getListMainSourceSoundProperties(const am_sourceID_t sourceID, std::vector<am_MainSoundProperty_s> & listSourceProperties) const
 {
+	return mDatabaseHandler->getListMainSourceSoundProperties(sourceID,listSourceProperties);
 }
 
 
 
 am_Error_e CommandReceiver::getListSourceClasses(std::vector<am_SourceClass_s> & listSourceClasses) const
 {
+	return mDatabaseHandler->getListSourceClasses(listSourceClasses);
 }
 
 
 
 am_Error_e CommandReceiver::getListSinkClasses(std::vector<am_SinkClass_s> & listSinkClasses) const
 {
+	return mDatabaseHandler->getListSinkClasses(listSinkClasses);
 }
 
 
 
 am_Error_e CommandReceiver::getListSystemProperties(std::vector<am_SystemProperty_s> & listSystemProperties) const
 {
+	return mDatabaseHandler->getListSystemProperties(listSystemProperties);
 }
 
 
 
 am_Error_e CommandReceiver::getTimingInformation(const am_mainConnectionID_t mainConnectionID, am_timeSync_t & delay) const
 {
+	return mDatabaseHandler->getTimingInformation(mainConnectionID,delay);
 }
 
 
