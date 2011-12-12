@@ -29,7 +29,7 @@
 #include <sstream>
 #include <string>
 
-DLT_IMPORT_CONTEXT(AudioManager);
+DLT_IMPORT_CONTEXT(AudioManager)
 
 
 #define ROOT_INTROSPECT_XML												\

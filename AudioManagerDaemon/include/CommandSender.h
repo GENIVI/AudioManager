@@ -8,8 +8,11 @@
 #ifndef COMMANDSENDER_H_
 #define COMMANDSENDER_H_
 
-#include "pluginTemplate.h"
 #include "command/CommandSendInterface.h"
+
+#ifdef UNIT_TEST
+#include "../test/CommandInterfaceBackdoor.h"
+#endif
 
 using namespace am;
 
@@ -35,8 +38,13 @@ public:
 	void cbSinkMuteStateChanged(const am_sinkID_t sinkID, const am_MuteState_e muteState) ;
 	void cbSystemPropertyChanged(const am_SystemProperty_s& SystemProperty) ;
 	void cbTimingInformationChanged(const am_mainConnectionID_t mainConnection, const am_timeSync_t time) ;
+#ifdef UNIT_TEST
+	friend class CommandInterfaceBackdoor;
+#endif
 private:
+	void unloadLibraries(void);
 	std::vector<CommandSendInterface*> mListInterfaces;
+	std::vector<void*> mListLibraryHandles;
 };
 
 #endif /* COMMANDSENDER_H_ */

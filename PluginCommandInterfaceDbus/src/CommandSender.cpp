@@ -34,7 +34,7 @@
 #include <assert.h>
 #include <set>
 
-DLT_DECLARE_CONTEXT(DBusCommandPlugin);
+DLT_DECLARE_CONTEXT(DBusCommandPlugin)
 
 /**
  * factory for plugin loading
@@ -66,6 +66,7 @@ DbusCommandSender::DbusCommandSender()
 DbusCommandSender::~DbusCommandSender()
 {
 	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("DbusCommandSender destructed"));
+	DLT_UNREGISTER_CONTEXT(DBusCommandPlugin);
 }
 
 am_Error_e DbusCommandSender::startupInterface(CommandReceiveInterface* commandreceiveinterface)
@@ -76,7 +77,7 @@ am_Error_e DbusCommandSender::startupInterface(CommandReceiveInterface* commandr
 	mCommandReceiverShadow.setCommandReceiver(mCommandReceiveInterface);
 	mCommandReceiveInterface->getDBusConnectionWrapper(mDBusWrapper);
 	assert(mDBusWrapper!=NULL);
-	return E_OK;
+	return (E_OK);
 }
 
 
@@ -87,7 +88,7 @@ am_Error_e DbusCommandSender::stopInterface()
 	/**
 	 * todo: finish DbusCommandSender::stopInterface(), what needs to be done?
 	 */
-	return E_OK;
+	return(E_OK);
 }
 
 

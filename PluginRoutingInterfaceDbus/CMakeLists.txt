@@ -2,9 +2,9 @@ cmake_minimum_required(VERSION 2.6)
 
 PROJECT(PluginRoutingInterfaceDbus)
 
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Xlinker -export-dynamic")
+#set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Xlinker -export-dynamic")
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
-set(CMAKE_CXX_FLAGS "-g -pipe -g -Wall -W -D_REENTRANT")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -pipe -g -Wall -W -D_REENTRANT")
 
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -14,6 +14,7 @@ set(EXECUTABLE_OUTPUT_PATH ../../bin/)
 set(LIBRARY_OUTPUT_PATH ../plugins/routing)
 set(DOC_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/../doc/RoutingDBusPlugin)
 set(AUDIO_INCLUDES_FOLDER ${CMAKE_SOURCE_DIR}/../includes)
+set(INCLUDES_FOLDER ${CMAKE_SOURCE_DIR}/include)
 
 find_package (Threads)
 FIND_PACKAGE(DBUS REQUIRED)
@@ -32,12 +33,12 @@ INCLUDE_DIRECTORIES(
  	${DBUS_INCLUDE_DIR}
 	${DBUS_ARCH_INCLUDE_DIR}
 	${AUDIO_INCLUDES_FOLDER}
+	${INCLUDES_FOLDER}
 )
 
 # all source files go here
-SET(PLUGINDBUS_SRCS_CXX
-	RoutingSender.cpp
-)
+file(GLOB PLUGINDBUS_SRCS_CXX "src/*.cpp")
+
 
 add_library(PluginRoutingInterfaceDbus SHARED ${PLUGINDBUS_SRCS_CXX})
 

@@ -9,7 +9,7 @@
 
 
 extern "C" RoutingSendInterface* PluginRoutingInterfaceDbusFactory() {
-    return new DbusRoutingSender();
+    return (new DbusRoutingSender());
 }
 
 extern "C" void destroyRoutingPluginInterfaceDbus(RoutingSendInterface* routingSendInterface) {

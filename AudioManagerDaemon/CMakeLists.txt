@@ -13,9 +13,10 @@ cmake_minimum_required(VERSION 2.6)
 
 PROJECT(AudioManagerDeamon)
 
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Xlinker -export-dynamic")
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
-set(CMAKE_CXX_FLAGS "-g -pipe -g -Wall -W -D_REENTRANT")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -rdynamic")
+#set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+
 
 ##todo only when dbus needed!
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -39,7 +40,6 @@ pkg_check_modules(DLT REQUIRED automotive-dlt)
 ##todo: only when dbus is reuqired !
 find_package (Threads)
 FIND_PACKAGE(DBUS REQUIRED)
-INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR} ${STD_INCLUDE_DIRS})
 
 file(GLOB AUDIOMAN_SRCS_CXX "src/*.cpp")
 
@@ -54,7 +54,6 @@ INCLUDE_DIRECTORIES(
 	${DBUS_ARCH_INCLUDE_DIR}
 	${DBUS_INCLUDES_FOLDER}
 )
-
 
 ADD_EXECUTABLE(AudioManager ${AUDIOMAN_SRCS_CXX})
 

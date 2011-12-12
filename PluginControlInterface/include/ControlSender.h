@@ -9,6 +9,7 @@
 #define CONTROLSENDER_H_
 
 #include <control/ControlSendInterface.h>
+#include <control/ControlReceiveInterface.h>
 
 using namespace am;
 

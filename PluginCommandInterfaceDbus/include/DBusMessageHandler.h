@@ -39,7 +39,7 @@ using std::string;
 #include <list>
 #include <dlt/dlt.h>
 
-DLT_IMPORT_CONTEXT(DBusCommandPlugin);
+DLT_IMPORT_CONTEXT(DBusCommandPlugin)
 
 /**
  * handles DBus Messages, is used to extract & append parameters and send messages

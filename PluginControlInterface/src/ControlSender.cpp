@@ -24,9 +24,9 @@ ControlSenderPlugin::~ControlSenderPlugin() {
 	// TODO Auto-generated destructor stub
 }
 
-am_Error_e ControlSendInterface::startupController(ControlReceiveInterface* controlreceiveinterface)
-{
-}
+//am_Error_e ControlSendInterface::startupController(ControlReceiveInterface* controlreceiveinterface)
+//{
+//}
 
 
 

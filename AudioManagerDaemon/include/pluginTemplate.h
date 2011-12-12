@@ -35,14 +35,14 @@
 #include <string>
 #include <dlt/dlt.h>
 
-DLT_IMPORT_CONTEXT(AudioManager);
+DLT_IMPORT_CONTEXT(AudioManager)
 
 /**
  * This template tries to load a library and cast ot to a class
  * @param libname the full path to the library to be loaded
  * @return returns the pointer to the class to be loaded
  */
-template<class T>T* getCreateFunction(std::string libname) {
+template<class T>T* getCreateFunction(const std::string& libname, void*& libraryHandle) {
 
 	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Trying to load libray with name: "),DLT_STRING(libname.c_str()));
 
@@ -54,9 +54,8 @@ template<class T>T* getCreateFunction(std::string libname) {
 	std::string createFunctionName = libFileName.substr(3, libFileName.length() - 6) + "Factory";
 
 	// open library
-	void *libraryHandle;
 	dlerror(); // Clear any existing error
-	libraryHandle = dlopen(libname.c_str(), RTLD_NOW /*LAZY*/);
+	libraryHandle = dlopen(libname.c_str(), RTLD_LAZY);
 	const char* dlopen_error = dlerror();
 	if (!libraryHandle || dlopen_error)
 	{

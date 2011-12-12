@@ -8,9 +8,14 @@
 #ifndef ROUTINGSENDER_H_
 #define ROUTINGSENDER_H_
 
-#include "pluginTemplate.h"
 #include "routing/RoutingSendInterface.h"
+
+#ifdef UNIT_TEST //this is needed to test RoutingSender
+#include "../test/RoutingInterfaceBackdoor.h"
+#endif
+
 #include <map>
+#include <set>
 
 using namespace am;
 
@@ -18,6 +23,14 @@ class RoutingSender {
 public:
 	RoutingSender();
 	virtual ~RoutingSender();
+
+	/**
+	 * removes a handle from the list
+	 * @param handle to be removed
+	 * @return E_OK in case of success
+	 */
+	am_Error_e removeHandle(const am_Handle_s& handle);
+
 	/**
 	 * @author Christian
 	 * this adds the domain to the lookup table of the Router. The data is used to have a quick lookup of the correct pluginInterface.
@@ -65,18 +78,17 @@ public:
 	void startupRoutingInterface(RoutingReceiveInterface* routingreceiveinterface) ;
 	void routingInterfacesReady() ;
 	void routingInterfacesRundown() ;
-	am_Error_e asyncAbort(const am_Handle_s handle) ;
-	am_Error_e asyncConnect(const am_Handle_s handle, const am_connectionID_t connectionID, const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_ConnectionFormat_e connectionFormat) ;
-	am_Error_e asyncDisconnect(const am_Handle_s handle, const am_connectionID_t connectionID) ;
-	am_Error_e asyncSetSinkVolume(const am_Handle_s handle, const am_sinkID_t sinkID, const am_volume_t volume, const am_RampType_e ramp, const am_time_t time) ;
-	am_Error_e asyncSetSourceVolume(const am_Handle_s handle, const am_sourceID_t sourceID, const am_volume_t volume, const am_RampType_e ramp, const am_time_t time) ;
-	am_Error_e asyncSetSourceState(const am_Handle_s handle, const am_sourceID_t sourceID, const am_SourceState_e state) ;
-	am_Error_e asyncSetSinkSoundProperty(const am_Handle_s handle, const am_sinkID_t sinkID, const am_SoundProperty_s& soundProperty) ;
-	am_Error_e asyncSetSourceSoundProperty(const am_Handle_s handle, const am_sourceID_t sourceID, const am_SoundProperty_s& soundProperty) ;
-	am_Error_e asyncCrossFade(const am_Handle_s handle, const am_crossfaderID_t crossfaderID, const am_HotSink_e hotSink, const am_RampType_e rampType, const am_time_t time) ;
+	am_Error_e asyncAbort(const am_Handle_s& handle) ;
+	am_Error_e asyncConnect(am_Handle_s& handle, const am_connectionID_t connectionID, const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_ConnectionFormat_e connectionFormat) ;
+	am_Error_e asyncDisconnect(am_Handle_s& handle, const am_connectionID_t connectionID) ;
+	am_Error_e asyncSetSinkVolume(am_Handle_s& handle, const am_sinkID_t sinkID, const am_volume_t volume, const am_RampType_e ramp, const am_time_t time) ;
+	am_Error_e asyncSetSourceVolume(am_Handle_s& handle, const am_sourceID_t sourceID, const am_volume_t volume, const am_RampType_e ramp, const am_time_t time) ;
+	am_Error_e asyncSetSourceState(am_Handle_s& handle, const am_sourceID_t sourceID, const am_SourceState_e state) ;
+	am_Error_e asyncSetSinkSoundProperty(am_Handle_s& handle, const am_sinkID_t sinkID, const am_SoundProperty_s& soundProperty) ;
+	am_Error_e asyncSetSourceSoundProperty(am_Handle_s& handle, const am_sourceID_t sourceID, const am_SoundProperty_s& soundProperty) ;
+	am_Error_e asyncCrossFade(am_Handle_s& handle, const am_crossfaderID_t crossfaderID, const am_HotSink_e hotSink, const am_RampType_e rampType, const am_time_t time) ;
 	am_Error_e setDomainState(const am_domainID_t domainID, const am_DomainState_e domainState) ;
-	am_Error_e returnBusName(std::string& BusName) const ;
-private:
+	am_Error_e getListHandles(std::vector<am_Handle_s> & listHandles) const ;
 
 	struct InterfaceNamePairs
 	{
@@ -84,18 +96,40 @@ private:
 		std::string busName;
 	};
 
+#ifdef UNIT_TEST //this is needed to test RoutingSender
+	friend class RoutingInterfaceBackdoor;
+#endif
+private:
+	struct compareHandles
+	{
+		bool operator()(const am_Handle_s& a, const am_Handle_s& b) const
+		{
+			{
+				return (a.handle < b.handle);
+			}
+		}
+	};
+
+	am_Handle_s createHandle(const am_Handle_e handle);
+	void unloadLibraries(void);
+
     typedef std::map<am_domainID_t, RoutingSendInterface*> DomainInterfaceMap;
     typedef std::map<am_sinkID_t, RoutingSendInterface*> SinkInterfaceMap;
     typedef std::map<am_sourceID_t, RoutingSendInterface*> SourceInterfaceMap;
     typedef std::map<am_crossfaderID_t, RoutingSendInterface*> CrossfaderInterfaceMap;
     typedef std::map<am_connectionID_t, RoutingSendInterface*> ConnectionInterfaceMap;
+    typedef std::map<uint16_t, RoutingSendInterface*> HandleInterfaceMap;
 
+    int16_t mHandleCount;
+    std::set<am_Handle_s,compareHandles> mlistActiveHandles;
 	std::vector<InterfaceNamePairs> mListInterfaces;
+	std::vector<void*> mListLibraryHandles;
+    ConnectionInterfaceMap mMapConnectionInterface;
+    CrossfaderInterfaceMap mMapCrossfaderInterface;
     DomainInterfaceMap mMapDomainInterface;
     SinkInterfaceMap mMapSinkInterface;
     SourceInterfaceMap mMapSourceInterface;
-    CrossfaderInterfaceMap mMapCrossfaderInterface;
-    ConnectionInterfaceMap mMapConnectionInterface;
+    HandleInterfaceMap mMapHandleInterface;
 };
 
 #endif /* ROUTINGSENDER_H_ */

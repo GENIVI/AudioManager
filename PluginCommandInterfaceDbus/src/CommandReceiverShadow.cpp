@@ -370,7 +370,7 @@ DBusHandlerResult CommandReceiverShadow::receiveCallback(DBusConnection *conn, D
 	assert(msg!=NULL);
 	assert(user_data!=NULL);
 	CommandReceiverShadow* reference=(CommandReceiverShadow*) user_data;
-	return reference->receiveCallbackDelegate(conn,msg);
+	return (reference->receiveCallbackDelegate(conn,msg));
 }
 
 void CommandReceiverShadow::sendIntrospection(DBusConnection *conn, DBusMessage *msg)
@@ -412,7 +412,7 @@ DBusHandlerResult CommandReceiverShadow::receiveCallbackDelegate(DBusConnection 
 
 	if (dbus_message_is_method_call(msg, DBUS_INTERFACE_INTROSPECTABLE, "Introspect")) {
 		sendIntrospection(conn,msg);
-		return DBUS_HANDLER_RESULT_HANDLED;
+		return (DBUS_HANDLER_RESULT_HANDLED);
 	}
 
 	functionMap_t::iterator iter = mFunctionMap.begin();
@@ -423,10 +423,10 @@ DBusHandlerResult CommandReceiverShadow::receiveCallbackDelegate(DBusConnection 
     	std::string p(iter->first);
     	CallBackMethod cb=iter->second;
     	(this->*cb)(conn,msg);
-    	return DBUS_HANDLER_RESULT_HANDLED;
+    	return (DBUS_HANDLER_RESULT_HANDLED);
     }
 
-	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	return (DBUS_HANDLER_RESULT_NOT_YET_HANDLED);
 }
 
 void CommandReceiverShadow::setCommandReceiver(CommandReceiveInterface*& receiver)
@@ -468,7 +468,7 @@ CommandReceiverShadow::functionMap_t CommandReceiverShadow::createMap()
 	m["GetListSystemProperties"]=&CommandReceiverShadow::getListSystemProperties ;
 	m["GetTimingInformation"]=&CommandReceiverShadow::getTimingInformation ;
 	m["SetSystemProperty"]=&CommandReceiverShadow::setSystemProperty ;
-	return m;
+	return (m);
 }
 
 

@@ -6,7 +6,9 @@
  */
 
 #include "RoutingSender.h"
+#include "pluginTemplate.h"
 #include <utility>
+
 using namespace am;
 
 #define CALL_ALL_INTERFACES(...) 														 \
@@ -20,10 +22,19 @@ using namespace am;
 const char* routingPluginDirectories[] = { "/home/christian/workspace/gitserver/build/plugins/routing"};
 uint16_t routingPluginDirectoriesCount = sizeof(routingPluginDirectories) / sizeof(routingPluginDirectories[0]);
 
+
 RoutingSender::RoutingSender()
+	: mHandleCount(0),
+	  mlistActiveHandles(),
+	  mListInterfaces(),
+	  mMapConnectionInterface(),
+	  mMapCrossfaderInterface(),
+	  mMapDomainInterface(),
+	  mMapSinkInterface(),
+	  mMapSourceInterface(),
+	  mMapHandleInterface()
 {
 	std::vector<std::string> sharedLibraryNameList;
-
     // search communicator plugins in configured directories
     for (uint16_t dirIndex = 0; dirIndex < routingPluginDirectoriesCount; dirIndex++)
     {
@@ -70,7 +81,8 @@ RoutingSender::RoutingSender()
     	//DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Loading Hook plugin"),DLT_STRING(iter->c_str()));
 
     	RoutingSendInterface* (*createFunc)();
-        createFunc = getCreateFunction<RoutingSendInterface*()>(*iter);
+    	void* tempLibHandle=NULL;
+        createFunc = getCreateFunction<RoutingSendInterface*()>(*iter,tempLibHandle);
 
         if (!createFunc)
         {
@@ -90,11 +102,13 @@ RoutingSender::RoutingSender()
         routerInterface.routingInterface = router;
         router->returnBusName(routerInterface.busName);
         mListInterfaces.push_back(routerInterface);
+        mListLibraryHandles.push_back(tempLibHandle);
     }
 }
 
 RoutingSender::~RoutingSender()
 {
+	unloadLibraries();
 }
 
 void RoutingSender::routingInterfacesReady()
@@ -112,22 +126,13 @@ void RoutingSender::startupRoutingInterface(RoutingReceiveInterface *routingrece
 	CALL_ALL_INTERFACES(startupRoutingInterface(routingreceiveinterface))
 }
 
-am_Error_e RoutingSender::asyncAbort(const am_Handle_s handle)
+am_Error_e RoutingSender::asyncAbort(const am_Handle_s& handle)
 {
-	//Todo: map handle to RoutingInterface via Database.
-	return E_UNKNOWN;
-}
-
-
-
-am_Error_e RoutingSender::asyncConnect(const am_Handle_s handle, const am_connectionID_t connectionID, const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_ConnectionFormat_e connectionFormat)
-{
-	SinkInterfaceMap::iterator iter = mMapSinkInterface.begin();
-	mMapSinkInterface.find(sinkID);
-    if (iter != mMapSinkInterface.end())
+	HandleInterfaceMap::iterator iter = mMapHandleInterface.begin();
+	iter=mMapHandleInterface.find(handle.handle);
+    if (iter != mMapHandleInterface.end())
     {
-    	return iter->second->asyncConnect(handle,connectionID,sourceID,sinkID,connectionFormat);
-    	mMapConnectionInterface.insert(std::make_pair(connectionID,iter->second));
+    	return iter->second->asyncAbort(handle);
     }
 
     return E_NON_EXISTENT;
@@ -135,14 +140,34 @@ am_Error_e RoutingSender::asyncConnect(const am_Handle_s handle, const am_connec
 
 
 
-am_Error_e RoutingSender::asyncDisconnect(const am_Handle_s handle, const am_connectionID_t connectionID)
+am_Error_e RoutingSender::asyncConnect(am_Handle_s& handle, const am_connectionID_t connectionID, const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_ConnectionFormat_e connectionFormat)
+{
+	SinkInterfaceMap::iterator iter = mMapSinkInterface.begin();
+	iter=mMapSinkInterface.find(sinkID);
+    if (iter != mMapSinkInterface.end())
+    {
+    	handle=createHandle(H_CONNECT);
+    	mMapConnectionInterface.insert(std::make_pair(connectionID,iter->second));
+    	mMapHandleInterface.insert(std::make_pair(handle.handle,iter->second));
+    	return iter->second->asyncConnect(handle,connectionID,sourceID,sinkID,connectionFormat);
+    }
+
+    return E_NON_EXISTENT;
+}
+
+
+
+am_Error_e RoutingSender::asyncDisconnect(am_Handle_s& handle, const am_connectionID_t connectionID)
 {
 	ConnectionInterfaceMap::iterator iter = mMapConnectionInterface.begin();
 	mMapConnectionInterface.find(connectionID);
     if (iter != mMapConnectionInterface.end())
     {
-    	return iter->second->asyncDisconnect(handle,connectionID);
+    	handle=createHandle(H_DISCONNECT);
+    	mMapHandleInterface.insert(std::make_pair(handle.handle,iter->second));
+    	am_Error_e returnVal=iter->second->asyncDisconnect(handle,connectionID);
     	mMapConnectionInterface.erase(iter);
+    	return returnVal;
     }
 
     return E_NON_EXISTENT;
@@ -150,66 +175,78 @@ am_Error_e RoutingSender::asyncDisconnect(const am_Handle_s handle, const am_con
 
 
 
-am_Error_e RoutingSender::asyncSetSinkVolume(const am_Handle_s handle, const am_sinkID_t sinkID, const am_volume_t volume, const am_RampType_e ramp, const am_time_t time)
+am_Error_e RoutingSender::asyncSetSinkVolume(am_Handle_s& handle, const am_sinkID_t sinkID, const am_volume_t volume, const am_RampType_e ramp, const am_time_t time)
 {
 	SinkInterfaceMap::iterator iter = mMapSinkInterface.begin();
-	mMapSinkInterface.find(sinkID);
+	iter=mMapSinkInterface.find(sinkID);
     if (iter != mMapSinkInterface.end())
+    	handle=createHandle(H_SETSINKVOLUME);
+		mMapHandleInterface.insert(std::make_pair(handle.handle,iter->second));
     	return iter->second->asyncSetSinkVolume(handle,sinkID,volume,ramp,time);
     return E_NON_EXISTENT;
 }
 
 
 
-am_Error_e RoutingSender::asyncSetSourceVolume(const am_Handle_s handle, const am_sourceID_t sourceID, const am_volume_t volume, const am_RampType_e ramp, const am_time_t time)
+am_Error_e RoutingSender::asyncSetSourceVolume(am_Handle_s& handle, const am_sourceID_t sourceID, const am_volume_t volume, const am_RampType_e ramp, const am_time_t time)
 {
 	SourceInterfaceMap::iterator iter = mMapSourceInterface.begin();
-	mMapSourceInterface.find(sourceID);
+	iter=mMapSourceInterface.find(sourceID);
     if (iter != mMapSourceInterface.end())
+    	handle=createHandle(H_SETSOURCEVOLUME);
+		mMapHandleInterface.insert(std::make_pair(handle.handle,iter->second));
     	return iter->second->asyncSetSourceVolume(handle,sourceID,volume,ramp,time);
     return E_NON_EXISTENT;
 }
 
 
 
-am_Error_e RoutingSender::asyncSetSourceState(const am_Handle_s handle, const am_sourceID_t sourceID, const am_SourceState_e state)
+am_Error_e RoutingSender::asyncSetSourceState(am_Handle_s& handle, const am_sourceID_t sourceID, const am_SourceState_e state)
 {
 	SourceInterfaceMap::iterator iter = mMapSourceInterface.begin();
-	mMapSourceInterface.find(sourceID);
+	iter=mMapSourceInterface.find(sourceID);
     if (iter != mMapSourceInterface.end())
+    	handle=createHandle(H_SETSOURCESTATE);
+		mMapHandleInterface.insert(std::make_pair(handle.handle,iter->second));
     	return iter->second->asyncSetSourceState(handle,sourceID,state);
     return E_NON_EXISTENT;
 }
 
 
 
-am_Error_e RoutingSender::asyncSetSinkSoundProperty(const am_Handle_s handle, const am_sinkID_t sinkID, const am_SoundProperty_s & soundProperty)
+am_Error_e RoutingSender::asyncSetSinkSoundProperty(am_Handle_s& handle, const am_sinkID_t sinkID, const am_SoundProperty_s & soundProperty)
 {
 	SinkInterfaceMap::iterator iter = mMapSinkInterface.begin();
-	mMapSinkInterface.find(sinkID);
+	iter=mMapSinkInterface.find(sinkID);
     if (iter != mMapSinkInterface.end())
+    	handle=createHandle(H_SETSINKSOUNDPROPERTY);
+		mMapHandleInterface.insert(std::make_pair(handle.handle,iter->second));
     	return iter->second->asyncSetSinkSoundProperty(handle,soundProperty,sinkID);
     return E_NON_EXISTENT;
 }
 
 
 
-am_Error_e RoutingSender::asyncSetSourceSoundProperty(const am_Handle_s handle, const am_sourceID_t sourceID, const am_SoundProperty_s & soundProperty)
+am_Error_e RoutingSender::asyncSetSourceSoundProperty(am_Handle_s& handle, const am_sourceID_t sourceID, const am_SoundProperty_s & soundProperty)
 {
 	SourceInterfaceMap::iterator iter = mMapSourceInterface.begin();
-	mMapSourceInterface.find(sourceID);
+	iter=mMapSourceInterface.find(sourceID);
     if (iter != mMapSourceInterface.end())
+    	handle=createHandle(H_SETSOURCESOUNDPROPERTY);
+		mMapHandleInterface.insert(std::make_pair(handle.handle,iter->second));
     	return iter->second->asyncSetSourceSoundProperty(handle,soundProperty,sourceID);
     return E_NON_EXISTENT;
 }
 
 
 
-am_Error_e RoutingSender::asyncCrossFade(const am_Handle_s handle, const am_crossfaderID_t crossfaderID, const am_HotSink_e hotSink, const am_RampType_e rampType, const am_time_t time)
+am_Error_e RoutingSender::asyncCrossFade(am_Handle_s& handle, const am_crossfaderID_t crossfaderID, const am_HotSink_e hotSink, const am_RampType_e rampType, const am_time_t time)
 {
 	CrossfaderInterfaceMap::iterator iter = mMapCrossfaderInterface.begin();
-	mMapCrossfaderInterface.find(crossfaderID);
+	iter=mMapCrossfaderInterface.find(crossfaderID);
     if (iter != mMapCrossfaderInterface.end())
+    	handle=createHandle(H_CROSSFADE);
+		mMapHandleInterface.insert(std::make_pair(handle.handle,iter->second));
     	return iter->second->asyncCrossFade(handle,crossfaderID,hotSink,rampType,time);
     return E_NON_EXISTENT;
 }
@@ -219,7 +256,7 @@ am_Error_e RoutingSender::asyncCrossFade(const am_Handle_s handle, const am_cros
 am_Error_e RoutingSender::setDomainState(const am_domainID_t domainID, const am_DomainState_e domainState)
 {
 	DomainInterfaceMap::iterator iter = mMapDomainInterface.begin();
-	mMapDomainInterface.find(domainID);
+	iter=mMapDomainInterface.find(domainID);
     if (iter != mMapDomainInterface.end())
     	return iter->second->setDomainState(domainID,domainState);
     return E_NON_EXISTENT;
@@ -246,7 +283,7 @@ am_Error_e RoutingSender::addDomainLookup(const am_Domain_s& domainData)
 am_Error_e RoutingSender::addSourceLookup(const am_Source_s& sourceData)
 {
 	DomainInterfaceMap::iterator iter = mMapDomainInterface.begin();
-	mMapDomainInterface.find(sourceData.domainID);
+	iter=mMapDomainInterface.find(sourceData.domainID);
     if (iter != mMapDomainInterface.end())
     {
     	mMapSourceInterface.insert(std::make_pair(sourceData.sourceID,iter->second));
@@ -261,7 +298,7 @@ am_Error_e RoutingSender::addSourceLookup(const am_Source_s& sourceData)
 am_Error_e RoutingSender::addSinkLookup(const am_Sink_s& sinkData)
 {
 	DomainInterfaceMap::iterator iter = mMapDomainInterface.begin();
-	mMapDomainInterface.find(sinkData.domainID);
+	iter=mMapDomainInterface.find(sinkData.domainID);
     if (iter != mMapDomainInterface.end())
     {
     	mMapSinkInterface.insert(std::make_pair(sinkData.sinkID,iter->second));
@@ -276,7 +313,7 @@ am_Error_e RoutingSender::addSinkLookup(const am_Sink_s& sinkData)
 am_Error_e RoutingSender::addCrossfaderLookup(const am_Crossfader_s& crossfaderData)
 {
 	DomainInterfaceMap::iterator iter = mMapSourceInterface.begin();
-	mMapSourceInterface.find(crossfaderData.sourceID);
+	iter=mMapSourceInterface.find(crossfaderData.sourceID);
     if (iter != mMapSourceInterface.end())
     {
     	mMapSourceInterface.insert(std::make_pair(crossfaderData.crossfaderID,iter->second));
@@ -289,7 +326,7 @@ am_Error_e RoutingSender::addCrossfaderLookup(const am_Crossfader_s& crossfaderD
 am_Error_e RoutingSender::removeDomainLookup(const am_domainID_t domainID)
 {
 	DomainInterfaceMap::iterator iter = mMapDomainInterface.begin();
-	mMapDomainInterface.find(domainID);
+	iter=mMapDomainInterface.find(domainID);
     if (iter != mMapDomainInterface.end())
     {
     	mMapDomainInterface.erase(iter);
@@ -304,7 +341,7 @@ am_Error_e RoutingSender::removeDomainLookup(const am_domainID_t domainID)
 am_Error_e RoutingSender::removeSourceLookup(const am_sourceID_t sourceID)
 {
 	SourceInterfaceMap::iterator iter = mMapSourceInterface.begin();
-	mMapSourceInterface.find(sourceID);
+	iter=mMapSourceInterface.find(sourceID);
     if (iter != mMapSourceInterface.end())
     {
     	mMapSourceInterface.erase(iter);
@@ -319,7 +356,7 @@ am_Error_e RoutingSender::removeSourceLookup(const am_sourceID_t sourceID)
 am_Error_e RoutingSender::removeSinkLookup(const am_sinkID_t sinkID)
 {
 	SinkInterfaceMap::iterator iter = mMapSinkInterface.begin();
-	mMapSinkInterface.find(sinkID);
+	iter=mMapSinkInterface.find(sinkID);
     if (iter != mMapSinkInterface.end())
     {
     	mMapSinkInterface.erase(iter);
@@ -334,7 +371,7 @@ am_Error_e RoutingSender::removeSinkLookup(const am_sinkID_t sinkID)
 am_Error_e RoutingSender::removeCrossfaderLookup(const am_crossfaderID_t crossfaderID)
 {
 	CrossfaderInterfaceMap::iterator iter = mMapCrossfaderInterface.begin();
-	mMapCrossfaderInterface.find(crossfaderID);
+	iter=mMapCrossfaderInterface.find(crossfaderID);
     if (iter != mMapCrossfaderInterface.end())
     {
     	mMapCrossfaderInterface.erase(iter);
@@ -343,6 +380,42 @@ am_Error_e RoutingSender::removeCrossfaderLookup(const am_crossfaderID_t crossfa
 
     return E_NON_EXISTENT;
 }
+
+
+am_Error_e RoutingSender::removeHandle(const am_Handle_s& handle)
+{
+	if(mlistActiveHandles.erase(handle)) return E_OK;
+	return E_UNKNOWN;
+}
+
+am_Error_e RoutingSender::getListHandles(std::vector<am_Handle_s> & listHandles) const
+{
+	std::copy(mlistActiveHandles.begin(),mlistActiveHandles.end(),std::back_inserter(listHandles));
+	return E_OK;
+}
+
+am_Handle_s RoutingSender::createHandle(const am_Handle_e handle)
+{
+	am_Handle_s newHandle;
+	newHandle.handle=++mHandleCount; //todo: handle overflows here...
+	newHandle.handleType=handle;
+	mlistActiveHandles.insert(newHandle);
+	return newHandle;
+}
+
+void RoutingSender::unloadLibraries(void)
+{
+	std::vector<void*>::iterator iterator=mListLibraryHandles.begin();
+	for(;iterator<mListLibraryHandles.end();++iterator)
+	{
+		dlclose(*iterator);
+	}
+	mListLibraryHandles.clear();
+}
+
+
+
+
 
 
 

@@ -8,12 +8,13 @@
 #include "CommandSender.h"
 #include "command/CommandSendInterface.h"
 #include "pluginTemplate.h"
+
 using namespace am;
 
 #define CALL_ALL_INTERFACES(...) 														 \
 		std::vector<CommandSendInterface*>::iterator iter = mListInterfaces.begin();	 \
 		std::vector<CommandSendInterface*>::iterator iterEnd = mListInterfaces.end();	 \
-		for (; iter<iterEnd;++iter)													 \
+		for (; iter<iterEnd;++iter)													 	 \
 		{																				 \
 			(*iter)->__VA_ARGS__;													 	 \
 		}
@@ -23,6 +24,8 @@ const char* commandPluginDirectories[] = { "/home/christian/workspace/gitserver/
 uint16_t commandPluginDirectoriesCount = sizeof(commandPluginDirectories) / sizeof(commandPluginDirectories[0]);
 
 CommandSender::CommandSender()
+	:mListInterfaces(),
+	 mListLibraryHandles()
 {
 	std::vector<std::string> sharedLibraryNameList;
 
@@ -71,7 +74,8 @@ CommandSender::CommandSender()
     {
     	//DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Loading Hook plugin"),DLT_STRING(iter->c_str()));
         CommandSendInterface* (*createFunc)();
-        createFunc = getCreateFunction<CommandSendInterface*()>(*iter);
+        void* tempLibHandle=NULL;
+        createFunc = getCreateFunction<CommandSendInterface*()>(*iter,tempLibHandle);
 
         if (!createFunc)
         {
@@ -88,11 +92,13 @@ CommandSender::CommandSender()
         }
 
         mListInterfaces.push_back(commander);
+        mListLibraryHandles.push_back(tempLibHandle);
     }
 }
 
 CommandSender::~CommandSender()
 {
+	unloadLibraries();
 }
 
 
@@ -228,6 +234,18 @@ void CommandSender::cbTimingInformationChanged(const am_mainConnectionID_t mainC
 {
 	CALL_ALL_INTERFACES(cbTimingInformationChanged(mainConnection,time))
 }
+
+void CommandSender::unloadLibraries(void)
+{
+	std::vector<void*>::iterator iterator=mListLibraryHandles.begin();
+	for(;iterator<mListLibraryHandles.end();++iterator)
+	{
+		dlclose(*iterator);
+	}
+	mListLibraryHandles.clear();
+}
+
+
 
 
 

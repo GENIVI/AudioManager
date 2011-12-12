@@ -33,7 +33,7 @@
 #include <dlt/dlt.h>
 #include <map>
 
-DLT_IMPORT_CONTEXT(DBusCommandPlugin);
+DLT_IMPORT_CONTEXT(DBusCommandPlugin)
 
 #define INTROSPECTION_XML_FILE "/home/christian/workspace/gitserver/dbusIncludes/CommandInterface.xml"
 

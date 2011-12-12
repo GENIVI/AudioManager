@@ -10,12 +10,13 @@
 
 #include <control/ControlReceiveInterface.h>
 #include "DatabaseHandler.h"
+#include "RoutingSender.h"
 
 using namespace am;
 
 class ControlReceiver: public ControlReceiveInterface {
 public:
-	ControlReceiver(DatabaseHandler* iDatabaseHandler);
+	ControlReceiver(DatabaseHandler *iDatabaseHandler, RoutingSender *iRoutingSender);
 	virtual ~ControlReceiver();
 	am_Error_e getRoute(const bool onlyfree, const am_sourceID_t sourceID, const am_sinkID_t sinkID, std::vector<am_Route_s>& returnList) ;
 	am_Error_e connect(am_Handle_s& handle, am_connectionID_t& connectionID, const am_ConnectionFormat_e format, const am_sourceID_t sourceID, const am_sinkID_t sinkID) ;
@@ -81,6 +82,7 @@ public:
 
 private:
 	DatabaseHandler* mDatabaseHandler;
+	RoutingSender* mRoutingSender;
 };
 
 #endif /* CONTRONLRECEIVER_H_ */

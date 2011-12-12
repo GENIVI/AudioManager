@@ -8,9 +8,13 @@
 #ifndef DATABASEHANDLER_H_
 #define DATABASEHANDLER_H_
 
+#include "Observer.h"
 #include "audiomanagertypes.h"
 #include <map>
 #include <string>
+#include <stdint.h>
+#include <fstream>
+#include <sstream>
 #include <vector>
 #include <sqlite3.h>
 
@@ -23,6 +27,9 @@ using namespace am;
 //todo: change asserts for dynamic boundary checks into failure answers.#
 //todo: check autoincrement boundary and set to 16bit limits
 //todo: If the sink is part of a gateway, the listconnectionFormats is copied to the gatewayInformation. Check this statement for sinks & sources
+//todo: exchange last_insert_row id to be more safe
+//todo: create test to ensure uniqueness of names throughout the database
+//todo: enforce the uniqueness of names
 
 class DatabaseHandler {
 public:
@@ -52,6 +59,8 @@ public:
 	am_Error_e changeSinkClassInfoDB(const am_SinkClass_s& sinkClass) ;
 	am_Error_e changeSourceClassInfoDB(const am_SourceClass_s& sourceClass) ;
 	am_Error_e changeConnectionTimingInformation(const am_connectionID_t connectionID, const am_timeSync_t delay) ;
+	am_Error_e changeConnectionFinal(const am_connectionID_t connectionID) ;
+	am_Error_e changeSourceState(const am_sourceID_t sourceID, const am_SourceState_e sourceState);
 	am_Error_e removeMainConnectionDB(const am_mainConnectionID_t mainConnectionID) ;
 	am_Error_e removeSinkDB(const am_sinkID_t sinkID) ;
 	am_Error_e removeSourceDB(const am_sourceID_t sourceID) ;
@@ -60,10 +69,15 @@ public:
 	am_Error_e removeDomainDB(const am_domainID_t domainID) ;
 	am_Error_e removeSinkClassDB(const am_sinkClass_t sinkClassID) ;
 	am_Error_e removeSourceClassDB(const am_sourceClass_t sourceClassID) ;
+	am_Error_e removeConnection(const am_connectionID_t connectionID) ;
 	am_Error_e getSourceClassInfoDB(const am_sourceID_t sourceID, am_SourceClass_s& classInfo) const ;
 	am_Error_e getSinkClassInfoDB(const am_sinkID_t sinkID, am_SinkClass_s& sinkClass) const ;
 	am_Error_e getGatewayInfoDB(const am_gatewayID_t gatewayID, am_Gateway_s& gatewayData) const ;
 	am_Error_e getCrossfaderInfoDB(const am_crossfaderID_t crossfaderID, am_Crossfader_s& crossfaderData) const ;
+	am_Error_e getSinkVolume(const am_sinkID_t sinkID, am_volume_t& volume) const;
+	am_Error_e getSourceVolume(const am_sourceID_t sourceID, am_volume_t& volume) const;
+	am_Error_e getSinkSoundPropertyValue(const am_sinkID_t sinkID, const am_SoundPropertyType_e propertyType, uint16_t& value) const ;
+	am_Error_e getSourceSoundPropertyValue(const am_sourceID_t sourceID, const am_SoundPropertyType_e propertyType, uint16_t& value) const ;
 	am_Error_e getListSinksOfDomain(const am_domainID_t domainID, std::vector<am_sinkID_t>& listSinkID) const ;
 	am_Error_e getListSourcesOfDomain(const am_domainID_t domainID, std::vector<am_sourceID_t>& listSourceID) const ;
 	am_Error_e getListCrossfadersOfDomain(const am_domainID_t domainID, std::vector<am_crossfaderID_t>& listGatewaysID) const ;
@@ -85,8 +99,11 @@ public:
 	am_Error_e getListSystemProperties(std::vector<am_SystemProperty_s>& listSystemProperties) const ;
 	am_Error_e getTimingInformation(const am_mainConnectionID_t mainConnectionID, am_timeSync_t& delay) const ;
 	am_Error_e getDomainOfSource(const am_sourceID_t sourceID, am_domainID_t& domainID) const;
-
-
+	am_Error_e getSoureState(const am_sourceID_t sourceID, am_SourceState_e& sourceState) const;
+	am_Error_e getDomainState(const am_domainID_t domainID, am_DomainState_e state) const;
+	am_Error_e peekDomain(const std::string& name, am_domainID_t& domainID);
+	am_Error_e peekSink(const std::string& name, am_sinkID_t& sinkID);
+	am_Error_e peekSource(const std::string& name, am_sourceID_t& sourceID);
 	/**
 	 * checks for a certain mainConnection
 	 * @param mainConnectionID to be checked for
@@ -95,6 +112,27 @@ public:
 	bool existMainConnection(const am_mainConnectionID_t mainConnectionID) const;
 
 	/**
+	 * checks if a CrossFader exists
+	 * @param crossFaderID the ID of the crossfader to be checked
+	 * @return true if exists
+	 */
+	bool existcrossFader(const am_crossfaderID_t crossfaderID) const;
+
+	/**
+	 * checks if a connection already exists.
+	 * Only takes sink, source and format information for search!
+	 * @param connection the connection to be checked
+	 * @return true if connections exists
+	 */
+	bool existConnection(const am_Connection_s connection);
+
+	/**
+	 * checks if a connection with the given ID exists
+	 * @param connectionID
+	 * @return true if connection exits
+	 */
+	bool existConnectionID(const am_connectionID_t connectionID);
+	/**
 	 * checks for a certain Source
 	 * @param sourceID to be checked for
 	 * @return true if it exists
@@ -102,11 +140,40 @@ public:
 	bool existSource(const am_sourceID_t sourceID) const;
 
 	/**
+	 * checks if a source name or ID exists
+	 * @param sourceID the sourceID
+	 * @param name the name
+	 * @return true if it exits
+	 */
+	bool existSourceNameOrID(const am_sourceID_t sourceID, const std::string& name) const;
+
+	/**
+	 * checks if a name exits
+	 * @param name the name
+	 * @return true if it exits
+	 */
+	bool existSourceName(const std::string& name) const;
+	/**
 	 * checks for a certain Sink
 	 * @param sinkID to be checked for
 	 * @return true if it exists
 	 */
 	bool existSink(const am_sinkID_t sinkID) const;
+
+	/**
+	 * checks if a sink with the ID or the name exists
+	 * @param sinkID the ID
+	 * @param name the name
+	 * @return true if it exists.
+	 */
+	bool existSinkNameOrID(const am_sinkID_t sinkID, const std::string& name) const;
+
+	/**
+	 * checks if a sink with the name exists
+	 * @param name the name
+	 * @return true if it exists
+	 */
+	bool existSinkName(const std::string& name) const;
 
 	/**
 	 * checks for a certain domain
@@ -136,6 +203,26 @@ public:
 	 */
 	bool existSourceClass(const am_sourceClass_t sourceClassID) const;
 
+	/**
+	 * registers the Observer at the Database
+	 * @param iObserver pointer to the observer
+	 */
+	void registerObserver(Observer *iObserver);
+
+	/**
+	 * gives information about the visibility of a source
+	 * @param sourceID the sourceID
+	 * @return true if source is visible
+	 */
+	bool sourceVisible(const am_sourceID_t sourceID) const;
+
+	/**
+	 * gives information about the visibility of a sink
+	 * @param sinkID the sinkID
+	 * @return true if source is visible
+	 */
+	bool sinkVisible(const am_sinkID_t sinkID) const;
+
 private:
 	am_timeSync_t calculateMainConnectionDelay(const am_mainConnectionID_t mainConnectionID) const;
 	bool connectionPartofMainConnection(const am_connectionID_t connectionID,const am_mainConnectionID_t mainConnectionID) const;
@@ -144,6 +231,7 @@ private:
 	void createTables();
 	sqlite3 *mDatabase;
 	std::string mPath;
+	Observer *mObserver;
 	bool mFirstStaticSink;
 	bool mFirstStaticSource;
 	bool mFirstStaticGateway;
