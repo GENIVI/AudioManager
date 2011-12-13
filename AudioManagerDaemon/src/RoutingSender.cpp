@@ -142,11 +142,13 @@ am_Error_e RoutingSender::asyncAbort(const am_Handle_s& handle)
 
 am_Error_e RoutingSender::asyncConnect(am_Handle_s& handle, const am_connectionID_t connectionID, const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_ConnectionFormat_e connectionFormat)
 {
+	am_handleData_c handleData;
 	SinkInterfaceMap::iterator iter = mMapSinkInterface.begin();
 	iter=mMapSinkInterface.find(sinkID);
     if (iter != mMapSinkInterface.end())
     {
-    	handle=createHandle(H_CONNECT);
+    	handleData.connectionID=connectionID;
+    	handle=createHandle(handleData,H_CONNECT);
     	mMapConnectionInterface.insert(std::make_pair(connectionID,iter->second));
     	mMapHandleInterface.insert(std::make_pair(handle.handle,iter->second));
     	return iter->second->asyncConnect(handle,connectionID,sourceID,sinkID,connectionFormat);
@@ -159,11 +161,13 @@ am_Error_e RoutingSender::asyncConnect(am_Handle_s& handle, const am_connectionI
 
 am_Error_e RoutingSender::asyncDisconnect(am_Handle_s& handle, const am_connectionID_t connectionID)
 {
+	am_handleData_c handleData;
 	ConnectionInterfaceMap::iterator iter = mMapConnectionInterface.begin();
 	mMapConnectionInterface.find(connectionID);
     if (iter != mMapConnectionInterface.end())
     {
-    	handle=createHandle(H_DISCONNECT);
+    	handleData.connectionID=connectionID;
+    	handle=createHandle(handleData,H_DISCONNECT);
     	mMapHandleInterface.insert(std::make_pair(handle.handle,iter->second));
     	am_Error_e returnVal=iter->second->asyncDisconnect(handle,connectionID);
     	mMapConnectionInterface.erase(iter);
@@ -177,10 +181,13 @@ am_Error_e RoutingSender::asyncDisconnect(am_Handle_s& handle, const am_connecti
 
 am_Error_e RoutingSender::asyncSetSinkVolume(am_Handle_s& handle, const am_sinkID_t sinkID, const am_volume_t volume, const am_RampType_e ramp, const am_time_t time)
 {
+	am_handleData_c handleData;
 	SinkInterfaceMap::iterator iter = mMapSinkInterface.begin();
 	iter=mMapSinkInterface.find(sinkID);
     if (iter != mMapSinkInterface.end())
-    	handle=createHandle(H_SETSINKVOLUME);
+    	handleData.sinkID=sinkID;
+    	handleData.volume=volume;
+    	handle=createHandle(handleData,H_SETSINKVOLUME);
 		mMapHandleInterface.insert(std::make_pair(handle.handle,iter->second));
     	return iter->second->asyncSetSinkVolume(handle,sinkID,volume,ramp,time);
     return E_NON_EXISTENT;
@@ -190,10 +197,13 @@ am_Error_e RoutingSender::asyncSetSinkVolume(am_Handle_s& handle, const am_sinkI
 
 am_Error_e RoutingSender::asyncSetSourceVolume(am_Handle_s& handle, const am_sourceID_t sourceID, const am_volume_t volume, const am_RampType_e ramp, const am_time_t time)
 {
+	am_handleData_c handleData;
 	SourceInterfaceMap::iterator iter = mMapSourceInterface.begin();
 	iter=mMapSourceInterface.find(sourceID);
     if (iter != mMapSourceInterface.end())
-    	handle=createHandle(H_SETSOURCEVOLUME);
+    	handleData.sourceID=sourceID;
+    	handleData.volume=volume;
+    	handle=createHandle(handleData,H_SETSOURCEVOLUME);
 		mMapHandleInterface.insert(std::make_pair(handle.handle,iter->second));
     	return iter->second->asyncSetSourceVolume(handle,sourceID,volume,ramp,time);
     return E_NON_EXISTENT;
@@ -203,10 +213,13 @@ am_Error_e RoutingSender::asyncSetSourceVolume(am_Handle_s& handle, const am_sou
 
 am_Error_e RoutingSender::asyncSetSourceState(am_Handle_s& handle, const am_sourceID_t sourceID, const am_SourceState_e state)
 {
+	am_handleData_c handleData;
 	SourceInterfaceMap::iterator iter = mMapSourceInterface.begin();
 	iter=mMapSourceInterface.find(sourceID);
     if (iter != mMapSourceInterface.end())
-    	handle=createHandle(H_SETSOURCESTATE);
+    	handleData.sourceID=sourceID;
+    	handleData.sourceState=state;
+    	handle=createHandle(handleData,H_SETSOURCESTATE);
 		mMapHandleInterface.insert(std::make_pair(handle.handle,iter->second));
     	return iter->second->asyncSetSourceState(handle,sourceID,state);
     return E_NON_EXISTENT;
@@ -216,10 +229,13 @@ am_Error_e RoutingSender::asyncSetSourceState(am_Handle_s& handle, const am_sour
 
 am_Error_e RoutingSender::asyncSetSinkSoundProperty(am_Handle_s& handle, const am_sinkID_t sinkID, const am_SoundProperty_s & soundProperty)
 {
+	am_handleData_c handleData;
 	SinkInterfaceMap::iterator iter = mMapSinkInterface.begin();
 	iter=mMapSinkInterface.find(sinkID);
     if (iter != mMapSinkInterface.end())
-    	handle=createHandle(H_SETSINKSOUNDPROPERTY);
+    	handleData.sinkID=sinkID;
+    	handleData.soundPropery=soundProperty;
+    	handle=createHandle(handleData,H_SETSINKSOUNDPROPERTY);
 		mMapHandleInterface.insert(std::make_pair(handle.handle,iter->second));
     	return iter->second->asyncSetSinkSoundProperty(handle,soundProperty,sinkID);
     return E_NON_EXISTENT;
@@ -229,10 +245,13 @@ am_Error_e RoutingSender::asyncSetSinkSoundProperty(am_Handle_s& handle, const a
 
 am_Error_e RoutingSender::asyncSetSourceSoundProperty(am_Handle_s& handle, const am_sourceID_t sourceID, const am_SoundProperty_s & soundProperty)
 {
+	am_handleData_c handleData;
 	SourceInterfaceMap::iterator iter = mMapSourceInterface.begin();
 	iter=mMapSourceInterface.find(sourceID);
     if (iter != mMapSourceInterface.end())
-    	handle=createHandle(H_SETSOURCESOUNDPROPERTY);
+    	handleData.sourceID=sourceID;
+    	handleData.soundPropery=soundProperty;
+    	handle=createHandle(handleData,H_SETSOURCESOUNDPROPERTY);
 		mMapHandleInterface.insert(std::make_pair(handle.handle,iter->second));
     	return iter->second->asyncSetSourceSoundProperty(handle,soundProperty,sourceID);
     return E_NON_EXISTENT;
@@ -242,10 +261,13 @@ am_Error_e RoutingSender::asyncSetSourceSoundProperty(am_Handle_s& handle, const
 
 am_Error_e RoutingSender::asyncCrossFade(am_Handle_s& handle, const am_crossfaderID_t crossfaderID, const am_HotSink_e hotSink, const am_RampType_e rampType, const am_time_t time)
 {
+	am_handleData_c handleData;
 	CrossfaderInterfaceMap::iterator iter = mMapCrossfaderInterface.begin();
 	iter=mMapCrossfaderInterface.find(crossfaderID);
     if (iter != mMapCrossfaderInterface.end())
-    	handle=createHandle(H_CROSSFADE);
+    	handleData.crossfaderID=crossfaderID;
+    	handleData.hotSink=hotSink;
+    	handle=createHandle(handleData,H_CROSSFADE);
 		mMapHandleInterface.insert(std::make_pair(handle.handle,iter->second));
     	return iter->second->asyncCrossFade(handle,crossfaderID,hotSink,rampType,time);
     return E_NON_EXISTENT;
@@ -390,17 +412,29 @@ am_Error_e RoutingSender::removeHandle(const am_Handle_s& handle)
 
 am_Error_e RoutingSender::getListHandles(std::vector<am_Handle_s> & listHandles) const
 {
-	std::copy(mlistActiveHandles.begin(),mlistActiveHandles.end(),std::back_inserter(listHandles));
+	listHandles.clear();
+	HandlesMap::const_iterator it=mlistActiveHandles.begin();
+	for(;it!=mlistActiveHandles.end();++it)
+	{
+		listHandles.push_back(it->first);
+	}
 	return E_OK;
 }
 
-am_Handle_s RoutingSender::createHandle(const am_Handle_e handle)
+am_Handle_s RoutingSender::createHandle(const am_handleData_c& handleData, const am_Handle_e type)
 {
-	am_Handle_s newHandle;
-	newHandle.handle=++mHandleCount; //todo: handle overflows here...
-	newHandle.handleType=handle;
-	mlistActiveHandles.insert(newHandle);
-	return newHandle;
+	am_Handle_s handle;
+	handle.handle=++mHandleCount; //todo: handle overflows here...
+	handle.handleType=type;
+	mlistActiveHandles.insert(std::make_pair(handle,handleData));
+	return handle;
+}
+
+RoutingSender::am_handleData_c RoutingSender::returnHandleData(am_Handle_s handle)
+{
+	HandlesMap::iterator it=mlistActiveHandles.begin();
+	it=mlistActiveHandles.find(handle);
+	return (it->second);
 }
 
 void RoutingSender::unloadLibraries(void)

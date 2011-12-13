@@ -53,6 +53,8 @@ public:
 	am_Error_e changeSinkMuteStateDB(const am_MuteState_e muteState, const am_sinkID_t sinkID) ;
 	am_Error_e changeMainSinkSoundPropertyDB(const am_MainSoundProperty_s& soundProperty, const am_sinkID_t sinkID) ;
 	am_Error_e changeMainSourceSoundPropertyDB(const am_MainSoundProperty_s& soundProperty, const am_sourceID_t sourceID) ;
+	am_Error_e changeSourceSoundPropertyDB(const am_SoundProperty_s& soundProperty, const am_sourceID_t sourceID) ;
+	am_Error_e changeSinkSoundPropertyDB(const am_SoundProperty_s& soundProperty, const am_sinkID_t sinkID) ;
 	am_Error_e changeSourceAvailabilityDB(const am_Availability_s& availability, const am_sourceID_t sourceID) ;
 	am_Error_e changeSystemPropertyDB(const am_SystemProperty_s& property) ;
 	am_Error_e changeDelayMainConnection(const am_timeSync_t & delay, const am_mainConnectionID_t & connectionID) ;
@@ -61,6 +63,9 @@ public:
 	am_Error_e changeConnectionTimingInformation(const am_connectionID_t connectionID, const am_timeSync_t delay) ;
 	am_Error_e changeConnectionFinal(const am_connectionID_t connectionID) ;
 	am_Error_e changeSourceState(const am_sourceID_t sourceID, const am_SourceState_e sourceState);
+	am_Error_e changeSinkVolume(const am_sinkID_t sinkID, const am_volume_t volume);
+	am_Error_e changeSourceVolume(const am_sourceID_t sourceID, const am_volume_t volume);
+	am_Error_e changeCrossFaderHotSink(const am_crossfaderID_t crossfaderID,const am_HotSink_e hotsink);
 	am_Error_e removeMainConnectionDB(const am_mainConnectionID_t mainConnectionID) ;
 	am_Error_e removeSinkDB(const am_sinkID_t sinkID) ;
 	am_Error_e removeSourceDB(const am_sourceID_t sourceID) ;

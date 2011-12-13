@@ -96,21 +96,45 @@ public:
 		std::string busName;
 	};
 
+	//todo: maybe this would be valuable information for the controller...
+	class am_handleData_c
+	{
+	public:
+		union
+		{
+			am_sinkID_t sinkID;
+			am_sourceID_t sourceID;
+			am_crossfaderID_t crossfaderID;
+			am_connectionID_t connectionID;
+		};
+		union
+		{
+			am_SoundProperty_s soundPropery;
+			am_SourceState_e sourceState;
+			am_volume_t volume;
+			am_HotSink_e hotSink;
+		};
+
+	};
+
+
 #ifdef UNIT_TEST //this is needed to test RoutingSender
 	friend class RoutingInterfaceBackdoor;
 #endif
+
+am_handleData_c returnHandleData(am_Handle_s handle);
+
 private:
-	struct compareHandles
+
+	struct comparator
 	{
 		bool operator()(const am_Handle_s& a, const am_Handle_s& b) const
 		{
-			{
-				return (a.handle < b.handle);
-			}
+			return (a.handle < b.handle);
 		}
 	};
 
-	am_Handle_s createHandle(const am_Handle_e handle);
+	am_Handle_s createHandle(const am_handleData_c& handleData, const am_Handle_e type);
 	void unloadLibraries(void);
 
     typedef std::map<am_domainID_t, RoutingSendInterface*> DomainInterfaceMap;
@@ -119,9 +143,9 @@ private:
     typedef std::map<am_crossfaderID_t, RoutingSendInterface*> CrossfaderInterfaceMap;
     typedef std::map<am_connectionID_t, RoutingSendInterface*> ConnectionInterfaceMap;
     typedef std::map<uint16_t, RoutingSendInterface*> HandleInterfaceMap;
+    typedef std::map<am_Handle_s,am_handleData_c,comparator> HandlesMap;
 
     int16_t mHandleCount;
-    std::set<am_Handle_s,compareHandles> mlistActiveHandles;
 	std::vector<InterfaceNamePairs> mListInterfaces;
 	std::vector<void*> mListLibraryHandles;
     ConnectionInterfaceMap mMapConnectionInterface;
@@ -130,6 +154,7 @@ private:
     SinkInterfaceMap mMapSinkInterface;
     SourceInterfaceMap mMapSourceInterface;
     HandleInterfaceMap mMapHandleInterface;
+    HandlesMap mlistActiveHandles;
 };
 
 #endif /* ROUTINGSENDER_H_ */

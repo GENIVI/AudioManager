@@ -39,7 +39,7 @@ void RoutingReceiver::ackConnect(const am_Handle_s handle, const am_connectionID
 	{
 		mDatabaseHandler->removeConnection(connectionID);
 	}
-	return mControlSender->cbAckConnect(handle,error);
+	mControlSender->cbAckConnect(handle,error);
 }
 
 
@@ -51,56 +51,106 @@ void RoutingReceiver::ackDisconnect(const am_Handle_s handle, const am_connectio
 	{
 		mDatabaseHandler->removeConnection(connectionID);
 	}
-	return mControlSender->cbAckConnect(handle,error);
+	mControlSender->cbAckDisconnect(handle,error);
 }
 
 
 
 void RoutingReceiver::ackSetSinkVolumeChange(const am_Handle_s handle, const am_volume_t volume, const am_Error_e error)
 {
-
+	RoutingSender::am_handleData_c handleData=mRoutingSender->returnHandleData(handle);
+	if(error==E_OK && handleData.sinkID!=0)
+	{
+		//todo: check if volume in handleData is same than volume. React to it.
+		mDatabaseHandler->changeSinkVolume(handleData.sinkID,volume);
+	}
+	mRoutingSender->removeHandle(handle);
+	mControlSender->cbAckSetSinkVolumeChange(handle,volume,error);
 }
 
 
 
 void RoutingReceiver::ackSetSourceVolumeChange(const am_Handle_s handle, const am_volume_t volume, const am_Error_e error)
 {
+	RoutingSender::am_handleData_c handleData=mRoutingSender->returnHandleData(handle);
+	if(error==E_OK && handleData.sourceID!=0)
+	{
+		//todo: check if volume in handleData is same than volume. React to it.
+		mDatabaseHandler->changeSourceVolume(handleData.sourceID,volume);
+	}
+	mRoutingSender->removeHandle(handle);
+	mControlSender->cbAckSetSourceVolumeChange(handle,volume,error);
 }
 
 
 
 void RoutingReceiver::ackSetSourceState(const am_Handle_s handle, const am_Error_e error)
 {
+	RoutingSender::am_handleData_c handleData=mRoutingSender->returnHandleData(handle);
+	if(error==E_OK && handleData.sourceID!=0)
+	{
+		//todo: check if volume in handleData is same than volume. React to it.
+		mDatabaseHandler->changeSourceState(handleData.sourceID,handleData.sourceState);
+	}
+	mRoutingSender->removeHandle(handle);
+	mControlSender->cbAckSetSourceState(handle,error);
 }
 
 
 
 void RoutingReceiver::ackSetSinkSoundProperty(const am_Handle_s handle, const am_Error_e error)
 {
+	RoutingSender::am_handleData_c handleData=mRoutingSender->returnHandleData(handle);
+	if(error==E_OK && handleData.sinkID!=0)
+	{
+		//todo: check if volume in handleData is same than volume. React to it.
+		mDatabaseHandler->changeSinkSoundPropertyDB(handleData.soundPropery,handleData.sinkID);
+	}
+	mRoutingSender->removeHandle(handle);
+	mControlSender->cbAckSetSinkSoundProperty(handle,error);
+
 }
 
 
 
 void RoutingReceiver::ackSetSourceSoundProperty(const am_Handle_s handle, const am_Error_e error)
 {
+	RoutingSender::am_handleData_c handleData=mRoutingSender->returnHandleData(handle);
+	if(error==E_OK && handleData.sourceID!=0)
+	{
+		//todo: check if volume in handleData is same than volume. React to it.
+		mDatabaseHandler->changeSourceSoundPropertyDB(handleData.soundPropery,handleData.sourceID);
+	}
+	mRoutingSender->removeHandle(handle);
+	mControlSender->cbAckSetSourceSoundProperty(handle,error);
 }
 
 
 
 void RoutingReceiver::ackCrossFading(const am_Handle_s handle, const am_HotSink_e hotSink, const am_Error_e error)
 {
+	RoutingSender::am_handleData_c handleData=mRoutingSender->returnHandleData(handle);
+	if(error==E_OK && handleData.crossfaderID!=0)
+	{
+		//todo: check if volume in handleData is same than volume. React to it.
+		mDatabaseHandler->changeCrossFaderHotSink(handleData.crossfaderID,hotSink);
+	}
+	mRoutingSender->removeHandle(handle);
+	mControlSender->cbAckCrossFade(handle,hotSink,error);
 }
 
 
 
 void RoutingReceiver::ackSourceVolumeTick(const am_Handle_s handle, const am_sourceID_t sourceID, const am_volume_t volume)
 {
+	mControlSender->hookSystemSourceVolumeTick(handle,sourceID,volume);
 }
 
 
 
 void RoutingReceiver::ackSinkVolumeTick(const am_Handle_s handle, const am_sinkID_t sinkID, const am_volume_t volume)
 {
+	mControlSender->hookSystemSinkVolumeTick(handle,sinkID,volume);
 }
 
 

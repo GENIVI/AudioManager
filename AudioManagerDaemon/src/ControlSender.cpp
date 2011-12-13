@@ -259,9 +259,9 @@ void ControlSender::cbAckSetSinkVolumeChange(const am_Handle_s handle, const am_
 
 
 
-void ControlSender::cbAckSetSourceVolumeChange(const am_Handle_s handle, const am_volume_t voulme, const am_Error_e error)
+void ControlSender::cbAckSetSourceVolumeChange(const am_Handle_s handle, const am_volume_t volume, const am_Error_e error)
 {
-	return mController->cbAckSetSourceVolumeChange(handle,voulme,error);
+	return mController->cbAckSetSourceVolumeChange(handle,volume,error);
 }
 
 

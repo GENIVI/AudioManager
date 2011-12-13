@@ -3322,7 +3322,7 @@ am_Error_e DatabaseHandler::changeSourceState(const am_sourceID_t sourceID, cons
 {
 	assert(sourceID!=0);
 	sqlite3_stmt* query=NULL;
-	std::string command = "UPDATE " + std::string(SOURCE_TABLE) +" setsourceState=? WHERE sourceID="+ i2s(sourceID);
+	std::string command = "UPDATE " + std::string(SOURCE_TABLE) +" SET sourceState=? WHERE sourceID="+ i2s(sourceID);
 	int eCode=0;
 	sqlite3_prepare_v2(mDatabase,command.c_str(),-1,&query,NULL);
 	sqlite3_bind_int(query,1,sourceState);
@@ -3596,6 +3596,165 @@ am_Error_e DatabaseHandler::peekSource(const std::string & name, am_sourceID_t &
 		sourceID=sqlite3_last_insert_rowid(mDatabase);
 	}
 	sqlite3_finalize(query);
+	return E_OK;
+}
+
+am_Error_e DatabaseHandler::changeSinkVolume(const am_sinkID_t sinkID, const am_volume_t volume)
+{
+	assert(sinkID!=0);
+
+	sqlite3_stmt* query=NULL;
+	int eCode=0;
+	std::string command;
+
+	if (!existSink(sinkID))
+	{
+		return E_NON_EXISTENT;
+	}
+	command = "UPDATE " + std::string(SINK_TABLE) + " SET volume=? WHERE sinkID=" + i2s(sinkID);
+	sqlite3_prepare_v2(mDatabase,command.c_str(),-1,&query,NULL);
+	sqlite3_bind_int(query,1, volume);
+	if((eCode=sqlite3_step(query))!=SQLITE_DONE)
+	{
+		DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeSinkVolume SQLITE Step error code:"),DLT_INT(eCode));
+		return E_DATABASE_ERROR;
+	}
+	if((eCode=sqlite3_finalize(query))!=SQLITE_OK)
+	{
+		DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeSinkVolume SQLITE Finalize error code:"),DLT_INT(eCode));
+		return E_DATABASE_ERROR;
+	}
+
+	DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::changeSinkVolume changed volume of sink:"),DLT_INT(sinkID),DLT_STRING("to:"),DLT_INT(volume));
+
+	return E_OK;
+}
+
+am_Error_e DatabaseHandler::changeSourceVolume(const am_sourceID_t sourceID, const am_volume_t volume)
+{
+	assert(sourceID!=0);
+
+	sqlite3_stmt* query=NULL;
+	int eCode=0;
+	std::string command;
+
+	if (!existSource(sourceID))
+	{
+		return E_NON_EXISTENT;
+	}
+	command = "UPDATE " + std::string(SOURCE_TABLE) + " SET volume=? WHERE sourceID=" + i2s(sourceID);
+	sqlite3_prepare_v2(mDatabase,command.c_str(),-1,&query,NULL);
+	sqlite3_bind_int(query,1, volume);
+	if((eCode=sqlite3_step(query))!=SQLITE_DONE)
+	{
+		DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeSourceVolume SQLITE Step error code:"),DLT_INT(eCode));
+		return E_DATABASE_ERROR;
+	}
+	if((eCode=sqlite3_finalize(query))!=SQLITE_OK)
+	{
+		DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeSourceVolume SQLITE Finalize error code:"),DLT_INT(eCode));
+		return E_DATABASE_ERROR;
+	}
+
+	DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::changeSourceVolume changed volume of source=:"),DLT_INT(sourceID),DLT_STRING("to:"),DLT_INT(volume));
+
+	return E_OK;
+}
+
+am_Error_e DatabaseHandler::changeSourceSoundPropertyDB(const am_SoundProperty_s & soundProperty, const am_sourceID_t sourceID)
+{
+	//todo: add checks if soundproperty exists!
+	assert(sourceID!=0);
+
+	sqlite3_stmt* query=NULL;
+	int eCode=0;
+	std::string command;
+
+	if (!existSource(sourceID))
+	{
+		return E_NON_EXISTENT;
+	}
+	command = "UPDATE SourceSoundProperty" + i2s(sourceID)+ " SET value=? WHERE soundPropertyType=" + i2s(soundProperty.type);
+	sqlite3_prepare_v2(mDatabase,command.c_str(),-1,&query,NULL);
+	sqlite3_bind_int(query,1, soundProperty.value);
+	if((eCode=sqlite3_step(query))!=SQLITE_DONE)
+	{
+		DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeSourceSoundPropertyDB SQLITE Step error code:"),DLT_INT(eCode));
+		return E_DATABASE_ERROR;
+	}
+
+	if((eCode=sqlite3_finalize(query))!=SQLITE_OK)
+	{
+		DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeSourceSoundPropertyDB SQLITE Finalize error code:"),DLT_INT(eCode));
+		return E_DATABASE_ERROR;
+	}
+
+	DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::changeSourceSoundPropertyDB changed SourceSoundProperty of source:"),DLT_INT(sourceID),DLT_STRING("type:"),DLT_INT(soundProperty.type),DLT_STRING("to:"),DLT_INT(soundProperty.value));
+
+	return E_OK;
+}
+
+am_Error_e DatabaseHandler::changeSinkSoundPropertyDB(const am_SoundProperty_s & soundProperty, const am_sinkID_t sinkID)
+{
+	//todo: add checks if soundproperty exists!
+	assert(sinkID!=0);
+
+	sqlite3_stmt* query=NULL;
+	int eCode=0;
+	std::string command;
+
+	if (!existSink(sinkID))
+	{
+		return E_NON_EXISTENT;
+	}
+	command = "UPDATE SinkSoundProperty" + i2s(sinkID)+ " SET value=? WHERE soundPropertyType=" + i2s(soundProperty.type);
+	sqlite3_prepare_v2(mDatabase,command.c_str(),-1,&query,NULL);
+	sqlite3_bind_int(query,1, soundProperty.value);
+	if((eCode=sqlite3_step(query))!=SQLITE_DONE)
+	{
+		DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeSinkSoundPropertyDB SQLITE Step error code:"),DLT_INT(eCode));
+		return E_DATABASE_ERROR;
+	}	assert(sinkID!=0);
+
+	if((eCode=sqlite3_finalize(query))!=SQLITE_OK)
+	{
+		DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeSinkSoundPropertyDB SQLITE Finalize error code:"),DLT_INT(eCode));
+		return E_DATABASE_ERROR;
+	}
+
+	DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::changeSinkSoundPropertyDB changed MainSinkSoundProperty of sink:"),DLT_INT(sinkID),DLT_STRING("type:"),DLT_INT(soundProperty.type),DLT_STRING("to:"),DLT_INT(soundProperty.value));
+
+	return E_OK;
+}
+
+am_Error_e DatabaseHandler::changeCrossFaderHotSink(const am_crossfaderID_t crossfaderID, const am_HotSink_e hotsink)
+{
+	assert(crossfaderID!=0);
+
+	sqlite3_stmt* query=NULL;
+	int eCode=0;
+	std::string command;
+
+	if (!existcrossFader(crossfaderID))
+	{
+		return E_NON_EXISTENT;
+	}
+	command = "UPDATE " + std::string(CROSSFADER_TABLE) + " SET hotsink=? WHERE crossfaderID=" + i2s(crossfaderID);
+	sqlite3_prepare_v2(mDatabase,command.c_str(),-1,&query,NULL);
+	sqlite3_bind_int(query,1, hotsink);
+	if((eCode=sqlite3_step(query))!=SQLITE_DONE)
+	{
+		DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeCrossFaderHotSink SQLITE Step error code:"),DLT_INT(eCode));
+		return E_DATABASE_ERROR;
+	}
+	if((eCode=sqlite3_finalize(query))!=SQLITE_OK)
+	{
+		DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeCrossFaderHotSink SQLITE Finalize error code:"),DLT_INT(eCode));
+		return E_DATABASE_ERROR;
+	}
+
+	DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::changeCrossFaderHotSink changed hotsink of crossfader="),DLT_INT(crossfaderID),DLT_STRING("to:"),DLT_INT(hotsink));
+
 	return E_OK;
 }
 

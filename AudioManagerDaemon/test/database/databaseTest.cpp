@@ -120,6 +120,50 @@ void databaseTest::TearDown()
 	DLT_UNREGISTER_CONTEXT(AudioManager);
 }
 
+TEST_F(databaseTest,crossfaders)
+{
+	//todo:implement crossfader tests
+}
+
+TEST_F(databaseTest,sourceState)
+{
+	am_Source_s source;
+	am_sourceID_t sourceID;
+	std::vector<am_Source_s> listSources;
+	pCF.createSource(source);
+	source.sourceState=SS_OFF;
+	ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceDB(source,sourceID));
+	ASSERT_EQ(E_OK,pDatabaseHandler.changeSourceState(sourceID,SS_ON));
+	ASSERT_EQ(E_OK,pDatabaseHandler.getListSources(listSources));
+	ASSERT_EQ(listSources[0].sourceState,SS_ON);
+}
+
+TEST_F(databaseTest,sinkVolumeChange)
+{
+	am_Sink_s sink;
+	am_sinkID_t sinkID;
+	std::vector<am_Sink_s> listSinks;
+	pCF.createSink(sink);
+	sink.volume=23;
+	ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(sink,sinkID));
+	ASSERT_EQ(E_OK,pDatabaseHandler.changeSinkVolume(sinkID,34));
+	ASSERT_EQ(E_OK,pDatabaseHandler.getListSinks(listSinks));
+	ASSERT_EQ(listSinks[0].volume,34);
+}
+
+TEST_F(databaseTest,sourceVolumeChange)
+{
+	am_Source_s source;
+	am_sourceID_t sourceID;
+	std::vector<am_Source_s> listSources;
+	pCF.createSource(source);
+	source.volume=23;
+	ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceDB(source,sourceID));
+	ASSERT_EQ(E_OK,pDatabaseHandler.changeSourceVolume(sourceID,34));
+	ASSERT_EQ(E_OK,pDatabaseHandler.getListSources(listSources));
+	ASSERT_EQ(listSources[0].volume,34);
+}
+
 TEST_F(databaseTest, peekSource)
 {
 	std::vector<am_Source_s> listSources;

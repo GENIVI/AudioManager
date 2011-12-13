@@ -15,20 +15,41 @@
 #include <string>
 #include <vector>
 #include <set>
-#include "MockControlInterface.h"
+#include "MockInterfaces.h"
 #include "DatabaseHandler.h"
 #include "ControlReceiver.h"
-#include "ControlSender.h"
-#include "Observer.h"
 #include "RoutingReceiver.h"
+#include "Observer.h"
+#include "ControlSender.h"
+#include "RoutingSender.h"
 #include "../RoutingInterfaceBackdoor.h"
 #include "../CommandInterfaceBackdoor.h"
+#include "../ControlInterfaceBackdoor.h"
 #include "../CommonFunctions.h"
 
 DLT_DECLARE_CONTEXT(AudioManager)
 
 using namespace testing;
 using namespace am;
+
+using ::testing::Field;
+using ::testing::Property;
+using ::testing::Matcher;
+using ::testing::Pointee;
+using ::testing::AllOf;
+using ::testing::SafeMatcherCast;
+using ::testing::MatcherCast;
+using ::testing::DefaultValue;
+using ::testing::Eq;
+using ::testing::An;
+using ::testing::ElementsAreArray;
+using ::testing::ElementsAre;
+using ::testing::NotNull;
+using ::testing::Assign;
+using ::testing::SetArgReferee;
+using ::testing::DoAll;
+using ::testing::MatcherInterface;
+using ::testing::MatchResultListener;
 
 class controlInterfaceTest : public Test{
 public:
@@ -37,7 +58,8 @@ public:
 	DatabaseHandler pDatabaseHandler;
 	RoutingSender pRoutingSender;
 	CommandSender pCommandSender;
-	MockControlSendInterface pMockInterface;
+	MockRoutingSendInterface pMockRoutingInterface;
+	MockControlSendInterface pMockControlInterface;
 	ControlSender pControlSender;
 	RoutingInterfaceBackdoor pRoutingInterfaceBackdoor;
 	CommandInterfaceBackdoor pCommandInterfaceBackdoor;

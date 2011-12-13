@@ -55,7 +55,7 @@ public:
 	void cbAckDisconnect(const am_Handle_s handle, const am_Error_e errorID) ;
 	void cbAckCrossFade(const am_Handle_s handle, const am_HotSink_e hostsink, const am_Error_e error) ;
 	void cbAckSetSinkVolumeChange(const am_Handle_s handle, const am_volume_t volume, const am_Error_e error) ;
-	void cbAckSetSourceVolumeChange(const am_Handle_s handle, const am_volume_t voulme, const am_Error_e error) ;
+	void cbAckSetSourceVolumeChange(const am_Handle_s handle, const am_volume_t volume, const am_Error_e error) ;
 	void cbAckSetSourceState(const am_Handle_s handle, const am_Error_e error) ;
 	void cbAckSetSourceSoundProperty(const am_Handle_s handle, const am_Error_e error) ;
 	void cbAckSetSinkSoundProperty(const am_Handle_s handle, const am_Error_e error) ;
