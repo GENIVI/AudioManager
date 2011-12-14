@@ -31,6 +31,8 @@
 //todo: versioning of PluginInterfaces on linux level (.symver stuff)
 //todo: all communication like all plugins loaded etc...
 //todo: seperate documentation of test from normal project
+//todo: check the startup sequence. Dbus shall be activated last...
+//todo: there is a bug in the visible flags of sinks and sources. fix it.
 
 #include <dbus/dbus.h>
 #include <dlt/dlt.h>
@@ -75,7 +77,10 @@ int main(int argc, char *argv[])
 	RoutingReceiver iRoutingReceiver(&iDatabaseHandler,&iRoutingSender,&iControlSender);
 	ControlReceiver iControlReceiver(&iDatabaseHandler,&iRoutingSender,&iCommandSender);
 
-	iCommandSender.startupInterface(&iCommandReceiver);
+	//since the plugins have been loaded by the *Senders before, we can tell the Controller this:
+	iControlSender.hookAllPluginsLoaded();
+
+
 
 	iDBusWrapper.dbusMainLoop();
 

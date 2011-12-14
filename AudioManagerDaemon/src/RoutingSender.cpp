@@ -118,10 +118,13 @@ RoutingSender::RoutingSender(const std::vector<std::string>& listOfPluginDirecto
 
         InterfaceNamePairs routerInterface;
         routerInterface.routingInterface = router;
+
+        //here, the busname is saved together with the interface. Later The domains will register with the name and sinks, sources etc with the domain....
         router->returnBusName(routerInterface.busName);
         mListInterfaces.push_back(routerInterface);
         mListLibraryHandles.push_back(tempLibHandle);
     }
+    //now all plugins are loaded, so the interface is ready
 }
 
 RoutingSender::~RoutingSender()

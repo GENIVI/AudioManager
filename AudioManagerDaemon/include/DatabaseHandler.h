@@ -132,7 +132,7 @@ public:
 
 	/**
 	 * checks if a CrossFader exists
-	 * @param crossFaderID the ID of the crossfader to be checked
+	 * @param crossfaderID the ID of the crossfader to be checked
 	 * @return true if exists
 	 */
 	bool existcrossFader(const am_crossfaderID_t crossfaderID) const;
@@ -244,7 +244,6 @@ public:
 
 private:
 	am_timeSync_t calculateMainConnectionDelay(const am_mainConnectionID_t mainConnectionID) const;
-	bool connectionPartofMainConnection(const am_connectionID_t connectionID,const am_mainConnectionID_t mainConnectionID) const;
 	bool sqQuery(const std::string& query);
 	bool openDatabase(); //!< opens the database
 	void createTables(); //!< creates all tables from the static table

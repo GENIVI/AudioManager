@@ -59,6 +59,7 @@ am_Error_e ControlReceiver::connect(am_Handle_s & handle, am_connectionID_t & co
 	tempConnection.connectionFormat=format;
 	tempConnection.connectionID=0;
 
+	//todo: enter function to find out what happends if the same connection is in the course of being build up.
 	if (mDatabaseHandler->existConnection(tempConnection)) return E_ALREADY_EXISTS; //todo:enter the correct connectionID here?
 
 	mDatabaseHandler->enterConnectionDB(tempConnection,connectionID);

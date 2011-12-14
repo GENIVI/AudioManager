@@ -276,7 +276,6 @@ void RoutingReceiver::hookDomainRegistrationComplete(const am_domainID_t domainI
 
 
 
-
 void RoutingReceiver::hookSinkAvailablityStatusChange(const am_sinkID_t sinkID, const am_Availability_s & availability)
 {
 	mControlSender->hookSystemSinkAvailablityStateChange(sinkID,availability);

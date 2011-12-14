@@ -24,7 +24,6 @@
 */
 
 #include "databaseTest.h"
-#include "DatabaseObserver.h"
 
 using namespace am;
 
@@ -36,8 +35,19 @@ extern bool equalClassProperties (const am_ClassProperty_s a,const am_ClassPrope
 extern std::string int2string(int i);
 
 databaseTest::databaseTest()
-	:pDatabaseHandler(std::string(":memory:"))
+	:plistRoutingPluginDirs(),
+	 plistCommandPluginDirs(),
+	 pDatabaseHandler(std::string(":memory:")),
+	 pRoutingSender(plistRoutingPluginDirs),
+	 pCommandSender(plistCommandPluginDirs),
+	 pMockInterface(),
+	 pRoutingInterfaceBackdoor(),
+	 pCommandInterfaceBackdoor(),
+	 pControlReceiver(&pDatabaseHandler,&pRoutingSender,&pCommandSender),
+	 pObserver(&pCommandSender,&pRoutingSender)
 {
+	pDatabaseHandler.registerObserver(&pObserver);
+	pCommandInterfaceBackdoor.injectInterface(&pCommandSender,&pMockInterface);
 }
 
 databaseTest::~databaseTest()
@@ -51,6 +61,10 @@ void databaseTest::createMainConnectionSetup()
 	am_Source_s source;
 	am_Sink_s sink;
 	std::vector<am_Connection_s> connectionList;
+
+	//we create 9 sources and sinks:
+	EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(9);
+	EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(9);
 
 	for (uint16_t i=1;i<10;i++)
 	{
@@ -95,6 +109,8 @@ void databaseTest::createMainConnectionSetup()
 	pCF.createMainConnection(mainConnection,route);
 
 	//enter mainconnection in database
+	EXPECT_CALL(pMockInterface,cbNumberOfMainConnectionsChanged()).Times(1);
+	EXPECT_CALL(pMockInterface,cbMainConnectionStateChanged(_,_)).Times(1);
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterMainConnectionDB(mainConnection,mainConnectionID))<< "ERROR: database error";
 	ASSERT_NE(0,mainConnectionID)<< "ERROR: connectionID zero";
 
@@ -120,8 +136,6 @@ void databaseTest::SetUp()
 	DLT_REGISTER_APP("Dtest","AudioManagerDeamon");
 	DLT_REGISTER_CONTEXT(AudioManager,"Main","Main Context");
 	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Database Test started "));
-	DatabaseObserver *observer=NULL;
-	pDatabaseHandler.registerObserver(observer);
 }
 
 void databaseTest::TearDown()
@@ -141,8 +155,15 @@ TEST_F(databaseTest,sourceState)
 	std::vector<am_Source_s> listSources;
 	pCF.createSource(source);
 	source.sourceState=SS_OFF;
+
+	//prepare the test
+	EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(1);
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceDB(source,sourceID));
+
+	//change the source state
 	ASSERT_EQ(E_OK,pDatabaseHandler.changeSourceState(sourceID,SS_ON));
+
+	//read out the changed values
 	ASSERT_EQ(E_OK,pDatabaseHandler.getListSources(listSources));
 	ASSERT_EQ(listSources[0].sourceState,SS_ON);
 }
@@ -154,7 +175,12 @@ TEST_F(databaseTest,sinkVolumeChange)
 	std::vector<am_Sink_s> listSinks;
 	pCF.createSink(sink);
 	sink.volume=23;
+
+	//prepare the test
+	EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(1);
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(sink,sinkID));
+
+	//change the volume and check the read out
 	ASSERT_EQ(E_OK,pDatabaseHandler.changeSinkVolume(sinkID,34));
 	ASSERT_EQ(E_OK,pDatabaseHandler.getListSinks(listSinks));
 	ASSERT_EQ(listSinks[0].volume,34);
@@ -167,7 +193,12 @@ TEST_F(databaseTest,sourceVolumeChange)
 	std::vector<am_Source_s> listSources;
 	pCF.createSource(source);
 	source.volume=23;
+
+	//prepare test
+	EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(1);
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceDB(source,sourceID));
+
+	//change the volume and check the read out
 	ASSERT_EQ(E_OK,pDatabaseHandler.changeSourceVolume(sourceID,34));
 	ASSERT_EQ(E_OK,pDatabaseHandler.getListSources(listSources));
 	ASSERT_EQ(listSources[0].volume,34);
@@ -176,19 +207,32 @@ TEST_F(databaseTest,sourceVolumeChange)
 TEST_F(databaseTest, peekSource)
 {
 	std::vector<am_Source_s> listSources;
-	am_sourceID_t sourceID;
-	am_sourceID_t source2ID;
+	am_sourceID_t sourceID, source2ID, source3ID;
 	am_Source_s source;
 	pCF.createSource(source);
+
+	//peek a source that does not exits
+	EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(0);
 	ASSERT_EQ(E_OK,pDatabaseHandler.peekSource(std::string("newsource"),sourceID));
+
+	//make sure it is not in the list
 	ASSERT_EQ(E_OK,pDatabaseHandler.getListSources(listSources));
 	ASSERT_TRUE(listSources.empty());
 	ASSERT_EQ(sourceID,100);
+
+	//now enter the source with the same name and make sure it does not get a new ID
 	source.name="newsource";
+	EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(1);
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceDB(source,source2ID));
 	ASSERT_EQ(E_OK,pDatabaseHandler.getListSources(listSources));
 	ASSERT_EQ(sourceID,source2ID);
 	ASSERT_TRUE(listSources[0].sourceID==sourceID);
+
+	//now we peek again. This time, the source exists
+	ASSERT_EQ(E_OK,pDatabaseHandler.peekSource(source.name,source3ID));
+	ASSERT_EQ(E_OK,pDatabaseHandler.getListSources(listSources));
+	ASSERT_TRUE(listSources.size()==1);
+	ASSERT_EQ(source3ID,source2ID);
 }
 
 TEST_F(databaseTest, peekSourceDouble)
@@ -199,48 +243,58 @@ TEST_F(databaseTest, peekSourceDouble)
 	am_sourceID_t source3ID;
 	am_Source_s source;
 	pCF.createSource(source);
+
+	//peek a source that does not exits
+	EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(0);
 	ASSERT_EQ(E_OK,pDatabaseHandler.peekSource(std::string("newsource"),sourceID));
+
+	//peek a second source that does not exits
+	EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(0);
 	ASSERT_EQ(E_OK,pDatabaseHandler.peekSource(std::string("newsource2"),source2ID));
+
+	//make sure they are is not in the list
 	ASSERT_EQ(E_OK,pDatabaseHandler.getListSources(listSources));
 	ASSERT_TRUE(listSources.empty());
 	ASSERT_EQ(sourceID,100);
 	source.name="newsource";
+
+	//now enter the source with the same name than the first peek and make sure it does not get a new ID
+	EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(1);
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceDB(source,source3ID));
 	ASSERT_EQ(E_OK,pDatabaseHandler.getListSources(listSources));
 	ASSERT_EQ(sourceID,source3ID);
 	ASSERT_TRUE(listSources[0].sourceID==sourceID);
 }
 
-TEST_F(databaseTest, peekSourceExists)
-{
-	std::vector<am_Source_s> listSources;
-	am_sourceID_t sourceID;
-	am_sourceID_t source2ID;
-	am_Source_s source;
-	pCF.createSource(source);
-	ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceDB(source,sourceID));
-	ASSERT_EQ(E_OK,pDatabaseHandler.peekSource(source.name,source2ID));
-	ASSERT_EQ(E_OK,pDatabaseHandler.getListSources(listSources));
-	ASSERT_TRUE(listSources.size()==1);
-	ASSERT_EQ(sourceID,source2ID);
-}
-
 TEST_F(databaseTest, peekSink)
 {
 	std::vector<am_Sink_s> listSinks;
-	am_sinkID_t sinkID;
-	am_sinkID_t sink2ID;
+	am_sinkID_t sinkID,sink2ID, sink3ID;
 	am_Sink_s sink;
 	pCF.createSink(sink);
+
+	//peek a sink that does not exits
+	EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(0);
 	ASSERT_EQ(E_OK,pDatabaseHandler.peekSink(std::string("newsink"),sinkID));
+
+	//make sure it is not in the list
 	ASSERT_EQ(E_OK,pDatabaseHandler.getListSinks(listSinks));
 	ASSERT_TRUE(listSinks.empty());
 	ASSERT_EQ(sinkID,100);
 	sink.name="newsink";
+
+	//now enter the source with the same name and make sure it does not get a new ID
+	EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(1);
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(sink,sink2ID));
 	ASSERT_EQ(E_OK,pDatabaseHandler.getListSinks(listSinks));
 	ASSERT_EQ(sinkID,sink2ID);
 	ASSERT_TRUE(listSinks[0].sinkID==sinkID);
+
+	//now we peek again, this time, the sink exists
+	ASSERT_EQ(E_OK,pDatabaseHandler.peekSink(sink.name,sink3ID));
+	ASSERT_EQ(E_OK,pDatabaseHandler.getListSinks(listSinks));
+	ASSERT_TRUE(listSinks.size()==1);
+	ASSERT_EQ(sink3ID,sink2ID);
 }
 
 TEST_F(databaseTest, peekSinkDouble)
@@ -251,32 +305,28 @@ TEST_F(databaseTest, peekSinkDouble)
 	am_sinkID_t sink3ID;
 	am_Sink_s sink;
 	pCF.createSink(sink);
+
+	//peek a sink that does not exits
+	EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(0);
 	ASSERT_EQ(E_OK,pDatabaseHandler.peekSink(std::string("newsink"),sinkID));
+
+	//peek again
+	EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(0);
 	ASSERT_EQ(E_OK,pDatabaseHandler.peekSink(std::string("nextsink"),sink2ID));
+
+	//make sure they are is not in the list
 	ASSERT_EQ(E_OK,pDatabaseHandler.getListSinks(listSinks));
 	ASSERT_TRUE(listSinks.empty());
 	ASSERT_EQ(sinkID,100);
 	sink.name="newsink";
+
+	//now enter the sink with the same name than the first peek and make sure it does not get a new ID
+	EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(1);
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(sink,sink3ID));
 	ASSERT_EQ(E_OK,pDatabaseHandler.getListSinks(listSinks));
 	ASSERT_EQ(sinkID,sink3ID);
 	ASSERT_TRUE(listSinks[0].sinkID==sinkID);
 }
-
-TEST_F(databaseTest, peekSinkExists)
-{
-	std::vector<am_Sink_s> listSinks;
-	am_sinkID_t sinkID;
-	am_sinkID_t sink2ID;
-	am_Sink_s sink;
-	pCF.createSink(sink);
-	ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(sink,sinkID));
-	ASSERT_EQ(E_OK,pDatabaseHandler.peekSink(sink.name,sink2ID));
-	ASSERT_EQ(E_OK,pDatabaseHandler.getListSinks(listSinks));
-	ASSERT_TRUE(listSinks.size()==1);
-	ASSERT_EQ(sinkID,sink2ID);
-}
-
 
 TEST_F(databaseTest,changeConnectionTimingInformationCheckMainConnection)
 {
@@ -284,17 +334,26 @@ TEST_F(databaseTest,changeConnectionTimingInformationCheckMainConnection)
 	std::vector<am_Connection_s> connectionList;
 	std::vector<am_MainConnectionType_s> mainList;
 	pCF.createConnection(connection);
+
+	//prepare the test, it is one mainconnection, so we expect one callback
 	createMainConnectionSetup();
-	ASSERT_EQ(-E_OK,pDatabaseHandler.getListVisibleMainConnections(mainList));
+	EXPECT_CALL(pMockInterface,cbTimingInformationChanged(1,216)).Times(1);
+
+	//first get all visible mainconnections and make sure, the delay is set to -1 for the first entry
+	ASSERT_EQ(E_OK,pDatabaseHandler.getListVisibleMainConnections(mainList));
 	ASSERT_EQ(mainList[0].delay,-1);
+
+	//no go through all connections and set the delay time to 24 for each connection
 	ASSERT_EQ(E_OK,pDatabaseHandler.getListConnections(connectionList));
 	std::vector<am_Connection_s>::iterator iteratorConnectionList=connectionList.begin();
 	for(;iteratorConnectionList<connectionList.end();++iteratorConnectionList)
 	{
 		ASSERT_EQ(E_OK,pDatabaseHandler.changeConnectionTimingInformation(iteratorConnectionList->sinkID,24));
 	}
+
+	//we read the result again and expect that the value is now different from -1
 	ASSERT_EQ(E_OK,pDatabaseHandler.getListVisibleMainConnections(mainList));
-	ASSERT_NE(mainList[0].delay,-1);
+	ASSERT_EQ(mainList[0].delay,216);
 }
 
 TEST_F(databaseTest,changeConnectionTimingInformation)
@@ -304,9 +363,12 @@ TEST_F(databaseTest,changeConnectionTimingInformation)
 	std::vector<am_Connection_s> connectionList;
 	pCF.createConnection(connection);
 
+	//enter a connection
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterConnectionDB(connection,connectionID));
-	ASSERT_EQ(E_OK,pDatabaseHandler.changeConnectionTimingInformation(connectionID,24));
 	ASSERT_EQ(E_OK,pDatabaseHandler.changeConnectionFinal(connectionID));
+
+	//change the timing and check it
+	ASSERT_EQ(E_OK,pDatabaseHandler.changeConnectionTimingInformation(connectionID,24));
 	ASSERT_EQ(E_OK,pDatabaseHandler.getListConnections(connectionList));
 	ASSERT_TRUE(connectionList[0].delay==24);
 }
@@ -332,7 +394,12 @@ TEST_F(databaseTest,getSinkClassOfSink)
 	pCF.createSink(sink);
 	sink.sinkClassID=4;
 
+	//prepare test
+	EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(1);
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(sink,sinkID));
+
+	//enter a new sinkclass, read out again and check
+	EXPECT_CALL(pMockInterface,cbNumberOfSinkClassesChanged()).Times(1);
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkClassDB(sinkClass,sinkClassID));
 	ASSERT_EQ(E_OK,pDatabaseHandler.getListSinkClasses(sinkClassList));
 	ASSERT_EQ(sinkClassList[0].name,sinkClass.name);
@@ -365,7 +432,9 @@ TEST_F(databaseTest,getSourceClassOfSource)
 	sourceClass.listClassProperties=classPropertyList;
 	pCF.createSource(source);
 
+	EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(1);
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceDB(source,sourceID));
+	EXPECT_CALL(pMockInterface,cbNumberOfSourceClassesChanged()).Times(1);
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceClassDB(sourceClassID,sourceClass));
 	ASSERT_EQ(E_OK,pDatabaseHandler.getListSourceClasses(sourceClassList));
 	ASSERT_EQ(sourceClassList[0].name,sourceClass.name);
@@ -395,6 +464,7 @@ TEST_F(databaseTest,removeSourceClass)
 	sourceClass.sourceClassID=3;
 	sourceClass.listClassProperties=classPropertyList;
 
+	EXPECT_CALL(pMockInterface,cbNumberOfSourceClassesChanged()).Times(2);
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceClassDB(sourceClassID,sourceClass));
 	ASSERT_EQ(E_OK,pDatabaseHandler.getListSourceClasses(sourceClassList));
 	ASSERT_EQ(sourceClassList[0].name,sourceClass.name);
@@ -424,6 +494,7 @@ TEST_F(databaseTest,updateSourceClass)
 	changedClass=sourceClass;
 	changedClass.listClassProperties[1].value=6;
 	changedPropertyList=changedClass.listClassProperties;
+	EXPECT_CALL(pMockInterface,cbNumberOfSourceClassesChanged()).Times(1);
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceClassDB(sourceClassID,sourceClass));
 	changedClass.sourceClassID=sourceClassID;
 	ASSERT_EQ(E_OK,pDatabaseHandler.getListSourceClasses(sourceClassList));
@@ -454,6 +525,7 @@ TEST_F(databaseTest,enterSourceClass)
 	sourceClass.sourceClassID=0;
 	sourceClass.listClassProperties=classPropertyList;
 
+	EXPECT_CALL(pMockInterface,cbNumberOfSourceClassesChanged()).Times(1);
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceClassDB(sourceClassID,sourceClass));
 	ASSERT_EQ(E_OK,pDatabaseHandler.getListSourceClasses(sourceClassList));
 	ASSERT_EQ(sourceClassList[0].name,sourceClass.name);
@@ -478,6 +550,7 @@ TEST_F(databaseTest,enterSourceClassStatic)
 	sourceClass.sourceClassID=3;
 	sourceClass.listClassProperties=classPropertyList;
 
+	EXPECT_CALL(pMockInterface,cbNumberOfSourceClassesChanged()).Times(1);
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceClassDB(sourceClassID,sourceClass));
 	ASSERT_EQ(E_OK,pDatabaseHandler.getListSourceClasses(sourceClassList));
 	ASSERT_EQ(sourceClassList[0].name,sourceClass.name);
@@ -503,6 +576,7 @@ TEST_F(databaseTest,removeSinkClass)
 	sinkClass.sinkClassID=0;
 	sinkClass.listClassProperties=classPropertyList;
 
+	EXPECT_CALL(pMockInterface,cbNumberOfSinkClassesChanged()).Times(2);
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkClassDB(sinkClass,sinkClassID));
 	ASSERT_EQ(E_OK,pDatabaseHandler.getListSinkClasses(sinkClassList));
 	ASSERT_EQ(sinkClassList[0].name,sinkClass.name);
@@ -532,6 +606,7 @@ TEST_F(databaseTest,updateSinkClass)
 	changedClass=sinkClass;
 	changedClass.listClassProperties[1].value=6;
 	changedPropertyList=changedClass.listClassProperties;
+	EXPECT_CALL(pMockInterface,cbNumberOfSinkClassesChanged()).Times(1);
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkClassDB(sinkClass,sinkClassID));
 	changedClass.sinkClassID=sinkClassID;
 	ASSERT_EQ(E_OK,pDatabaseHandler.getListSinkClasses(sinkClassList));
@@ -562,6 +637,7 @@ TEST_F(databaseTest,enterSinkClass)
 	sinkClass.sinkClassID=0;
 	sinkClass.listClassProperties=classPropertyList;
 
+	EXPECT_CALL(pMockInterface,cbNumberOfSinkClassesChanged()).Times(1);
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkClassDB(sinkClass,sinkClassID));
 	ASSERT_EQ(E_OK,pDatabaseHandler.getListSinkClasses(sinkClassList));
 	ASSERT_EQ(sinkClassList[0].name,sinkClass.name);
@@ -586,6 +662,7 @@ TEST_F(databaseTest,enterSinkClassStatic)
 	sinkClass.sinkClassID=4;
 	sinkClass.listClassProperties=classPropertyList;
 
+	EXPECT_CALL(pMockInterface,cbNumberOfSinkClassesChanged()).Times(1);
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkClassDB(sinkClass,sinkClassID));
 	ASSERT_EQ(E_OK,pDatabaseHandler.getListSinkClasses(sinkClassList));
 	ASSERT_EQ(sinkClassList[0].name,sinkClass.name);
@@ -602,6 +679,7 @@ TEST_F(databaseTest, changeSystemProperty)
 	systemProperty.type=SYP_TEST;
 	systemProperty.value=33;
 	listSystemProperties.push_back(systemProperty);
+	EXPECT_CALL(pMockInterface,cbSystemPropertyChanged(_)).Times(1); //todo: check the exact value here
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterSystemProperties(listSystemProperties));
 	systemProperty.value=444;
 	ASSERT_EQ(E_OK,pDatabaseHandler.changeSystemPropertyDB(systemProperty));
@@ -637,6 +715,7 @@ TEST_F(databaseTest,enterSourcesCorrect)
 	staticSource.sourceID=4;
 	staticSource.name="Static";
 
+	EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(3);
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceDB(staticSource,staticSourceID))<< "ERROR: database error";
 	ASSERT_EQ(staticSource.sourceID,staticSourceID)<< "ERROR: ID not the one given in staticSource";
 
@@ -688,7 +767,10 @@ TEST_F(databaseTest, changeSourceMainSoundProperty)
 	am_MainSoundProperty_s property;
 	property.type=MSP_NAVIGATION_OFFSET;
 	property.value=33;
+	EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(1);
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceDB(source,sourceID));
+
+	EXPECT_CALL(pMockInterface,cbMainSourceSoundPropertyChanged(sourceID,_)).Times(1); //todo: check in detail
 	ASSERT_EQ(E_OK,pDatabaseHandler.changeMainSourceSoundPropertyDB(property,sourceID));
 	ASSERT_EQ(E_OK,pDatabaseHandler.getListSources(listSources));
 	std::vector<am_MainSoundProperty_s>::iterator listIterator=listSources[0].listMainSoundProperties.begin();
@@ -708,7 +790,10 @@ TEST_F(databaseTest, changeSinkMuteState)
 	am_sinkID_t sinkID;
 	pCF.createSink(sink);
 	am_MuteState_e muteState=MS_MUTED;
+	EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(1);
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(sink,sinkID));
+
+	EXPECT_CALL(pMockInterface,cbSinkMuteStateChanged(sinkID,muteState)).Times(1);
 	ASSERT_EQ(E_OK,pDatabaseHandler.changeSinkMuteStateDB(muteState,sinkID));
 	ASSERT_EQ(E_OK,pDatabaseHandler.getListSinks(listSinks));
 	ASSERT_EQ(muteState,listSinks[0].muteState);
@@ -723,7 +808,11 @@ TEST_F(databaseTest, changeSinkMainSoundProperty)
 	am_MainSoundProperty_s property;
 	property.type=MSP_NAVIGATION_OFFSET;
 	property.value=33;
+
+	EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(1);
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(sink,sinkID));
+
+	EXPECT_CALL(pMockInterface,cbMainSinkSoundPropertyChanged(sinkID,_)).Times(1);
 	ASSERT_EQ(E_OK,pDatabaseHandler.changeMainSinkSoundPropertyDB(property,sinkID));
 	ASSERT_EQ(E_OK,pDatabaseHandler.getListSinks(listSinks));
 	std::vector<am_MainSoundProperty_s>::iterator listIterator=listSinks[0].listMainSoundProperties.begin();
@@ -787,6 +876,7 @@ TEST_F(databaseTest, changeMainConnectionState)
 {
 	std::vector<am_MainConnection_s> listMainConnections;
 	createMainConnectionSetup();
+	EXPECT_CALL(pMockInterface,cbMainConnectionStateChanged(_,_)).Times(1);
 	ASSERT_EQ(E_OK,pDatabaseHandler.changeMainConnectionStateDB(1,CS_DISCONNECTING))<< "ERROR: database error";
 	ASSERT_EQ(E_OK,pDatabaseHandler.getListMainConnections(listMainConnections));
 	ASSERT_EQ(CS_DISCONNECTING,listMainConnections[0].connectionState);
@@ -801,6 +891,8 @@ TEST_F(databaseTest, changeSinkAvailability)
 	am_Availability_s availability;
 	availability.availability=A_UNKNOWN;
 	availability.availabilityReason=AR_TEMPERATURE;
+
+	EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(1);
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(sink,sinkID));
 	ASSERT_EQ(E_OK,pDatabaseHandler.changeSinkAvailabilityDB(availability,sinkID));
 	ASSERT_EQ(E_OK,pDatabaseHandler.getListSinks(listSinks));
@@ -817,6 +909,9 @@ TEST_F(databaseTest, changeSourceAvailability)
 	am_Availability_s availability;
 	availability.availability=A_UNKNOWN;
 	availability.availabilityReason=AR_TEMPERATURE;
+	source.visible=true;
+
+	EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(1);
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceDB(source,sourceID));
 	ASSERT_EQ(E_OK,pDatabaseHandler.changeSourceAvailabilityDB(availability,sourceID));
 	ASSERT_EQ(E_OK,pDatabaseHandler.getListSources(listSources));
@@ -836,6 +931,8 @@ TEST_F(databaseTest,changeMainConnectionRoute)
 	am_Sink_s sink;
 	std::vector<am_Connection_s> connectionList;
 
+	EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(9);
+	EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(9);
 	for (uint16_t i=1;i<10;i++)
 	{
 		am_sinkID_t forgetSink;
@@ -887,7 +984,12 @@ TEST_F(databaseTest,changeMainSinkVolume)
 	am_mainVolume_t newVol=20;
 	std::vector<am_Sink_s> listSinks;
 	pCF.createSink(sink);
+
+	EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(1);
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(sink,sinkID));
+
+
+	EXPECT_CALL(pMockInterface,cbVolumeChanged(sinkID,newVol)).Times(1);
 	ASSERT_EQ(E_OK,pDatabaseHandler.changeSinkMainVolumeDB(newVol,sinkID));
 	ASSERT_EQ(E_OK,pDatabaseHandler.getListSinks(listSinks));
 	ASSERT_EQ(listSinks[0].mainVolume,newVol);
@@ -900,6 +1002,8 @@ TEST_F(databaseTest,getMainSourceSoundProperties)
 	pCF.createSource(source);
 	std::vector<am_MainSoundProperty_s> mainSoundProperties=source.listMainSoundProperties;
 	std::vector<am_MainSoundProperty_s> listMainSoundProperties;
+
+	EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(1);
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceDB(source,sourceID));
 	ASSERT_EQ(E_OK,pDatabaseHandler.getListMainSourceSoundProperties(sourceID,listMainSoundProperties));
 	ASSERT_TRUE(std::equal(mainSoundProperties.begin(),mainSoundProperties.end(),listMainSoundProperties.begin(),equalMainSoundProperty));
@@ -912,6 +1016,8 @@ TEST_F(databaseTest,getMainSinkSoundProperties)
 			pCF.createSink(sink);
 			std::vector<am_MainSoundProperty_s> mainSoundProperties=sink.listMainSoundProperties;
 			std::vector<am_MainSoundProperty_s> listMainSoundProperties;
+
+			EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(1);
 			ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(sink,sinkID));
 			ASSERT_EQ(E_OK,pDatabaseHandler.getListMainSinkSoundProperties(sinkID,listMainSoundProperties));
 			ASSERT_TRUE(std::equal(mainSoundProperties.begin(),mainSoundProperties.end(),listMainSoundProperties.begin(),equalMainSoundProperty));
@@ -930,6 +1036,9 @@ TEST_F(databaseTest,getMainSources)
 	source1.visible=false;
 	std::vector<am_SourceType_s> listMainSources;
 	std::vector<am_Source_s> listSources;
+
+	EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(3);
+
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceDB(source,sourceID));
 	source.sourceID=sourceID;
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceDB(source1,sourceID));
@@ -959,6 +1068,8 @@ TEST_F(databaseTest,getMainSinks)
 	sink1.visible=false;
 	std::vector<am_SinkType_s> listMainSinks;
 	std::vector<am_Sink_s> listSinks;
+
+	EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(3);
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(sink,sinkID));
 	sink.sinkID=sinkID;
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(sink1,sinkID));
@@ -1007,6 +1118,9 @@ TEST_F(databaseTest,getListSourcesOfDomain)
 	source2.domainID=5;
 	pCF.createDomain(domain);
 	sourceCheckList.push_back(1);//sink.sinkID);
+
+
+	EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(2);
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterDomainDB(domain,domainID));
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceDB(source,sourceID))<< "ERROR: database error";
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceDB(source2,sourceID))<< "ERROR: database error";
@@ -1031,6 +1145,8 @@ TEST_F(databaseTest,getListSinksOfDomain)
 	sink2.name="sink2";
 	pCF.createDomain(domain);
 	sinkCheckList.push_back(1);//sink.sinkID);
+
+	EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(2);
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterDomainDB(domain,domainID));
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(sink,sinkID))<< "ERROR: database error";
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(sink2,sinkID))<< "ERROR: database error";
@@ -1104,6 +1220,7 @@ TEST_F(databaseTest,removeSink)
 	am_sinkID_t sinkID;
 	std::vector<am_Sink_s> listSinks;
 	pCF.createSink(sink);
+	EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(2);
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(sink,sinkID))<< "ERROR: database error";
 	ASSERT_EQ(E_OK,pDatabaseHandler.removeSinkDB(sinkID))<< "ERROR: database error";
 	ASSERT_EQ(E_OK,pDatabaseHandler.getListSinks(listSinks))<< "ERROR: database error";
@@ -1118,6 +1235,7 @@ TEST_F(databaseTest,removeSource)
 	std::vector<am_Source_s> listSources;
 	pCF.createSource(source);
 
+	EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(2);
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceDB(source,sourceID))<< "ERROR: database error";
 	ASSERT_EQ(E_OK,pDatabaseHandler.removeSourceDB(sourceID))<< "ERROR: database error";
 	ASSERT_EQ(E_OK,pDatabaseHandler.getListSources(listSources))<< "ERROR: database error";
@@ -1127,6 +1245,8 @@ TEST_F(databaseTest,removeSource)
 TEST_F(databaseTest, removeMainConnection)
 {
 	createMainConnectionSetup();
+	EXPECT_CALL(pMockInterface,cbNumberOfMainConnectionsChanged()).Times(1);
+	EXPECT_CALL(pMockInterface,cbMainConnectionStateChanged(_,_)).Times(1);
 	ASSERT_EQ(E_OK,pDatabaseHandler.removeMainConnectionDB(1))<< "ERROR: database error";
 }
 
@@ -1259,6 +1379,7 @@ TEST_F(databaseTest,enterSinkThatAlreadyExistFail)
 	staticSink.sinkID=43;
 	staticSink.name="Static";
 
+	EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(1);
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(staticSink,staticSinkID))<< "ERROR: database error";
 	ASSERT_EQ(staticSink.sinkID,staticSinkID)<< "ERROR: ID not the one given in staticSink";
 
@@ -1277,6 +1398,7 @@ TEST_F(databaseTest,enterSourcesThatAlreadyExistFail)
 	pCF.createSource(staticSource);
 	staticSource.sourceID=4;
 
+	EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(1);
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceDB(staticSource,staticSourceID))<< "ERROR: database error";
 	ASSERT_EQ(staticSource.sourceID,staticSourceID)<< "ERROR: ID not the one given in staticSource";
 
@@ -1356,6 +1478,7 @@ TEST_F(databaseTest,enterSinksCorrect)
 	pCF.createSink(staticSink);
 	staticSink.sinkID=4;
 
+	EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(3);
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(staticSink,staticSinkID))<< "ERROR: database error";
 	ASSERT_EQ(staticSink.sinkID,staticSinkID)<< "ERROR: ID not the one given in staticSink";
 

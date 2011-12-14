@@ -28,6 +28,7 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include <string>
 
 #define DOMAIN_TABLE "Domains"
 #define SOURCE_CLASS_TABLE "SourceClasses"
@@ -193,7 +194,7 @@ am_Error_e DatabaseHandler::enterMainConnectionDB(const am_MainConnection_s & ma
 
 	sqlite3_stmt* query=NULL;
 	int eCode=0;
-	std::string command= "INSERT INTO " + std::string(MAINCONNECTION_TABLE) + "(sourceID, sinkID, connectionState) VALUES (?,?,?)";
+	std::string command= "INSERT INTO " + std::string(MAINCONNECTION_TABLE) + "(sourceID, sinkID, connectionState, delay) VALUES (?,?,?,-1)";
 	sqlite3_prepare_v2(mDatabase,command.c_str(),-1,&query,NULL);
 	sqlite3_bind_int(query,1, mainConnectionData.route.sourceID);
 	sqlite3_bind_int(query,2, mainConnectionData.route.sinkID);
@@ -214,7 +215,7 @@ am_Error_e DatabaseHandler::enterMainConnectionDB(const am_MainConnection_s & ma
 
 	connectionID=sqlite3_last_insert_rowid(mDatabase);
 
-	//now check the connectionTabel for all connections in the route. IF a particular route is not found, we return with error
+	//now check the connectionTable for all connections in the route. IF a particular route is not found, we return with error
 	std::vector<uint16_t> listOfConnections;
 	int16_t delay=0;
 	command="SELECT connectionID, delay FROM "+std::string(CONNECTION_TABLE)+(" WHERE sourceID=? AND sinkID=? AND connectionFormat=?");
@@ -1179,7 +1180,10 @@ am_Error_e DatabaseHandler::removeMainConnectionDB(const am_mainConnectionID_t m
 	if(!sqQuery(command)) return E_DATABASE_ERROR;
 	if(!sqQuery(command1)) return E_DATABASE_ERROR;
 	DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::removeMainConnectionDB removed:"),DLT_INT(mainConnectionID));
-	if (mDatabaseObserver) mDatabaseObserver->numberOfMainConnectionsChanged();
+	if (mDatabaseObserver) {
+		mDatabaseObserver->mainConnectionStateChanged(mainConnectionID,CS_DISCONNECTED);
+		mDatabaseObserver->numberOfMainConnectionsChanged();
+	}
 	return E_OK;
 }
 
@@ -2587,7 +2591,16 @@ am_Error_e DatabaseHandler::changeDelayMainConnection(const am_timeSync_t & dela
 
 	sqlite3_stmt* query=NULL;
 	int eCode=0;
-	std::string command="UPDATE " + std::string(MAINCONNECTION_TABLE) + " SET delay=? WHERE mainConnectionID=?;";
+	std::string command ="SELECT mainConnectionID FROM "+ std::string(MAINCONNECTION_TABLE) +" WHERE delay=? AND mainConnectionID=?";
+	sqlite3_prepare_v2(mDatabase,command.c_str(),-1,&query,NULL);
+	sqlite3_bind_int(query,1, delay);
+	sqlite3_bind_int(query,2, connectionID);
+	if((eCode=sqlite3_step(query))!=SQLITE_DONE)
+	{
+		sqlite3_finalize(query);
+		return E_OK;
+	}
+	command="UPDATE " + std::string(MAINCONNECTION_TABLE) + " SET delay=? WHERE mainConnectionID=?;";
 	sqlite3_prepare_v2(mDatabase,command.c_str(),-1,&query,NULL);
 	sqlite3_bind_int(query,1, delay);
 	sqlite3_bind_int(query,2, connectionID);
@@ -3072,7 +3085,7 @@ am_Error_e DatabaseHandler::changeConnectionTimingInformation(const am_connectio
 {
 	assert(connectionID!=0);
 
-	sqlite3_stmt *query=NULL, *queryMainConnections;
+	sqlite3_stmt *query=NULL, *queryMainConnections, *queryMainConnectionSubIDs;
 	int eCode=0;
 	std::string command= "UPDATE " + std::string(CONNECTION_TABLE) + " set delay=? WHERE connectionID=?";
 
@@ -3093,22 +3106,27 @@ am_Error_e DatabaseHandler::changeConnectionTimingInformation(const am_connectio
 	}
 
 	//now we need to find all mainConnections that use the changed connection and update their timing
-	am_mainConnectionID_t mainConnectionID;
 	am_timeSync_t tempDelay=0;
 	am_Error_e error;
-	command= "SELECT mainConnectionID FROM " + std::string(MAINCONNECTION_TABLE);
+
+	std::string command2;
+	int tempMainConnectionID;
+	bool firstrow=true;
+	//first get all route tables for all mainconnections
+	command= "SELECT name FROM sqlite_master WHERE type ='table' and name LIKE 'MainConnectionRoute%'";
 	sqlite3_prepare_v2(mDatabase,command.c_str(),-1,&queryMainConnections,NULL);
 
 	while((eCode=sqlite3_step(queryMainConnections))==SQLITE_ROW)
 	{
-		mainConnectionID=sqlite3_column_int(queryMainConnections,0);
-		if(connectionPartofMainConnection(connectionID,mainConnectionID))
+		//now check if the connection ID is in this table
+		std::string tablename=std::string((const char*)sqlite3_column_text(queryMainConnections,0));
+		command2="(SELECT connectionID FROM " + tablename + " WHERE connectionID="+i2s(connectionID)+")";
+		sqlite3_prepare_v2(mDatabase,command.c_str(),-1,&queryMainConnectionSubIDs,NULL);
+		if((eCode=sqlite3_step(queryMainConnectionSubIDs))==SQLITE_ROW)
 		{
-			tempDelay=calculateMainConnectionDelay(mainConnectionID);
-			if ((error=changeDelayMainConnection(tempDelay,mainConnectionID))!= E_OK)
-			{
-				return error;
-			}
+			//if the connection ID is in, recalculate the mainconnection delay
+			std::stringstream(tablename.substr(tablename.find_first_not_of("MainConnectionRoute"))) >> tempMainConnectionID;
+			changeDelayMainConnection(calculateMainConnectionDelay(tempMainConnectionID),tempMainConnectionID);
 		}
 	}
 
@@ -3122,6 +3140,12 @@ am_Error_e DatabaseHandler::changeConnectionTimingInformation(const am_connectio
 	{
 		DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeConnectionTimingInformation SQLITE Finalize error code:"),DLT_INT(eCode));
 		return E_DATABASE_ERROR;
+	}
+
+	sqlite3_prepare_v2(mDatabase,command2.c_str(),-1,&queryMainConnectionSubIDs,NULL);
+	while((eCode=sqlite3_step(queryMainConnectionSubIDs))==SQLITE_ROW)
+	{
+		std::string temp=std::string((const char*)sqlite3_column_text(queryMainConnections,0));
 	}
 
 	return E_OK;
@@ -3152,36 +3176,19 @@ am_Error_e DatabaseHandler::changeConnectionFinal(const am_connectionID_t connec
 	return E_OK;
 }
 
-bool DatabaseHandler::connectionPartofMainConnection(const am_connectionID_t connectionID, const am_mainConnectionID_t mainConnectionID) const
-{
-	sqlite3_stmt* query=NULL;
-	std::string command = "SELECT connectionID FROM MainConnectionRoute"+ i2s(mainConnectionID)+ " WHERE connectionID=" + i2s(connectionID);
-	int eCode=0;
-	bool returnVal=true;
-	sqlite3_prepare_v2(mDatabase,command.c_str(),-1,&query,NULL);
-	if ((eCode=sqlite3_step(query))==SQLITE_DONE) returnVal=false;
-	else if (eCode!=SQLITE_ROW)
-	{
-		returnVal=false;
-		DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::connectionPartofMainConnection database error!:"), DLT_INT(eCode))
-	}
-	sqlite3_finalize(query);
-	return returnVal;
-}
-
 am_timeSync_t DatabaseHandler::calculateMainConnectionDelay(const am_mainConnectionID_t mainConnectionID) const
 {
 	assert (mainConnectionID!=0);
 	sqlite3_stmt* query=NULL;
-	std::string command = "SELECT delay FROM MainConnectionRoute"+ i2s(mainConnectionID);
+	std::string command = "SELECT sum(Connections.delay),min(Connections.delay) FROM "+ std::string(CONNECTION_TABLE)+",MainConnectionRoute"+ i2s(mainConnectionID)+" WHERE MainConnectionRoute"+ i2s(mainConnectionID)+".connectionID = Connections.connectionID" ;
 	int eCode=0;
 	am_timeSync_t delay=0;
+	am_timeSync_t min=0;
 	sqlite3_prepare_v2(mDatabase,command.c_str(),-1,&query,NULL);
-	while((eCode=sqlite3_step(query))==SQLITE_ROW)
+	if((eCode=sqlite3_step(query))==SQLITE_ROW)
 	{
-		int16_t temp_delay=sqlite3_column_int(query,0);
-		if (temp_delay!=-1 && delay!=-1) delay+=temp_delay;
-		else delay=-1;
+		delay=sqlite3_column_int(query,0);
+		min=sqlite3_column_int(query,1);
 	}
 	if((eCode=sqlite3_step(query))!=SQLITE_DONE)
 	{
@@ -3194,9 +3201,9 @@ am_timeSync_t DatabaseHandler::calculateMainConnectionDelay(const am_mainConnect
 		DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::calculateMainConnectionDelay SQLITE Finalize error code:"),DLT_INT(eCode));
 		return E_DATABASE_ERROR;
 	}
-
-	if (delay==0) delay=-1;
+	if (min<0) delay=-1;
 	return delay;
+
 }
 
 void DatabaseHandler::registerObserver(DatabaseObserver *iObserver)
@@ -3215,7 +3222,7 @@ bool DatabaseHandler::sourceVisible(const am_sourceID_t sourceID) const
 	sqlite3_prepare_v2(mDatabase,command.c_str(),-1,&query,NULL);
 	if ((eCode=sqlite3_step(query))==SQLITE_DONE)
 	{
-		returnVal=sqlite3_column_int(query,0);
+		returnVal=(bool)sqlite3_column_int(query,0);
 	}
 	else if (eCode!=SQLITE_ROW)
 	{

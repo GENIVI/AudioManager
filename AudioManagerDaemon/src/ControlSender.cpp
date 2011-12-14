@@ -7,6 +7,7 @@
 
 #include "ControlSender.h"
 #include "PluginTemplate.h"
+#include <dlt/dlt.h>
 #include <assert.h>
 
 
@@ -14,15 +15,22 @@ ControlSender::ControlSender(std::string controlPluginFile)
 	:mlibHandle(NULL),
 	 mController(NULL)
 {
-	ControlSendInterface* (*createFunc)();
-	createFunc = getCreateFunction<ControlSendInterface*()>(controlPluginFile,mlibHandle);
-	assert(createFunc!=NULL);
-	mController = createFunc();
+	if (!controlPluginFile.empty())
+	{
+		ControlSendInterface* (*createFunc)();
+		createFunc = getCreateFunction<ControlSendInterface*()>(controlPluginFile,mlibHandle);
+		assert(createFunc!=NULL);
+		mController = createFunc();
+	}
+	else
+	{
+		DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("No controller loaded !"));
+	}
 }
 
 ControlSender::~ControlSender()
 {
-	dlclose(mlibHandle);
+	if (mlibHandle) dlclose(mlibHandle);
 }
 
 void ControlSender::hookAllPluginsLoaded()
