@@ -24,7 +24,7 @@
 */
 
 #include "databaseTest.h"
-#include "Observer.h"
+#include "DatabaseObserver.h"
 
 using namespace am;
 
@@ -34,6 +34,15 @@ extern bool equalMainSoundProperty (const am_MainSoundProperty_s a, const am_Mai
 extern bool equalRoutingElement (const am_RoutingElement_s a,const am_RoutingElement_s b);
 extern bool equalClassProperties (const am_ClassProperty_s a,const am_ClassProperty_s b);
 extern std::string int2string(int i);
+
+databaseTest::databaseTest()
+	:pDatabaseHandler(std::string(":memory:"))
+{
+}
+
+databaseTest::~databaseTest()
+{
+}
 
 void databaseTest::createMainConnectionSetup()
 {
@@ -111,7 +120,7 @@ void databaseTest::SetUp()
 	DLT_REGISTER_APP("Dtest","AudioManagerDeamon");
 	DLT_REGISTER_CONTEXT(AudioManager,"Main","Main Context");
 	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Database Test started "));
-	Observer *observer=NULL;
+	DatabaseObserver *observer=NULL;
 	pDatabaseHandler.registerObserver(observer);
 }
 

@@ -1,27 +1,45 @@
-/*
- * RoutingSender.h
- *
- *  Created on: Oct 26, 2011
- *      Author: christian
- */
+/**
+* Copyright (C) 2011, BMW AG
+*
+* GeniviAudioMananger AudioManagerDaemon
+*
+* \file RoutingSender.h
+*
+* \date 20-Oct-2011 3:42:04 PM
+* \author Christian Mueller (christian.ei.mueller@bmw.de)
+*
+* \section License
+* GNU Lesser General Public License, version 2.1, with special exception (GENIVI clause)
+* Copyright (C) 2011, BMW AG Christian Mueller  Christian.ei.mueller@bmw.de
+*
+* This program is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License, version 2.1, as published by the Free Software Foundation.
+* This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License, version 2.1, for more details.
+* You should have received a copy of the GNU Lesser General Public License, version 2.1, along with this program; if not, see <http://www.gnu.org/licenses/lgpl-2.1.html>.
+* Note that the copyright holders assume that the GNU Lesser General Public License, version 2.1, may also be applicable to programs even in cases in which the program is not a library in the technical sense.
+* Linking AudioManager statically or dynamically with other modules is making a combined work based on AudioManager. You may license such other modules under the GNU Lesser General Public License, version 2.1. If you do not want to license your linked modules under the GNU Lesser General Public License, version 2.1, you may use the program under the following exception.
+* As a special exception, the copyright holders of AudioManager give you permission to combine AudioManager with software programs or libraries that are released under any license unless such a combination is not permitted by the license of such a software program or library. You may copy and distribute such a system following the terms of the GNU Lesser General Public License, version 2.1, including this special exception, for AudioManager and the licenses of the other code concerned.
+* Note that people who make modified versions of AudioManager are not obligated to grant this special exception for their modified versions; it is their choice whether to do so. The GNU Lesser General Public License, version 2.1, gives permission to release a modified version without this exception; this exception also makes it possible to release a modified version which carries forward this exception.
+*
+*/
 
 #ifndef ROUTINGSENDER_H_
 #define ROUTINGSENDER_H_
 
 #include "routing/RoutingSendInterface.h"
+#include <map>
 
 #ifdef UNIT_TEST //this is needed to test RoutingSender
 #include "../test/RoutingInterfaceBackdoor.h"
 #endif
 
-#include <map>
-#include <set>
-
 using namespace am;
 
+/**
+ * Implements the RoutingSendInterface. Loads all plugins and dispatches calls to the plugins
+ */
 class RoutingSender {
 public:
-	RoutingSender();
+	RoutingSender(const std::vector<std::string>& listOfPluginDirectories);
 	virtual ~RoutingSender();
 
 	/**
@@ -90,13 +108,14 @@ public:
 	am_Error_e setDomainState(const am_domainID_t domainID, const am_DomainState_e domainState) ;
 	am_Error_e getListHandles(std::vector<am_Handle_s> & listHandles) const ;
 
+	//!< is used to pair interfaces with busnames
 	struct InterfaceNamePairs
 	{
 		RoutingSendInterface* routingInterface;
 		std::string busName;
 	};
 
-	//todo: maybe this would be valuable information for the controller...
+	//!< is used to store data related to handles
 	class am_handleData_c
 	{
 	public:
@@ -122,10 +141,16 @@ public:
 	friend class RoutingInterfaceBackdoor;
 #endif
 
-am_handleData_c returnHandleData(am_Handle_s handle);
+	/**
+	 * returns the data that belong to handles
+	 * @param handle the handle
+	 * @return a class holding the handle data
+	 */
+	am_handleData_c returnHandleData(am_Handle_s handle);
 
 private:
 
+	//!< is needed to sort the handles in the map
 	struct comparator
 	{
 		bool operator()(const am_Handle_s& a, const am_Handle_s& b) const
@@ -134,27 +159,33 @@ private:
 		}
 	};
 
+	/**
+	 * creates a handle and adds it to the list of handles
+	 * @param handleData the data that should be saves together with the handle
+	 * @param type the type of handle to be created
+	 * @return the handle
+	 */
 	am_Handle_s createHandle(const am_handleData_c& handleData, const am_Handle_e type);
-	void unloadLibraries(void);
+	void unloadLibraries(void); //!< unloads all loaded plugins
 
-    typedef std::map<am_domainID_t, RoutingSendInterface*> DomainInterfaceMap;
-    typedef std::map<am_sinkID_t, RoutingSendInterface*> SinkInterfaceMap;
-    typedef std::map<am_sourceID_t, RoutingSendInterface*> SourceInterfaceMap;
-    typedef std::map<am_crossfaderID_t, RoutingSendInterface*> CrossfaderInterfaceMap;
-    typedef std::map<am_connectionID_t, RoutingSendInterface*> ConnectionInterfaceMap;
-    typedef std::map<uint16_t, RoutingSendInterface*> HandleInterfaceMap;
-    typedef std::map<am_Handle_s,am_handleData_c,comparator> HandlesMap;
+    typedef std::map<am_domainID_t, RoutingSendInterface*> DomainInterfaceMap; //!< maps domains to interfaces
+    typedef std::map<am_sinkID_t, RoutingSendInterface*> SinkInterfaceMap; //!< maps sinks to interfaces
+    typedef std::map<am_sourceID_t, RoutingSendInterface*> SourceInterfaceMap; //!< maps sources to interfaces
+    typedef std::map<am_crossfaderID_t, RoutingSendInterface*> CrossfaderInterfaceMap; //!< maps crossfaders to interfaces
+    typedef std::map<am_connectionID_t, RoutingSendInterface*> ConnectionInterfaceMap; //!< maps connections to interfaces
+    typedef std::map<uint16_t, RoutingSendInterface*> HandleInterfaceMap; //!< maps handles to interfaces
+    typedef std::map<am_Handle_s,am_handleData_c,comparator> HandlesMap; //!< maps handleData to handles
 
-    int16_t mHandleCount;
-	std::vector<InterfaceNamePairs> mListInterfaces;
-	std::vector<void*> mListLibraryHandles;
-    ConnectionInterfaceMap mMapConnectionInterface;
-    CrossfaderInterfaceMap mMapCrossfaderInterface;
-    DomainInterfaceMap mMapDomainInterface;
-    SinkInterfaceMap mMapSinkInterface;
-    SourceInterfaceMap mMapSourceInterface;
-    HandleInterfaceMap mMapHandleInterface;
-    HandlesMap mlistActiveHandles;
+    int16_t mHandleCount; //!< is used to create handles
+	std::vector<InterfaceNamePairs> mListInterfaces;	//!< list of busname/interface relation
+	std::vector<void*> mListLibraryHandles;	//!< list of all loaded pluginInterfaces
+    ConnectionInterfaceMap mMapConnectionInterface; //!< map of connection to interfaces
+    CrossfaderInterfaceMap mMapCrossfaderInterface; //!< map of crossfaders to interface
+    DomainInterfaceMap mMapDomainInterface; //!< map of domains to interfaces
+    SinkInterfaceMap mMapSinkInterface; //!< map of sinks to interfaces
+    SourceInterfaceMap mMapSourceInterface; //!< map of sources to interfaces
+    HandleInterfaceMap mMapHandleInterface; //!< map of handles to interfaces
+    HandlesMap mlistActiveHandles; //!< list of all currently "running" handles.
 };
 
 #endif /* ROUTINGSENDER_H_ */

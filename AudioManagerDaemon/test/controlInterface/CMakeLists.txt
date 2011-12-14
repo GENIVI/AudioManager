@@ -54,7 +54,7 @@ INCLUDE_DIRECTORIES(
    
 file(GLOB CONTROL_INTERFACE_SRCS_CXX 
     "../../src/DatabaseHandler.cpp"
-    "../../src/Observer.cpp"
+    "../../src/DatabaseObserver.cpp"
     "../../src/RoutingSender.cpp"
     "../../src/RoutingReceiver.cpp"
     "../../src/CommandSender.cpp"

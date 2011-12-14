@@ -19,7 +19,7 @@
 #include "DatabaseHandler.h"
 #include "ControlReceiver.h"
 #include "ControlSender.h"
-#include "Observer.h"
+#include "DatabaseObserver.h"
 #include "../RoutingInterfaceBackdoor.h"
 #include "../CommandInterfaceBackdoor.h"
 #include "../CommonFunctions.h"
@@ -32,7 +32,9 @@ using namespace am;
 class routingInterfaceTest : public Test{
 public:
 	routingInterfaceTest();
-	virtual ~routingInterfaceTest();
+	~routingInterfaceTest();
+	std::vector<std::string> plistRoutingPluginDirs;
+	std::vector<std::string> plistCommandPluginDirs;
 	DatabaseHandler pDatabaseHandler;
 	RoutingSender pRoutingSender;
 	CommandSender pCommandSender;
@@ -40,7 +42,7 @@ public:
 	RoutingInterfaceBackdoor pRoutingInterfaceBackdoor;
 	CommandInterfaceBackdoor pCommandInterfaceBackdoor;
 	ControlReceiver pControlReceiver;
-	Observer pObserver;
+	DatabaseObserver pObserver;
 	CommonFunctions pCF;
 	void SetUp();
 	void TearDown();

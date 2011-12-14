@@ -19,7 +19,7 @@
 #include "DatabaseHandler.h"
 #include "ControlReceiver.h"
 #include "RoutingReceiver.h"
-#include "Observer.h"
+#include "DatabaseObserver.h"
 #include "ControlSender.h"
 #include "RoutingSender.h"
 #include "../RoutingInterfaceBackdoor.h"
@@ -54,7 +54,9 @@ using ::testing::MatchResultListener;
 class controlInterfaceTest : public Test{
 public:
 	controlInterfaceTest();
-	virtual ~controlInterfaceTest();
+	~controlInterfaceTest();
+	std::vector<std::string> plistRoutingPluginDirs;
+	std::vector<std::string> plistCommandPluginDirs;
 	DatabaseHandler pDatabaseHandler;
 	RoutingSender pRoutingSender;
 	CommandSender pCommandSender;
@@ -64,7 +66,7 @@ public:
 	RoutingInterfaceBackdoor pRoutingInterfaceBackdoor;
 	CommandInterfaceBackdoor pCommandInterfaceBackdoor;
 	ControlInterfaceBackdoor pControlInterfaceBackdoor;
-	Observer pObserver;
+	DatabaseObserver pDatabaseObserver;
 	ControlReceiver pControlReceiver;
 	RoutingReceiver pRoutingReceiver;
 	CommonFunctions pCF;

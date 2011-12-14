@@ -6,20 +6,17 @@
  */
 
 #include "ControlSender.h"
-#include "control/ControlSendInterface.h"
-#include "control/ControlReceiveInterface.h"
-#include "pluginTemplate.h"
+#include "PluginTemplate.h"
 #include <assert.h>
 
-std::string controlPluginFile= "/home/christian/workspace/gitserver/build/plugins/control/libPluginControlInterface.so";
 
-ControlSender::ControlSender()
+ControlSender::ControlSender(std::string controlPluginFile)
+	:mlibHandle(NULL),
+	 mController(NULL)
 {
 	ControlSendInterface* (*createFunc)();
 	createFunc = getCreateFunction<ControlSendInterface*()>(controlPluginFile,mlibHandle);
-
 	assert(createFunc!=NULL);
-
 	mController = createFunc();
 }
 

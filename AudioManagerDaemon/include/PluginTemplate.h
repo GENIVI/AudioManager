@@ -3,7 +3,7 @@
 *
 * GeniviAudioMananger AudioManagerDaemon
 *
-* \file CommandReveiver.h
+* \file pluginTemplate.h
 *
 * \date 20-Oct-2011 3:42:04 PM
 * \author Christian Mueller (christian.ei.mueller@bmw.de)
@@ -22,46 +22,68 @@
 *
 */
 
-#ifndef COMMANDRECEIVER_H_
-#define COMMANDRECEIVER_H_
+#ifndef PLUGINTEMPLATE_H_
+#define PLUGINTEMPLATE_H_
 
-#include <command/CommandReceiveInterface.h>
-#include "DatabaseHandler.h"
-#include "DBusWrapper.h"
-#include "ControlSender.h"
+#include <dlt/dlt.h>
+#include <dlfcn.h>
+#include <libgen.h>
 
-using namespace am;
+DLT_IMPORT_CONTEXT(AudioManager)
 
 /**
- * This class realizes the command Interface
+ * This template tries to load a library and cast ot to a class
+ * @param libname the full path to the library to be loaded
+ * @return returns the pointer to the class to be loaded
  */
-class CommandReceiver: public  CommandReceiveInterface {
-public:
-	CommandReceiver(DatabaseHandler* iDatabaseHandler, DBusWrapper* iDBusWrapper, ControlSender* iControlSender);
-	virtual ~CommandReceiver();
-	am_Error_e connect(const am_sourceID_t sourceID, const am_sinkID_t sinkID, am_mainConnectionID_t& mainConnectionID) ;
-	am_Error_e disconnect(const am_mainConnectionID_t mainConnectionID) ;
-	am_Error_e setVolume(const am_sinkID_t sinkID, const am_mainVolume_t volume) ;
-	am_Error_e volumeStep(const am_sinkID_t sinkID, const int16_t volumeStep) ;
-	am_Error_e setSinkMuteState(const am_sinkID_t sinkID, const am_MuteState_e muteState) ;
-	am_Error_e setMainSinkSoundProperty(const am_MainSoundProperty_s& soundProperty, const am_sinkID_t sinkID) ;
-	am_Error_e setMainSourceSoundProperty(const am_MainSoundProperty_s& soundProperty, const am_sourceID_t sourceID) ;
-	am_Error_e setSystemProperty(const am_SystemProperty_s& property) ;
-	am_Error_e getListMainConnections(std::vector<am_MainConnectionType_s>& listConnections) const ;
-	am_Error_e getListMainSinks(std::vector<am_SinkType_s>& listMainSinks) const ;
-	am_Error_e getListMainSources(std::vector<am_SourceType_s>& listMainSources) const ;
-	am_Error_e getListMainSinkSoundProperties(const am_sinkID_t sinkID, std::vector<am_MainSoundProperty_s>& listSoundProperties) const ;
-	am_Error_e getListMainSourceSoundProperties(const am_sourceID_t sourceID, std::vector<am_MainSoundProperty_s>& listSourceProperties) const ;
-	am_Error_e getListSourceClasses(std::vector<am_SourceClass_s>& listSourceClasses) const ;
-	am_Error_e getListSinkClasses(std::vector<am_SinkClass_s>& listSinkClasses) const ;
-	am_Error_e getListSystemProperties(std::vector<am_SystemProperty_s>& listSystemProperties) const ;
-	am_Error_e getTimingInformation(const am_mainConnectionID_t mainConnectionID, am_timeSync_t& delay) const ;
-	am_Error_e getDBusConnectionWrapper(DBusWrapper*& dbusConnectionWrapper) const ;
+template<class T>T* getCreateFunction(const std::string& libname, void*& libraryHandle) {
 
-private:
-	DatabaseHandler* mDatabaseHandler; //!< pointer to the databasehandler
-	DBusWrapper* mDBusWrapper; //!< pointer to the dbuswrapper
-	ControlSender* mControlSender; //!< pointer to the control sender
-};
+	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Trying to load libray with name: "),DLT_STRING(libname.c_str()));
 
-#endif /* COMMANDRECEIVER_H_ */
+	// cut off directories
+	char* fileWithPath = const_cast<char*>(libname.c_str());
+	std::string libFileName = basename(fileWithPath);
+
+	// cut off "lib" in front and cut off .so end"
+	std::string createFunctionName = libFileName.substr(3, libFileName.length() - 6) + "Factory";
+
+	// open library
+	dlerror(); // Clear any existing error
+	libraryHandle = dlopen(libname.c_str(), RTLD_LAZY);
+	const char* dlopen_error = dlerror();
+	if (!libraryHandle || dlopen_error)
+	{
+		DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("dlopen failed"),DLT_STRING(dlopen_error));
+		return 0;
+	}
+
+	// get entry point from shared lib
+	dlerror(); // Clear any existing error
+
+	union
+	{
+		void* voidPointer;
+		T* typedPointer;
+	} functionPointer;
+
+	// Note: direct cast is not allowed by ISO C++. e.g.
+	// T* createFunction = reinterpret_cast<T*>(dlsym(libraryHandle, createFunctionName.c_str()));
+	// compiler warning: "forbids casting between pointer-to-function and pointer-to-object"
+
+	functionPointer.voidPointer = dlsym(libraryHandle, createFunctionName.c_str());
+	T* createFunction = functionPointer.typedPointer;
+
+	const char* dlsym_error = dlerror();
+	if (!createFunction || dlsym_error)
+	{
+		DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("Failed to load shared lib entry point"),DLT_STRING(dlsym_error));
+	}
+	else
+	{
+		DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("loaded successfully plugin"),DLT_STRING(createFunctionName.c_str()));
+	}
+	return createFunction;
+}
+
+
+#endif /* PLUGINTEMPLATE_H_ */

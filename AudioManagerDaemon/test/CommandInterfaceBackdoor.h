@@ -8,6 +8,7 @@
 #ifndef COMMANDINTERFACEBACKDOOR_H_
 #define COMMANDINTERFACEBACKDOOR_H_
 
+#include <command/CommandSendInterface.h>
 #include "CommandSender.h"
 
 using namespace am;

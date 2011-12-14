@@ -1,26 +1,37 @@
-/*
- * DatabaseHandler.h
- *
- *  Created on: Oct 24, 2011
- *      Author: christian
- */
+/**
+* Copyright (C) 2011, BMW AG
+*
+* GeniviAudioMananger AudioManagerDaemon
+*
+* \file Databasehandler.h
+*
+* \date 20-Oct-2011 3:42:04 PM
+* \author Christian Mueller (christian.ei.mueller@bmw.de)
+*
+* \section License
+* GNU Lesser General Public License, version 2.1, with special exception (GENIVI clause)
+* Copyright (C) 2011, BMW AG Christian Mueller  Christian.ei.mueller@bmw.de
+*
+* This program is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License, version 2.1, as published by the Free Software Foundation.
+* This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License, version 2.1, for more details.
+* You should have received a copy of the GNU Lesser General Public License, version 2.1, along with this program; if not, see <http://www.gnu.org/licenses/lgpl-2.1.html>.
+* Note that the copyright holders assume that the GNU Lesser General Public License, version 2.1, may also be applicable to programs even in cases in which the program is not a library in the technical sense.
+* Linking AudioManager statically or dynamically with other modules is making a combined work based on AudioManager. You may license such other modules under the GNU Lesser General Public License, version 2.1. If you do not want to license your linked modules under the GNU Lesser General Public License, version 2.1, you may use the program under the following exception.
+* As a special exception, the copyright holders of AudioManager give you permission to combine AudioManager with software programs or libraries that are released under any license unless such a combination is not permitted by the license of such a software program or library. You may copy and distribute such a system following the terms of the GNU Lesser General Public License, version 2.1, including this special exception, for AudioManager and the licenses of the other code concerned.
+* Note that people who make modified versions of AudioManager are not obligated to grant this special exception for their modified versions; it is their choice whether to do so. The GNU Lesser General Public License, version 2.1, gives permission to release a modified version without this exception; this exception also makes it possible to release a modified version which carries forward this exception.
+*
+*/
 
 #ifndef DATABASEHANDLER_H_
 #define DATABASEHANDLER_H_
 
-#include "Observer.h"
 #include "audiomanagertypes.h"
-#include <map>
-#include <string>
-#include <stdint.h>
-#include <fstream>
-#include <sstream>
-#include <vector>
+#include "DatabaseObserver.h"
 #include <sqlite3.h>
 
 using namespace am;
 
-#define DYNAMIC_ID_BOUNDARY 100
+#define DYNAMIC_ID_BOUNDARY 100 //!< the value below is reserved for staticIDs, the value above will be assigned to dynamically registered items
 
 //todo: we do not have to create MainSoundProperty tables if visible = false.
 //todo: check the enum values before entering & changing in the database.
@@ -31,9 +42,12 @@ using namespace am;
 //todo: create test to ensure uniqueness of names throughout the database
 //todo: enforce the uniqueness of names
 
+/**
+ * This class handles and abstracts the database
+ */
 class DatabaseHandler {
 public:
-	DatabaseHandler();
+	DatabaseHandler(std::string databasePath);
 	virtual ~DatabaseHandler();
 	am_Error_e enterDomainDB(const am_Domain_s& domainData, am_domainID_t& domainID) ;
 	am_Error_e enterMainConnectionDB(const am_MainConnection_s& mainConnectionData, am_mainConnectionID_t& connectionID) ;
@@ -212,7 +226,7 @@ public:
 	 * registers the Observer at the Database
 	 * @param iObserver pointer to the observer
 	 */
-	void registerObserver(Observer *iObserver);
+	void registerObserver(DatabaseObserver *iObserver);
 
 	/**
 	 * gives information about the visibility of a source
@@ -232,18 +246,18 @@ private:
 	am_timeSync_t calculateMainConnectionDelay(const am_mainConnectionID_t mainConnectionID) const;
 	bool connectionPartofMainConnection(const am_connectionID_t connectionID,const am_mainConnectionID_t mainConnectionID) const;
 	bool sqQuery(const std::string& query);
-	bool openDatabase();
-	void createTables();
-	sqlite3 *mDatabase;
-	std::string mPath;
-	Observer *mObserver;
+	bool openDatabase(); //!< opens the database
+	void createTables(); //!< creates all tables from the static table
+	sqlite3 *mDatabase; //!< pointer to the database
+	std::string mPath;  //!< path to the database
+	DatabaseObserver *mDatabaseObserver; //!< pointer to the Observer
 	bool mFirstStaticSink;
 	bool mFirstStaticSource;
 	bool mFirstStaticGateway;
 	bool mFirstStaticSinkClass;
 	bool mFirstStaticSourceClass;
-	typedef std::map<am_gatewayID_t,std::vector<bool> > ListConnectionFormat;
-	ListConnectionFormat mListConnectionFormat;
+	typedef std::map<am_gatewayID_t,std::vector<bool> > ListConnectionFormat; //!< type for list of connection formats
+	ListConnectionFormat mListConnectionFormat; //!< list of connection formats
 };
 
 #endif /* DATABASEHANDLER_H_ */

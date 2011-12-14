@@ -22,13 +22,14 @@ using ::testing::ElementsAre;
 using ::testing::NotNull;
 
 routingInterfaceTest::routingInterfaceTest()
-	:pDatabaseHandler(),
-	 pRoutingSender(),
-	 pCommandSender(),
+	:plistCommandPluginDirs(),
+	 pDatabaseHandler(std::string(":memory:")),
+	 pRoutingSender(plistRoutingPluginDirs),
+	 pCommandSender(plistCommandPluginDirs),
 	 pMockInterface(),
 	 pRoutingInterfaceBackdoor(),
 	 pCommandInterfaceBackdoor(),
-	 pControlReceiver(&pDatabaseHandler,&pRoutingSender),
+	 pControlReceiver(&pDatabaseHandler,&pRoutingSender,&pCommandSender),
 	 pObserver(&pCommandSender,&pRoutingSender)
 {
 	pDatabaseHandler.registerObserver(&pObserver);

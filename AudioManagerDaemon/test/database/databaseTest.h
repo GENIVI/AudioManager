@@ -24,6 +24,8 @@ using namespace testing;
 
 class databaseTest : public Test {
 public:
+	databaseTest();
+	~databaseTest();
 
 	DatabaseHandler pDatabaseHandler;
 	CommonFunctions pCF;

@@ -1,16 +1,35 @@
-/*
- * CommandSender.cpp
- *
- *  Created on: Oct 26, 2011
- *      Author: christian
- */
+/**
+* Copyright (C) 2011, BMW AG
+*
+* GeniviAudioMananger AudioManagerDaemon
+*
+* \file CommandSender.cpp
+*
+* \date 20-Oct-2011 3:42:04 PM
+* \author Christian Mueller (christian.ei.mueller@bmw.de)
+*
+* \section License
+* GNU Lesser General Public License, version 2.1, with special exception (GENIVI clause)
+* Copyright (C) 2011, BMW AG Christian Mueller  Christian.ei.mueller@bmw.de
+*
+* This program is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License, version 2.1, as published by the Free Software Foundation.
+* This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License, version 2.1, for more details.
+* You should have received a copy of the GNU Lesser General Public License, version 2.1, along with this program; if not, see <http://www.gnu.org/licenses/lgpl-2.1.html>.
+* Note that the copyright holders assume that the GNU Lesser General Public License, version 2.1, may also be applicable to programs even in cases in which the program is not a library in the technical sense.
+* Linking AudioManager statically or dynamically with other modules is making a combined work based on AudioManager. You may license such other modules under the GNU Lesser General Public License, version 2.1. If you do not want to license your linked modules under the GNU Lesser General Public License, version 2.1, you may use the program under the following exception.
+* As a special exception, the copyright holders of AudioManager give you permission to combine AudioManager with software programs or libraries that are released under any license unless such a combination is not permitted by the license of such a software program or library. You may copy and distribute such a system following the terms of the GNU Lesser General Public License, version 2.1, including this special exception, for AudioManager and the licenses of the other code concerned.
+* Note that people who make modified versions of AudioManager are not obligated to grant this special exception for their modified versions; it is their choice whether to do so. The GNU Lesser General Public License, version 2.1, gives permission to release a modified version without this exception; this exception also makes it possible to release a modified version which carries forward this exception.
+*
+*/
+
 
 #include "CommandSender.h"
-#include "command/CommandSendInterface.h"
-#include "pluginTemplate.h"
+#include "PluginTemplate.h"
+#include <dirent.h>
 
 using namespace am;
 
+//!< macro to call all interfaces
 #define CALL_ALL_INTERFACES(...) 														 \
 		std::vector<CommandSendInterface*>::iterator iter = mListInterfaces.begin();	 \
 		std::vector<CommandSendInterface*>::iterator iterEnd = mListInterfaces.end();	 \
@@ -19,26 +38,24 @@ using namespace am;
 			(*iter)->__VA_ARGS__;													 	 \
 		}
 
-
-const char* commandPluginDirectories[] = { "/home/christian/workspace/gitserver/build/plugins/command"};
-uint16_t commandPluginDirectoriesCount = sizeof(commandPluginDirectories) / sizeof(commandPluginDirectories[0]);
-
-CommandSender::CommandSender()
+CommandSender::CommandSender(const std::vector<std::string>& listOfPluginDirectories)
 	:mListInterfaces(),
 	 mListLibraryHandles()
 {
 	std::vector<std::string> sharedLibraryNameList;
+    std::vector<std::string>::const_iterator dirIter = listOfPluginDirectories.begin();
+    std::vector<std::string>::const_iterator dirIterEnd = listOfPluginDirectories.end();
 
     // search communicator plugins in configured directories
-    for (uint16_t dirIndex = 0; dirIndex < commandPluginDirectoriesCount; dirIndex++)
+    for (; dirIter < dirIterEnd; ++dirIter)
     {
-		const char* directoryName = commandPluginDirectories[dirIndex];
-		//DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Searching for HookPlugins in"),DLT_STRING(directoryName));
+		const char* directoryName = dirIter->c_str();
+		DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Searching for CommandPlugins in"),DLT_STRING(directoryName));
 		DIR *directory = opendir(directoryName);
 
 		if (!directory)
 		{
-			//DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Error opening directory "),DLT_STRING(dirName.c_str()));
+			DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Error opening directory "),DLT_STRING(directoryName));
 		}
 
         // iterate content of directory
@@ -53,16 +70,10 @@ CommandSender::CommandSender()
 
 			if (regularFile && sharedLibExtension)
 			{
-			//	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("PluginSearch adding file "),DLT_STRING(entryName.c_str()));
 			  std::string name(directoryName);
 			  sharedLibraryNameList.push_back(name + "/" + entryName);
 			}
-			else
-			{
-			//DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("PluginSearch ignoring file "),DLT_STRING(entryName.c_str()));
-			}
         }
-
           closedir(directory);
     }
 
@@ -72,14 +83,14 @@ CommandSender::CommandSender()
 
     for (; iter < iterEnd; ++iter)
     {
-    	//DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Loading Hook plugin"),DLT_STRING(iter->c_str()));
+    	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Loading CommandSender plugin"),DLT_STRING(iter->c_str()));
         CommandSendInterface* (*createFunc)();
         void* tempLibHandle=NULL;
         createFunc = getCreateFunction<CommandSendInterface*()>(*iter,tempLibHandle);
 
         if (!createFunc)
         {
-           // DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Entry point of Communicator not found"));
+            DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Entry point of CommandPlugin not found"),DLT_STRING(iter->c_str()));
             continue;
         }
 
@@ -87,7 +98,7 @@ CommandSender::CommandSender()
 
         if (!commander)
         {
-        	//DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("HookPlugin initialization failed. Entry Function not callable"));
+        	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("CommandPlugin initialization failed. Entry Function not callable"));
             continue;
         }
 

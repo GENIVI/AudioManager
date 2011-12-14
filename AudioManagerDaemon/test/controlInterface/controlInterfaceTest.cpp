@@ -10,20 +10,22 @@
 
 
 controlInterfaceTest::controlInterfaceTest()
-	:pDatabaseHandler(),
-	 pRoutingSender(),
-	 pCommandSender(),
+	:plistCommandPluginDirs(),
+	 plistRoutingPluginDirs(),
+	 pDatabaseHandler(std::string(":memory:")),
+	 pRoutingSender(plistRoutingPluginDirs),
+	 pCommandSender(plistCommandPluginDirs),
 	 pMockControlInterface(),
 	 pMockRoutingInterface(),
-	 pControlSender(),
+	 pControlSender(std::string("")),
 	 pRoutingInterfaceBackdoor(),
 	 pCommandInterfaceBackdoor(),
 	 pControlInterfaceBackdoor(),
-	 pObserver(&pCommandSender,&pRoutingSender),
-	 pControlReceiver(&pDatabaseHandler,&pRoutingSender),
+	 pDatabaseObserver(&pCommandSender,&pRoutingSender),
+	 pControlReceiver(&pDatabaseHandler,&pRoutingSender,&pCommandSender),
 	 pRoutingReceiver(&pDatabaseHandler,&pRoutingSender,&pControlSender)
 {
-	pDatabaseHandler.registerObserver(&pObserver);
+	pDatabaseHandler.registerObserver(&pDatabaseObserver);
 	pRoutingInterfaceBackdoor.unloadPlugins(&pRoutingSender);
 	pCommandInterfaceBackdoor.unloadPlugins(&pCommandSender);
 	pControlInterfaceBackdoor.replaceController(&pControlSender,&pMockControlInterface);
@@ -207,15 +209,17 @@ TEST_F(controlInterfaceTest,setSourceState)
 	source.domainID=1;
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterDomainDB(domain,domainID));
 	ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceDB(source,sourceID));
-	EXPECT_CALL(pMockRoutingInterface,asyncSetSourceState(_,2,SS_PAUSED));
+	EXPECT_CALL(pMockRoutingInterface,asyncSetSourceState(_,2,SS_PAUSED)).WillOnce(Return(E_OK));
 	ASSERT_EQ(E_OK,pControlReceiver.setSourceState(handle,source.sourceID,SS_PAUSED));
 	ASSERT_EQ(E_OK,pControlReceiver.getListHandles(handlesList));
 	ASSERT_EQ(handlesList[0].handle,handle.handle);
 	ASSERT_EQ(handlesList[0].handleType,handle.handleType);
 	ASSERT_EQ(E_OK,pDatabaseHandler.getSoureState(source.sourceID,state));
-	ASSERT_EQ(state,SS_PAUSED);
+	ASSERT_EQ(state,SS_ON); //ok, since value will be added after the ack!
 	EXPECT_CALL(pMockControlInterface,cbAckSetSourceState(_,E_OK)).Times(1);
-	//pRoutingReceiver.ackSetSourceState(handle,SS_PAUSED);
+	pRoutingReceiver.ackSetSourceState(handle,E_OK);
+	ASSERT_EQ(E_OK,pDatabaseHandler.getSoureState(source.sourceID,state));
+	ASSERT_EQ(state,SS_PAUSED);
 
 }
 

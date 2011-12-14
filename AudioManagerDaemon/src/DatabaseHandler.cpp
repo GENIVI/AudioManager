@@ -1,26 +1,33 @@
-/*
- * DatabaseHandler.cpp
- *
- *  Created on: Oct 24, 2011
- *      Author: christian
- */
+/**
+* Copyright (C) 2011, BMW AG
+*
+* GeniviAudioMananger AudioManagerDaemon
+*
+* \file Databasehandler.cpp
+*
+* \date 20-Oct-2011 3:42:04 PM
+* \author Christian Mueller (christian.ei.mueller@bmw.de)
+*
+* \section License
+* GNU Lesser General Public License, version 2.1, with special exception (GENIVI clause)
+* Copyright (C) 2011, BMW AG Christian Mueller  Christian.ei.mueller@bmw.de
+*
+* This program is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License, version 2.1, as published by the Free Software Foundation.
+* This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License, version 2.1, for more details.
+* You should have received a copy of the GNU Lesser General Public License, version 2.1, along with this program; if not, see <http://www.gnu.org/licenses/lgpl-2.1.html>.
+* Note that the copyright holders assume that the GNU Lesser General Public License, version 2.1, may also be applicable to programs even in cases in which the program is not a library in the technical sense.
+* Linking AudioManager statically or dynamically with other modules is making a combined work based on AudioManager. You may license such other modules under the GNU Lesser General Public License, version 2.1. If you do not want to license your linked modules under the GNU Lesser General Public License, version 2.1, you may use the program under the following exception.
+* As a special exception, the copyright holders of AudioManager give you permission to combine AudioManager with software programs or libraries that are released under any license unless such a combination is not permitted by the license of such a software program or library. You may copy and distribute such a system following the terms of the GNU Lesser General Public License, version 2.1, including this special exception, for AudioManager and the licenses of the other code concerned.
+* Note that people who make modified versions of AudioManager are not obligated to grant this special exception for their modified versions; it is their choice whether to do so. The GNU Lesser General Public License, version 2.1, gives permission to release a modified version without this exception; this exception also makes it possible to release a modified version which carries forward this exception.
+*
+*/
 
 #include "DatabaseHandler.h"
-#include "Observer.h"
 #include <dlt/dlt.h>
 #include <assert.h>
-#include <stdint.h>
+#include <vector>
 #include <fstream>
 #include <sstream>
-#include <stdlib.h>
-#include <stdio.h>
-#include <malloc.h>
-#include <string.h>
-
-DLT_IMPORT_CONTEXT(AudioManager)
-
-//#define DATABASE_PATH "/tmp/audiomanager.sqlite"
-#define DATABASE_PATH ":memory:"
 
 #define DOMAIN_TABLE "Domains"
 #define SOURCE_CLASS_TABLE "SourceClasses"
@@ -34,6 +41,8 @@ DLT_IMPORT_CONTEXT(AudioManager)
 #define INTERRUPT_TABLE "Interrupts"
 #define MAIN_TABLE "MainTable"
 #define SYSTEM_TABLE "SystemProperties"
+
+DLT_IMPORT_CONTEXT(AudioManager)
 
 const std::string databaseTables[]={
 		" Domains (domainID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, name VARCHAR(50), busname VARCHAR(50), nodename VARCHAR(50), early BOOL, complete BOOL, state INTEGER, reserved BOOL);",
@@ -61,10 +70,10 @@ inline std::string i2s(T const& x)
 	return o.str();
 }
 
-DatabaseHandler::DatabaseHandler()
+DatabaseHandler::DatabaseHandler(std::string databasePath)
 	: mDatabase(NULL),
-	  mPath(DATABASE_PATH),
-	  mObserver(NULL),
+	  mPath(databasePath),
+	  mDatabaseObserver(NULL),
 	  mFirstStaticSink(true),
 	  mFirstStaticSource(true),
 	  mFirstStaticGateway(true),
@@ -168,7 +177,7 @@ am_Error_e DatabaseHandler::enterDomainDB(const am_Domain_s & domainData, am_dom
 
 	am_Domain_s domain=domainData;
 	domain.domainID=domainID;
-	if(mObserver) mObserver->newDomain(domain);
+	if(mDatabaseObserver) mDatabaseObserver->newDomain(domain);
 
 	return E_OK;
 }
@@ -267,10 +276,10 @@ am_Error_e DatabaseHandler::enterMainConnectionDB(const am_MainConnection_s & ma
 			DLT_STRING("delay:"),DLT_INT16(delay),
 			DLT_STRING("assigned ID:"),DLT_INT16(connectionID));
 
-	if (mObserver)
+	if (mDatabaseObserver)
 	{
-		mObserver->numberOfMainConnectionsChanged();
-		mObserver->mainConnectionStateChanged(connectionID,mainConnectionData.connectionState);
+		mDatabaseObserver->numberOfMainConnectionsChanged();
+		mDatabaseObserver->mainConnectionStateChanged(connectionID,mainConnectionData.connectionState);
 	}
 
 	//finally, we update the delay value for the maintable
@@ -457,7 +466,7 @@ am_Error_e DatabaseHandler::enterSinkDB(const am_Sink_s & sinkData, am_sinkID_t 
 
 	am_Sink_s sink=sinkData;
 	sink.sinkID=sinkID;
-	if (mObserver!=NULL) mObserver->newSink(sink);
+	if (mDatabaseObserver!=NULL) mDatabaseObserver->newSink(sink);
 
 	return E_OK;
 }
@@ -586,7 +595,7 @@ am_Error_e DatabaseHandler::enterGatewayDB(const am_Gateway_s & gatewayData, am_
 
 	am_Gateway_s gateway=gatewayData;
 	gateway.gatewayID=gatewayID;
-	if(mObserver) mObserver->newGateway(gateway);
+	if(mDatabaseObserver) mDatabaseObserver->newGateway(gateway);
 	return E_OK;
 }
 
@@ -769,7 +778,7 @@ am_Error_e DatabaseHandler::enterSourceDB(const am_Source_s & sourceData, am_sou
 
 	am_Source_s source=sourceData;
 	source.sourceID=sourceID;
-	if(mObserver) mObserver->newSource(source);
+	if(mDatabaseObserver) mDatabaseObserver->newSource(source);
 	return E_OK;
 }
 
@@ -872,7 +881,7 @@ am_Error_e DatabaseHandler::changeMainConnectionStateDB(const am_mainConnectionI
 	}
 	DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::changeMainConnectionStateDB changed mainConnectionState of MainConnection:"),DLT_INT(mainconnectionID),DLT_STRING("to:"),DLT_INT(connectionState));
 
-	if (mObserver) mObserver->mainConnectionStateChanged(mainconnectionID,connectionState);
+	if (mDatabaseObserver) mDatabaseObserver->mainConnectionStateChanged(mainconnectionID,connectionState);
 	return E_OK;
 }
 
@@ -906,7 +915,7 @@ am_Error_e DatabaseHandler::changeSinkMainVolumeDB(const am_mainVolume_t mainVol
 
 	DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::changeSinkMainVolumeDB changed mainVolume of sink:"),DLT_INT(sinkID),DLT_STRING("to:"),DLT_INT(mainVolume));
 
-	if(mObserver) mObserver->volumeChanged(sinkID,mainVolume);
+	if(mDatabaseObserver) mDatabaseObserver->volumeChanged(sinkID,mainVolume);
 
 	return E_OK;
 }
@@ -943,7 +952,7 @@ am_Error_e DatabaseHandler::changeSinkAvailabilityDB(const am_Availability_s & a
 
 	DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::changeSinkAvailabilityDB changed sinkAvailability of sink:"),DLT_INT(sinkID),DLT_STRING("to:"),DLT_INT(availability.availability), DLT_STRING("Reason:"),DLT_INT(availability.availabilityReason));
 
-	if (mObserver && sourceVisible(sinkID)) mObserver->sinkAvailabilityChanged(sinkID,availability);
+	if (mDatabaseObserver && sourceVisible(sinkID)) mDatabaseObserver->sinkAvailabilityChanged(sinkID,availability);
 	return E_OK;
 }
 
@@ -1011,7 +1020,7 @@ am_Error_e DatabaseHandler::changeSinkMuteStateDB(const am_MuteState_e muteState
 
 	DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::changeSinkMuteStateDB changed sinkMuteState of sink:"),DLT_INT(sinkID),DLT_STRING("to:"),DLT_INT(muteState));
 
-	if(mObserver) mObserver->sinkMuteStateChanged(sinkID,muteState);
+	if(mDatabaseObserver) mDatabaseObserver->sinkMuteStateChanged(sinkID,muteState);
 
 	return E_OK;
 }
@@ -1047,7 +1056,7 @@ am_Error_e DatabaseHandler::changeMainSinkSoundPropertyDB(const am_MainSoundProp
 	}
 
 	DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::changeMainSinkSoundPropertyDB changed MainSinkSoundProperty of sink:"),DLT_INT(sinkID),DLT_STRING("type:"),DLT_INT(soundProperty.type),DLT_STRING("to:"),DLT_INT(soundProperty.value));
-	if (mObserver) mObserver->mainSinkSoundPropertyChanged(sinkID,soundProperty);
+	if (mDatabaseObserver) mDatabaseObserver->mainSinkSoundPropertyChanged(sinkID,soundProperty);
 	return E_OK;
 }
 
@@ -1083,7 +1092,7 @@ am_Error_e DatabaseHandler::changeMainSourceSoundPropertyDB(const am_MainSoundPr
 
 	DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::changeMainSourceSoundPropertyDB changed MainSinkSoundProperty of source:"),DLT_INT(sourceID),DLT_STRING("type:"),DLT_INT(soundProperty.type),DLT_STRING("to:"),DLT_INT(soundProperty.value));
 
-	if(mObserver) mObserver->mainSourceSoundPropertyChanged(sourceID,soundProperty);
+	if(mDatabaseObserver) mDatabaseObserver->mainSourceSoundPropertyChanged(sourceID,soundProperty);
 	return E_OK;
 }
 
@@ -1119,7 +1128,7 @@ am_Error_e DatabaseHandler::changeSourceAvailabilityDB(const am_Availability_s &
 
 	DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::changeSourceAvailabilityDB changed changeSourceAvailabilityDB of source:"),DLT_INT(sourceID),DLT_STRING("to:"),DLT_INT(availability.availability), DLT_STRING("Reason:"),DLT_INT(availability.availabilityReason));
 
-	if (mObserver && sourceVisible(sourceID)) mObserver->sourceAvailabilityChanged(sourceID,availability);
+	if (mDatabaseObserver && sourceVisible(sourceID)) mDatabaseObserver->sourceAvailabilityChanged(sourceID,availability);
 	return E_OK;
 }
 
@@ -1150,7 +1159,7 @@ am_Error_e DatabaseHandler::changeSystemPropertyDB(const am_SystemProperty_s & p
 
 	DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::changeSystemPropertyDB changed system property"));
 
-	if(mObserver) mObserver->systemPropertyChanged(property);
+	if(mDatabaseObserver) mDatabaseObserver->systemPropertyChanged(property);
 
 	return E_OK;
 }
@@ -1170,7 +1179,7 @@ am_Error_e DatabaseHandler::removeMainConnectionDB(const am_mainConnectionID_t m
 	if(!sqQuery(command)) return E_DATABASE_ERROR;
 	if(!sqQuery(command1)) return E_DATABASE_ERROR;
 	DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::removeMainConnectionDB removed:"),DLT_INT(mainConnectionID));
-	if (mObserver) mObserver->numberOfMainConnectionsChanged();
+	if (mDatabaseObserver) mDatabaseObserver->numberOfMainConnectionsChanged();
 	return E_OK;
 }
 
@@ -1194,7 +1203,7 @@ am_Error_e DatabaseHandler::removeSinkDB(const am_sinkID_t sinkID)
 	if(!sqQuery(command3)) return E_DATABASE_ERROR;
 	DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::removeSinkDB removed:"),DLT_INT(sinkID));
 
-	if (mObserver!=NULL) mObserver->removedSink(sinkID);
+	if (mDatabaseObserver!=NULL) mDatabaseObserver->removedSink(sinkID);
 
 	return E_OK;
 }
@@ -1218,7 +1227,7 @@ am_Error_e DatabaseHandler::removeSourceDB(const am_sourceID_t sourceID)
 	if(!sqQuery(command2)) return E_DATABASE_ERROR;
 	if(!sqQuery(command3)) return E_DATABASE_ERROR;
 	DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::removeSourceDB removed:"),DLT_INT(sourceID));
-	if(mObserver) mObserver->removedSource(sourceID);
+	if(mDatabaseObserver) mDatabaseObserver->removedSource(sourceID);
 	return E_OK;
 }
 
@@ -1235,7 +1244,7 @@ am_Error_e DatabaseHandler::removeGatewayDB(const am_gatewayID_t gatewayID)
 	std::string command = "DELETE from " + std::string(GATEWAY_TABLE) + " WHERE gatewayID=" + i2s(gatewayID);
 	if(!sqQuery(command)) return E_DATABASE_ERROR;
 	DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::removeGatewayDB removed:"),DLT_INT(gatewayID));
-	if(mObserver) mObserver->removeGateway(gatewayID);
+	if(mDatabaseObserver) mDatabaseObserver->removeGateway(gatewayID);
 	return E_OK;
 }
 
@@ -1261,7 +1270,7 @@ am_Error_e DatabaseHandler::removeDomainDB(const am_domainID_t domainID)
 	std::string command = "DELETE from " + std::string(DOMAIN_TABLE) + " WHERE domainID=" + i2s(domainID);
 	if(!sqQuery(command)) return E_DATABASE_ERROR;
 	DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::removeDomainDB removed:"),DLT_INT(domainID));
-	if(mObserver) mObserver->removeDomain(domainID);
+	if(mDatabaseObserver) mDatabaseObserver->removeDomain(domainID);
 	return E_OK;
 }
 
@@ -1279,7 +1288,7 @@ am_Error_e DatabaseHandler::removeSinkClassDB(const am_sinkClass_t sinkClassID)
 	if(!sqQuery(command1)) return E_DATABASE_ERROR;
 
 	DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::removeSinkClassDB removed:"),DLT_INT(sinkClassID));
-	if (mObserver) mObserver->numberOfSinkClassesChanged();
+	if (mDatabaseObserver) mDatabaseObserver->numberOfSinkClassesChanged();
 
 	return E_OK;
 }
@@ -1298,7 +1307,7 @@ am_Error_e DatabaseHandler::removeSourceClassDB(const am_sourceClass_t sourceCla
 	if(!sqQuery(command1)) return E_DATABASE_ERROR;
 	DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::removeSourceClassDB removed:"),DLT_INT(sourceClassID));
 
-	if (mObserver) mObserver->numberOfSourceClassesChanged();
+	if (mDatabaseObserver) mDatabaseObserver->numberOfSourceClassesChanged();
 	return E_OK;
 }
 
@@ -2595,7 +2604,7 @@ am_Error_e DatabaseHandler::changeDelayMainConnection(const am_timeSync_t & dela
 		return E_DATABASE_ERROR;
 	}
 
-	if(mObserver) mObserver->timingInformationChanged(connectionID,delay);
+	if(mDatabaseObserver) mDatabaseObserver->timingInformationChanged(connectionID,delay);
 
 	return E_OK;
 }
@@ -2720,7 +2729,7 @@ am_Error_e DatabaseHandler::enterSinkClassDB(const am_SinkClass_s & sinkClass, a
 	}
 
 	DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::enterSinkClassDB entered new sinkClass"));
-	if (mObserver) mObserver->numberOfSinkClassesChanged();
+	if (mDatabaseObserver) mDatabaseObserver->numberOfSinkClassesChanged();
 	return E_OK;
 }
 
@@ -2804,7 +2813,7 @@ am_Error_e DatabaseHandler::enterSourceClassDB(am_sourceClass_t & sourceClassID,
 
 	DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::enterSourceClassDB entered new sourceClass"));
 
-	if (mObserver) mObserver->numberOfSourceClassesChanged();
+	if (mDatabaseObserver) mDatabaseObserver->numberOfSourceClassesChanged();
 	return E_OK;
 }
 
@@ -3190,13 +3199,10 @@ am_timeSync_t DatabaseHandler::calculateMainConnectionDelay(const am_mainConnect
 	return delay;
 }
 
-void DatabaseHandler::registerObserver(Observer *iObserver)
+void DatabaseHandler::registerObserver(DatabaseObserver *iObserver)
 {
-	#ifndef  UNIT_TEST					//we need this here for unittest
-		assert(iObserver!=NULL);
-	#endif
-
-	mObserver=iObserver;
+	assert(iObserver!=NULL);
+	mDatabaseObserver=iObserver;
 }
 
 bool DatabaseHandler::sourceVisible(const am_sourceID_t sourceID) const
