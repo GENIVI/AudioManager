@@ -1,0 +1,75 @@
+GENIVI AUDIOMANAGER
+
+Copyright (C) 2011, BMW AG
+
+Datum  14.12.2012
+author Christian Müller (christian.ei.mueller@bmw.de)
+
+***********************************************************************************************************
+LICENSE
+***********************************************************************************************************
+
+GNU Lesser General Public License, version 2.1, with special exception (GENIVI clause)
+Copyright (C) 2011, BMW AG – Christian Müller  Christian.ei.mueller@bmw.de
+
+This program is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License, version 2.1, as published by the Free Software Foundation.
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License, version 2.1, for more details.
+You should have received a copy of the GNU Lesser General Public License, version 2.1, along with this program; if not, see <http://www.gnu.org/licenses/lgpl-2.1.html>.
+Note that the copyright holders assume that the GNU Lesser General Public License, version 2.1, may also be applicable to programs even in cases in which the program is not a library in the technical sense.
+Linking AudioManager statically or dynamically with other modules is making a combined work based on AudioManager. You may license such other modules under the GNU Lesser General Public License, version 2.1. If you do not want to license your linked modules under the GNU Lesser General Public License, version 2.1, you may use the program under the following exception.
+As a special exception, the copyright holders of AudioManager give you permission to combine AudioManager with software programs or libraries that are released under any license unless such a combination is not permitted by the license of such a software program or library. You may copy and distribute such a system following the terms of the GNU Lesser General Public License, version 2.1, including this special exception, for AudioManager and the licenses of the other code concerned.
+Note that people who make modified versions of AudioManager are not obligated to grant this special exception for their modified versions; it is their choice whether to do so. The GNU Lesser General Public License, version 2.1, gives permission to release a modified version without this exception; this exception also makes it possible to release a modified version which carries forward this exception.
+
+Version 0.3
+
+***********************************************************************************************************
+CURRENT STATUS
+***********************************************************************************************************
+The most important parts of the audiomanager are already there - nevertheless there are main features missing (pls look at the todos)
+It should be sufficient to start working on a POC around it.
+
+***********************************************************************************************************
+COMPILE PROGRAMS
+***********************************************************************************************************
+
+You will need some packages in order to comile the GENIVI AudioManager Proof of Concept, these are:
+-dbus
+-sqlite
+-automotive-dlt
+-google mock & google test (for the test - if you do not want them, uncomment these lines in Cmakelist.txt:
+	add_subdirectory (database)
+	add_subdirectory (routingInterface)
+	add_subdirectory (controlInterface))
+	
+-doxygen (only for documentation)
+
+More details in the CMake Files CmakeList.txt in the projects
+
+on the top level of the folder you just received, there is a shall script "cmaker.sh" which can be invoked with a lot of different parameters. Invoking it with:
+
+sh cmaker.sh all all
+
+will create all neccessary folders and compile all plugins and applications except the PulseAudio Plugin.
+
+after the script finished, you should have:
+
+a /bin folder which contains: 
+	AudioManager  
+
+a /build folder which has all build objects (erase that if you need a clean build)
+
+a /test folder which invokes all the tests for the audiomanager
+
+
+
+
+
+
+                                 _..-------++._
+                             _.-'/ |      _||  \"--._
+                       __.--'`._/_\j_____/_||___\    `----.
+                  _.--'_____    |          \     _____    /
+                _j    /,---.\   |        =o |   /,---.\   |_
+               [__]==// .-. \\==`===========/==// .-. \\=[__]
+                 `-._|\ `-' /|___\_________/___|\ `-' /|_.'     
+                       `---'                     `---'
