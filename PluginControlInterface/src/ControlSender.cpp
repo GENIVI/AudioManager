@@ -33,18 +33,21 @@ extern "C" void destroyControlPluginInterface(ControlSendInterface* controlSendI
     delete controlSendInterface;
 }
 
-ControlSenderPlugin::ControlSenderPlugin() {
-	// TODO Auto-generated constructor stub
-
+ControlSenderPlugin::ControlSenderPlugin()
+{
 }
 
-ControlSenderPlugin::~ControlSenderPlugin() {
-	// TODO Auto-generated destructor stub
+
+
+ControlSenderPlugin::~ControlSenderPlugin()
+{
 }
 
-//am_Error_e ControlSendInterface::startupController(ControlReceiveInterface* controlreceiveinterface)
-//{
-//}
+
+
+am_Error_e ControlSenderPlugin::startupController(ControlReceiveInterface *controlreceiveinterface)
+{
+}
 
 
 

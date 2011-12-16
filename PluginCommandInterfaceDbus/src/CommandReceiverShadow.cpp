@@ -25,7 +25,7 @@
 
 
 #include "CommandReceiverShadow.h"
-#include "CommandSender.h"
+#include "DBusCommandSender.h"
 #include "DBusWrapper.h"
 #include <audiomanagertypes.h>
 

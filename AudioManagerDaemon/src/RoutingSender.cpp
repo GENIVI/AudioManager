@@ -26,6 +26,7 @@
 #include "PluginTemplate.h"
 #include <utility>
 #include <dirent.h>
+#include <dlfcn.h>
 
 using namespace am;
 

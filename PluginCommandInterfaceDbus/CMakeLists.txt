@@ -16,7 +16,6 @@ set(AUDIO_INCLUDES_FOLDER ${CMAKE_SOURCE_DIR}/../includes)
 set(DBUS_INCLUDES_FOLDER ${CMAKE_SOURCE_DIR}/../dbusIncludes)
 set(INCLUDES_FOLDER ${CMAKE_SOURCE_DIR}/include)
 
-find_package (Threads)
 FIND_PACKAGE(DBUS REQUIRED)
 FIND_PACKAGE(PkgConfig)
 pkg_check_modules(DLT REQUIRED automotive-dlt)
@@ -43,11 +42,11 @@ file(GLOB PLUGINDBUS_SRCS_CXX "src/*.cpp")
 add_library(PluginCommandInterfaceDbus SHARED ${PLUGINDBUS_SRCS_CXX})
 
 TARGET_LINK_LIBRARIES(PluginCommandInterfaceDbus 
-	${DLT_LIBRARIES}
-	${DBUS_LIBRARY}
-	${CMAKE_THREAD_LIBS_INIT}
+    ${DLT_LIBRARIES}
+    ${DBUS_LIBRARY}
 )
 
+add_subdirectory (test)
 
 #add a target to generate API documentation with Doxygen
 find_package(Doxygen)

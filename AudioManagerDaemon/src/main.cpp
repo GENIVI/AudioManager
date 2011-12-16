@@ -33,6 +33,7 @@
 //todo: seperate documentation of test from normal project
 //todo: check the startup sequence. Dbus shall be activated last...
 //todo: there is a bug in the visible flags of sinks and sources. fix it.
+//todo: check namespace handling. no use.. in headers
 
 #include <dbus/dbus.h>
 #include <dlt/dlt.h>
@@ -80,6 +81,8 @@ int main(int argc, char *argv[])
 	//since the plugins have been loaded by the *Senders before, we can tell the Controller this:
 	iControlSender.hookAllPluginsLoaded();
 
+	iCommandSender.startupInterface(&iCommandReceiver);
+	iRoutingSender.startupRoutingInterface(&iRoutingReceiver);
 
 
 	iDBusWrapper.dbusMainLoop();

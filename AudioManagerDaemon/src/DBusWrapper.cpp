@@ -81,7 +81,7 @@ DBusWrapper::~DBusWrapper()
 {
 	//close the connection again
 	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("DBusWrapper::~DBusWrapper Closing DBus connection"));
-	dbus_connection_close(mDbusConnection);
+	dbus_connection_unref(mDbusConnection);
 }
 
 void DBusWrapper::registerCallback(const DBusObjectPathVTable* vtable, const std::string& path, void* userdata)

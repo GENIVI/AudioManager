@@ -24,8 +24,8 @@
 */
 
 
-#ifndef COMMANDSENDER_H_
-#define COMMANDSENDER_H_
+#ifndef DBUSCOMMANDSENDER_H_
+#define DBUSCOMMANDSENDER_H_
 
 #include "DBusMessageHandler.h"
 #include "CommandReceiverShadow.h"
@@ -105,4 +105,4 @@ private:
 
 };
 
-#endif /* COMMANDSENDER_H_ */
+#endif /* DBUSCOMMANDSENDER_H_ */
