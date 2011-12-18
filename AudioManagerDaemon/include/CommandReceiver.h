@@ -30,7 +30,7 @@
 #include "DBusWrapper.h"
 #include "ControlSender.h"
 
-using namespace am;
+namespace am {
 
 /**
  * This class realizes the command Interface
@@ -63,5 +63,7 @@ private:
 	DBusWrapper* mDBusWrapper; //!< pointer to the dbuswrapper
 	ControlSender* mControlSender; //!< pointer to the control sender
 };
+
+}
 
 #endif /* COMMANDRECEIVER_H_ */

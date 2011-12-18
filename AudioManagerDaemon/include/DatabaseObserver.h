@@ -28,6 +28,8 @@
 #include "CommandSender.h"
 #include "RoutingSender.h"
 
+namespace am {
+
 /**
  * This class observes the Database and notifies other classes about important events, mainly the CommandSender.
  */
@@ -61,5 +63,7 @@ private:
 	CommandSender *mCommandSender; //!< pointer to the comandSender
 	RoutingSender* mRoutingSender; //!< pointer to the routingSender
 };
+
+}
 
 #endif /* DATABASEOBSERVER_H_ */

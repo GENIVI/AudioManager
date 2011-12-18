@@ -32,7 +32,7 @@
 #include "../test/RoutingInterfaceBackdoor.h"
 #endif
 
-using namespace am;
+namespace am {
 
 /**
  * Implements the RoutingSendInterface. Loads all plugins and dispatches calls to the plugins
@@ -177,15 +177,17 @@ private:
     typedef std::map<am_Handle_s,am_handleData_c,comparator> HandlesMap; //!< maps handleData to handles
 
     int16_t mHandleCount; //!< is used to create handles
-	std::vector<InterfaceNamePairs> mListInterfaces;	//!< list of busname/interface relation
+    HandlesMap mlistActiveHandles; //!< list of all currently "running" handles.
 	std::vector<void*> mListLibraryHandles;	//!< list of all loaded pluginInterfaces
+	std::vector<InterfaceNamePairs> mListInterfaces;	//!< list of busname/interface relation
     ConnectionInterfaceMap mMapConnectionInterface; //!< map of connection to interfaces
     CrossfaderInterfaceMap mMapCrossfaderInterface; //!< map of crossfaders to interface
     DomainInterfaceMap mMapDomainInterface; //!< map of domains to interfaces
     SinkInterfaceMap mMapSinkInterface; //!< map of sinks to interfaces
     SourceInterfaceMap mMapSourceInterface; //!< map of sources to interfaces
     HandleInterfaceMap mMapHandleInterface; //!< map of handles to interfaces
-    HandlesMap mlistActiveHandles; //!< list of all currently "running" handles.
 };
+
+}
 
 #endif /* ROUTINGSENDER_H_ */

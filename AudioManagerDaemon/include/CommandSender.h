@@ -31,7 +31,7 @@
 
 #include "command/CommandSendInterface.h"
 
-using namespace am;
+namespace am {
 
 /**
  * This class is used to send data to the CommandInterface.
@@ -67,5 +67,7 @@ private:
 	std::vector<CommandSendInterface*> mListInterfaces; //!< list of all interfaces
 	std::vector<void*> mListLibraryHandles; //!< list of all library handles. This information is used to unload the plugins correctly.
 };
+
+}
 
 #endif /* COMMANDSENDER_H_ */

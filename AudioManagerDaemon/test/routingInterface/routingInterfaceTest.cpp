@@ -25,19 +25,10 @@
 
 #include "routingInterfaceTest.h"
 
-using ::testing::Field;
-using ::testing::Property;
-using ::testing::Matcher;
-using ::testing::Pointee;
-using ::testing::AllOf;
-using ::testing::SafeMatcherCast;
-using ::testing::MatcherCast;
-using ::testing::DefaultValue;
-using ::testing::Eq;
-using ::testing::An;
-using ::testing::ElementsAreArray;
-using ::testing::ElementsAre;
-using ::testing::NotNull;
+using namespace am;
+using namespace testing;
+
+DLT_DECLARE_CONTEXT(DLT_CONTEXT)
 
 routingInterfaceTest::routingInterfaceTest()
 	:plistRoutingPluginDirs(),
@@ -64,14 +55,14 @@ routingInterfaceTest::~routingInterfaceTest()
 void routingInterfaceTest::SetUp()
 {
 	DLT_REGISTER_APP("Rtest","RoutingInterfacetest");
-	DLT_REGISTER_CONTEXT(AudioManager,"Main","Main Context");
-	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("RoutingSendInterface Test started "));
+	DLT_REGISTER_CONTEXT(DLT_CONTEXT,"Main","Main Context");
+	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("RoutingSendInterface Test started "));
 
 }
 
 void routingInterfaceTest::TearDown()
 {
-	DLT_UNREGISTER_CONTEXT(AudioManager);
+	DLT_UNREGISTER_CONTEXT(DLT_CONTEXT);
 }
 
 TEST_F(routingInterfaceTest,abort)

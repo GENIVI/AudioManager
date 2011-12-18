@@ -23,8 +23,11 @@
 */
 
 #include "DatabaseObserver.h"
-#include "CommandSender.h"
 #include <assert.h>
+#include "CommandSender.h"
+#include "RoutingSender.h"
+
+using namespace am;
 
 DatabaseObserver::DatabaseObserver(CommandSender *iCommandSender, RoutingSender *iRoutingSender)
 	:mCommandSender(iCommandSender),

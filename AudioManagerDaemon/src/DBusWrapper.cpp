@@ -23,18 +23,18 @@
 */
 
 #include "DBusWrapper.h"
-#include <dlt/dlt.h>
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <dlt/dlt.h>
 
-DLT_IMPORT_CONTEXT(AudioManager)
+DLT_IMPORT_CONTEXT(DLT_CONTEXT)
 
 
 #define ROOT_INTROSPECT_XML												\
 DBUS_INTROSPECT_1_0_XML_DOCTYPE_DECL_NODE								\
 "<node>"																\
-"<interface name='org.freedesktop.DBus.Introspectable'>"				\
+"<interface name='orAudioManagerg.freedesktop.DBus.Introspectable'>"	\
 "<method name='Introspect'>"											\
 "	<arg name='xml_data' type='s' direction='out'/>"					\
 "</method>"							      								\
@@ -50,17 +50,17 @@ DBusWrapper::DBusWrapper()
 {
     dbus_error_init(&mDBusError);
 
-    DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("DBusWrapper::DBusWrapper Opening DBus connection"));
+    DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("DBusWrapper::DBusWrapper Opening DBus connection"));
 
     mDbusConnection=dbus_bus_get(DBUS_BUS_SESSION, &mDBusError);
     if (dbus_error_is_set(&mDBusError))
     {
-    	DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("DBusWrapper::DBusWrapper Error while getting the DBus"));
+    	DLT_LOG(DLT_CONTEXT,DLT_LOG_ERROR, DLT_STRING("DBusWrapper::DBusWrapper Error while getting the DBus"));
         dbus_error_free(&mDBusError);
     }
     if (NULL == mDbusConnection)
     {
-    	DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("DBusWrapper::DBusWrapper DBus Connection is null"));
+    	DLT_LOG(DLT_CONTEXT,DLT_LOG_ERROR, DLT_STRING("DBusWrapper::DBusWrapper DBus Connection is null"));
     }
 
 	mObjectPathVTable.message_function=DBusWrapper::cbRootIntrospection;
@@ -68,25 +68,25 @@ DBusWrapper::DBusWrapper()
 	int ret = dbus_bus_request_name(mDbusConnection,DBUS_SERVICE_PREFIX,DBUS_NAME_FLAG_DO_NOT_QUEUE, &mDBusError);
     if (dbus_error_is_set(&mDBusError))
     {
-    	DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("DBusWrapper::DBusWrapper Name Error"),DLT_STRING(mDBusError.message));
+    	DLT_LOG(DLT_CONTEXT,DLT_LOG_ERROR, DLT_STRING("DBusWrapper::DBusWrapper Name Error"),DLT_STRING(mDBusError.message));
         dbus_error_free(&mDBusError);
     }
     if (DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER != ret)
     {
-    	DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("DBusWrapper::DBusWrapper Wrapper is not the Primary Owner"), DLT_INT(ret));
+    	DLT_LOG(DLT_CONTEXT,DLT_LOG_ERROR, DLT_STRING("DBusWrapper::DBusWrapper Wrapper is not the Primary Owner"), DLT_INT(ret));
     }
 }
 
 DBusWrapper::~DBusWrapper()
 {
 	//close the connection again
-	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("DBusWrapper::~DBusWrapper Closing DBus connection"));
+	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("DBusWrapper::~DBusWrapper Closing DBus connection"));
 	dbus_connection_unref(mDbusConnection);
 }
 
 void DBusWrapper::registerCallback(const DBusObjectPathVTable* vtable, const std::string& path, void* userdata)
 {
-	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("DBusWrapper::~registerCallback register callback:"),DLT_STRING(path.c_str()));
+	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("DBusWrapper::~registerCallback register callback:"),DLT_STRING(path.c_str()));
 
 	std::string completePath=std::string(DBUS_SERVICE_OBJECT_PATH)+"/"+path;
 	dbus_error_init(&mDBusError);
@@ -94,7 +94,7 @@ void DBusWrapper::registerCallback(const DBusObjectPathVTable* vtable, const std
 	dbus_connection_register_object_path(mDbusConnection,completePath.c_str(), vtable, userdata);
     if (dbus_error_is_set(&mDBusError))
     {
-    	DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("DBusWrapper::registerCallack error: "),DLT_STRING(mDBusError.message));
+    	DLT_LOG(DLT_CONTEXT,DLT_LOG_ERROR, DLT_STRING("DBusWrapper::registerCallack error: "),DLT_STRING(mDBusError.message));
         dbus_error_free(&mDBusError);
     }
 	mNodesList.push_back(path);
@@ -102,7 +102,7 @@ void DBusWrapper::registerCallback(const DBusObjectPathVTable* vtable, const std
 
 DBusHandlerResult DBusWrapper::cbRootIntrospection(DBusConnection *conn, DBusMessage *msg, void *reference)
 {
-	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("DBusWrapper::~cbRootIntrospection called:"));
+	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("DBusWrapper::~cbRootIntrospection called:"));
 
 	mReference=(DBusWrapper*)reference;
 	std::list<std::string>nodesList=mReference->mNodesList;
@@ -129,13 +129,13 @@ DBusHandlerResult DBusWrapper::cbRootIntrospection(DBusConnection *conn, DBusMes
 	    dbus_message_iter_init_append(reply, &args);
 	    if (!dbus_message_iter_append_basic(&args, DBUS_TYPE_STRING, &string))
 	    {
-	    	DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("DBusWrapper::~cbRootIntrospection DBUS Out Of Memory!"));
+	    	DLT_LOG(DLT_CONTEXT,DLT_LOG_ERROR, DLT_STRING("DBusWrapper::~cbRootIntrospection DBUS Out Of Memory!"));
 	    }
 
 	    // send the reply && flush the connection
 	    if (!dbus_connection_send(conn, reply, &serial))
 	    {
-	    	DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("DBusWrapper::~cbRootIntrospection DBUS Out Of Memory!"));
+	    	DLT_LOG(DLT_CONTEXT,DLT_LOG_ERROR, DLT_STRING("DBusWrapper::~cbRootIntrospection DBUS Out Of Memory!"));
 	    }
 	    dbus_connection_flush(conn);
 	    // free the reply
@@ -151,7 +151,7 @@ DBusHandlerResult DBusWrapper::cbRootIntrospection(DBusConnection *conn, DBusMes
 
 void DBusWrapper::dbusMainLoop()
 {
-	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("DBusWrapper::~dbusMainLoop Entering MainLoop"));
+	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("DBusWrapper::~dbusMainLoop Entering MainLoop"));
 
 	while (dbus_connection_read_write_dispatch(mDbusConnection, -1))
 	{

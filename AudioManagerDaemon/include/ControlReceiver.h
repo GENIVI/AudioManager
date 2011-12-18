@@ -30,7 +30,7 @@
 #include "RoutingSender.h"
 #include "CommandSender.h"
 
-using namespace am;
+namespace am {
 
 /**
  * This class is used to receive all commands from the control interface
@@ -106,5 +106,7 @@ private:
 	RoutingSender* mRoutingSender; //!< pointer to the routing send interface.
 	CommandSender* mCommandSender; //!< pointer to the command send interface
 };
+
+}
 
 #endif /* CONTRONLRECEIVER_H_ */

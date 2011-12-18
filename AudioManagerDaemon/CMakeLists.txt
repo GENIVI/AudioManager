@@ -14,8 +14,8 @@ cmake_minimum_required(VERSION 2.6)
 PROJECT(AudioManagerDeamon)
 
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -rdynamic")
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+#set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -DDLT_CONTEXT=AudioManager")
 
 
 ##todo only when dbus needed!

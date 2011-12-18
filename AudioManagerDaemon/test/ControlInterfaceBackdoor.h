@@ -29,9 +29,9 @@
 #include "control/ControlSendInterface.h"
 #include "ControlSender.h"
 
-class ControlSender;
+namespace am {
 
-using namespace am;
+class ControlSender;
 
 class ControlInterfaceBackdoor {
 public:
@@ -39,5 +39,7 @@ public:
 	virtual ~ControlInterfaceBackdoor();
 	bool replaceController(ControlSender *controlSender, ControlSendInterface *newController);
 };
+
+}
 
 #endif /* CONTROLINTERFACEBACKDOOR_H_ */

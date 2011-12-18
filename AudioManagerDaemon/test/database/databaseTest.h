@@ -44,11 +44,9 @@
 #include "../CommandInterfaceBackdoor.h"
 #include "../CommonFunctions.h"
 
-DLT_DECLARE_CONTEXT(AudioManager)
+namespace am {
 
-using namespace testing;
-
-class databaseTest : public Test {
+class databaseTest : public ::testing::Test {
 public:
 	databaseTest();
 	~databaseTest();
@@ -68,5 +66,7 @@ public:
 
 	void createMainConnectionSetup();
 };
+
+}
 
 #endif /* DATABASETEST_H_ */

@@ -24,7 +24,12 @@
 */
 
 #include "RoutingReceiver.h"
+#include "RoutingSender.h"
+#include "DatabaseHandler.h"
+#include "ControlSender.h"
 #include <assert.h>
+
+using namespace am;
 
 RoutingReceiver::RoutingReceiver(DatabaseHandler *iDatabaseHandler, RoutingSender *iRoutingSender, ControlSender *iControlSender)
 	:mDatabaseHandler(iDatabaseHandler),
@@ -316,15 +321,18 @@ am_Error_e RoutingReceiver::sendChangedData(const std::vector<am_EarlyData_s> & 
 am_Error_e RoutingReceiver::peekSinkClassID(const std::string & name, am_sourceClass_t & sourceClassID)
 {
 	//todo: implement
+	return E_NOT_USED;
 }
 
 am_Error_e RoutingReceiver::peekSourceClassID(const std::string & name, am_sinkClass_t & sinkClassID)
 {
 	//todo: implement
+	return E_NOT_USED;
 }
 
 am_Error_e RoutingReceiver::getDBusConnectionWrapper(DBusWrapper *dbusConnectionWrapper) const
 {
 	//todo: return DbusWrapper
+	return E_NOT_USED;
 }
 

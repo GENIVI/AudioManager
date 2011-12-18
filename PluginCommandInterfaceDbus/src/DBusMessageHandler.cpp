@@ -30,6 +30,9 @@
 #include <assert.h>
 #include <vector>
 
+using namespace am;
+
+DLT_IMPORT_CONTEXT(DLT_CONTEXT)
 
 DBusMessageHandler::DBusMessageHandler()
 : 	mDBusMessageIter(),
@@ -84,12 +87,20 @@ void DBusMessageHandler::initSignal(std::string path, std::string signalName)
 	{
     	DLT_LOG(DLT_CONTEXT,DLT_LOG_ERROR, DLT_STRING("DBusMessageHandler::initSignal Cannot allocate DBus message!"));
 	}
+    dbus_message_iter_init_append(mDbusMessage, &mDBusMessageIter);
 }
 
 void DBusMessageHandler::sendMessage()
 {
 	assert(mDBusConnection!=NULL);
-	mSerial=dbus_message_get_serial(mReveiveMessage);
+	if(mReveiveMessage!=0)
+	{
+		mSerial=dbus_message_get_serial(mReveiveMessage);
+	}
+	else
+	{
+		mSerial=1;
+	}
 	if (!mErrorName.empty()) {
 		mDbusMessage = dbus_message_new_error(mReveiveMessage, mErrorName.c_str(), mErrorMsg.c_str());
 	}
@@ -292,14 +303,14 @@ void DBusMessageHandler::append(const am::am_SinkType_s& sinkType)
     DBusMessageIter structIter;
     DBusMessageIter structAvailIter;
     dbus_bool_t success=true;
-    success=success && dbus_message_iter_open_container(&mDBusMessageIter, DBUS_TYPE_STRUCT, "us(ii)iiu", &structIter);
+    success=success && dbus_message_iter_open_container(&mDBusMessageIter, DBUS_TYPE_STRUCT, NULL, &structIter);
     success=success && dbus_message_iter_append_basic(&structIter, DBUS_TYPE_UINT16, &sinkType.sinkID);
     success=success && dbus_message_iter_append_basic(&structIter, DBUS_TYPE_STRING, &sinkType.name);
 
-    success=success && dbus_message_iter_open_container(&mDBusMessageIter, DBUS_TYPE_STRUCT, "(ii)", &structAvailIter);
+    success=success && dbus_message_iter_open_container(&structIter, DBUS_TYPE_STRUCT, NULL, &structAvailIter);
     success=success && dbus_message_iter_append_basic(&structAvailIter, DBUS_TYPE_INT16, &sinkType.availability.availability);
     success=success && dbus_message_iter_append_basic(&structAvailIter, DBUS_TYPE_INT16, &sinkType.availability.availabilityReason);
-    success=success && dbus_message_iter_close_container(&mDBusMessageIter, &structAvailIter);
+    success=success && dbus_message_iter_close_container(&structIter, &structAvailIter);
 
     success=success && dbus_message_iter_append_basic(&structIter, DBUS_TYPE_INT16, &sinkType.volume);
     success=success && dbus_message_iter_append_basic(&structIter, DBUS_TYPE_INT16, &sinkType.muteState);
@@ -319,14 +330,14 @@ void DBusMessageHandler::append(const am::am_SourceType_s & sourceType)
     DBusMessageIter structIter;
     DBusMessageIter structAvailIter;
     dbus_bool_t success=true;
-    success=success && dbus_message_iter_open_container(&mDBusMessageIter, DBUS_TYPE_STRUCT, "us(ii)u", &structIter);
+    success=success && dbus_message_iter_open_container(&mDBusMessageIter, DBUS_TYPE_STRUCT, NULL, &structIter);
     success=success && dbus_message_iter_append_basic(&structIter, DBUS_TYPE_UINT16, &sourceType.sourceID);
     success=success &&  dbus_message_iter_append_basic(&structIter, DBUS_TYPE_STRING, &sourceType.name);
 
-    success=success && dbus_message_iter_open_container(&mDBusMessageIter, DBUS_TYPE_STRUCT, "(ii)", &structAvailIter);
+    success=success && dbus_message_iter_open_container(&structIter, DBUS_TYPE_STRUCT, NULL, &structAvailIter);
     success=success && dbus_message_iter_append_basic(&structAvailIter, DBUS_TYPE_INT16, &sourceType.availability.availability);
     success=success && dbus_message_iter_append_basic(&structAvailIter, DBUS_TYPE_INT16, &sourceType.availability.availabilityReason);
-    success=success && dbus_message_iter_close_container(&mDBusMessageIter, &structAvailIter);
+    success=success && dbus_message_iter_close_container(&structIter, &structAvailIter);
 
     success=success && dbus_message_iter_append_basic(&structIter, DBUS_TYPE_UINT16, &sourceType.sourceClassID);
     success=success && dbus_message_iter_close_container(&mDBusMessageIter, &structIter);
@@ -343,7 +354,7 @@ void DBusMessageHandler::append(const am::am_MainSoundProperty_s mainSoundProper
 {
 	DBusMessageIter structIter;
     dbus_bool_t success=true;
-    success=success && dbus_message_iter_open_container(&mDBusMessageIter, DBUS_TYPE_STRUCT, "(ii)", &structIter);
+    success=success && dbus_message_iter_open_container(&mDBusMessageIter, DBUS_TYPE_STRUCT, NULL, &structIter);
     success=success && dbus_message_iter_append_basic(&structIter, DBUS_TYPE_INT16, &mainSoundProperty.type);
     success=success && dbus_message_iter_append_basic(&structIter, DBUS_TYPE_INT16, &mainSoundProperty.value);
     success=success && dbus_message_iter_close_container(&mDBusMessageIter, &structIter);
@@ -360,7 +371,7 @@ void DBusMessageHandler::append(const am::am_Availability_s & availability)
 {
     DBusMessageIter structAvailIter;
     dbus_bool_t success=true;
-    success=success && dbus_message_iter_open_container(&mDBusMessageIter, DBUS_TYPE_STRUCT, "(ii)", &structAvailIter);
+    success=success && dbus_message_iter_open_container(&mDBusMessageIter, DBUS_TYPE_STRUCT,NULL, &structAvailIter);
     success=success && dbus_message_iter_append_basic(&structAvailIter, DBUS_TYPE_INT16, &availability.availability);
     success=success && dbus_message_iter_append_basic(&structAvailIter, DBUS_TYPE_INT16, &availability.availabilityReason);
     success=success && dbus_message_iter_close_container(&mDBusMessageIter, &structAvailIter);
@@ -377,7 +388,7 @@ void DBusMessageHandler::append(const am::am_SystemProperty_s & SystemProperty)
 {
     DBusMessageIter structIter;
     dbus_bool_t success=true;
-    success=success && dbus_message_iter_open_container(&mDBusMessageIter, DBUS_TYPE_STRUCT, "(ii)", &structIter);
+    success=success && dbus_message_iter_open_container(&mDBusMessageIter, DBUS_TYPE_STRUCT, NULL, &structIter);
     success=success && dbus_message_iter_append_basic(&structIter, DBUS_TYPE_INT16, &SystemProperty.type);
     success=success && dbus_message_iter_append_basic(&structIter, DBUS_TYPE_INT16, &SystemProperty.value);
     success=success && dbus_message_iter_close_container(&mDBusMessageIter, &structIter);

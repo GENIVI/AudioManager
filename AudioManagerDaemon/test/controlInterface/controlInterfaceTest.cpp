@@ -23,8 +23,15 @@
 */
 
 #include "controlInterfaceTest.h"
+#include <algorithm>
+#include <string>
+#include <vector>
+#include <set>
 
+using namespace am;
+using namespace testing;
 
+DLT_DECLARE_CONTEXT(DLT_CONTEXT)
 
 controlInterfaceTest::controlInterfaceTest()
 	:plistCommandPluginDirs(),
@@ -55,14 +62,14 @@ controlInterfaceTest::~controlInterfaceTest()
 void controlInterfaceTest::SetUp()
 {
 	DLT_REGISTER_APP("Rtest","RoutingInterfacetest");
-	DLT_REGISTER_CONTEXT(AudioManager,"Main","Main Context");
-	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("RoutingSendInterface Test started "));
+	DLT_REGISTER_CONTEXT(DLT_CONTEXT,"Main","Main Context");
+	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("RoutingSendInterface Test started "));
 
 }
 
 void controlInterfaceTest::TearDown()
 {
-	DLT_UNREGISTER_CONTEXT(AudioManager);
+	DLT_UNREGISTER_CONTEXT(DLT_CONTEXT);
 }
 
 TEST_F(controlInterfaceTest,registerDomain)
@@ -467,7 +474,6 @@ TEST_F(controlInterfaceTest,ackSetSourceSoundProperty)
 	am_sourceID_t sourceID;
 	am_Domain_s domain;
 	am_domainID_t domainID;
-	am_volume_t volume;
 	std::vector<am_Handle_s> handlesList;
 	am_Handle_s handle;
 	am_SoundProperty_s soundProperty;

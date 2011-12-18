@@ -28,10 +28,6 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <dlt/dlt.h>
-#include <algorithm>
-#include <string>
-#include <vector>
-#include <set>
 #include "MockInterfaces.h"
 #include "DatabaseHandler.h"
 #include "ControlReceiver.h"
@@ -44,41 +40,20 @@
 #include "../ControlInterfaceBackdoor.h"
 #include "../CommonFunctions.h"
 
-DLT_DECLARE_CONTEXT(AudioManager)
 
-using namespace testing;
-using namespace am;
+namespace am {
 
-using ::testing::Field;
-using ::testing::Property;
-using ::testing::Matcher;
-using ::testing::Pointee;
-using ::testing::AllOf;
-using ::testing::SafeMatcherCast;
-using ::testing::MatcherCast;
-using ::testing::DefaultValue;
-using ::testing::Eq;
-using ::testing::An;
-using ::testing::ElementsAreArray;
-using ::testing::ElementsAre;
-using ::testing::NotNull;
-using ::testing::Assign;
-using ::testing::SetArgReferee;
-using ::testing::DoAll;
-using ::testing::MatcherInterface;
-using ::testing::MatchResultListener;
-
-class controlInterfaceTest : public Test{
+class controlInterfaceTest : public ::testing::Test{
 public:
 	controlInterfaceTest();
 	~controlInterfaceTest();
-	std::vector<std::string> plistRoutingPluginDirs;
 	std::vector<std::string> plistCommandPluginDirs;
+	std::vector<std::string> plistRoutingPluginDirs;
 	DatabaseHandler pDatabaseHandler;
 	RoutingSender pRoutingSender;
 	CommandSender pCommandSender;
-	MockRoutingSendInterface pMockRoutingInterface;
 	MockControlSendInterface pMockControlInterface;
+	MockRoutingSendInterface pMockRoutingInterface;
 	ControlSender pControlSender;
 	RoutingInterfaceBackdoor pRoutingInterfaceBackdoor;
 	CommandInterfaceBackdoor pCommandInterfaceBackdoor;
@@ -90,5 +65,7 @@ public:
 	void SetUp();
 	void TearDown();
 };
+
+}
 
 #endif /* ROUTINGINTERFACETEST_H_ */

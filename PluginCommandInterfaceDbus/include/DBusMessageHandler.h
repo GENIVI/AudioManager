@@ -28,18 +28,15 @@
 
 
 #include <audiomanagertypes.h>
+#include <dbus/dbus.h>
+#include <dlt/dlt.h>
 #include <vector>
 #include <sstream>
-using std::stringstream;
-
 #include <string>
-using std::string;
-
-#include <dbus/dbus.h>
 #include <list>
-#include <dlt/dlt.h>
 
-DLT_IMPORT_CONTEXT(DBusCommandPlugin)
+namespace am {
+
 
 /**
  * handles DBus Messages, is used to extract & append parameters and send messages
@@ -114,7 +111,6 @@ public:
     void append(const std::vector<am::am_SinkClass_s>& listSinkClasses);
     void append(const std::vector<am::am_SystemProperty_s>& listSystemProperties);
 
-
 private:
 
     DBusMessageIter mDBusMessageIter;
@@ -126,5 +122,7 @@ private:
     DBusMessage* mReveiveMessage;
     DBusConnection* mDBusConnection;
 };
+
+}
 
 #endif // _DBUSMESSAGEWRAPPER_H_

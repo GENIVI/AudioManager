@@ -27,6 +27,10 @@
 #include "CommandInterfaceBackdoor.h"
 #include "RoutingInterfaceBackdoor.h"
 #include "ControlInterfaceBackdoor.h"
+#include <assert.h>
+#include <sstream>
+
+using namespace am;
 
 CommandInterfaceBackdoor::CommandInterfaceBackdoor() {
 }
@@ -87,9 +91,9 @@ bool ControlInterfaceBackdoor::replaceController(ControlSender *controlSender, C
 }
 
 
-int GetRandomNumber(int nLow, int nHigh) {
-	return (rand() % (nHigh - nLow + 1)) + nLow;
-}
+//int GetRandomNumber(int nLow, int nHigh) {
+//	return (rand() % (nHigh - nLow + 1)) + nLow;
+//}
 
 bool equalSoundProperty(const am_SoundProperty_s a,
 		const am_SoundProperty_s b) {

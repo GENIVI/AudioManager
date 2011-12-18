@@ -30,7 +30,7 @@
 #include "RoutingSender.h"
 #include "ControlSender.h"
 
-using namespace am;
+namespace am {
 
 /**
  * Implements the Receiving side of the RoutingPlugins.
@@ -78,5 +78,7 @@ private:
 	ControlSender *mControlSender; //!< pointer to the controlSender
 
 };
+
+}
 
 #endif /* ROUTINGRECEIVER_H_ */

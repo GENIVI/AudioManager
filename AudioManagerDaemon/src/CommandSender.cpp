@@ -24,10 +24,12 @@
 
 
 #include "CommandSender.h"
-#include "PluginTemplate.h"
 #include <dirent.h>
-
+#include <dlt/dlt.h>
+#include "PluginTemplate.h"
 using namespace am;
+
+DLT_IMPORT_CONTEXT(DLT_CONTEXT)
 
 //!< macro to call all interfaces
 #define CALL_ALL_INTERFACES(...) 														 \
@@ -50,12 +52,12 @@ CommandSender::CommandSender(const std::vector<std::string>& listOfPluginDirecto
     for (; dirIter < dirIterEnd; ++dirIter)
     {
 		const char* directoryName = dirIter->c_str();
-		DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Searching for CommandPlugins in"),DLT_STRING(directoryName));
+		DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("Searching for CommandPlugins in"),DLT_STRING(directoryName));
 		DIR *directory = opendir(directoryName);
 
 		if (!directory)
 		{
-			DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Error opening directory "),DLT_STRING(directoryName));
+			DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("Error opening directory "),DLT_STRING(directoryName));
 		}
 
         // iterate content of directory
@@ -83,14 +85,14 @@ CommandSender::CommandSender(const std::vector<std::string>& listOfPluginDirecto
 
     for (; iter < iterEnd; ++iter)
     {
-    	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Loading CommandSender plugin"),DLT_STRING(iter->c_str()));
+    	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("Loading CommandSender plugin"),DLT_STRING(iter->c_str()));
         CommandSendInterface* (*createFunc)();
         void* tempLibHandle=NULL;
         createFunc = getCreateFunction<CommandSendInterface*()>(*iter,tempLibHandle);
 
         if (!createFunc)
         {
-            DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Entry point of CommandPlugin not found"),DLT_STRING(iter->c_str()));
+            DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("Entry point of CommandPlugin not found"),DLT_STRING(iter->c_str()));
             continue;
         }
 
@@ -98,7 +100,7 @@ CommandSender::CommandSender(const std::vector<std::string>& listOfPluginDirecto
 
         if (!commander)
         {
-        	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("CommandPlugin initialization failed. Entry Function not callable"));
+        	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("CommandPlugin initialization failed. Entry Function not callable"));
             continue;
         }
 

@@ -26,7 +26,7 @@
 #ifndef DBUSWRAPPER_H_
 #define DBUSWRAPPER_H_
 
-#include "audiomanagertypes.h"
+
 #include "DBusConfiguration.h"
 #include <dbus/dbus.h>
 #include <string>

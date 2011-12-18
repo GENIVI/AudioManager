@@ -42,12 +42,10 @@
 #include "../CommandInterfaceBackdoor.h"
 #include "../CommonFunctions.h"
 
-DLT_DECLARE_CONTEXT(AudioManager)
 
-using namespace testing;
-using namespace am;
+namespace am {
 
-class routingInterfaceTest : public Test{
+class routingInterfaceTest : public ::testing::Test{
 public:
 	routingInterfaceTest();
 	~routingInterfaceTest();
@@ -65,5 +63,7 @@ public:
 	void SetUp();
 	void TearDown();
 };
+
+}
 
 #endif /* ROUTINGINTERFACETEST_H_ */

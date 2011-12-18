@@ -26,10 +26,9 @@
 #ifndef COMMONHEADERS_H_
 #define COMMONHEADERS_H_
 
-#include <gtest/gtest.h>
-#include "DatabaseHandler.h"
+#include "audiomanagertypes.h"
 
-using namespace am;
+namespace am {
 
 class CommonFunctions
 {
@@ -86,7 +85,7 @@ public:
 	};
 };
 
-
+}
 
 
 #endif /* COMMONHEADERS_H_ */

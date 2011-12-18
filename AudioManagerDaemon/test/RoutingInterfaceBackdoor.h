@@ -28,7 +28,7 @@
 
 #include "RoutingSender.h"
 
-using namespace am;
+namespace am {
 
 class RoutingSender;
 
@@ -39,6 +39,8 @@ public:
 	bool unloadPlugins(RoutingSender *RoutingSender);
 	bool injectInterface(RoutingSender *RoutingSender, RoutingSendInterface *newInterface, const std::string& busname);
 };
+
+}
 
 //definitions are in CommonFunctions.cpp!
 

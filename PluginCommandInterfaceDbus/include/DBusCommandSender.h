@@ -27,17 +27,19 @@
 #ifndef DBUSCOMMANDSENDER_H_
 #define DBUSCOMMANDSENDER_H_
 
-#include "DBusMessageHandler.h"
-#include "CommandReceiverShadow.h"
-#include "DBusWrapper.h"
+#ifdef UNIT_TEST
+#include  "../test/DbusCommandInterfaceBackdoor.h"
+#endif
 
 #include <command/CommandSendInterface.h>
 #include <dbus/dbus.h>
 #include <map>
+#include "DBusMessageHandler.h"
+#include "CommandReceiverShadow.h"
+#include "DBusWrapper.h"
 
-using namespace am;
+namespace am {
 
-#define DLT_CONTEXT DBusCommandPlugin
 const char MY_NODE[]="CommandInterface";
 
 /**
@@ -65,6 +67,10 @@ public:
 	void cbSinkMuteStateChanged(const am_sinkID_t sinkID, const am_MuteState_e muteState) ;
 	void cbSystemPropertyChanged(const am_SystemProperty_s& SystemProperty) ;
 	void cbTimingInformationChanged(const am_mainConnectionID_t mainConnection, const am_timeSync_t time) ;
+
+#ifdef UNIT_TEST
+    friend class DbusCommandInterfaceBackdoor;
+#endif
 private:
 	DBusMessageHandler mDBUSMessageHandler;
 	CommandReceiverShadow mCommandReceiverShadow;
@@ -104,5 +110,7 @@ private:
 	};
 
 };
+
+}
 
 #endif /* DBUSCOMMANDSENDER_H_ */

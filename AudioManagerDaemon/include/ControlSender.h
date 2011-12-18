@@ -31,7 +31,7 @@
 
 #include "control/ControlSendInterface.h"
 
-using namespace am;
+namespace am {
 
 /**
  * sends data to the commandInterface, takes the file of the library that needs to be loaded
@@ -84,8 +84,10 @@ public:
 	friend class ControlInterfaceBackdoor;
 #endif
 private:
-	ControlSendInterface* mController; //!< pointer to the ControlSend interface
 	void* mlibHandle; //!< pointer to the loaded control plugin interface
+	ControlSendInterface* mController; //!< pointer to the ControlSend interface
 };
+
+}
 
 #endif /* CONTROLSENDER_H_ */

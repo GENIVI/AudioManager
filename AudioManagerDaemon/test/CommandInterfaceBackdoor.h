@@ -29,7 +29,7 @@
 #include <command/CommandSendInterface.h>
 #include "CommandSender.h"
 
-using namespace am;
+namespace am {
 
 class CommandSender;
 
@@ -40,6 +40,8 @@ public:
 	bool unloadPlugins(CommandSender *CommandSender);
 	bool injectInterface(CommandSender* CommandSender, CommandSendInterface* CommandSendInterface);
 };
+
+}
 
 //definitions are in CommonFunctions.cpp!
 

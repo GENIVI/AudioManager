@@ -23,10 +23,11 @@
 */
 
 #include "RoutingSender.h"
-#include "PluginTemplate.h"
 #include <utility>
 #include <dirent.h>
 #include <dlfcn.h>
+#include <dlt/dlt.h>
+#include "PluginTemplate.h"
 
 using namespace am;
 

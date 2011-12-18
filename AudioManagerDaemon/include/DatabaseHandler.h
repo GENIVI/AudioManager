@@ -29,7 +29,7 @@
 #include "DatabaseObserver.h"
 #include <sqlite3.h>
 
-using namespace am;
+namespace am {
 
 #define DYNAMIC_ID_BOUNDARY 100 //!< the value below is reserved for staticIDs, the value above will be assigned to dynamically registered items
 
@@ -258,5 +258,7 @@ private:
 	typedef std::map<am_gatewayID_t,std::vector<bool> > ListConnectionFormat; //!< type for list of connection formats
 	ListConnectionFormat mListConnectionFormat; //!< list of connection formats
 };
+
+}
 
 #endif /* DATABASEHANDLER_H_ */

@@ -23,10 +23,12 @@
 */
 
 #include "ControlReceiver.h"
-#include <dlt/dlt.h>
 #include <assert.h>
+#include <dlt/dlt.h>
 
-DLT_IMPORT_CONTEXT(AudioManager)
+DLT_IMPORT_CONTEXT(DLT_CONTEXT)
+
+using namespace am;
 
 ControlReceiver::ControlReceiver(DatabaseHandler *iDatabaseHandler, RoutingSender *iRoutingSender, CommandSender *iCommandSender)
 	: mDatabaseHandler(iDatabaseHandler),
@@ -45,13 +47,14 @@ ControlReceiver::~ControlReceiver()
 am_Error_e ControlReceiver::getRoute(const bool onlyfree, const am_sourceID_t sourceID, const am_sinkID_t sinkID, std::vector<am_Route_s> & returnList)
 {
 	//todo: implement routing algorithm
+	return E_NOT_USED;
 }
 
 
 
 am_Error_e ControlReceiver::connect(am_Handle_s & handle, am_connectionID_t & connectionID, const am_ConnectionFormat_e format, const am_sourceID_t sourceID, const am_sinkID_t sinkID)
 {
-	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("ControlReceiver::connect got called, connectionFormat"),DLT_INT(format),DLT_STRING("sourceID"),DLT_INT(sourceID),DLT_STRING("sinkID"),DLT_INT(sinkID));
+	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("ControlReceiver::connect got called, connectionFormat"),DLT_INT(format),DLT_STRING("sourceID"),DLT_INT(sourceID),DLT_STRING("sinkID"),DLT_INT(sinkID));
 
 	am_Connection_s tempConnection;
 	tempConnection.sinkID=sinkID;
@@ -70,7 +73,7 @@ am_Error_e ControlReceiver::connect(am_Handle_s & handle, am_connectionID_t & co
 
 am_Error_e ControlReceiver::disconnect(am_Handle_s & handle, const am_connectionID_t connectionID)
 {
-	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("ControlReceiver::disconnect got called, connectionID="),DLT_INT(connectionID));
+	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("ControlReceiver::disconnect got called, connectionID="),DLT_INT(connectionID));
 
 	if (!mDatabaseHandler->existConnectionID(connectionID)) return E_NON_EXISTENT;   //todo: check with EA model and correct
 	return mRoutingSender->asyncDisconnect(handle,connectionID);
@@ -80,7 +83,7 @@ am_Error_e ControlReceiver::disconnect(am_Handle_s & handle, const am_connection
 
 am_Error_e ControlReceiver::crossfade(am_Handle_s & handle, const am_HotSink_e hotSource, const am_crossfaderID_t crossfaderID, const am_RampType_e rampType, const am_time_t rampTime)
 {
-	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("ControlReceiver::crossfade got called, hotSource="),DLT_INT(hotSource),DLT_STRING("crossfaderID="),DLT_INT(crossfaderID),DLT_STRING("rampType="),DLT_INT(rampType),DLT_STRING("rampTime="),DLT_INT(rampTime));
+	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("ControlReceiver::crossfade got called, hotSource="),DLT_INT(hotSource),DLT_STRING("crossfaderID="),DLT_INT(crossfaderID),DLT_STRING("rampType="),DLT_INT(rampType),DLT_STRING("rampTime="),DLT_INT(rampTime));
 
 	if (!mDatabaseHandler->existcrossFader(crossfaderID)) return E_NON_EXISTENT;
 	return mRoutingSender->asyncCrossFade(handle,crossfaderID,hotSource,rampType,rampTime);
@@ -90,7 +93,7 @@ am_Error_e ControlReceiver::crossfade(am_Handle_s & handle, const am_HotSink_e h
 
 am_Error_e ControlReceiver::setSourceState(am_Handle_s & handle, const am_sourceID_t sourceID, const am_SourceState_e state)
 {
-	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("ControlReceiver::setSourceState got called, sourceID="),DLT_INT(sourceID),DLT_STRING("state="),DLT_INT(state));
+	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("ControlReceiver::setSourceState got called, sourceID="),DLT_INT(sourceID),DLT_STRING("state="),DLT_INT(state));
 
 	am_SourceState_e sourceState;
 	if(mDatabaseHandler->getSoureState(sourceID,sourceState)!=E_OK) return E_UNKNOWN;
@@ -102,7 +105,7 @@ am_Error_e ControlReceiver::setSourceState(am_Handle_s & handle, const am_source
 
 am_Error_e ControlReceiver::setSinkVolume(am_Handle_s & handle, const am_sinkID_t sinkID, const am_volume_t volume, const am_RampType_e ramp, const am_time_t time)
 {
-	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("ControlReceiver::setSinkVolume got called, sinkID="),DLT_INT(sinkID),DLT_STRING("volume="),DLT_INT(volume),DLT_STRING("ramp="),DLT_INT(ramp),DLT_STRING("time="),DLT_INT(time));
+	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("ControlReceiver::setSinkVolume got called, sinkID="),DLT_INT(sinkID),DLT_STRING("volume="),DLT_INT(volume),DLT_STRING("ramp="),DLT_INT(ramp),DLT_STRING("time="),DLT_INT(time));
 
 	am_volume_t tempVolume;
 	if(mDatabaseHandler->getSinkVolume(sinkID,tempVolume)!=E_OK) return E_UNKNOWN;
@@ -114,7 +117,7 @@ am_Error_e ControlReceiver::setSinkVolume(am_Handle_s & handle, const am_sinkID_
 
 am_Error_e ControlReceiver::setSourceVolume(am_Handle_s & handle, const am_sourceID_t sourceID, const am_volume_t volume, const am_RampType_e rampType, const am_time_t time)
 {
-	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("ControlReceiver::setSourceVolume got called, sourceID="),DLT_INT(sourceID),DLT_STRING("volume="),DLT_INT(volume),DLT_STRING("ramp="),DLT_INT(rampType),DLT_STRING("time="),DLT_INT(time));
+	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("ControlReceiver::setSourceVolume got called, sourceID="),DLT_INT(sourceID),DLT_STRING("volume="),DLT_INT(volume),DLT_STRING("ramp="),DLT_INT(rampType),DLT_STRING("time="),DLT_INT(time));
 
 	am_volume_t tempVolume;
 	if(mDatabaseHandler->getSourceVolume(sourceID,tempVolume)!=E_OK) return E_UNKNOWN;
@@ -126,7 +129,7 @@ am_Error_e ControlReceiver::setSourceVolume(am_Handle_s & handle, const am_sourc
 
 am_Error_e ControlReceiver::setSinkSoundProperty(am_Handle_s & handle, const am_sinkID_t sinkID, const am_SoundProperty_s & soundProperty)
 {
-	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("ControlReceiver::setSinkSoundProperty got called, sinkID="),DLT_INT(sinkID),DLT_STRING("soundProperty.Type="),DLT_INT(soundProperty.type),DLT_STRING("soundProperty.value="),DLT_INT(soundProperty.value));
+	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("ControlReceiver::setSinkSoundProperty got called, sinkID="),DLT_INT(sinkID),DLT_STRING("soundProperty.Type="),DLT_INT(soundProperty.type),DLT_STRING("soundProperty.value="),DLT_INT(soundProperty.value));
 
 	uint16_t value;
 	if(mDatabaseHandler->getSinkSoundPropertyValue(sinkID,soundProperty.type,value)!=E_OK) return E_UNKNOWN;
@@ -138,7 +141,7 @@ am_Error_e ControlReceiver::setSinkSoundProperty(am_Handle_s & handle, const am_
 
 am_Error_e ControlReceiver::setSourceSoundProperty(am_Handle_s & handle, const am_sourceID_t sourceID, const am_SoundProperty_s & soundProperty)
 {
-	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("ControlReceiver::setSourceSoundProperty got called, sourceID="),DLT_INT(sourceID),DLT_STRING("soundProperty.Type="),DLT_INT(soundProperty.type),DLT_STRING("soundProperty.value="),DLT_INT(soundProperty.value));
+	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("ControlReceiver::setSourceSoundProperty got called, sourceID="),DLT_INT(sourceID),DLT_STRING("soundProperty.Type="),DLT_INT(soundProperty.type),DLT_STRING("soundProperty.value="),DLT_INT(soundProperty.value));
 
 	uint16_t value;
 	if(mDatabaseHandler->getSourceSoundPropertyValue(sourceID,soundProperty.type,value)!=E_OK) return E_UNKNOWN;
@@ -150,7 +153,7 @@ am_Error_e ControlReceiver::setSourceSoundProperty(am_Handle_s & handle, const a
 
 am_Error_e ControlReceiver::setDomainState(const am_domainID_t domainID, const am_DomainState_e domainState)
 {
-	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("ControlReceiver::setDomainState got called, domainID="),DLT_INT(domainID),DLT_STRING("domainState="),DLT_INT(domainState));
+	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("ControlReceiver::setDomainState got called, domainID="),DLT_INT(domainID),DLT_STRING("domainState="),DLT_INT(domainState));
 
 	am_DomainState_e tempState=DS_MIN;
 	if(mDatabaseHandler->getDomainState(domainID,tempState)!=E_OK) return E_UNKNOWN;
@@ -162,7 +165,7 @@ am_Error_e ControlReceiver::setDomainState(const am_domainID_t domainID, const a
 
 am_Error_e ControlReceiver::abortAction(const am_Handle_s handle)
 {
-	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("ControlReceiver::abortAction got called, handle.type="),DLT_INT(handle.handle),DLT_STRING("handle.handleType="),DLT_INT(handle.handleType));
+	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("ControlReceiver::abortAction got called, handle.type="),DLT_INT(handle.handle),DLT_STRING("handle.handleType="),DLT_INT(handle.handleType));
 
 	return mRoutingSender->asyncAbort(handle);
 }
@@ -470,33 +473,33 @@ am_Error_e ControlReceiver::getListSystemProperties(std::vector<am_SystemPropert
 
 am_Error_e ControlReceiver::changeSinkClassInfoDB(const am_SinkClass_s & classInfo)
 {
-	mDatabaseHandler->changeSinkClassInfoDB(classInfo);
+	return mDatabaseHandler->changeSinkClassInfoDB(classInfo);
 }
 
 am_Error_e ControlReceiver::changeSourceClassInfoDB(const am_SourceClass_s & classInfo)
 {
-	mDatabaseHandler->changeSourceClassInfoDB(classInfo);
+	return mDatabaseHandler->changeSourceClassInfoDB(classInfo);
 }
 
 am_Error_e ControlReceiver::removeSinkClassDB(const am_sinkClass_t sinkClassID)
 {
-	mDatabaseHandler->removeSinkClassDB(sinkClassID);
+	return mDatabaseHandler->removeSinkClassDB(sinkClassID);
 }
 
 am_Error_e ControlReceiver::removeSourceClassDB(const am_sourceClass_t sourceClassID)
 {
-	mDatabaseHandler->removeSourceClassDB(sourceClassID);
+	return mDatabaseHandler->removeSourceClassDB(sourceClassID);
 }
 
 void ControlReceiver::setCommandReady()
 {
-	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("ControlReceiver::setCommandReady got called"));
+	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("ControlReceiver::setCommandReady got called"));
 	mCommandSender->cbCommunicationReady();
 }
 
 void ControlReceiver::setRoutingReady()
 {
-	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("ControlReceiver::setRoutingReady got called"));
+	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("ControlReceiver::setRoutingReady got called"));
 	mRoutingSender->routingInterfacesReady();
 }
 

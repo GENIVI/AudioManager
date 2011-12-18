@@ -105,7 +105,7 @@
         </signal>
 
 	<signal name="SinkAdded">
-            	<arg type="(qs(nn)nnq)" name="newSink" direction="out"/>
+            	<arg type="(qs(nn)nnq)" name="newSink" direction="out"/><!-- am_sinkID_t sinkID; std::string name; am_Availability_s availability; am_mainVolume_t volume; am_MuteState_e muteState; am_sinkClass_t sinkClassID; -->
         </signal>
 		
 	<signal name="SinkRemoved">
@@ -113,7 +113,7 @@
         </signal>
 
 	<signal name="SourceAdded">
-            	<arg type="(qs(nn)q)" name="newSource" direction="out"/>
+            	<arg type="(qs(nn)q)" name="newSource" direction="out"/><!-- am_sourceID_t sourceID; std::string name; 	am_Availability_s availability; am_sourceClass_t sourceClassID; -->
         </signal>
 		
 	<signal name="SourceRemoved">

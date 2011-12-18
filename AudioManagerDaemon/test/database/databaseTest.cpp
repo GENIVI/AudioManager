@@ -26,6 +26,9 @@
 #include "databaseTest.h"
 
 using namespace am;
+using namespace testing;
+
+DLT_DECLARE_CONTEXT(DLT_CONTEXT)
 
 //extern int GetRandomNumber(int nLow, int nHigh);
 //extern bool equalSoundProperty (const am_SoundProperty_s a, const am_SoundProperty_s b);
@@ -134,13 +137,13 @@ void databaseTest::createMainConnectionSetup()
 void databaseTest::SetUp()
 {
 	DLT_REGISTER_APP("Dtest","AudioManagerDeamon");
-	DLT_REGISTER_CONTEXT(AudioManager,"Main","Main Context");
-	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Database Test started "));
+	DLT_REGISTER_CONTEXT(DLT_CONTEXT,"Main","Main Context");
+	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("Database Test started "));
 }
 
 void databaseTest::TearDown()
 {
-	DLT_UNREGISTER_CONTEXT(AudioManager);
+	DLT_UNREGISTER_CONTEXT(DLT_CONTEXT);
 }
 
 TEST_F(databaseTest,crossfaders)

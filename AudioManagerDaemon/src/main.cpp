@@ -35,8 +35,6 @@
 //todo: there is a bug in the visible flags of sinks and sources. fix it.
 //todo: check namespace handling. no use.. in headers
 
-#include <dbus/dbus.h>
-#include <dlt/dlt.h>
 #include "DatabaseHandler.h"
 #include "DatabaseObserver.h"
 #include "RoutingReceiver.h"
@@ -47,7 +45,10 @@
 #include "RoutingSender.h"
 #include "DBusWrapper.h"
 
-DLT_DECLARE_CONTEXT(AudioManager)
+#include <dbus/dbus.h>
+#include <dlt/dlt.h>
+
+DLT_DECLARE_CONTEXT(DLT_CONTEXT)
 
 using namespace am;
 
@@ -58,8 +59,8 @@ using namespace am;
 int main(int argc, char *argv[])
 {
 	DLT_REGISTER_APP("AudioManagerDeamon","AudioManagerDeamon");
-	DLT_REGISTER_CONTEXT(AudioManager,"Main","Main Context");
-	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("The AudioManager is started "));
+	DLT_REGISTER_CONTEXT(DLT_CONTEXT,"Main","Main Context");
+	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("The AudioManager is started "));
 
 	std::vector<std::string> listCommandPluginDirs;
 	listCommandPluginDirs.push_back(std::string(DEFAULT_PLUGIN_COMMAND_DIR)); //change this to be modified by the commandline!
@@ -81,6 +82,7 @@ int main(int argc, char *argv[])
 	//since the plugins have been loaded by the *Senders before, we can tell the Controller this:
 	iControlSender.hookAllPluginsLoaded();
 
+	//the controller should startup the interfaces - this is just for testing
 	iCommandSender.startupInterface(&iCommandReceiver);
 	iRoutingSender.startupRoutingInterface(&iRoutingReceiver);
 

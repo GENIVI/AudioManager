@@ -26,19 +26,20 @@
 #ifndef COMMANDRECEIVERSHADOW_H_
 #define COMMANDRECEIVERSHADOW_H_
 
-#include "DBusMessageHandler.h"
-
 #include <command/CommandReceiveInterface.h>
 #include <dbus/dbus.h>
 #include <dlt/dlt.h>
 #include <map>
+#include "DBusWrapper.h"
+#include "DBusMessageHandler.h"
 
-DLT_IMPORT_CONTEXT(DBusCommandPlugin)
+namespace am {
+
 
 #define INTROSPECTION_XML_FILE "/home/christian/workspace/gitserver/dbusIncludes/CommandInterface.xml"
 
+
 class CommandReceiverShadow;
-using namespace am;
 
 typedef void (CommandReceiverShadow::*CallBackMethod)(DBusConnection *connection, DBusMessage *message);
 
@@ -106,5 +107,7 @@ private:
 	 */
 	functionMap_t createMap();
 };
+
+}
 
 #endif /* COMMANDRECEIVERSHADOW_H_ */

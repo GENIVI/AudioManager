@@ -26,7 +26,7 @@
 #include "DBusCommandSender.h"
 #include "DBusMessageHandler.h"
 #include "DBusWrapper.h"
-
+#include "command/CommandReceiveInterface.h"
 #include <dlt/dlt.h>
 #include <algorithm>
 #include <string>
@@ -34,7 +34,10 @@
 #include <assert.h>
 #include <set>
 
-DLT_DECLARE_CONTEXT(DBusCommandPlugin)
+using namespace am;
+
+DLT_DECLARE_CONTEXT(DLT_CONTEXT)
+//DLT_IMPORT_CONTEXT(DLT_CONTEXT);
 
 /**
  * factory for plugin loading
@@ -59,14 +62,14 @@ DbusCommandSender::DbusCommandSender()
   	mDBusWrapper(NULL),
   	mCommandReceiveInterface(NULL)
 {
-	DLT_REGISTER_CONTEXT(DBusCommandPlugin,"DBP","DBus Plugin");
+	DLT_REGISTER_CONTEXT(DLT_CONTEXT,"DBP","DBus Plugin");
 	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("DbusCommandSender constructed"));
 }
 
 DbusCommandSender::~DbusCommandSender()
 {
 	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("DbusCommandSender destructed"));
-	DLT_UNREGISTER_CONTEXT(DBusCommandPlugin);
+	DLT_UNREGISTER_CONTEXT(DLT_CONTEXT);
 }
 
 am_Error_e DbusCommandSender::startupInterface(CommandReceiveInterface* commandreceiveinterface)
@@ -99,6 +102,7 @@ am_Error_e DbusCommandSender::cbCommunicationReady()
 	/**
 	 * todo: implement DbusCommandSender::cbCommunicationReady()
 	 */
+	return E_NOT_USED;
 }
 
 
@@ -109,6 +113,7 @@ am_Error_e DbusCommandSender::cbCommunicationRundown()
 	/**
 	 * todo: implement DbusCommandSender::cbCommunicationRundown()
 	 */
+	return E_NOT_USED;
 }
 
 
@@ -131,12 +136,12 @@ void DbusCommandSender::cbNumberOfSinksChanged()
 	std::vector<am_SinkType_s> diffList;
 	mCommandReceiveInterface->getListMainSinks(newListSinks);
 	std::sort(newListSinks.begin(),newListSinks.end(),sortBySinkID());
-	std::set_difference(newListSinks.begin(),newListSinks.end(),mlistSinks.begin(),mlistSinks.end(),std::back_inserter(diffList), sortBySinkID());
+	std::set_symmetric_difference(newListSinks.begin(),newListSinks.end(),mlistSinks.begin(),mlistSinks.end(),std::back_inserter(diffList), sortBySinkID());
 	assert(diffList.size()==1);
 	if (newListSinks.size()>mlistSinks.size())
 	{
 		mDBUSMessageHandler.initSignal(std::string(MY_NODE),"SinkAdded");
-		mDBUSMessageHandler.append(&diffList.at(0));
+		mDBUSMessageHandler.append(diffList[0]);
 
 		DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("send signal SinkAdded"));
 	}
@@ -162,12 +167,12 @@ void DbusCommandSender::cbNumberOfSourcesChanged()
 	std::vector<am_SourceType_s> diffList;
 	mCommandReceiveInterface->getListMainSources(newlistSources);
 	std::sort(newlistSources.begin(),newlistSources.end(),sortBySourceID());
-	std::set_difference(newlistSources.begin(),newlistSources.end(),mlistSources.begin(),mlistSources.end(),std::back_inserter(diffList), sortBySourceID());
+	std::set_symmetric_difference(newlistSources.begin(),newlistSources.end(),mlistSources.begin(),mlistSources.end(),std::back_inserter(diffList), sortBySourceID());
 	assert(diffList.size()==1);
 	if (newlistSources.size()>mlistSources.size())
 	{
 		mDBUSMessageHandler.initSignal(std::string(MY_NODE),"SourceAdded");
-		mDBUSMessageHandler.append(&diffList.at(0));
+		mDBUSMessageHandler.append(diffList[0]);
 
 		DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("send signal SourceAdded"));
 	}

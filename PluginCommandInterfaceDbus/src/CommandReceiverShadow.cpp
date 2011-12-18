@@ -24,14 +24,16 @@
 */
 
 
-#include "CommandReceiverShadow.h"
-#include "DBusCommandSender.h"
-#include "DBusWrapper.h"
 #include <audiomanagertypes.h>
-
 #include <string>
 #include <fstream>
 #include <assert.h>
+#include "CommandReceiverShadow.h"
+#include "DBusCommandSender.h"
+
+using namespace am;
+
+DLT_IMPORT_CONTEXT(DLT_CONTEXT)
 
 /**
  * static ObjectPathTable is needed for DBus Callback handling

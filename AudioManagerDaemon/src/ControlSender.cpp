@@ -6,10 +6,13 @@
  */
 
 #include "ControlSender.h"
-#include "PluginTemplate.h"
-#include <dlt/dlt.h>
 #include <assert.h>
+#include <dlt/dlt.h>
+#include "PluginTemplate.h"
 
+DLT_IMPORT_CONTEXT(DLT_CONTEXT)
+
+using namespace am;
 
 ControlSender::ControlSender(std::string controlPluginFile)
 	:mlibHandle(NULL),
@@ -24,7 +27,7 @@ ControlSender::ControlSender(std::string controlPluginFile)
 	}
 	else
 	{
-		DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("No controller loaded !"));
+		DLT_LOG(DLT_CONTEXT,DLT_LOG_ERROR, DLT_STRING("No controller loaded !"));
 	}
 }
 
