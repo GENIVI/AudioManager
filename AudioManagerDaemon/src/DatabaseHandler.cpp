@@ -3088,7 +3088,7 @@ am_Error_e DatabaseHandler::changeConnectionTimingInformation(const am_connectio
 	assert(connectionID!=0);
 
 	sqlite3_stmt *query=NULL, *queryMainConnections, *queryMainConnectionSubIDs;
-	int eCode=0;
+	int eCode=0, eCode1=0;
 	std::string command= "UPDATE " + std::string(CONNECTION_TABLE) + " set delay=? WHERE connectionID=?";
 
 	sqlite3_prepare_v2(mDatabase,command.c_str(),-1,&query,NULL);
@@ -3111,7 +3111,6 @@ am_Error_e DatabaseHandler::changeConnectionTimingInformation(const am_connectio
 	am_timeSync_t tempDelay=0;
 	am_Error_e error;
 
-	std::string command2;
 	int tempMainConnectionID;
 	//first get all route tables for all mainconnections
 	command= "SELECT name FROM sqlite_master WHERE type ='table' and name LIKE 'MainConnectionRoute%'";
@@ -3121,13 +3120,18 @@ am_Error_e DatabaseHandler::changeConnectionTimingInformation(const am_connectio
 	{
 		//now check if the connection ID is in this table
 		std::string tablename=std::string((const char*)sqlite3_column_text(queryMainConnections,0));
-		command2="(SELECT connectionID FROM " + tablename + " WHERE connectionID="+i2s(connectionID)+")";
-		sqlite3_prepare_v2(mDatabase,command.c_str(),-1,&queryMainConnectionSubIDs,NULL);
-		if((eCode=sqlite3_step(queryMainConnectionSubIDs))==SQLITE_ROW)
+		std::string command2="SELECT connectionID FROM " + tablename + " WHERE connectionID="+i2s(connectionID);
+		sqlite3_prepare_v2(mDatabase,command2.c_str(),-1,&queryMainConnectionSubIDs,NULL);
+		if((eCode1=sqlite3_step(queryMainConnectionSubIDs))==SQLITE_ROW)
 		{
 			//if the connection ID is in, recalculate the mainconnection delay
 			std::stringstream(tablename.substr(tablename.find_first_not_of("MainConnectionRoute"))) >> tempMainConnectionID;
 			changeDelayMainConnection(calculateMainConnectionDelay(tempMainConnectionID),tempMainConnectionID);
+		}
+		else if(eCode1!=SQLITE_DONE)
+		{
+			DLT_LOG(DLT_CONTEXT, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeConnectionTimingInformation SQLITE error code:"),DLT_INT(eCode1));
+			return E_DATABASE_ERROR;
 		}
 	}
 
