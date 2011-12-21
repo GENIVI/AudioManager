@@ -18,8 +18,8 @@ class fdCallBack
 public:
 	fdCallBack(SocketHandler *SocketHandler);
 	virtual ~fdCallBack();
-	void connectSocket(int fd,const short events);
-	void handleSocketData(int fd,const short events);
+	void connectSocket(int fd,const short events,void * userData);
+	void handleSocketData(int fd,const short events,void * userData);
 	TSpecificPollCallback<fdCallBack> pSocketDataCallback;
 	TSpecificPollCallback<fdCallBack> pSocketConnectionCallback;
 private:
@@ -32,10 +32,10 @@ class timerCallBack
 public:
 	timerCallBack(SocketHandler *SocketHandler);
 	virtual ~timerCallBack();
-	void timer1Callback(SocketHandler::timerHandle_t handle);
-	void timer2Callback(SocketHandler::timerHandle_t handle);
-	void timer3Callback(SocketHandler::timerHandle_t handle);
-	void timer4Callback(SocketHandler::timerHandle_t handle);
+	void timer1Callback(SocketHandler::sh_timerHandle_t handle,void * userData);
+	void timer2Callback(SocketHandler::sh_timerHandle_t handle,void * userData);
+	void timer3Callback(SocketHandler::sh_timerHandle_t handle,void * userData);
+	void timer4Callback(SocketHandler::sh_timerHandle_t handle,void * userData);
 	TSpecificTimerCallback<timerCallBack> pTimer1Callback;
 	TSpecificTimerCallback<timerCallBack> pTimer2Callback;
 	TSpecificTimerCallback<timerCallBack> pTimer3Callback;

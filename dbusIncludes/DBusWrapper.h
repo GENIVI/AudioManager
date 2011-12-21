@@ -28,16 +28,18 @@
 
 
 #include "DBusConfiguration.h"
+#include "SocketHandler.h"
 #include <dbus/dbus.h>
 #include <string>
 #include <list>
 
+namespace am {
 /**
  * This wraps dbus and provides everything needed to anyone who wants to use dbus (including plugins)
  */
 class DBusWrapper {
 public:
-	DBusWrapper();
+	DBusWrapper(SocketHandler* socketHandler);
 	virtual ~DBusWrapper();
 
 	/**
@@ -60,13 +62,44 @@ public:
 	 */
 	void dbusMainLoop();
 
+	static dbus_bool_t addWatch(DBusWatch *watch, void *userData);
+	static void removeWatch(DBusWatch *watch, void *userData);
+	static void toogleWatch(DBusWatch *watch, void *userData);
+
+	static dbus_bool_t addTimeout(DBusTimeout *timeout,void* userData);
+	static void removeTimeout(DBusTimeout *timeout, void* userData);
+	static void toggleTimeout(DBusTimeout *timeout, void* userData);
+
+	bool dbusDispatchCallback(const sh_pollHandle_t handle, void* userData);
+	shPollDispatch_T<DBusWrapper> pDbusDispatchCallback;
+
+	bool dbusCheckCallback(const sh_pollHandle_t handle, void* userData);
+	shPollCheck_T<DBusWrapper> pDbusCheckCallback;
+
+	void dbusFireCallback(const pollfd pollfd,const sh_pollHandle_t handle, void* userData);
+	shPollFired_T<DBusWrapper> pDbusFireCallback;
+
+	void dbusTimerCallback(sh_timerHandle_t handle, void* userData);
+	TSpecificTimerCallback<DBusWrapper> pDbusTimerCallback;
+
 private:
     static DBusWrapper* mReference;
 	static DBusHandlerResult cbRootIntrospection(DBusConnection *conn, DBusMessage *msg, void *reference);
+	dbus_bool_t addWatchDelegate(DBusWatch * watch,void* userData);
+	void removeWatchDelegate(DBusWatch *watch, void *userData);
+	void toogleWatchDelegate(DBusWatch *watch, void *userData);
+	dbus_bool_t addTimeoutDelegate(DBusTimeout *timeout,void* userData);
+	void removeTimeoutDelegate(DBusTimeout *timeout, void* userData);
+	void toggleTimeoutDelegate(DBusTimeout *timeout, void* userData);
 	DBusObjectPathVTable mObjectPathVTable;
     DBusConnection* mDbusConnection;
     DBusError mDBusError;
     std::list<std::string> mNodesList;
+    std::vector<sh_timerHandle_t*> mListTimerhandlePointer;
+    SocketHandler *mSocketHandler;
+    std::map<DBusWatch*,sh_pollHandle_t> mMapHandleWatch;
 };
+
+}
 
 #endif /* DBUSWRAPPER_H_ */

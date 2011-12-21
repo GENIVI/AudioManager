@@ -34,6 +34,7 @@
 //todo: check the startup sequence. Dbus shall be activated last...
 //todo: there is a bug in the visible flags of sinks and sources. fix it.
 //todo: check namespace handling. no use.. in headers
+//todo: make sure that iterators have a fixed end to prevent crashed while adding vectors while iterating on critical vectors
 
 #include "DatabaseHandler.h"
 #include "DatabaseObserver.h"
@@ -44,6 +45,7 @@
 #include "CommandSender.h"
 #include "RoutingSender.h"
 #include "DBusWrapper.h"
+#include "SocketHandler.h"
 
 #include <dbus/dbus.h>
 #include <dlt/dlt.h>
@@ -70,7 +72,8 @@ int main(int argc, char *argv[])
 
 	//Instantiate all classes. Keep in same order !
 	DatabaseHandler iDatabaseHandler(std::string(":memory:"));
-	DBusWrapper iDBusWrapper;
+	SocketHandler iSocketHandler;
+	DBusWrapper iDBusWrapper(&iSocketHandler);
 	RoutingSender iRoutingSender(listRoutingPluginDirs);
 	CommandSender iCommandSender(listCommandPluginDirs);
 	ControlSender iControlSender(std::string(CONTROLLER_PLUGIN));
@@ -86,8 +89,8 @@ int main(int argc, char *argv[])
 	iCommandSender.startupInterface(&iCommandReceiver);
 	iRoutingSender.startupRoutingInterface(&iRoutingReceiver);
 
-
-	iDBusWrapper.dbusMainLoop();
+	iSocketHandler.start_listenting();
+	//iDBusWrapper.dbusMainLoop();
 
 }
 

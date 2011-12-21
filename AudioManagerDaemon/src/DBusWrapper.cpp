@@ -3,7 +3,7 @@
 *
 * GeniviAudioMananger AudioManagerDaemon
 *
-* \file DBusWrapper.cpp
+* \file SocketHandler.cpp
 *
 * \date 20-Oct-2011 3:42:04 PM
 * \author Christian Mueller (christian.ei.mueller@bmw.de)
@@ -23,13 +23,19 @@
 */
 
 #include "DBusWrapper.h"
+#include "SocketHandler.h"
 #include <fstream>
 #include <sstream>
 #include <string>
 #include <dlt/dlt.h>
+#include <assert.h>
+
+
+#include <iostream> //remove !
+
+using namespace am;
 
 DLT_IMPORT_CONTEXT(DLT_CONTEXT)
-
 
 #define ROOT_INTROSPECT_XML												\
 DBUS_INTROSPECT_1_0_XML_DOCTYPE_DECL_NODE								\
@@ -43,11 +49,19 @@ DBUS_INTROSPECT_1_0_XML_DOCTYPE_DECL_NODE								\
 DBusWrapper* DBusWrapper::mReference = NULL;
 
 
-DBusWrapper::DBusWrapper()
-	: mDbusConnection(0),
+DBusWrapper::DBusWrapper(SocketHandler* socketHandler)
+	: pDbusDispatchCallback(this,&DBusWrapper::dbusDispatchCallback),
+	  pDbusFireCallback(this,&DBusWrapper::dbusFireCallback),
+	  pDbusCheckCallback(this,&DBusWrapper::dbusCheckCallback),
+	  pDbusTimerCallback(this,&DBusWrapper::dbusTimerCallback),
+	  mDbusConnection(0),
 	  mDBusError(),
-	  mNodesList()
+	  mNodesList(),
+	  mListTimerhandlePointer(),
+	  mSocketHandler(socketHandler)
 {
+	assert(mSocketHandler!=0);
+	//ok, first lets get the connection
     dbus_error_init(&mDBusError);
 
     DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("DBusWrapper::DBusWrapper Opening DBus connection"));
@@ -63,6 +77,19 @@ DBusWrapper::DBusWrapper()
     	DLT_LOG(DLT_CONTEXT,DLT_LOG_ERROR, DLT_STRING("DBusWrapper::DBusWrapper DBus Connection is null"));
     }
 
+    //then we need to adopt the dbus to our mainloop:
+    //first, we are old enought to live longer then the connection:
+    dbus_connection_set_exit_on_disconnect(mDbusConnection, FALSE);
+
+    //we do not need the manual dispatching, since it is not allowed to call from a different thread. So leave it uncommented:
+    //dbus_connection_set_dispatch_status_function
+
+    //add watch functions:
+    dbus_bool_t ok=dbus_connection_set_watch_functions(mDbusConnection, addWatch, removeWatch, toogleWatch , this, NULL);
+
+    //add timer functions:
+    dbus_bool_t ok2=dbus_connection_set_timeout_functions(mDbusConnection, addTimeout, removeTimeout, toggleTimeout, this, NULL);
+
 	mObjectPathVTable.message_function=DBusWrapper::cbRootIntrospection;
 	dbus_connection_register_object_path(mDbusConnection,DBUS_SERVICE_OBJECT_PATH , &mObjectPathVTable, this);
 	int ret = dbus_bus_request_name(mDbusConnection,DBUS_SERVICE_PREFIX,DBUS_NAME_FLAG_DO_NOT_QUEUE, &mDBusError);
@@ -75,6 +102,15 @@ DBusWrapper::DBusWrapper()
     {
     	DLT_LOG(DLT_CONTEXT,DLT_LOG_ERROR, DLT_STRING("DBusWrapper::DBusWrapper Wrapper is not the Primary Owner"), DLT_INT(ret));
     }
+//    dbus_connection_ref(mDbusConnection);
+//    DBusDispatchStatus dstatus;
+//    do
+//	{
+//    	dstatus=dbus_connection_dispatch(mDbusConnection);
+//    	std::cout<<"status"<<dstatus<<std::endl;
+//	}
+//    while (dstatus!=DBUS_DISPATCH_COMPLETE);
+//    dbus_connection_unref(mDbusConnection);
 }
 
 DBusWrapper::~DBusWrapper()
@@ -82,6 +118,13 @@ DBusWrapper::~DBusWrapper()
 	//close the connection again
 	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("DBusWrapper::~DBusWrapper Closing DBus connection"));
 	dbus_connection_unref(mDbusConnection);
+
+	//clean up all timerhandles we created but did not delete before
+	std::vector<sh_timerHandle_t*>::iterator it=mListTimerhandlePointer.begin();
+	for(;it!=mListTimerhandlePointer.end();++it)
+	{
+		delete *it;
+	}
 }
 
 void DBusWrapper::registerCallback(const DBusObjectPathVTable* vtable, const std::string& path, void* userdata)
@@ -164,9 +207,214 @@ void DBusWrapper::getDBusConnection(DBusConnection *& connection) const
 	connection=mDbusConnection;
 }
 
+dbus_bool_t DBusWrapper::addWatch(DBusWatch *watch, void *userData)
+{
+	mReference=(DBusWrapper*)userData;
+	assert(mReference!=0);
+	return mReference->addWatchDelegate(watch,userData);
+}
 
+dbus_bool_t DBusWrapper::addWatchDelegate(DBusWatch * watch, void* userData)
+{
+	short event=0;
+	uint flags=dbus_watch_get_flags(watch);
+    /* no watch flags for disabled watches */
+    if (dbus_watch_get_enabled(watch))
+    {
+        if (flags & DBUS_WATCH_READABLE) event |= POLLIN;
+        if (flags & DBUS_WATCH_WRITABLE) event |= POLLOUT;
+    }
 
+    sh_pollHandle_t handle=0;
+    am_Error_e error=mSocketHandler->addFDPoll(dbus_watch_get_unix_fd(watch),event,NULL,&pDbusFireCallback,&pDbusCheckCallback,&pDbusDispatchCallback,watch,handle);
 
+	//if everything is alright, add the watch and the handle to our map so we know this relationship
+	if (error==E_OK && handle!=0)
+	{
+		mMapHandleWatch.insert(std::make_pair(watch,handle));
+		return true;
+	}
+	return false;
+}
+
+void DBusWrapper::removeWatch(DBusWatch *watch, void *userData)
+{
+	mReference=(DBusWrapper*)userData;
+	assert(mReference!=0);
+	mReference->removeWatchDelegate(watch,userData);
+}
+
+void DBusWrapper::removeWatchDelegate(DBusWatch *watch, void *userData)
+{
+	std::map<DBusWatch*,sh_pollHandle_t>::iterator iterator=mMapHandleWatch.begin();
+	iterator=mMapHandleWatch.find(watch);
+	if (iterator!=mMapHandleWatch.end()) mSocketHandler->removeFDPoll(iterator->second);
+	mMapHandleWatch.erase(iterator);
+}
+
+void DBusWrapper::toogleWatch(DBusWatch *watch, void *userData)
+{
+	mReference=(DBusWrapper*)userData;
+	assert(mReference!=0);
+	mReference->toogleWatchDelegate(watch,userData);
+}
+
+void DBusWrapper::toogleWatchDelegate(DBusWatch *watch, void *userData)
+{
+	short event=0;
+	int watchFD=dbus_watch_get_unix_fd(watch);
+	uint flags=dbus_watch_get_flags(watch);
+	/* no watch flags for disabled watches */
+	if (dbus_watch_get_enabled(watch))
+	{
+		if (flags & DBUS_WATCH_READABLE) event |= POLLIN;
+		if (flags & DBUS_WATCH_WRITABLE) event |= POLLOUT;
+	}
+	std::map<DBusWatch*,sh_pollHandle_t>::iterator iterator=mMapHandleWatch.begin();
+	iterator=mMapHandleWatch.find(watch);
+	if (iterator!=mMapHandleWatch.end()) mSocketHandler->updateEventFlags(iterator->second,event);
+}
+
+dbus_bool_t DBusWrapper::addTimeout(DBusTimeout *timeout, void* userData)
+{
+	mReference=(DBusWrapper*)userData;
+	assert(mReference!=0);
+	return mReference->addTimeoutDelegate(timeout,userData);
+}
+
+dbus_bool_t DBusWrapper::addTimeoutDelegate(DBusTimeout *timeout,void* userData)
+{
+    if (!dbus_timeout_get_enabled(timeout)) return false;
+
+    //calculate the timeout in timeval
+    timespec pollTimeout;
+    int localTimeout=dbus_timeout_get_interval(timeout);
+    pollTimeout.tv_sec=localTimeout/1000;
+    pollTimeout.tv_nsec=(localTimeout%1000)*1000000;
+
+    //prepare handle and callback. new is eval, but there is no other choice because we need the pointer!
+    sh_timerHandle_t* handle=new sh_timerHandle_t;
+    mListTimerhandlePointer.push_back(handle);
+    TBasicTimerCallback* buffer=&pDbusTimerCallback;
+
+    //add the timer to the pollLoop
+    mSocketHandler->addTimer(pollTimeout,buffer,*handle,timeout);
+
+    //save the handle with dbus context
+    dbus_timeout_set_data(timeout, handle, NULL);
+
+    //save timeout in Socket context
+    userData=timeout;
+    return true;
+}
+
+void DBusWrapper::removeTimeout(DBusTimeout *timeout, void* userData)
+{
+	mReference=(DBusWrapper*)userData;
+	assert(mReference!=0);
+	mReference->removeTimeoutDelegate(timeout,userData);
+}
+
+void DBusWrapper::removeTimeoutDelegate(DBusTimeout *timeout, void* userData)
+{
+	//get the pointer to the handle and remove the timer
+	sh_timerHandle_t* handle=(sh_timerHandle_t*)dbus_timeout_get_data(timeout);
+	mSocketHandler->removeTimer(*handle);
+
+	//now go throught the timerlist and remove the pointer, free memory
+	std::vector<sh_timerHandle_t*>::iterator it=mListTimerhandlePointer.begin();
+	for(;it!=mListTimerhandlePointer.end();++it)
+	{
+		if (*it==handle)
+		{
+			mListTimerhandlePointer.erase(it);
+			break;
+		}
+	}
+	delete handle;
+}
+
+void DBusWrapper::toggleTimeout(DBusTimeout *timeout, void* userData)
+{
+	mReference=(DBusWrapper*)userData;
+	assert(mReference!=0);
+	mReference->toggleTimeoutDelegate(timeout,userData);
+}
+
+bool am::DBusWrapper::dbusDispatchCallback(const sh_pollHandle_t handle, void *userData)
+{
+    bool returnVal=false;
+	dbus_connection_ref(mDbusConnection);
+	if (dbus_connection_dispatch(mDbusConnection)==DBUS_DISPATCH_COMPLETE) returnVal=true;
+    dbus_connection_unref(mDbusConnection);
+    return returnVal;
+}
+
+bool am::DBusWrapper::dbusCheckCallback(const sh_pollHandle_t handle, void *userData)
+{
+    bool returnVal=false;
+	dbus_connection_ref(mDbusConnection);
+	if (dbus_connection_get_dispatch_status(mDbusConnection) == DBUS_DISPATCH_DATA_REMAINS) returnVal=true;
+    dbus_connection_unref(mDbusConnection);
+    return returnVal;
+}
+
+void am::DBusWrapper::dbusFireCallback(const pollfd pollfd, const sh_pollHandle_t handle, void *userData)
+{
+	assert(userData!=NULL);
+	uint flags=0;
+
+	if (!dbus_watch_get_enabled((DBusWatch*)userData))
+	{
+		std::cout<<"sdfsdf"<<std::endl;
+	}
+
+	if (pollfd.revents & POLLIN) 	flags |= DBUS_WATCH_READABLE;
+	if (pollfd.revents & POLLOUT)   flags |= DBUS_WATCH_WRITABLE;
+	if (pollfd.revents & POLLHUP)   flags |= DBUS_WATCH_HANGUP;
+	if (pollfd.revents & POLLERR)   flags |= DBUS_WATCH_ERROR;
+
+//    std::cout<<fd<<" "<<revent<<std::endl;
+	DBusWatch *watch=(DBusWatch*)userData;
+
+	dbus_connection_ref(mDbusConnection);
+	bool ok=dbus_watch_handle(watch, flags);
+	dbus_connection_unref(mDbusConnection);
+}
+
+void DBusWrapper::toggleTimeoutDelegate(DBusTimeout *timeout, void* userData)
+{
+	//get the pointer to the handle and remove the timer
+	sh_timerHandle_t* handle=(sh_timerHandle_t*)dbus_timeout_get_data(timeout);
+
+	//stop or restart?
+	if (dbus_timeout_get_enabled(timeout))
+	{
+		//calculate the timeout in timeval
+	    timespec pollTimeout;
+	    int localTimeout=dbus_timeout_get_interval(timeout);
+	    pollTimeout.tv_sec=localTimeout/1000;
+	    pollTimeout.tv_nsec=(localTimeout%1000)*1000000;
+		mSocketHandler->restartTimer(*handle,pollTimeout);
+	}
+	else
+	{
+		mSocketHandler->stopTimer(*handle);
+	}
+}
+
+void DBusWrapper::dbusTimerCallback(sh_timerHandle_t handle, void *userData)
+{
+	assert(userData!=NULL);
+	if (dbus_timeout_get_enabled((DBusTimeout*)userData))
+	{
+		timespec ts;
+		ts.tv_nsec=-1;
+		ts.tv_sec=-1;
+		mSocketHandler->restartTimer(handle,ts);
+	}
+	dbus_timeout_handle((DBusTimeout*)userData);
+}
 
 
 

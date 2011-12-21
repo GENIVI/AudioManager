@@ -25,7 +25,7 @@ sockethandlerTest::~sockethandlerTest()
 {
 }
 
-void fdCallBack::connectSocket(int fd, const short  events)
+void fdCallBack::connectSocket(int fd, const short  events,void * userData)
 {
 	std::cout<<"Socket connection received and open"<<std::endl;
 
@@ -34,9 +34,9 @@ void fdCallBack::connectSocket(int fd, const short  events)
 	short event = 0;
 	event |=POLLIN;
 
-	TBasicPollCallback* buf=&pSocketDataCallback;
+	shPollCallBack* buf=&pSocketDataCallback;
 	//add new socketConnection to the handler
-	mSocketHandler->addFDPoll(mSocketConnection,event,buf);
+	mSocketHandler->addFDPoll(mSocketConnection,event,buf,NULL);
 }
 
 
@@ -52,7 +52,7 @@ fdCallBack::fdCallBack(SocketHandler *SocketHandler)
 
 
 
-void am::fdCallBack::handleSocketData(int fd, const short  events)
+void am::fdCallBack::handleSocketData(int fd, const short  events, void* userdata)
 {
 	char buffer[3000];
 	std::string msg;
@@ -93,36 +93,36 @@ am::timerCallBack::~timerCallBack()
 
 
 
-void am::timerCallBack::timer1Callback(SocketHandler::timerHandle_t handle)
+void am::timerCallBack::timer1Callback(SocketHandler::sh_timerHandle_t handle, void* userData)
 {
 	std::cout<<"callback1 called"<<std::endl;
 	timespec timeout;
 	timeout.tv_nsec=0;
 	timeout.tv_sec=1;
 	TBasicTimerCallback *buf=&pTimer1Callback;
-	SocketHandler::timerHandle_t handle_;
-	mSocketHandler->addTimer(timeout,buf,handle_);
+	SocketHandler::sh_timerHandle_t handle_;
+	mSocketHandler->addTimer(timeout,buf,handle_,NULL);
 }
 
 
 
-void am::timerCallBack::timer2Callback(SocketHandler::timerHandle_t handle)
+void am::timerCallBack::timer2Callback(SocketHandler::sh_timerHandle_t handle, void* userData)
 {
 	std::cout<<"callback2 called"<<std::endl;
 	timespec timeout;
 	timeout.tv_nsec=0;
 	timeout.tv_sec=1;
 	TBasicTimerCallback *buf=&pTimer2Callback;
-	SocketHandler::timerHandle_t handle_;
-	mSocketHandler->addTimer(timeout,buf,handle_);
+	SocketHandler::sh_timerHandle_t handle_;
+	mSocketHandler->addTimer(timeout,buf,handle_,NULL);
 }
 
-void am::timerCallBack::timer3Callback(SocketHandler::timerHandle_t handle)
+void am::timerCallBack::timer3Callback(SocketHandler::sh_timerHandle_t handle, void* userData)
 {
 	std::cout<<"callback3 called"<<std::endl;
 }
 
-void am::timerCallBack::timer4Callback(SocketHandler::timerHandle_t handle)
+void am::timerCallBack::timer4Callback(SocketHandler::sh_timerHandle_t handle, void* userData)
 {
 	std::cout<<"callback4 called"<<std::endl;
 }
@@ -151,9 +151,9 @@ void* playWithSocketServer(void* data)
 	short event = 0;
 	event |=POLLIN;
 
-	TBasicPollCallback* buf=&testCallback.pSocketConnectionCallback;
+	shPollCallBack* buf=&testCallback.pSocketConnectionCallback;
 	//add the callback to the Sockethandler
-	myHandler.addFDPoll(socketHandle, event, buf);
+	myHandler.addFDPoll(socketHandle, event, buf, NULL);
 
 	//start the mainloop
 	myHandler.start_listenting();
@@ -216,11 +216,11 @@ TEST(sockethandlerTest,playWithTimers)
 	TBasicTimerCallback* buf2=&testCallback.pTimer2Callback;
 	TBasicTimerCallback* buf3=&testCallback.pTimer3Callback;
 	TBasicTimerCallback* buf4=&testCallback.pTimer4Callback;
-	SocketHandler::timerHandle_t handle;
-	myHandler.addTimer(timeoutTime,buf,handle);
-	myHandler.addTimer(timeout2,buf2,handle);
-	myHandler.addTimer(timeout3,buf3,handle);
-	myHandler.addTimer(timeout4,buf4,handle);
+	SocketHandler::sh_timerHandle_t handle;
+	myHandler.addTimer(timeoutTime,buf,handle,NULL);
+	myHandler.addTimer(timeout2,buf2,handle,NULL);
+	myHandler.addTimer(timeout3,buf3,handle,NULL);
+	myHandler.addTimer(timeout4,buf4,handle,NULL);
 	myHandler.start_listenting();
 
 }
