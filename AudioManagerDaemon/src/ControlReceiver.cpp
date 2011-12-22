@@ -22,6 +22,7 @@
 *
 */
 
+#include <config.h>
 #include "ControlReceiver.h"
 #include <assert.h>
 #include <dlt/dlt.h>
@@ -30,15 +31,28 @@ DLT_IMPORT_CONTEXT(DLT_CONTEXT)
 
 using namespace am;
 
+ControlReceiver::ControlReceiver(DatabaseHandler *iDatabaseHandler, RoutingSender *iRoutingSender, CommandSender *iCommandSender, SocketHandler *iSocketHandler)
+	: mDatabaseHandler(iDatabaseHandler),
+	  mRoutingSender(iRoutingSender),
+	  mCommandSender(iCommandSender),
+	  mSocketHandler(iSocketHandler)
+{
+	assert(mDatabaseHandler!=NULL);
+	assert(mRoutingSender!=NULL);
+	assert(mCommandSender!=NULL);
+	assert(mSocketHandler!=NULL);
+}
+
 ControlReceiver::ControlReceiver(DatabaseHandler *iDatabaseHandler, RoutingSender *iRoutingSender, CommandSender *iCommandSender)
 	: mDatabaseHandler(iDatabaseHandler),
 	  mRoutingSender(iRoutingSender),
 	  mCommandSender(iCommandSender)
 {
-	assert(mDatabaseHandler!=NULL);
-	assert(mRoutingSender!=NULL);
-	assert(mCommandSender!=NULL);
+assert(mDatabaseHandler!=NULL);
+assert(mRoutingSender!=NULL);
+assert(mCommandSender!=NULL);
 }
+
 
 ControlReceiver::~ControlReceiver()
 {
@@ -502,6 +516,18 @@ void ControlReceiver::setRoutingReady()
 	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("ControlReceiver::setRoutingReady got called"));
 	mRoutingSender->routingInterfacesReady();
 }
+
+am_Error_e am::ControlReceiver::getSocketHandler(SocketHandler *& socketHandler)
+{
+#ifdef WITH_SOCKETHANDLER_LOOP
+	socketHandler=mSocketHandler;
+	return E_OK;
+#else
+	return E_UNKNOWN;
+#endif
+}
+
+
 
 
 

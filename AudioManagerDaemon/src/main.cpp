@@ -35,7 +35,13 @@
 //todo: there is a bug in the visible flags of sinks and sources. fix it.
 //todo: check namespace handling. no use.. in headers
 //todo: make sure that iterators have a fixed end to prevent crashed while adding vectors while iterating on critical vectors
+//todo: make sure all configurations are tested
 
+#include <config.h>
+#include <SocketHandler.h>
+#ifdef WITH_DBUS_WRAPPER
+#include <dbus/DBusWrapper.h>
+#endif
 #include "DatabaseHandler.h"
 #include "DatabaseObserver.h"
 #include "RoutingReceiver.h"
@@ -44,19 +50,12 @@
 #include "ControlSender.h"
 #include "CommandSender.h"
 #include "RoutingSender.h"
-#include "DBusWrapper.h"
-#include "SocketHandler.h"
 
-#include <dbus/dbus.h>
 #include <dlt/dlt.h>
 
 DLT_DECLARE_CONTEXT(DLT_CONTEXT)
 
 using namespace am;
-
-#define DEFAULT_PLUGIN_COMMAND_DIR "/home/christian/workspace/gitserver/build/plugins/command"
-#define DEFAULT_PLUGIN_ROUTING_DIR "/home/christian/workspace/gitserver/build/plugins/routing"
-#define CONTROLLER_PLUGIN "/home/christian/workspace/gitserver/build/plugins/control/libPluginControlInterface.so"
 
 int main(int argc, char *argv[])
 {
@@ -71,16 +70,39 @@ int main(int argc, char *argv[])
 	listRoutingPluginDirs.push_back(std::string(DEFAULT_PLUGIN_ROUTING_DIR)); //change this to be modified by the commandline!
 
 	//Instantiate all classes. Keep in same order !
-	DatabaseHandler iDatabaseHandler(std::string(":memory:"));
+#ifdef WITH_SOCKETHANDLER_LOOP
 	SocketHandler iSocketHandler;
+#endif
+
+#ifdef WITH_DBUS_WRAPPER
+#ifdef WITH_SOCKETHANDLER_LOOP
 	DBusWrapper iDBusWrapper(&iSocketHandler);
+#else /*WITH_SOCKETHANDLER_LOOP*/
+	DBusWrapper iDBusWrapper;
+#endif /*WITH_SOCKETHANDLER_LOOP*/
+#endif /*WITH_DBUS_WRAPPER */
+
+	DatabaseHandler iDatabaseHandler(std::string(":memory:"));
 	RoutingSender iRoutingSender(listRoutingPluginDirs);
 	CommandSender iCommandSender(listCommandPluginDirs);
 	ControlSender iControlSender(std::string(CONTROLLER_PLUGIN));
 	DatabaseObserver iObserver(&iCommandSender, &iRoutingSender);
-	CommandReceiver iCommandReceiver(&iDatabaseHandler,&iDBusWrapper,&iControlSender);
-	RoutingReceiver iRoutingReceiver(&iDatabaseHandler,&iRoutingSender,&iControlSender);
+
+#ifdef WITH_DBUS_WRAPPER
+#ifdef WITH_SOCKETHANDLER_LOOP
+	CommandReceiver iCommandReceiver(&iDatabaseHandler,&iControlSender,&iSocketHandler,&iDBusWrapper);
+	RoutingReceiver iRoutingReceiver(&iDatabaseHandler,&iRoutingSender,&iControlSender,&iSocketHandler,&iDBusWrapper);
+	ControlReceiver iControlReceiver(&iDatabaseHandler,&iRoutingSender,&iCommandSender,&iSocketHandler);
+#else /*WITH_SOCKETHANDLER_LOOP */
+	CommandReceiver iCommandReceiver(&iDatabaseHandler,&iControlSender,&iDBusWrapper);
+	RoutingReceiver iRoutingReceiver(&iDatabaseHandler,&iRoutingSender,&iControlSender,&iDBusWrapper);
 	ControlReceiver iControlReceiver(&iDatabaseHandler,&iRoutingSender,&iCommandSender);
+#endif /*WITH_SOCKETHANDLER_LOOP*/
+#else /*WITH_DBUS_WRAPPER*/
+	CommandReceiver iCommandReceiver(&iDatabaseHandler,&iControlSender,&iSocketHandler);
+	RoutingReceiver iRoutingReceiver(&iDatabaseHandler,&iRoutingSender,&iControlSender,&iSocketHandler);
+	ControlReceiver iControlReceiver(&iDatabaseHandler,&iRoutingSender,&iCommandSender,&iSocketHandler);
+#endif /*WITH_DBUS_WRAPPER*/
 
 	//since the plugins have been loaded by the *Senders before, we can tell the Controller this:
 	iControlSender.hookAllPluginsLoaded();
@@ -89,8 +111,15 @@ int main(int argc, char *argv[])
 	iCommandSender.startupInterface(&iCommandReceiver);
 	iRoutingSender.startupRoutingInterface(&iRoutingReceiver);
 
+#ifdef WITH_SOCKETHANDLER_LOOP
 	iSocketHandler.start_listenting();
-	//iDBusWrapper.dbusMainLoop();
+#endif /*WITH_SOCKETHANDLER_LOOP*/
+
+#ifdef WITH_DBUS_WRAPPER
+#ifdef WITH_SIMPLEDBUS_LOOP
+	iDBusWrapper.dbusMainLoop();
+#endif/*WITH_SIMPLEDBUS_LOOP*/
+#endif /*WITH_DBUS_WRAPPER*/
 
 }
 

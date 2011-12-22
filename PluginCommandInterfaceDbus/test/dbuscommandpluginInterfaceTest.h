@@ -39,8 +39,6 @@
 #include "MockInterfaces.h"
 #include "DbusCommandInterfaceBackdoor.h"
 
-
-#define DEFAULT_PLUGIN_COMMAND_DIR "/home/christian/workspace/gitserver/build/plugins/command"
 #define UNIT_TEST 1
 
 namespace am {

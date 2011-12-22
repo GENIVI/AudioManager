@@ -42,7 +42,7 @@ class shPollPrepare;
 class shPollCheck;
 class shPollFired;
 class shPollDispatch;
-class TBasicTimerCallback;
+class shTimerCallBack;
 
 class SocketHandler
 {
@@ -53,7 +53,7 @@ public:
 	am_Error_e addFDPoll(const int fd,const short event, shPollPrepare *prepare,shPollFired *fired,shPollCheck *check,shPollDispatch *dispatch, void* userData,sh_pollHandle_t& handle);
 	am_Error_e removeFDPoll(const sh_pollHandle_t handle);
 	am_Error_e updateEventFlags(const sh_pollHandle_t handle, const short events);
-	am_Error_e addTimer(const timespec timeouts,TBasicTimerCallback*& callback,sh_timerHandle_t& handle, void* userData);
+	am_Error_e addTimer(const timespec timeouts,shTimerCallBack*& callback,sh_timerHandle_t& handle, void* userData);
 	am_Error_e removeTimer(const sh_timerHandle_t handle);
 	am_Error_e restartTimer(const sh_timerHandle_t handle, const timespec timeouts);
 	am_Error_e stopTimer(const sh_timerHandle_t handle);
@@ -66,7 +66,7 @@ private:
 		sh_timerHandle_t handle;		//!<the handle of the timer
 		timespec countdown;				//!<the countdown, this value is decreased every time the timer is up
 		timespec timeout;				//!<the original timer value
-		TBasicTimerCallback* callback;	//!<the callbackfunction
+		shTimerCallBack* callback;	//!<the callbackfunction
 		void * userData;				//!<saves a void pointer together with the rest.
 	};
 
@@ -132,11 +132,11 @@ private:
 /**
  * classic functor for the BasicTimerCallback
  */
-class TBasicTimerCallback
+class shTimerCallBack
 {
 public:
 	virtual void Call (const sh_timerHandle_t handle, void* userData)=0;
-	virtual ~TBasicTimerCallback(){};
+	virtual ~shTimerCallBack(){};
 };
 
 class shPollPrepare
@@ -170,14 +170,14 @@ public:
 /**
  * template to create the functor for a class
  */
-template <class TClass> class TSpecificTimerCallback : public TBasicTimerCallback
+template <class TClass> class shTimerCallBack_T : public shTimerCallBack
 {
 private:
 	TClass* mInstance;
 	void (TClass::*mFunction)(sh_timerHandle_t handle, void* userData);
 
 public:
-	TSpecificTimerCallback(TClass* instance, void(TClass::*function)(sh_timerHandle_t handle, void* userData))
+	shTimerCallBack_T(TClass* instance, void(TClass::*function)(sh_timerHandle_t handle, void* userData))
 	:mInstance(instance), mFunction(function){};
 
 	virtual void Call(sh_timerHandle_t handle, void* userData)

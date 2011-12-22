@@ -35,7 +35,7 @@
 #include <string>
 #include <list>
 
-namespace am {
+namespace am{
 
 
 /**

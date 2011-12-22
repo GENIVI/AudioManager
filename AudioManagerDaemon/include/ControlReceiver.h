@@ -26,6 +26,11 @@
 #define CONTRONLRECEIVER_H_
 
 #include <control/ControlReceiveInterface.h>
+#include <SocketHandler.h>
+#include <config.h>
+#ifdef WITH_DBUS_WRAPPER
+#include <dbus/DBusWrapper.h>
+#endif
 #include "DatabaseHandler.h"
 #include "RoutingSender.h"
 #include "CommandSender.h"
@@ -37,6 +42,7 @@ namespace am {
  */
 class ControlReceiver: public ControlReceiveInterface {
 public:
+	ControlReceiver(DatabaseHandler *iDatabaseHandler, RoutingSender *iRoutingSender, CommandSender *iCommandSender, SocketHandler *iSocketHandler);
 	ControlReceiver(DatabaseHandler *iDatabaseHandler, RoutingSender *iRoutingSender, CommandSender *iCommandSender);
 	virtual ~ControlReceiver();
 	am_Error_e getRoute(const bool onlyfree, const am_sourceID_t sourceID, const am_sinkID_t sinkID, std::vector<am_Route_s>& returnList) ;
@@ -100,11 +106,13 @@ public:
 	am_Error_e getListSystemProperties(std::vector<am_SystemProperty_s>& listSystemProperties) const ;
 	void setRoutingReady() ;
 	void setCommandReady() ;
+	am_Error_e getSocketHandler(SocketHandler*& socketHandler);
 
 private:
 	DatabaseHandler* mDatabaseHandler; //!< pointer tto the databasehandler
 	RoutingSender* mRoutingSender; //!< pointer to the routing send interface.
 	CommandSender* mCommandSender; //!< pointer to the command send interface
+	SocketHandler* mSocketHandler; //!< pointer to the socketHandler
 };
 
 }

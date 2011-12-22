@@ -23,7 +23,8 @@
 */
 
 #include "CommandReceiver.h"
-
+#include <SocketHandler.h>
+#include <config.h>
 #include <assert.h>
 #include <dlt/dlt.h>
 
@@ -31,14 +32,36 @@ DLT_IMPORT_CONTEXT(DLT_CONTEXT)
 
 using namespace am;
 
-CommandReceiver::CommandReceiver (DatabaseHandler* iDatabaseHandler, DBusWrapper* iDBusWrapper, ControlSender* iControlSender)
-	: mDatabaseHandler(iDatabaseHandler),
-	  mDBusWrapper(iDBusWrapper),
-	  mControlSender(iControlSender)
+am::CommandReceiver::CommandReceiver(DatabaseHandler *iDatabaseHandler, ControlSender *iControlSender, DBusWrapper *iDBusWrapper)
+: mDatabaseHandler(iDatabaseHandler),
+  mControlSender(iControlSender),
+  mDBusWrapper(iDBusWrapper)
 {
-	assert(mDatabaseHandler!=NULL);
-	assert(mDBusWrapper!=NULL);
-	assert(mControlSender!=NULL);
+assert(mDatabaseHandler!=NULL);
+assert(mDBusWrapper!=NULL);
+assert(mControlSender!=NULL);
+}
+
+am::CommandReceiver::CommandReceiver(DatabaseHandler *iDatabaseHandler, ControlSender *iControlSender, SocketHandler *iSocketHandler)
+: mDatabaseHandler(iDatabaseHandler),
+  mControlSender(iControlSender),
+  mSocketHandler(iSocketHandler)
+{
+assert(mDatabaseHandler!=NULL);
+assert(mSocketHandler!=NULL);
+assert(mControlSender!=NULL);
+}
+
+am::CommandReceiver::CommandReceiver(DatabaseHandler *iDatabaseHandler, ControlSender *iControlSender, SocketHandler *iSocketHandler, DBusWrapper *iDBusWrapper)
+: mDatabaseHandler(iDatabaseHandler),
+  mControlSender(iControlSender),
+  mDBusWrapper(iDBusWrapper),
+  mSocketHandler(iSocketHandler)
+{
+assert(mDatabaseHandler!=NULL);
+assert(mSocketHandler!=NULL);
+assert(mControlSender!=NULL);
+assert(mDBusWrapper!=NULL);
 }
 
 CommandReceiver::~CommandReceiver()
@@ -171,13 +194,27 @@ am_Error_e CommandReceiver::getTimingInformation(const am_mainConnectionID_t mai
 	return mDatabaseHandler->getTimingInformation(mainConnectionID,delay);
 }
 
-
-
 am_Error_e CommandReceiver::getDBusConnectionWrapper(DBusWrapper*& dbusConnectionWrapper) const
 {
+#ifdef WITH_DBUS_WRAPPER
 	dbusConnectionWrapper=mDBusWrapper;
 	return E_OK;
+#else
+	return E_UNKNOWN;
+#endif /*WITH_DBUS_WRAPPER*/
 }
+
+am_Error_e am::CommandReceiver::getSocketHandler(SocketHandler *& socketHandler) const
+{
+#ifdef WITH_SOCKETHANDLER_LOOP
+	socketHandler=mSocketHandler;
+	return E_OK;
+#else
+	return E_UNKNOWN;
+#endif /*WITH_SOCKETHANDLER_LOOP*/
+}
+
+
 
 
 

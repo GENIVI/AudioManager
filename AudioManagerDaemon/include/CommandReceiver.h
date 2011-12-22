@@ -26,8 +26,12 @@
 #define COMMANDRECEIVER_H_
 
 #include <command/CommandReceiveInterface.h>
+#include <config.h>
+#ifdef WITH_DBUS_WRAPPER
+#include <dbus/DBusWrapper.h>
+#endif
+#include <SocketHandler.h>
 #include "DatabaseHandler.h"
-#include "DBusWrapper.h"
 #include "ControlSender.h"
 
 namespace am {
@@ -37,7 +41,9 @@ namespace am {
  */
 class CommandReceiver: public  CommandReceiveInterface {
 public:
-	CommandReceiver(DatabaseHandler* iDatabaseHandler, DBusWrapper* iDBusWrapper, ControlSender* iControlSender);
+	CommandReceiver(DatabaseHandler* iDatabaseHandler, ControlSender* iControlSender,DBusWrapper* iDBusWrapper);
+	CommandReceiver(DatabaseHandler* iDatabaseHandler, ControlSender* iControlSender,SocketHandler* iSocketHandler);
+	CommandReceiver(DatabaseHandler* iDatabaseHandler, ControlSender* iControlSender,SocketHandler* iSocketHandler,DBusWrapper* iDBusWrapper);
 	virtual ~CommandReceiver();
 	am_Error_e connect(const am_sourceID_t sourceID, const am_sinkID_t sinkID, am_mainConnectionID_t& mainConnectionID) ;
 	am_Error_e disconnect(const am_mainConnectionID_t mainConnectionID) ;
@@ -57,11 +63,13 @@ public:
 	am_Error_e getListSystemProperties(std::vector<am_SystemProperty_s>& listSystemProperties) const ;
 	am_Error_e getTimingInformation(const am_mainConnectionID_t mainConnectionID, am_timeSync_t& delay) const ;
 	am_Error_e getDBusConnectionWrapper(DBusWrapper*& dbusConnectionWrapper) const ;
+	am_Error_e getSocketHandler(SocketHandler*& socketHandler) const;
 
 private:
 	DatabaseHandler* mDatabaseHandler; //!< pointer to the databasehandler
 	DBusWrapper* mDBusWrapper; //!< pointer to the dbuswrapper
 	ControlSender* mControlSender; //!< pointer to the control sender
+	SocketHandler* mSocketHandler; //!< pointer to the SocketHandler
 };
 
 }

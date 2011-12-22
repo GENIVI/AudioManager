@@ -14,69 +14,86 @@ cmake_minimum_required(VERSION 2.6)
 PROJECT(AudioManagerDeamon)
 
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -rdynamic")
-#set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -DDLT_CONTEXT=AudioManager")
 
+set(DOC_OUTPUT_PATH ${DOC_OUTPUT_PATH}/AudioManager)
+set(INCLUDES_FOLDER "include")
 
-##todo only when dbus needed!
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}")
-
-set(STD_INCLUDE_DIRS "/usr/include")
-set(DBUS_FOLDER ${CMAKE_SOURCE_DIR}/../dbusInterfaces)
-set(AUDIO_INCLUDES_FOLDER ${CMAKE_SOURCE_DIR}/../includes)
-set(DBUS_INCLUDES_FOLDER ${CMAKE_SOURCE_DIR}/../dbusIncludes)
-set(INCLUDES_FOLDER ${CMAKE_SOURCE_DIR}/include)
-set(DOC_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/../doc/AudioManager)
-set(EXECUTABLE_OUTPUT_PATH ../../bin/)
-set(DOC_OUTPUT_PATH ../../doc/)
-set(DOCUMENT $ENV{gendoc})
-
-file(MAKE_DIRECTORY ${DOC_OUTPUT_PATH})
-
-FIND_PACKAGE(PkgConfig)
 pkg_check_modules(SQLITE REQUIRED sqlite3)
-pkg_check_modules(DLT REQUIRED automotive-dlt)
 
-##todo: only when dbus is reuqired !
-find_package (Threads)
-FIND_PACKAGE(DBUS REQUIRED)
+IF(WITH_DBUS_WRAPPER)
+    FIND_PACKAGE(DBUS REQUIRED)
+ENDIF(WITH_DBUS_WRAPPER)
 
-file(GLOB AUDIOMAN_SRCS_CXX "src/*.cpp")
+SET(AUDIOMAN_SRCS_CXX
+    src/CommandReceiver.cpp
+    src/CommandSender.cpp
+    src/ControlReceiver.cpp
+    src/ControlSender.cpp
+    src/DatabaseHandler.cpp
+    src/DatabaseObserver.cpp
+    src/main.cpp
+    src/RoutingReceiver.cpp
+    src/RoutingSender.cpp
+    src/SocketHandler.cpp
+)
+
+IF(WITH_DBUS_WRAPPER)
+    SET (AUDIOMAN_SRCS_CXX
+        ${AUDIOMAN_SRCS_CXX}
+        src/DBusWrapper.cpp
+    )
+ENDIF(WITH_DBUS_WRAPPER)
+
+IF(WITH_SOCKETHANDLER_LOOP)
+    SET (AUDIOMAN_SRCS_CXX
+        ${AUDIOMAN_SRCS_CXX}
+        src/SocketHandler.cpp
+     )
+ENDIF(WITH_SOCKETHANDLER_LOOP)
 
 INCLUDE_DIRECTORIES(	
 	${CMAKE_SOURCE_DIR} 
-	${STD_INCLUDE_DIRS}
 	${CMAKE_CURRENT_BINARY_DIR}
 	${DLT_INCLUDE_DIRS}
-	${DBUS_INCLUDE_DIR}
 	${AUDIO_INCLUDES_FOLDER}
 	${INCLUDES_FOLDER}
-	${DBUS_ARCH_INCLUDE_DIR}
-	${DBUS_INCLUDES_FOLDER}
 )
+
+IF(WITH_DBUS_WRAPPER)
+INCLUDE_DIRECTORIES(${INCLUDE_DIRECTORIES}
+    ${DBUS_ARCH_INCLUDE_DIR}
+    ${DBUS_INCLUDE_DIR}
+)
+ENDIF(WITH_DBUS_WRAPPER)
 
 ADD_EXECUTABLE(AudioManager ${AUDIOMAN_SRCS_CXX})
 
-##todo only when dbus is required
+IF(WITH_DBUS_WRAPPER)
 TARGET_LINK_LIBRARIES(AudioManager 
 	${SQLITE_LIBRARIES}
 	${DLT_LIBRARIES}
 	${DBUS_LIBRARY}
-	${CMAKE_THREAD_LIBS_INIT}
 )
+ELSE(WITH_DBUS_WRAPPER)
+    TARGET_LINK_LIBRARIES(AudioManager 
+        ${SQLITE_LIBRARIES}
+        ${DLT_LIBRARIES}
+)
+ENDIF(WITH_DBUS_WRAPPER)
 
-add_subdirectory (test)
+IF(WITH_TESTS)
+	add_subdirectory (test)
+ENDIF(WITH_TESTS)
 
-#add a target to generate API documentation with Doxygen
-find_package(Doxygen)
-if(DOXYGEN_FOUND)
-if(DOCUMENT)
-  	configure_file(Doxyfile.in ${PROJECT_BINARY_DIR}/Doxyfile  @ONLY IMMEDIATE)
+IF(WITH_DOCUMENTATION)
+	file(MAKE_DIRECTORY ${DOC_OUTPUT_PATH})
+	configure_file(${DOXY_FILE}  ${DOC_OUTPUT_PATH}/Doxyfile  @ONLY IMMEDIATE)
   	add_custom_target (Docs ALL 
-  	COMMAND ${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/Doxyfile WORKING_DIRECTORY ${DOC_OUTPUT_PATH}
-  	SOURCES ${PROJECT_BINARY_DIR}/Doxyfile)
-endif(DOCUMENT)
-endif(DOXYGEN_FOUND)
+  		COMMAND ${DOXYGEN_EXECUTABLE} ${DOC_OUTPUT_PATH}/Doxyfile WORKING_DIRECTORY ${DOC_OUTPUT_PATH}
+  		SOURCES ${PROJECT_BINARY_DIR} ${DOC_OUTPUT_PATH}/Doxyfile
+	)
+ENDIF(WITH_DOCUMENTATION)
 
 
 

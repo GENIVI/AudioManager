@@ -33,10 +33,10 @@
 
 #include <command/CommandSendInterface.h>
 #include <dbus/dbus.h>
+#include <dbus/DBusWrapper.h>
 #include <map>
 #include "DBusMessageHandler.h"
 #include "CommandReceiverShadow.h"
-#include "DBusWrapper.h"
 
 namespace am {
 

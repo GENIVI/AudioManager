@@ -26,18 +26,15 @@
 #ifndef COMMANDRECEIVERSHADOW_H_
 #define COMMANDRECEIVERSHADOW_H_
 
+#include <config.h>
 #include <command/CommandReceiveInterface.h>
+#include <dbus/DBusWrapper.h>
 #include <dbus/dbus.h>
 #include <dlt/dlt.h>
 #include <map>
-#include "DBusWrapper.h"
 #include "DBusMessageHandler.h"
 
 namespace am {
-
-
-#define INTROSPECTION_XML_FILE "/home/christian/workspace/gitserver/dbusIncludes/CommandInterface.xml"
-
 
 class CommandReceiverShadow;
 

@@ -25,15 +25,12 @@ cmake_minimum_required(VERSION 2.6)
 
 PROJECT(controlInterfacetest)
 
-#set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -DUNIT_TEST=1 -DDLT_CONTEXT=AudioManager")
 
 set(STD_INCLUDE_DIRS "/usr/include")
-set(EXECUTABLE_OUTPUT_PATH ../../../test/)
-set(AUDIO2_INCLUDES_FOLDER ${CMAKE_SOURCE_DIR}/../../includes)
-set(AUDIO_INCLUDES_FOLDER ${CMAKE_SOURCE_DIR}/../AudioManagerDaemon/include)
-set(DBUS_INCLUDES_FOLDER ${CMAKE_SOURCE_DIR}/../../dbusIncludes)
-set(INCLUDES_FOLDER ${CMAKE_SOURCE_DIR}/../include)
+
+set(EXECUTABLE_OUTPUT_PATH ${TEST_EXECUTABLE_OUTPUT_PATH})
+FIND_PACKAGE(GTest REQUIRED) 
 
 find_package (Threads)
 FIND_PACKAGE(DBUS REQUIRED)
@@ -45,7 +42,6 @@ INCLUDE_DIRECTORIES(
     ${CMAKE_SOURCE_DIR} 
     ${CMAKE_CURRENT_BINARY_DIR}
     ${AUDIO_INCLUDES_FOLDER}
-    ${AUDIO2_INCLUDES_FOLDER}
     ${DBUS_ARCH_INCLUDE_DIR}
     ${DBUS_INCLUDES_FOLDER} 
     ${CMAKE_SOURCE_DIR} 
@@ -53,11 +49,15 @@ INCLUDE_DIRECTORIES(
     ${DBUS_INCLUDE_DIR}
     ${INCLUDES_FOLDER}
     ${PYTHON_INCLUDE_DIRS}
+    ${GTEST_INCLUDE_DIR}
+    "../../AudioManagerDaemon/include"
+    "../include"
 )
    
 file(GLOB DBUS_PLUGIN_INTERFACE_SRCS_CXX 
      "../../AudioManagerDaemon/src/DBusWrapper.cpp"
      "../../AudioManagerDaemon/src/CommandSender.cpp"
+     "../../AudioManagerDaemon/src/SocketHandler.cpp"
      "../src/*.cpp"  
      "dbuscommandpluginInterfaceTest.cpp" 
      "DbusCommanInterfaceBackdoor.cpp"
@@ -66,11 +66,11 @@ file(GLOB DBUS_PLUGIN_INTERFACE_SRCS_CXX
 file(GLOB DBUS_SIGNAL_INTERFACE_SRCS_CXX 
      "../../AudioManagerDaemon/src/DBusWrapper.cpp"
      "../../AudioManagerDaemon/src/CommandSender.cpp"
+     "../../AudioManagerDaemon/src/SocketHandler.cpp"
      "../src/*.cpp" 
      "dbuscommaninterfacesignalsTest.cpp" 
      "DbusCommandInterfaceBackdoor.cpp"
 )
-
 ADD_EXECUTABLE(dbusCommandMessages ${DBUS_PLUGIN_INTERFACE_SRCS_CXX})
 
 ADD_EXECUTABLE(dbusCommandSignals ${DBUS_SIGNAL_INTERFACE_SRCS_CXX})
@@ -81,7 +81,7 @@ TARGET_LINK_LIBRARIES(dbusCommandMessages
     ${CMAKE_DL_LIBS}
     ${CMAKE_THREAD_LIBS_INIT}
     ${PYTHON_LIBRARY}
-    gtest
+    ${GTEST_LIBRARIES}
     gmock
 )
 
@@ -92,7 +92,7 @@ TARGET_LINK_LIBRARIES(dbusCommandSignals
     ${CMAKE_DL_LIBS}
     ${CMAKE_THREAD_LIBS_INIT}
     ${PYTHON_LIBRARY}
-    gtest
+    ${GTEST_LIBRARIES}
     gmock
 )
 

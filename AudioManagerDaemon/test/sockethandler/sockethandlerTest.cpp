@@ -25,13 +25,13 @@ sockethandlerTest::~sockethandlerTest()
 {
 }
 
-void fdCallBack::connectSocket(int fd, const short  events,void * userData)
+void fdCallBack::connectSocket(int fd, const int16_t  events,void * userData)
 {
 	std::cout<<"Socket connection received and open"<<std::endl;
 
 	//accept the connection
 	mSocketConnection = accept(fd, NULL, NULL);
-	short event = 0;
+	int16_t event = 0;
 	event |=POLLIN;
 
 	shPollCallBack* buf=&pSocketDataCallback;
@@ -52,7 +52,7 @@ fdCallBack::fdCallBack(SocketHandler *SocketHandler)
 
 
 
-void am::fdCallBack::handleSocketData(int fd, const short  events, void* userdata)
+void am::fdCallBack::handleSocketData(int fd, const int16_t  events, void* userdata)
 {
 	char buffer[3000];
 	std::string msg;
@@ -148,7 +148,7 @@ void* playWithSocketServer(void* data)
 	listen(socketHandle, 3);
 
 	//prepare the event (we want POLLIN because we need to listen)
-	short event = 0;
+	int16_t event = 0;
 	event |=POLLIN;
 
 	shPollCallBack* buf=&testCallback.pSocketConnectionCallback;

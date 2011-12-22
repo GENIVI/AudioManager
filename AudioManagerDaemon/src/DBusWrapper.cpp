@@ -22,16 +22,15 @@
 *
 */
 
-#include "DBusWrapper.h"
-#include "SocketHandler.h"
+#include <dbus/DBusWrapper.h>
+#include <SocketHandler.h>
+#include <config.h>
 #include <fstream>
 #include <sstream>
 #include <string>
 #include <dlt/dlt.h>
 #include <assert.h>
-
-
-#include <iostream> //remove !
+#include <stdlib.h>
 
 using namespace am;
 
@@ -48,6 +47,46 @@ DBUS_INTROSPECT_1_0_XML_DOCTYPE_DECL_NODE								\
 
 DBusWrapper* DBusWrapper::mReference = NULL;
 
+DBusWrapper::DBusWrapper()
+	: pDbusDispatchCallback(this,&DBusWrapper::dbusDispatchCallback),
+	  pDbusFireCallback(this,&DBusWrapper::dbusFireCallback),
+	  pDbusCheckCallback(this,&DBusWrapper::dbusCheckCallback),
+	  pDbusTimerCallback(this,&DBusWrapper::dbusTimerCallback),
+	  mDbusConnection(0),
+	  mDBusError(),
+	  mNodesList(),
+	  mListTimerhandlePointer()
+{
+	dbus_error_init(&mDBusError);
+    DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("DBusWrapper::DBusWrapper Opening DBus connection"));
+    mDbusConnection=dbus_bus_get(DBUS_BUS_SESSION, &mDBusError);
+    if (dbus_error_is_set(&mDBusError))
+    {
+    	DLT_LOG(DLT_CONTEXT,DLT_LOG_ERROR, DLT_STRING("DBusWrapper::DBusWrapper Error while getting the DBus"));
+        dbus_error_free(&mDBusError);
+    }
+    if (NULL == mDbusConnection)
+    {
+    	DLT_LOG(DLT_CONTEXT,DLT_LOG_ERROR, DLT_STRING("DBusWrapper::DBusWrapper DBus Connection is null"));
+    }
+
+    //first, we are old enought to live longer then the connection:
+    dbus_connection_set_exit_on_disconnect(mDbusConnection, FALSE);
+
+	mObjectPathVTable.message_function=DBusWrapper::cbRootIntrospection;
+	dbus_connection_register_object_path(mDbusConnection,DBUS_SERVICE_OBJECT_PATH , &mObjectPathVTable, this);
+	int ret = dbus_bus_request_name(mDbusConnection,DBUS_SERVICE_PREFIX,DBUS_NAME_FLAG_DO_NOT_QUEUE, &mDBusError);
+    if (dbus_error_is_set(&mDBusError))
+    {
+    	DLT_LOG(DLT_CONTEXT,DLT_LOG_ERROR, DLT_STRING("DBusWrapper::DBusWrapper Name Error"),DLT_STRING(mDBusError.message));
+        dbus_error_free(&mDBusError);
+    }
+    if (DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER != ret)
+    {
+    	DLT_LOG(DLT_CONTEXT,DLT_LOG_ERROR, DLT_STRING("DBusWrapper::DBusWrapper Wrapper is not the Primary Owner"), DLT_INT(ret));
+    	exit(1);
+    }
+}
 
 DBusWrapper::DBusWrapper(SocketHandler* socketHandler)
 	: pDbusDispatchCallback(this,&DBusWrapper::dbusDispatchCallback),
@@ -61,11 +100,9 @@ DBusWrapper::DBusWrapper(SocketHandler* socketHandler)
 	  mSocketHandler(socketHandler)
 {
 	assert(mSocketHandler!=0);
-	//ok, first lets get the connection
-    dbus_error_init(&mDBusError);
 
+	dbus_error_init(&mDBusError);
     DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("DBusWrapper::DBusWrapper Opening DBus connection"));
-
     mDbusConnection=dbus_bus_get(DBUS_BUS_SESSION, &mDBusError);
     if (dbus_error_is_set(&mDBusError))
     {
@@ -85,11 +122,20 @@ DBusWrapper::DBusWrapper(SocketHandler* socketHandler)
     //dbus_connection_set_dispatch_status_function
 
     //add watch functions:
-    dbus_bool_t ok=dbus_connection_set_watch_functions(mDbusConnection, addWatch, removeWatch, toogleWatch , this, NULL);
+    dbus_bool_t watch=dbus_connection_set_watch_functions(mDbusConnection, addWatch, removeWatch, toogleWatch , this, NULL);
+    if (!watch)
+    {
+    	DLT_LOG(DLT_CONTEXT,DLT_LOG_ERROR, DLT_STRING("DBusWrapper::DBusWrapper Registering of watch functions failed"));
+    }
 
     //add timer functions:
-    dbus_bool_t ok2=dbus_connection_set_timeout_functions(mDbusConnection, addTimeout, removeTimeout, toggleTimeout, this, NULL);
+    dbus_bool_t timer=dbus_connection_set_timeout_functions(mDbusConnection, addTimeout, removeTimeout, toggleTimeout, this, NULL);
+    if(!timer)
+    {
+    	DLT_LOG(DLT_CONTEXT,DLT_LOG_ERROR, DLT_STRING("DBusWrapper::DBusWrapper Registering of timer functions failed"));
+    }
 
+    //register callback for Introspectio
 	mObjectPathVTable.message_function=DBusWrapper::cbRootIntrospection;
 	dbus_connection_register_object_path(mDbusConnection,DBUS_SERVICE_OBJECT_PATH , &mObjectPathVTable, this);
 	int ret = dbus_bus_request_name(mDbusConnection,DBUS_SERVICE_PREFIX,DBUS_NAME_FLAG_DO_NOT_QUEUE, &mDBusError);
@@ -101,16 +147,8 @@ DBusWrapper::DBusWrapper(SocketHandler* socketHandler)
     if (DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER != ret)
     {
     	DLT_LOG(DLT_CONTEXT,DLT_LOG_ERROR, DLT_STRING("DBusWrapper::DBusWrapper Wrapper is not the Primary Owner"), DLT_INT(ret));
+    	exit(1);
     }
-//    dbus_connection_ref(mDbusConnection);
-//    DBusDispatchStatus dstatus;
-//    do
-//	{
-//    	dstatus=dbus_connection_dispatch(mDbusConnection);
-//    	std::cout<<"status"<<dstatus<<std::endl;
-//	}
-//    while (dstatus!=DBUS_DISPATCH_COMPLETE);
-//    dbus_connection_unref(mDbusConnection);
 }
 
 DBusWrapper::~DBusWrapper()
@@ -194,7 +232,7 @@ DBusHandlerResult DBusWrapper::cbRootIntrospection(DBusConnection *conn, DBusMes
 
 void DBusWrapper::dbusMainLoop()
 {
-	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("DBusWrapper::~dbusMainLoop Entering MainLoop"));
+	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("DBusWrapper::dbusMainLoop Entering MainLoop"));
 
 	while (dbus_connection_read_write_dispatch(mDbusConnection, -1))
 	{
@@ -216,16 +254,18 @@ dbus_bool_t DBusWrapper::addWatch(DBusWatch *watch, void *userData)
 
 dbus_bool_t DBusWrapper::addWatchDelegate(DBusWatch * watch, void* userData)
 {
-	short event=0;
+	int16_t event=0;
+    sh_pollHandle_t handle=0;
 	uint flags=dbus_watch_get_flags(watch);
-    /* no watch flags for disabled watches */
+
+	/* no watch flags for disabled watches */
     if (dbus_watch_get_enabled(watch))
     {
         if (flags & DBUS_WATCH_READABLE) event |= POLLIN;
         if (flags & DBUS_WATCH_WRITABLE) event |= POLLOUT;
     }
 
-    sh_pollHandle_t handle=0;
+    DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("DBusWrapper::addWatchDelegate entered new watch, fd="),DLT_INT(dbus_watch_get_unix_fd(watch)),DLT_STRING("event flag="),DLT_INT(event));
     am_Error_e error=mSocketHandler->addFDPoll(dbus_watch_get_unix_fd(watch),event,NULL,&pDbusFireCallback,&pDbusCheckCallback,&pDbusDispatchCallback,watch,handle);
 
 	//if everything is alright, add the watch and the handle to our map so we know this relationship
@@ -234,7 +274,7 @@ dbus_bool_t DBusWrapper::addWatchDelegate(DBusWatch * watch, void* userData)
 		mMapHandleWatch.insert(std::make_pair(watch,handle));
 		return true;
 	}
-	return false;
+	DLT_LOG(DLT_CONTEXT,DLT_LOG_ERROR, DLT_STRING("DBusWrapper::addWatchDelegate entering watch failed"));
 }
 
 void DBusWrapper::removeWatch(DBusWatch *watch, void *userData)
@@ -249,6 +289,7 @@ void DBusWrapper::removeWatchDelegate(DBusWatch *watch, void *userData)
 	std::map<DBusWatch*,sh_pollHandle_t>::iterator iterator=mMapHandleWatch.begin();
 	iterator=mMapHandleWatch.find(watch);
 	if (iterator!=mMapHandleWatch.end()) mSocketHandler->removeFDPoll(iterator->second);
+	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("DBusWrapper::removeWatch removed watch with handle"),DLT_INT(iterator->second));
 	mMapHandleWatch.erase(iterator);
 }
 
@@ -261,7 +302,7 @@ void DBusWrapper::toogleWatch(DBusWatch *watch, void *userData)
 
 void DBusWrapper::toogleWatchDelegate(DBusWatch *watch, void *userData)
 {
-	short event=0;
+	int16_t event=0;
 	int watchFD=dbus_watch_get_unix_fd(watch);
 	uint flags=dbus_watch_get_flags(watch);
 	/* no watch flags for disabled watches */
@@ -273,6 +314,7 @@ void DBusWrapper::toogleWatchDelegate(DBusWatch *watch, void *userData)
 	std::map<DBusWatch*,sh_pollHandle_t>::iterator iterator=mMapHandleWatch.begin();
 	iterator=mMapHandleWatch.find(watch);
 	if (iterator!=mMapHandleWatch.end()) mSocketHandler->updateEventFlags(iterator->second,event);
+	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("DBusWrapper::toogleWatchDelegate watch was toggeled"));
 }
 
 dbus_bool_t DBusWrapper::addTimeout(DBusTimeout *timeout, void* userData)
@@ -295,7 +337,7 @@ dbus_bool_t DBusWrapper::addTimeoutDelegate(DBusTimeout *timeout,void* userData)
     //prepare handle and callback. new is eval, but there is no other choice because we need the pointer!
     sh_timerHandle_t* handle=new sh_timerHandle_t;
     mListTimerhandlePointer.push_back(handle);
-    TBasicTimerCallback* buffer=&pDbusTimerCallback;
+    shTimerCallBack* buffer=&pDbusTimerCallback;
 
     //add the timer to the pollLoop
     mSocketHandler->addTimer(pollTimeout,buffer,*handle,timeout);
@@ -305,6 +347,7 @@ dbus_bool_t DBusWrapper::addTimeoutDelegate(DBusTimeout *timeout,void* userData)
 
     //save timeout in Socket context
     userData=timeout;
+	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("DBusWrapper::addTimeoutDelegate a timeout was added"));
     return true;
 }
 
@@ -332,6 +375,7 @@ void DBusWrapper::removeTimeoutDelegate(DBusTimeout *timeout, void* userData)
 		}
 	}
 	delete handle;
+	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("DBusWrapper::removeTimeoutDelegate a timeout was removed"));
 }
 
 void DBusWrapper::toggleTimeout(DBusTimeout *timeout, void* userData)
@@ -347,6 +391,7 @@ bool am::DBusWrapper::dbusDispatchCallback(const sh_pollHandle_t handle, void *u
 	dbus_connection_ref(mDbusConnection);
 	if (dbus_connection_dispatch(mDbusConnection)==DBUS_DISPATCH_COMPLETE) returnVal=true;
     dbus_connection_unref(mDbusConnection);
+	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("DBusWrapper::dbusDispatchCallback was called"));
     return returnVal;
 }
 
@@ -356,6 +401,7 @@ bool am::DBusWrapper::dbusCheckCallback(const sh_pollHandle_t handle, void *user
 	dbus_connection_ref(mDbusConnection);
 	if (dbus_connection_get_dispatch_status(mDbusConnection) == DBUS_DISPATCH_DATA_REMAINS) returnVal=true;
     dbus_connection_unref(mDbusConnection);
+	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("DBusWrapper::dbusCheckCallback was called"));
     return returnVal;
 }
 
@@ -364,22 +410,17 @@ void am::DBusWrapper::dbusFireCallback(const pollfd pollfd, const sh_pollHandle_
 	assert(userData!=NULL);
 	uint flags=0;
 
-	if (!dbus_watch_get_enabled((DBusWatch*)userData))
-	{
-		std::cout<<"sdfsdf"<<std::endl;
-	}
-
 	if (pollfd.revents & POLLIN) 	flags |= DBUS_WATCH_READABLE;
 	if (pollfd.revents & POLLOUT)   flags |= DBUS_WATCH_WRITABLE;
 	if (pollfd.revents & POLLHUP)   flags |= DBUS_WATCH_HANGUP;
 	if (pollfd.revents & POLLERR)   flags |= DBUS_WATCH_ERROR;
 
-//    std::cout<<fd<<" "<<revent<<std::endl;
 	DBusWatch *watch=(DBusWatch*)userData;
 
 	dbus_connection_ref(mDbusConnection);
 	bool ok=dbus_watch_handle(watch, flags);
 	dbus_connection_unref(mDbusConnection);
+	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("DBusWrapper::dbusFireCallback was called"));
 }
 
 void DBusWrapper::toggleTimeoutDelegate(DBusTimeout *timeout, void* userData)
@@ -401,6 +442,7 @@ void DBusWrapper::toggleTimeoutDelegate(DBusTimeout *timeout, void* userData)
 	{
 		mSocketHandler->stopTimer(*handle);
 	}
+	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("DBusWrapper::toggleTimeoutDelegate was called"));
 }
 
 void DBusWrapper::dbusTimerCallback(sh_timerHandle_t handle, void *userData)
@@ -414,6 +456,7 @@ void DBusWrapper::dbusTimerCallback(sh_timerHandle_t handle, void *userData)
 		mSocketHandler->restartTimer(handle,ts);
 	}
 	dbus_timeout_handle((DBusTimeout*)userData);
+	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("DBusWrapper::dbusTimerCallback was called"));
 }
 
 

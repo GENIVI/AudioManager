@@ -66,8 +66,10 @@ class MockCommandReceiveInterface : public CommandReceiveInterface {
       am_Error_e(const am_mainConnectionID_t mainConnectionID, am_timeSync_t& delay));
   MOCK_CONST_METHOD1(getDBusConnectionWrapper,
       am_Error_e(DBusWrapper*& dbusConnectionWrapper));
-};
+  MOCK_CONST_METHOD1(getSocketHandler,
+      am_Error_e(SocketHandler*& socketHandler));
 
+};
 }  // namespace am
 
 

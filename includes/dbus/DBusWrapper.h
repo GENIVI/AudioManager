@@ -27,8 +27,8 @@
 #define DBUSWRAPPER_H_
 
 
-#include "DBusConfiguration.h"
-#include "SocketHandler.h"
+#include <config.h>
+#include <SocketHandler.h>
 #include <dbus/dbus.h>
 #include <string>
 #include <list>
@@ -39,6 +39,7 @@ namespace am {
  */
 class DBusWrapper {
 public:
+	DBusWrapper();
 	DBusWrapper(SocketHandler* socketHandler);
 	virtual ~DBusWrapper();
 
@@ -80,7 +81,7 @@ public:
 	shPollFired_T<DBusWrapper> pDbusFireCallback;
 
 	void dbusTimerCallback(sh_timerHandle_t handle, void* userData);
-	TSpecificTimerCallback<DBusWrapper> pDbusTimerCallback;
+	shTimerCallBack_T<DBusWrapper> pDbusTimerCallback;
 
 private:
     static DBusWrapper* mReference;

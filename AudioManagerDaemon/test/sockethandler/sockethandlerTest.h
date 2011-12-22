@@ -18,8 +18,8 @@ class fdCallBack
 public:
 	fdCallBack(SocketHandler *SocketHandler);
 	virtual ~fdCallBack();
-	void connectSocket(int fd,const short events,void * userData);
-	void handleSocketData(int fd,const short events,void * userData);
+	void connectSocket(int fd,const int16_t events,void * userData);
+	void handleSocketData(int fd,const int16_t events,void * userData);
 	TSpecificPollCallback<fdCallBack> pSocketDataCallback;
 	TSpecificPollCallback<fdCallBack> pSocketConnectionCallback;
 private:

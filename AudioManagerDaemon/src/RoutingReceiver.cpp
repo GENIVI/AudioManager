@@ -24,21 +24,46 @@
 */
 
 #include "RoutingReceiver.h"
-#include "RoutingSender.h"
-#include "DatabaseHandler.h"
-#include "ControlSender.h"
 #include <assert.h>
 
 using namespace am;
 
-RoutingReceiver::RoutingReceiver(DatabaseHandler *iDatabaseHandler, RoutingSender *iRoutingSender, ControlSender *iControlSender)
+am::RoutingReceiver::RoutingReceiver(DatabaseHandler *iDatabaseHandler, RoutingSender *iRoutingSender, ControlSender *iControlSender, SocketHandler *iSocketHandler)
 	:mDatabaseHandler(iDatabaseHandler),
 	 mRoutingSender(iRoutingSender),
-	 mControlSender(iControlSender)
+	 mControlSender(iControlSender),
+	 mSocketHandler(iSocketHandler)
 {
-	assert(mDatabaseHandler!=0);
-	assert(mRoutingSender!=0);
-	assert(mControlSender!=0);
+assert(mDatabaseHandler!=NULL);
+assert(mRoutingSender!=NULL);
+assert(mControlSender!=NULL);
+assert(mSocketHandler!=NULL);
+}
+
+am::RoutingReceiver::RoutingReceiver(DatabaseHandler *iDatabaseHandler, RoutingSender *iRoutingSender, ControlSender *iControlSender, DBusWrapper *iDBusWrapper)
+	:mDatabaseHandler(iDatabaseHandler),
+	 mRoutingSender(iRoutingSender),
+	 mControlSender(iControlSender),
+	 mDBusWrapper(iDBusWrapper)
+{
+assert(mDatabaseHandler!=NULL);
+assert(mRoutingSender!=NULL);
+assert(mControlSender!=NULL);
+assert(mDBusWrapper!=NULL);
+}
+
+am::RoutingReceiver::RoutingReceiver(DatabaseHandler *iDatabaseHandler, RoutingSender *iRoutingSender, ControlSender *iControlSender, SocketHandler *iSocketHandler, DBusWrapper *iDBusWrapper)
+	:mDatabaseHandler(iDatabaseHandler),
+	 mRoutingSender(iRoutingSender),
+	 mControlSender(iControlSender),
+	 mSocketHandler(iSocketHandler),
+	 mDBusWrapper(iDBusWrapper)
+{
+assert(mDatabaseHandler!=NULL);
+assert(mRoutingSender!=NULL);
+assert(mControlSender!=NULL);
+assert(mSocketHandler!=NULL);
+assert(mDBusWrapper!=NULL);
 }
 
 
@@ -318,21 +343,38 @@ am_Error_e RoutingReceiver::sendChangedData(const std::vector<am_EarlyData_s> & 
 
 
 
-am_Error_e RoutingReceiver::peekSinkClassID(const std::string & name, am_sourceClass_t & sourceClassID)
+am_Error_e RoutingReceiver::peekSinkClassID(const std::string name, const am_sinkClass_t& sinkClassID)
 {
 	//todo: implement
 	return E_NOT_USED;
 }
 
-am_Error_e RoutingReceiver::peekSourceClassID(const std::string & name, am_sinkClass_t & sinkClassID)
+am_Error_e RoutingReceiver::peekSourceClassID(const std::string name, const am_sourceClass_t& sourceClassID)
 {
 	//todo: implement
 	return E_NOT_USED;
 }
 
-am_Error_e RoutingReceiver::getDBusConnectionWrapper(DBusWrapper *dbusConnectionWrapper) const
+am_Error_e am::RoutingReceiver::getDBusConnectionWrapper(DBusWrapper *& dbusConnectionWrapper) const
 {
-	//todo: return DbusWrapper
-	return E_NOT_USED;
+#ifdef WITH_DBUS_WRAPPER
+	dbusConnectionWrapper=mDBusWrapper;
+	return E_OK;
+#else
+	return E_UNKNOWN;
+#endif
 }
+
+
+am_Error_e am::RoutingReceiver::getSocketHandler(SocketHandler *& socketHandler) const
+{
+#ifdef WITH_SOCKETHANDLER_LOOP
+	socketHandler=mSocketHandler;
+	return E_OK;
+#else
+	return E_UNKNOWN;
+#endif
+}
+
+
 

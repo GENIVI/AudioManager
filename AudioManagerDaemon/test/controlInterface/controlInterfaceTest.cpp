@@ -34,7 +34,8 @@ using namespace testing;
 DLT_DECLARE_CONTEXT(DLT_CONTEXT)
 
 controlInterfaceTest::controlInterfaceTest()
-	:plistCommandPluginDirs(),
+	:pDBusWrapper((DBusWrapper*)1), //to get rid of assert
+	 plistCommandPluginDirs(),
 	 plistRoutingPluginDirs(),
 	 pDatabaseHandler(std::string(":memory:")),
 	 pRoutingSender(plistRoutingPluginDirs),
@@ -47,7 +48,7 @@ controlInterfaceTest::controlInterfaceTest()
 	 pControlInterfaceBackdoor(),
 	 pDatabaseObserver(&pCommandSender,&pRoutingSender),
 	 pControlReceiver(&pDatabaseHandler,&pRoutingSender,&pCommandSender),
-	 pRoutingReceiver(&pDatabaseHandler,&pRoutingSender,&pControlSender)
+	 pRoutingReceiver(&pDatabaseHandler,&pRoutingSender,&pControlSender,pDBusWrapper)
 {
 	pDatabaseHandler.registerObserver(&pDatabaseObserver);
 	pControlInterfaceBackdoor.replaceController(&pControlSender,&pMockControlInterface);

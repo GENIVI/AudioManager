@@ -12,6 +12,9 @@
 cmake_minimum_required(VERSION 2.6)
 
 
+set(EXECUTABLE_OUTPUT_PATH ${TEST_EXECUTABLE_OUTPUT_PATH})
+FIND_PACKAGE(GTest REQUIRED) 
+
 add_subdirectory (database)
 add_subdirectory (routingInterface)
 add_subdirectory (controlInterface)
