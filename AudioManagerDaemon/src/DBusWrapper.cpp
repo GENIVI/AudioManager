@@ -387,9 +387,9 @@ void DBusWrapper::toggleTimeout(DBusTimeout *timeout, void* userData)
 
 bool am::DBusWrapper::dbusDispatchCallback(const sh_pollHandle_t handle, void *userData)
 {
-    bool returnVal=false;
+    bool returnVal=true;
 	dbus_connection_ref(mDbusConnection);
-	if (dbus_connection_dispatch(mDbusConnection)==DBUS_DISPATCH_COMPLETE) returnVal=true;
+	if (dbus_connection_dispatch(mDbusConnection)==DBUS_DISPATCH_COMPLETE) returnVal=false;
     dbus_connection_unref(mDbusConnection);
 	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("DBusWrapper::dbusDispatchCallback was called"));
     return returnVal;

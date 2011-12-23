@@ -79,6 +79,7 @@ void SocketHandler::start_listenting()
 
 		if(mRecreatePollfds)
 		{
+			mfdPollingArray.clear();
 			//there was a change in the setup, so we need to recreate the fdarray from the list
 			std::for_each(mListPoll.begin(),mListPoll.end(),CopyPollfd(mfdPollingArray));
 			mRecreatePollfds=false;
@@ -94,60 +95,59 @@ void SocketHandler::start_listenting()
 		{
 			//todo: here could be a timer that makes sure naughty plugins return!
 
-			//first, we check what happened:
-			mPollfd_t::iterator iterator=mfdPollingArray.begin();
-			mPollfd_t::iterator iteratorEnd=mfdPollingArray.end();
-			for(;iterator!=iteratorEnd;++iterator)
+			//get all indexes of the fired events and save them int hitList
+			hitList.clear();
+			std::vector<pollfd>::iterator it=mfdPollingArray.begin();
+			do
 			{
-				//get all indexes of the fired events and save them int hitList
-				hitList.clear();
-				std::vector<pollfd>::iterator it=mfdPollingArray.begin();
-				do
-				{
-					it=std::find_if(it,mfdPollingArray.end(),onlyFiredEvents);
-					if (it!=mfdPollingArray.end()) hitList.push_back(std::distance(mfdPollingArray.begin(), it++));
+				it=std::find_if(it,mfdPollingArray.end(),onlyFiredEvents);
+				if (it!=mfdPollingArray.end()) hitList.push_back(std::distance(mfdPollingArray.begin(), it++));
 
-				} while (it!=mfdPollingArray.end());
+			} while (it!=mfdPollingArray.end());
 
-				//stage 1, call firedCB for all matched events, but only if callback is not zero!
-				std::list<int16_t>::iterator hListIt=hitList.begin();
-				for(;hListIt!=hitList.end();++hListIt)
+			//stage 1, call firedCB for all matched events, but only if callback is not zero!
+			std::list<int16_t>::iterator hListIt=hitList.begin();
+			for(;hListIt!=hitList.end();++hListIt)
+			{
+				shPollFired* fire=NULL;
+				if ((fire=mListPoll.at(*hListIt).firedCB)!=NULL) fire->Call(mfdPollingArray.at(*hListIt),mListPoll.at(*hListIt).handle,mListPoll.at(*hListIt).userData);
+			}
+
+			//stage 2, lets ask around if some dispatching is necessary, if not, they are taken from the hitlist
+			hListIt=hitList.begin();
+			for(;hListIt!=hitList.end();++hListIt)
+			{
+				shPollCheck* check=NULL;
+				if ((check=mListPoll.at(*hListIt).checkCB)!=NULL)
 				{
-					shPollFired* fire=NULL;
-					if ((fire=mListPoll.at(*hListIt).firedCB)!=NULL) fire->Call(mfdPollingArray.at(*hListIt),mListPoll.at(*hListIt).handle,mListPoll.at(*hListIt).userData);
+					if (!check->Call(mListPoll.at(*hListIt).handle,mListPoll.at(*hListIt).userData))
+					{
+						hListIt=hitList.erase(hListIt);
+					}
 				}
+			}
 
-				//stage 2, lets ask around if some dispatching is necessary, if not, they are taken from the hitlist
+			//stage 3, the ones left need to dispatch, we do this as long as there is something to dispatch..
+			do
+			{
 				hListIt=hitList.begin();
 				for(;hListIt!=hitList.end();++hListIt)
 				{
-					shPollCheck* check=NULL;
-					if ((check=mListPoll.at(*hListIt).checkCB)!=NULL)
+					shPollDispatch *dispatch=NULL;
+					if((dispatch=mListPoll.at(*hListIt).dispatchCB)!=NULL)
 					{
-						if (!check->Call(mListPoll.at(*hListIt).handle,mListPoll.at(*hListIt).userData))
+						if (!dispatch->Call(mListPoll.at(*hListIt).handle,mListPoll.at(*hListIt).userData))
 						{
 							hListIt=hitList.erase(hListIt);
 						}
 					}
-				}
-
-				//stage 3, the ones left need to dispatch, we do this as long as there is something to dispatch..
-				do
-				{
-					hListIt=hitList.begin();
-					for(;hListIt!=hitList.end();++hListIt)
+					else //there is no dispatch function, so we just remove the file from the list...
 					{
-						shPollDispatch *dispatch=NULL;
-						if((dispatch=mListPoll.at(*hListIt).dispatchCB)!=NULL)
-						{
-							if (dispatch->Call(mListPoll.at(*hListIt).handle,mListPoll.at(*hListIt).userData))
-							{
-								hListIt=hitList.erase(hListIt);
-							}
-						}
+						hListIt=hitList.erase(hListIt);
 					}
-				} while (!hitList.empty());
-			}
+				}
+			} while (!hitList.empty());
+
 		}
 		else //Timerevent
 		{
@@ -177,8 +177,8 @@ am_Error_e SocketHandler::addFDPoll(const int fd,const int16_t event, shPollPrep
 	if (!fdIsValid(fd)) return E_NON_EXISTENT;
 
 	sh_poll_s pollData;
-	pollData.handle=++mLastInsertedPollHandle;
 	pollData.pollfdValue.fd=fd;
+	pollData.handle=++mLastInsertedPollHandle;
 	pollData.pollfdValue.events=event;
 	pollData.pollfdValue.revents=0;
 	pollData.userData=userData;
@@ -227,7 +227,7 @@ am_Error_e SocketHandler::removeFDPoll(const sh_pollHandle_t handle)
  * @param handle the handle that is created for the timer is returned. Can be used to remove the timer
  * @return E_OK in case of success
  */
-am_Error_e SocketHandler::addTimer(const timespec timeouts,TBasicTimerCallback*& callback,sh_timerHandle_t& handle, void * userData)
+am_Error_e SocketHandler::addTimer(const timespec timeouts,shTimerCallBack*& callback,sh_timerHandle_t& handle, void * userData)
 {
 	assert(!((timeouts.tv_sec==0) && (timeouts.tv_nsec==0)));
 	assert(callback!=NULL);
@@ -433,7 +433,9 @@ void SocketHandler::SubstractTime::operator ()(timer_s & t) const
 
 void SocketHandler::CopyPollfd::operator ()(const sh_poll_s & row)
 {
-	mArray.push_back(row.pollfdValue);
+	pollfd temp=row.pollfdValue;
+	temp.revents=0;
+	mArray.push_back(temp);
 }
 
 /* namespace am */

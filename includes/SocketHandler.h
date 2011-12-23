@@ -59,7 +59,6 @@ public:
 	am_Error_e stopTimer(const sh_timerHandle_t handle);
 	void start_listenting();
 	void stop_listening();
-
 private:
 	struct timer_s						//!<struct that holds information of timers
 	{
@@ -113,7 +112,7 @@ private:
 
 	static bool onlyFiredEvents(const pollfd& a)
 	{
-		return a.events==0 ? false : true;
+		return a.revents==0 ? false : true;
 	}
 
 	//todo: maybe we could simplify mListActiveTimer to hold only the handle and the countdown ....
