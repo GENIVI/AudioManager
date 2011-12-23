@@ -9,37 +9,44 @@
 #define SOCKETHANDLERTEST_H_
 
 #include <gtest/gtest.h>
+#include <queue>
 #include "SocketHandler.h"
 
 namespace am {
 
-class fdCallBack
+class SamplePlugin
 {
 public:
-	fdCallBack(SocketHandler *SocketHandler);
-	virtual ~fdCallBack();
-	void connectSocket(int fd,const int16_t events,void * userData);
-	void handleSocketData(int fd,const int16_t events,void * userData);
-	TSpecificPollCallback<fdCallBack> pSocketDataCallback;
-	TSpecificPollCallback<fdCallBack> pSocketConnectionCallback;
+	SamplePlugin(SocketHandler *mySocketHandler);
+	virtual ~SamplePlugin() {};
+	void connectSocket(const pollfd pollfd,const sh_pollHandle_t handle, void* userData);
+	void receiveData(const pollfd pollfd,const sh_pollHandle_t handle, void* userData);
+	bool dispatchData(const sh_pollHandle_t handle, void* userData);
+	bool check(const sh_pollHandle_t handle, void* userData);
+	shPollFired_T<SamplePlugin> connectFiredCB;
+	shPollFired_T<SamplePlugin> receiveFiredCB;
+	shPollDispatch_T<SamplePlugin> sampleDispatchCB;
+	shPollCheck_T<SamplePlugin> sampleCheckCB;
 private:
-	int mSocketConnection;
 	SocketHandler *mSocketHandler;
+	sh_pollHandle_t mConnecthandle,mReceiveHandle;
+	std::queue<std::string> msgList;
 };
+
 
 class timerCallBack
 {
 public:
 	timerCallBack(SocketHandler *SocketHandler);
 	virtual ~timerCallBack();
-	void timer1Callback(SocketHandler::sh_timerHandle_t handle,void * userData);
-	void timer2Callback(SocketHandler::sh_timerHandle_t handle,void * userData);
-	void timer3Callback(SocketHandler::sh_timerHandle_t handle,void * userData);
-	void timer4Callback(SocketHandler::sh_timerHandle_t handle,void * userData);
-	TSpecificTimerCallback<timerCallBack> pTimer1Callback;
-	TSpecificTimerCallback<timerCallBack> pTimer2Callback;
-	TSpecificTimerCallback<timerCallBack> pTimer3Callback;
-	TSpecificTimerCallback<timerCallBack> pTimer4Callback;
+	void timer1Callback(sh_timerHandle_t handle,void * userData);
+	void timer2Callback(sh_timerHandle_t handle,void * userData);
+	void timer3Callback(sh_timerHandle_t handle,void * userData);
+	void timer4Callback(sh_timerHandle_t handle,void * userData);
+	shTimerCallBack_T<timerCallBack> pTimer1Callback;
+	shTimerCallBack_T<timerCallBack> pTimer2Callback;
+	shTimerCallBack_T<timerCallBack> pTimer3Callback;
+	shTimerCallBack_T<timerCallBack> pTimer4Callback;
 	SocketHandler *mSocketHandler;
 };
 
