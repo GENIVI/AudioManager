@@ -32,6 +32,8 @@
 #include <features.h>
 
 //todo: implement ppoll
+//todo: signal handling here
+//todo: implement time correction if timer was interrupted by call
 
 #include <iostream>  //todo remove
 
@@ -43,6 +45,7 @@ SocketHandler::SocketHandler()
 	 mListActiveTimer(),
 	 mNextTimer(),
 	 mLastInsertedHandle(0),
+	 mLastInsertedPollHandle(0),
 	 mDispatch(true),
 	 mRecreatePollfds(true)
 {

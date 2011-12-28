@@ -1,0 +1,47 @@
+cmake_minimum_required(VERSION 2.6)
+
+PROJECT(PluginRoutingInterfaceAsync)
+
+set(LIBRARY_OUTPUT_PATH ${PLUGINS_OUTPUT_PATH}/routing)
+set(DOC_OUTPUT_PATH ${DOC_OUTPUT_PATH}/RoutingAsync)
+set(INCLUDES_FOLDER "include")
+
+find_package( Threads )
+FIND_PACKAGE(DBUS REQUIRED)
+
+INCLUDE_DIRECTORIES(
+	${CMAKE_SOURCE_DIR} 
+ 	${CMAKE_CURRENT_BINARY_DIR}
+	${AUDIO_INCLUDES_FOLDER}
+	${INCLUDES_FOLDER}
+	${DBUS_INCLUDE_DIR}
+    ${DBUS_ARCH_INCLUDE_DIR}
+)
+
+# all source files go here
+file(GLOB PLUGINDBUS_SRCS_CXX "src/*.cpp")
+
+
+add_library(PluginRoutingInterfaceAsync SHARED ${PLUGINDBUS_SRCS_CXX})
+
+TARGET_LINK_LIBRARIES(PluginRoutingInterfaceAsync
+    ${DLT_LIBRARIES}
+    ${DBUS_LIBRARY}
+    ${CMAKE_THREAD_LIBS_INIT}
+)
+
+IF(WITH_TESTS)
+	add_subdirectory (test)
+ENDIF(WITH_TESTS)
+
+IF(WITH_DOCUMENTATION)
+	file(MAKE_DIRECTORY ${DOC_OUTPUT_PATH})
+	configure_file(${DOXY_FILE}  ${DOC_OUTPUT_PATH}/Doxyfile  @ONLY IMMEDIATE)
+  	add_custom_target (PluginRoutingInterfaceAsyncDocs ALL 
+  		COMMAND ${DOXYGEN_EXECUTABLE} ${DOC_OUTPUT_PATH}/Doxyfile WORKING_DIRECTORY ${DOC_OUTPUT_PATH}
+  		SOURCES ${PROJECT_BINARY_DIR} ${DOC_OUTPUT_PATH}/Doxyfile
+	)
+ENDIF(WITH_DOCUMENTATION)
+
+
+

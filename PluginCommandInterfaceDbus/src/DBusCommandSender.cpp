@@ -38,7 +38,6 @@
 using namespace am;
 
 DLT_DECLARE_CONTEXT(DLT_CONTEXT)
-//DLT_IMPORT_CONTEXT(DLT_CONTEXT);
 
 /**
  * factory for plugin loading

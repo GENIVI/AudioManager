@@ -50,6 +50,7 @@ IF(NOT DEFINED DBUS_SERVICE_OBJECT_PATH)
 	SET( DBUS_SERVICE_OBJECT_PATH "/org/genivi/audiomanager\0" )
 ENDIF(NOT DEFINED DBUS_SERVICE_OBJECT_PATH)
 
+SET(DLT_CONTEXT AudioManager)
 SET(PLUGINS_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin/plugins)
 
 SET(DEFAULT_PLUGIN_COMMAND_DIR "${PLUGINS_OUTPUT_PATH}/command")
@@ -80,7 +81,7 @@ IF(WITH_DOCUMENTATION)
 ENDIF(WITH_DOCUMENTATION)
 
 ##global build flags
-#set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -std=c++98")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Wextra -std=c++98")
 
 if(WITH_PLUGIN_COMMAND)
 	add_subdirectory (PluginCommandInterfaceDbus)
@@ -88,6 +89,7 @@ endif(WITH_PLUGIN_COMMAND)
 
 if(WITH_PLUGIN_ROUTING)
 	add_subdirectory (PluginRoutingInterfaceDbus)
+	add_subdirectory (PluginRoutingInterfaceAsync)
 endif(WITH_PLUGIN_ROUTING)
 
 if(WITH_PLUGIN_CONTROL)

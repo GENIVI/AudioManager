@@ -125,6 +125,8 @@ am_Error_e DbusRoutingSender::asyncSetSourceSoundProperty(const am_Handle_s hand
 
 am_Error_e DbusRoutingSender::returnBusName(std::string & BusName) const
 {
+	BusName="DbusPlugin";
+	return (E_OK);
 }
 
 

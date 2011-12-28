@@ -27,6 +27,7 @@
 #include <dirent.h>
 #include <dlfcn.h>
 #include <dlt/dlt.h>
+#include <assert.h>
 #include "PluginTemplate.h"
 
 using namespace am;
@@ -123,6 +124,7 @@ RoutingSender::RoutingSender(const std::vector<std::string>& listOfPluginDirecto
 
         //here, the busname is saved together with the interface. Later The domains will register with the name and sinks, sources etc with the domain....
         router->returnBusName(routerInterface.busName);
+        assert(!routerInterface.busName.empty());
         mListInterfaces.push_back(routerInterface);
         mListLibraryHandles.push_back(tempLibHandle);
     }

@@ -47,12 +47,14 @@ ControlSenderPlugin::~ControlSenderPlugin()
 
 am_Error_e ControlSenderPlugin::startupController(ControlReceiveInterface *controlreceiveinterface)
 {
+	return E_NOT_USED;
 }
 
 
 
 am_Error_e ControlSenderPlugin::stopController()
 {
+	return E_NOT_USED;
 }
 
 
@@ -65,60 +67,71 @@ void ControlSenderPlugin::hookAllPluginsLoaded()
 
 am_Error_e ControlSenderPlugin::hookUserConnectionRequest(const am_sourceID_t sourceID, const am_sinkID_t sinkID, am_mainConnectionID_t & mainConnectionID)
 {
+	return E_NOT_USED;
 }
+
 
 
 
 am_Error_e ControlSenderPlugin::hookUserDisconnectionRequest(const am_mainConnectionID_t connectionID)
 {
+	return E_NOT_USED;
 }
 
 
 
 am_Error_e ControlSenderPlugin::hookUserSetMainSinkSoundProperty(const am_sinkID_t sinkID, const am_MainSoundProperty_s & soundProperty)
 {
+	return E_NOT_USED;
 }
 
 
 
 am_Error_e ControlSenderPlugin::hookUserSetMainSourceSoundProperty(const am_sourceID_t sourceID, const am_MainSoundProperty_s & soundProperty)
 {
+	return E_NOT_USED;
 }
 
 
 
 am_Error_e ControlSenderPlugin::hookUserSetSystemProperty(const am_SystemProperty_s & property)
 {
+	return E_NOT_USED;
 }
 
 
 
 am_Error_e ControlSenderPlugin::hookUserVolumeChange(const am_sinkID_t SinkID, const am_mainVolume_t newVolume)
 {
+	return E_NOT_USED;
 }
 
 
 
 am_Error_e ControlSenderPlugin::hookUserVolumeStep(const am_sinkID_t SinkID, const int16_t increment)
 {
+	return E_NOT_USED;
 }
 
 
 
 am_Error_e ControlSenderPlugin::hookUserSetSinkMuteState(const am_sinkID_t sinkID, const am_MuteState_e muteState)
 {
+	return E_NOT_USED;
 }
 
 
 
 am_Error_e ControlSenderPlugin::hookSystemRegisterDomain(const am_Domain_s & domainData, am_domainID_t & domainID)
 {
+	return E_NOT_USED;
 }
 
 
 
 am_Error_e ControlSenderPlugin::hookSystemDeregisterDomain(const am_domainID_t domainID)
 {
+	return E_NOT_USED;
 }
 
 
@@ -131,48 +144,56 @@ void ControlSenderPlugin::hookSystemDomainRegistrationComplete(const am_domainID
 
 am_Error_e ControlSenderPlugin::hookSystemRegisterSink(const am_Sink_s & sinkData, am_sinkID_t & sinkID)
 {
+	return E_NOT_USED;
 }
 
 
 
 am_Error_e ControlSenderPlugin::hookSystemDeregisterSink(const am_sinkID_t sinkID)
 {
+	return E_NOT_USED;
 }
 
 
 
 am_Error_e ControlSenderPlugin::hookSystemRegisterSource(const am_Source_s & sourceData, am_sourceID_t & sourceID)
 {
+	return E_NOT_USED;
 }
 
 
 
 am_Error_e ControlSenderPlugin::hookSystemDeregisterSource(const am_sourceID_t sourceID)
 {
+	return E_NOT_USED;
 }
 
 
 
 am_Error_e ControlSenderPlugin::hookSystemRegisterGateway(const am_Gateway_s & gatewayData, am_gatewayID_t & gatewayID)
 {
+	return E_NOT_USED;
 }
 
 
 
 am_Error_e ControlSenderPlugin::hookSystemDeregisterGateway(const am_gatewayID_t gatewayID)
 {
+	return E_NOT_USED;
 }
 
 
 
 am_Error_e ControlSenderPlugin::hookSystemRegisterCrossfader(const am_Crossfader_s & crossfaderData, am_crossfaderID_t & crossfaderID)
 {
+	return E_NOT_USED;
 }
 
 
 
 am_Error_e ControlSenderPlugin::hookSystemDeregisterCrossfader(const am_crossfaderID_t crossfaderID)
 {
+	return E_NOT_USED;
 }
 
 
@@ -221,12 +242,14 @@ void ControlSenderPlugin::hookSystemReceiveEarlyData(const std::vector<am_EarlyD
 
 void ControlSenderPlugin::hookSystemSpeedChange(const am_speed_t speed)
 {
+
 }
 
 
 
 void ControlSenderPlugin::hookSystemTimingInformationChanged(const am_mainConnectionID_t mainConnectionID, const am_timeSync_t time)
 {
+
 }
 
 

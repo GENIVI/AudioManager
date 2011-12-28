@@ -84,11 +84,54 @@ void am::timerCallBack::timer4Callback(sh_timerHandle_t, void* userData)
 void* playWithSocketServer(void* data)
 {
 	SocketHandler myHandler;
-	SamplePlugin myplugin(&myHandler);
+	SamplePlugin::sockType_e type=SamplePlugin::INET;
+	SamplePlugin myplugin(&myHandler,type);
 	myHandler.start_listenting();
 }
 
+void* playWithUnixSocketServer(void* data)
+{
+	SocketHandler myHandler;
+	SamplePlugin::sockType_e type=SamplePlugin::UNIX;
+	SamplePlugin myplugin(&myHandler,type);
+	myHandler.start_listenting();
+}
 
+TEST(sockethandlerTest,playWithUNIXSockets)
+{
+	pthread_t serverThread;
+	char buffer[3000];
+	struct sockaddr_un servAddr;
+	int socket_;
+
+	//creates a thread that handles the serverpart
+	pthread_create(&serverThread,NULL,playWithUnixSocketServer,NULL);
+
+	sleep(1); //we need that here because the port needs to be opened
+    if ((socket_ = socket(AF_UNIX, SOCK_STREAM, 0)) < 0)
+    {
+    	std::cout<<"socket problem"<<std::endl;
+
+    }
+
+    memset(&servAddr, 0, sizeof(servAddr));
+    strcpy(servAddr.sun_path, SOCK_PATH);
+    servAddr.sun_family = AF_UNIX;
+    if (connect(socket_, (struct sockaddr *) &servAddr, sizeof(servAddr)) < 0)
+    {
+     	std::cout<<"ERROR: connect() failed\n"<<std::endl;
+    }
+
+	for (int i=0;i<=1000;i++)
+	{
+		std::string string("Got It?");
+		send(socket_,string.c_str(),string.size(),0);
+	}
+	std::string string("finish!");
+	send(socket_,string.c_str(),string.size(),0);
+
+	pthread_join(serverThread,NULL);
+}
 
 TEST(sockethandlerTest,playWithSockets)
 {
@@ -176,7 +219,7 @@ int main(int argc, char **argv)
 	return RUN_ALL_TESTS();
 }
 
-am::SamplePlugin::SamplePlugin(SocketHandler *mySocketHandler)
+am::SamplePlugin::SamplePlugin(SocketHandler *mySocketHandler, sockType_e socketType)
 	:connectFiredCB(this,&SamplePlugin::connectSocket),
 	 receiveFiredCB(this,&SamplePlugin::receiveData),
 	 sampleDispatchCB(this,&SamplePlugin::dispatchData),
@@ -189,19 +232,32 @@ am::SamplePlugin::SamplePlugin(SocketHandler *mySocketHandler)
 	int ret;
 	int yes = 1;
 
+	int socketHandle;
 	struct sockaddr_in servAddr;
+	struct sockaddr_un unixAddr;
 	unsigned int servPort = 6060;
-	int socketHandle = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
-    setsockopt(socketHandle, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int));
-    memset(&servAddr, 0, sizeof(servAddr));
-    servAddr.sin_family      = AF_INET;
-    servAddr.sin_addr.s_addr = INADDR_ANY;
-    servAddr.sin_port        = htons(servPort);
 
-    if (bind(socketHandle, (struct sockaddr *) &servAddr, sizeof(servAddr)) < 0)
-    {
-    	std::cout<<"bind ok"<<std::endl;
-    } /* if */
+	switch (socketType)
+	{
+	case UNIX:
+		socketHandle = socket(AF_UNIX, SOCK_STREAM, 0);
+		unixAddr.sun_family = AF_UNIX;
+		strcpy(unixAddr.sun_path,SOCK_PATH);
+		unlink(unixAddr.sun_path);
+		bind(socketHandle, (struct sockaddr *)&unixAddr, strlen(unixAddr.sun_path) + sizeof(unixAddr.sun_family));
+		break;
+	case INET:
+		socketHandle = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+		setsockopt(socketHandle, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int));
+		memset(&servAddr, 0, sizeof(servAddr));
+		servAddr.sin_family      = AF_INET;
+		servAddr.sin_addr.s_addr = INADDR_ANY;
+		servAddr.sin_port        = htons(servPort);
+	    bind(socketHandle, (struct sockaddr *) &servAddr, sizeof(servAddr));
+	    break;
+	default:
+		break;
+	}
 
     if (listen(socketHandle, 3) < 0)
     {

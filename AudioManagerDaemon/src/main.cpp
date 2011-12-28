@@ -110,6 +110,7 @@ int main(int argc, char *argv[])
 	//the controller should startup the interfaces - this is just for testing
 	iCommandSender.startupInterface(&iCommandReceiver);
 	iRoutingSender.startupRoutingInterface(&iRoutingReceiver);
+	iRoutingSender.routingInterfacesReady();
 
 #ifdef WITH_SOCKETHANDLER_LOOP
 	iSocketHandler.start_listenting();

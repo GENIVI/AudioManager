@@ -17,7 +17,12 @@ namespace am {
 class SamplePlugin
 {
 public:
-	SamplePlugin(SocketHandler *mySocketHandler);
+	enum sockType_e
+	{
+		UNIX,
+		INET
+	};
+	SamplePlugin(SocketHandler *mySocketHandler,sockType_e socketType);
 	virtual ~SamplePlugin() {};
 	void connectSocket(const pollfd pollfd,const sh_pollHandle_t handle, void* userData);
 	void receiveData(const pollfd pollfd,const sh_pollHandle_t handle, void* userData);
