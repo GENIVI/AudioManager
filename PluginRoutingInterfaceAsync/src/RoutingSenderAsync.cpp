@@ -34,6 +34,8 @@
 #include <string>
 #include <dbus/dbus.h>
 
+
+
 using namespace am;
 
 DLT_DECLARE_CONTEXT(PluginRoutingAsync)
@@ -359,11 +361,10 @@ void AsyncRoutingSender::routingInterfacesReady()
 //		gatewayIter->gatewayID=gatewayID;
 //	}
 
-	//create thread for interrupts:
-	pthread_create(&mInterruptThread,NULL,&AsyncRoutingSender::InterruptEvents,&mShadow);
+	//create thread for interrupts, but only if we are testing - otherwise we get 100% cpu load:
+	//todo: find a solution for the 100% dbus load to uncomment this and make interrupt tests work
+	//pthread_create(&mInterruptThread,NULL,&AsyncRoutingSender::InterruptEvents,&mShadow);
 }
-
-
 
 void AsyncRoutingSender::routingInterfacesRundown()
 {

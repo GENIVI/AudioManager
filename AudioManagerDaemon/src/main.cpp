@@ -26,19 +26,16 @@
  * Please make sure to have read the documentation on genivi.org!
  */
 
-//todo: add debug commandline option to allow to use other than memory database
 //todo: make real daemon out of it- systemd conform
 //todo: versioning of PluginInterfaces on linux level (.symver stuff)
 //todo: all communication like all plugins loaded etc...
 //todo: seperate documentation of test from normal project
 //todo: check the startup sequence. Dbus shall be activated last...
 //todo: there is a bug in the visible flags of sinks and sources. fix it.
-//todo: check namespace handling. no use.. in headers
 //todo: make sure that iterators have a fixed end to prevent crashed while adding vectors while iterating on critical vectors
 //todo: make sure all configurations are tested
 
 #include <config.h>
-#include <SocketHandler.h>
 #ifdef WITH_DBUS_WRAPPER
 #include <dbus/DBusWrapper.h>
 #endif
@@ -50,24 +47,173 @@
 #include "ControlSender.h"
 #include "CommandSender.h"
 #include "RoutingSender.h"
+#include <SocketHandler.h>
+#include <sys/resource.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <cstdlib>
+#include <assert.h>
+#include <fcntl.h>
+#include <signal.h>
+#include <string.h>
+#include <stdio.h>
+
+
 
 #include <dlt/dlt.h>
 
-DLT_DECLARE_CONTEXT(DLT_CONTEXT)
+DLT_DECLARE_CONTEXT(AudioManager)
 
 using namespace am;
+
+const char* USAGE_DESCRIPTION = "Usage:\tAudioManagerDaemon [options]\n"
+                                "options:\t\n"
+                                "\t-h: print this message\t\n"
+								"\t-v: print version\t\n"
+								"\t-d: daemonize AudioManager \t\n"
+								"\t-p: path for sqlite database (default is in memory)\t\n"
+								"\t-c: <Name> use controllerPlugin <Name> (full path with .so ending)\t\n"
+								"\t-l: <Name> replace command plugin directory with <Name> (full path)\t\n"
+								"\t-r: <Name> replace routing plugin directory with <Name> (full path)\t\n"
+								"\t-L: <Name> add command plugin directory with <Name> (full path)\t\n"
+								"\t-R: <Name> add routing plugin directory with <Name> (full path)\t\n";
+
+std::string controllerPlugin=std::string(CONTROLLER_PLUGIN);
+std::vector<std::string> listCommandPluginDirs;
+std::vector<std::string> listRoutingPluginDirs;
+std::string databasePath=std::string(":memory:");
+
+void daemonize ()
+{
+	umask(0);
+	std::string dir="/";
+
+	rlimit rl;
+	if (getrlimit(RLIMIT_NOFILE, &rl) < 0)
+	{
+		DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("can't get file limit "));
+	}
+
+	pid_t pid;
+	if ((pid = fork()) < 0)
+	{
+		DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("cannot fork!"));
+	}
+	else if (pid != 0)
+	{
+	  exit(0);
+	}
+
+	setsid();
+
+	if (!dir.empty() && chdir(dir.c_str()) < 0)
+	{
+		DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("couldn't chdir to the new directory"));
+	}
+
+	if (rl.rlim_max == RLIM_INFINITY)
+	{
+	  rl.rlim_max = 1024;
+	}
+
+
+	for (unsigned int i = 0; i < rl.rlim_max; i++)
+	{
+	  close(i);
+	}
+
+	int fd0 = open("/dev/null", O_RDONLY);
+	int fd1 = open("/dev/null",O_WRONLY|O_CREAT|O_APPEND, S_IRUSR|S_IWUSR);
+	int fd2 = open("/dev/null", O_WRONLY|O_CREAT|O_APPEND, S_IRUSR|S_IWUSR);
+
+	if (fd0 != STDIN_FILENO || fd1 != STDOUT_FILENO || fd2 != STDERR_FILENO)
+	{
+		DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("new standard file descriptors were not opened"));
+	}
+}
+
+void parseCommandLine(int argc, char **argv)
+{
+	while (optind < argc)
+	{
+		int option =  getopt (argc, argv, "h::v::c::l::r::L::R::d");
+
+		switch (option)
+		{
+		case 'p':
+			assert(!controllerPlugin.empty());
+			databasePath=std::string(optarg);
+			break;
+		case 'd':
+			daemonize();
+			break;
+		case 'l':
+			listCommandPluginDirs.clear();
+			listCommandPluginDirs.push_back(std::string(optarg));
+			break;
+		case 'r':
+			listRoutingPluginDirs.clear();
+			listRoutingPluginDirs.push_back(std::string(optarg));
+			break;
+		case 'L':
+			listCommandPluginDirs.push_back(std::string(optarg));
+			break;
+		case 'R':
+			listRoutingPluginDirs.push_back(std::string(optarg));
+			break;
+		case 'c':
+			controllerPlugin=std::string(optarg);
+			assert(!controllerPlugin.empty());
+			assert(controllerPlugin.find(".so")!=std::string::npos);
+			break;
+		case 'v':
+			printf("AudioManagerDaemon Version: %s\n",DAEMONVERSION);
+			exit(-1);
+			break;
+		case 'h':
+        default:
+            printf("AudioManagerDaemon Version: %s\n",DAEMONVERSION);
+            puts(USAGE_DESCRIPTION);
+            exit(-1);
+		}
+	}
+}
+
+static void signalHandler (int sig, siginfo_t *siginfo, void *context)
+{
+	DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("signal handler was called, exit now..."));
+	gDispatchDone=1;
+}
+
 
 int main(int argc, char *argv[])
 {
 	DLT_REGISTER_APP("AudioManagerDeamon","AudioManagerDeamon");
-	DLT_REGISTER_CONTEXT(DLT_CONTEXT,"Main","Main Context");
-	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("The AudioManager is started "));
+	DLT_REGISTER_CONTEXT(AudioManager,"Main","Main Context");
+	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("The AudioManager is started, "), DLT_STRING(DAEMONVERSION));
 
-	std::vector<std::string> listCommandPluginDirs;
-	listCommandPluginDirs.push_back(std::string(DEFAULT_PLUGIN_COMMAND_DIR)); //change this to be modified by the commandline!
+	listCommandPluginDirs.push_back(std::string(DEFAULT_PLUGIN_COMMAND_DIR));
+	listRoutingPluginDirs.push_back(std::string(DEFAULT_PLUGIN_ROUTING_DIR));
 
-	std::vector<std::string> listRoutingPluginDirs;
-	listRoutingPluginDirs.push_back(std::string(DEFAULT_PLUGIN_ROUTING_DIR)); //change this to be modified by the commandline!
+	//parse the commandline options
+	parseCommandLine(argc, (char**) argv);
+
+	//now the signal handler:
+	struct sigaction signalAction;
+	memset (&signalAction, '\0', sizeof(signalAction));
+	signalAction.sa_sigaction = &signalHandler;
+	signalAction.sa_flags = SA_SIGINFO;
+	sigaction(SIGINT, &signalAction, NULL);
+	sigaction(SIGQUIT, &signalAction, NULL);
+	sigaction(SIGTERM, &signalAction, NULL);
+	sigaction(SIGHUP, &signalAction, NULL);
+	sigaction(SIGQUIT, &signalAction, NULL);
+
+	struct sigaction signalChildAction;
+	memset (&signalAction, '\0', sizeof(signalChildAction));
+	signalChildAction.sa_flags = SA_NOCLDWAIT;
+	sigaction (SIGCHLD, &signalChildAction, NULL);
+
 
 	//Instantiate all classes. Keep in same order !
 #ifdef WITH_SOCKETHANDLER_LOOP
@@ -82,10 +228,10 @@ int main(int argc, char *argv[])
 #endif /*WITH_SOCKETHANDLER_LOOP*/
 #endif /*WITH_DBUS_WRAPPER */
 
-	DatabaseHandler iDatabaseHandler(std::string(":memory:"));
+	DatabaseHandler iDatabaseHandler(databasePath);
 	RoutingSender iRoutingSender(listRoutingPluginDirs);
 	CommandSender iCommandSender(listCommandPluginDirs);
-	ControlSender iControlSender(std::string(CONTROLLER_PLUGIN));
+	ControlSender iControlSender(controllerPlugin);
 	DatabaseObserver iObserver(&iCommandSender, &iRoutingSender);
 
 #ifdef WITH_DBUS_WRAPPER
@@ -121,6 +267,8 @@ int main(int argc, char *argv[])
 	iDBusWrapper.dbusMainLoop();
 #endif/*WITH_SIMPLEDBUS_LOOP*/
 #endif /*WITH_DBUS_WRAPPER*/
+
+exit(0);
 
 }
 

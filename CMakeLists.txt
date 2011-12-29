@@ -11,6 +11,12 @@
 
 cmake_minimum_required(VERSION 2.6)
 
+execute_process(COMMAND git describe --tags WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} 
+                OUTPUT_VARIABLE DAEMONVERSION 
+                OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+message(STATUS "Build Version ${DAEMONVERSION}")
+
 PROJECT(AudioManagerDeamon)
 
 OPTION( WITH_DBUS_WRAPPER 
@@ -39,6 +45,9 @@ OPTION( WITH_PLUGIN_ROUTING
 
 OPTION( WITH_MAIN
 	"Build with daemon" ON)
+
+OPTION( WITH_PPOLL
+	"libc supports ppoll" ON)
 
 #Can be changed via passing -DDBUS_SERVICE_PREFIX="XXX" to cmake
 IF(NOT DEFINED DBUS_SERVICE_PREFIX)
@@ -81,7 +90,7 @@ IF(WITH_DOCUMENTATION)
 ENDIF(WITH_DOCUMENTATION)
 
 ##global build flags
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Wextra -std=c++98")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Wextra -std=c++98 -D_GNU_SOURCE")
 
 if(WITH_PLUGIN_COMMAND)
 	add_subdirectory (PluginCommandInterfaceDbus)

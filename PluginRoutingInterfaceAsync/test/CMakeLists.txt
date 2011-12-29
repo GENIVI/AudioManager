@@ -53,13 +53,31 @@ file(GLOB ASYNC_PLUGIN_INTERFACE_SRCS_CXX
      "../../AudioManagerDaemon/src/SocketHandler.cpp"
      "../../AudioManagerDaemon/src/RoutingSender.cpp"
      "../src/*.cpp"  
-     "*.cpp" 
+     "testRoutingInterfaceAsync.cpp" 
+)
+
+file(GLOB ASYNC_PLUGIN_INTERFACE_INTERRUPT_SRCS_CXX 
+     "../../AudioManagerDaemon/src/SocketHandler.cpp"
+     "../../AudioManagerDaemon/src/RoutingSender.cpp"
+     "../src/*.cpp"  
+     "testRoutingInterfaceAsyncInterrupt.cpp" 
+
 )
 
 ADD_EXECUTABLE(asyncRoutingInterfaceTest ${ASYNC_PLUGIN_INTERFACE_SRCS_CXX})
+ADD_EXECUTABLE(asyncRoutingInterfaceInterruptTest ${ASYNC_PLUGIN_INTERFACE_INTERRUPT_SRCS_CXX})
 
 
 TARGET_LINK_LIBRARIES(asyncRoutingInterfaceTest 
+    ${DLT_LIBRARIES}
+    ${CMAKE_DL_LIBS}
+    ${CMAKE_THREAD_LIBS_INIT}
+    ${GTEST_LIBRARIES}
+    ${DBUS_LIBRARY}
+    gmock
+)
+
+TARGET_LINK_LIBRARIES(asyncRoutingInterfaceInterruptTest 
     ${DLT_LIBRARIES}
     ${CMAKE_DL_LIBS}
     ${CMAKE_THREAD_LIBS_INIT}

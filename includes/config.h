@@ -1,9 +1,12 @@
 #ifndef _CONFIG_H
 #define _CONFIG_H
 
+#define DAEMONVERSION "ver-0.0.1-1-g8e09101"
+
 #define WITH_DBUS_WRAPPER
 #define WITH_SOCKETHANDLER_LOOP 
 /* #undef WITH_SIMPLEDBUS_LOOP */
+#define WITH_PPOLL
 
 #define DEFAULT_PLUGIN_COMMAND_DIR "/home/christian/workspace/gitserver/bin/plugins/command"
 #define DEFAULT_PLUGIN_ROUTING_DIR "/home/christian/workspace/gitserver/bin/plugins/routing"

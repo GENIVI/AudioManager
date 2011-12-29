@@ -100,10 +100,6 @@ void testRoutingInterfaceAsync::TearDown()
 	DLT_UNREGISTER_CONTEXT(DLT_CONTEXT);
 }
 
-std::string DBUSCOMMAND = "dbus-send --session --print-reply --dest=org.genivi.test /org/genivi/test org.genivi.test.";
-
-
-
 
 TEST_F(testRoutingInterfaceAsync,setDomainState)
 {
@@ -115,39 +111,6 @@ TEST_F(testRoutingInterfaceAsync,setDomainState)
 	ASSERT_EQ(E_OK,pRoutingSender.setDomainState(domainID,state));
 	pSocketHandler.start_listenting();
 }
-TEST_F(testRoutingInterfaceAsync,hookInterruptStatusChange)
-{
-	am_sourceID_t sourceID=2;
-	EXPECT_CALL(pReceiveInterface,hookInterruptStatusChange(sourceID,_)).Times(1);
-	system((DBUSCOMMAND + std::string("InterruptStatusChange int16:2")).c_str());
-	pSocketHandler.start_listenting();
-}
-
-TEST_F(testRoutingInterfaceAsync,hookSourceAvailablityStatusChange)
-{
-	am_sourceID_t sourceID=2;
-	EXPECT_CALL(pReceiveInterface,hookSourceAvailablityStatusChange(sourceID,_)).Times(1);
-	system((DBUSCOMMAND + std::string("SourceAvailablityStatusChange int16:2")).c_str());
-	pSocketHandler.start_listenting();
-}
-
-TEST_F(testRoutingInterfaceAsync,hookSinkAvailablityStatusChange)
-{
-	am_sinkID_t sinkID=2;
-	EXPECT_CALL(pReceiveInterface,hookSinkAvailablityStatusChange(sinkID,_)).Times(1);
-	system((DBUSCOMMAND + std::string("SinkAvailablityStatusChange int16:2")).c_str());
-	pSocketHandler.start_listenting();
-}
-
-TEST_F(testRoutingInterfaceAsync,hookTimingInformationChanged)
-{
-	am_connectionID_t connectionID=4;
-	am_timeSync_t delay=35;
-	EXPECT_CALL(pReceiveInterface,hookTimingInformationChanged(connectionID,delay)).Times(1);
-	system((DBUSCOMMAND + std::string("timingChanged int16:4 int16:35")).c_str());
-	pSocketHandler.start_listenting();
-}
-
 
 TEST_F(testRoutingInterfaceAsync,setSourceSoundProperty)
 {

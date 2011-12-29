@@ -29,7 +29,7 @@
 #include <dlfcn.h>
 #include <libgen.h>
 
-DLT_IMPORT_CONTEXT(DLT_CONTEXT)
+DLT_IMPORT_CONTEXT(AudioManager)
 
 namespace am {
 
@@ -40,7 +40,7 @@ namespace am {
  */
 template<class T>T* getCreateFunction(const std::string& libname, void*& libraryHandle) {
 
-	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("Trying to load libray with name: "),DLT_STRING(libname.c_str()));
+	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Trying to load libray with name: "),DLT_STRING(libname.c_str()));
 
 	// cut off directories
 	char* fileWithPath = const_cast<char*>(libname.c_str());
@@ -55,7 +55,7 @@ template<class T>T* getCreateFunction(const std::string& libname, void*& library
 	const char* dlopen_error = dlerror();
 	if (!libraryHandle || dlopen_error)
 	{
-		DLT_LOG(DLT_CONTEXT,DLT_LOG_ERROR, DLT_STRING("dlopen failed"),DLT_STRING(dlopen_error));
+		DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("dlopen failed"),DLT_STRING(dlopen_error));
 		return 0;
 	}
 
@@ -78,11 +78,11 @@ template<class T>T* getCreateFunction(const std::string& libname, void*& library
 	const char* dlsym_error = dlerror();
 	if (!createFunction || dlsym_error)
 	{
-		DLT_LOG(DLT_CONTEXT,DLT_LOG_ERROR, DLT_STRING("Failed to load shared lib entry point"),DLT_STRING(dlsym_error));
+		DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("Failed to load shared lib entry point"),DLT_STRING(dlsym_error));
 	}
 	else
 	{
-		DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("loaded successfully plugin"),DLT_STRING(createFunctionName.c_str()));
+		DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("loaded successfully plugin"),DLT_STRING(createFunctionName.c_str()));
 	}
 	return createFunction;
 }

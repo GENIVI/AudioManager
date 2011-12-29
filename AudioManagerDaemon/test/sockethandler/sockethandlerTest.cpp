@@ -14,11 +14,16 @@
 #include <netdb.h>
 #include <fcntl.h>
 #include <sys/un.h>
+#include <dlt/dlt.h>
 
 #define SOCK_PATH "/tmp/mysock"
 
 using namespace testing;
 using namespace am;
+
+DLT_DECLARE_CONTEXT(AudioManager)
+
+static volatile sig_atomic_t gDispatch = 1;		//this global is used to stop the mainloop
 
 sockethandlerTest::sockethandlerTest()
 {

@@ -23,6 +23,7 @@
 */
 
 #include "SocketHandler.h"
+#include <config.h>
 #include <assert.h>
 #include <sys/fcntl.h>
 #include <sys/errno.h>
@@ -30,14 +31,14 @@
 #include <algorithm>
 #include <time.h>
 #include <features.h>
+#include <dlt/dlt.h>
+#include <signal.h>
 
-//todo: implement ppoll
-//todo: signal handling here
 //todo: implement time correction if timer was interrupted by call
 
-#include <iostream>  //todo remove
+DLT_IMPORT_CONTEXT(AudioManager)
 
-namespace am {
+using namespace am;
 
 SocketHandler::SocketHandler()
 	:mListPoll(),
@@ -46,11 +47,12 @@ SocketHandler::SocketHandler()
 	 mNextTimer(),
 	 mLastInsertedHandle(0),
 	 mLastInsertedPollHandle(0),
-	 mDispatch(true),
-	 mRecreatePollfds(true)
+	 mRecreatePollfds(true),
+	 mTimeout(),
+	 mTimeoutPointer(NULL)
 {
-	mTimeout.tv_nsec=-1;
-	mTimeout.tv_sec=-1;
+	mTimeout.tv_nsec=0;
+	mTimeout.tv_sec=0;
 }
 
 SocketHandler::~SocketHandler()
@@ -70,7 +72,16 @@ void SocketHandler::start_listenting()
 	//init the timer
 	initTimer();
 
-	while (mDispatch)
+	//prepare the signalmask
+	sigset_t sigmask;
+	sigemptyset(&sigmask);
+	sigaddset(&sigmask, SIGINT);
+	sigaddset(&sigmask, SIGQUIT);
+	sigaddset(&sigmask, SIGTERM);
+	sigaddset(&sigmask, SIGHUP);
+	sigaddset(&sigmask, SIGQUIT);
+
+	while (!gDispatchDone)
 	{
 		//first we go through the registered filedescriptors and check if someone needs preparation:
 		mListPoll_t::iterator prepIter=mListPoll.begin();
@@ -89,10 +100,37 @@ void SocketHandler::start_listenting()
 		}
 
 		//block until something is on a filedescriptor
-		if((pollStatus=poll(&mfdPollingArray.front(),mfdPollingArray.size(),timespec2ms(mTimeout)))==-1)
+#ifdef WITH_PPOLL
+		if((pollStatus=ppoll(&mfdPollingArray.front(),mfdPollingArray.size(),mTimeoutPointer,&sigmask))<0)
 		{
-			//todo enter DLT message here;
+			if(errno==EINTR)
+			{
+				//a signal was received, that means it's time to go...
+				pollStatus=0;
+			}
+			else
+			{
+				DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("SocketHandler::start_listenting ppoll returned with error"),DLT_INT(errno));
+				exit(0);
+			}
 		}
+
+#else
+		sigprocmask (SIG_SETMASK, &mask, &oldmask);
+		if((pollStatus=poll(&mfdPollingArray.front(),mfdPollingArray.size(),timespec2ms(mTimeout)))<0)
+		{
+
+			if(errno==EINTR)
+			{
+				//a signal was received, that means it's time to go...
+				//todo: add things to do here before going to sleep
+		        exit(0);
+			}
+			DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("SocketHandler::start_listenting poll returned with error"),DLT_INT(errno));
+			exit(0);
+		}
+		sigprocmask (SIG_SETMASK, &oldmask, NULL);
+#endif
 
 		if (pollStatus!=0) //only check filedescriptors if there was a change
 		{
@@ -165,7 +203,7 @@ void SocketHandler::start_listenting()
  */
 void SocketHandler::stop_listening()
 {
-	mDispatch=false;
+	gDispatchDone=1;
 }
 
 /**
@@ -323,11 +361,13 @@ am_Error_e SocketHandler::stopTimer(const sh_timerHandle_t handle)
 			if (!mListActiveTimer.empty())
 			{
 				mTimeout=mListActiveTimer.front().countdown;
+				mTimeoutPointer=&mTimeout;
 			}
 			else
 			{
-				mTimeout.tv_nsec=-1;
-				mTimeout.tv_sec=-1;
+				mTimeout.tv_nsec=0;
+				mTimeout.tv_sec=0;
+				mTimeoutPointer=NULL;
 			}
 			return E_OK;
 		}
@@ -383,11 +423,13 @@ void SocketHandler::timerUp()
 		//substract the old value from all timers in the list
 		std::for_each(mListActiveTimer.begin(),mListActiveTimer.end(),SubstractTime(mTimeout));
 		mTimeout=mListActiveTimer.front().countdown;
+		mTimeoutPointer=&mTimeout;
 	}
 	else
 	{
-		mTimeout.tv_nsec=-1;
-		mTimeout.tv_sec=-1;
+		mTimeout.tv_nsec=0;
+		mTimeout.tv_sec=0;
+		mTimeoutPointer=NULL;
 	}
 }
 
@@ -399,11 +441,13 @@ void SocketHandler::initTimer()
 	if(!mListActiveTimer.empty())
 	{
 		mTimeout=mListActiveTimer.front().countdown;
+		mTimeoutPointer=&mTimeout;
 	}
 	else
 	{
-		mTimeout.tv_nsec=-1;
-		mTimeout.tv_sec=-1;
+		mTimeout.tv_nsec=0;
+		mTimeout.tv_sec=0;
+		mTimeoutPointer=NULL;
 	}
 }
 
@@ -415,7 +459,7 @@ void SocketHandler::initTimer()
 */
 inline int SocketHandler::timespec2ms(const timespec & time)
 {
-	return (time.tv_nsec == -1 && time.tv_sec == -1) ? -1 : time.tv_sec * 1000 + time.tv_nsec / 1000000;
+	return (time.tv_nsec == 0 && time.tv_sec == 0) ? -1 : time.tv_sec * 1000 + time.tv_nsec / 1000000;
 }
 
 /**
@@ -441,6 +485,4 @@ void SocketHandler::CopyPollfd::operator ()(const sh_poll_s & row)
 	mArray.push_back(temp);
 }
 
-/* namespace am */
-}
 

@@ -14,7 +14,7 @@ cmake_minimum_required(VERSION 2.6)
 PROJECT(AudioManagerDeamon)
 
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -rdynamic")
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -DDLT_CONTEXT=AudioManager")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 
 set(DOC_OUTPUT_PATH ${DOC_OUTPUT_PATH}/AudioManager)
 set(INCLUDES_FOLDER "include")

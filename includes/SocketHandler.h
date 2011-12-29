@@ -32,8 +32,11 @@
 #include <sys/poll.h>
 #include <list>
 #include <map>
+#include <signal.h>
 
 namespace am {
+
+static volatile sig_atomic_t gDispatchDone = 0;		//this global is used to stop the mainloop
 
 typedef uint16_t sh_timerHandle_t;   	//!<this is a handle for a timer to be used with the SocketHandler
 typedef uint16_t sh_pollHandle_t;		//!<this is a handle for a filedescriptor to be used with the SocketHandler
@@ -124,7 +127,7 @@ private:
 	sh_timerHandle_t mLastInsertedHandle;
 	sh_pollHandle_t mLastInsertedPollHandle;
 	timespec mTimeout;
-	bool mDispatch;
+	timespec *mTimeoutPointer; 				//we need this because for infinite loops we need to set this to NULL mTimeout -1 is not working with ppoll
 	bool mRecreatePollfds;
 };
 
