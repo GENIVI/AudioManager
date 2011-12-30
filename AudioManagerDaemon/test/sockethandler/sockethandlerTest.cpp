@@ -186,6 +186,7 @@ TEST(sockethandlerTest,playWithSockets)
 
 TEST(sockethandlerTest,playWithTimers)
 {
+	gDispatchDone=0;
 	SocketHandler myHandler;
 	timerCallBack testCallback(&myHandler);
 	timespec timeoutTime, timeout2, timeout3, timeout4;

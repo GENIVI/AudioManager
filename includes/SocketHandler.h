@@ -108,6 +108,7 @@ private:
 	void initTimer();
 	void timerUp();
 	int timespec2ms(const timespec& time);
+	timespec* insertTime(timespec& buffertime);
 	static bool compareCountdown(const timer_s& a, const timer_s& b)
 	{
 		return (a.countdown.tv_sec==b.countdown.tv_sec) ? (a.countdown.tv_nsec < b.countdown.tv_nsec) : (a.countdown.tv_sec < b.countdown.tv_sec);
@@ -127,7 +128,6 @@ private:
 	sh_timerHandle_t mLastInsertedHandle;
 	sh_pollHandle_t mLastInsertedPollHandle;
 	timespec mTimeout;
-	timespec *mTimeoutPointer; 				//we need this because for infinite loops we need to set this to NULL mTimeout -1 is not working with ppoll
 	bool mRecreatePollfds;
 };
 

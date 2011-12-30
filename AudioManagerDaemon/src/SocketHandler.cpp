@@ -34,6 +34,8 @@
 #include <dlt/dlt.h>
 #include <signal.h>
 
+
+#include <iostream>
 //todo: implement time correction if timer was interrupted by call
 
 DLT_IMPORT_CONTEXT(AudioManager)
@@ -48,11 +50,11 @@ SocketHandler::SocketHandler()
 	 mLastInsertedHandle(0),
 	 mLastInsertedPollHandle(0),
 	 mRecreatePollfds(true),
-	 mTimeout(),
-	 mTimeoutPointer(NULL)
+	 mTimeout()
 {
-	mTimeout.tv_nsec=0;
-	mTimeout.tv_sec=0;
+	mTimeout.tv_nsec=-1;
+	mTimeout.tv_sec=-1;
+	gDispatchDone=0;
 }
 
 SocketHandler::~SocketHandler()
@@ -101,7 +103,9 @@ void SocketHandler::start_listenting()
 
 		//block until something is on a filedescriptor
 #ifdef WITH_PPOLL
-		if((pollStatus=ppoll(&mfdPollingArray.front(),mfdPollingArray.size(),mTimeoutPointer,&sigmask))<0)
+
+		timespec buffertime;
+		if((pollStatus=ppoll(&mfdPollingArray.front(),mfdPollingArray.size(),insertTime(buffertime),&sigmask))<0)
 		{
 			if(errno==EINTR)
 			{
@@ -116,7 +120,7 @@ void SocketHandler::start_listenting()
 		}
 
 #else
-		sigprocmask (SIG_SETMASK, &mask, &oldmask);
+		//sigprocmask (SIG_SETMASK, &mask, &oldmask);
 		if((pollStatus=poll(&mfdPollingArray.front(),mfdPollingArray.size(),timespec2ms(mTimeout)))<0)
 		{
 
@@ -129,7 +133,7 @@ void SocketHandler::start_listenting()
 			DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("SocketHandler::start_listenting poll returned with error"),DLT_INT(errno));
 			exit(0);
 		}
-		sigprocmask (SIG_SETMASK, &oldmask, NULL);
+		//sigprocmask (SIG_SETMASK, &oldmask, NULL);
 #endif
 
 		if (pollStatus!=0) //only check filedescriptors if there was a change
@@ -361,13 +365,11 @@ am_Error_e SocketHandler::stopTimer(const sh_timerHandle_t handle)
 			if (!mListActiveTimer.empty())
 			{
 				mTimeout=mListActiveTimer.front().countdown;
-				mTimeoutPointer=&mTimeout;
 			}
 			else
 			{
-				mTimeout.tv_nsec=0;
-				mTimeout.tv_sec=0;
-				mTimeoutPointer=NULL;
+				mTimeout.tv_nsec=-1;
+				mTimeout.tv_sec=-1;
 			}
 			return E_OK;
 		}
@@ -423,13 +425,11 @@ void SocketHandler::timerUp()
 		//substract the old value from all timers in the list
 		std::for_each(mListActiveTimer.begin(),mListActiveTimer.end(),SubstractTime(mTimeout));
 		mTimeout=mListActiveTimer.front().countdown;
-		mTimeoutPointer=&mTimeout;
 	}
 	else
 	{
-		mTimeout.tv_nsec=0;
-		mTimeout.tv_sec=0;
-		mTimeoutPointer=NULL;
+		mTimeout.tv_nsec=-1;
+		mTimeout.tv_sec=-1;
 	}
 }
 
@@ -441,13 +441,11 @@ void SocketHandler::initTimer()
 	if(!mListActiveTimer.empty())
 	{
 		mTimeout=mListActiveTimer.front().countdown;
-		mTimeoutPointer=&mTimeout;
 	}
 	else
 	{
-		mTimeout.tv_nsec=0;
-		mTimeout.tv_sec=0;
-		mTimeoutPointer=NULL;
+		mTimeout.tv_nsec=-1;
+		mTimeout.tv_sec=-1;
 	}
 }
 
@@ -459,7 +457,14 @@ void SocketHandler::initTimer()
 */
 inline int SocketHandler::timespec2ms(const timespec & time)
 {
-	return (time.tv_nsec == 0 && time.tv_sec == 0) ? -1 : time.tv_sec * 1000 + time.tv_nsec / 1000000;
+	return (time.tv_nsec == -1 && time.tv_sec == -1) ? -1 : time.tv_sec * 1000 + time.tv_nsec / 1000000;
+}
+
+inline timespec* am::SocketHandler::insertTime(timespec& buffertime)
+{
+	buffertime.tv_nsec=mTimeout.tv_nsec;
+	buffertime.tv_sec=mTimeout.tv_sec;
+	return (mTimeout.tv_nsec == -1 && mTimeout.tv_sec == -1) ? NULL : &buffertime;
 }
 
 /**
@@ -484,5 +489,9 @@ void SocketHandler::CopyPollfd::operator ()(const sh_poll_s & row)
 	temp.revents=0;
 	mArray.push_back(temp);
 }
+
+
+
+
 
 
