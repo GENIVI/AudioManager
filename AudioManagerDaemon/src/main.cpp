@@ -183,6 +183,7 @@ static void signalHandler (int sig, siginfo_t *siginfo, void *context)
 {
 	DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("signal handler was called, exit now..."));
 	gDispatchDone=1;
+	exit(1);
 }
 
 

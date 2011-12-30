@@ -36,30 +36,36 @@ You will need some packages in order to comile the GENIVI AudioManager Proof of 
 -dbus
 -sqlite
 -automotive-dlt
--google mock & google test (for the test - if you do not want them, uncomment these lines in Cmakelist.txt:
-	add_subdirectory (database)
-	add_subdirectory (routingInterface)
-	add_subdirectory (controlInterface))
-	
+-google mock & google test (for the test - if you do not want them, use the options of cmake to disable them)
 -doxygen (only for documentation)
 
 More details in the CMake Files CmakeList.txt in the projects
 
-on the top level of the folder you just received, there is a shall script "cmaker.sh" which can be invoked with a lot of different parameters. Invoking it with:
+In order to build the project (out of source build), please follow these instructions on the commandline:
 
-sh cmaker.sh all all
-
-will create all neccessary folders and compile all plugins and applications except the PulseAudio Plugin.
+mkdir /build
+cd build
+cmake ..
+make -j4
 
 after the script finished, you should have:
 
-a /bin folder which contains: 
-	AudioManager  
-
+a /bin folder which contains all executables and the libraries: 
 a /build folder which has all build objects (erase that if you need a clean build)
 
-a /test folder which invokes all the tests for the audiomanager
+The options of the AudioManager
 
+Usage:	AudioManagerDaemon [options]
+options:	
+	-h: print this message	
+	-v: print version	
+	-d: daemonize AudioManager 	
+	-p: path for sqlite database (default is in memory)	
+	-c: <Name> use controllerPlugin <Name> (full path with .so ending)	
+	-l: <Name> replace command plugin directory with <Name> (full path)	
+	-r: <Name> replace routing plugin directory with <Name> (full path)	
+	-L: <Name> add command plugin directory with <Name> (full path)	
+	-R: <Name> add routing plugin directory with <Name> (full path)	
 
 
 
