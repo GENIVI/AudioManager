@@ -23,6 +23,7 @@ FIND_PATH(DBUS_INCLUDE_DIR dbus/dbus.h
 
 FIND_PATH(DBUS_ARCH_INCLUDE_DIR dbus/dbus-arch-deps.h
 /usr/lib/dbus-1.0/include
+/usr/lib/*/dbus-1.0/include
 )
 
 FIND_LIBRARY(DBUS_LIBRARY

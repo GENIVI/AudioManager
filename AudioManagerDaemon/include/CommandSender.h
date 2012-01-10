@@ -59,6 +59,7 @@ public:
 	void cbSinkMuteStateChanged(const am_sinkID_t sinkID, const am_MuteState_e muteState) ;
 	void cbSystemPropertyChanged(const am_SystemProperty_s& SystemProperty) ;
 	void cbTimingInformationChanged(const am_mainConnectionID_t mainConnection, const am_timeSync_t time) ;
+	uint16_t getInterfaceVersion() const;
 #ifdef UNIT_TEST
 	friend class CommandInterfaceBackdoor; //this is to get access to the loaded plugins and be able to exchange the interfaces
 #endif

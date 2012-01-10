@@ -23,6 +23,8 @@
 */
 
 #include "CommandReceiver.h"
+#include "DatabaseHandler.h"
+#include "ControlSender.h"
 #include <SocketHandler.h>
 #include <config.h>
 #include <assert.h>
@@ -204,7 +206,7 @@ am_Error_e CommandReceiver::getDBusConnectionWrapper(DBusWrapper*& dbusConnectio
 #endif /*WITH_DBUS_WRAPPER*/
 }
 
-am_Error_e am::CommandReceiver::getSocketHandler(SocketHandler *& socketHandler) const
+am_Error_e CommandReceiver::getSocketHandler(SocketHandler *& socketHandler) const
 {
 #ifdef WITH_SOCKETHANDLER_LOOP
 	socketHandler=mSocketHandler;
@@ -213,6 +215,13 @@ am_Error_e am::CommandReceiver::getSocketHandler(SocketHandler *& socketHandler)
 	return E_UNKNOWN;
 #endif /*WITH_SOCKETHANDLER_LOOP*/
 }
+
+uint16_t CommandReceiver::getInterfaceVersion() const
+{
+	return CommandReceiveVersion;
+}
+
+
 
 
 

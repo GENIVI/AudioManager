@@ -26,16 +26,17 @@ IF(WITH_DBUS_WRAPPER)
 ENDIF(WITH_DBUS_WRAPPER)
 
 SET(AUDIOMAN_SRCS_CXX
+    src/main.cpp
     src/CommandReceiver.cpp
     src/CommandSender.cpp
     src/ControlReceiver.cpp
     src/ControlSender.cpp
     src/DatabaseHandler.cpp
     src/DatabaseObserver.cpp
-    src/main.cpp
     src/RoutingReceiver.cpp
     src/RoutingSender.cpp
     src/SocketHandler.cpp
+    src/TelnetServer.cpp
 )
 
 IF(WITH_DBUS_WRAPPER)

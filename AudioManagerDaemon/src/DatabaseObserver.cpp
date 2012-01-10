@@ -23,9 +23,10 @@
 */
 
 #include "DatabaseObserver.h"
-#include <assert.h>
 #include "CommandSender.h"
 #include "RoutingSender.h"
+#include "TelnetServer.h"
+#include <assert.h>
 
 using namespace am;
 
@@ -35,6 +36,16 @@ DatabaseObserver::DatabaseObserver(CommandSender *iCommandSender, RoutingSender 
 {
 	assert(mCommandSender!=0);
 	assert(mRoutingSender!=0);
+}
+
+DatabaseObserver::DatabaseObserver(CommandSender *iCommandSender, RoutingSender *iRoutingSender, TelnetServer *iTelnetServer)
+	:mCommandSender(iCommandSender),
+	 mRoutingSender(iRoutingSender),
+	 mTelnetServer(iTelnetServer)
+{
+	assert(mCommandSender!=0);
+	assert(mRoutingSender!=0);
+	assert(mTelnetServer!=0);
 }
 
 DatabaseObserver::~DatabaseObserver() {
@@ -194,6 +205,9 @@ void DatabaseObserver::timingInformationChanged(const am_mainConnectionID_t main
 	mCommandSender->cbTimingInformationChanged(mainConnection,time);
 	//todo:inform the controller via controlsender
 }
+
+
+
 
 
 

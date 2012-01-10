@@ -25,17 +25,20 @@
 #ifndef DATABASEOBSERVER_H_
 #define DATABASEOBSERVER_H_
 
-#include "CommandSender.h"
-#include "RoutingSender.h"
+#include <audiomanagertypes.h>
 
 namespace am {
 
+class TelnetServer;
+class CommandSender;
+class RoutingSender;
 /**
  * This class observes the Database and notifies other classes about important events, mainly the CommandSender.
  */
 class DatabaseObserver {
 public:
 	DatabaseObserver(CommandSender *iCommandSender, RoutingSender *iRoutingSender);
+	DatabaseObserver(CommandSender *iCommandSender, RoutingSender *iRoutingSender,TelnetServer *iTelnetServer);
 	virtual ~DatabaseObserver();
 	void numberOfMainConnectionsChanged() ;
 	void numberOfSinkClassesChanged() ;
@@ -62,6 +65,7 @@ public:
 private:
 	CommandSender *mCommandSender; //!< pointer to the comandSender
 	RoutingSender* mRoutingSender; //!< pointer to the routingSender
+	TelnetServer* mTelnetServer;   //!< pointer to the telnetserver
 };
 
 }

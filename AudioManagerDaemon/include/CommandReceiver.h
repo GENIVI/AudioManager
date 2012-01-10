@@ -27,14 +27,13 @@
 
 #include <command/CommandReceiveInterface.h>
 #include <config.h>
-#ifdef WITH_DBUS_WRAPPER
-#include <dbus/DBusWrapper.h>
-#endif
-#include <SocketHandler.h>
-#include "DatabaseHandler.h"
-#include "ControlSender.h"
 
 namespace am {
+
+class DatabaseHandler;
+class ControlSender;
+class DBusWrapper;
+class SocketHandler;
 
 /**
  * This class realizes the command Interface
@@ -64,11 +63,12 @@ public:
 	am_Error_e getTimingInformation(const am_mainConnectionID_t mainConnectionID, am_timeSync_t& delay) const ;
 	am_Error_e getDBusConnectionWrapper(DBusWrapper*& dbusConnectionWrapper) const ;
 	am_Error_e getSocketHandler(SocketHandler*& socketHandler) const;
+	uint16_t getInterfaceVersion() const;
 
 private:
 	DatabaseHandler* mDatabaseHandler; //!< pointer to the databasehandler
-	DBusWrapper* mDBusWrapper; //!< pointer to the dbuswrapper
 	ControlSender* mControlSender; //!< pointer to the control sender
+	DBusWrapper* mDBusWrapper; //!< pointer to the dbuswrapper
 	SocketHandler* mSocketHandler; //!< pointer to the SocketHandler
 };
 

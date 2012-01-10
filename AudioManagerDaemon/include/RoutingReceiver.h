@@ -26,16 +26,15 @@
 #define ROUTINGRECEIVER_H_
 
 #include <routing/RoutingReceiveInterface.h>
-#include <SocketHandler.h>
 #include <config.h>
-#ifdef WITH_DBUS_WRAPPER
-#include <dbus/DBusWrapper.h>
-#endif
-#include "DatabaseHandler.h"
-#include "RoutingSender.h"
-#include "ControlSender.h"
 
 namespace am {
+
+class SocketHandler;
+class DBusWrapper;
+class DatabaseHandler;
+class RoutingSender;
+class ControlSender;
 
 /**
  * Implements the Receiving side of the RoutingPlugins.
@@ -52,7 +51,9 @@ public:
 	void ackSetSourceVolumeChange(const am_Handle_s handle, const am_volume_t volume, const am_Error_e error) ;
 	void ackSetSourceState(const am_Handle_s handle, const am_Error_e error) ;
 	void ackSetSinkSoundProperty(const am_Handle_s handle, const am_Error_e error) ;
+	void ackSetSinkSoundProperties(const am_Handle_s handle, const am_Error_e error) ;
 	void ackSetSourceSoundProperty(const am_Handle_s handle, const am_Error_e error) ;
+	void ackSetSourceSoundProperties(const am_Handle_s handle, const am_Error_e error) ;
 	void ackCrossFading(const am_Handle_s handle, const am_HotSink_e hotSink, const am_Error_e error) ;
 	void ackSourceVolumeTick(const am_Handle_s handle, const am_sourceID_t sourceID, const am_volume_t volume) ;
 	void ackSinkVolumeTick(const am_Handle_s handle, const am_sinkID_t sinkID, const am_volume_t volume) ;
@@ -80,13 +81,14 @@ public:
 	am_Error_e sendChangedData(const std::vector<am_EarlyData_s>& earlyData) ;
 	am_Error_e getDBusConnectionWrapper(DBusWrapper*& dbusConnectionWrapper) const ;
 	am_Error_e getSocketHandler(SocketHandler*& socketHandler) const;
+	uint16_t getInterfaceVersion() const;
 
 private:
 	DatabaseHandler *mDatabaseHandler; //!< pointer to the databaseHandler
 	RoutingSender *mRoutingSender; //!< pointer to the routingSender
 	ControlSender *mControlSender; //!< pointer to the controlSender
-	DBusWrapper *mDBusWrapper;	//!< pointer to dbuswrapper
 	SocketHandler *mSocketHandler; //!< pointer to sockethandler
+	DBusWrapper *mDBusWrapper;	//!< pointer to dbuswrapper
 
 };
 

@@ -24,6 +24,13 @@
 */
 
 #include "RoutingReceiver.h"
+#include <SocketHandler.h>
+#ifdef WITH_DBUS_WRAPPER
+#include <dbus/DBusWrapper.h>
+#endif
+#include "DatabaseHandler.h"
+#include "RoutingSender.h"
+#include "ControlSender.h"
 #include <assert.h>
 
 using namespace am;
@@ -149,7 +156,6 @@ void RoutingReceiver::ackSetSinkSoundProperty(const am_Handle_s handle, const am
 	RoutingSender::am_handleData_c handleData=mRoutingSender->returnHandleData(handle);
 	if(error==E_OK && handleData.sinkID!=0)
 	{
-		//todo: check if volume in handleData is same than volume. React to it.
 		mDatabaseHandler->changeSinkSoundPropertyDB(handleData.soundPropery,handleData.sinkID);
 	}
 	mRoutingSender->removeHandle(handle);
@@ -157,6 +163,21 @@ void RoutingReceiver::ackSetSinkSoundProperty(const am_Handle_s handle, const am
 
 }
 
+void am::RoutingReceiver::ackSetSinkSoundProperties(const am_Handle_s handle, const am_Error_e error)
+{
+	RoutingSender::am_handleData_c handleData=mRoutingSender->returnHandleData(handle);
+	if(error==E_OK && handleData.sinkID!=0)
+	{
+		std::vector<am_SoundProperty_s>::const_iterator it=handleData.soundProperties->begin();
+		for(;it!=handleData.soundProperties->end();++it)
+		{
+			mDatabaseHandler->changeSinkSoundPropertyDB(*it,handleData.sinkID);
+		}
+		delete handleData.soundProperties;
+	}
+	mRoutingSender->removeHandle(handle);
+	mControlSender->cbAckSetSinkSoundProperties(handle,error);
+}
 
 
 void RoutingReceiver::ackSetSourceSoundProperty(const am_Handle_s handle, const am_Error_e error)
@@ -164,7 +185,6 @@ void RoutingReceiver::ackSetSourceSoundProperty(const am_Handle_s handle, const 
 	RoutingSender::am_handleData_c handleData=mRoutingSender->returnHandleData(handle);
 	if(error==E_OK && handleData.sourceID!=0)
 	{
-		//todo: check if volume in handleData is same than volume. React to it.
 		mDatabaseHandler->changeSourceSoundPropertyDB(handleData.soundPropery,handleData.sourceID);
 	}
 	mRoutingSender->removeHandle(handle);
@@ -172,6 +192,21 @@ void RoutingReceiver::ackSetSourceSoundProperty(const am_Handle_s handle, const 
 }
 
 
+void am::RoutingReceiver::ackSetSourceSoundProperties(const am_Handle_s handle, const am_Error_e error)
+{
+	RoutingSender::am_handleData_c handleData=mRoutingSender->returnHandleData(handle);
+	if(error==E_OK && handleData.sourceID!=0)
+	{
+		std::vector<am_SoundProperty_s>::const_iterator it=handleData.soundProperties->begin();
+		for(;it!=handleData.soundProperties->end();++it)
+		{
+			mDatabaseHandler->changeSourceSoundPropertyDB(*it,handleData.sourceID);
+		}
+		delete handleData.soundProperties;
+	}
+	mRoutingSender->removeHandle(handle);
+	mControlSender->cbAckSetSourceSoundProperties(handle,error);
+}
 
 void RoutingReceiver::ackCrossFading(const am_Handle_s handle, const am_HotSink_e hotSink, const am_Error_e error)
 {
@@ -355,7 +390,7 @@ am_Error_e RoutingReceiver::peekSourceClassID(const std::string name, const am_s
 	return E_NOT_USED;
 }
 
-am_Error_e am::RoutingReceiver::getDBusConnectionWrapper(DBusWrapper *& dbusConnectionWrapper) const
+am_Error_e RoutingReceiver::getDBusConnectionWrapper(DBusWrapper *& dbusConnectionWrapper) const
 {
 #ifdef WITH_DBUS_WRAPPER
 	dbusConnectionWrapper=mDBusWrapper;
@@ -366,7 +401,7 @@ am_Error_e am::RoutingReceiver::getDBusConnectionWrapper(DBusWrapper *& dbusConn
 }
 
 
-am_Error_e am::RoutingReceiver::getSocketHandler(SocketHandler *& socketHandler) const
+am_Error_e RoutingReceiver::getSocketHandler(SocketHandler *& socketHandler) const
 {
 #ifdef WITH_SOCKETHANDLER_LOOP
 	socketHandler=mSocketHandler;
@@ -375,6 +410,13 @@ am_Error_e am::RoutingReceiver::getSocketHandler(SocketHandler *& socketHandler)
 	return E_UNKNOWN;
 #endif
 }
+
+uint16_t RoutingReceiver::getInterfaceVersion() const
+{
+	return RoutingReceiveVersion;
+}
+
+
 
 
 

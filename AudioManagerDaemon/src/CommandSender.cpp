@@ -24,10 +24,13 @@
 
 
 #include "CommandSender.h"
+#include "command/CommandReceiveInterface.h"
 #include <dirent.h>
 #include <dlt/dlt.h>
 #include "PluginTemplate.h"
 using namespace am;
+
+#define REQUIRED_INTERFACE_VERSION 1
 
 DLT_IMPORT_CONTEXT(AudioManager)
 
@@ -67,7 +70,7 @@ CommandSender::CommandSender(const std::vector<std::string>& listOfPluginDirecto
 			unsigned char entryType = itemInDirectory->d_type;
 			std::string entryName = itemInDirectory->d_name;
 
-			bool regularFile = (entryType == DT_REG);
+			bool regularFile = (entryType == DT_REG || entryType== DT_LNK);
 			bool sharedLibExtension = ("so" == entryName.substr(entryName.find_last_of(".") + 1));
 
 			if (regularFile && sharedLibExtension)
@@ -102,6 +105,13 @@ CommandSender::CommandSender(const std::vector<std::string>& listOfPluginDirecto
         {
         	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("CommandPlugin initialization failed. Entry Function not callable"));
             continue;
+        }
+
+        //check libversion
+        if (commander->getInterfaceVersion()<REQUIRED_INTERFACE_VERSION)
+        {
+        	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("RoutingPlugin initialization failed. Version of Interface to old"));
+        	continue;
         }
 
         mListInterfaces.push_back(commander);
@@ -257,6 +267,13 @@ void CommandSender::unloadLibraries(void)
 	}
 	mListLibraryHandles.clear();
 }
+
+uint16_t CommandSender::getInterfaceVersion() const
+{
+	return CommandSendVersion;
+}
+
+
 
 
 

@@ -26,16 +26,15 @@
 #define CONTRONLRECEIVER_H_
 
 #include <control/ControlReceiveInterface.h>
-#include <SocketHandler.h>
 #include <config.h>
-#ifdef WITH_DBUS_WRAPPER
-#include <dbus/DBusWrapper.h>
-#endif
-#include "DatabaseHandler.h"
-#include "RoutingSender.h"
-#include "CommandSender.h"
+
 
 namespace am {
+
+class SocketHandler;
+class DatabaseHandler;
+class RoutingSender;
+class CommandSender;
 
 /**
  * This class is used to receive all commands from the control interface
@@ -53,7 +52,9 @@ public:
 	am_Error_e setSinkVolume(am_Handle_s& handle, const am_sinkID_t sinkID, const am_volume_t volume, const am_RampType_e ramp, const am_time_t time) ;
 	am_Error_e setSourceVolume(am_Handle_s& handle, const am_sourceID_t sourceID, const am_volume_t volume, const am_RampType_e rampType, const am_time_t time) ;
 	am_Error_e setSinkSoundProperty(am_Handle_s& handle, const am_sinkID_t sinkID, const am_SoundProperty_s& soundProperty) ;
+	am_Error_e setSinkSoundProperties(am_Handle_s& handle, const am_sinkID_t sinkID, const std::vector<am_SoundProperty_s>& soundProperty) ;
 	am_Error_e setSourceSoundProperty(am_Handle_s& handle, const am_sourceID_t sourceID, const am_SoundProperty_s& soundProperty) ;
+	am_Error_e setSourceSoundProperties(am_Handle_s& handle, const am_sourceID_t sourceID, const std::vector<am_SoundProperty_s>& soundProperty) ;
 	am_Error_e setDomainState(const am_domainID_t domainID, const am_DomainState_e domainState) ;
 	am_Error_e abortAction(const am_Handle_s handle) ;
 	am_Error_e enterDomainDB(const am_Domain_s& domainData, am_domainID_t& domainID) ;
@@ -107,6 +108,7 @@ public:
 	void setRoutingReady() ;
 	void setCommandReady() ;
 	am_Error_e getSocketHandler(SocketHandler*& socketHandler);
+	uint16_t getInterfaceVersion() const;
 
 private:
 	DatabaseHandler* mDatabaseHandler; //!< pointer tto the databasehandler

@@ -36,19 +36,21 @@
 //todo: make sure all configurations are tested
 
 #include <config.h>
+#include <SocketHandler.h>
 #ifdef WITH_DBUS_WRAPPER
 #include <dbus/DBusWrapper.h>
 #endif
 #include "DatabaseHandler.h"
-#include "DatabaseObserver.h"
-#include "RoutingReceiver.h"
-#include "CommandReceiver.h"
-#include "ControlReceiver.h"
 #include "ControlSender.h"
 #include "CommandSender.h"
 #include "RoutingSender.h"
-#include <SocketHandler.h>
+#include "RoutingReceiver.h"
+#include "CommandReceiver.h"
+#include "ControlReceiver.h"
+#include "DatabaseObserver.h"
+#include "TelnetServer.h"
 #include <sys/resource.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <cstdlib>
@@ -57,8 +59,6 @@
 #include <signal.h>
 #include <string.h>
 #include <stdio.h>
-
-
 
 #include <dlt/dlt.h>
 
@@ -69,19 +69,24 @@ using namespace am;
 const char* USAGE_DESCRIPTION = "Usage:\tAudioManagerDaemon [options]\n"
                                 "options:\t\n"
                                 "\t-h: print this message\t\n"
+								"\t-i: info about current settings \t\n"
 								"\t-v: print version\t\n"
 								"\t-d: daemonize AudioManager \t\n"
-								"\t-p: path for sqlite database (default is in memory)\t\n"
-								"\t-c: <Name> use controllerPlugin <Name> (full path with .so ending)\t\n"
-								"\t-l: <Name> replace command plugin directory with <Name> (full path)\t\n"
-								"\t-r: <Name> replace routing plugin directory with <Name> (full path)\t\n"
-								"\t-L: <Name> add command plugin directory with <Name> (full path)\t\n"
-								"\t-R: <Name> add routing plugin directory with <Name> (full path)\t\n";
+								"\t-p<path> path for sqlite database (default is in memory)\t\n"
+								"\t-t<port> port for telnetconnection\t\n"
+								"\t-m<max> number of max telnetconnections\t\n"
+								"\t-c<Name> use controllerPlugin <Name> (full path with .so ending)\t\n"
+								"\t-l<Name> replace command plugin directory with <Name> (full path)\t\n"
+								"\t-r<Name> replace routing plugin directory with <Name> (full path)\t\n"
+								"\t-L<Name> add command plugin directory with <Name> (full path)\t\n"
+								"\t-R<Name> add routing plugin directory with <Name> (full path)\t\n";
 
 std::string controllerPlugin=std::string(CONTROLLER_PLUGIN);
 std::vector<std::string> listCommandPluginDirs;
 std::vector<std::string> listRoutingPluginDirs;
 std::string databasePath=std::string(":memory:");
+unsigned int telnetport=DEFAULT_TELNETPORT;
+unsigned int maxConnections=MAX_TELNETCONNECTIONS;
 
 void daemonize ()
 {
@@ -136,10 +141,29 @@ void parseCommandLine(int argc, char **argv)
 {
 	while (optind < argc)
 	{
-		int option =  getopt (argc, argv, "h::v::c::l::r::L::R::d");
+		int option =  getopt (argc, argv, "h::v::c::l::r::L::R::d::t::m::i::");
 
 		switch (option)
 		{
+		case 'i':
+			printf("Current settings:\n");
+			printf("\tAudioManagerDaemon Version:\t\t%s\n",DAEMONVERSION);
+			printf("\tTelnet portNumber:\t\t\t%i\n",telnetport);
+			printf("\tTelnet maxConnections:\t\t\t%i\n",maxConnections);
+			printf("\tSqlite Database path:\t\t\t%s\n",databasePath.c_str());
+			printf("\tControllerPlugin: \t\t\t%s\n",controllerPlugin.c_str());
+			printf("\tDirectory of CommandPlugins: \t\t%s\n",listCommandPluginDirs.front().c_str());
+			printf("\tDirectory of RoutingPlugins: \t\t%s\n",listRoutingPluginDirs.front().c_str());
+			exit(0);
+			break;
+		case 't':
+			assert(atoi(optarg)!=0);
+			telnetport=atoi(optarg);
+			break;
+		case 'm':
+			assert(atoi(optarg)!=0);
+			maxConnections=atoi(optarg);
+			break;
 		case 'p':
 			assert(!controllerPlugin.empty());
 			databasePath=std::string(optarg);
@@ -215,7 +239,6 @@ int main(int argc, char *argv[])
 	signalChildAction.sa_flags = SA_NOCLDWAIT;
 	sigaction (SIGCHLD, &signalChildAction, NULL);
 
-
 	//Instantiate all classes. Keep in same order !
 #ifdef WITH_SOCKETHANDLER_LOOP
 	SocketHandler iSocketHandler;
@@ -233,13 +256,15 @@ int main(int argc, char *argv[])
 	RoutingSender iRoutingSender(listRoutingPluginDirs);
 	CommandSender iCommandSender(listCommandPluginDirs);
 	ControlSender iControlSender(controllerPlugin);
-	DatabaseObserver iObserver(&iCommandSender, &iRoutingSender);
 
 #ifdef WITH_DBUS_WRAPPER
 #ifdef WITH_SOCKETHANDLER_LOOP
 	CommandReceiver iCommandReceiver(&iDatabaseHandler,&iControlSender,&iSocketHandler,&iDBusWrapper);
 	RoutingReceiver iRoutingReceiver(&iDatabaseHandler,&iRoutingSender,&iControlSender,&iSocketHandler,&iDBusWrapper);
 	ControlReceiver iControlReceiver(&iDatabaseHandler,&iRoutingSender,&iCommandSender,&iSocketHandler);
+#ifdef WITH_TELNET
+	TelnetServer iTelnetServer(&iSocketHandler,&iCommandSender,&iCommandReceiver,&iRoutingSender,&iRoutingReceiver,&iControlSender,&iControlReceiver,&iDatabaseHandler,telnetport,maxConnections);
+#endif
 #else /*WITH_SOCKETHANDLER_LOOP */
 	CommandReceiver iCommandReceiver(&iDatabaseHandler,&iControlSender,&iDBusWrapper);
 	RoutingReceiver iRoutingReceiver(&iDatabaseHandler,&iRoutingSender,&iControlSender,&iDBusWrapper);
@@ -249,7 +274,17 @@ int main(int argc, char *argv[])
 	CommandReceiver iCommandReceiver(&iDatabaseHandler,&iControlSender,&iSocketHandler);
 	RoutingReceiver iRoutingReceiver(&iDatabaseHandler,&iRoutingSender,&iControlSender,&iSocketHandler);
 	ControlReceiver iControlReceiver(&iDatabaseHandler,&iRoutingSender,&iCommandSender,&iSocketHandler);
+#ifdef WITH_TELNET
+	TelnetServer iTelnetServer(&iSocketHandler,telnetport,maxConnections);
+#endif
 #endif /*WITH_DBUS_WRAPPER*/
+
+#ifdef WITH_TELNET
+	DatabaseObserver iObserver(&iCommandSender, &iRoutingSender,&iTelnetServer);
+#else
+	DatabaseObserver iObserver(&iCommandSender, &iRoutingSender);
+#endif
+
 
 	//since the plugins have been loaded by the *Senders before, we can tell the Controller this:
 	iControlSender.hookAllPluginsLoaded();

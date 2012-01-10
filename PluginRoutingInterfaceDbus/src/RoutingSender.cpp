@@ -129,6 +129,23 @@ am_Error_e DbusRoutingSender::returnBusName(std::string & BusName) const
 	return (E_OK);
 }
 
+am_Error_e DbusRoutingSender::asyncSetSinkSoundProperties(const am_Handle_s handle, const std::vector<am_SoundProperty_s> & listSoundProperties, const am_sinkID_t sinkID)
+{
+
+}
+
+am_Error_e DbusRoutingSender::asyncSetSourceSoundProperties(const am_Handle_s handle, const std::vector<am_SoundProperty_s> & listSoundProperties, const am_sourceID_t sourceID)
+{
+
+}
+
+uint16_t DbusRoutingSender::getInterfaceVersion() const
+{
+	return (RoutingSendVersion);
+}
+
+
+
 
 
 

@@ -41,7 +41,11 @@ class MockRoutingReceiveInterface : public RoutingReceiveInterface {
       void(const am_Handle_s handle, const am_volume_t volume, const am_Error_e error));
   MOCK_METHOD2(ackSetSourceState,
       void(const am_Handle_s handle, const am_Error_e error));
+  MOCK_METHOD2(ackSetSinkSoundProperties,
+      void(const am_Handle_s handle, const am_Error_e error));
   MOCK_METHOD2(ackSetSinkSoundProperty,
+      void(const am_Handle_s handle, const am_Error_e error));
+  MOCK_METHOD2(ackSetSourceSoundProperties,
       void(const am_Handle_s handle, const am_Error_e error));
   MOCK_METHOD2(ackSetSourceSoundProperty,
       void(const am_Handle_s handle, const am_Error_e error));
@@ -99,6 +103,8 @@ class MockRoutingReceiveInterface : public RoutingReceiveInterface {
       am_Error_e(DBusWrapper*& dbusConnectionWrapper));
   MOCK_CONST_METHOD1(getSocketHandler,
       am_Error_e(SocketHandler*& socketHandler));
+  MOCK_CONST_METHOD0(getInterfaceVersion,
+      uint16_t());
 };
 
 }  // namespace am

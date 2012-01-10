@@ -20,7 +20,7 @@ Linking AudioManager statically or dynamically with other modules is making a co
 As a special exception, the copyright holders of AudioManager give you permission to combine AudioManager with software programs or libraries that are released under any license unless such a combination is not permitted by the license of such a software program or library. You may copy and distribute such a system following the terms of the GNU Lesser General Public License, version 2.1, including this special exception, for AudioManager and the licenses of the other code concerned.
 Note that people who make modified versions of AudioManager are not obligated to grant this special exception for their modified versions; it is their choice whether to do so. The GNU Lesser General Public License, version 2.1, gives permission to release a modified version without this exception; this exception also makes it possible to release a modified version which carries forward this exception.
 
-Version 0.3
+Version 0.0.1
 
 ***********************************************************************************************************
 CURRENT STATUS
@@ -31,29 +31,64 @@ It should be sufficient to start working on a POC around it.
 ***********************************************************************************************************
 COMPILE PROGRAMS
 ***********************************************************************************************************
+- compile options with default values:
 
-You will need some packages in order to comile the GENIVI AudioManager Proof of Concept, these are:
--dbus
--sqlite
--automotive-dlt
--google mock & google test (for the test - if you do not want them, use the options of cmake to disable them)
--doxygen (only for documentation)
+ 	CMAKE_BUILD_TYPE                                                                                                                  
+ 	CMAKE_INSTALL_PREFIX             /usr/local                                                                                       
+ 	WITH_DBUS_WRAPPER                ON                                                                                               
+ 	WITH_DOCUMENTATION               OFF                                                                                              
+ 	WITH_MAIN                        ON                                                                                               
+	WITH_PLUGIN_COMMAND              ON                                                                                               
+ 	WITH_PLUGIN_CONTROL              ON                                                                                               
+ 	WITH_PLUGIN_ROUTING              ON                                                                                               
+ 	WITH_PPOLL                       ON                                                                                               
+ 	WITH_SIMPLEDBUS_LOOP             OFF                                                                                              
+ 	WITH_SOCKETHANDLER_LOOP          ON                                                                                               
+ 	WITH_TESTS                       ON   
 
-More details in the CMake Files CmakeList.txt in the projects
+In order to change these options, you can modify this values with ccmake, do the appropriate changes in CmakeList.txt or via 
+the commandline for cmake or (when installed via ccmake)
+
+You will need some packages in order to comile the GENIVI AudioManager Daemon, these are:
+	-dbus (only when DBUS_WRAPPER==ON) [tested on version 1.2.16]
+	-sqlite3 [tested on version 3.6.22]
+	-automotive-dlt [tested on version 2.2.0]
+	-doxygen (only when WITH_DOCUMENTATION==ON) [tested on version 1.6.3]
+
+	to install them in a build environment like Ubuntu you can use:
+		sudo apt-get install libdbus-1-dev libsqlite3-dev doxygen git cmake build-essential
+
+For building the tests, you will need the following packages:
+	-google mock [tested on version 1.6.0-1] 
+	-google test [tested on version 1.6.0]
+	-python [tested on version 2.6]
+
+	to install them in a build environment like Ubuntu you can use:
+		sudo apt-get install libgtest-dev google-mock python2.6-dev
+
+More details in the CMake Files CmakeList.txt in the projects.
+
+The build was tested on a freshly setup LinuxMint 12 (don't like Unity) with the following steps:
+	sudo apt-get update
+	sudo apt-get upgrade
+	sudo apt-get install libdbus-1-dev libsqlite3-dev doxygen libgtest-dev google-mock git cmake build-essential python2.6-dev
+
+	git clone https://<kavi-account>:<kavi-password>@git.genivi.org/srv/git/DLT-daemon
 
 In order to build the project (out of source build), please follow these instructions on the commandline:
 
-mkdir /build
-cd build
-cmake ..
-make -j4
+	mkdir /build
+	cd build
+	cmake ..
+	make -j4
 
 after the script finished, you should have:
 
-a /bin folder which contains all executables and the libraries: 
-a /build folder which has all build objects (erase that if you need a clean build)
+	a /bin folder which contains all executables and the libraries: 
+	a /build folder which has all build objects (erase that if you need a clean build)
+	a /doc folder in case you turned the documentation on
 
-The options of the AudioManager
+The commandline options of the AudioManager:
 
 Usage:	AudioManagerDaemon [options]
 options:	

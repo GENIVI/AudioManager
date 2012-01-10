@@ -28,7 +28,7 @@
 using namespace am;
 using namespace testing;
 
-DLT_DECLARE_CONTEXT(DLT_CONTEXT)
+DLT_DECLARE_CONTEXT(DLT_CONTEXT);
 
 routingInterfaceTest::routingInterfaceTest()
 	:plistRoutingPluginDirs(),

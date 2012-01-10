@@ -78,7 +78,10 @@ public:
 	void cbAckSetSourceVolumeChange(const am_Handle_s handle, const am_volume_t volume, const am_Error_e error) ;
 	void cbAckSetSourceState(const am_Handle_s handle, const am_Error_e error) ;
 	void cbAckSetSourceSoundProperty(const am_Handle_s handle, const am_Error_e error) ;
+	void cbAckSetSinkSoundProperties(const am_Handle_s handle, const am_Error_e error) ;
 	void cbAckSetSinkSoundProperty(const am_Handle_s handle, const am_Error_e error) ;
+	void cbAckSetSourceSoundProperties(const am_Handle_s handle, const am_Error_e error) ;
+	uint16_t getInterfaceVersion() const;
 
 #ifdef UNIT_TEST
 	friend class ControlInterfaceBackdoor;

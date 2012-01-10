@@ -28,6 +28,11 @@ set(LIBRARY_OUTPUT_PATH ${PLUGINS_OUTPUT_PATH}/routing)
 set(DOC_OUTPUT_PATH ${DOC_OUTPUT_PATH}/RoutingAsync)
 set(INCLUDES_FOLDER "include")
 
+FILE(READ "${AUDIO_INCLUDES_FOLDER}/routing/RoutingSendInterface.h" VERSION_BUFFER LIMIT 6000)
+STRING(REGEX MATCH "RoutingSendVersion*.[^0-9]*[0-9]" LIB_INTERFACE_VERSION_STRING ${VERSION_BUFFER})
+STRING(REGEX REPLACE "[^0-9]" "" LIB_INTERFACE_VERSION ${LIB_INTERFACE_VERSION_STRING})
+MESSAGE(STATUS "Building against routing interface version ${LIB_INTERFACE_VERSION}")
+
 find_package( Threads )
 FIND_PACKAGE(DBUS REQUIRED)
 
@@ -45,6 +50,10 @@ file(GLOB PLUGINDBUS_SRCS_CXX "src/*.cpp")
 
 
 add_library(PluginRoutingInterfaceAsync SHARED ${PLUGINDBUS_SRCS_CXX})
+
+SET_TARGET_PROPERTIES(PluginRoutingInterfaceAsync PROPERTIES 
+                                            SOVERSION "${LIB_INTERFACE_VERSION}"
+)
 
 TARGET_LINK_LIBRARIES(PluginRoutingInterfaceAsync
     ${DLT_LIBRARIES}

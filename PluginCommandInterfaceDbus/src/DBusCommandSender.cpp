@@ -302,17 +302,24 @@ void DbusCommandSender::cbSystemPropertyChanged(const am_SystemProperty_s & Syst
 	mDBUSMessageHandler.sendMessage();
 }
 
-
-
-void DbusCommandSender::cbTimingInformationChanged(const am_mainConnectionID_t mainConnection, const am_timeSync_t time)
+void am::DbusCommandSender::cbTimingInformationChanged(const am_timeSync_t time, const am_mainConnectionID_t mainConnectionID)
 {
-	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("cbTimingInformationChanged called, mainConnectionID"),DLT_INT16(mainConnection),DLT_STRING("time"),DLT_INT16(time));
+	DLT_LOG(DLT_CONTEXT,DLT_LOG_INFO, DLT_STRING("cbTimingInformationChanged called, mainConnectionID"),DLT_INT16(mainConnectionID),DLT_STRING("time"),DLT_INT16(time));
 
 	mDBUSMessageHandler.initSignal(std::string(MY_NODE),std::string("TimingInformationChanged"));
-	mDBUSMessageHandler.append((dbus_uint16_t)mainConnection);
+	mDBUSMessageHandler.append((dbus_uint16_t)mainConnectionID);
 	mDBUSMessageHandler.append((dbus_int16_t)time);
 	mDBUSMessageHandler.sendMessage();
 }
+
+
+
+uint16_t DbusCommandSender::getInterfaceVersion() const
+{
+	return (CommandSendVersion);
+}
+
+
 
 
 

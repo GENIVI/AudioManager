@@ -300,5 +300,20 @@ void ControlSenderPlugin::cbAckSetSinkSoundProperty(const am_Handle_s handle, co
 {
 }
 
+void ControlSenderPlugin::cbAckSetSourceSoundProperties(const am_Handle_s handle, const am_Error_e error)
+{
+}
+
+void ControlSenderPlugin::cbAckSetSinkSoundProperties(const am_Handle_s handle, const am_Error_e error)
+{
+}
+
+uint16_t ControlSenderPlugin::getInterfaceVersion() const
+{
+	return (ControlSendVersion);
+}
+
+
+
 
 

@@ -24,6 +24,14 @@
 */
 
 #include "databaseTest.h"
+#include "MockInterfaces.h"
+#include "DatabaseHandler.h"
+#include "ControlReceiver.h"
+#include "ControlSender.h"
+#include "DatabaseObserver.h"
+#include "../ControlInterfaceBackdoor.h"
+#include "../CommandInterfaceBackdoor.h"
+#include "../CommonFunctions.h"
 
 using namespace am;
 using namespace testing;

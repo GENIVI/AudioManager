@@ -39,7 +39,7 @@ DLT_IMPORT_CONTEXT(AudioManager)
 #define ROOT_INTROSPECT_XML												\
 DBUS_INTROSPECT_1_0_XML_DOCTYPE_DECL_NODE								\
 "<node>"																\
-"<interface name='orAudioManagerg.freedesktop.DBus.Introspectable'>"	\
+"<interface name='org.AudioManager.freedesktop.DBus.Introspectable'>"	\
 "<method name='Introspect'>"											\
 "	<arg name='xml_data' type='s' direction='out'/>"					\
 "</method>"							      								\

@@ -961,6 +961,21 @@ void am::AsyncRoutingSender::updateDomainstateSafe(am_domainID_t domainID, am_Do
 	pthread_mutex_unlock(&mDomainsMutex);
 }
 
+uint16_t AsyncRoutingSender::getInterfaceVersion() const
+{
+	return (RoutingSendVersion);
+}
+
+am_Error_e am::AsyncRoutingSender::asyncSetSinkSoundProperties(const am_Handle_s handle, const std::vector<am_SoundProperty_s> & listSoundProperties, const am_sinkID_t sinkID)
+{
+	//todo: implement
+}
+
+am_Error_e am::AsyncRoutingSender::asyncSetSourceSoundProperties(const am_Handle_s handle, const std::vector<am_SoundProperty_s> & listSoundProperties, const am_sourceID_t sourceID)
+{
+	//todo: implement
+}
+
 std::vector<am_Gateway_s> AsyncRoutingSender::createGatewayTable()
 {
 	std::vector<am_Gateway_s> table;

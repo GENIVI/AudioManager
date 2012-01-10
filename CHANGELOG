@@ -1,0 +1,269 @@
+commit e7af3cd4dc7f2b19fcd0b5a9e22bd9f55103d4d4
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * recreated the header files out of the model. Added versioning support in the headerfiles generated
+    * ensured compatibility with 64 bit systems while compiling dbus [ changed FindDBUS.cmake]
+    * updated the README to better support building
+    * updated typo in introspectable string of DBusWrapper
+    * reworked including strategie
+    * added getInterfafeVersion method on all interfaces
+    * added Interface Versioning support
+    * added version as part of .so ending
+    * it is no possible to set a vector of source and sink sound properties at a time
+    * added interface to ask for all loaded plugins on RoutingSender
+    * added first version of telnet server (not yet productive) - set to not active in CMakeLists.txt
+    * added changelog (created out of git commit log)
+    * added default values for all enum types to be save even on other if communication is on other domain
+
+commit 6ebae8c4d3a340c135ed2f5f611a0e1c31994164
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * fixed sockethandler timespec issues
+
+commit d2033f10762c1b39b7755f067cb614228336aec8
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    changed README, added correct header in files
+
+commit 93d7610b460c6212a3098a3eccb127fd45ada345
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    *added versioning support automatically out of git
+    *added commandline parser
+    *changed DLT_CONTEXT for AudioManager to AudioManager
+    *added signalhandler
+    *TODO: make signalhandler not only call but correctly rundown the daemon
+
+commit b7e748007bbe0b16fa8a8a089c6cc8fe43bc7aac
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * assert on empty busname (routinginterface)
+    * added busname for DbusroutingSender
+    * rework of sockethandlertests
+    * small changes on compilerflags
+    * new default error messages on dummy controller plugin
+    * new plugin Asynchronous including tests
+
+commit 6b583365d1f0f5c7ff613ecfc323c4d1eba1699d
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * finally, first socket test work
+
+commit cd23bf5e1d2e1d134df91f23ebfd761d770a99db
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * fixed no compile bug
+    * fixed sockethandler loop
+
+commit 4f74d6e303c58326fe75ee75e1c92cf9263f800d
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * rework of buildsystem
+    * now everything depends on a toplevel CMakefile
+    * cleanup of makefiles and compiler options
+
+commit 4618280b6d777ac7bf3bb5cf5b0ea3f0d9e4b2b7
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * new run of code generation by EA
+    * removed audiomanagertypes.cpp it's creadted by EA, but empty
+    * get rid of dbusincludes, dbus files are now in the includes folder
+
+commit b9b9e9ace5c6c7c493438ecf9a4b33b47543e8e3
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * first version of SocketHandler working with DBus
+    * currently Sockethandler test not working
+
+commit f8a41c140abbd1d193ed19f6c2be598adc01292a
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * fixed bug in database handler connected to delay calculation
+
+commit 18d1c7ee814993ae3fbee5635650e55472dac587
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * first version of the sockethandler with test
+
+commit 1c992fd131eab06ee4f5a7090377031975092aba
+Author: Christian Mueller <christian@lmuc329619u.(none)>
+
+    - changed header comment - entered correct licence
+
+commit 2cefc51e7bb2b3810f57e7c340c0c8857de1a05a
+Author: Christian Mueller <christian@lmuc329619u.(none)>
+
+    - adds dbus test for command plugin
+
+commit 18b59afe6cda90607ad0b193088000d4f9749a97
+Author: Christian Mueller <christian@lmuc329619u.(none)>
+
+    - added comments in XML description
+    - fixed bug in Dbus signal sending
+    - corrected namespace usage
+
+commit 392d090c63dcb03df8a044abbc6cc84807e341e5
+Author: Christian Mueller <christian@lmuc329619u.(none)>
+
+    changes to make controlSender compile & loadable
+
+commit 281cb0d875832bb56c82bad3516fc4021f8be4b0
+Author: Christian Mueller <christian@lmuc329619u.(none)>
+
+    added README
+
+commit cad108114630deebde684267d67a5b648479679e
+Author: Christian Mueller <christian@lmuc329619u.(none)>
+
+    first release !
+
+commit 68678bed2dc3d4a5849d283bec84a01e2836603f
+Author: Christian Mueller <christian@lmuc329619u.(none)>
+
+    update in headers, small things
+
+commit 92c8b837306ff1dcd889f9c075435aec50e9aea3
+Author: Christian Mueller <christian@lmuc329619u.(none)>
+
+    .
+
+commit 205595e3d3e6a1d55be3c462ef02c9f828a77feb
+Author: Christian Mueller <christian@lmuc329619u.(none)>
+
+    some updates, new tests
+
+commit d85e69bbf6d8ec6e087c7af579686923c76079cd
+Author: Christian Mueller <christian@lmuc329619u.(none)>
+
+    Some changes, renaming...
+
+commit 5773404eb801e27179b7c3c7803a990145d6e94a
+Author: Christian Mueller <christian@lmuc329619u.(none)>
+
+    total rework
+
+commit 9826492b0066d47cfa9ba68d6efe737cc3c317a3
+Author: Christian Mueller <christian@lmuc329619u.(none)>
+
+    update on dbus
+
+commit 2d849dd0b5b1558e92cd0f2cd6dbc556950d631d
+Author: Christian Mueller <christian@lmuc329619u.(none)>
+
+    Dbus restructured
+
+commit df88fefdd7df890aaf2a3206483678851cffc5c5
+Author: Christian Mueller <christian@lmuc329619u.(none)>
+
+    - first time synchronisation with EA
+    - remodelled some interfaces
+    - new plugin structure for CommandInterfaces
+
+commit 2feaef3bb5f91af43573155106c73143597bdf3e
+Author: Christian Mueller <christian@lmuc329619u.(none)>
+
+    - daily commit
+    - dbus working smooth now, implemented signal handling
+    - changed worker thread for dbus to wait for dbus events not to wakeup every 50 ms
+
+commit a34ffa9cf03c0685ee4751efb16eca8267e533c3
+Author: Christian Mueller <christian@lmuc329619u.(none)>
+
+    - next part of getting rid of QT
+    - plugin handling for routing plugins work
+    - dbus communication works but nof finalized
+
+commit 4bcad418c039cad5690e62ed63e2b4260c12a517
+Author: Christian Mueller <christian@lmuc329619u.(none)>
+
+    make it compile on 10.04
+
+commit 4a67d4c668148dd8b0cd9c818ab45c7c6ac9841a
+Author: blacky <blacky@kiwi.(none)>
+
+    added layermanager plugin mechanism
+
+commit 6d7c17a9ab1bccbf0bc656c87818338de28f408d
+Author: blacky <blacky@kiwi.(none)>
+
+    - first attempt to remove QT
+    - this compiles but does not provide the same functionality
+    - hookplugin compiles
+    - other plugins do not
+
+commit 8da33c909cfce7370ef8e53acb2e3a00464edf37
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    - track StructuralPlugins via list
+    - use this list to deinit the plugins upon destructor call of the hookhandler
+
+commit 8329c1baf99ece0e93feda1331e089bc0aced52e
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    adding feature in the compile script:
+    by adding document to the cmaker call , the documentation will be created. By default the documentation will not be created
+
+commit 958ff9a0907602f359028261de5d822ac995aede
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    - just typos in AudioManagerCore
+    - fixed a bug only updating and showing the first connection
+    - change in gitignore
+
+commit 9eb2402884c520a4d7eaa8ce041618bfaa6930b3
+Merge: 0108869 5394c6f
+Author: blacky <blacky@kiwi.(none)>
+
+    Merge branch 'master' of https://git.genivi.org/srv/git/AudioManager
+
+commit 0108869db26775b5e30028b0956adb2007020a10
+Author: blacky <blacky@kiwi.(none)>
+
+    merge due to non empty Repo on genivi git server. Resolving conflics in the READMEFILE
+
+commit 4a32aebe3776323c176e0fe57298c1220ecc6d2c
+Author: blacky <blacky@kiwi.(none)>
+
+    small change on CMakelist in player gui
+
+commit 9d723d9b3918d8c9227b806aa9f016699e234a15
+Merge: d61f9cb e6ad5d8
+Author: Simon Brandner <simon.brandner@partner.bmw.de>
+
+    Merge branch 'master' of 10.250.89.137:audiomangenivi
+
+commit e6ad5d883663688d0e36e9d506aa9a1f1190c47f
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    changed daemon directory name
+    changed absolute path for doxygen to relative path
+
+commit d61f9cbeeb25c02d73fc99170b1bdf0cc802002f
+Author: Simon Brandner <simon.brandner@partner.bmw.de>
+
+    listInterrruptedSources -> listInterruptedSources
+
+commit fa4da60f971f55bafe157da87ae9d3bce07389b0
+Author: Simon Brandner <simon.brandner@partner.bmw.de>
+
+    corrected speeling of sourceID
+
+commit 246e009c14ccec699d9fbb92fde61bba5ebb8221
+Author: Simon Brandner <simon.brandner@partner.bmw.de>
+
+    corrected spelling error in README file
+
+commit 02acf3cebd9ec61193f63415590929ef40c504c1
+Author: blacky <blacky@kiwi.(none)>
+
+    update & cleanup
+
+commit 4a33862456def70049364761b2035a536b3c5881
+Author: blacky <blacky@kiwi.(none)>
+
+    Initial submission
+
+commit 5394c6fa5bf40d9bc8619026cbc4c306211a8499
+Author: Jeremiah C. Foster <jeremiah.foster@pelagicore.com>
+
+    Initial import of TEMPLATE.git dir.

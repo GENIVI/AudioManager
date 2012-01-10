@@ -26,10 +26,12 @@
 #define DATABASEHANDLER_H_
 
 #include "audiomanagertypes.h"
-#include "DatabaseObserver.h"
 #include <sqlite3.h>
+#include <map>
 
 namespace am {
+
+class DatabaseObserver;
 
 #define DYNAMIC_ID_BOUNDARY 100 //!< the value below is reserved for staticIDs, the value above will be assigned to dynamically registered items
 

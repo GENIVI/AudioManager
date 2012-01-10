@@ -23,7 +23,11 @@
 */
 
 #include <config.h>
+#include <SocketHandler.h>
 #include "ControlReceiver.h"
+#include "DatabaseHandler.h"
+#include "RoutingSender.h"
+#include "CommandSender.h"
 #include <assert.h>
 #include <dlt/dlt.h>
 
@@ -151,7 +155,21 @@ am_Error_e ControlReceiver::setSinkSoundProperty(am_Handle_s & handle, const am_
 	return mRoutingSender->asyncSetSinkSoundProperty(handle,sinkID,soundProperty);
 }
 
+am_Error_e am::ControlReceiver::setSinkSoundProperties(am_Handle_s & handle, const am_sinkID_t sinkID, const std::vector<am_SoundProperty_s> & listSoundProperties)
+{
+	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("ControlReceiver::setSinkSoundProperties got called, sinkID="),DLT_INT(sinkID));
 
+	uint16_t value;
+	bool noChange=true;
+	std::vector<am_SoundProperty_s>::const_iterator it=listSoundProperties.begin();
+	for(;it!=listSoundProperties.end();++it)
+	{
+		if(mDatabaseHandler->getSinkSoundPropertyValue(sinkID,it->type,value)!=E_OK) return (E_UNKNOWN);
+		if(value!=it->value) noChange=false;
+	}
+	if (noChange) return (E_NO_CHANGE);
+	return (mRoutingSender->asyncSetSinkSoundProperties(handle,listSoundProperties,sinkID));
+}
 
 am_Error_e ControlReceiver::setSourceSoundProperty(am_Handle_s & handle, const am_sourceID_t sourceID, const am_SoundProperty_s & soundProperty)
 {
@@ -163,6 +181,21 @@ am_Error_e ControlReceiver::setSourceSoundProperty(am_Handle_s & handle, const a
 	return mRoutingSender->asyncSetSourceSoundProperty(handle,sourceID,soundProperty);
 }
 
+am_Error_e am::ControlReceiver::setSourceSoundProperties(am_Handle_s & handle, const am_sourceID_t sourceID, const std::vector<am_SoundProperty_s> & listSoundProperties)
+{
+	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("ControlReceiver::setSourceSoundProperties got called, sourceID="),DLT_INT(sourceID));
+
+	uint16_t value;
+	bool noChange=true;
+	std::vector<am_SoundProperty_s>::const_iterator it=listSoundProperties.begin();
+	for(;it!=listSoundProperties.end();++it)
+	{
+		if(mDatabaseHandler->getSourceSoundPropertyValue(sourceID,it->type,value)!=E_OK) return (E_UNKNOWN);
+		if(value!=it->value) noChange=false;
+	}
+	if (noChange) return (E_NO_CHANGE);
+	return (mRoutingSender->asyncSetSourceSoundProperties(handle,listSoundProperties,sourceID));
+}
 
 
 am_Error_e ControlReceiver::setDomainState(const am_domainID_t domainID, const am_DomainState_e domainState)
@@ -526,6 +559,14 @@ am_Error_e am::ControlReceiver::getSocketHandler(SocketHandler *& socketHandler)
 	return E_UNKNOWN;
 #endif
 }
+
+
+uint16_t ControlReceiver::getInterfaceVersion() const
+{
+	return ControlReceiveVersion;
+}
+
+
 
 
 

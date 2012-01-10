@@ -103,10 +103,14 @@ public:
 	am_Error_e asyncSetSourceVolume(am_Handle_s& handle, const am_sourceID_t sourceID, const am_volume_t volume, const am_RampType_e ramp, const am_time_t time) ;
 	am_Error_e asyncSetSourceState(am_Handle_s& handle, const am_sourceID_t sourceID, const am_SourceState_e state) ;
 	am_Error_e asyncSetSinkSoundProperty(am_Handle_s& handle, const am_sinkID_t sinkID, const am_SoundProperty_s& soundProperty) ;
+	am_Error_e asyncSetSourceSoundProperties(am_Handle_s& handle, const std::vector<am_SoundProperty_s>& listSoundProperties, const am_sourceID_t sourceID) ;
+	am_Error_e asyncSetSinkSoundProperties(am_Handle_s& handle, const std::vector<am_SoundProperty_s>& listSoundProperties, const am_sinkID_t sinkID) ;
 	am_Error_e asyncSetSourceSoundProperty(am_Handle_s& handle, const am_sourceID_t sourceID, const am_SoundProperty_s& soundProperty) ;
 	am_Error_e asyncCrossFade(am_Handle_s& handle, const am_crossfaderID_t crossfaderID, const am_HotSink_e hotSink, const am_RampType_e rampType, const am_time_t time) ;
 	am_Error_e setDomainState(const am_domainID_t domainID, const am_DomainState_e domainState) ;
 	am_Error_e getListHandles(std::vector<am_Handle_s> & listHandles) const ;
+	am_Error_e getListPlugins(std::vector<std::string>& interfaces) const;
+	uint16_t getInterfaceVersion() const;
 
 	//!< is used to pair interfaces with busnames
 	struct InterfaceNamePairs
@@ -132,6 +136,7 @@ public:
 			am_SourceState_e sourceState;
 			am_volume_t volume;
 			am_HotSink_e hotSink;
+			std::vector<am_SoundProperty_s>* soundProperties;
 		};
 
 	};
@@ -146,7 +151,7 @@ public:
 	 * @param handle the handle
 	 * @return a class holding the handle data
 	 */
-	am_handleData_c returnHandleData(am_Handle_s handle);
+	am_handleData_c returnHandleData(const am_Handle_s handle) const;
 
 private:
 

@@ -23,6 +23,7 @@
 */
 
 #include "DatabaseHandler.h"
+#include "DatabaseObserver.h"
 #include <assert.h>
 #include <vector>
 #include <fstream>

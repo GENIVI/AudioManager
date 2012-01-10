@@ -32,6 +32,8 @@
 
 using namespace am;
 
+#define REQUIRED_INTERFACE_VERSION 1
+
 #define CALL_ALL_INTERFACES(...) 														 \
 		std::vector<InterfaceNamePairs>::iterator iter = mListInterfaces.begin();	 	 \
 		std::vector<InterfaceNamePairs>::iterator iterEnd = mListInterfaces.end();	 	 \
@@ -99,7 +101,7 @@ RoutingSender::RoutingSender(const std::vector<std::string>& listOfPluginDirecto
 
     for (; iter != iterEnd; ++iter)
     {
-    	//DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Loading Hook plugin"),DLT_STRING(iter->c_str()));
+    	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("RoutingPlugin: "),DLT_STRING(iter->c_str()));
 
     	RoutingSendInterface* (*createFunc)();
     	void* tempLibHandle=NULL;
@@ -107,7 +109,7 @@ RoutingSender::RoutingSender(const std::vector<std::string>& listOfPluginDirecto
 
         if (!createFunc)
         {
-           // DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Entry point of Communicator not found"));
+            DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Entry point of RoutingPlugin not found"));
             continue;
         }
 
@@ -115,12 +117,20 @@ RoutingSender::RoutingSender(const std::vector<std::string>& listOfPluginDirecto
 
         if (!router)
         {
-        	//DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("HookPlugin initialization failed. Entry Function not callable"));
+        	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("RoutingPlugin initialization failed. Entry Function not callable"));
             continue;
         }
 
         InterfaceNamePairs routerInterface;
         routerInterface.routingInterface = router;
+
+        //check libversion
+        if (router->getInterfaceVersion()<REQUIRED_INTERFACE_VERSION)
+        {
+        	DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("RoutingPlugin initialization failed. Version of Interface to old"));
+        	continue;
+        }
+
 
         //here, the busname is saved together with the interface. Later The domains will register with the name and sinks, sources etc with the domain....
         router->returnBusName(routerInterface.busName);
@@ -134,6 +144,16 @@ RoutingSender::RoutingSender(const std::vector<std::string>& listOfPluginDirecto
 RoutingSender::~RoutingSender()
 {
 	unloadLibraries();
+	HandlesMap::iterator it=mlistActiveHandles.begin();
+
+	//clean up heap if existent
+	for(;it!=mlistActiveHandles.end();++it)
+	{
+		if (it->first.handleType==H_SETSINKSOUNDPROPERTIES || it->first.handleType==H_SETSOURCESOUNDPROPERTIES)
+		{
+			delete it->second.soundProperties;
+		}
+	}
 }
 
 void RoutingSender::routingInterfacesReady()
@@ -263,9 +283,8 @@ am_Error_e RoutingSender::asyncSetSinkSoundProperty(am_Handle_s& handle, const a
     	handle=createHandle(handleData,H_SETSINKSOUNDPROPERTY);
 		mMapHandleInterface.insert(std::make_pair(handle.handle,iter->second));
     	return iter->second->asyncSetSinkSoundProperty(handle,soundProperty,sinkID);
-    return E_NON_EXISTENT;
+    return (E_NON_EXISTENT);
 }
-
 
 
 am_Error_e RoutingSender::asyncSetSourceSoundProperty(am_Handle_s& handle, const am_sourceID_t sourceID, const am_SoundProperty_s & soundProperty)
@@ -279,10 +298,38 @@ am_Error_e RoutingSender::asyncSetSourceSoundProperty(am_Handle_s& handle, const
     	handle=createHandle(handleData,H_SETSOURCESOUNDPROPERTY);
 		mMapHandleInterface.insert(std::make_pair(handle.handle,iter->second));
     	return iter->second->asyncSetSourceSoundProperty(handle,soundProperty,sourceID);
-    return E_NON_EXISTENT;
+    return (E_NON_EXISTENT);
+}
+
+am_Error_e am::RoutingSender::asyncSetSourceSoundProperties(am_Handle_s& handle, const std::vector<am_SoundProperty_s> & listSoundProperties, const am_sourceID_t sourceID)
+{
+	am_handleData_c handleData;
+	SourceInterfaceMap::iterator iter = mMapSourceInterface.begin();
+	iter=mMapSourceInterface.find(sourceID);
+    if (iter != mMapSourceInterface.end())
+    	handleData.sourceID=sourceID;
+    	handleData.soundProperties=new std::vector<am_SoundProperty_s>(listSoundProperties);
+    	handle=createHandle(handleData,H_SETSOURCESOUNDPROPERTIES);
+		mMapHandleInterface.insert(std::make_pair(handle.handle,iter->second));
+    	return iter->second->asyncSetSourceSoundProperties(handle,listSoundProperties,sourceID);
+    return (E_NON_EXISTENT);
 }
 
 
+am_Error_e am::RoutingSender::asyncSetSinkSoundProperties(am_Handle_s& handle, const std::vector<am_SoundProperty_s> & listSoundProperties, const am_sinkID_t sinkID)
+{
+	am_handleData_c handleData;
+	SinkInterfaceMap::iterator iter = mMapSinkInterface.begin();
+	iter=mMapSinkInterface.find(sinkID);
+    if (iter != mMapSinkInterface.end())
+    	handleData.sinkID=sinkID;
+    	handleData.soundProperties=new std::vector<am_SoundProperty_s>(listSoundProperties);
+    	handle=createHandle(handleData,H_SETSINKSOUNDPROPERTIES);
+		mMapHandleInterface.insert(std::make_pair(handle.handle,iter->second));
+    	return iter->second->asyncSetSinkSoundProperties(handle,listSoundProperties,sinkID);
+    return (E_NON_EXISTENT);
+
+}
 
 am_Error_e RoutingSender::asyncCrossFade(am_Handle_s& handle, const am_crossfaderID_t crossfaderID, const am_HotSink_e hotSink, const am_RampType_e rampType, const am_time_t time)
 {
@@ -455,9 +502,9 @@ am_Handle_s RoutingSender::createHandle(const am_handleData_c& handleData, const
 	return handle;
 }
 
-RoutingSender::am_handleData_c RoutingSender::returnHandleData(am_Handle_s handle)
+RoutingSender::am_handleData_c RoutingSender::returnHandleData(const am_Handle_s handle) const
 {
-	HandlesMap::iterator it=mlistActiveHandles.begin();
+	HandlesMap::const_iterator it=mlistActiveHandles.begin();
 	it=mlistActiveHandles.find(handle);
 	return (it->second);
 }
@@ -471,6 +518,26 @@ void RoutingSender::unloadLibraries(void)
 	}
 	mListLibraryHandles.clear();
 }
+
+am_Error_e am::RoutingSender::getListPlugins(std::vector<std::string>& interfaces) const
+{
+	std::vector<InterfaceNamePairs>::const_iterator it=mListInterfaces.begin();
+	for(;it!=mListInterfaces.end();++it)
+	{
+		interfaces.push_back(it->busName);
+	}
+	return E_OK;
+}
+
+
+uint16_t RoutingSender::getInterfaceVersion() const
+{
+	return (RoutingSendVersion);
+}
+
+
+
+
 
 
 
