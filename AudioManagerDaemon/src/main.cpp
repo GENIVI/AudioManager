@@ -141,7 +141,7 @@ void parseCommandLine(int argc, char **argv)
 {
 	while (optind < argc)
 	{
-		int option =  getopt (argc, argv, "h::v::c::l::r::L::R::d::t::m::i::");
+		int option =  getopt (argc, argv, "h::v::c::l::r::L::R::d::t::m::i::p::");
 
 		switch (option)
 		{
