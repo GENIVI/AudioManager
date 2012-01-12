@@ -1,4 +1,10 @@
-commit e7af3cd4dc7f2b19fcd0b5a9e22bd9f55103d4d4
+commit 5f02509296864bc5b4b438139a246fb3119802ed
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * fixed commandline option p is now recognized
+    * fixed bug: loading of routing plugins with version control now works
+
+commit 472d0762b68ce0f2a755b4215515a3e031831495
 Author: christian mueller <christian.ei.mueller@bmw.de>
 
     * recreated the header files out of the model. Added versioning support in the headerfiles generated
