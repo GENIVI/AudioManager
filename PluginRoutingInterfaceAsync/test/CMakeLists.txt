@@ -86,5 +86,13 @@ TARGET_LINK_LIBRARIES(asyncRoutingInterfaceInterruptTest
     gmock
 )
 
+INSTALL(TARGETS asyncRoutingInterfaceInterruptTest 
+        DESTINATION "~/AudioManagerTest/"
+        PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
+        COMPONENT tests
+)
+
+SET(ADD_DEPEND "audiomanager-bin" "dlt" "libdbus-1-3(>=1.2.16)" "libgtest-dev(>=1.6.0-1)" "google-mock" "libpthread-stubs0")
+set_property(GLOBAL APPEND PROPERTY tests_prop "${ADD_DEPEND}")
 
 

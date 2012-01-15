@@ -25,6 +25,7 @@
 #include "ControlSender.h"
 #include <assert.h>
 #include <dlt/dlt.h>
+#include <fstream>
 #include "PluginTemplate.h"
 
 DLT_IMPORT_CONTEXT(AudioManager)
@@ -37,7 +38,12 @@ ControlSender::ControlSender(std::string controlPluginFile)
 	:mlibHandle(NULL),
 	 mController(NULL)
 {
-	if (!controlPluginFile.empty())
+	std::ifstream isfile(controlPluginFile.c_str());
+	if (!isfile)
+	{
+		DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("ControlSender::ControlSender: Controller plugin not found:"),DLT_STRING(controlPluginFile.c_str()));
+	}
+	else if (!controlPluginFile.empty())
 	{
 		ControlSendInterface* (*createFunc)();
 		createFunc = getCreateFunction<ControlSendInterface*()>(controlPluginFile,mlibHandle);
@@ -49,7 +55,7 @@ ControlSender::ControlSender(std::string controlPluginFile)
 	}
 	else
 	{
-		DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("No controller loaded !"));
+		DLT_LOG(AudioManager,DLT_LOG_ERROR, DLT_STRING("ControlSender::ControlSender: No controller loaded !"));
 	}
 }
 

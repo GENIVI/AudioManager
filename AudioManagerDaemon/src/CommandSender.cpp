@@ -61,6 +61,7 @@ CommandSender::CommandSender(const std::vector<std::string>& listOfPluginDirecto
 		if (!directory)
 		{
 			DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Error opening directory "),DLT_STRING(directoryName));
+			continue;
 		}
 
         // iterate content of directory

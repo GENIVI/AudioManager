@@ -20,3 +20,6 @@ FOREACH(file ${files})
   ENDIF(EXISTS "$ENV{DESTDIR}${file}")
 ENDFOREACH(file)
 
+#remove the libraries in lib
+MESSAGE(STATUS "Removing libs")
+execute_process(COMMAND rm -R "@CMAKE_INSTALL_PREFIX@/lib/@LIB_INSTALL_SUFFIX@")

@@ -100,5 +100,17 @@ INSTALL(TARGETS AudioManager
         RUNTIME 
         DESTINATION bin
         PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
+        COMPONENT bin
 )
+
+INSTALL(DIRECTORY "${AUDIO_INCLUDES_FOLDER}/" 
+        DESTINATION include
+        COMPONENT dev
+)
+
+SET(ADD_DEPEND "sqlite3(>=3.6.22)" "dlt" "libdbus-1-3(>=1.2.16)")
+set_property(GLOBAL APPEND PROPERTY bin_prop "${ADD_DEPEND}")
+
+SET(ADD_DEPEND "audiomanager-bin" "sqlite3(>=3.6.22)" "dlt" "libdbus-1-3(>=1.2.16)")
+set_property(GLOBAL APPEND PROPERTY dev_prop "${ADD_DEPEND}")
 

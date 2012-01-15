@@ -1,14 +1,6 @@
 bin/
 build/
 doc/
-beagleClient/
-.metadata/
-PluginRoutingInterfaceTCP/
-pulseaudio-0.9.22/
-dbusInterfaces/tcpMessages.h
-.settings/
-*.cproject
-*.project
-.metadata/
-/music/navi.mp3
-/test
+packages/
+.*
+

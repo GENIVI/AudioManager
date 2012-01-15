@@ -2,7 +2,7 @@ GENIVI AUDIOMANAGER
 
 Copyright (C) 2011, BMW AG
 
-Datum  14.12.2012
+Datum  15.1.2012
 author Christian Müller (christian.ei.mueller@bmw.de)
 
 ***********************************************************************************************************
@@ -33,18 +33,21 @@ COMPILE PROGRAMS
 ***********************************************************************************************************
 - compile options with default values:
 
- 	CMAKE_BUILD_TYPE                                                                                                                  
- 	CMAKE_INSTALL_PREFIX             /usr/local                                                                                       
- 	WITH_DBUS_WRAPPER                ON                                                                                               
- 	WITH_DOCUMENTATION               OFF                                                                                              
- 	WITH_MAIN                        ON                                                                                               
-	WITH_PLUGIN_COMMAND              ON                                                                                               
- 	WITH_PLUGIN_CONTROL              ON                                                                                               
- 	WITH_PLUGIN_ROUTING              ON                                                                                               
- 	WITH_PPOLL                       ON                                                                                               
- 	WITH_SIMPLEDBUS_LOOP             OFF                                                                                              
- 	WITH_SOCKETHANDLER_LOOP          ON                                                                                               
- 	WITH_TESTS                       ON   
+	 CMAKE_BUILD_TYPE                                                                               
+	 CMAKE_INSTALL_PREFIX             /usr/local                                                    
+	 USE_BUILD_LIBS                   OFF                                                           
+	 WITH_DBUS_WRAPPER                ON                                                            
+	 WITH_DOCUMENTATION               OFF                                                           
+	 WITH_MAIN                        ON                                                            
+	 WITH_PLUGIN_COMMAND              ON                                                            
+	 WITH_PLUGIN_CONTROL              ON                                                            
+	 WITH_PLUGIN_ROUTING              ON                                                            
+	 WITH_PPOLL                       ON                                                            
+	 WITH_SIMPLEDBUS_LOOP             OFF                                                           
+	 WITH_SOCKETHANDLER_LOOP          ON                                                            
+	 WITH_TELNET                      OFF                                                           
+	 WITH_TESTS                       ON  
+ 
 
 In order to change these options, you can modify this values with ccmake, do the appropriate changes in CmakeList.txt or via 
 the commandline for cmake or (when installed via ccmake)
@@ -84,25 +87,55 @@ In order to build the project (out of source build), please follow these instruc
 
 after the script finished, you should have:
 
-	a /bin folder which contains all executables and the libraries: 
-	a /build folder which has all build objects (erase that if you need a clean build)
-	a /doc folder in case you turned the documentation on
+	a bin/ folder which contains all executables and the libraries: 
+	a build/ folder which has all build objects (erase that if you need a clean build)
+	a doc/ folder in case you turned the documentation on
+
+in order to install the AudioManager, you can do
+
+	sudo make install
+
+package generation is supported via CPack. To build packages, you have to 
+
+	make genivi_package
+
+this will create one package if your CMake version is < 2.8.5 (all binaries stripped):
+	
+	AudioManager-<git verison>-Linux.deb 
+
+if your version is above, you will get 4 packages (all binaries stripped) :
+	
+	AudioManager-<git verison>-Linux-bin.deb   		[AudioManager binary]
+	AudioManager-<git verison>-Linux-dev.deb   		[header files needed to compile plugins]
+	AudioManager-<git verison>-Linux-sampleplugins.deb 	[sample plugins]
+	AudioManager-<git verison>-Linux-tests.deb		[tests including tests for sample plugins, installed in the ~/AudioMAnagerTests]
+
+to create a tar.gz file of all sources (not including .git, build and bin folder,config files), you can do:
+
+	make package_source	
+
+This will create the following package:
+
+	AudioManager-<git verison>-Source.tar.gz
+
+All packages will be placed in a folder called packages
 
 The commandline options of the AudioManager:
 
-Usage:	AudioManagerDaemon [options]
-options:	
-	-h: print this message	
-	-v: print version	
-	-d: daemonize AudioManager 	
-	-p: path for sqlite database (default is in memory)	
-	-c: <Name> use controllerPlugin <Name> (full path with .so ending)	
-	-l: <Name> replace command plugin directory with <Name> (full path)	
-	-r: <Name> replace routing plugin directory with <Name> (full path)	
-	-L: <Name> add command plugin directory with <Name> (full path)	
-	-R: <Name> add routing plugin directory with <Name> (full path)	
-
-
+	Usage:	AudioManagerDaemon [options]
+	options:	
+		-h: print this message	
+		-i: info about current settings 	
+		-v: print version	
+		-d: daemonize AudioManager 	
+		-p<path> path for sqlite database (default is in memory)	
+		-t<port> port for telnetconnection	
+		-m<max> number of max telnetconnections	
+		-c<Name> use controllerPlugin <Name> (full path with .so ending)	
+		-l<Name> replace command plugin directory with <Name> (full path)	
+		-r<Name> replace routing plugin directory with <Name> (full path)	
+		-L<Name> add command plugin directory with <Name> (full path)	
+		-R<Name> add routing plugin directory with <Name> (full path)	
 
 
 

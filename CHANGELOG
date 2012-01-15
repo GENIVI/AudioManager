@@ -1,3 +1,19 @@
+commit 126870e1c2af541558aefd46aad38565c0ece795
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * added package creation based on cpack
+    * updated .gitignore
+
+commit a4a4c50ff375d94fa90c13d293b145176f214bf4
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * added install and uninstall routines to make
+
+commit 915ae08fa586cfa67559cc94a72ac5787df909ea
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * just update changelog
+
 commit 5f02509296864bc5b4b438139a246fb3119802ed
 Author: christian mueller <christian.ei.mueller@bmw.de>
 
