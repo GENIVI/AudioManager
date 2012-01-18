@@ -50,6 +50,7 @@ file(GLOB ROUTING_INTERFACE_SRCS_CXX
     "../../src/DatabaseObserver.cpp"
     "../../src/CommandSender.cpp"
     "../../src/RoutingSender.cpp"
+    "../../src/Router.cpp"
     "../CommonFunctions.cpp" 
     "*.cpp"
 )

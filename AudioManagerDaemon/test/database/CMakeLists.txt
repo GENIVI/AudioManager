@@ -49,6 +49,7 @@ file(GLOB DATABASE_SRCS_CXX
     "../../src/CommandSender.cpp"
     "../../src/RoutingSender.cpp"
     "../../src/ControlReceiver.cpp"
+    "../../src/Router.cpp"
     "../CommonFunctions.cpp" 
     "*.cpp"
     )

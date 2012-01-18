@@ -32,6 +32,8 @@
 namespace am {
 
 class DatabaseObserver;
+class RoutingTree;
+class RoutingTreeItem;
 
 #define DYNAMIC_ID_BOUNDARY 100 //!< the value below is reserved for staticIDs, the value above will be assigned to dynamically registered items
 
@@ -43,6 +45,7 @@ class DatabaseObserver;
 //todo: exchange last_insert_row id to be more safe
 //todo: create test to ensure uniqueness of names throughout the database
 //todo: enforce the uniqueness of names
+//todo: set isUsed flag for gateways!
 
 /**
  * This class handles and abstracts the database
@@ -118,10 +121,15 @@ public:
 	am_Error_e getListMainSinkSoundProperties(const am_sinkID_t sinkID, std::vector<am_MainSoundProperty_s>& listSoundProperties) const ;
 	am_Error_e getListMainSourceSoundProperties(const am_sourceID_t sourceID, std::vector<am_MainSoundProperty_s>& listSourceProperties) const ;
 	am_Error_e getListSystemProperties(std::vector<am_SystemProperty_s>& listSystemProperties) const ;
+	am_Error_e getListSinkConnectionFormats(const am_sinkID_t sinkID, std::vector<am_ConnectionFormat_e> & listConnectionFormats) const ;
+	am_Error_e getListSourceConnectionFormats(const am_sourceID_t sourceID, std::vector<am_ConnectionFormat_e> & listConnectionFormats) const ;
+	am_Error_e getListGatewayConnectionFormats(const am_gatewayID_t gatewayID, std::vector<bool> & listConnectionFormat) const;
 	am_Error_e getTimingInformation(const am_mainConnectionID_t mainConnectionID, am_timeSync_t& delay) const ;
 	am_Error_e getDomainOfSource(const am_sourceID_t sourceID, am_domainID_t& domainID) const;
+	am_Error_e getDomainOfSink(const am_sinkID_t sinkID, am_domainID_t& domainID) const;
 	am_Error_e getSoureState(const am_sourceID_t sourceID, am_SourceState_e& sourceState) const;
 	am_Error_e getDomainState(const am_domainID_t domainID, am_DomainState_e state) const;
+	am_Error_e getRoutingTree(bool onlyfree, RoutingTree* tree, std::vector<RoutingTreeItem*>* flatTree);
 	am_Error_e peekDomain(const std::string& name, am_domainID_t& domainID);
 	am_Error_e peekSink(const std::string& name, am_sinkID_t& sinkID);
 	am_Error_e peekSource(const std::string& name, am_sourceID_t& sourceID);

@@ -205,8 +205,13 @@ void parseCommandLine(int argc, char **argv)
 
 static void signalHandler (int sig, siginfo_t *siginfo, void *context)
 {
+	(void)sig;
+	(void)siginfo;
+	(void)context;
 	DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("signal handler was called, exit now..."));
 	gDispatchDone=1;
+	//todo: maually fire the mainloop
+	//todo: ifdef no sockethandler
 	exit(1);
 }
 
@@ -235,7 +240,7 @@ int main(int argc, char *argv[])
 	sigaction(SIGQUIT, &signalAction, NULL);
 
 	struct sigaction signalChildAction;
-	memset (&signalAction, '\0', sizeof(signalChildAction));
+	memset (&signalChildAction, '\0', sizeof(signalChildAction));
 	signalChildAction.sa_flags = SA_NOCLDWAIT;
 	sigaction (SIGCHLD, &signalChildAction, NULL);
 

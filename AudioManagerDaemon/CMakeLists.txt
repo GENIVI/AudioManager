@@ -37,6 +37,7 @@ SET(AUDIOMAN_SRCS_CXX
     src/RoutingSender.cpp
     src/SocketHandler.cpp
     src/TelnetServer.cpp
+    src/Router.cpp
 )
 
 IF(WITH_DBUS_WRAPPER)

@@ -30,6 +30,7 @@
 #include <sstream>
 #include <string>
 #include <dlt/dlt.h>
+#include "Router.h"
 
 #define DOMAIN_TABLE "Domains"
 #define SOURCE_CLASS_TABLE "SourceClasses"
@@ -54,7 +55,7 @@ const std::string databaseTables[]={
 		" SinkClasses (sinkClassID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, name VARCHAR(50));",
 		" Sources (sourceID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, domainID INTEGER, name VARCHAR(50), sourceClassID INTEGER, sourceState INTEGER, volume INTEGER, visible BOOL, availability INTEGER, availabilityReason INTEGER, interruptState INTEGER, reserved BOOL);",
 		" Sinks (sinkID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, name VARCHAR(50), domainID INTEGER, sinkClassID INTEGER, volume INTEGER, visible BOOL, availability INTEGER, availabilityReason INTEGER, muteState INTEGER, mainVolume INTEGER, reserved BOOL);",
-		" Gateways (gatewayID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, name VARCHAR(50), sinkID INTEGER, sourceID INTEGER, domainSinkID INTEGER, domainSourceID INTEGER, controlDomainID INTEGER);",
+		" Gateways (gatewayID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, name VARCHAR(50), sinkID INTEGER, sourceID INTEGER, domainSinkID INTEGER, domainSourceID INTEGER, controlDomainID INTEGER, inUse BOOL);",
 		" Crossfaders (crossfaderID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, name VARCHAR(50), sinkID_A INTEGER, sinkID_B INTEGER, sourceID INTEGER, hotSink INTEGER);",
 		" Connections (connectionID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, sourceID INTEGER, sinkID INTEGER, delay INTEGER, connectionFormat INTEGER, reserved BOOL);",
 		" MainConnections (mainConnectionID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, sourceID INTEGER, sinkID INTEGER, connectionState INTEGER, delay INTEGER);",
@@ -2531,6 +2532,70 @@ am_Error_e DatabaseHandler::getListSystemProperties(std::vector<am_SystemPropert
 	return E_OK;
 }
 
+am_Error_e am::DatabaseHandler::getListSinkConnectionFormats(const am_sinkID_t sinkID, std::vector<am_ConnectionFormat_e> & listConnectionFormats) const
+{
+	listConnectionFormats.clear();
+	sqlite3_stmt *qConnectionFormat=NULL;
+	int eCode=0;
+	am_ConnectionFormat_e tempConnectionFormat;
+	std::string commandConnectionFormat= "SELECT soundFormat FROM SinkConnectionFormat"+ i2s(sinkID);
+	sqlite3_prepare_v2(mDatabase,commandConnectionFormat.c_str(),-1,&qConnectionFormat,NULL);
+	while((eCode=sqlite3_step(qConnectionFormat))==SQLITE_ROW)
+	{
+		tempConnectionFormat=(am_ConnectionFormat_e)sqlite3_column_int(qConnectionFormat,0);
+		listConnectionFormats.push_back(tempConnectionFormat);
+	}
+
+	if((eCode=sqlite3_finalize(qConnectionFormat))!=SQLITE_OK)
+	{
+		DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListSinkConnectionFormats SQLITE Finalize error code:"),DLT_INT(eCode));
+		return E_DATABASE_ERROR;
+	}
+
+	return E_OK;
+}
+
+
+
+am_Error_e am::DatabaseHandler::getListSourceConnectionFormats(const am_sourceID_t sourceID, std::vector<am_ConnectionFormat_e> & listConnectionFormats) const
+{
+	listConnectionFormats.clear();
+	sqlite3_stmt* query=NULL, *qConnectionFormat=NULL, *qSoundProperty=NULL, *qMAinSoundProperty=NULL;
+	int eCode=0;
+	am_ConnectionFormat_e tempConnectionFormat;
+
+	//read out the connectionFormats
+	std::string commandConnectionFormat= "SELECT soundFormat FROM SourceConnectionFormat"+ i2s(sourceID);
+	sqlite3_prepare_v2(mDatabase,commandConnectionFormat.c_str(),-1,&qConnectionFormat,NULL);
+	while((eCode=sqlite3_step(qConnectionFormat))==SQLITE_ROW)
+	{
+		tempConnectionFormat=(am_ConnectionFormat_e)sqlite3_column_int(qConnectionFormat,0);
+		listConnectionFormats.push_back(tempConnectionFormat);
+	}
+
+	if((eCode=sqlite3_finalize(qConnectionFormat))!=SQLITE_OK)
+	{
+		DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListSources SQLITE Finalize error code:"),DLT_INT(eCode));
+		return E_DATABASE_ERROR;
+	}
+
+	return E_OK;
+}
+
+am_Error_e am::DatabaseHandler::getListGatewayConnectionFormats(const am_gatewayID_t gatewayID, std::vector<bool> & listConnectionFormat) const
+{
+	ListConnectionFormat::const_iterator iter=mListConnectionFormat.begin();
+	iter=mListConnectionFormat.find(gatewayID);
+	if (iter == mListConnectionFormat.end())
+	{
+		DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListGatewayConnectionFormats database error with convertionFormat"));
+		return (E_DATABASE_ERROR);
+	}
+	listConnectionFormat=iter->second;
+
+	return (E_OK);
+}
+
 
 
 am_Error_e DatabaseHandler::getTimingInformation(const am_mainConnectionID_t mainConnectionID, am_timeSync_t & delay) const
@@ -3046,7 +3111,29 @@ am_Error_e DatabaseHandler::getDomainOfSource(const am_sourceID_t sourceID, am_d
 		DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getDomainOfSource database error!:"), DLT_INT(eCode))
 	}
 	sqlite3_finalize(query);
-	return returnVal;
+	return (returnVal);
+}
+
+am_Error_e am::DatabaseHandler::getDomainOfSink(const am_sinkID_t sinkID, am_domainID_t & domainID) const
+{
+	assert(sinkID!=0);
+
+	sqlite3_stmt* query=NULL;
+	std::string command = "SELECT domainID FROM " + std::string(SINK_TABLE) + " WHERE sinkID=" + i2s(sinkID);
+	int eCode=0;
+	am_Error_e returnVal=E_DATABASE_ERROR;
+	sqlite3_prepare_v2(mDatabase,command.c_str(),-1,&query,NULL);
+	if ((eCode=sqlite3_step(query))==SQLITE_ROW)
+	{
+		domainID=sqlite3_column_int(query,0);
+		returnVal=E_OK;
+	}
+	else
+	{
+		DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getDomainOfSink database error!:"), DLT_INT(eCode))
+	}
+	sqlite3_finalize(query);
+	return (returnVal);
 }
 
 
@@ -3769,6 +3856,45 @@ am_Error_e DatabaseHandler::changeCrossFaderHotSink(const am_crossfaderID_t cros
 	DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::changeCrossFaderHotSink changed hotsink of crossfader="),DLT_INT(crossfaderID),DLT_STRING("to:"),DLT_INT(hotsink));
 
 	return E_OK;
+}
+
+am_Error_e am::DatabaseHandler::getRoutingTree(bool onlyfree, RoutingTree *tree, std::vector<RoutingTreeItem*> *flatTree)
+{
+	sqlite3_stmt* query=NULL;
+	int eCode=0;
+	size_t i=0;
+	std::string command;
+	am_domainID_t rootID = tree->returnRootDomainID();
+	RoutingTreeItem *parent = tree->returnRootItem();
+
+	command="SELECT domainSourceID,gatewayID FROM " + std::string(GATEWAY_TABLE)+ " WHERE domainSinkID=? AND IsBlocked=?";
+
+	sqlite3_prepare_v2(mDatabase,command.c_str(),-1,&query,NULL);
+	do {
+		sqlite3_bind_int(query,1, rootID);
+		sqlite3_bind_int(query,2, onlyfree);
+		while((eCode=sqlite3_step(query))==SQLITE_ROW)
+		{
+			flatTree->push_back(tree->insertItem(sqlite3_column_int(query,0),sqlite3_column_int(query,1),parent));
+		}
+
+		if(eCode!=SQLITE_DONE)
+		{
+			DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getRoutingTree SQLITE error code:"),DLT_INT(eCode));
+			return (E_DATABASE_ERROR);
+		}
+		parent = flatTree->at(i);
+		rootID = parent->returnDomainID();
+		i++;
+	} while (flatTree->size() > i);
+
+	if((eCode=sqlite3_finalize(query))!=SQLITE_OK)
+	{
+		DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getRoutingTree SQLITE Finalize error code:"),DLT_INT(eCode));
+		return (E_DATABASE_ERROR);
+	}
+
+	return (E_OK);
 }
 
 void DatabaseHandler::createTables()
