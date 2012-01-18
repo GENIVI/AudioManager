@@ -171,7 +171,11 @@ dbus_uint16_t DBusMessageHandler::getUInt()
 {
     dbus_uint16_t param;
 
+#ifdef GLIB_DBUS_TYPES_TOLERANT
+    if (DBUS_TYPE_UINT16 != dbus_message_iter_get_arg_type(&mDBusMessageIter) && DBUS_TYPE_UINT32 != dbus_message_iter_get_arg_type(&mDBusMessageIter))
+#else
     if (DBUS_TYPE_UINT16 != dbus_message_iter_get_arg_type(&mDBusMessageIter))
+#endif
     {
     	DLT_LOG(DLT_CONTEXT,DLT_LOG_ERROR, DLT_STRING("DBusMessageHandler::getUInt DBUS handler argument is no uint16_t!"));
     	mErrorName=std::string(DBUS_ERROR_INVALID_ARGS);
@@ -189,7 +193,11 @@ dbus_int16_t DBusMessageHandler::getInt()
 {
     dbus_int16_t param;
 
+#ifdef GLIB_DBUS_TYPES_TOLERANT
+    if (DBUS_TYPE_INT16 != dbus_message_iter_get_arg_type(&mDBusMessageIter) && DBUS_TYPE_INT32 != dbus_message_iter_get_arg_type(&mDBusMessageIter))
+#else
     if (DBUS_TYPE_INT16 != dbus_message_iter_get_arg_type(&mDBusMessageIter))
+#endif
     {
     	DLT_LOG(DLT_CONTEXT,DLT_LOG_ERROR, DLT_STRING("DBusMessageHandler::getInt DBUS handler argument is no int16_t!"));
     	mErrorName=std::string(DBUS_ERROR_INVALID_ARGS);
