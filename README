@@ -139,6 +139,9 @@ The commandline options of the AudioManager:
 
 
 
+The source code if formatted with eclipse, the style sheet used can be found in the cmake folder:
+cmake/AudioManager_Codestyle.xml
+
                                  _..-------++._
                              _.-'/ |      _||  \"--._
                        __.--'`._/_\j_____/_||___\    `----.
