@@ -27,51 +27,54 @@
 
 #include <audiomanagertypes.h>
 
-namespace am {
+namespace am
+{
 
 class DatabaseHandler;
 
-class Router {
+class Router
+{
 public:
-	Router(DatabaseHandler* iDatabaseHandler);
-	am_Error_e getRoute(const bool onlyfree, const am_sourceID_t sourceID, const am_sinkID_t sinkID, std::vector<am_Route_s>& returnList);
-	virtual ~Router();
+    Router(DatabaseHandler* iDatabaseHandler);
+    am_Error_e getRoute(const bool onlyfree, const am_sourceID_t sourceID, const am_sinkID_t sinkID, std::vector<am_Route_s>& returnList);
+    virtual ~Router();
 
 private:
-	am_Error_e findBestWay(std::vector<am_RoutingElement_s>& listRoute,std::vector<am_RoutingElement_s>::iterator routeIterator,std::vector<am_gatewayID_t>::iterator gatewayIterator,int choiceNumber);
-	void listPossibleConnectionFormats(const am_sourceID_t sourceID,const am_sinkID_t sinkID,std::vector<am_ConnectionFormat_e>& listFormats) const;
-	void listRestrictedOutputFormatsGateways(const am_gatewayID_t gatewayID, const am_ConnectionFormat_e sinkConnectionFormat, std::vector<am_ConnectionFormat_e>& listFormats) const;
-	DatabaseHandler* mDatabaseHandler;
+    am_Error_e findBestWay(std::vector<am_RoutingElement_s>& listRoute, std::vector<am_RoutingElement_s>::iterator routeIterator, std::vector<am_gatewayID_t>::iterator gatewayIterator, int choiceNumber);
+    void listPossibleConnectionFormats(const am_sourceID_t sourceID, const am_sinkID_t sinkID, std::vector<am_ConnectionFormat_e>& listFormats) const;
+    void listRestrictedOutputFormatsGateways(const am_gatewayID_t gatewayID, const am_ConnectionFormat_e sinkConnectionFormat, std::vector<am_ConnectionFormat_e>& listFormats) const;
+    DatabaseHandler* mDatabaseHandler;
 };
 
-class RoutingTreeItem {
+class RoutingTreeItem
+{
 public:
-	RoutingTreeItem(const am_domainID_t domainID, const am_gatewayID_t gatewayID = 0, RoutingTreeItem *parent = 0);
-	void appendChild(RoutingTreeItem *newChild);
-	void returnChildItems(std::vector<RoutingTreeItem*> listChildItems);
-	am_domainID_t returnDomainID() const;
-	am_gatewayID_t returnGatewayID() const;
-	virtual ~RoutingTreeItem();
-	RoutingTreeItem* returnParent() const;
+    RoutingTreeItem(const am_domainID_t domainID, const am_gatewayID_t gatewayID = 0, RoutingTreeItem *parent = 0);
+    void appendChild(RoutingTreeItem *newChild);
+    void returnChildItems(std::vector<RoutingTreeItem*> listChildItems);
+    am_domainID_t returnDomainID() const;
+    am_gatewayID_t returnGatewayID() const;
+    virtual ~RoutingTreeItem();
+    RoutingTreeItem* returnParent() const;
 private:
-	std::vector<RoutingTreeItem*> mListChildItems; //!< List of all child items
-	am_domainID_t mDomainID; //!< the domain ID of the item
-	am_gatewayID_t mGatewayID; //!< the gateway Id
-	RoutingTreeItem *mParentItem; //!< pointer to the parent item
+    std::vector<RoutingTreeItem*> mListChildItems; //!< List of all child items
+    am_domainID_t mDomainID; //!< the domain ID of the item
+    am_gatewayID_t mGatewayID; //!< the gateway Id
+    RoutingTreeItem *mParentItem; //!< pointer to the parent item
 };
 
-
-class RoutingTree {
+class RoutingTree
+{
 public:
-	RoutingTree(const am_domainID_t rootDomainID);
-	RoutingTreeItem* insertItem(const am_domainID_t domainID, const am_gatewayID_t gatewayID, RoutingTreeItem *parent);
-	void getRoute(RoutingTreeItem* targetItem, std::vector<am_gatewayID_t>* listGateways);
-	am_domainID_t returnRootDomainID() const;
-	RoutingTreeItem* returnRootItem();
-	virtual ~RoutingTree();
+    RoutingTree(const am_domainID_t rootDomainID);
+    RoutingTreeItem* insertItem(const am_domainID_t domainID, const am_gatewayID_t gatewayID, RoutingTreeItem *parent);
+    void getRoute(RoutingTreeItem* targetItem, std::vector<am_gatewayID_t>* listGateways);
+    am_domainID_t returnRootDomainID() const;
+    RoutingTreeItem* returnRootItem();
+    virtual ~RoutingTree();
 private:
-	RoutingTreeItem mRootItem; //!< pointer to root item
-	std::vector<RoutingTreeItem*> mListChild; //!< list of all childs
+    RoutingTreeItem mRootItem; //!< pointer to root item
+    std::vector<RoutingTreeItem*> mListChild; //!< list of all childs
 };
 
 } /* namespace am */

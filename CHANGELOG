@@ -1,4 +1,34 @@
-commit 126870e1c2af541558aefd46aad38565c0ece795
+commit 4fe50302a695c625d5161b538da771b2c36bd33e
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * formatting all the source code with eclipse source code style
+    * added used xml to the project
+
+commit 80213f17291e5b58c733de09f06439d71640d2e2
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * fixed wrong memset in main.cpp (thanks to frank)
+    * fixed compiler warnings in signalhandler
+    * added Router Class: this class does now the autorouting job. First commit, no tests yet
+
+commit adf0d48f869007e4527b00e1a346ed37ee82cc1a
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * fix for package building with lower cmake versions
+    * fix DBus interface to be GLIB tolerant 32bit types
+
+commit 8a99f39f0a5b84230bb6e764950dc674258870e8
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * fix build without git
+
+commit 3d458653de2ec50f524b38d33645fd773bcb207f
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * fixed compilation without git
+    * fixed compilation without tests
+
+commit 23c90675c09d4e2947b5a827a5ebcd5516c0270e
 Author: christian mueller <christian.ei.mueller@bmw.de>
 
     * added package creation based on cpack
