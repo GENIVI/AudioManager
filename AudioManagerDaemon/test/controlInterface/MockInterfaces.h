@@ -155,6 +155,8 @@ class MockControlSendInterface : public ControlSendInterface {
       void(const am_Handle_s handle, const am_Error_e error));
   MOCK_METHOD2(cbAckSetSinkSoundProperty,
       void(const am_Handle_s handle, const am_Error_e error));
+  MOCK_METHOD4(getConnectionFormatChoice,
+      am_Error_e(const am_sourceID_t sourceID, const am_sinkID_t sinkID, const std::vector<am_ConnectionFormat_e> listPossibleConnectionFormats, std::vector<am_ConnectionFormat_e>& listPrioConnectionFormats));
   MOCK_CONST_METHOD0(getInterfaceVersion,
       uint16_t());
 };

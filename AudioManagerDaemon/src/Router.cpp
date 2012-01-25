@@ -24,6 +24,7 @@
 
 #include "Router.h"
 #include "DatabaseHandler.h"
+#include "ControlSender.h"
 #include <assert.h>
 #include <algorithm>
 #include <vector>
@@ -31,16 +32,12 @@
 
 using namespace am;
 
-am_Error_e getConnectionFormatChoice(const am_sinkID_t, const am_sourceID_t, const std::vector<am_ConnectionFormat_e>& listPossibleConnectionFormats, std::vector<am_ConnectionFormat_e>& listPriorityConnectionFormats)
-{
-    listPriorityConnectionFormats = listPossibleConnectionFormats;
-    return (E_OK);
-}
-
-Router::Router(DatabaseHandler *iDatabaseHandler) :
-        mDatabaseHandler(iDatabaseHandler)
+Router::Router(DatabaseHandler* iDatabaseHandler, ControlSender* iSender) :
+        mDatabaseHandler(iDatabaseHandler), //
+        mControlSender(iSender)
 {
     assert(mDatabaseHandler);
+    assert(mControlSender);
 }
 
 am_Error_e Router::getRoute(const bool onlyfree, const am_sourceID_t sourceID, const am_sinkID_t sinkID, std::vector<am_Route_s> & returnList)
@@ -55,7 +52,7 @@ am_Error_e Router::getRoute(const bool onlyfree, const am_sourceID_t sourceID, c
 
     RoutingTree routingtree(sourceDomainID); //Build up a Tree from the Source_Domain to every other domain.
     std::vector<RoutingTreeItem*> flattree; //This list is the flat tree
-    std::vector<RoutingTreeItem*> matchtree; //This List holds all TreeItems which have the right Domain Sink IDs
+    std::vector<RoutingTreeItem*> matchtree;
     std::vector<am_gatewayID_t> listGatewayID; //holds all gateway ids of the route
     am_RoutingElement_s routingElement;
     std::vector<am_RoutingElement_s> actualRoutingElement; //intermediate list of current routing pairs
@@ -63,24 +60,24 @@ am_Error_e Router::getRoute(const bool onlyfree, const am_sourceID_t sourceID, c
     am_sourceID_t lastSource = 0;
 
     //TODO: kind of unclean. The separation between database and router could be better.
-    mDatabaseHandler->getRoutingTree(onlyfree, &routingtree, &flattree); //Build up the tree out of the database as
+    mDatabaseHandler->getRoutingTree(onlyfree, routingtree, flattree); //Build up the tree out of the database as
 
     //we go through the returned flattree and look for our sink, after that flattree holds only treeItems that match
-    std::vector<RoutingTreeItem*>::iterator flatIterator = flattree.begin();
-    for (; flatIterator != flattree.end(); ++flatIterator)
+    std::vector<RoutingTreeItem*>::iterator iterator = flattree.begin();
+    for (; iterator != flattree.end(); ++iterator)
     {
-        if ((*flatIterator)->returnDomainID() != sinkDomainID)
+        if ((*iterator)->returnDomainID() == sinkDomainID)
         {
-            flatIterator = flattree.erase(flatIterator);
+            matchtree.push_back(*iterator);
         }
     }
 
     //No we need to trace back the routes for each entry in matchtree
-    flatIterator = flattree.begin();
-    for (; flatIterator != flattree.end(); ++flatIterator)
+    iterator = matchtree.begin();
+    for (; iterator != matchtree.end(); ++iterator)
     {
         //getting the route for the actual item
-        routingtree.getRoute(*flatIterator, &listGatewayID); //This gives only the Gateway IDs we need more
+        routingtree.getRoute(*iterator, listGatewayID); //This gives only the Gateway IDs we need more
 
         //go throught the gatewayids and get more information
         std::vector<am_gatewayID_t>::iterator gatewayIterator = listGatewayID.begin();
@@ -136,6 +133,7 @@ void Router::listPossibleConnectionFormats(const am_sourceID_t sourceID, const a
     mDatabaseHandler->getListSourceConnectionFormats(sourceID, listSourceFormats);
     std::insert_iterator<std::vector<am_ConnectionFormat_e> > inserter(listFormats, listFormats.begin());
     set_intersection(listSourceFormats.begin(), listSourceFormats.end(), listSinkFormats.begin(), listSinkFormats.end(), inserter);
+    std::vector<am_ConnectionFormat_e>::iterator it = listSourceFormats.begin();
 }
 
 am_Error_e Router::findBestWay(std::vector<am_RoutingElement_s> & listRoute, std::vector<am_RoutingElement_s>::iterator routeIterator, std::vector<am_gatewayID_t>::iterator gatewayIterator, int choiceNumber)
@@ -163,7 +161,7 @@ am_Error_e Router::findBestWay(std::vector<am_RoutingElement_s> & listRoute, std
     }
 
     //let the controller decide:
-    getConnectionFormatChoice(routeIterator->sinkID, routeIterator->sourceID, listConnectionFormats, listPriorityConnectionFormats);
+    mControlSender->getConnectionFormatChoice(routeIterator->sourceID, routeIterator->sinkID, listConnectionFormats, listPriorityConnectionFormats);
 
     //go back one step, if we cannot find a format and take the next best!
     if (listPriorityConnectionFormats.empty())
@@ -263,14 +261,16 @@ RoutingTreeItem *RoutingTree::insertItem(const am_domainID_t domainID, const am_
     return newTree;
 }
 
-void RoutingTree::getRoute(RoutingTreeItem *targetItem, std::vector<am_gatewayID_t> *listGateways)
+void RoutingTree::getRoute(RoutingTreeItem *targetItem, std::vector<am_gatewayID_t>& listGateways)
 {
+    listGateways.clear();
     RoutingTreeItem *parentItem = targetItem;
     while (parentItem != &mRootItem)
     {
-        listGateways->push_back(parentItem->returnGatewayID());
+        listGateways.push_back(parentItem->returnGatewayID());
         parentItem = parentItem->returnParent();
     }
+    std::reverse(listGateways.begin(), listGateways.end());
 }
 
 am_domainID_t RoutingTree::returnRootDomainID() const

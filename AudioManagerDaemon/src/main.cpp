@@ -48,6 +48,7 @@
 #include "ControlReceiver.h"
 #include "DatabaseObserver.h"
 #include "TelnetServer.h"
+#include "Router.h"
 #include <sys/resource.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -286,6 +287,8 @@ int main(int argc, char *argv[])
 #else
     DatabaseObserver iObserver(&iCommandSender, &iRoutingSender);
 #endif
+
+    Router iRouter(&iDatabaseHandler,&iControlSender);
 
     //since the plugins have been loaded by the *Senders before, we can tell the Controller this:
     iControlSender.hookAllPluginsLoaded();

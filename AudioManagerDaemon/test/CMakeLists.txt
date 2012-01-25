@@ -16,6 +16,7 @@ set(EXECUTABLE_OUTPUT_PATH ${TEST_EXECUTABLE_OUTPUT_PATH})
 FIND_PACKAGE(GTest REQUIRED) 
 
 add_subdirectory (database)
+add_subdirectory (routing)
 add_subdirectory (routingInterface)
 add_subdirectory (controlInterface)
 add_subdirectory (sockethandler)

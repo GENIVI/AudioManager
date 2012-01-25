@@ -169,7 +169,8 @@ am_Error_e DatabaseHandler::enterDomainDB(const am_Domain_s & domainData, am_dom
 
     am_Domain_s domain = domainData;
     domain.domainID = domainID;
-    if (mDatabaseObserver) mDatabaseObserver->newDomain(domain);
+    if (mDatabaseObserver)
+        mDatabaseObserver->newDomain(domain);
 
     return E_OK;
 }
@@ -271,7 +272,8 @@ am_Error_e DatabaseHandler::enterMainConnectionDB(const am_MainConnection_s & ma
     }
 
     //finally, we update the delay value for the maintable
-    if (delay == 0) delay = -1;
+    if (delay == 0)
+        delay = -1;
     return changeDelayMainConnection(delay, connectionID);
 }
 
@@ -444,7 +446,8 @@ am_Error_e DatabaseHandler::enterSinkDB(const am_Sink_s & sinkData, am_sinkID_t 
 
     am_Sink_s sink = sinkData;
     sink.sinkID = sinkID;
-    if (mDatabaseObserver != NULL) mDatabaseObserver->newSink(sink);
+    if (mDatabaseObserver != NULL)
+        mDatabaseObserver->newSink(sink);
 
     return E_OK;
 }
@@ -482,7 +485,8 @@ am_Error_e DatabaseHandler::enterGatewayDB(const am_Gateway_s & gatewayData, am_
     else
     {
         //check if the ID already exists
-        if (existGateway(gatewayData.gatewayID)) return E_ALREADY_EXISTS;
+        if (existGateway(gatewayData.gatewayID))
+            return E_ALREADY_EXISTS;
         command = "INSERT INTO " + std::string(GATEWAY_TABLE) + "(name, sinkID, sourceID, domainSinkID, domainSourceID, controlDomainID, gatewayID, inUse) VALUES (?,?,?,?,?,?,?,0)";
     }
 
@@ -562,7 +566,8 @@ am_Error_e DatabaseHandler::enterGatewayDB(const am_Gateway_s & gatewayData, am_
 
     am_Gateway_s gateway = gatewayData;
     gateway.gatewayID = gatewayID;
-    if (mDatabaseObserver) mDatabaseObserver->newGateway(gateway);
+    if (mDatabaseObserver)
+        mDatabaseObserver->newGateway(gateway);
     return E_OK;
 }
 
@@ -736,7 +741,8 @@ am_Error_e DatabaseHandler::enterSourceDB(const am_Source_s & sourceData, am_sou
 
     am_Source_s source = sourceData;
     source.sourceID = sourceID;
-    if (mDatabaseObserver) mDatabaseObserver->newSource(source);
+    if (mDatabaseObserver)
+        mDatabaseObserver->newSource(source);
     return E_OK;
 }
 
@@ -837,7 +843,8 @@ am_Error_e DatabaseHandler::changeMainConnectionStateDB(const am_mainConnectionI
         return E_DATABASE_ERROR;
     }DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::changeMainConnectionStateDB changed mainConnectionState of MainConnection:"), DLT_INT(mainconnectionID), DLT_STRING("to:"), DLT_INT(connectionState));
 
-    if (mDatabaseObserver) mDatabaseObserver->mainConnectionStateChanged(mainconnectionID, connectionState);
+    if (mDatabaseObserver)
+        mDatabaseObserver->mainConnectionStateChanged(mainconnectionID, connectionState);
     return E_OK;
 }
 
@@ -869,7 +876,8 @@ am_Error_e DatabaseHandler::changeSinkMainVolumeDB(const am_mainVolume_t mainVol
 
     DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::changeSinkMainVolumeDB changed mainVolume of sink:"), DLT_INT(sinkID), DLT_STRING("to:"), DLT_INT(mainVolume));
 
-    if (mDatabaseObserver) mDatabaseObserver->volumeChanged(sinkID, mainVolume);
+    if (mDatabaseObserver)
+        mDatabaseObserver->volumeChanged(sinkID, mainVolume);
 
     return E_OK;
 }
@@ -904,7 +912,8 @@ am_Error_e DatabaseHandler::changeSinkAvailabilityDB(const am_Availability_s & a
 
     DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::changeSinkAvailabilityDB changed sinkAvailability of sink:"), DLT_INT(sinkID), DLT_STRING("to:"), DLT_INT(availability.availability), DLT_STRING("Reason:"), DLT_INT(availability.availabilityReason));
 
-    if (mDatabaseObserver && sourceVisible(sinkID)) mDatabaseObserver->sinkAvailabilityChanged(sinkID, availability);
+    if (mDatabaseObserver && sourceVisible(sinkID))
+        mDatabaseObserver->sinkAvailabilityChanged(sinkID, availability);
     return E_OK;
 }
 
@@ -968,7 +977,8 @@ am_Error_e DatabaseHandler::changeSinkMuteStateDB(const am_MuteState_e muteState
 
     DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::changeSinkMuteStateDB changed sinkMuteState of sink:"), DLT_INT(sinkID), DLT_STRING("to:"), DLT_INT(muteState));
 
-    if (mDatabaseObserver) mDatabaseObserver->sinkMuteStateChanged(sinkID, muteState);
+    if (mDatabaseObserver)
+        mDatabaseObserver->sinkMuteStateChanged(sinkID, muteState);
 
     return E_OK;
 }
@@ -1002,7 +1012,8 @@ am_Error_e DatabaseHandler::changeMainSinkSoundPropertyDB(const am_MainSoundProp
     }
 
     DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::changeMainSinkSoundPropertyDB changed MainSinkSoundProperty of sink:"), DLT_INT(sinkID), DLT_STRING("type:"), DLT_INT(soundProperty.type), DLT_STRING("to:"), DLT_INT(soundProperty.value));
-    if (mDatabaseObserver) mDatabaseObserver->mainSinkSoundPropertyChanged(sinkID, soundProperty);
+    if (mDatabaseObserver)
+        mDatabaseObserver->mainSinkSoundPropertyChanged(sinkID, soundProperty);
     return E_OK;
 }
 
@@ -1036,7 +1047,8 @@ am_Error_e DatabaseHandler::changeMainSourceSoundPropertyDB(const am_MainSoundPr
 
     DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::changeMainSourceSoundPropertyDB changed MainSinkSoundProperty of source:"), DLT_INT(sourceID), DLT_STRING("type:"), DLT_INT(soundProperty.type), DLT_STRING("to:"), DLT_INT(soundProperty.value));
 
-    if (mDatabaseObserver) mDatabaseObserver->mainSourceSoundPropertyChanged(sourceID, soundProperty);
+    if (mDatabaseObserver)
+        mDatabaseObserver->mainSourceSoundPropertyChanged(sourceID, soundProperty);
     return E_OK;
 }
 
@@ -1070,7 +1082,8 @@ am_Error_e DatabaseHandler::changeSourceAvailabilityDB(const am_Availability_s &
 
     DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::changeSourceAvailabilityDB changed changeSourceAvailabilityDB of source:"), DLT_INT(sourceID), DLT_STRING("to:"), DLT_INT(availability.availability), DLT_STRING("Reason:"), DLT_INT(availability.availabilityReason));
 
-    if (mDatabaseObserver && sourceVisible(sourceID)) mDatabaseObserver->sourceAvailabilityChanged(sourceID, availability);
+    if (mDatabaseObserver && sourceVisible(sourceID))
+        mDatabaseObserver->sourceAvailabilityChanged(sourceID, availability);
     return E_OK;
 }
 
@@ -1098,7 +1111,8 @@ am_Error_e DatabaseHandler::changeSystemPropertyDB(const am_SystemProperty_s & p
 
     DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::changeSystemPropertyDB changed system property"));
 
-    if (mDatabaseObserver) mDatabaseObserver->systemPropertyChanged(property);
+    if (mDatabaseObserver)
+        mDatabaseObserver->systemPropertyChanged(property);
 
     return E_OK;
 }
@@ -1113,8 +1127,10 @@ am_Error_e DatabaseHandler::removeMainConnectionDB(const am_mainConnectionID_t m
     }
     std::string command = "DELETE from " + std::string(MAINCONNECTION_TABLE) + " WHERE mainConnectionID=" + i2s(mainConnectionID);
     std::string command1 = "DROP table MainConnectionRoute" + i2s(mainConnectionID);
-    if (!sqQuery(command)) return E_DATABASE_ERROR;
-    if (!sqQuery(command1)) return E_DATABASE_ERROR;DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::removeMainConnectionDB removed:"), DLT_INT(mainConnectionID));
+    if (!sqQuery(command))
+        return E_DATABASE_ERROR;
+    if (!sqQuery(command1))
+        return E_DATABASE_ERROR;DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::removeMainConnectionDB removed:"), DLT_INT(mainConnectionID));
     if (mDatabaseObserver)
     {
         mDatabaseObserver->mainConnectionStateChanged(mainConnectionID, CS_DISCONNECTED);
@@ -1135,12 +1151,17 @@ am_Error_e DatabaseHandler::removeSinkDB(const am_sinkID_t sinkID)
     std::string command1 = "DROP table SinkConnectionFormat" + i2s(sinkID);
     std::string command2 = "DROP table SinkMainSoundProperty" + i2s(sinkID);
     std::string command3 = "DROP table SinkSoundProperty" + i2s(sinkID);
-    if (!sqQuery(command)) return E_DATABASE_ERROR;
-    if (!sqQuery(command1)) return E_DATABASE_ERROR;
-    if (!sqQuery(command2)) return E_DATABASE_ERROR;
-    if (!sqQuery(command3)) return E_DATABASE_ERROR;DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::removeSinkDB removed:"), DLT_INT(sinkID));
+    if (!sqQuery(command))
+        return E_DATABASE_ERROR;
+    if (!sqQuery(command1))
+        return E_DATABASE_ERROR;
+    if (!sqQuery(command2))
+        return E_DATABASE_ERROR;
+    if (!sqQuery(command3))
+        return E_DATABASE_ERROR;DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::removeSinkDB removed:"), DLT_INT(sinkID));
 
-    if (mDatabaseObserver != NULL) mDatabaseObserver->removedSink(sinkID);
+    if (mDatabaseObserver != NULL)
+        mDatabaseObserver->removedSink(sinkID);
 
     return E_OK;
 }
@@ -1157,11 +1178,16 @@ am_Error_e DatabaseHandler::removeSourceDB(const am_sourceID_t sourceID)
     std::string command1 = "DROP table SourceConnectionFormat" + i2s(sourceID);
     std::string command2 = "DROP table SourceMainSoundProperty" + i2s(sourceID);
     std::string command3 = "DROP table SourceSoundProperty" + i2s(sourceID);
-    if (!sqQuery(command)) return E_DATABASE_ERROR;
-    if (!sqQuery(command1)) return E_DATABASE_ERROR;
-    if (!sqQuery(command2)) return E_DATABASE_ERROR;
-    if (!sqQuery(command3)) return E_DATABASE_ERROR;DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::removeSourceDB removed:"), DLT_INT(sourceID));
-    if (mDatabaseObserver) mDatabaseObserver->removedSource(sourceID);
+    if (!sqQuery(command))
+        return E_DATABASE_ERROR;
+    if (!sqQuery(command1))
+        return E_DATABASE_ERROR;
+    if (!sqQuery(command2))
+        return E_DATABASE_ERROR;
+    if (!sqQuery(command3))
+        return E_DATABASE_ERROR;DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::removeSourceDB removed:"), DLT_INT(sourceID));
+    if (mDatabaseObserver)
+        mDatabaseObserver->removedSource(sourceID);
     return E_OK;
 }
 
@@ -1174,8 +1200,10 @@ am_Error_e DatabaseHandler::removeGatewayDB(const am_gatewayID_t gatewayID)
         return E_NON_EXISTENT;
     }
     std::string command = "DELETE from " + std::string(GATEWAY_TABLE) + " WHERE gatewayID=" + i2s(gatewayID);
-    if (!sqQuery(command)) return E_DATABASE_ERROR;DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::removeGatewayDB removed:"), DLT_INT(gatewayID));
-    if (mDatabaseObserver) mDatabaseObserver->removeGateway(gatewayID);
+    if (!sqQuery(command))
+        return E_DATABASE_ERROR;DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::removeGatewayDB removed:"), DLT_INT(gatewayID));
+    if (mDatabaseObserver)
+        mDatabaseObserver->removeGateway(gatewayID);
     return E_OK;
 }
 
@@ -1195,8 +1223,10 @@ am_Error_e DatabaseHandler::removeDomainDB(const am_domainID_t domainID)
         return E_NON_EXISTENT;
     }
     std::string command = "DELETE from " + std::string(DOMAIN_TABLE) + " WHERE domainID=" + i2s(domainID);
-    if (!sqQuery(command)) return E_DATABASE_ERROR;DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::removeDomainDB removed:"), DLT_INT(domainID));
-    if (mDatabaseObserver) mDatabaseObserver->removeDomain(domainID);
+    if (!sqQuery(command))
+        return E_DATABASE_ERROR;DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::removeDomainDB removed:"), DLT_INT(domainID));
+    if (mDatabaseObserver)
+        mDatabaseObserver->removeDomain(domainID);
     return E_OK;
 }
 
@@ -1210,11 +1240,14 @@ am_Error_e DatabaseHandler::removeSinkClassDB(const am_sinkClass_t sinkClassID)
     }
     std::string command = "DELETE from " + std::string(SINK_CLASS_TABLE) + " WHERE sinkClassID=" + i2s(sinkClassID);
     std::string command1 = "DROP table SinkClassProperties" + i2s(sinkClassID);
-    if (!sqQuery(command)) return E_DATABASE_ERROR;
-    if (!sqQuery(command1)) return E_DATABASE_ERROR;
+    if (!sqQuery(command))
+        return E_DATABASE_ERROR;
+    if (!sqQuery(command1))
+        return E_DATABASE_ERROR;
 
     DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::removeSinkClassDB removed:"), DLT_INT(sinkClassID));
-    if (mDatabaseObserver) mDatabaseObserver->numberOfSinkClassesChanged();
+    if (mDatabaseObserver)
+        mDatabaseObserver->numberOfSinkClassesChanged();
 
     return E_OK;
 }
@@ -1229,10 +1262,13 @@ am_Error_e DatabaseHandler::removeSourceClassDB(const am_sourceClass_t sourceCla
     }
     std::string command = "DELETE from " + std::string(SOURCE_CLASS_TABLE) + " WHERE sourceClassID=" + i2s(sourceClassID);
     std::string command1 = "DROP table SourceClassProperties" + i2s(sourceClassID);
-    if (!sqQuery(command)) return E_DATABASE_ERROR;
-    if (!sqQuery(command1)) return E_DATABASE_ERROR;DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::removeSourceClassDB removed:"), DLT_INT(sourceClassID));
+    if (!sqQuery(command))
+        return E_DATABASE_ERROR;
+    if (!sqQuery(command1))
+        return E_DATABASE_ERROR;DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::removeSourceClassDB removed:"), DLT_INT(sourceClassID));
 
-    if (mDatabaseObserver) mDatabaseObserver->numberOfSourceClassesChanged();
+    if (mDatabaseObserver)
+        mDatabaseObserver->numberOfSourceClassesChanged();
     return E_OK;
 }
 
@@ -1242,8 +1278,10 @@ am_Error_e DatabaseHandler::removeConnection(const am_connectionID_t connectionI
 
     std::string command = "DELETE from " + std::string(CONNECTION_TABLE) + " WHERE connectionID=" + i2s(connectionID);
     std::string command1 = "DROP table SourceClassProperties" + i2s(connectionID);
-    if (!sqQuery(command)) return E_DATABASE_ERROR;
-    if (!sqQuery(command1)) return E_DATABASE_ERROR;DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::removeConnection removed:"), DLT_INT(connectionID));
+    if (!sqQuery(command))
+        return E_DATABASE_ERROR;
+    if (!sqQuery(command1))
+        return E_DATABASE_ERROR;DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::removeConnection removed:"), DLT_INT(connectionID));
 
     return E_OK;
 }
@@ -1332,7 +1370,8 @@ am_Error_e DatabaseHandler::changeSinkClassInfoDB(const am_SinkClass_s& sinkClas
     int eCode = 0;
 
     //check if the ID already exists
-    if (!existSinkClass(sinkClass.sinkClassID)) return E_NON_EXISTENT;
+    if (!existSinkClass(sinkClass.sinkClassID))
+        return E_NON_EXISTENT;
 
     //fill ConnectionFormats
     std::string command = "UPDATE SinkClassProperties" + i2s(sinkClass.sinkClassID) + " set value=? WHERE classProperty=?;";
@@ -1369,7 +1408,8 @@ am_Error_e DatabaseHandler::changeSourceClassInfoDB(const am_SourceClass_s& sour
     int eCode = 0;
 
     //check if the ID already exists
-    if (!existSourceClass(sourceClass.sourceClassID)) return E_NON_EXISTENT;
+    if (!existSourceClass(sourceClass.sourceClassID))
+        return E_NON_EXISTENT;
 
     //fill ConnectionFormats
     std::string command = "UPDATE SourceClassProperties" + i2s(sourceClass.sourceClassID) + " set value=? WHERE classProperty=?;";
@@ -2300,7 +2340,8 @@ am_Error_e DatabaseHandler::getListMainSources(std::vector<am_SourceType_s> & li
 am_Error_e DatabaseHandler::getListMainSinkSoundProperties(const am_sinkID_t sinkID, std::vector<am_MainSoundProperty_s> & listSoundProperties) const
 {
     assert(sinkID!=0);
-    if (!existSink(sinkID)) return E_DATABASE_ERROR; // todo: here we could change to non existen, but not shown in sequences
+    if (!existSink(sinkID))
+        return E_DATABASE_ERROR; // todo: here we could change to non existen, but not shown in sequences
     listSoundProperties.clear();
 
     sqlite3_stmt* query = NULL;
@@ -2334,7 +2375,8 @@ am_Error_e DatabaseHandler::getListMainSinkSoundProperties(const am_sinkID_t sin
 am_Error_e DatabaseHandler::getListMainSourceSoundProperties(const am_sourceID_t sourceID, std::vector<am_MainSoundProperty_s> & listSourceProperties) const
 {
     assert(sourceID!=0);
-    if (!existSource(sourceID)) return E_DATABASE_ERROR; // todo: here we could change to non existen, but not shown in sequences
+    if (!existSource(sourceID))
+        return E_DATABASE_ERROR; // todo: here we could change to non existen, but not shown in sequences
     listSourceProperties.clear();
 
     sqlite3_stmt* query = NULL;
@@ -2486,7 +2528,8 @@ am_Error_e DatabaseHandler::getTimingInformation(const am_mainConnectionID_t mai
         return E_DATABASE_ERROR;
     }
 
-    if (delay == -1) return E_NOT_POSSIBLE;
+    if (delay == -1)
+        return E_NOT_POSSIBLE;
 
     return E_OK;
 }
@@ -2545,7 +2588,8 @@ am_Error_e DatabaseHandler::changeDelayMainConnection(const am_timeSync_t & dela
         return E_DATABASE_ERROR;
     }
 
-    if (mDatabaseObserver) mDatabaseObserver->timingInformationChanged(connectionID, delay);
+    if (mDatabaseObserver)
+        mDatabaseObserver->timingInformationChanged(connectionID, delay);
 
     return E_OK;
 }
@@ -2604,7 +2648,8 @@ am_Error_e DatabaseHandler::enterSinkClassDB(const am_SinkClass_s & sinkClass, a
     else
     {
         //check if the ID already exists
-        if (existSinkClass(sinkClass.sinkClassID)) return E_ALREADY_EXISTS;
+        if (existSinkClass(sinkClass.sinkClassID))
+            return E_ALREADY_EXISTS;
         command = "INSERT INTO " + std::string(SINK_CLASS_TABLE) + "(name, sinkClassID) VALUES (?,?)";
     }
 
@@ -2665,7 +2710,8 @@ am_Error_e DatabaseHandler::enterSinkClassDB(const am_SinkClass_s & sinkClass, a
     }
 
     DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::enterSinkClassDB entered new sinkClass"));
-    if (mDatabaseObserver) mDatabaseObserver->numberOfSinkClassesChanged();
+    if (mDatabaseObserver)
+        mDatabaseObserver->numberOfSinkClassesChanged();
     return E_OK;
 }
 
@@ -2687,7 +2733,8 @@ am_Error_e DatabaseHandler::enterSourceClassDB(am_sourceClass_t & sourceClassID,
     else
     {
         //check if the ID already exists
-        if (existSourceClass(sourceClass.sourceClassID)) return E_ALREADY_EXISTS;
+        if (existSourceClass(sourceClass.sourceClassID))
+            return E_ALREADY_EXISTS;
         command = "INSERT INTO " + std::string(SOURCE_CLASS_TABLE) + "(name, sourceClassID) VALUES (?,?)";
     }
 
@@ -2749,7 +2796,8 @@ am_Error_e DatabaseHandler::enterSourceClassDB(am_sourceClass_t & sourceClassID,
 
     DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::enterSourceClassDB entered new sourceClass"));
 
-    if (mDatabaseObserver) mDatabaseObserver->numberOfSourceClassesChanged();
+    if (mDatabaseObserver)
+        mDatabaseObserver->numberOfSourceClassesChanged();
     return E_OK;
 }
 
@@ -3153,7 +3201,8 @@ am_timeSync_t DatabaseHandler::calculateMainConnectionDelay(const am_mainConnect
         DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::calculateMainConnectionDelay SQLITE Finalize error code:"), DLT_INT(eCode));
         return E_DATABASE_ERROR;
     }
-    if (min < 0) delay = -1;
+    if (min < 0)
+        delay = -1;
     return delay;
 
 }
@@ -3351,7 +3400,8 @@ am_Error_e DatabaseHandler::getSourceVolume(const am_sourceID_t sourceID, am_vol
 am_Error_e DatabaseHandler::getSinkSoundPropertyValue(const am_sinkID_t sinkID, const am_SoundPropertyType_e propertyType, uint16_t & value) const
 {
     assert(sinkID!=0);
-    if (!existSink(sinkID)) return E_DATABASE_ERROR; // todo: here we could change to non existent, but not shown in sequences
+    if (!existSink(sinkID))
+        return E_DATABASE_ERROR; // todo: here we could change to non existent, but not shown in sequences
 
     sqlite3_stmt* query = NULL;
     int eCode = 0;
@@ -3381,7 +3431,8 @@ am_Error_e DatabaseHandler::getSinkSoundPropertyValue(const am_sinkID_t sinkID, 
 am_Error_e DatabaseHandler::getSourceSoundPropertyValue(const am_sourceID_t sourceID, const am_SoundPropertyType_e propertyType, uint16_t & value) const
 {
     assert(sourceID!=0);
-    if (!existSource(sourceID)) return E_DATABASE_ERROR; // todo: here we could change to non existent, but not shown in sequences
+    if (!existSource(sourceID))
+        return E_DATABASE_ERROR; // todo: here we could change to non existent, but not shown in sequences
 
     sqlite3_stmt* query = NULL;
     int eCode = 0;
@@ -3722,25 +3773,31 @@ am_Error_e DatabaseHandler::changeCrossFaderHotSink(const am_crossfaderID_t cros
     return E_OK;
 }
 
-am_Error_e am::DatabaseHandler::getRoutingTree(bool onlyfree, RoutingTree *tree, std::vector<RoutingTreeItem*> *flatTree)
+am_Error_e DatabaseHandler::getRoutingTree(bool onlyfree, RoutingTree& tree, std::vector<RoutingTreeItem*>& flatTree)
 {
     sqlite3_stmt* query = NULL;
     int eCode = 0;
     size_t i = 0;
     std::string command;
-    am_domainID_t rootID = tree->returnRootDomainID();
-    RoutingTreeItem *parent = tree->returnRootItem();
+    am_domainID_t rootID = tree.returnRootDomainID();
+    RoutingTreeItem *parent = tree.returnRootItem();
 
     command = "SELECT domainSourceID,gatewayID FROM " + std::string(GATEWAY_TABLE) + " WHERE domainSinkID=? AND inUse=?";
 
-    sqlite3_prepare_v2(mDatabase, command.c_str(), -1, &query, NULL);
     do
     {
+        if (i != 0)
+        {
+            parent = flatTree.at(i - 1);
+            rootID = parent->returnDomainID();
+        }
+        sqlite3_prepare_v2(mDatabase, command.c_str(), -1, &query, NULL);
         sqlite3_bind_int(query, 1, rootID);
         sqlite3_bind_int(query, 2, onlyfree);
+
         while ((eCode = sqlite3_step(query)) == SQLITE_ROW)
         {
-            flatTree->push_back(tree->insertItem(sqlite3_column_int(query, 0), sqlite3_column_int(query, 1), parent));
+            flatTree.push_back(tree.insertItem(sqlite3_column_int(query, 0), sqlite3_column_int(query, 1), parent));
         }
 
         if (eCode != SQLITE_DONE)
@@ -3748,16 +3805,14 @@ am_Error_e am::DatabaseHandler::getRoutingTree(bool onlyfree, RoutingTree *tree,
             DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getRoutingTree SQLITE error code:"), DLT_INT(eCode));
             return (E_DATABASE_ERROR);
         }
-        parent = flatTree->at(i);
-        rootID = parent->returnDomainID();
-        i++;
-    } while (flatTree->size() > i);
 
-    if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
-    {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getRoutingTree SQLITE Finalize error code:"), DLT_INT(eCode));
-        return (E_DATABASE_ERROR);
-    }
+        if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
+        {
+            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getRoutingTree SQLITE Finalize error code:"), DLT_INT(eCode));
+            return (E_DATABASE_ERROR);
+        }
+        i++;
+    } while (flatTree.size() > (i - 1));
 
     return (E_OK);
 }

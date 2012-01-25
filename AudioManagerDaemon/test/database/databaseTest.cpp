@@ -52,7 +52,7 @@ routingTest::routingTest() :
         pRoutingSender(plistRoutingPluginDirs), //
         pCommandSender(plistCommandPluginDirs), //
         pMockInterface(), //
-        pRoutingInterfaceBackdoor(),//
+        pRoutingInterfaceBackdoor(), //
         pCommandInterfaceBackdoor(), //
         pControlReceiver(&pDatabaseHandler, &pRoutingSender, &pCommandSender), //
         pObserver(&pCommandSender, &pRoutingSender)

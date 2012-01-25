@@ -23,7 +23,7 @@
 
 cmake_minimum_required(VERSION 2.6)
 
-PROJECT(datbaseTest)
+PROJECT(routingTest)
 
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -DUNIT_TEST=1 -DDLT_CONTEXT=AudioManager")
 
@@ -43,7 +43,7 @@ INCLUDE_DIRECTORIES(
     ${INCLUDES_FOLDER}
 )
 
-file(GLOB DATABASE_SRCS_CXX 
+file(GLOB ROUTING_SRCS_CXX 
     "../../src/DatabaseHandler.cpp"
     "../../src/DatabaseObserver.cpp"
     "../../src/CommandSender.cpp"
@@ -55,9 +55,9 @@ file(GLOB DATABASE_SRCS_CXX
     "*.cpp"
     )
 
-ADD_EXECUTABLE( databasetest ${DATABASE_SRCS_CXX})
+ADD_EXECUTABLE( routingtest ${ROUTING_SRCS_CXX})
 
-TARGET_LINK_LIBRARIES( databasetest 
+TARGET_LINK_LIBRARIES( routingtest 
 	${SQLITE_LIBRARIES}
 	${DLT_LIBRARIES}
 	${DBUS_LIBRARY}
@@ -66,7 +66,7 @@ TARGET_LINK_LIBRARIES( databasetest
 	gmock
 )
 
-INSTALL(TARGETS databasetest 
+INSTALL(TARGETS routingtest 
         DESTINATION "~/AudioManagerTest/"
         PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
         COMPONENT tests
