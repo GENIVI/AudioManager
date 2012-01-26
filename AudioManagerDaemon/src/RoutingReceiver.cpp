@@ -319,12 +319,16 @@ am_Error_e RoutingReceiver::sendChangedData(const std::vector<am_EarlyData_s> & 
 
 am_Error_e RoutingReceiver::peekSinkClassID(const std::string name, const am_sinkClass_t& sinkClassID)
 {
+    (void) name;
+    (void) sinkClassID;
 //todo: implement
     return E_NOT_USED;
 }
 
 am_Error_e RoutingReceiver::peekSourceClassID(const std::string name, const am_sourceClass_t& sourceClassID)
 {
+    (void) name;
+    (void) sourceClassID;
 //todo: implement
     return E_NOT_USED;
 }

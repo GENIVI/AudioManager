@@ -75,11 +75,11 @@ public:
     bool dbusDispatchCallback(const sh_pollHandle_t handle, void* userData);
     shPollDispatch_T<DBusWrapper> pDbusDispatchCallback;
 
-    bool dbusCheckCallback(const sh_pollHandle_t handle, void* userData);
-    shPollCheck_T<DBusWrapper> pDbusCheckCallback;
-
     void dbusFireCallback(const pollfd pollfd, const sh_pollHandle_t handle, void* userData);
     shPollFired_T<DBusWrapper> pDbusFireCallback;
+
+    bool dbusCheckCallback(const sh_pollHandle_t handle, void* userData);
+    shPollCheck_T<DBusWrapper> pDbusCheckCallback;
 
     void dbusTimerCallback(sh_timerHandle_t handle, void* userData);
     shTimerCallBack_T<DBusWrapper> pDbusTimerCallback;

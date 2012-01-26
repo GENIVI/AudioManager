@@ -71,7 +71,7 @@ class MockCommandSendInterface : public CommandSendInterface {
   MOCK_METHOD1(cbSystemPropertyChanged,
       void(const am_SystemProperty_s& systemProperty));
   MOCK_METHOD2(cbTimingInformationChanged,
-      void(const am_timeSync_t time, const am_mainConnectionID_t mainConnectionID));
+      void(const am_mainConnectionID_t mainConnectionID, const am_timeSync_t time));
   MOCK_CONST_METHOD0(getInterfaceVersion,
       uint16_t());
 };

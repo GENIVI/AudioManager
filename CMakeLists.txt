@@ -50,9 +50,6 @@ OPTION( WITH_PLUGIN_CONTROL
 OPTION( WITH_PLUGIN_ROUTING
 	"Build routing pluings" ON)
 
-OPTION( USE_BUILD_LIBS
-	"Sets the default path to the libs that are compiled with the AudioManager together. If turned off, the default location will be the one of the install path" OFF) 
-
 OPTION( WITH_MAIN
 	"Build with daemon" ON)
 
@@ -126,6 +123,7 @@ IF(WITH_DOCUMENTATION)
 ENDIF(WITH_DOCUMENTATION)
 
 ##global build flags set(CPACK_RPM_COMPONENT_INSTALL ON)
+#set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Wextra -std=c++98 -D_GNU_SOURCE -pedantic -Wno-variadic-macros")
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Wextra -std=c++98 -D_GNU_SOURCE")
 
 if(WITH_PLUGIN_COMMAND)

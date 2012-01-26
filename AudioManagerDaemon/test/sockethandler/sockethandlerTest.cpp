@@ -23,8 +23,6 @@ using namespace am;
 
 DLT_DECLARE_CONTEXT(AudioManager)
 
-static volatile sig_atomic_t gDispatch = 1; //this global is used to stop the mainloop
-
 sockethandlerTest::sockethandlerTest()
 {
 }
@@ -49,6 +47,8 @@ am::timerCallBack::~timerCallBack()
 
 void am::timerCallBack::timer1Callback(sh_timerHandle_t handle, void* userData)
 {
+    (void) handle;
+    (void) userData;
     std::cout << "callback1 called" << std::endl;
     timespec timeout;
     timeout.tv_nsec = 0;
@@ -60,6 +60,8 @@ void am::timerCallBack::timer1Callback(sh_timerHandle_t handle, void* userData)
 
 void am::timerCallBack::timer2Callback(sh_timerHandle_t handle, void* userData)
 {
+    (void) handle;
+    (void) userData;
     std::cout << "callback2 called" << std::endl;
     timespec timeout;
     timeout.tv_nsec = 0;
@@ -71,35 +73,40 @@ void am::timerCallBack::timer2Callback(sh_timerHandle_t handle, void* userData)
 
 void am::timerCallBack::timer3Callback(sh_timerHandle_t, void* userData)
 {
+    (void) userData;
     std::cout << "callback3 called" << std::endl;
 }
 
 void am::timerCallBack::timer4Callback(sh_timerHandle_t, void* userData)
 {
+    (void) userData;
     std::cout << "callback4 called" << std::endl;
     mSocketHandler->stop_listening();
 }
 
 void* playWithSocketServer(void* data)
 {
+    (void) data;
     SocketHandler myHandler;
     SamplePlugin::sockType_e type = SamplePlugin::INET;
     SamplePlugin myplugin(&myHandler, type);
     myHandler.start_listenting();
+    return (NULL);
 }
 
 void* playWithUnixSocketServer(void* data)
 {
+    (void) data;
     SocketHandler myHandler;
     SamplePlugin::sockType_e type = SamplePlugin::UNIX;
     SamplePlugin myplugin(&myHandler, type);
     myHandler.start_listenting();
+    return (NULL);
 }
 
 TEST(sockethandlerTest,playWithUNIXSockets)
 {
     pthread_t serverThread;
-    char buffer[3000];
     struct sockaddr_un servAddr;
     int socket_;
 
@@ -135,7 +142,6 @@ TEST(sockethandlerTest,playWithUNIXSockets)
 TEST(sockethandlerTest,playWithSockets)
 {
     pthread_t serverThread;
-    char buffer[3000];
     struct sockaddr_in servAddr;
     unsigned short servPort = 6060;
     struct hostent *host;
@@ -154,7 +160,7 @@ TEST(sockethandlerTest,playWithSockets)
     if ((host = (struct hostent*) gethostbyname("localhost")) == 0)
     {
         std::cout << "ERROR: gethostbyname() failed\n" << std::endl;
-
+        exit(1);
     }
 
     memset(&servAddr, 0, sizeof(servAddr));
@@ -229,7 +235,6 @@ am::SamplePlugin::SamplePlugin(SocketHandler *mySocketHandler, sockType_e socket
         mReceiveHandle(), //
         msgList()
 {
-    int ret;
     int yes = 1;
 
     int socketHandle;
@@ -276,6 +281,8 @@ am::SamplePlugin::SamplePlugin(SocketHandler *mySocketHandler, sockType_e socket
 
 void am::SamplePlugin::connectSocket(const pollfd pollfd1, const sh_pollHandle_t handle, void *userData)
 {
+    (void) handle;
+    (void) userData;
     //first, accept the connection, create a new filedescriptor
     std::cout << "Got a connection request !" << std::endl;
     struct sockaddr answer;
@@ -293,6 +300,8 @@ void am::SamplePlugin::connectSocket(const pollfd pollfd1, const sh_pollHandle_t
 
 void am::SamplePlugin::receiveData(const pollfd pollfd, const sh_pollHandle_t handle, void *userData)
 {
+    (void) handle;
+    (void) userData;
     //initialize buffer
     char buffer[10];
     //read until buffer is full or no more data is there
@@ -308,6 +317,8 @@ void am::SamplePlugin::receiveData(const pollfd pollfd, const sh_pollHandle_t ha
 
 bool am::SamplePlugin::dispatchData(const sh_pollHandle_t handle, void *userData)
 {
+    (void) handle;
+    (void) userData;
     //read data from the queue
     std::cout << "Data:" << msgList.front() << std::endl;
 
@@ -318,15 +329,19 @@ bool am::SamplePlugin::dispatchData(const sh_pollHandle_t handle, void *userData
     }
     //remove the message from the queue and return false if there is no more message to read.
     msgList.pop();
-    if (msgList.size() != 0) return true;
+    if (msgList.size() != 0)
+        return true;
     return false;
 }
 
 bool am::SamplePlugin::check(const sh_pollHandle_t handle, void *userData)
 {
+    (void) handle;
+    (void) userData;
     //checks if there is data to dispatch
     std::cout << "check!:" << std::endl;
-    if (msgList.size() != 0) return true;
+    if (msgList.size() != 0)
+        return true;
     return false;
 }
 

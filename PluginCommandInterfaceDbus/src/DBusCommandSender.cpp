@@ -269,7 +269,7 @@ void DbusCommandSender::cbSystemPropertyChanged(const am_SystemProperty_s & Syst
     mDBUSMessageHandler.sendMessage();
 }
 
-void am::DbusCommandSender::cbTimingInformationChanged(const am_timeSync_t time, const am_mainConnectionID_t mainConnectionID)
+void am::DbusCommandSender::cbTimingInformationChanged(const am_mainConnectionID_t mainConnectionID, const am_timeSync_t time)
 {
     DLT_LOG(DLT_CONTEXT, DLT_LOG_INFO, DLT_STRING("cbTimingInformationChanged called, mainConnectionID"), DLT_INT16(mainConnectionID), DLT_STRING("time"), DLT_INT16(time));
 

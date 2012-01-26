@@ -106,6 +106,8 @@ am_Error_e am::testRoutingInterfaceAsync::handleDomainRegister(const am_Domain_s
 
 void am::testRoutingInterfaceAsync::timerCallback(sh_timerHandle_t handle, void *userData)
 {
+    (void) handle;
+    (void) userData;
     pSocketHandler.stop_listening();
 }
 
@@ -284,9 +286,6 @@ TEST_F(testRoutingInterfaceAsync,disconnectNonExisting)
     handle.handleType = H_CONNECT;
 
     am_connectionID_t connectionID = 4;
-    am_sourceID_t sourceID = 2;
-    am_sinkID_t sinkID = 1;
-    am_ConnectionFormat_e format = CF_ANALOG;
 
     EXPECT_CALL(pReceiveInterface,ackConnect(_,connectionID,E_OK)).Times(0);
     EXPECT_CALL(pReceiveInterface,ackDisconnect(_,connectionID,E_OK)).Times(0);

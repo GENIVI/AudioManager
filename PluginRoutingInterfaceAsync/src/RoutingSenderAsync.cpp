@@ -57,9 +57,6 @@ pthread_mutex_t WorkerThreadPool::mBlockingMutex = PTHREAD_MUTEX_INITIALIZER;
 
 void* AsyncRoutingSender::InterruptEvents(void *data)
 {
-    //This is a very very very basic implementation of the dbus interface
-    //there is not failure handling, nothing.
-    //it is used just for testing, not intended to be used otherwise...
     RoutingReceiverAsyncShadow *shadow=(RoutingReceiverAsyncShadow *)data;
     DBusError err;
     DBusMessage* msg;
@@ -69,7 +66,7 @@ void* AsyncRoutingSender::InterruptEvents(void *data)
     dbus_uint32_t serial = 0;
     DBusMessage* reply;
     DBusMessageIter args;
-    int answer = dbus_bus_request_name(conn, "org.genivi.test",DBUS_NAME_FLAG_REPLACE_EXISTING , &err);
+    dbus_bus_request_name(conn, "org.genivi.test",DBUS_NAME_FLAG_REPLACE_EXISTING , &err);
 
     while (dbus_connection_read_write_dispatch(conn, -1))
     {
@@ -94,7 +91,6 @@ void* AsyncRoutingSender::InterruptEvents(void *data)
         else if (dbus_message_is_method_call(msg, "org.genivi.test", "SinkAvailablityStatusChange"))
         {
             am_sinkID_t sinkID;
-            am_timeSync_t delay;
             am_Availability_s availability;
             dbus_message_iter_init(msg, &args);
             dbus_message_iter_get_basic(&args,(void*) &sinkID);
@@ -108,7 +104,6 @@ void* AsyncRoutingSender::InterruptEvents(void *data)
         else if (dbus_message_is_method_call(msg, "org.genivi.test", "SourceAvailablityStatusChange"))
         {
             am_sourceID_t sourceID;
-            am_timeSync_t delay;
             am_Availability_s availability;
             dbus_message_iter_init(msg, &args);
             dbus_message_iter_get_basic(&args,(void*) &sourceID);
@@ -123,7 +118,7 @@ void* AsyncRoutingSender::InterruptEvents(void *data)
         {
             am_sourceID_t sourceID;
 
-            am_InterruptState_e state;
+            am_InterruptState_e state=IS_MIN;
             dbus_message_iter_init(msg, &args);
             dbus_message_iter_get_basic(&args,(void*) &sourceID);
             reply = dbus_message_new_method_return(msg);
@@ -135,6 +130,7 @@ void* AsyncRoutingSender::InterruptEvents(void *data)
         }
         dbus_connection_flush(conn);
     }
+    return NULL;
 }
 
 void *WorkerThreadPool::WorkerThread(void* data)
@@ -150,10 +146,11 @@ void *WorkerThreadPool::WorkerThread(void* data)
         actWorker->start2work();
         actWorker->pPool->finishedWork(myInfo->threadID);
     }
+    return NULL;
 }
 
 WorkerThreadPool::WorkerThreadPool(int numThreads):
-        mNumThreads(numThreads)
+mNumThreads(numThreads)
 {
     int workerID=0;
     mListWorkers.resize(mNumThreads);
@@ -222,58 +219,58 @@ WorkerThreadPool::~WorkerThreadPool()
     {
         pthread_cancel(mListWorkers[i].threadID);
     }
-    }
+}
 
 Worker::Worker(WorkerThreadPool *pool):
-    pPool(pool), //
-    mCancelSem()
-{
-}
-
-void Worker::setCancelSempaphore(sem_t* cancel)
-{
-    mCancelSem=cancel;
-}
-
-bool Worker::timedWait(timespec timer)
-{
-    timespec temp;
-    if(clock_gettime(0, &temp)==-1)
-    {
-        DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("Worker::timedWait error on getting time"));
-    }
-    temp.tv_nsec+=timer.tv_nsec;
-    temp.tv_sec+=timer.tv_sec;
-    //if(sem_wait(mCancelSem)==-1)
-    if (sem_timedwait(mCancelSem,&temp)==-1)
-    {
-        //a timeout happened
-        if(errno == ETIMEDOUT)
+pPool(pool), //
+        mCancelSem()
         {
-            DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("Worker::timedWait timeout waiting error"));
-            return (false);
         }
-        else //failure in waiting, nevertheless, we quit the thread...
-        {
-            DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("Worker::timedWait semaphore waiting error"));
-            return (true);
-        }
-    }
-    DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("Worker::timedWait semaphore waiting error"));
-    this->cancelWork();
-    return (true);
-}
 
-AsyncRoutingSender::AsyncRoutingSender():
+        void Worker::setCancelSempaphore(sem_t* cancel)
+        {
+            mCancelSem=cancel;
+        }
+
+        bool Worker::timedWait(timespec timer)
+        {
+            timespec temp;
+            if(clock_gettime(0, &temp)==-1)
+            {
+                DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("Worker::timedWait error on getting time"));
+            }
+            temp.tv_nsec+=timer.tv_nsec;
+            temp.tv_sec+=timer.tv_sec;
+            //if(sem_wait(mCancelSem)==-1)
+        if (sem_timedwait(mCancelSem,&temp)==-1)
+        {
+            //a timeout happened
+            if(errno == ETIMEDOUT)
+            {
+                DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("Worker::timedWait timeout waiting error"));
+                return (false);
+            }
+            else //failure in waiting, nevertheless, we quit the thread...
+            {
+                DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("Worker::timedWait semaphore waiting error"));
+                return (true);
+            }
+        }
+        DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("Worker::timedWait semaphore waiting error"));
+        this->cancelWork();
+        return (true);
+    }
+
+    AsyncRoutingSender::AsyncRoutingSender():
     mShadow(), //
     mReceiveInterface(0), //
-    mDomains(createDomainTable()), //
-    mSinks(createSinkTable()), //
-    mSources ( createSourceTable ( ) ), //
-    mGateways ( createGatewayTable ( ) ) , //
-    mMapHandleWorker ( ), //
-    mMapConnectionIDRoute(),//
-    mPool(10)
+        mDomains(createDomainTable()), //
+        mSinks(createSinkTable()), //
+mSources ( createSourceTable ( ) ), //
+mGateways ( createGatewayTable ( ) ) , //
+mMapHandleWorker ( ), //
+mMapConnectionIDRoute(),//
+mPool(10)
 {
     DLT_REGISTER_CONTEXT(PluginRoutingAsync,"ASY","Async Plugin");
     DLT_LOG(PluginRoutingAsync,DLT_LOG_INFO, DLT_STRING("AsyncRoutingSender constructed"));
@@ -374,7 +371,8 @@ am_Error_e AsyncRoutingSender::asyncAbort(const am_Handle_s handle)
     pthread_mutex_unlock(&mMapHandleWorkerMutex);
 
     //ok, cancel the action:
-    if (mPool.cancelWork(iter->second)) return (E_OK);
+    if (mPool.cancelWork(iter->second))
+        return (E_OK);
     return (E_UNKNOWN);
 }
 
@@ -402,7 +400,8 @@ am_Error_e AsyncRoutingSender::asyncConnect(const am_Handle_s handle, const am_c
             break;
         }
     }
-    if (sinkIter == mSinks.end()) return (E_NON_EXISTENT); //not found!
+    if (sinkIter == mSinks.end())
+        return (E_NON_EXISTENT); //not found!
 
     //find the source
     std::vector<am_Source_s>::iterator sourceIter = mSources.begin();
@@ -414,11 +413,14 @@ am_Error_e AsyncRoutingSender::asyncConnect(const am_Handle_s handle, const am_c
             break;
         }
     }
-    if (sourceIter == mSources.end()) return (E_NON_EXISTENT); //not found!
+    if (sourceIter == mSources.end())
+        return (E_NON_EXISTENT); //not found!
 
     //check the format
-    if (std::find(source.listConnectionFormats.begin(), source.listConnectionFormats.end(), connectionFormat) == source.listConnectionFormats.end()) return (E_WRONG_FORMAT);
-    if (std::find(sink.listConnectionFormats.begin(), sink.listConnectionFormats.end(), connectionFormat) == sink.listConnectionFormats.end()) return (E_WRONG_FORMAT);
+    if (std::find(source.listConnectionFormats.begin(), source.listConnectionFormats.end(), connectionFormat) == source.listConnectionFormats.end())
+        return (E_WRONG_FORMAT);
+    if (std::find(sink.listConnectionFormats.begin(), sink.listConnectionFormats.end(), connectionFormat) == sink.listConnectionFormats.end())
+        return (E_WRONG_FORMAT);
 
     //the operation is ok, lets create a worker, assign it to a task in the task pool
     asycConnectWorker *worker = new asycConnectWorker(this, &mPool, &mShadow, handle, connectionID, sourceID, sinkID, connectionFormat);
@@ -495,7 +497,8 @@ am_Error_e AsyncRoutingSender::asyncSetSinkVolume(const am_Handle_s handle, cons
         }
     }
     pthread_mutex_unlock(&mSinksMutex);
-    if (sinkIter == mSinks.end()) return (E_NON_EXISTENT); //not found!
+    if (sinkIter == mSinks.end())
+        return (E_NON_EXISTENT); //not found!
 
     asyncSetSinkVolumeWorker *worker = new asyncSetSinkVolumeWorker(this, &mPool, &mShadow, sinkIter->volume, handle, sinkID, volume, ramp, time);
     if ((work = mPool.startWork(worker)) == -1)
@@ -536,7 +539,8 @@ am_Error_e AsyncRoutingSender::asyncSetSourceVolume(const am_Handle_s handle, co
         }
     }
     pthread_mutex_unlock(&mSourcesMutex);
-    if (sourceIter == mSources.end()) return (E_NON_EXISTENT); //not found!
+    if (sourceIter == mSources.end())
+        return (E_NON_EXISTENT); //not found!
 
     asyncSetSourceVolumeWorker *worker = new asyncSetSourceVolumeWorker(this, &mPool, &mShadow, sourceIter->volume, handle, sourceID, volume, ramp, time);
     if ((work = mPool.startWork(worker)) == -1)
@@ -577,7 +581,8 @@ am_Error_e AsyncRoutingSender::asyncSetSourceState(const am_Handle_s handle, con
         }
     }
     pthread_mutex_unlock(&mSourcesMutex);
-    if (sourceIter == mSources.end()) return (E_NON_EXISTENT); //not found!
+    if (sourceIter == mSources.end())
+        return (E_NON_EXISTENT); //not found!
 
     asyncSetSourceStateWorker *worker = new asyncSetSourceStateWorker(this, &mPool, &mShadow, handle, sourceID, state);
     if ((work = mPool.startWork(worker)) == -1)
@@ -595,7 +600,7 @@ am_Error_e AsyncRoutingSender::asyncSetSourceState(const am_Handle_s handle, con
     return (E_OK);
 }
 
-am_Error_e AsyncRoutingSender::asyncSetSinkSoundProperty(const am_Handle_s handle, const am_SoundProperty_s& soundProperty, const am_sinkID_t sinkID)
+am_Error_e AsyncRoutingSender::asyncSetSinkSoundProperty(const am_Handle_s handle, const am_sinkID_t sinkID, const am_SoundProperty_s & soundProperty)
 {
     assert(mReceiveInterface!=0);
     assert(handle.handle!=0);
@@ -618,7 +623,8 @@ am_Error_e AsyncRoutingSender::asyncSetSinkSoundProperty(const am_Handle_s handl
         }
     }
     pthread_mutex_unlock(&mSinksMutex);
-    if (sinkIter == mSinks.end()) return (E_NON_EXISTENT); //not found!
+    if (sinkIter == mSinks.end())
+        return (E_NON_EXISTENT); //not found!
 
     asyncSetSinkSoundPropertyWorker *worker = new asyncSetSinkSoundPropertyWorker(this, &mPool, &mShadow, handle, soundProperty, sinkID);
     if ((work = mPool.startWork(worker)) == -1)
@@ -639,6 +645,11 @@ am_Error_e AsyncRoutingSender::asyncSetSinkSoundProperty(const am_Handle_s handl
 am_Error_e AsyncRoutingSender::asyncCrossFade(const am_Handle_s handle, const am_crossfaderID_t crossfaderID, const am_HotSink_e hotSink, const am_RampType_e rampType, const am_time_t time)
 {
     //todo: implement crossfader
+    (void) handle;
+    (void) crossfaderID;
+    (void) hotSink;
+    (void) rampType;
+    (void) time;
     return E_NOT_USED;
 }
 
@@ -663,7 +674,8 @@ am_Error_e AsyncRoutingSender::setDomainState(const am_domainID_t domainID, cons
         }
     }
     pthread_mutex_unlock(&mDomainsMutex);
-    if (domainIter == mDomains.end()) return (E_NON_EXISTENT); //not found!
+    if (domainIter == mDomains.end())
+        return (E_NON_EXISTENT); //not found!
 
     asyncDomainStateChangeWorker *worker = new asyncDomainStateChangeWorker(this, &mPool, &mShadow, domainID, domainState);
     if ((work = mPool.startWork(worker)) == -1)
@@ -677,7 +689,7 @@ am_Error_e AsyncRoutingSender::setDomainState(const am_domainID_t domainID, cons
 
 }
 
-am_Error_e AsyncRoutingSender::asyncSetSourceSoundProperty(const am_Handle_s handle, const am_SoundProperty_s & soundProperty, const am_sourceID_t sourceID)
+am_Error_e AsyncRoutingSender::asyncSetSourceSoundProperty(const am_Handle_s handle, const am_sourceID_t sourceID, const am_SoundProperty_s & soundProperty)
 {
     assert(mReceiveInterface!=0);
     assert(handle.handle!=0);
@@ -700,7 +712,8 @@ am_Error_e AsyncRoutingSender::asyncSetSourceSoundProperty(const am_Handle_s han
         }
     }
     pthread_mutex_unlock(&mSourcesMutex);
-    if (sourceIter == mSources.end()) return (E_NON_EXISTENT); //not found!
+    if (sourceIter == mSources.end())
+        return (E_NON_EXISTENT); //not found!
 
     asyncSetSourceSoundPropertyWorker *worker = new asyncSetSourceSoundPropertyWorker(this, &mPool, &mShadow, handle, soundProperty, sourceID);
     if ((work = mPool.startWork(worker)) == -1)
@@ -758,9 +771,9 @@ std::vector<am_Sink_s> AsyncRoutingSender::createSinkTable()
     {
         std::stringstream temp;
         temp << i;
-        item.domainID = 0;     //we cannot know this when the table is created !
+        item.domainID = 0; //we cannot know this when the table is created !
         item.name = "mySink" + temp.str();
-        item.sinkID = i;		 //take fixed ids to make thins easy
+        item.sinkID = i; //take fixed ids to make thins easy
         item.sinkClassID = 1;
         item.volume = 0;
         item.listSoundProperties.push_back(sp);
@@ -780,9 +793,9 @@ std::vector<am_Source_s> AsyncRoutingSender::createSourceTable()
     {
         std::stringstream temp;
         temp << i;
-        item.domainID = 0;     //we cannot know this when the table is created !
+        item.domainID = 0; //we cannot know this when the table is created !
         item.name = "mySource" + temp.str();
-        item.sourceID = i;		 //take fixed ids to make thins easy
+        item.sourceID = i; //take fixed ids to make thins easy
         item.sourceClassID = 1;
         item.volume = 0;
         item.visible = true;
@@ -928,14 +941,22 @@ uint16_t AsyncRoutingSender::getInterfaceVersion() const
     return (RoutingSendVersion);
 }
 
-am_Error_e am::AsyncRoutingSender::asyncSetSinkSoundProperties(const am_Handle_s handle, const std::vector<am_SoundProperty_s> & listSoundProperties, const am_sinkID_t sinkID)
+am_Error_e AsyncRoutingSender::asyncSetSourceSoundProperties(const am_Handle_s handle, const am_sourceID_t sourceID, const std::vector<am_SoundProperty_s> & listSoundProperties)
 {
     //todo: implement
+    (void) handle;
+    (void) sourceID;
+    (void) listSoundProperties;
+    return (E_NOT_USED);
 }
 
-am_Error_e am::AsyncRoutingSender::asyncSetSourceSoundProperties(const am_Handle_s handle, const std::vector<am_SoundProperty_s> & listSoundProperties, const am_sourceID_t sourceID)
+am_Error_e AsyncRoutingSender::asyncSetSinkSoundProperties(const am_Handle_s handle, const am_sinkID_t sinkID, const std::vector<am_SoundProperty_s> & listSoundProperties)
 {
     //todo: implement
+    (void) handle;
+    (void) sinkID;
+    (void) listSoundProperties;
+    return (E_NOT_USED);
 }
 
 std::vector<am_Gateway_s> AsyncRoutingSender::createGatewayTable()
@@ -950,7 +971,14 @@ std::vector<am_Gateway_s> AsyncRoutingSender::createGatewayTable()
 }
 
 asycConnectWorker::asycConnectWorker(AsyncRoutingSender * asyncSender, WorkerThreadPool *pool, RoutingReceiverAsyncShadow* shadow, const am_Handle_s handle, const am_connectionID_t connectionID, const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_ConnectionFormat_e connectionFormat) :
-        Worker(pool), mAsyncSender(asyncSender), mShadow(shadow), mHandle(handle), mConnectionID(connectionID), mSourceID(sourceID), mSinkID(sinkID), mConnectionFormat(connectionFormat)
+        Worker(pool), //
+        mAsyncSender(asyncSender), //
+        mShadow(shadow), //
+        mHandle(handle), //
+        mConnectionID(connectionID), //
+        mSourceID(sourceID), //
+        mSinkID(sinkID), //
+        mConnectionFormat(connectionFormat)
 {
 }
 
@@ -962,7 +990,8 @@ void asycConnectWorker::start2work()
     t.tv_sec = 1;
 
     //do something for one second
-    if (timedWait(t)) return;
+    if (timedWait(t))
+        return;
     am_RoutingElement_s route;
     route.sinkID = mSinkID;
     route.sourceID = mSourceID;
@@ -985,7 +1014,11 @@ void asycConnectWorker::cancelWork()
 }
 
 asycDisConnectWorker::asycDisConnectWorker(AsyncRoutingSender *asyncSender, WorkerThreadPool *pool, RoutingReceiverAsyncShadow *shadow, const am_Handle_s handle, const am_connectionID_t connectionID) :
-        Worker(pool), mAsyncSender(asyncSender), mShadow(shadow), mHandle(handle), mConnectionID(connectionID)
+        Worker(pool), //
+        mAsyncSender(asyncSender), //
+        mShadow(shadow), //
+        mHandle(handle), //
+        mConnectionID(connectionID)
 {
 }
 
@@ -997,7 +1030,8 @@ void asycDisConnectWorker::start2work()
     t.tv_sec = 1;
 
     //do something for one second
-    if (timedWait(t)) return;
+    if (timedWait(t))
+        return;
     am_RoutingElement_s route;
 
     //enter new connectionID into the list
@@ -1018,7 +1052,15 @@ void asycDisConnectWorker::cancelWork()
 }
 
 asyncSetSinkVolumeWorker::asyncSetSinkVolumeWorker(AsyncRoutingSender *asyncSender, WorkerThreadPool *pool, RoutingReceiverAsyncShadow *shadow, const am_volume_t currentVolume, const am_Handle_s handle, const am_sinkID_t sinkID, const am_volume_t volume, const am_RampType_e ramp, const am_time_t time) :
-        Worker(pool), mAsyncSender(asyncSender), mShadow(shadow), mCurrentVolume(currentVolume), mHandle(handle), mSinkID(sinkID), mVolume(volume), mRamp(ramp), mTime(time)
+        Worker(pool), //
+        mAsyncSender(asyncSender), //
+        mShadow(shadow), //
+        mCurrentVolume(currentVolume), //
+        mHandle(handle), //
+        mSinkID(sinkID), //
+        mVolume(volume), //
+        mRamp(ramp), //
+        mTime(time)
 {
 }
 
@@ -1037,7 +1079,8 @@ void asyncSetSinkVolumeWorker::start2work()
         else
             mCurrentVolume--;
         mShadow->ackSinkVolumeTick(mHandle, mSinkID, mCurrentVolume);
-        if (timedWait(t)) return;
+        if (timedWait(t))
+            return;
     }
 
     //enter new connectionID into the list
@@ -1057,12 +1100,20 @@ void asyncSetSinkVolumeWorker::cancelWork()
     mShadow->ackSetSinkVolumeChange(mHandle, mCurrentVolume, E_ABORTED);
 }
 
-am::asyncSetSourceVolumeWorker::asyncSetSourceVolumeWorker(AsyncRoutingSender *asyncSender, WorkerThreadPool *pool, RoutingReceiverAsyncShadow *shadow, const am_volume_t currentVolume, const am_Handle_s handle, const am_sourceID_t SourceID, const am_volume_t volume, const am_RampType_e ramp, const am_time_t time) :
-        Worker(pool), mAsyncSender(asyncSender), mShadow(shadow), mCurrentVolume(currentVolume), mHandle(handle), mSourceID(SourceID), mVolume(volume), mRamp(ramp), mTime(time)
+asyncSetSourceVolumeWorker::asyncSetSourceVolumeWorker(AsyncRoutingSender *asyncSender, WorkerThreadPool *pool, RoutingReceiverAsyncShadow *shadow, const am_volume_t currentVolume, const am_Handle_s handle, const am_sourceID_t SourceID, const am_volume_t volume, const am_RampType_e ramp, const am_time_t time) :
+        Worker(pool), //
+        mAsyncSender(asyncSender), //
+        mShadow(shadow), //
+        mCurrentVolume(currentVolume), //
+        mHandle(handle), //
+        mSourceID(SourceID), //
+        mVolume(volume), //
+        mRamp(ramp), //
+        mTime(time)
 {
 }
 
-void am::asyncSetSourceVolumeWorker::start2work()
+void asyncSetSourceVolumeWorker::start2work()
 {
     //todo: this implementation does not respect time and ramp....
     DLT_LOG(PluginRoutingAsync, DLT_LOG_INFO, DLT_STRING("Start setting source volume"));
@@ -1077,7 +1128,8 @@ void am::asyncSetSourceVolumeWorker::start2work()
         else
             mCurrentVolume--;
         mShadow->ackSourceVolumeTick(mHandle, mSourceID, mCurrentVolume);
-        if (timedWait(t)) return;
+        if (timedWait(t))
+            return;
     }
 
     //enter new connectionID into the list
@@ -1090,19 +1142,24 @@ void am::asyncSetSourceVolumeWorker::start2work()
     mAsyncSender->removeHandleSafe(mHandle.handle);
 }
 
-void am::asyncSetSourceVolumeWorker::cancelWork()
+void asyncSetSourceVolumeWorker::cancelWork()
 {
     mAsyncSender->updateSourceVolumeSafe(mSourceID, mCurrentVolume);
     mAsyncSender->removeHandleSafe(mHandle.handle);
     mShadow->ackSetSourceVolumeChange(mHandle, mCurrentVolume, E_ABORTED);
 }
 
-am::asyncSetSourceStateWorker::asyncSetSourceStateWorker(AsyncRoutingSender *asyncSender, WorkerThreadPool *pool, RoutingReceiverAsyncShadow *shadow, const am_Handle_s handle, const am_sourceID_t sourceID, const am_SourceState_e state) :
-        Worker(pool), mAsyncSender(asyncSender), mShadow(shadow), mHandle(handle), mSourceID(sourceID), mSourcestate(state)
+asyncSetSourceStateWorker::asyncSetSourceStateWorker(AsyncRoutingSender *asyncSender, WorkerThreadPool *pool, RoutingReceiverAsyncShadow *shadow, const am_Handle_s handle, const am_sourceID_t sourceID, const am_SourceState_e state) :
+        Worker(pool), //
+        mAsyncSender(asyncSender), //
+        mShadow(shadow), //
+        mHandle(handle), //
+        mSourceID(sourceID), //
+        mSourcestate(state)
 {
 }
 
-void am::asyncSetSourceStateWorker::start2work()
+void asyncSetSourceStateWorker::start2work()
 {
     DLT_LOG(PluginRoutingAsync, DLT_LOG_INFO, DLT_STRING("Start setting source state"));
     timespec t;
@@ -1110,7 +1167,8 @@ void am::asyncSetSourceStateWorker::start2work()
     t.tv_sec = 1;
 
     //do something for one second
-    if (timedWait(t)) return;
+    if (timedWait(t))
+        return;
 
     //enter new connectionID into the list
     mAsyncSender->updateSourceStateSafe(mSourceID, mSourcestate);
@@ -1122,7 +1180,7 @@ void am::asyncSetSourceStateWorker::start2work()
     mAsyncSender->removeHandleSafe(mHandle.handle);
 }
 
-void am::asyncSetSourceStateWorker::cancelWork()
+void asyncSetSourceStateWorker::cancelWork()
 {
     //send the ack
     mShadow->ackSetSourceState(mHandle, E_ABORTED);
@@ -1131,12 +1189,17 @@ void am::asyncSetSourceStateWorker::cancelWork()
     mAsyncSender->removeHandleSafe(mHandle.handle);
 }
 
-am::asyncSetSinkSoundPropertyWorker::asyncSetSinkSoundPropertyWorker(AsyncRoutingSender *asyncSender, WorkerThreadPool *pool, RoutingReceiverAsyncShadow *shadow, const am_Handle_s handle, const am_SoundProperty_s soundProperty, const am_sinkID_t sinkID) :
-        Worker(pool), mAsyncSender(asyncSender), mShadow(shadow), mHandle(), mSinkID(sinkID), mSoundProperty(soundProperty)
+asyncSetSinkSoundPropertyWorker::asyncSetSinkSoundPropertyWorker(AsyncRoutingSender *asyncSender, WorkerThreadPool *pool, RoutingReceiverAsyncShadow *shadow, const am_Handle_s handle, const am_SoundProperty_s soundProperty, const am_sinkID_t sinkID) :
+        Worker(pool), //
+        mAsyncSender(asyncSender), //
+        mShadow(shadow), //
+        mHandle(handle), //
+        mSinkID(sinkID), //
+        mSoundProperty(soundProperty)
 {
 }
 
-void am::asyncSetSinkSoundPropertyWorker::start2work()
+void asyncSetSinkSoundPropertyWorker::start2work()
 {
     DLT_LOG(PluginRoutingAsync, DLT_LOG_INFO, DLT_STRING("Start setting sink sound property"));
     timespec t;
@@ -1144,7 +1207,8 @@ void am::asyncSetSinkSoundPropertyWorker::start2work()
     t.tv_sec = 1;
 
     //do something for one second
-    if (timedWait(t)) return;
+    if (timedWait(t))
+        return;
 
     //enter new connectionID into the list
     mAsyncSender->updateSinkSoundPropertySafe(mSinkID, mSoundProperty);
@@ -1156,7 +1220,7 @@ void am::asyncSetSinkSoundPropertyWorker::start2work()
     mAsyncSender->removeHandleSafe(mHandle.handle);
 }
 
-void am::asyncSetSinkSoundPropertyWorker::cancelWork()
+void asyncSetSinkSoundPropertyWorker::cancelWork()
 {
     //send the ack
     mShadow->ackSetSinkSoundProperty(mHandle, E_OK);
@@ -1165,12 +1229,17 @@ void am::asyncSetSinkSoundPropertyWorker::cancelWork()
     mAsyncSender->removeHandleSafe(mHandle.handle);
 }
 
-am::asyncSetSourceSoundPropertyWorker::asyncSetSourceSoundPropertyWorker(AsyncRoutingSender *asyncSender, WorkerThreadPool *pool, RoutingReceiverAsyncShadow *shadow, const am_Handle_s handle, const am_SoundProperty_s soundProperty, const am_sourceID_t sourceID) :
-        Worker(pool), mAsyncSender(asyncSender), mShadow(shadow), mHandle(), mSourceID(sourceID), mSoundProperty(soundProperty)
+asyncSetSourceSoundPropertyWorker::asyncSetSourceSoundPropertyWorker(AsyncRoutingSender *asyncSender, WorkerThreadPool *pool, RoutingReceiverAsyncShadow *shadow, const am_Handle_s handle, const am_SoundProperty_s soundProperty, const am_sourceID_t sourceID) :
+        Worker(pool), //
+        mAsyncSender(asyncSender), //
+        mShadow(shadow), //
+        mHandle(handle), //
+        mSourceID(sourceID), //
+        mSoundProperty(soundProperty)
 {
 }
 
-void am::asyncSetSourceSoundPropertyWorker::start2work()
+void asyncSetSourceSoundPropertyWorker::start2work()
 {
     DLT_LOG(PluginRoutingAsync, DLT_LOG_INFO, DLT_STRING("Start setting source sound property"));
     timespec t;
@@ -1178,7 +1247,8 @@ void am::asyncSetSourceSoundPropertyWorker::start2work()
     t.tv_sec = 1;
 
     //do something for one second
-    if (timedWait(t)) return;
+    if (timedWait(t))
+        return;
 
     //enter new connectionID into the list
     mAsyncSender->updateSourceSoundPropertySafe(mSourceID, mSoundProperty);
@@ -1190,7 +1260,7 @@ void am::asyncSetSourceSoundPropertyWorker::start2work()
     mAsyncSender->removeHandleSafe(mHandle.handle);
 }
 
-void am::asyncSetSourceSoundPropertyWorker::cancelWork()
+void asyncSetSourceSoundPropertyWorker::cancelWork()
 {
     //send the ack
     mShadow->ackSetSourceSoundProperty(mHandle, E_OK);
@@ -1199,12 +1269,16 @@ void am::asyncSetSourceSoundPropertyWorker::cancelWork()
     mAsyncSender->removeHandleSafe(mHandle.handle);
 }
 
-am::asyncDomainStateChangeWorker::asyncDomainStateChangeWorker(AsyncRoutingSender *asyncSender, WorkerThreadPool *pool, RoutingReceiverAsyncShadow *shadow, const am_domainID_t domainID, const am_DomainState_e domainState) :
-        Worker(pool), mAsyncSender(asyncSender), mShadow(shadow), mDomainID(domainID), mDomainState(domainState)
+asyncDomainStateChangeWorker::asyncDomainStateChangeWorker(AsyncRoutingSender *asyncSender, WorkerThreadPool *pool, RoutingReceiverAsyncShadow *shadow, const am_domainID_t domainID, const am_DomainState_e domainState) :
+        Worker(pool), //
+        mAsyncSender(asyncSender), //
+        mShadow(shadow), //
+        mDomainID(domainID), //
+        mDomainState(domainState)
 {
 }
 
-void am::asyncDomainStateChangeWorker::start2work()
+void asyncDomainStateChangeWorker::start2work()
 {
     //todo: sendchanged data must be in here !
     DLT_LOG(PluginRoutingAsync, DLT_LOG_INFO, DLT_STRING("Start setting source sound property"));
@@ -1213,7 +1287,8 @@ void am::asyncDomainStateChangeWorker::start2work()
     t.tv_sec = 1;
 
     //do something for one second
-    if (timedWait(t)) return;
+    if (timedWait(t))
+        return;
 
     //enter new connectionID into the list
     mAsyncSender->updateDomainstateSafe(mDomainID, mDomainState);

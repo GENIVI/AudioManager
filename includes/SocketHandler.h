@@ -130,8 +130,8 @@ private:
     sh_timerHandle_t mNextTimer;
     sh_timerHandle_t mLastInsertedHandle;
     sh_pollHandle_t mLastInsertedPollHandle;
-    timespec mTimeout;
     bool mRecreatePollfds;
+    timespec mTimeout;
 };
 
 /**

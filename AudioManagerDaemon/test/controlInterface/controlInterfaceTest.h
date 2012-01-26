@@ -36,6 +36,7 @@
 #include "DatabaseObserver.h"
 #include "ControlSender.h"
 #include "RoutingSender.h"
+#include "Router.h"
 #include "../RoutingInterfaceBackdoor.h"
 #include "../CommandInterfaceBackdoor.h"
 #include "../ControlInterfaceBackdoor.h"
@@ -57,10 +58,11 @@ public:
     CommandSender pCommandSender;
     MockControlSendInterface pMockControlInterface;
     MockRoutingSendInterface pMockRoutingInterface;
-    ControlSender pControlSender;
     RoutingInterfaceBackdoor pRoutingInterfaceBackdoor;
     CommandInterfaceBackdoor pCommandInterfaceBackdoor;
     ControlInterfaceBackdoor pControlInterfaceBackdoor;
+    ControlSender pControlSender;
+    Router pRouter;
     DatabaseObserver pDatabaseObserver;
     ControlReceiver pControlReceiver;
     RoutingReceiver pRoutingReceiver;

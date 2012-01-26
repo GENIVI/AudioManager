@@ -34,6 +34,7 @@
 //todo: there is a bug in the visible flags of sinks and sources. fix it.
 //todo: make sure that iterators have a fixed end to prevent crashed while adding vectors while iterating on critical vectors
 //todo: make sure all configurations are tested
+//todo: clean up startup sequences controller, command and routing interfaces----
 #include <config.h>
 #include <SocketHandler.h>
 #ifdef WITH_DBUS_WRAPPER
@@ -87,6 +88,7 @@ std::vector<std::string> listRoutingPluginDirs;
 std::string databasePath = std::string(":memory:");
 unsigned int telnetport = DEFAULT_TELNETPORT;
 unsigned int maxConnections = MAX_TELNETCONNECTIONS;
+int fd0, fd1, fd2;
 
 void daemonize()
 {
@@ -126,9 +128,9 @@ void daemonize()
         close(i);
     }
 
-    int fd0 = open("/dev/null", O_RDONLY);
-    int fd1 = open("/dev/null", O_WRONLY | O_CREAT | O_APPEND, S_IRUSR | S_IWUSR);
-    int fd2 = open("/dev/null", O_WRONLY | O_CREAT | O_APPEND, S_IRUSR | S_IWUSR);
+    fd0 = open("/dev/null", O_RDONLY);
+    fd1 = open("/dev/null", O_WRONLY | O_CREAT | O_APPEND, S_IRUSR | S_IWUSR);
+    fd2 = open("/dev/null", O_WRONLY | O_CREAT | O_APPEND, S_IRUSR | S_IWUSR);
 
     if (fd0 != STDIN_FILENO || fd1 != STDOUT_FILENO || fd2 != STDERR_FILENO)
     {
@@ -259,24 +261,25 @@ int main(int argc, char *argv[])
     RoutingSender iRoutingSender(listRoutingPluginDirs);
     CommandSender iCommandSender(listCommandPluginDirs);
     ControlSender iControlSender(controllerPlugin);
+    Router iRouter(&iDatabaseHandler, &iControlSender);
 
 #ifdef WITH_DBUS_WRAPPER
 #ifdef WITH_SOCKETHANDLER_LOOP
     CommandReceiver iCommandReceiver(&iDatabaseHandler, &iControlSender, &iSocketHandler, &iDBusWrapper);
     RoutingReceiver iRoutingReceiver(&iDatabaseHandler, &iRoutingSender, &iControlSender, &iSocketHandler, &iDBusWrapper);
-    ControlReceiver iControlReceiver(&iDatabaseHandler, &iRoutingSender, &iCommandSender, &iSocketHandler);
+    ControlReceiver iControlReceiver(&iDatabaseHandler, &iRoutingSender, &iCommandSender, &iSocketHandler, &iRouter);
 #ifdef WITH_TELNET
     TelnetServer iTelnetServer(&iSocketHandler,&iCommandSender,&iCommandReceiver,&iRoutingSender,&iRoutingReceiver,&iControlSender,&iControlReceiver,&iDatabaseHandler,telnetport,maxConnections);
 #endif
 #else /*WITH_SOCKETHANDLER_LOOP */
     CommandReceiver iCommandReceiver(&iDatabaseHandler,&iControlSender,&iDBusWrapper);
     RoutingReceiver iRoutingReceiver(&iDatabaseHandler,&iRoutingSender,&iControlSender,&iDBusWrapper);
-    ControlReceiver iControlReceiver(&iDatabaseHandler,&iRoutingSender,&iCommandSender);
+    ControlReceiver iControlReceiver(&iDatabaseHandler,&iRoutingSender,&iCommandSender, &iRouter);
 #endif /*WITH_SOCKETHANDLER_LOOP*/
 #else /*WITH_DBUS_WRAPPER*/
     CommandReceiver iCommandReceiver(&iDatabaseHandler,&iControlSender,&iSocketHandler);
     RoutingReceiver iRoutingReceiver(&iDatabaseHandler,&iRoutingSender,&iControlSender,&iSocketHandler);
-    ControlReceiver iControlReceiver(&iDatabaseHandler,&iRoutingSender,&iCommandSender,&iSocketHandler);
+    ControlReceiver iControlReceiver(&iDatabaseHandler,&iRoutingSender,&iCommandSender,&iSocketHandler, &iRouter);
 #ifdef WITH_TELNET
     TelnetServer iTelnetServer(&iSocketHandler,telnetport,maxConnections);
 #endif
@@ -287,8 +290,6 @@ int main(int argc, char *argv[])
 #else
     DatabaseObserver iObserver(&iCommandSender, &iRoutingSender);
 #endif
-
-    Router iRouter(&iDatabaseHandler,&iControlSender);
 
     //since the plugins have been loaded by the *Senders before, we can tell the Controller this:
     iControlSender.hookAllPluginsLoaded();
@@ -308,6 +309,9 @@ int main(int argc, char *argv[])
 #endif/*WITH_SIMPLEDBUS_LOOP*/
 #endif /*WITH_DBUS_WRAPPER*/
 
+    close(fd0);
+    close(fd1);
+    close(fd2);
     exit(0);
 
 }

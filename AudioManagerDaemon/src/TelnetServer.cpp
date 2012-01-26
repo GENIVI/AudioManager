@@ -113,6 +113,8 @@ TelnetServer::~TelnetServer()
 
 void TelnetServer::connectSocket(const pollfd pfd, const sh_pollHandle_t handle, void *userData)
 {
+    (void) handle;
+    (void) userData;
     //first, accept the connection, create a new filedescriptor
     struct sockaddr answer;
     socklen_t len = sizeof(answer);
@@ -131,6 +133,8 @@ void TelnetServer::connectSocket(const pollfd pfd, const sh_pollHandle_t handle,
 
 void TelnetServer::receiveData(const pollfd pollfd, const sh_pollHandle_t handle, void *userData)
 {
+    (void)handle;
+    (void)userData;
     //initialize buffer
     char buffer[100];
     //read until buffer is full or no more data is there
@@ -145,6 +149,8 @@ void TelnetServer::receiveData(const pollfd pollfd, const sh_pollHandle_t handle
 
 bool TelnetServer::dispatchData(const sh_pollHandle_t handle, void *userData)
 {
+    (void)handle;
+    (void)userData;
     std::vector<connection_s>::iterator iterator = mListConnections.begin();
     for (; iterator != mListConnections.end(); ++iterator)
     {
@@ -173,6 +179,8 @@ bool TelnetServer::dispatchData(const sh_pollHandle_t handle, void *userData)
 
 bool TelnetServer::check(const sh_pollHandle_t handle, void *userData)
 {
+    (void)handle;
+    (void)userData;
     if (msgList.size() != 0) return true;
     return false;
 }

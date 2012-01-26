@@ -45,6 +45,7 @@ ControlSenderPlugin::~ControlSenderPlugin()
 
 am_Error_e ControlSenderPlugin::startupController(ControlReceiveInterface *controlreceiveinterface)
 {
+    (void) controlreceiveinterface;
     return E_NOT_USED;
 }
 
@@ -59,178 +60,250 @@ void ControlSenderPlugin::hookAllPluginsLoaded()
 
 am_Error_e ControlSenderPlugin::hookUserConnectionRequest(const am_sourceID_t sourceID, const am_sinkID_t sinkID, am_mainConnectionID_t & mainConnectionID)
 {
+    (void) sourceID;
+    (void) sinkID;
+    (void) mainConnectionID;
     return E_NOT_USED;
 }
 
 am_Error_e ControlSenderPlugin::hookUserDisconnectionRequest(const am_mainConnectionID_t connectionID)
 {
+    (void) connectionID;
     return E_NOT_USED;
 }
 
 am_Error_e ControlSenderPlugin::hookUserSetMainSinkSoundProperty(const am_sinkID_t sinkID, const am_MainSoundProperty_s & soundProperty)
 {
+    (void) sinkID;
+    (void) soundProperty;
     return E_NOT_USED;
 }
 
 am_Error_e ControlSenderPlugin::hookUserSetMainSourceSoundProperty(const am_sourceID_t sourceID, const am_MainSoundProperty_s & soundProperty)
 {
+    (void) sourceID;
+    (void) soundProperty;
     return E_NOT_USED;
 }
 
 am_Error_e ControlSenderPlugin::hookUserSetSystemProperty(const am_SystemProperty_s & property)
 {
+    (void) property;
     return E_NOT_USED;
 }
 
 am_Error_e ControlSenderPlugin::hookUserVolumeChange(const am_sinkID_t SinkID, const am_mainVolume_t newVolume)
 {
+    (void) SinkID;
+    (void) newVolume;
     return E_NOT_USED;
 }
 
 am_Error_e ControlSenderPlugin::hookUserVolumeStep(const am_sinkID_t SinkID, const int16_t increment)
 {
+    (void) SinkID;
+    (void) increment;
     return E_NOT_USED;
 }
 
 am_Error_e ControlSenderPlugin::hookUserSetSinkMuteState(const am_sinkID_t sinkID, const am_MuteState_e muteState)
 {
+    (void) sinkID;
+    (void) muteState;
     return E_NOT_USED;
 }
 
 am_Error_e ControlSenderPlugin::hookSystemRegisterDomain(const am_Domain_s & domainData, am_domainID_t & domainID)
 {
+    (void) domainData;
+    (void) domainID;
     return E_NOT_USED;
 }
 
 am_Error_e ControlSenderPlugin::hookSystemDeregisterDomain(const am_domainID_t domainID)
 {
+    (void) domainID;
     return E_NOT_USED;
 }
 
 void ControlSenderPlugin::hookSystemDomainRegistrationComplete(const am_domainID_t domainID)
 {
+    (void) domainID;
 }
 
 am_Error_e ControlSenderPlugin::hookSystemRegisterSink(const am_Sink_s & sinkData, am_sinkID_t & sinkID)
 {
+    (void) sinkID;
+    (void) sinkData;
     return E_NOT_USED;
 }
 
 am_Error_e ControlSenderPlugin::hookSystemDeregisterSink(const am_sinkID_t sinkID)
 {
+    (void) sinkID;
     return E_NOT_USED;
 }
 
 am_Error_e ControlSenderPlugin::hookSystemRegisterSource(const am_Source_s & sourceData, am_sourceID_t & sourceID)
 {
+    (void) sourceData;
+    (void) sourceID;
     return E_NOT_USED;
 }
 
 am_Error_e ControlSenderPlugin::hookSystemDeregisterSource(const am_sourceID_t sourceID)
 {
+    (void) sourceID;
     return E_NOT_USED;
 }
 
 am_Error_e ControlSenderPlugin::hookSystemRegisterGateway(const am_Gateway_s & gatewayData, am_gatewayID_t & gatewayID)
 {
+    (void) gatewayData;
+    (void) gatewayID;
     return E_NOT_USED;
 }
 
 am_Error_e ControlSenderPlugin::hookSystemDeregisterGateway(const am_gatewayID_t gatewayID)
 {
+    (void) gatewayID;
     return E_NOT_USED;
 }
 
 am_Error_e ControlSenderPlugin::hookSystemRegisterCrossfader(const am_Crossfader_s & crossfaderData, am_crossfaderID_t & crossfaderID)
 {
+    (void) crossfaderData;
+    (void) crossfaderID;
     return E_NOT_USED;
 }
 
 am_Error_e ControlSenderPlugin::hookSystemDeregisterCrossfader(const am_crossfaderID_t crossfaderID)
 {
+    (void) crossfaderID;
     return E_NOT_USED;
 }
 
 void ControlSenderPlugin::hookSystemSinkVolumeTick(const am_Handle_s handle, const am_sinkID_t sinkID, const am_volume_t volume)
 {
+    (void) handle;
+    (void) sinkID;
+    (void) volume;
 }
 
 void ControlSenderPlugin::hookSystemSourceVolumeTick(const am_Handle_s handle, const am_sourceID_t sourceID, const am_volume_t volume)
 {
+    (void) handle;
+    (void) sourceID;
+    (void) volume;
 }
 
 void ControlSenderPlugin::hookSystemInterruptStateChange(const am_sourceID_t sourceID, const am_InterruptState_e interruptState)
 {
+    (void) sourceID;
+    (void) interruptState;
 }
 
 void ControlSenderPlugin::hookSystemSinkAvailablityStateChange(const am_sinkID_t sinkID, const am_Availability_s & availability)
 {
+    (void) sinkID;
+    (void) availability;
 }
 
 void ControlSenderPlugin::hookSystemSourceAvailablityStateChange(const am_sourceID_t sourceID, const am_Availability_s & availability)
 {
+    (void) sourceID;
+    (void) availability;
 }
 
 void ControlSenderPlugin::hookSystemDomainStateChange(const am_domainID_t domainID, const am_DomainState_e state)
 {
+    (void) domainID;
+    (void) state;
 }
 
 void ControlSenderPlugin::hookSystemReceiveEarlyData(const std::vector<am_EarlyData_s> & data)
 {
+    (void) data;
 }
 
 void ControlSenderPlugin::hookSystemSpeedChange(const am_speed_t speed)
 {
-
+    (void) speed;
 }
 
 void ControlSenderPlugin::hookSystemTimingInformationChanged(const am_mainConnectionID_t mainConnectionID, const am_timeSync_t time)
 {
-
+    (void) mainConnectionID;
+    (void) time;
 }
 
 void ControlSenderPlugin::cbAckConnect(const am_Handle_s handle, const am_Error_e errorID)
 {
+    (void) handle;
+    (void) errorID;
 }
 
 void ControlSenderPlugin::cbAckDisconnect(const am_Handle_s handle, const am_Error_e errorID)
 {
+    (void) handle;
+    (void) errorID;
 }
 
 void ControlSenderPlugin::cbAckCrossFade(const am_Handle_s handle, const am_HotSink_e hostsink, const am_Error_e error)
 {
+    (void) handle;
+    (void) hostsink;
+    (void) error;
 }
 
 void ControlSenderPlugin::cbAckSetSinkVolumeChange(const am_Handle_s handle, const am_volume_t volume, const am_Error_e error)
 {
+    (void) error;
+    (void) volume;
+    (void) handle;
 }
 
 void ControlSenderPlugin::cbAckSetSourceVolumeChange(const am_Handle_s handle, const am_volume_t voulme, const am_Error_e error)
 {
+    (void) error;
+    (void) voulme;
+    (void) handle;
 }
 
 void ControlSenderPlugin::cbAckSetSourceState(const am_Handle_s handle, const am_Error_e error)
 {
+    (void) error;
+    (void) handle;
 }
 
 void ControlSenderPlugin::cbAckSetSourceSoundProperty(const am_Handle_s handle, const am_Error_e error)
 {
+    (void) error;
+    (void) handle;
 }
 
 void ControlSenderPlugin::cbAckSetSinkSoundProperty(const am_Handle_s handle, const am_Error_e error)
 {
+    (void) error;
+    (void) handle;
 }
 
 void ControlSenderPlugin::cbAckSetSourceSoundProperties(const am_Handle_s handle, const am_Error_e error)
 {
+    (void) error;
+    (void) handle;
 }
 
 void ControlSenderPlugin::cbAckSetSinkSoundProperties(const am_Handle_s handle, const am_Error_e error)
 {
+    (void) error;
+    (void) handle;
 }
 
 am_Error_e ControlSenderPlugin::getConnectionFormatChoice(const am_sourceID_t sourceID, const am_sinkID_t sinkID, const std::vector<am_ConnectionFormat_e> listPossibleConnectionFormats, std::vector<am_ConnectionFormat_e>& listPrioConnectionFormats)
 {
+    (void) sourceID;
+    (void) sinkID;
     listPrioConnectionFormats = listPossibleConnectionFormats;
     return (E_OK);
 }

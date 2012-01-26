@@ -45,6 +45,7 @@ DbusRoutingSender::~DbusRoutingSender()
 
 void DbusRoutingSender::startupRoutingInterface(RoutingReceiveInterface *routingreceiveinterface)
 {
+    (void)routingreceiveinterface;
 }
 
 void DbusRoutingSender::routingInterfacesReady()
@@ -57,42 +58,70 @@ void DbusRoutingSender::routingInterfacesRundown()
 
 am_Error_e DbusRoutingSender::asyncAbort(const am_Handle_s handle)
 {
+    (void) handle;
+    return (E_NOT_USED);
 }
 
 am_Error_e DbusRoutingSender::asyncConnect(const am_Handle_s handle, const am_connectionID_t connectionID, const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_ConnectionFormat_e connectionFormat)
 {
+    (void) handle;
+    (void) connectionID;
+    (void) sourceID;
+    (void) sinkID;
+    (void) connectionFormat;
+    return (E_NOT_USED);
 }
 
 am_Error_e DbusRoutingSender::asyncDisconnect(const am_Handle_s handle, const am_connectionID_t connectionID)
 {
+    (void) handle;
+    (void) connectionID;
+    return (E_NOT_USED);
 }
 
 am_Error_e DbusRoutingSender::asyncSetSinkVolume(const am_Handle_s handle, const am_sinkID_t sinkID, const am_volume_t volume, const am_RampType_e ramp, const am_time_t time)
 {
+    (void) handle;
+    (void) sinkID;
+    (void) volume;
+    (void) ramp;
+    (void) time;
+    return (E_NOT_USED);
 }
 
 am_Error_e DbusRoutingSender::asyncSetSourceVolume(const am_Handle_s handle, const am_sourceID_t sourceID, const am_volume_t volume, const am_RampType_e ramp, const am_time_t time)
 {
+    (void) handle;
+    (void) sourceID;
+    (void) volume;
+    (void) ramp;
+    (void) time;
+    return (E_NOT_USED);
 }
 
 am_Error_e DbusRoutingSender::asyncSetSourceState(const am_Handle_s handle, const am_sourceID_t sourceID, const am_SourceState_e state)
 {
-}
-
-am_Error_e DbusRoutingSender::asyncSetSinkSoundProperty(const am_Handle_s handle, const am_SoundProperty_s& soundProperty, const am_sinkID_t sinkID)
-{
+    (void) handle;
+    (void) sourceID;
+    (void) state;
+    return (E_NOT_USED);
 }
 
 am_Error_e DbusRoutingSender::asyncCrossFade(const am_Handle_s handle, const am_crossfaderID_t crossfaderID, const am_HotSink_e hotSink, const am_RampType_e rampType, const am_time_t time)
 {
+    (void) handle;
+    (void) crossfaderID;
+    (void) hotSink;
+    (void) rampType;
+    (void) time;
+    return (E_NOT_USED);
 }
 
 am_Error_e DbusRoutingSender::setDomainState(const am_domainID_t domainID, const am_DomainState_e domainState)
 {
-}
-
-am_Error_e DbusRoutingSender::asyncSetSourceSoundProperty(const am_Handle_s handle, const am_SoundProperty_s & soundProperty, const am_sourceID_t sourceID)
-{
+    (void) domainID;
+    (void) domainState;
+    return (E_NOT_USED);
 }
 
 am_Error_e DbusRoutingSender::returnBusName(std::string & BusName) const
@@ -101,14 +130,36 @@ am_Error_e DbusRoutingSender::returnBusName(std::string & BusName) const
     return (E_OK);
 }
 
-am_Error_e DbusRoutingSender::asyncSetSinkSoundProperties(const am_Handle_s handle, const std::vector<am_SoundProperty_s> & listSoundProperties, const am_sinkID_t sinkID)
+am_Error_e DbusRoutingSender::asyncSetSinkSoundProperty(const am_Handle_s handle, const am_sinkID_t sinkID, const am_SoundProperty_s & soundProperty)
 {
-
+    (void) handle;
+    (void) sinkID;
+    (void) soundProperty;
+    return (E_NOT_USED);
 }
 
-am_Error_e DbusRoutingSender::asyncSetSourceSoundProperties(const am_Handle_s handle, const std::vector<am_SoundProperty_s> & listSoundProperties, const am_sourceID_t sourceID)
+am_Error_e DbusRoutingSender::asyncSetSinkSoundProperties(const am_Handle_s handle, const am_sinkID_t sinkID, const std::vector<am_SoundProperty_s> & listSoundProperties)
 {
+    (void) handle;
+    (void) sinkID;
+    (void) listSoundProperties;
+    return (E_NOT_USED);
+}
 
+am_Error_e DbusRoutingSender::asyncSetSourceSoundProperty(const am_Handle_s handle, const am_sourceID_t sourceID, const am_SoundProperty_s & soundProperty)
+{
+    (void) handle;
+    (void) sourceID;
+    (void) soundProperty;
+    return (E_NOT_USED);
+}
+
+am_Error_e DbusRoutingSender::asyncSetSourceSoundProperties(const am_Handle_s handle, const am_sourceID_t sourceID, const std::vector<am_SoundProperty_s> & listSoundProperties)
+{
+    (void) handle;
+    (void) sourceID;
+    (void) listSoundProperties;
+    return (E_NOT_USED);
 }
 
 uint16_t DbusRoutingSender::getInterfaceVersion() const

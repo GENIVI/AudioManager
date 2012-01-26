@@ -42,12 +42,13 @@ controlInterfaceTest::controlInterfaceTest() :
         pCommandSender(plistCommandPluginDirs), //
         pMockControlInterface(), //
         pMockRoutingInterface(), //
-        pControlSender(std::string("")), //
         pRoutingInterfaceBackdoor(), //
         pCommandInterfaceBackdoor(), //
         pControlInterfaceBackdoor(), //
+        pControlSender(std::string("")), //
+        pRouter(&pDatabaseHandler,&pControlSender), //
         pDatabaseObserver(&pCommandSender, &pRoutingSender), //
-        pControlReceiver(&pDatabaseHandler, &pRoutingSender, &pCommandSender), //
+        pControlReceiver(&pDatabaseHandler, &pRoutingSender, &pCommandSender,&pRouter), //
         pRoutingReceiver(&pDatabaseHandler, &pRoutingSender, &pControlSender, pDBusWrapper)
 {
     pDatabaseHandler.registerObserver(&pDatabaseObserver);
@@ -440,7 +441,7 @@ TEST_F(controlInterfaceTest,ackSetSinkSoundProperty)
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
 
     //change the soundproperty, expect a call on the routinginterface
-    EXPECT_CALL(pMockRoutingInterface,asyncSetSinkSoundProperty(_,_,2)).WillOnce(Return(E_OK));
+    EXPECT_CALL(pMockRoutingInterface,asyncSetSinkSoundProperty(_,2,_)).WillOnce(Return(E_OK));
     ASSERT_EQ(E_OK, pControlReceiver.setSinkSoundProperty(handle,sink.sinkID,soundProperty));
 
     //check the list of handles. The handle must be in there and have the right type
@@ -492,7 +493,7 @@ TEST_F(controlInterfaceTest,ackSetSourceSoundProperty)
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
 
     //we trigger the change and wait for a call on the routinginterface
-    EXPECT_CALL(pMockRoutingInterface,asyncSetSourceSoundProperty(_,_,2)).WillOnce(Return(E_OK));
+    EXPECT_CALL(pMockRoutingInterface,asyncSetSourceSoundProperty(_,2,_)).WillOnce(Return(E_OK));
     ASSERT_EQ(E_OK, pControlReceiver.setSourceSoundProperty(handle,source.sourceID,soundProperty));
 
     //check the list of handles. The handle must be in there and have the right type

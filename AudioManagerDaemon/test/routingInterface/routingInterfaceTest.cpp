@@ -28,7 +28,7 @@
 using namespace am;
 using namespace testing;
 
-DLT_DECLARE_CONTEXT(DLT_CONTEXT);
+DLT_DECLARE_CONTEXT(DLT_CONTEXT)
 
 routingInterfaceTest::routingInterfaceTest() :
         plistRoutingPluginDirs(), //
@@ -36,10 +36,12 @@ routingInterfaceTest::routingInterfaceTest() :
         pDatabaseHandler(std::string(":memory:")), //
         pRoutingSender(plistRoutingPluginDirs), //
         pCommandSender(plistCommandPluginDirs), //
+        pControlSender(""), //
+        pRouter(&pDatabaseHandler, &pControlSender), //
         pMockInterface(), //
         pRoutingInterfaceBackdoor(), //
         pCommandInterfaceBackdoor(), //
-        pControlReceiver(&pDatabaseHandler, &pRoutingSender, &pCommandSender), //
+        pControlReceiver(&pDatabaseHandler, &pRoutingSender, &pCommandSender, &pRouter), //
         pObserver(&pCommandSender, &pRoutingSender)
 {
     pDatabaseHandler.registerObserver(&pObserver);
@@ -160,7 +162,7 @@ TEST_F(routingInterfaceTest,setSinkSoundPropertyNoChange)
     sink.listSoundProperties.push_back(soundProperty);
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
-    EXPECT_CALL(pMockInterface,asyncSetSinkSoundProperty(_,_,sinkID)).Times(0);
+    EXPECT_CALL(pMockInterface,asyncSetSinkSoundProperty(_,sinkID,_)).Times(0);
     ASSERT_EQ(E_NO_CHANGE, pControlReceiver.setSinkSoundProperty(handle,sinkID,soundProperty));
 }
 
@@ -203,7 +205,7 @@ TEST_F(routingInterfaceTest,setSourceSoundProperty)
     source.domainID = 1;
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
-    EXPECT_CALL(pMockInterface,asyncSetSourceSoundProperty(_,_,sourceID)).WillOnce(Return(E_OK));
+    EXPECT_CALL(pMockInterface,asyncSetSourceSoundProperty(_,sourceID,_)).WillOnce(Return(E_OK));
     ASSERT_EQ(E_OK, pControlReceiver.setSourceSoundProperty(handle,sourceID,soundProperty));
     ASSERT_NE(handle.handle, 0);
     ASSERT_EQ(handle.handleType, H_SETSOURCESOUNDPROPERTY);
@@ -229,7 +231,7 @@ TEST_F(routingInterfaceTest,setSinkSoundProperty)
     sink.domainID = 1;
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
-    EXPECT_CALL(pMockInterface,asyncSetSinkSoundProperty(_,_,sinkID)).WillOnce(Return(E_OK));
+    EXPECT_CALL(pMockInterface,asyncSetSinkSoundProperty(_,sinkID,_)).WillOnce(Return(E_OK));
     ASSERT_EQ(E_OK, pControlReceiver.setSinkSoundProperty(handle,sinkID,soundProperty));
     ASSERT_NE(handle.handle, 0);
     ASSERT_EQ(handle.handleType, H_SETSINKSOUNDPROPERTY);

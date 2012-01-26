@@ -44,6 +44,7 @@ void* run_the_loop(void* wrapper)
 {
 	DBusWrapper* wrap=(DBusWrapper*)wrapper;
 	wrap->dbusMainLoop();
+	return (NULL);
 }
 
 dbuscommandpluginInterfaceTest::dbuscommandpluginInterfaceTest()

@@ -106,8 +106,10 @@ am_Error_e am::testRoutingInterfaceAsync::handleDomainRegister(const am_Domain_s
     return (E_OK);
 }
 
-void am::testRoutingInterfaceAsync::timerCallback(sh_timerHandle_t handle, void *userData)
+void testRoutingInterfaceAsync::timerCallback(sh_timerHandle_t handle, void *userData)
 {
+    (void) handle;
+    (void) userData;
     pSocketHandler.stop_listening();
 }
 

@@ -72,6 +72,7 @@ void DatabaseObserver::newDomain(am_Domain_s domain)
 
 void DatabaseObserver::newGateway(am_Gateway_s gateway)
 {
+    (void) gateway;
     //todo: implement something
 }
 
@@ -99,6 +100,7 @@ void DatabaseObserver::removeDomain(am_domainID_t domainID)
 
 void DatabaseObserver::removeGateway(am_gatewayID_t gatewayID)
 {
+    (void) gatewayID;
     //todo: implement something
 }
 

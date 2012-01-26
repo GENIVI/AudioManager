@@ -39,11 +39,11 @@ pthread_mutex_t RoutingReceiverAsyncShadow::mMutex = PTHREAD_MUTEX_INITIALIZER;
 
 RoutingReceiverAsyncShadow::RoutingReceiverAsyncShadow():
 asyncMsgReceive(this, &RoutingReceiverAsyncShadow::asyncMsgReceiver), //
-asyncDispatch(this, &RoutingReceiverAsyncShadow::asyncDispatcher),//
-asyncCheck(this, &RoutingReceiverAsyncShadow::asyncChecker), //
-mSocketHandler(), //
-mRoutingReceiveInterface(),//
-mHandle (),//
+        asyncDispatch(this, &RoutingReceiverAsyncShadow::asyncDispatcher), //
+        asyncCheck(this, &RoutingReceiverAsyncShadow::asyncChecker), //
+        mSocketHandler(), //
+        mRoutingReceiveInterface(), //
+mHandle (), //
 mPipe()
 {
 
@@ -489,7 +489,8 @@ bool RoutingReceiverAsyncShadow::asyncDispatcher(const sh_pollHandle_t handle, v
 
     bool retVal = false;
     pthread_mutex_lock(&mMutex);
-    if (mQueue.size() > 0) retVal = true;
+    if (mQueue.size() > 0)
+        retVal = true;
     pthread_mutex_unlock(&mMutex);
 
     return (retVal);
@@ -501,7 +502,8 @@ bool RoutingReceiverAsyncShadow::asyncChecker(const sh_pollHandle_t handle, void
     (void) userData;
     bool returnVal = false;
     pthread_mutex_lock(&mMutex);
-    if (mQueue.size() > 0) returnVal = true;
+    if (mQueue.size() > 0)
+        returnVal = true;
     pthread_mutex_unlock(&mMutex);
     return (returnVal);
 }

@@ -254,6 +254,7 @@ dbus_bool_t DBusWrapper::addWatch(DBusWatch *watch, void *userData)
 
 dbus_bool_t DBusWrapper::addWatchDelegate(DBusWatch * watch, void* userData)
 {
+    (void) userData;
     int16_t event = 0;
     sh_pollHandle_t handle = 0;
     uint flags = dbus_watch_get_flags(watch);
@@ -261,8 +262,10 @@ dbus_bool_t DBusWrapper::addWatchDelegate(DBusWatch * watch, void* userData)
     /* no watch flags for disabled watches */
     if (dbus_watch_get_enabled(watch))
     {
-        if (flags & DBUS_WATCH_READABLE) event |= POLLIN;
-        if (flags & DBUS_WATCH_WRITABLE) event |= POLLOUT;
+        if (flags & DBUS_WATCH_READABLE)
+            event |= POLLIN;
+        if (flags & DBUS_WATCH_WRITABLE)
+            event |= POLLOUT;
     }
 
     DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DBusWrapper::addWatchDelegate entered new watch, fd="), DLT_INT(dbus_watch_get_unix_fd(watch)), DLT_STRING("event flag="), DLT_INT(event));
@@ -274,6 +277,7 @@ dbus_bool_t DBusWrapper::addWatchDelegate(DBusWatch * watch, void* userData)
         mMapHandleWatch.insert(std::make_pair(watch, handle));
         return true;
     }DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DBusWrapper::addWatchDelegate entering watch failed"));
+    return (true);
 }
 
 void DBusWrapper::removeWatch(DBusWatch *watch, void *userData)
@@ -285,9 +289,11 @@ void DBusWrapper::removeWatch(DBusWatch *watch, void *userData)
 
 void DBusWrapper::removeWatchDelegate(DBusWatch *watch, void *userData)
 {
+    (void) userData;
     std::map<DBusWatch*, sh_pollHandle_t>::iterator iterator = mMapHandleWatch.begin();
     iterator = mMapHandleWatch.find(watch);
-    if (iterator != mMapHandleWatch.end()) mSocketHandler->removeFDPoll(iterator->second);
+    if (iterator != mMapHandleWatch.end())
+        mSocketHandler->removeFDPoll(iterator->second);
     DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DBusWrapper::removeWatch removed watch with handle"), DLT_INT(iterator->second));
     mMapHandleWatch.erase(iterator);
 }
@@ -301,18 +307,22 @@ void DBusWrapper::toogleWatch(DBusWatch *watch, void *userData)
 
 void DBusWrapper::toogleWatchDelegate(DBusWatch *watch, void *userData)
 {
+    (void) userData;
     int16_t event = 0;
-    int watchFD = dbus_watch_get_unix_fd(watch);
+    dbus_watch_get_unix_fd(watch);
     uint flags = dbus_watch_get_flags(watch);
     /* no watch flags for disabled watches */
     if (dbus_watch_get_enabled(watch))
     {
-        if (flags & DBUS_WATCH_READABLE) event |= POLLIN;
-        if (flags & DBUS_WATCH_WRITABLE) event |= POLLOUT;
+        if (flags & DBUS_WATCH_READABLE)
+            event |= POLLIN;
+        if (flags & DBUS_WATCH_WRITABLE)
+            event |= POLLOUT;
     }
     std::map<DBusWatch*, sh_pollHandle_t>::iterator iterator = mMapHandleWatch.begin();
     iterator = mMapHandleWatch.find(watch);
-    if (iterator != mMapHandleWatch.end()) mSocketHandler->updateEventFlags(iterator->second, event);
+    if (iterator != mMapHandleWatch.end())
+        mSocketHandler->updateEventFlags(iterator->second, event);
     DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DBusWrapper::toogleWatchDelegate watch was toggeled"));
 }
 
@@ -325,7 +335,8 @@ dbus_bool_t DBusWrapper::addTimeout(DBusTimeout *timeout, void* userData)
 
 dbus_bool_t DBusWrapper::addTimeoutDelegate(DBusTimeout *timeout, void* userData)
 {
-    if (!dbus_timeout_get_enabled(timeout)) return false;
+    if (!dbus_timeout_get_enabled(timeout))
+        return false;
 
     //calculate the timeout in timeval
     timespec pollTimeout;
@@ -359,6 +370,7 @@ void DBusWrapper::removeTimeout(DBusTimeout *timeout, void* userData)
 
 void DBusWrapper::removeTimeoutDelegate(DBusTimeout *timeout, void* userData)
 {
+    (void) userData;
     //get the pointer to the handle and remove the timer
     sh_timerHandle_t* handle = (sh_timerHandle_t*) dbus_timeout_get_data(timeout);
     mSocketHandler->removeTimer(*handle);
@@ -386,9 +398,12 @@ void DBusWrapper::toggleTimeout(DBusTimeout *timeout, void* userData)
 
 bool am::DBusWrapper::dbusDispatchCallback(const sh_pollHandle_t handle, void *userData)
 {
+    (void) handle;
+    (void) userData;
     bool returnVal = true;
     dbus_connection_ref(mDbusConnection);
-    if (dbus_connection_dispatch(mDbusConnection) == DBUS_DISPATCH_COMPLETE) returnVal = false;
+    if (dbus_connection_dispatch(mDbusConnection) == DBUS_DISPATCH_COMPLETE)
+        returnVal = false;
     dbus_connection_unref(mDbusConnection);
     DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DBusWrapper::dbusDispatchCallback was called"));
     return returnVal;
@@ -396,9 +411,12 @@ bool am::DBusWrapper::dbusDispatchCallback(const sh_pollHandle_t handle, void *u
 
 bool am::DBusWrapper::dbusCheckCallback(const sh_pollHandle_t handle, void *userData)
 {
+    (void) handle;
+    (void) userData;
     bool returnVal = false;
     dbus_connection_ref(mDbusConnection);
-    if (dbus_connection_get_dispatch_status(mDbusConnection) == DBUS_DISPATCH_DATA_REMAINS) returnVal = true;
+    if (dbus_connection_get_dispatch_status(mDbusConnection) == DBUS_DISPATCH_DATA_REMAINS)
+        returnVal = true;
     dbus_connection_unref(mDbusConnection);
     DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DBusWrapper::dbusCheckCallback was called"));
     return returnVal;
@@ -406,24 +424,31 @@ bool am::DBusWrapper::dbusCheckCallback(const sh_pollHandle_t handle, void *user
 
 void am::DBusWrapper::dbusFireCallback(const pollfd pollfd, const sh_pollHandle_t handle, void *userData)
 {
+    (void) handle;
+    (void) userData;
     assert(userData!=NULL);
     uint flags = 0;
 
-    if (pollfd.revents & POLLIN) flags |= DBUS_WATCH_READABLE;
-    if (pollfd.revents & POLLOUT) flags |= DBUS_WATCH_WRITABLE;
-    if (pollfd.revents & POLLHUP) flags |= DBUS_WATCH_HANGUP;
-    if (pollfd.revents & POLLERR) flags |= DBUS_WATCH_ERROR;
+    if (pollfd.revents & POLLIN)
+        flags |= DBUS_WATCH_READABLE;
+    if (pollfd.revents & POLLOUT)
+        flags |= DBUS_WATCH_WRITABLE;
+    if (pollfd.revents & POLLHUP)
+        flags |= DBUS_WATCH_HANGUP;
+    if (pollfd.revents & POLLERR)
+        flags |= DBUS_WATCH_ERROR;
 
     DBusWatch *watch = (DBusWatch*) userData;
 
     dbus_connection_ref(mDbusConnection);
-    bool ok = dbus_watch_handle(watch, flags);
+    dbus_watch_handle(watch, flags);
     dbus_connection_unref(mDbusConnection);
     DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DBusWrapper::dbusFireCallback was called"));
 }
 
 void DBusWrapper::toggleTimeoutDelegate(DBusTimeout *timeout, void* userData)
 {
+    (void) userData;
     //get the pointer to the handle and remove the timer
     sh_timerHandle_t* handle = (sh_timerHandle_t*) dbus_timeout_get_data(timeout);
 

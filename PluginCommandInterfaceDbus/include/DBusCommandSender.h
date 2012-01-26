@@ -67,7 +67,7 @@ public:
     void cbVolumeChanged(const am_sinkID_t sinkID, const am_mainVolume_t volume);
     void cbSinkMuteStateChanged(const am_sinkID_t sinkID, const am_MuteState_e muteState);
     void cbSystemPropertyChanged(const am_SystemProperty_s& SystemProperty);
-    void cbTimingInformationChanged(const am_timeSync_t time, const am_mainConnectionID_t mainConnectionID);
+    void cbTimingInformationChanged(const am_mainConnectionID_t mainConnectionID, const am_timeSync_t time);
     uint16_t getInterfaceVersion() const;
 
 #ifdef UNIT_TEST

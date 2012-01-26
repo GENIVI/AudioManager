@@ -53,13 +53,13 @@ class MockRoutingSendInterface : public RoutingSendInterface {
   MOCK_METHOD3(asyncSetSourceState,
       am_Error_e(const am_Handle_s handle, const am_sourceID_t sourceID, const am_SourceState_e state));
   MOCK_METHOD3(asyncSetSinkSoundProperties,
-      am_Error_e(const am_Handle_s handle, const std::vector<am_SoundProperty_s>& listSoundProperties, const am_sinkID_t sinkID));
+      am_Error_e(const am_Handle_s handle, const am_sinkID_t sinkID, const std::vector<am_SoundProperty_s>& listSoundProperties));
   MOCK_METHOD3(asyncSetSinkSoundProperty,
-      am_Error_e(const am_Handle_s handle, const am_SoundProperty_s& soundProperty, const am_sinkID_t sinkID));
+      am_Error_e(const am_Handle_s handle, const am_sinkID_t sinkID, const am_SoundProperty_s& soundProperty));
   MOCK_METHOD3(asyncSetSourceSoundProperties,
-      am_Error_e(const am_Handle_s handle, const std::vector<am_SoundProperty_s>& listSoundProperties, const am_sourceID_t sourceID));
+      am_Error_e(const am_Handle_s handle, const am_sourceID_t sourceID, const std::vector<am_SoundProperty_s>& listSoundProperties));
   MOCK_METHOD3(asyncSetSourceSoundProperty,
-      am_Error_e(const am_Handle_s handle, const am_SoundProperty_s& soundProperty, const am_sourceID_t sourceID));
+      am_Error_e(const am_Handle_s handle, const am_sourceID_t sourceID, const am_SoundProperty_s& soundProperty));
   MOCK_METHOD5(asyncCrossFade,
       am_Error_e(const am_Handle_s handle, const am_crossfaderID_t crossfaderID, const am_HotSink_e hotSink, const am_RampType_e rampType, const am_time_t time));
   MOCK_METHOD2(setDomainState,
@@ -69,6 +69,7 @@ class MockRoutingSendInterface : public RoutingSendInterface {
   MOCK_CONST_METHOD0(getInterfaceVersion,
       uint16_t());
 };
+
 
 
 class MockControlSendInterface : public ControlSendInterface {

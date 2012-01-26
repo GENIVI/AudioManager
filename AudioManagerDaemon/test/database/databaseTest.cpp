@@ -54,7 +54,9 @@ routingTest::routingTest() :
         pMockInterface(), //
         pRoutingInterfaceBackdoor(), //
         pCommandInterfaceBackdoor(), //
-        pControlReceiver(&pDatabaseHandler, &pRoutingSender, &pCommandSender), //
+        pControlSender(""),//
+        pRouter(&pDatabaseHandler,&pControlSender), //
+        pControlReceiver(&pDatabaseHandler, &pRoutingSender, &pCommandSender, &pRouter), //
         pObserver(&pCommandSender, &pRoutingSender)
 {
     pDatabaseHandler.registerObserver(&pObserver);

@@ -2465,7 +2465,7 @@ am_Error_e am::DatabaseHandler::getListSinkConnectionFormats(const am_sinkID_t s
 am_Error_e am::DatabaseHandler::getListSourceConnectionFormats(const am_sourceID_t sourceID, std::vector<am_ConnectionFormat_e> & listConnectionFormats) const
 {
     listConnectionFormats.clear();
-    sqlite3_stmt* query = NULL, *qConnectionFormat = NULL, *qSoundProperty = NULL, *qMAinSoundProperty = NULL;
+    sqlite3_stmt* qConnectionFormat = NULL;
     int eCode = 0;
     am_ConnectionFormat_e tempConnectionFormat;
 
@@ -3109,8 +3109,6 @@ am_Error_e DatabaseHandler::changeConnectionTimingInformation(const am_connectio
     }
 
     //now we need to find all mainConnections that use the changed connection and update their timing
-    am_timeSync_t tempDelay = 0;
-    am_Error_e error;
 
     int tempMainConnectionID;
     //first get all route tables for all mainconnections

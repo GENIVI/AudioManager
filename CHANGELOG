@@ -1,3 +1,22 @@
+commit 002295bee9b1a4b4b97060458be4ab8d4cb43eda
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * regenerated EA code based on Conti Feedback.
+    * changed paths of audiomanagertypes include in generated files
+    * changed order of parameters in asyncSetSinkSoundProperty / asyncSetSourceSoundProperty / cbTimingInformationChanged  to have common style over all interfaces.
+
+commit 93c6b1973d59ce225e9cb5d2bcaea7d01c5fda52
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * routing algorithm improvements
+    * routing algorithms first tests
+
+commit af0ba5b505b361679c07899187b7043d867742c3
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * finalized Router implementation
+    * added new generated ControlSendInterface with router support
+
 commit 4fe50302a695c625d5161b538da771b2c36bd33e
 Author: christian mueller <christian.ei.mueller@bmw.de>
 

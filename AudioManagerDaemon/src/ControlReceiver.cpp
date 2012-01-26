@@ -28,6 +28,7 @@
 #include "DatabaseHandler.h"
 #include "RoutingSender.h"
 #include "CommandSender.h"
+#include "Router.h"
 #include <assert.h>
 #include <dlt/dlt.h>
 
@@ -35,26 +36,30 @@ DLT_IMPORT_CONTEXT(AudioManager)
 
 using namespace am;
 
-ControlReceiver::ControlReceiver(DatabaseHandler *iDatabaseHandler, RoutingSender *iRoutingSender, CommandSender *iCommandSender, SocketHandler *iSocketHandler) :
+ControlReceiver::ControlReceiver(DatabaseHandler *iDatabaseHandler, RoutingSender *iRoutingSender, CommandSender *iCommandSender, SocketHandler *iSocketHandler, Router* iRouter) :
         mDatabaseHandler(iDatabaseHandler), //
         mRoutingSender(iRoutingSender), //
         mCommandSender(iCommandSender), //
-        mSocketHandler(iSocketHandler)
+        mSocketHandler(iSocketHandler), //
+        mRouter(iRouter)
 {
     assert(mDatabaseHandler!=NULL);
     assert(mRoutingSender!=NULL);
     assert(mCommandSender!=NULL);
     assert(mSocketHandler!=NULL);
+    assert(mRouter!=NULL);
 }
 
-ControlReceiver::ControlReceiver(DatabaseHandler *iDatabaseHandler, RoutingSender *iRoutingSender, CommandSender *iCommandSender) :
+ControlReceiver::ControlReceiver(DatabaseHandler *iDatabaseHandler, RoutingSender *iRoutingSender, CommandSender *iCommandSender, Router* iRouter) :
         mDatabaseHandler(iDatabaseHandler), //
         mRoutingSender(iRoutingSender), //
-        mCommandSender(iCommandSender)
+        mCommandSender(iCommandSender), //
+        mRouter(iRouter)
 {
     assert(mDatabaseHandler!=NULL);
     assert(mRoutingSender!=NULL);
     assert(mCommandSender!=NULL);
+    assert(mRouter!=NULL);
 }
 
 ControlReceiver::~ControlReceiver()
@@ -63,7 +68,7 @@ ControlReceiver::~ControlReceiver()
 
 am_Error_e ControlReceiver::getRoute(const bool onlyfree, const am_sourceID_t sourceID, const am_sinkID_t sinkID, std::vector<am_Route_s> & returnList)
 {
-    //todo: implement routing algorithm
+    mRouter->getRoute(onlyfree,sourceID,sinkID,returnList);
     return E_NOT_USED;
 }
 

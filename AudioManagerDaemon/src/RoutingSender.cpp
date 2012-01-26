@@ -268,7 +268,7 @@ am_Error_e RoutingSender::asyncSetSinkSoundProperty(am_Handle_s& handle, const a
     handleData.soundPropery = soundProperty;
     handle = createHandle(handleData, H_SETSINKSOUNDPROPERTY);
     mMapHandleInterface.insert(std::make_pair(handle.handle, iter->second));
-    return iter->second->asyncSetSinkSoundProperty(handle, soundProperty, sinkID);
+    return iter->second->asyncSetSinkSoundProperty(handle, sinkID, soundProperty);
     return (E_NON_EXISTENT);
 }
 
@@ -282,7 +282,7 @@ am_Error_e RoutingSender::asyncSetSourceSoundProperty(am_Handle_s& handle, const
     handleData.soundPropery = soundProperty;
     handle = createHandle(handleData, H_SETSOURCESOUNDPROPERTY);
     mMapHandleInterface.insert(std::make_pair(handle.handle, iter->second));
-    return iter->second->asyncSetSourceSoundProperty(handle, soundProperty, sourceID);
+    return iter->second->asyncSetSourceSoundProperty(handle, sourceID, soundProperty);
     return (E_NON_EXISTENT);
 }
 
@@ -296,7 +296,7 @@ am_Error_e am::RoutingSender::asyncSetSourceSoundProperties(am_Handle_s& handle,
     handleData.soundProperties = new std::vector<am_SoundProperty_s>(listSoundProperties);
     handle = createHandle(handleData, H_SETSOURCESOUNDPROPERTIES);
     mMapHandleInterface.insert(std::make_pair(handle.handle, iter->second));
-    return iter->second->asyncSetSourceSoundProperties(handle, listSoundProperties, sourceID);
+    return iter->second->asyncSetSourceSoundProperties(handle, sourceID, listSoundProperties);
     return (E_NON_EXISTENT);
 }
 
@@ -310,7 +310,7 @@ am_Error_e am::RoutingSender::asyncSetSinkSoundProperties(am_Handle_s& handle, c
     handleData.soundProperties = new std::vector<am_SoundProperty_s>(listSoundProperties);
     handle = createHandle(handleData, H_SETSINKSOUNDPROPERTIES);
     mMapHandleInterface.insert(std::make_pair(handle.handle, iter->second));
-    return iter->second->asyncSetSinkSoundProperties(handle, listSoundProperties, sinkID);
+    return iter->second->asyncSetSinkSoundProperties(handle, sinkID, listSoundProperties);
     return (E_NON_EXISTENT);
 
 }
