@@ -29,10 +29,11 @@
 #include <assert.h>
 #include "CommandReceiverShadow.h"
 #include "DBusCommandSender.h"
+#include "DLTWrapper.h"
 
 using namespace am;
 
-DLT_IMPORT_CONTEXT(DLT_CONTEXT)
+DLT_IMPORT_CONTEXT(commandDbus)
 
 /**
  * static ObjectPathTable is needed for DBus Callback handling
@@ -45,17 +46,17 @@ CommandReceiverShadow::CommandReceiverShadow() :
         mFunctionMap(createMap()), //
         mDBUSMessageHandler()
 {
-    DLT_LOG(DLT_CONTEXT, DLT_LOG_INFO, DLT_STRING("CommandReceiverShadow constructed"));
+    log(&commandDbus,DLT_LOG_INFO,"CommandReceiverShadow constructed");
 }
 
 CommandReceiverShadow::~CommandReceiverShadow()
 {
-    DLT_LOG(DLT_CONTEXT, DLT_LOG_INFO, DLT_STRING("CommandReceiverShadow destructed"));
+    log(&commandDbus,DLT_LOG_INFO,"CommandReceiverShadow destructed");
 }
 
 void CommandReceiverShadow::connect(DBusConnection *conn, DBusMessage *msg)
 {
-    DLT_LOG(DLT_CONTEXT, DLT_LOG_INFO, DLT_STRING("CommandReceiverShadow::connect called"));
+    log(&commandDbus,DLT_LOG_INFO,"CommandReceiverShadow::connect called");
 
     (void) conn;
     assert(mCommandReceiveInterface!=NULL);
@@ -73,7 +74,7 @@ void CommandReceiverShadow::connect(DBusConnection *conn, DBusMessage *msg)
 
 void CommandReceiverShadow::disconnect(DBusConnection *conn, DBusMessage *msg)
 {
-    DLT_LOG(DLT_CONTEXT, DLT_LOG_INFO, DLT_STRING("CommandReceiverShadow::disconnect called"));
+    log(&commandDbus,DLT_LOG_INFO,"CommandReceiverShadow::disconnect called");
 
     (void) conn;
     assert(mCommandReceiveInterface!=NULL);
@@ -88,7 +89,7 @@ void CommandReceiverShadow::disconnect(DBusConnection *conn, DBusMessage *msg)
 
 void CommandReceiverShadow::setVolume(DBusConnection *conn, DBusMessage *msg)
 {
-    DLT_LOG(DLT_CONTEXT, DLT_LOG_INFO, DLT_STRING("CommandReceiverShadow::setVolume called"));
+    log(&commandDbus,DLT_LOG_INFO,"CommandReceiverShadow::setVolume called");
 
     (void) conn;
     assert(mCommandReceiveInterface!=NULL);
@@ -104,7 +105,7 @@ void CommandReceiverShadow::setVolume(DBusConnection *conn, DBusMessage *msg)
 
 void CommandReceiverShadow::volumeStep(DBusConnection *conn, DBusMessage *msg)
 {
-    DLT_LOG(DLT_CONTEXT, DLT_LOG_INFO, DLT_STRING("CommandReceiverShadow::volumeStep called"));
+    log(&commandDbus,DLT_LOG_INFO,"CommandReceiverShadow::volumeStep called");
 
     (void) conn;
     assert(mCommandReceiveInterface!=NULL);
@@ -120,7 +121,7 @@ void CommandReceiverShadow::volumeStep(DBusConnection *conn, DBusMessage *msg)
 
 void CommandReceiverShadow::setSinkMuteState(DBusConnection *conn, DBusMessage *msg)
 {
-    DLT_LOG(DLT_CONTEXT, DLT_LOG_INFO, DLT_STRING("CommandReceiverShadow::setSinkMuteState called"));
+    log(&commandDbus,DLT_LOG_INFO,"CommandReceiverShadow::setSinkMuteState called");
 
     (void) conn;
     assert(mCommandReceiveInterface!=NULL);
@@ -136,7 +137,7 @@ void CommandReceiverShadow::setSinkMuteState(DBusConnection *conn, DBusMessage *
 
 void CommandReceiverShadow::setMainSinkSoundProperty(DBusConnection *conn, DBusMessage *msg)
 {
-    DLT_LOG(DLT_CONTEXT, DLT_LOG_INFO, DLT_STRING("CommandReceiverShadow::setMainSinkSoundProperty called"));
+    log(&commandDbus,DLT_LOG_INFO,"CommandReceiverShadow::setMainSinkSoundProperty called");
 
     (void) conn;
     assert(mCommandReceiveInterface!=NULL);
@@ -157,7 +158,7 @@ void CommandReceiverShadow::setMainSinkSoundProperty(DBusConnection *conn, DBusM
 
 void CommandReceiverShadow::setMainSourceSoundProperty(DBusConnection *conn, DBusMessage *msg)
 {
-    DLT_LOG(DLT_CONTEXT, DLT_LOG_INFO, DLT_STRING("CommandReceiverShadow::setMainSourceSoundProperty called"));
+    log(&commandDbus,DLT_LOG_INFO,"CommandReceiverShadow::setMainSourceSoundProperty called");
 
     (void) conn;
     assert(mCommandReceiveInterface!=NULL);
@@ -178,7 +179,7 @@ void CommandReceiverShadow::setMainSourceSoundProperty(DBusConnection *conn, DBu
 
 void CommandReceiverShadow::setSystemProperty(DBusConnection *conn, DBusMessage *msg)
 {
-    DLT_LOG(DLT_CONTEXT, DLT_LOG_INFO, DLT_STRING("CommandReceiverShadow::setSystemProperty called"));
+    log(&commandDbus,DLT_LOG_INFO,"CommandReceiverShadow::setSystemProperty called");
 
     (void) conn;
     assert(mCommandReceiveInterface!=NULL);
@@ -198,7 +199,7 @@ void CommandReceiverShadow::setSystemProperty(DBusConnection *conn, DBusMessage 
 
 void CommandReceiverShadow::getListMainConnections(DBusConnection *conn, DBusMessage *msg)
 {
-    DLT_LOG(DLT_CONTEXT, DLT_LOG_INFO, DLT_STRING("CommandReceiverShadow::getListMainConnections called"));
+    log(&commandDbus,DLT_LOG_INFO,"CommandReceiverShadow::getListMainConnections called");
 
     (void) conn;
     assert(mCommandReceiveInterface!=NULL);
@@ -212,7 +213,7 @@ void CommandReceiverShadow::getListMainConnections(DBusConnection *conn, DBusMes
 
 void CommandReceiverShadow::getListMainSinks(DBusConnection *conn, DBusMessage *msg)
 {
-    DLT_LOG(DLT_CONTEXT, DLT_LOG_INFO, DLT_STRING("CommandReceiverShadow::getListMainSinks called"));
+    log(&commandDbus,DLT_LOG_INFO,"CommandReceiverShadow::getListMainSinks called");
 
     (void) conn;
     assert(mCommandReceiveInterface!=NULL);
@@ -226,7 +227,7 @@ void CommandReceiverShadow::getListMainSinks(DBusConnection *conn, DBusMessage *
 
 void CommandReceiverShadow::getListMainSources(DBusConnection *conn, DBusMessage *msg)
 {
-    DLT_LOG(DLT_CONTEXT, DLT_LOG_INFO, DLT_STRING("CommandReceiverShadow::getListMainSources called"));
+    log(&commandDbus,DLT_LOG_INFO,"CommandReceiverShadow::getListMainSources called");
 
     (void) conn;
     assert(mCommandReceiveInterface!=NULL);
@@ -240,7 +241,7 @@ void CommandReceiverShadow::getListMainSources(DBusConnection *conn, DBusMessage
 
 void CommandReceiverShadow::getListMainSinkSoundProperties(DBusConnection *conn, DBusMessage *msg)
 {
-    DLT_LOG(DLT_CONTEXT, DLT_LOG_INFO, DLT_STRING("CommandReceiverShadow::getListMainSinkSoundProperties called"));
+    log(&commandDbus,DLT_LOG_INFO,"CommandReceiverShadow::getListMainSinkSoundProperties called");
 
     (void) conn;
     assert(mCommandReceiveInterface!=NULL);
@@ -257,7 +258,7 @@ void CommandReceiverShadow::getListMainSinkSoundProperties(DBusConnection *conn,
 
 void CommandReceiverShadow::getListMainSourceSoundProperties(DBusConnection *conn, DBusMessage *msg)
 {
-    DLT_LOG(DLT_CONTEXT, DLT_LOG_INFO, DLT_STRING("CommandReceiverShadow::getListMainSourceSoundProperties called"));
+    log(&commandDbus,DLT_LOG_INFO,"CommandReceiverShadow::getListMainSourceSoundProperties called");
 
     (void) conn;
     assert(mCommandReceiveInterface!=NULL);
@@ -274,7 +275,7 @@ void CommandReceiverShadow::getListMainSourceSoundProperties(DBusConnection *con
 
 void CommandReceiverShadow::getListSourceClasses(DBusConnection *conn, DBusMessage *msg)
 {
-    DLT_LOG(DLT_CONTEXT, DLT_LOG_INFO, DLT_STRING("CommandReceiverShadow::getListSourceClasses called"));
+    log(&commandDbus,DLT_LOG_INFO,"CommandReceiverShadow::getListSourceClasses called");
 
     (void) conn;
     assert(mCommandReceiveInterface!=NULL);
@@ -288,7 +289,7 @@ void CommandReceiverShadow::getListSourceClasses(DBusConnection *conn, DBusMessa
 
 void CommandReceiverShadow::getListSinkClasses(DBusConnection *conn, DBusMessage *msg)
 {
-    DLT_LOG(DLT_CONTEXT, DLT_LOG_INFO, DLT_STRING("CommandReceiverShadow::getListSinkClasses called"));
+    log(&commandDbus,DLT_LOG_INFO,"CommandReceiverShadow::getListSinkClasses called");
 
     (void) conn;
     assert(mCommandReceiveInterface!=NULL);
@@ -302,7 +303,7 @@ void CommandReceiverShadow::getListSinkClasses(DBusConnection *conn, DBusMessage
 
 void CommandReceiverShadow::getListSystemProperties(DBusConnection *conn, DBusMessage *msg)
 {
-    DLT_LOG(DLT_CONTEXT, DLT_LOG_INFO, DLT_STRING("CommandReceiverShadow::getListSystemProperties called"));
+    log(&commandDbus,DLT_LOG_INFO,"CommandReceiverShadow::getListSystemProperties called");
 
     (void) conn;
     assert(mCommandReceiveInterface!=NULL);
@@ -316,7 +317,7 @@ void CommandReceiverShadow::getListSystemProperties(DBusConnection *conn, DBusMe
 
 void CommandReceiverShadow::getTimingInformation(DBusConnection *conn, DBusMessage *msg)
 {
-    DLT_LOG(DLT_CONTEXT, DLT_LOG_INFO, DLT_STRING("CommandReceiverShadow::getTimingInformation called"));
+    log(&commandDbus,DLT_LOG_INFO,"CommandReceiverShadow::getTimingInformation called");
 
     (void) conn;
     assert(mCommandReceiveInterface!=NULL);

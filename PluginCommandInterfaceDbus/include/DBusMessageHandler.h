@@ -28,7 +28,6 @@
 
 #include <audiomanagertypes.h>
 #include <dbus/dbus.h>
-#include <dlt/dlt.h>
 #include <vector>
 #include <sstream>
 #include <string>

@@ -25,12 +25,10 @@
 #include "CommandReceiver.h"
 #include "DatabaseHandler.h"
 #include "ControlSender.h"
+#include "DLTWrapper.h"
 #include <SocketHandler.h>
 #include <config.h>
 #include <assert.h>
-#include <dlt/dlt.h>
-
-DLT_IMPORT_CONTEXT(AudioManager)
 
 using namespace am;
 
@@ -72,49 +70,49 @@ CommandReceiver::~CommandReceiver()
 
 am_Error_e CommandReceiver::connect(const am_sourceID_t sourceID, const am_sinkID_t sinkID, am_mainConnectionID_t & mainConnectionID)
 {
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("CommandReceiver::connect got called:"), DLT_STRING("sourceID"), DLT_INT(sourceID), DLT_STRING("sinkID"), DLT_INT(sinkID));
+    logInfo("CommandReceiver::connect got called, sourceID=", sourceID, "sinkID=", sinkID);
     return mControlSender->hookUserConnectionRequest(sourceID, sinkID, mainConnectionID);
 }
 
 am_Error_e CommandReceiver::disconnect(const am_mainConnectionID_t mainConnectionID)
 {
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("CommandReceiver::disconnect got called, mainConnectionID="), DLT_INT(mainConnectionID));
+    logInfo("CommandReceiver::disconnect got called, mainConnectionID=", mainConnectionID);
     return mControlSender->hookUserDisconnectionRequest(mainConnectionID);
 }
 
 am_Error_e CommandReceiver::setVolume(const am_sinkID_t sinkID, const am_mainVolume_t volume)
 {
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("CommandReceiver::setVolume got called, sinkID="), DLT_INT(sinkID), DLT_STRING("volume="), DLT_INT(volume));
+    logInfo("CommandReceiver::setVolume got called, sinkID=", sinkID, "volume=", volume);
     return mControlSender->hookUserVolumeChange(sinkID, volume);
 }
 
 am_Error_e CommandReceiver::volumeStep(const am_sinkID_t sinkID, const int16_t volumeStep)
 {
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("CommandReceiver::volumeStep got called, sinkID="), DLT_INT(sinkID), DLT_STRING("volumeStep="), DLT_INT(volumeStep));
+    logInfo("CommandReceiver::volumeStep got called, sinkID=", sinkID, "volumeStep=", volumeStep);
     return mControlSender->hookUserVolumeStep(sinkID, volumeStep);
 }
 
 am_Error_e CommandReceiver::setSinkMuteState(const am_sinkID_t sinkID, const am_MuteState_e muteState)
 {
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("CommandReceiver::setSinkMuteState got called, sinkID="), DLT_INT(sinkID), DLT_STRING("muteState="), DLT_INT(muteState));
+    logInfo("CommandReceiver::setSinkMuteState got called, sinkID=", sinkID, "muteState=", muteState);
     return mControlSender->hookUserSetSinkMuteState(sinkID, muteState);
 }
 
 am_Error_e CommandReceiver::setMainSinkSoundProperty(const am_MainSoundProperty_s & soundProperty, const am_sinkID_t sinkID)
 {
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("CommandReceiver::setMainSinkSoundProperty got called, sinkID="), DLT_INT(sinkID), DLT_STRING("soundPropertyType="), DLT_INT(soundProperty.type), DLT_STRING("soundPropertyValue="), DLT_INT(soundProperty.value));
+    logInfo("CommandReceiver::setMainSinkSoundProperty got called, sinkID=", sinkID, "soundPropertyType=", soundProperty.type, "soundPropertyValue=", soundProperty.value);
     return mControlSender->hookUserSetMainSinkSoundProperty(sinkID, soundProperty);
 }
 
 am_Error_e CommandReceiver::setMainSourceSoundProperty(const am_MainSoundProperty_s & soundProperty, const am_sourceID_t sourceID)
 {
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("CommandReceiver::setMainSourceSoundProperty got called, sourceID="), DLT_INT(sourceID), DLT_STRING("soundPropertyType="), DLT_INT(soundProperty.type), DLT_STRING("soundPropertyValue="), DLT_INT(soundProperty.value));
+    logInfo("CommandReceiver::setMainSourceSoundProperty got called, sourceID=", sourceID, "soundPropertyType=", soundProperty.type, "soundPropertyValue=", soundProperty.value);
     return mControlSender->hookUserSetMainSourceSoundProperty(sourceID, soundProperty);
 }
 
 am_Error_e CommandReceiver::setSystemProperty(const am_SystemProperty_s & property)
 {
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("CommandReceiver::setSystemProperty got called"), DLT_STRING("type="), DLT_INT(property.type), DLT_STRING("soundPropertyValue="), DLT_INT(property.value));
+    logInfo("CommandReceiver::setSystemProperty got called", "type=", property.type, "soundPropertyValue=", property.value);
     return mControlSender->hookUserSetSystemProperty(property);
 }
 

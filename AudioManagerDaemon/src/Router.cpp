@@ -55,7 +55,6 @@ am_Error_e Router::getRoute(const bool onlyfree, const am_sourceID_t sourceID, c
     std::vector<RoutingTreeItem*> matchtree;
     std::vector<am_gatewayID_t> listGatewayID; //holds all gateway ids of the route
     am_RoutingElement_s routingElement;
-    std::vector<am_RoutingElement_s> actualRoutingElement; //intermediate list of current routing pairs
     am_Route_s actualRoute; //holds the actual Route
     am_sourceID_t lastSource = 0;
 
@@ -76,6 +75,7 @@ am_Error_e Router::getRoute(const bool onlyfree, const am_sourceID_t sourceID, c
     iterator = matchtree.begin();
     for (; iterator != matchtree.end(); ++iterator)
     {
+        std::vector<am_RoutingElement_s> actualRoutingElement; //intermediate list of current routing pairs
         //getting the route for the actual item
         routingtree.getRoute(*iterator, listGatewayID); //This gives only the Gateway IDs we need more
 
@@ -133,9 +133,10 @@ void Router::listPossibleConnectionFormats(const am_sourceID_t sourceID, const a
     std::vector<am_ConnectionFormat_e> listSinkFormats;
     mDatabaseHandler->getListSinkConnectionFormats(sinkID, listSinkFormats);
     mDatabaseHandler->getListSourceConnectionFormats(sourceID, listSourceFormats);
+    std::sort(listSinkFormats.begin(),listSinkFormats.end()); //todo: this might be not needed if we use strictly sorted input
+    std::sort(listSourceFormats.begin(),listSourceFormats.end()); //todo: this might be not needed if we use strictly sorted input
     std::insert_iterator<std::vector<am_ConnectionFormat_e> > inserter(listFormats, listFormats.begin());
     set_intersection(listSourceFormats.begin(), listSourceFormats.end(), listSinkFormats.begin(), listSinkFormats.end(), inserter);
-    std::vector<am_ConnectionFormat_e>::iterator it = listSourceFormats.begin();
 }
 
 am_Error_e Router::findBestWay(std::vector<am_RoutingElement_s> & listRoute, std::vector<am_RoutingElement_s>::iterator routeIterator, std::vector<am_gatewayID_t>::iterator gatewayIterator)
@@ -157,6 +158,7 @@ am_Error_e Router::findBestWay(std::vector<am_RoutingElement_s> & listRoute, std
         std::vector<am_RoutingElement_s>::iterator tempIterator(routeIterator);
         tempIterator--;
         listRestrictedOutputFormatsGateways(*gatewayIterator, (tempIterator)->connectionFormat, listRestrictedConnectionFormats);
+        std::sort(listRestrictedConnectionFormats.begin(),listRestrictedConnectionFormats.end());           //todo: this might be not needed if we use strictly sorted input
         set_intersection(listConnectionFormats.begin(), listConnectionFormats.end(), listRestrictedConnectionFormats.begin(), listRestrictedConnectionFormats.end(), inserter);
         gatewayIterator++;
     }
@@ -208,17 +210,17 @@ void Router::listRestrictedOutputFormatsGateways(const am_gatewayID_t gatewayID,
     int rowNumberSink = rowSinkIterator - gatewayData.listSinkFormats.begin();
 
     //go through the convertionMatrix and find out if the conversion is possible, if yes, add connectionFormat ...
-    matrixIterator + rowNumberSink;
+    std::advance(matrixIterator, rowNumberSink);
 
     //iterate line-wise through the matrix and add more formats
     do
     {
         if (*matrixIterator)
         {
-            listFormats.push_back(gatewayData.listSourceFormats.at(matrixIterator - gatewayData.convertionMatrix.begin()));
+            listFormats.push_back(gatewayData.listSourceFormats.at((matrixIterator - gatewayData.convertionMatrix.begin()) / gatewayData.listSinkFormats.size()));
         }
-        matrixIterator += gatewayData.listSinkFormats.size();
-    } while (matrixIterator - gatewayData.convertionMatrix.begin() < (int) gatewayData.listSourceFormats.size());
+        std::advance(matrixIterator, gatewayData.listSinkFormats.size());
+    } while (gatewayData.convertionMatrix.end() - matrixIterator > 0);
 }
 
 Router::~Router()

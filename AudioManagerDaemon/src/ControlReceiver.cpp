@@ -29,10 +29,8 @@
 #include "RoutingSender.h"
 #include "CommandSender.h"
 #include "Router.h"
-#include <assert.h>
-#include <dlt/dlt.h>
-
-DLT_IMPORT_CONTEXT(AudioManager)
+#include "DLTWrapper.h"
+#include <cassert>
 
 using namespace am;
 
@@ -68,13 +66,13 @@ ControlReceiver::~ControlReceiver()
 
 am_Error_e ControlReceiver::getRoute(const bool onlyfree, const am_sourceID_t sourceID, const am_sinkID_t sinkID, std::vector<am_Route_s> & returnList)
 {
-    mRouter->getRoute(onlyfree,sourceID,sinkID,returnList);
+    mRouter->getRoute(onlyfree, sourceID, sinkID, returnList);
     return E_NOT_USED;
 }
 
 am_Error_e ControlReceiver::connect(am_Handle_s & handle, am_connectionID_t & connectionID, const am_ConnectionFormat_e format, const am_sourceID_t sourceID, const am_sinkID_t sinkID)
 {
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("ControlReceiver::connect got called, connectionFormat"), DLT_INT(format), DLT_STRING("sourceID"), DLT_INT(sourceID), DLT_STRING("sinkID"), DLT_INT(sinkID));
+    logInfo("ControlReceiver::connect got called, connectionFormat=", format, "sourceID=", sourceID, "sinkID=", sinkID);
 
     am_Connection_s tempConnection;
     tempConnection.sinkID = sinkID;
@@ -83,7 +81,8 @@ am_Error_e ControlReceiver::connect(am_Handle_s & handle, am_connectionID_t & co
     tempConnection.connectionID = 0;
 
     //todo: enter function to find out what happends if the same connection is in the course of being build up.
-    if (mDatabaseHandler->existConnection(tempConnection)) return E_ALREADY_EXISTS; //todo:enter the correct connectionID here?
+    if (mDatabaseHandler->existConnection(tempConnection))
+        return E_ALREADY_EXISTS; //todo:enter the correct connectionID here?
 
     mDatabaseHandler->enterConnectionDB(tempConnection, connectionID);
     return mRoutingSender->asyncConnect(handle, connectionID, sourceID, sinkID, format);
@@ -91,115 +90,135 @@ am_Error_e ControlReceiver::connect(am_Handle_s & handle, am_connectionID_t & co
 
 am_Error_e ControlReceiver::disconnect(am_Handle_s & handle, const am_connectionID_t connectionID)
 {
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("ControlReceiver::disconnect got called, connectionID="), DLT_INT(connectionID));
+    logInfo("ControlReceiver::disconnect got called, connectionID=", connectionID);
 
-    if (!mDatabaseHandler->existConnectionID(connectionID)) return E_NON_EXISTENT; //todo: check with EA model and correct
+    if (!mDatabaseHandler->existConnectionID(connectionID))
+        return E_NON_EXISTENT; //todo: check with EA model and correct
     return mRoutingSender->asyncDisconnect(handle, connectionID);
 }
 
 am_Error_e ControlReceiver::crossfade(am_Handle_s & handle, const am_HotSink_e hotSource, const am_crossfaderID_t crossfaderID, const am_RampType_e rampType, const am_time_t rampTime)
 {
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("ControlReceiver::crossfade got called, hotSource="), DLT_INT(hotSource), DLT_STRING("crossfaderID="), DLT_INT(crossfaderID), DLT_STRING("rampType="), DLT_INT(rampType), DLT_STRING("rampTime="), DLT_INT(rampTime));
+    logInfo("ControlReceiver::crossfade got called, hotSource=",hotSource,"crossfaderID=",crossfaderID,"rampType=",rampType,"rampTime=",rampTime);
 
-    if (!mDatabaseHandler->existcrossFader(crossfaderID)) return E_NON_EXISTENT;
+    if (!mDatabaseHandler->existcrossFader(crossfaderID))
+        return E_NON_EXISTENT;
     return mRoutingSender->asyncCrossFade(handle, crossfaderID, hotSource, rampType, rampTime);
 }
 
 am_Error_e ControlReceiver::setSourceState(am_Handle_s & handle, const am_sourceID_t sourceID, const am_SourceState_e state)
 {
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("ControlReceiver::setSourceState got called, sourceID="), DLT_INT(sourceID), DLT_STRING("state="), DLT_INT(state));
+    logInfo("ControlReceiver::setSourceState got called, sourceID=",sourceID,"state=",state);
 
     am_SourceState_e sourceState;
-    if (mDatabaseHandler->getSoureState(sourceID, sourceState) != E_OK) return E_UNKNOWN;
-    if (sourceState == state) return E_NO_CHANGE;
+    if (mDatabaseHandler->getSoureState(sourceID, sourceState) != E_OK)
+        return E_UNKNOWN;
+    if (sourceState == state)
+        return E_NO_CHANGE;
     return mRoutingSender->asyncSetSourceState(handle, sourceID, state);
 }
 
 am_Error_e ControlReceiver::setSinkVolume(am_Handle_s & handle, const am_sinkID_t sinkID, const am_volume_t volume, const am_RampType_e ramp, const am_time_t time)
 {
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("ControlReceiver::setSinkVolume got called, sinkID="), DLT_INT(sinkID), DLT_STRING("volume="), DLT_INT(volume), DLT_STRING("ramp="), DLT_INT(ramp), DLT_STRING("time="), DLT_INT(time));
+    logInfo("ControlReceiver::setSinkVolume got called, sinkID=",sinkID,"volume=",volume,"ramp=",ramp, "time=",time);
 
     am_volume_t tempVolume;
-    if (mDatabaseHandler->getSinkVolume(sinkID, tempVolume) != E_OK) return E_UNKNOWN;
-    if (tempVolume == volume) return E_NO_CHANGE;
+    if (mDatabaseHandler->getSinkVolume(sinkID, tempVolume) != E_OK)
+        return E_UNKNOWN;
+    if (tempVolume == volume)
+        return E_NO_CHANGE;
     return mRoutingSender->asyncSetSinkVolume(handle, sinkID, volume, ramp, time);
 }
 
 am_Error_e ControlReceiver::setSourceVolume(am_Handle_s & handle, const am_sourceID_t sourceID, const am_volume_t volume, const am_RampType_e rampType, const am_time_t time)
 {
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("ControlReceiver::setSourceVolume got called, sourceID="), DLT_INT(sourceID), DLT_STRING("volume="), DLT_INT(volume), DLT_STRING("ramp="), DLT_INT(rampType), DLT_STRING("time="), DLT_INT(time));
+    logInfo("ControlReceiver::setSourceVolume got called, sourceID=",sourceID,"volume=",volume,"ramp=",rampType,"time=",time);
 
     am_volume_t tempVolume;
-    if (mDatabaseHandler->getSourceVolume(sourceID, tempVolume) != E_OK) return E_UNKNOWN;
-    if (tempVolume == volume) return E_NO_CHANGE;
+    if (mDatabaseHandler->getSourceVolume(sourceID, tempVolume) != E_OK)
+        return E_UNKNOWN;
+    if (tempVolume == volume)
+        return E_NO_CHANGE;
     return mRoutingSender->asyncSetSourceVolume(handle, sourceID, volume, rampType, time);
 }
 
 am_Error_e ControlReceiver::setSinkSoundProperty(am_Handle_s & handle, const am_sinkID_t sinkID, const am_SoundProperty_s & soundProperty)
 {
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("ControlReceiver::setSinkSoundProperty got called, sinkID="), DLT_INT(sinkID), DLT_STRING("soundProperty.Type="), DLT_INT(soundProperty.type), DLT_STRING("soundProperty.value="), DLT_INT(soundProperty.value));
+    logInfo("ControlReceiver::setSinkSoundProperty got called, sinkID=",sinkID,"soundProperty.Type=",soundProperty.type,"soundProperty.value=",soundProperty.value);
 
     uint16_t value;
-    if (mDatabaseHandler->getSinkSoundPropertyValue(sinkID, soundProperty.type, value) != E_OK) return E_UNKNOWN;
-    if (value == soundProperty.value) return E_NO_CHANGE;
+    if (mDatabaseHandler->getSinkSoundPropertyValue(sinkID, soundProperty.type, value) != E_OK)
+        return E_UNKNOWN;
+    if (value == soundProperty.value)
+        return E_NO_CHANGE;
     return mRoutingSender->asyncSetSinkSoundProperty(handle, sinkID, soundProperty);
 }
 
 am_Error_e ControlReceiver::setSinkSoundProperties(am_Handle_s & handle, const am_sinkID_t sinkID, const std::vector<am_SoundProperty_s> & listSoundProperties)
 {
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("ControlReceiver::setSinkSoundProperties got called, sinkID="), DLT_INT(sinkID));
+    logInfo("ControlReceiver::setSinkSoundProperties got called, sinkID=",sinkID);
 
     uint16_t value;
     bool noChange = true;
     std::vector<am_SoundProperty_s>::const_iterator it = listSoundProperties.begin();
     for (; it != listSoundProperties.end(); ++it)
     {
-        if (mDatabaseHandler->getSinkSoundPropertyValue(sinkID, it->type, value) != E_OK) return (E_UNKNOWN);
-        if (value != it->value) noChange = false;
+        if (mDatabaseHandler->getSinkSoundPropertyValue(sinkID, it->type, value) != E_OK)
+            return (E_UNKNOWN);
+        if (value != it->value)
+            noChange = false;
     }
-    if (noChange) return (E_NO_CHANGE);
+    if (noChange)
+        return (E_NO_CHANGE);
     return (mRoutingSender->asyncSetSinkSoundProperties(handle, listSoundProperties, sinkID));
 }
 
 am_Error_e ControlReceiver::setSourceSoundProperty(am_Handle_s & handle, const am_sourceID_t sourceID, const am_SoundProperty_s & soundProperty)
 {
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("ControlReceiver::setSourceSoundProperty got called, sourceID="), DLT_INT(sourceID), DLT_STRING("soundProperty.Type="), DLT_INT(soundProperty.type), DLT_STRING("soundProperty.value="), DLT_INT(soundProperty.value));
+    logInfo("ControlReceiver::setSourceSoundProperty got called, sourceID=",sourceID,"soundProperty.Type=",soundProperty.type,"soundProperty.value=",soundProperty.value);
 
     uint16_t value;
-    if (mDatabaseHandler->getSourceSoundPropertyValue(sourceID, soundProperty.type, value) != E_OK) return E_UNKNOWN;
-    if (value == soundProperty.value) return E_NO_CHANGE;
+    if (mDatabaseHandler->getSourceSoundPropertyValue(sourceID, soundProperty.type, value) != E_OK)
+        return E_UNKNOWN;
+    if (value == soundProperty.value)
+        return E_NO_CHANGE;
     return mRoutingSender->asyncSetSourceSoundProperty(handle, sourceID, soundProperty);
 }
 
 am_Error_e ControlReceiver::setSourceSoundProperties(am_Handle_s & handle, const am_sourceID_t sourceID, const std::vector<am_SoundProperty_s> & listSoundProperties)
 {
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("ControlReceiver::setSourceSoundProperties got called, sourceID="), DLT_INT(sourceID));
+    logInfo("ControlReceiver::setSourceSoundProperties got called, sourceID=",sourceID);
 
     uint16_t value;
     bool noChange = true;
     std::vector<am_SoundProperty_s>::const_iterator it = listSoundProperties.begin();
     for (; it != listSoundProperties.end(); ++it)
     {
-        if (mDatabaseHandler->getSourceSoundPropertyValue(sourceID, it->type, value) != E_OK) return (E_UNKNOWN);
-        if (value != it->value) noChange = false;
+        if (mDatabaseHandler->getSourceSoundPropertyValue(sourceID, it->type, value) != E_OK)
+            return (E_UNKNOWN);
+        if (value != it->value)
+            noChange = false;
     }
-    if (noChange) return (E_NO_CHANGE);
+    if (noChange)
+        return (E_NO_CHANGE);
     return (mRoutingSender->asyncSetSourceSoundProperties(handle, listSoundProperties, sourceID));
 }
 
 am_Error_e ControlReceiver::setDomainState(const am_domainID_t domainID, const am_DomainState_e domainState)
 {
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("ControlReceiver::setDomainState got called, domainID="), DLT_INT(domainID), DLT_STRING("domainState="), DLT_INT(domainState));
+    logInfo("ControlReceiver::setDomainState got called, domainID=",domainID,"domainState=",domainState);
 
     am_DomainState_e tempState = DS_MIN;
-    if (mDatabaseHandler->getDomainState(domainID, tempState) != E_OK) return E_UNKNOWN;
-    if (tempState == domainState) return E_NO_CHANGE;
+    if (mDatabaseHandler->getDomainState(domainID, tempState) != E_OK)
+        return E_UNKNOWN;
+    if (tempState == domainState)
+        return E_NO_CHANGE;
     return mRoutingSender->setDomainState(domainID, domainState);
 }
 
 am_Error_e ControlReceiver::abortAction(const am_Handle_s handle)
 {
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("ControlReceiver::abortAction got called, handle.type="), DLT_INT(handle.handle), DLT_STRING("handle.handleType="), DLT_INT(handle.handleType));
+    logInfo("ControlReceiver::abortAction got called, handle.type=",handle.handle,"handle.handleType=",handle.handleType);
 
     return mRoutingSender->asyncAbort(handle);
 }
@@ -446,13 +465,13 @@ am_Error_e ControlReceiver::removeSourceClassDB(const am_sourceClass_t sourceCla
 
 void ControlReceiver::setCommandReady()
 {
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("ControlReceiver::setCommandReady got called"));
+    logInfo("ControlReceiver::setCommandReady got called");
     mCommandSender->cbCommunicationReady();
 }
 
 void ControlReceiver::setRoutingReady()
 {
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("ControlReceiver::setRoutingReady got called"));
+    logInfo("ControlReceiver::setRoutingReady got called");
     mRoutingSender->routingInterfacesReady();
 }
 

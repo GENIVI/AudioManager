@@ -52,6 +52,7 @@ INCLUDE_DIRECTORIES(
    
 file(GLOB Socket_SRCS_CXX 
     "../../src/SocketHandler.cpp"
+    "../../src/DLTWrapper.cpp"
     "*.cpp"    
 )
 

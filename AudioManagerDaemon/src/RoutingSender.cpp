@@ -26,9 +26,9 @@
 #include <utility>
 #include <dirent.h>
 #include <dlfcn.h>
-#include <dlt/dlt.h>
 #include <assert.h>
 #include "PluginTemplate.h"
+#include "DLTWrapper.h"
 
 using namespace am;
 
@@ -61,12 +61,12 @@ RoutingSender::RoutingSender(const std::vector<std::string>& listOfPluginDirecto
     for (; dirIter < dirIterEnd; ++dirIter)
     {
         const char* directoryName = dirIter->c_str();
-        //DLT_LOG(AudioManager,DLT_LOG_INFO, DLT_STRING("Searching for HookPlugins in"),DLT_STRING(directoryName));
+        logInfo("Searching for HookPlugins in",directoryName);
         DIR *directory = opendir(directoryName);
 
         if (!directory)
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("RoutingSender::RoutingSender Error opening directory "), DLT_STRING(directoryName));
+            logError("RoutingSender::RoutingSender Error opening directory: ", directoryName);
             continue;
         }
 
@@ -82,13 +82,13 @@ RoutingSender::RoutingSender(const std::vector<std::string>& listOfPluginDirecto
 
             if (regularFile && sharedLibExtension)
             {
-                DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("RoutingSender::RoutingSender adding file "), DLT_STRING(entryName.c_str()));
+                logInfo("RoutingSender::RoutingSender adding file: ", entryName);
                 std::string name(directoryName);
                 sharedLibraryNameList.push_back(name + "/" + entryName);
             }
             else
             {
-                DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("RoutingSender::RoutingSender PluginSearch ignoring file "), DLT_STRING(entryName.c_str()));
+                logInfo("RoutingSender::RoutingSender PluginSearch ignoring file :", entryName);
             }
         }
 
@@ -101,7 +101,7 @@ RoutingSender::RoutingSender(const std::vector<std::string>& listOfPluginDirecto
 
     for (; iter != iterEnd; ++iter)
     {
-        DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("RoutingSender::RoutingSender try loading "), DLT_STRING(iter->c_str()));
+        logInfo("RoutingSender::RoutingSender try loading: " , *iter);
 
         RoutingSendInterface* (*createFunc)();
         void* tempLibHandle = NULL;
@@ -109,7 +109,7 @@ RoutingSender::RoutingSender(const std::vector<std::string>& listOfPluginDirecto
 
         if (!createFunc)
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("RoutingSender::RoutingSender Entry point of RoutingPlugin not found"));
+            logError("RoutingSender::RoutingSender Entry point of RoutingPlugin not found");
             continue;
         }
 
@@ -117,7 +117,7 @@ RoutingSender::RoutingSender(const std::vector<std::string>& listOfPluginDirecto
 
         if (!router)
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("RoutingSender::RoutingSender RoutingPlugin initialization failed. Entry Function not callable"));
+            logError("RoutingSender::RoutingSender RoutingPlugin initialization failed. Entry Function not callable");
             continue;
         }
 
@@ -127,7 +127,7 @@ RoutingSender::RoutingSender(const std::vector<std::string>& listOfPluginDirecto
         //check libversion
         if (router->getInterfaceVersion() < REQUIRED_INTERFACE_VERSION)
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("RoutingSender::RoutingSender RoutingPlugin initialization failed. Version of Interface to old"));
+            logError("RoutingSender::RoutingSender RoutingPlugin initialization failed. Version of Interface to old");
             continue;
         }
 

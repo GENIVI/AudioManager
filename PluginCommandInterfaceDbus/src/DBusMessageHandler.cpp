@@ -25,14 +25,14 @@
 #include <config.h>
 #include "DBusMessageHandler.h"
 #include "DBusCommandSender.h"
-
+#include "DLTWrapper.h"
 #include <stdlib.h>
 #include <assert.h>
 #include <vector>
 
-using namespace am;
+DLT_IMPORT_CONTEXT(commandDbus)
 
-DLT_IMPORT_CONTEXT(DLT_CONTEXT)
+using namespace am;
 
 DBusMessageHandler::DBusMessageHandler() :
         mDBusMessageIter(), //
@@ -44,12 +44,12 @@ DBusMessageHandler::DBusMessageHandler() :
         mReveiveMessage(NULL), //
         mDBusConnection(NULL)
 {
-    DLT_LOG(DLT_CONTEXT, DLT_LOG_INFO, DLT_STRING("DBUSMessageHandler constructed"));
+    log(&commandDbus, DLT_LOG_INFO, "DBusMessageHandler constructed");
 }
 
 DBusMessageHandler::~DBusMessageHandler()
 {
-    DLT_LOG(DLT_CONTEXT, DLT_LOG_INFO, DLT_STRING("DBUSMessageHandler destructed"));
+    log(&commandDbus, DLT_LOG_INFO, "DBUSMessageHandler destructed");
 }
 
 void DBusMessageHandler::initReceive(DBusMessage* msg)
@@ -58,7 +58,7 @@ void DBusMessageHandler::initReceive(DBusMessage* msg)
     mReveiveMessage = msg;
     if (!dbus_message_iter_init(msg, &mDBusMessageIter))
     {
-        DLT_LOG(DLT_CONTEXT, DLT_LOG_ERROR, DLT_STRING("DBusMessageHandler::initReceive DBus Message has no arguments!"));
+        log(&commandDbus, DLT_LOG_INFO, "DBusMessageHandler::initReceive DBus Message has no arguments!");
         mErrorName = std::string(DBUS_ERROR_INVALID_ARGS);
         mErrorMsg = "DBUS Message has no arguments!";
     }
@@ -70,7 +70,7 @@ void DBusMessageHandler::initReply(DBusMessage* msg)
     mDbusMessage = dbus_message_new_method_return(msg);
     if (mDbusMessage == NULL)
     {
-        DLT_LOG(DLT_CONTEXT, DLT_LOG_ERROR, DLT_STRING("DBusMessageHandler::initReply Cannot allocate DBus message!"));
+        log(&commandDbus, DLT_LOG_ERROR, "DBusMessageHandler::initReply Cannot allocate DBus message!");
         mErrorName = std::string(DBUS_ERROR_NO_MEMORY);
         mErrorMsg = "Cannot create reply!";
     }
@@ -86,7 +86,7 @@ void DBusMessageHandler::initSignal(std::string path, std::string signalName)
 
     if (mDbusMessage == NULL)
     {
-        DLT_LOG(DLT_CONTEXT, DLT_LOG_ERROR, DLT_STRING("DBusMessageHandler::initSignal Cannot allocate DBus message!"));
+        log(&commandDbus, DLT_LOG_ERROR, "DBusMessageHandler::initSignal Cannot allocate DBus message!");
     }
     dbus_message_iter_init_append(mDbusMessage, &mDBusMessageIter);
 }
@@ -108,7 +108,7 @@ void DBusMessageHandler::sendMessage()
     }
     if (!dbus_connection_send(mDBusConnection, mDbusMessage, &mSerial))
     {
-        DLT_LOG(DLT_CONTEXT, DLT_LOG_ERROR, DLT_STRING("DBusMessageHandler::sendMessage cannot send message!"));
+        log(&commandDbus, DLT_LOG_ERROR, "DBusMessageHandler::sendMessage cannot send message!");
     }
     dbus_connection_flush(mDBusConnection);
     dbus_message_unref(mDbusMessage);
@@ -121,7 +121,7 @@ char* DBusMessageHandler::getString()
 
     if (DBUS_TYPE_STRING != dbus_message_iter_get_arg_type(&mDBusMessageIter))
     {
-        DLT_LOG(DLT_CONTEXT, DLT_LOG_ERROR, DLT_STRING("DBusMessageHandler::getString DBUS handler argument is no String!"));
+        log(&commandDbus, DLT_LOG_ERROR, "DBusMessageHandler::getString DBUS handler argument is no String!");
         mErrorName = std::string(DBUS_ERROR_INVALID_ARGS);
         mErrorMsg = "DBus argument is no string";
     }
@@ -139,7 +139,7 @@ dbus_bool_t DBusMessageHandler::getBool()
 
     if (DBUS_TYPE_BOOLEAN != dbus_message_iter_get_arg_type(&mDBusMessageIter))
     {
-        DLT_LOG(DLT_CONTEXT, DLT_LOG_ERROR, DLT_STRING("DBusMessageHandler::getBool DBUS handler argument is no bool!"));
+        log(&commandDbus, DLT_LOG_ERROR, "DBusMessageHandler::getBool DBUS handler argument is no bool!");
         mErrorName = std::string(DBUS_ERROR_INVALID_ARGS);
         mErrorMsg = "DBus argument is no bool";
     }
@@ -157,7 +157,7 @@ char DBusMessageHandler::getByte()
 
     if (DBUS_TYPE_BYTE != dbus_message_iter_get_arg_type(&mDBusMessageIter))
     {
-        DLT_LOG(DLT_CONTEXT, DLT_LOG_ERROR, DLT_STRING("DBusMessageHandler::getByte DBUS handler argument is no byte!"));
+        log(&commandDbus, DLT_LOG_ERROR, "DBusMessageHandler::getByte DBUS handler argument is no byte!");
         mErrorName = std::string(DBUS_ERROR_INVALID_ARGS);
         mErrorMsg = "DBus argument is no byte";
     }
@@ -179,7 +179,7 @@ dbus_uint16_t DBusMessageHandler::getUInt()
     if (DBUS_TYPE_UINT16 != dbus_message_iter_get_arg_type(&mDBusMessageIter))
 #endif
     {
-        DLT_LOG(DLT_CONTEXT, DLT_LOG_ERROR, DLT_STRING("DBusMessageHandler::getUInt DBUS handler argument is no uint16_t!"));
+        log(&commandDbus, DLT_LOG_ERROR, "DBusMessageHandler::getUInt DBUS handler argument is no uint16_t!");
         mErrorName = std::string(DBUS_ERROR_INVALID_ARGS);
         mErrorMsg = "DBus argument is no uint16_t";
     }
@@ -201,7 +201,7 @@ dbus_int16_t DBusMessageHandler::getInt()
     if (DBUS_TYPE_INT16 != dbus_message_iter_get_arg_type(&mDBusMessageIter))
 #endif
     {
-        DLT_LOG(DLT_CONTEXT, DLT_LOG_ERROR, DLT_STRING("DBusMessageHandler::getInt DBUS handler argument is no int16_t!"));
+        log(&commandDbus, DLT_LOG_ERROR, "DBusMessageHandler::getInt DBUS handler argument is no int16_t!");
         mErrorName = std::string(DBUS_ERROR_INVALID_ARGS);
         mErrorMsg = "DBus argument is no int16_t";
     }
@@ -218,7 +218,7 @@ double DBusMessageHandler::getDouble()
     double param;
     if (DBUS_TYPE_DOUBLE != dbus_message_iter_get_arg_type(&mDBusMessageIter))
     {
-        DLT_LOG(DLT_CONTEXT, DLT_LOG_ERROR, DLT_STRING("DBusMessageHandler::getDouble DBUS handler argument is no double!"));
+        log(&commandDbus, DLT_LOG_ERROR, "DBusMessageHandler::getDouble DBUS handler argument is no double!");
         mErrorName = std::string(DBUS_ERROR_INVALID_ARGS);
         mErrorMsg = "DBus argument is no double";
     }
@@ -235,7 +235,7 @@ void DBusMessageHandler::getProperty(dbus_int16_t & type, dbus_int16_t & value)
     DBusMessageIter arrayIter;
     if (DBUS_TYPE_STRUCT != dbus_message_iter_get_arg_type(&mDBusMessageIter))
     {
-        DLT_LOG(DLT_CONTEXT, DLT_LOG_ERROR, DLT_STRING("DBusMessageHandler::getProperty DBUS handler argument is no array!"));
+        log(&commandDbus, DLT_LOG_ERROR, "DBusMessageHandler::getProperty DBUS handler argument is no array!");
         mErrorName = std::string(DBUS_ERROR_INVALID_ARGS);
         mErrorMsg = "DBus argument is no array";
     }
@@ -254,7 +254,7 @@ void DBusMessageHandler::append(bool toAppend)
     dbus_bool_t mybool = toAppend;
     if (!dbus_message_iter_append_basic(&mDBusMessageIter, DBUS_TYPE_BOOLEAN, &mybool))
     {
-        DLT_LOG(DLT_CONTEXT, DLT_LOG_ERROR, DLT_STRING("DBusMessageHandler::append Cannot allocate DBus message!"));
+        log(&commandDbus, DLT_LOG_ERROR, "DBusMessageHandler::append Cannot allocate DBus message!");
         mErrorName = std::string(DBUS_ERROR_NO_MEMORY);
         mErrorMsg = "Cannot create reply!";
     }
@@ -264,7 +264,7 @@ void DBusMessageHandler::append(double toAppend)
 {
     if (!dbus_message_iter_append_basic(&mDBusMessageIter, DBUS_TYPE_DOUBLE, &toAppend))
     {
-        DLT_LOG(DLT_CONTEXT, DLT_LOG_ERROR, DLT_STRING("DBusMessageHandler::append Cannot allocate DBus message!"));
+        log(&commandDbus, DLT_LOG_ERROR, "DBusMessageHandler::append Cannot allocate DBus message!");
         mErrorName = std::string(DBUS_ERROR_NO_MEMORY);
         mErrorMsg = "Cannot create reply!";
     }
@@ -274,7 +274,7 @@ void DBusMessageHandler::append(char toAppend)
 {
     if (!dbus_message_iter_append_basic(&mDBusMessageIter, DBUS_TYPE_BYTE, &toAppend))
     {
-        DLT_LOG(DLT_CONTEXT, DLT_LOG_ERROR, DLT_STRING("DBusMessageHandler::append Cannot allocate DBus message!"));
+        log(&commandDbus, DLT_LOG_ERROR, "DBusMessageHandler::append Cannot allocate DBus message!");
         mErrorName = std::string(DBUS_ERROR_NO_MEMORY);
         mErrorMsg = "Cannot create reply!";
     }
@@ -284,7 +284,7 @@ void DBusMessageHandler::append(dbus_int16_t toAppend)
 {
     if (!dbus_message_iter_append_basic(&mDBusMessageIter, DBUS_TYPE_INT16, &toAppend))
     {
-        DLT_LOG(DLT_CONTEXT, DLT_LOG_ERROR, DLT_STRING("DBusMessageHandler::append Cannot allocate DBus message!"));
+        log(&commandDbus, DLT_LOG_ERROR, "DBusMessageHandler::append Cannot allocate DBus message!");
         mErrorName = std::string(DBUS_ERROR_NO_MEMORY);
         mErrorMsg = "Cannot create reply!";
     }
@@ -294,7 +294,7 @@ void DBusMessageHandler::append(dbus_uint16_t toAppend)
 {
     if (!dbus_message_iter_append_basic(&mDBusMessageIter, DBUS_TYPE_UINT16, &toAppend))
     {
-        DLT_LOG(DLT_CONTEXT, DLT_LOG_ERROR, DLT_STRING("DBusMessageHandler::append Cannot allocate DBus message!"));
+        log(&commandDbus, DLT_LOG_ERROR, "DBusMessageHandler::append Cannot allocate DBus message!");
         mErrorName = std::string(DBUS_ERROR_NO_MEMORY);
         mErrorMsg = "Cannot create reply!";
     }
@@ -327,7 +327,7 @@ void DBusMessageHandler::append(const am::am_SinkType_s& sinkType)
 
     if (!success)
     {
-        DLT_LOG(DLT_CONTEXT, DLT_LOG_ERROR, DLT_STRING("DBusMessageHandler::append Cannot allocate DBus message!"));
+        log(&commandDbus, DLT_LOG_ERROR, "DBusMessageHandler::append Cannot allocate DBus message!");
         mErrorName = std::string(DBUS_ERROR_NO_MEMORY);
         mErrorMsg = "Cannot create reply!";
     }
@@ -352,7 +352,7 @@ void DBusMessageHandler::append(const am::am_SourceType_s & sourceType)
 
     if (!success)
     {
-        DLT_LOG(DLT_CONTEXT, DLT_LOG_ERROR, DLT_STRING("DBusMessageHandler::append Cannot allocate DBus message!"));
+        log(&commandDbus, DLT_LOG_ERROR, "DBusMessageHandler::append Cannot allocate DBus message!");
         mErrorName = std::string(DBUS_ERROR_NO_MEMORY);
         mErrorMsg = "Cannot create reply!";
     }
@@ -369,7 +369,7 @@ void DBusMessageHandler::append(const am::am_MainSoundProperty_s mainSoundProper
 
     if (!success)
     {
-        DLT_LOG(DLT_CONTEXT, DLT_LOG_ERROR, DLT_STRING("DBusMessageHandler::append Cannot allocate DBus message!"));
+        log(&commandDbus, DLT_LOG_ERROR, "DBusMessageHandler::append Cannot allocate DBus message!");
         mErrorName = std::string(DBUS_ERROR_NO_MEMORY);
         mErrorMsg = "Cannot create reply!";
     }
@@ -386,7 +386,7 @@ void DBusMessageHandler::append(const am::am_Availability_s & availability)
 
     if (!success)
     {
-        DLT_LOG(DLT_CONTEXT, DLT_LOG_ERROR, DLT_STRING("DBusMessageHandler::append Cannot allocate DBus message!"));
+        log(&commandDbus, DLT_LOG_ERROR, "DBusMessageHandler::append Cannot allocate DBus message!");
         mErrorName = std::string(DBUS_ERROR_NO_MEMORY);
         mErrorMsg = "Cannot create reply!";
     }
@@ -403,7 +403,7 @@ void DBusMessageHandler::append(const am::am_SystemProperty_s & SystemProperty)
 
     if (!success)
     {
-        DLT_LOG(DLT_CONTEXT, DLT_LOG_ERROR, DLT_STRING("DBusMessageHandler::append Cannot allocate DBus message!"));
+        log(&commandDbus, DLT_LOG_ERROR, "DBusMessageHandler::append Cannot allocate DBus message!");
         mErrorName = std::string(DBUS_ERROR_NO_MEMORY);
         mErrorMsg = "Cannot create reply!";
     }
@@ -431,7 +431,7 @@ void DBusMessageHandler::append(const std::vector<am::am_MainConnectionType_s>& 
 
     if (!success)
     {
-        DLT_LOG(DLT_CONTEXT, DLT_LOG_ERROR, DLT_STRING("DBusMessageHandler::append Cannot allocate DBus message!"));
+        log(&commandDbus, DLT_LOG_ERROR, "DBusMessageHandler::append Cannot allocate DBus message!");
         mErrorName = std::string(DBUS_ERROR_NO_MEMORY);
         mErrorMsg = "Cannot create reply!";
     }
@@ -464,7 +464,7 @@ void DBusMessageHandler::append(const std::vector<am::am_SinkType_s> & listMainS
 
     if (!success)
     {
-        DLT_LOG(DLT_CONTEXT, DLT_LOG_ERROR, DLT_STRING("DBusMessageHandler::append Cannot allocate DBus message!"));
+        log(&commandDbus, DLT_LOG_ERROR, "DBusMessageHandler::append Cannot allocate DBus message!");
         mErrorName = std::string(DBUS_ERROR_NO_MEMORY);
         mErrorMsg = "Cannot create reply!";
     }
@@ -495,7 +495,7 @@ void DBusMessageHandler::append(const std::vector<am::am_SourceType_s> & listMai
 
     if (!success)
     {
-        DLT_LOG(DLT_CONTEXT, DLT_LOG_ERROR, DLT_STRING("DBusMessageHandler::append Cannot allocate DBus message!"));
+        log(&commandDbus, DLT_LOG_ERROR, "DBusMessageHandler::append Cannot allocate DBus message!");
         mErrorName = std::string(DBUS_ERROR_NO_MEMORY);
         mErrorMsg = "Cannot create reply!";
     }
@@ -520,7 +520,7 @@ void DBusMessageHandler::append(const std::vector<am::am_MainSoundProperty_s> & 
 
     if (!success)
     {
-        DLT_LOG(DLT_CONTEXT, DLT_LOG_ERROR, DLT_STRING("DBusMessageHandler::append Cannot allocate DBus message!"));
+        log(&commandDbus, DLT_LOG_ERROR, "DBusMessageHandler::append Cannot allocate DBus message!");
         mErrorName = std::string(DBUS_ERROR_NO_MEMORY);
         mErrorMsg = "Cannot create reply!";
     }
@@ -558,7 +558,7 @@ void DBusMessageHandler::append(const std::vector<am::am_SourceClass_s> & listSo
 
     if (!success)
     {
-        DLT_LOG(DLT_CONTEXT, DLT_LOG_ERROR, DLT_STRING("DBusMessageHandler::append Cannot allocate DBus message!"));
+        log(&commandDbus, DLT_LOG_ERROR, "DBusMessageHandler::append Cannot allocate DBus message!");
         mErrorName = std::string(DBUS_ERROR_NO_MEMORY);
         mErrorMsg = "Cannot create reply!";
     }
@@ -596,7 +596,7 @@ void DBusMessageHandler::append(const std::vector<am::am_SinkClass_s> & listSink
 
     if (!success)
     {
-        DLT_LOG(DLT_CONTEXT, DLT_LOG_ERROR, DLT_STRING("DBusMessageHandler::append Cannot allocate DBus message!"));
+        log(&commandDbus, DLT_LOG_ERROR, "DBusMessageHandler::append Cannot allocate DBus message!");
         mErrorName = std::string(DBUS_ERROR_NO_MEMORY);
         mErrorMsg = "Cannot create reply!";
     }
@@ -621,7 +621,7 @@ void DBusMessageHandler::append(const std::vector<am::am_SystemProperty_s> & lis
 
     if (!success)
     {
-        DLT_LOG(DLT_CONTEXT, DLT_LOG_ERROR, DLT_STRING("DBusMessageHandler::append Cannot allocate DBus message!"));
+        log(&commandDbus, DLT_LOG_ERROR, "DBusMessageHandler::append Cannot allocate DBus message!");
         mErrorName = std::string(DBUS_ERROR_NO_MEMORY);
         mErrorMsg = "Cannot create reply!";
     }

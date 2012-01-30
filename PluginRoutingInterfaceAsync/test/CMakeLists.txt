@@ -52,6 +52,7 @@ INCLUDE_DIRECTORIES(
 file(GLOB ASYNC_PLUGIN_INTERFACE_SRCS_CXX 
      "../../AudioManagerDaemon/src/SocketHandler.cpp"
      "../../AudioManagerDaemon/src/RoutingSender.cpp"
+     "../../AudioManagerDaemon/src/DLTWrapper.cpp"
      "../src/*.cpp"  
      "testRoutingInterfaceAsync.cpp" 
 )
@@ -59,6 +60,7 @@ file(GLOB ASYNC_PLUGIN_INTERFACE_SRCS_CXX
 file(GLOB ASYNC_PLUGIN_INTERFACE_INTERRUPT_SRCS_CXX 
      "../../AudioManagerDaemon/src/SocketHandler.cpp"
      "../../AudioManagerDaemon/src/RoutingSender.cpp"
+     "../../AudioManagerDaemon/src/DLTWrapper.cpp"
      "../src/*.cpp"  
      "testRoutingInterfaceAsyncInterrupt.cpp" 
 

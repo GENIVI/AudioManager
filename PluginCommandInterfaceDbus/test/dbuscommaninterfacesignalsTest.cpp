@@ -31,23 +31,20 @@
 #include "../include/DBusMessageHandler.h"
 #include "DbusCommandInterfaceBackdoor.h"
 #include "MockInterfaces.h"
+#include "DLTWrapper.h"
 
 using namespace am;
 using namespace testing;
 
-DLT_IMPORT_CONTEXT(DLT_CONTEXT)
 
 dbuscommaninterfacesignalsTest::dbuscommaninterfacesignalsTest()
 {
-    DLT_REGISTER_APP("DPtest", "RoutingInterfacetest");
-    DLT_REGISTER_CONTEXT(DLT_CONTEXT, "Main", "Main Context");
-    DLT_LOG(DLT_CONTEXT, DLT_LOG_INFO, DLT_STRING("RoutingSendInterface Test started "));
-
+    DLTWrapper::instance()->registerApp("dbusTest","dbusTest");
+    logInfo("dbusCommandInterfaceSignalTest started");
 }
 
 dbuscommaninterfacesignalsTest::~dbuscommaninterfacesignalsTest()
 {
-    DLT_UNREGISTER_CONTEXT(DLT_CONTEXT);
 }
 
 void* NumberOfMainConnectionsChanged(void*)

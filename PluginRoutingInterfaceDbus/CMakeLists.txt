@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 2.6)
 
 PROJECT(PluginRoutingInterfaceDbus)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -DDLT_CONTEXT=RoutingPluginDbus")
-
 set(LIBRARY_OUTPUT_PATH ${PLUGINS_OUTPUT_PATH}/routing)
 set(DOC_OUTPUT_PATH ${DOC_OUTPUT_PATH}/RoutingPlugin)
 set(INCLUDES_FOLDER "include")

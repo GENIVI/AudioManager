@@ -14,14 +14,11 @@
 #include <netdb.h>
 #include <fcntl.h>
 #include <sys/un.h>
-#include <dlt/dlt.h>
 
 #define SOCK_PATH "/tmp/mysock"
 
 using namespace testing;
 using namespace am;
-
-DLT_DECLARE_CONTEXT(AudioManager)
 
 sockethandlerTest::sockethandlerTest()
 {

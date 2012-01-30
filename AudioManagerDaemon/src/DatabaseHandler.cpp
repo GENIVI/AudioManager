@@ -29,7 +29,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
-#include <dlt/dlt.h>
+#include "DLTWrapper.h"
 #include "Router.h"
 
 #define DOMAIN_TABLE "Domains"
@@ -44,8 +44,6 @@
 #define INTERRUPT_TABLE "Interrupts"
 #define MAIN_TABLE "MainTable"
 #define SYSTEM_TABLE "SystemProperties"
-
-DLT_IMPORT_CONTEXT(AudioManager)
 
 using namespace am;
 
@@ -90,14 +88,13 @@ DatabaseHandler::DatabaseHandler(std::string databasePath) :
     if (infile)
     {
         remove(mPath.c_str());
-        DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::DatabaseHandler Knocked down database"));
+        logInfo("DatabaseHandler::DatabaseHandler Knocked down database");
     }
 
     bool dbOpen = openDatabase();
     if (!dbOpen)
     {
-        DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::DatabaseHandler problems opening the database!"));
-        assert(!dbOpen);
+        logInfo("DatabaseHandler::DatabaseHandler problems opening the database!");
     }
 
     createTables();
@@ -105,7 +102,7 @@ DatabaseHandler::DatabaseHandler(std::string databasePath) :
 
 DatabaseHandler::~DatabaseHandler()
 {
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("Closed Database"));
+    logInfo("Closed Database");
     sqlite3_close(mDatabase);
 }
 
@@ -133,13 +130,13 @@ am_Error_e DatabaseHandler::enterDomainDB(const am_Domain_s & domainData, am_dom
     }
     else
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::enterDomainDB SQLITE Step error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::enterDomainDB SQLITE Step error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::enterDomainDB SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::enterDomainDB SQLITE Finalize error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
@@ -154,18 +151,18 @@ am_Error_e DatabaseHandler::enterDomainDB(const am_Domain_s & domainData, am_dom
 
     if ((eCode = sqlite3_step(queryFinal)) != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::enterDomainDB SQLITE Step error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::enterDomainDB SQLITE Step error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(queryFinal)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::enterDomainDB SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::enterDomainDB SQLITE Finalize error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
     domainID = sqlite3_last_insert_rowid(mDatabase);
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::enterDomainDB entered new domain with name"), DLT_STRING(domainData.name.c_str()), DLT_STRING("busname:"), DLT_STRING(domainData.busname.c_str()), DLT_STRING("nodename:"), DLT_STRING(domainData.nodename.c_str()), DLT_STRING("early:"), DLT_BOOL(domainData.early), DLT_STRING("complete:"), DLT_BOOL(domainData.complete), DLT_STRING("state:"), DLT_INT(domainData.state), DLT_STRING("assigned ID:"), DLT_INT16(domainID));
+    logInfo("DatabaseHandler::enterDomainDB entered new domain with name=", domainData.name, "busname=", domainData.busname, "nodename=", domainData.nodename, "assigned ID:", domainID);
 
     am_Domain_s domain = domainData;
     domain.domainID = domainID;
@@ -192,13 +189,13 @@ am_Error_e DatabaseHandler::enterMainConnectionDB(const am_MainConnection_s & ma
 
     if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::enterMainConnectionDB SQLITE Step error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::enterMainConnectionDB SQLITE Step error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::enterMainConnectionDB SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::enterMainConnectionDB SQLITE Finalize error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
@@ -227,7 +224,8 @@ am_Error_e DatabaseHandler::enterMainConnectionDB(const am_MainConnection_s & ma
         }
         else
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::enterMainConnectionDB did not find route for MainConnection:"), DLT_INT(eCode));
+            logError("DatabaseHandler::enterMainConnectionDB did not find route for MainConnection:", eCode);
+
             return E_DATABASE_ERROR;
         }
         sqlite3_reset(query);
@@ -235,7 +233,7 @@ am_Error_e DatabaseHandler::enterMainConnectionDB(const am_MainConnection_s & ma
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::enterMainConnectionDB SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::enterMainConnectionDB SQLITE Finalize error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
@@ -251,7 +249,7 @@ am_Error_e DatabaseHandler::enterMainConnectionDB(const am_MainConnection_s & ma
         sqlite3_bind_int(query, 1, *listConnectionIterator);
         if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::enterMainConnectionDB SQLITE Step error code:"), DLT_INT(eCode));
+            logError("DatabaseHandler::enterMainConnectionDB SQLITE Step error code:", eCode);
             return E_DATABASE_ERROR;
         }
         sqlite3_reset(query);
@@ -259,11 +257,11 @@ am_Error_e DatabaseHandler::enterMainConnectionDB(const am_MainConnection_s & ma
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::enterMainConnectionDB SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::enterMainConnectionDB SQLITE Finalize error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::enterMainConnectionDB entered new mainConnection with sourceID"), DLT_INT(mainConnectionData.route.sourceID), DLT_STRING("sinkID:"), DLT_INT16(mainConnectionData.route.sinkID), DLT_STRING("delay:"), DLT_INT16(delay), DLT_STRING("assigned ID:"), DLT_INT16(connectionID));
+    logInfo("DatabaseHandler::enterMainConnectionDB entered new mainConnection with sourceID", mainConnectionData.route.sourceID, "sinkID:", mainConnectionData.route.sinkID, "delay:", delay, "assigned ID:", connectionID);
 
     if (mDatabaseObserver)
     {
@@ -318,14 +316,14 @@ am_Error_e DatabaseHandler::enterSinkDB(const am_Sink_s & sinkData, am_sinkID_t 
     }
     else
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::enterSinkDB SQLITE Step error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::enterSinkDB SQLITE Step error code:", eCode);
         sqlite3_finalize(query);
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::enterSinkDB SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::enterSinkDB SQLITE Finalize error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
@@ -356,14 +354,14 @@ am_Error_e DatabaseHandler::enterSinkDB(const am_Sink_s & sinkData, am_sinkID_t 
 
     if ((eCode = sqlite3_step(queryFinal)) != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::enterSinkDB SQLITE Step error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::enterSinkDB SQLITE Step error code:", eCode);
         sqlite3_finalize(queryFinal);
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(queryFinal)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::enterSinkDB SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::enterSinkDB SQLITE Finalize error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
@@ -378,7 +376,7 @@ am_Error_e DatabaseHandler::enterSinkDB(const am_Sink_s & sinkData, am_sinkID_t 
     else
     {
         sinkID = 0;
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::existSink database error!:"), DLT_INT(eCode))
+        logError("DatabaseHandler::existSink database error!:", eCode);
         sqlite3_finalize(query);
         return E_DATABASE_ERROR;
     }
@@ -401,7 +399,7 @@ am_Error_e DatabaseHandler::enterSinkDB(const am_Sink_s & sinkData, am_sinkID_t 
         sqlite3_bind_int(query, 1, *connectionFormatIterator);
         if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::enterSinkDB SQLITE Step error code:"), DLT_INT(eCode));
+            logError("DatabaseHandler::enterSinkDB SQLITE Step error code:", eCode);
             sqlite3_finalize(query);
             return E_DATABASE_ERROR;
         }
@@ -418,7 +416,7 @@ am_Error_e DatabaseHandler::enterSinkDB(const am_Sink_s & sinkData, am_sinkID_t 
         sqlite3_bind_int(query, 2, mainSoundPropertyIterator->value);
         if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::enterSinkDB SQLITE Step error code:"), DLT_INT(eCode));
+            logError("DatabaseHandler::enterSinkDB SQLITE Step error code:", eCode);
             sqlite3_finalize(query);
             return E_DATABASE_ERROR;
         }
@@ -435,20 +433,18 @@ am_Error_e DatabaseHandler::enterSinkDB(const am_Sink_s & sinkData, am_sinkID_t 
         sqlite3_bind_int(query, 2, SoundPropertyIterator->value);
         if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::enterSinkDB SQLITE Step error code:"), DLT_INT(eCode));
+            logError("DatabaseHandler::enterSinkDB SQLITE Step error code:", eCode);
             sqlite3_finalize(query);
             return E_DATABASE_ERROR;
         }
         sqlite3_reset(query);
     }
 
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::enterSinkDB entered new sink with name"), DLT_STRING(sinkData.name.c_str()), DLT_STRING("domainID:"), DLT_INT(sinkData.domainID), DLT_STRING("classID:"), DLT_INT(sinkData.sinkClassID), DLT_STRING("volume:"), DLT_INT(sinkData.volume), DLT_STRING("visible:"), DLT_BOOL(sinkData.visible), DLT_STRING("available.availability:"), DLT_INT(sinkData.available.availability), DLT_STRING("available.availabilityReason:"), DLT_INT(sinkData.available.availabilityReason), DLT_STRING("muteState:"), DLT_INT(sinkData.muteState), DLT_STRING("mainVolume:"), DLT_INT(sinkData.mainVolume), DLT_STRING("assigned ID:"), DLT_INT16(sinkID));
-
+    logInfo("DatabaseHandler::enterSinkDB entered new sink with name", sinkData.name, "domainID:", sinkData.domainID, "classID:", sinkData.sinkClassID, "volume:", sinkData.volume, "assigned ID:", sinkID);
     am_Sink_s sink = sinkData;
     sink.sinkID = sinkID;
     if (mDatabaseObserver != NULL)
         mDatabaseObserver->newSink(sink);
-
     return E_OK;
 }
 
@@ -513,13 +509,13 @@ am_Error_e DatabaseHandler::enterGatewayDB(const am_Gateway_s & gatewayData, am_
 
     if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::enterGatewayDB SQLITE Step error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::enterGatewayDB SQLITE Step error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::enterGatewayDB SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::enterGatewayDB SQLITE Finalize error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
@@ -542,7 +538,7 @@ am_Error_e DatabaseHandler::enterGatewayDB(const am_Gateway_s & gatewayData, am_
         sqlite3_bind_int(query, 1, *connectionFormatIterator);
         if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::enterGatewayDB SQLITE Step error code:"), DLT_INT(eCode));
+            logError("DatabaseHandler::enterGatewayDB SQLITE Step error code:", eCode);
             return E_DATABASE_ERROR;
         }
         sqlite3_reset(query);
@@ -556,14 +552,13 @@ am_Error_e DatabaseHandler::enterGatewayDB(const am_Gateway_s & gatewayData, am_
         sqlite3_bind_int(query, 1, *connectionFormatIterator);
         if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::enterGatewayDB SQLITE Step error code:"), DLT_INT(eCode));
+            logError("DatabaseHandler::enterGatewayDB SQLITE Step error code:", eCode);
             return E_DATABASE_ERROR;
         }
         sqlite3_reset(query);
     }
 
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::enterGatewayDB entered new gateway with name"), DLT_STRING(gatewayData.name.c_str()), DLT_STRING("sourceID:"), DLT_INT(gatewayData.sourceID), DLT_STRING("sinkID:"), DLT_INT(gatewayData.sinkID), DLT_STRING("domainSinkID:"), DLT_INT(gatewayData.domainSinkID), DLT_STRING("domainSourceID:"), DLT_BOOL(gatewayData.domainSourceID), DLT_STRING("controlDomainID:"), DLT_INT(gatewayData.controlDomainID), DLT_STRING("assigned ID:"), DLT_INT16(gatewayID));
-
+    logInfo("DatabaseHandler::enterGatewayDB entered new gateway with name", gatewayData.name, "sourceID:", gatewayData.sourceID, "sinkID:", gatewayData.sinkID, "assigned ID:", gatewayID);
     am_Gateway_s gateway = gatewayData;
     gateway.gatewayID = gatewayID;
     if (mDatabaseObserver)
@@ -613,14 +608,14 @@ am_Error_e DatabaseHandler::enterSourceDB(const am_Source_s & sourceData, am_sou
     }
     else
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::enterSourceDB SQLITE Step error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::enterSourceDB SQLITE Step error code:", eCode);
         sqlite3_finalize(query);
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::enterSourceDB SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::enterSourceDB SQLITE Finalize error code:", eCode);
         return E_DATABASE_ERROR;
     }
     sqlite3_prepare_v2(mDatabase, command.c_str(), -1, &queryFinal, NULL);
@@ -650,14 +645,14 @@ am_Error_e DatabaseHandler::enterSourceDB(const am_Source_s & sourceData, am_sou
 
     if ((eCode = sqlite3_step(queryFinal)) != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::enterSourceDB SQLITE Step error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::enterSourceDB SQLITE Step error code:", eCode);
         sqlite3_finalize(queryFinal);
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(queryFinal)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::enterSourceDB SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::enterSourceDB SQLITE Finalize error code:", eCode);
         sqlite3_finalize(queryFinal);
         return E_DATABASE_ERROR;
     }
@@ -673,7 +668,7 @@ am_Error_e DatabaseHandler::enterSourceDB(const am_Source_s & sourceData, am_sou
     else
     {
         sourceID = 0;
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::existSink database error!:"), DLT_INT(eCode))
+        logError("DatabaseHandler::existSink database error!:", eCode);
         sqlite3_finalize(query);
         return E_DATABASE_ERROR;
     }
@@ -696,7 +691,7 @@ am_Error_e DatabaseHandler::enterSourceDB(const am_Source_s & sourceData, am_sou
         sqlite3_bind_int(query, 1, *connectionFormatIterator);
         if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::enterSourceDB SQLITE Step error code:"), DLT_INT(eCode));
+            logError("DatabaseHandler::enterSourceDB SQLITE Step error code:", eCode);
             sqlite3_finalize(query);
             return E_DATABASE_ERROR;
         }
@@ -713,7 +708,7 @@ am_Error_e DatabaseHandler::enterSourceDB(const am_Source_s & sourceData, am_sou
         sqlite3_bind_int(query, 2, mainSoundPropertyIterator->value);
         if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::enterSourceDB SQLITE Step error code:"), DLT_INT(eCode));
+            logError("DatabaseHandler::enterSourceDB SQLITE Step error code:", eCode);
             sqlite3_finalize(query);
             return E_DATABASE_ERROR;
         }
@@ -730,14 +725,14 @@ am_Error_e DatabaseHandler::enterSourceDB(const am_Source_s & sourceData, am_sou
         sqlite3_bind_int(query, 2, SoundPropertyIterator->value);
         if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::enterSinkDB SQLITE Step error code:"), DLT_INT(eCode));
+            logError("DatabaseHandler::enterSinkDB SQLITE Step error code:", eCode);
             sqlite3_finalize(query);
             return E_DATABASE_ERROR;
         }
         sqlite3_reset(query);
     }
 
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::enterSinkDB entered new source with name"), DLT_STRING(sourceData.name.c_str()), DLT_STRING("domainID:"), DLT_INT(sourceData.domainID), DLT_STRING("classID:"), DLT_INT(sourceData.sourceClassID), DLT_STRING("volume:"), DLT_INT(sourceData.volume), DLT_STRING("visible:"), DLT_BOOL(sourceData.visible), DLT_STRING("available.availability:"), DLT_INT(sourceData.available.availability), DLT_STRING("available.availabilityReason:"), DLT_INT(sourceData.available.availabilityReason), DLT_STRING("interruptState:"), DLT_INT(sourceData.interruptState), DLT_STRING("assigned ID:"), DLT_INT16(sourceID));
+    logInfo("DatabaseHandler::enterSinkDB entered new source with name", sourceData.name, "domainID:", sourceData.domainID, "classID:", sourceData.sourceClassID, "visible:", sourceData.visible, "assigned ID:", sourceID);
 
     am_Source_s source = sourceData;
     source.sourceID = sourceID;
@@ -779,7 +774,8 @@ am_Error_e DatabaseHandler::changeMainConnectionRouteDB(const am_mainConnectionI
         }
         else
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeMainConnectionRouteDB did not find route for MainConnection:"), DLT_INT(eCode));
+            logError("DatabaseHandler::changeMainConnectionRouteDB did not find route for MainConnection:", eCode);
+
             return E_DATABASE_ERROR;
         }
         sqlite3_reset(query);
@@ -787,7 +783,8 @@ am_Error_e DatabaseHandler::changeMainConnectionRouteDB(const am_mainConnectionI
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeMainConnectionRouteDB SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::changeMainConnectionRouteDB SQLITE Finalize error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
@@ -803,7 +800,8 @@ am_Error_e DatabaseHandler::changeMainConnectionRouteDB(const am_mainConnectionI
         sqlite3_bind_int(query, 1, *listConnectionIterator);
         if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeMainConnectionRouteDB SQLITE Step error code:"), DLT_INT(eCode));
+            logError("DatabaseHandler::changeMainConnectionRouteDB SQLITE Step error code:", eCode);
+
             return E_DATABASE_ERROR;
         }
         sqlite3_reset(query);
@@ -811,9 +809,11 @@ am_Error_e DatabaseHandler::changeMainConnectionRouteDB(const am_mainConnectionI
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeMainConnectionRouteDB SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::changeMainConnectionRouteDB SQLITE Finalize error code:", eCode);
+
         return E_DATABASE_ERROR;
-    }DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::changeMainConnectionRouteDB entered new route:"), DLT_INT(mainconnectionID));
+    }
+    logInfo("DatabaseHandler::changeMainConnectionRouteDB entered new route:", mainconnectionID);
     return E_OK;
 }
 
@@ -834,14 +834,15 @@ am_Error_e DatabaseHandler::changeMainConnectionStateDB(const am_mainConnectionI
     sqlite3_bind_int(query, 1, connectionState);
     if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeMainConnectionStateDB SQLITE Step error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::changeMainConnectionStateDB SQLITE Step error code:", eCode);
         return E_DATABASE_ERROR;
     }
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeMainConnectionStateDB SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::changeMainConnectionStateDB SQLITE Finalize error code:", eCode);
         return E_DATABASE_ERROR;
-    }DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::changeMainConnectionStateDB changed mainConnectionState of MainConnection:"), DLT_INT(mainconnectionID), DLT_STRING("to:"), DLT_INT(connectionState));
+    }
+    logInfo("DatabaseHandler::changeMainConnectionStateDB changed mainConnectionState of MainConnection:", mainconnectionID, "to:", connectionState);
 
     if (mDatabaseObserver)
         mDatabaseObserver->mainConnectionStateChanged(mainconnectionID, connectionState);
@@ -865,16 +866,16 @@ am_Error_e DatabaseHandler::changeSinkMainVolumeDB(const am_mainVolume_t mainVol
     sqlite3_bind_int(query, 1, mainVolume);
     if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeSinkMainVolumeDB SQLITE Step error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::changeSinkMainVolumeDB SQLITE Step error code:", eCode);
         return E_DATABASE_ERROR;
     }
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeSinkMainVolumeDB SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::changeSinkMainVolumeDB SQLITE Finalize error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::changeSinkMainVolumeDB changed mainVolume of sink:"), DLT_INT(sinkID), DLT_STRING("to:"), DLT_INT(mainVolume));
+    logInfo("DatabaseHandler::changeSinkMainVolumeDB changed mainVolume of sink:", sinkID, "to:", mainVolume);
 
     if (mDatabaseObserver)
         mDatabaseObserver->volumeChanged(sinkID, mainVolume);
@@ -900,17 +901,17 @@ am_Error_e DatabaseHandler::changeSinkAvailabilityDB(const am_Availability_s & a
     sqlite3_bind_int(query, 2, availability.availabilityReason);
     if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeSinkAvailabilityDB SQLITE Step error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::changeSinkAvailabilityDB SQLITE Step error code:", eCode);
         return E_DATABASE_ERROR;
     }assert(sinkID!=0);
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeSinkAvailabilityDB SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::changeSinkAvailabilityDB SQLITE Finalize error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::changeSinkAvailabilityDB changed sinkAvailability of sink:"), DLT_INT(sinkID), DLT_STRING("to:"), DLT_INT(availability.availability), DLT_STRING("Reason:"), DLT_INT(availability.availabilityReason));
+    logInfo("DatabaseHandler::changeSinkAvailabilityDB changed sinkAvailability of sink:", sinkID, "to:", availability.availability, "Reason:", availability.availabilityReason);
 
     if (mDatabaseObserver && sourceVisible(sinkID))
         mDatabaseObserver->sinkAvailabilityChanged(sinkID, availability);
@@ -934,17 +935,18 @@ am_Error_e DatabaseHandler::changDomainStateDB(const am_DomainState_e domainStat
     sqlite3_bind_int(query, 1, domainState);
     if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changDomainStateDB SQLITE Step error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::changDomainStateDB SQLITE Step error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changDomainStateDB SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::changDomainStateDB SQLITE Finalize error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::changDomainStateDB changed domainState of domain:"), DLT_INT(domainID), DLT_STRING("to:"), DLT_INT(domainState));
+    logInfo("DatabaseHandler::changDomainStateDB changed domainState of domain:", domainID, "to:", domainState);
     return E_OK;
 }
 
@@ -965,17 +967,17 @@ am_Error_e DatabaseHandler::changeSinkMuteStateDB(const am_MuteState_e muteState
     sqlite3_bind_int(query, 1, muteState);
     if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeSinkMuteStateDB SQLITE Step error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::changeSinkMuteStateDB SQLITE Step error code:", eCode);
         return E_DATABASE_ERROR;
     }assert(sinkID!=0);
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeSinkMuteStateDB SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::changeSinkMuteStateDB SQLITE Finalize error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::changeSinkMuteStateDB changed sinkMuteState of sink:"), DLT_INT(sinkID), DLT_STRING("to:"), DLT_INT(muteState));
+    logInfo("DatabaseHandler::changeSinkMuteStateDB changed sinkMuteState of sink:", sinkID, "to:", muteState);
 
     if (mDatabaseObserver)
         mDatabaseObserver->sinkMuteStateChanged(sinkID, muteState);
@@ -1001,17 +1003,17 @@ am_Error_e DatabaseHandler::changeMainSinkSoundPropertyDB(const am_MainSoundProp
     sqlite3_bind_int(query, 1, soundProperty.value);
     if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeMainSinkSoundPropertyDB SQLITE Step error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::changeMainSinkSoundPropertyDB SQLITE Step error code:", eCode);
         return E_DATABASE_ERROR;
     }assert(sinkID!=0);
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeMainSinkSoundPropertyDB SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::changeMainSinkSoundPropertyDB SQLITE Finalize error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::changeMainSinkSoundPropertyDB changed MainSinkSoundProperty of sink:"), DLT_INT(sinkID), DLT_STRING("type:"), DLT_INT(soundProperty.type), DLT_STRING("to:"), DLT_INT(soundProperty.value));
+    logInfo("DatabaseHandler::changeMainSinkSoundPropertyDB changed MainSinkSoundProperty of sink:", sinkID, "type:", soundProperty.type, "to:", soundProperty.value);
     if (mDatabaseObserver)
         mDatabaseObserver->mainSinkSoundPropertyChanged(sinkID, soundProperty);
     return E_OK;
@@ -1035,17 +1037,17 @@ am_Error_e DatabaseHandler::changeMainSourceSoundPropertyDB(const am_MainSoundPr
     sqlite3_bind_int(query, 1, soundProperty.value);
     if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeMainSourceSoundPropertyDB SQLITE Step error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::changeMainSourceSoundPropertyDB SQLITE Step error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeMainSourceSoundPropertyDB SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::changeMainSourceSoundPropertyDB SQLITE Finalize error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::changeMainSourceSoundPropertyDB changed MainSinkSoundProperty of source:"), DLT_INT(sourceID), DLT_STRING("type:"), DLT_INT(soundProperty.type), DLT_STRING("to:"), DLT_INT(soundProperty.value));
+    logInfo("DatabaseHandler::changeMainSourceSoundPropertyDB changed MainSinkSoundProperty of source:", sourceID, "type:", soundProperty.type, "to:", soundProperty.value);
 
     if (mDatabaseObserver)
         mDatabaseObserver->mainSourceSoundPropertyChanged(sourceID, soundProperty);
@@ -1070,17 +1072,17 @@ am_Error_e DatabaseHandler::changeSourceAvailabilityDB(const am_Availability_s &
     sqlite3_bind_int(query, 2, availability.availabilityReason);
     if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeSourceAvailabilityDB SQLITE Step error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::changeSourceAvailabilityDB SQLITE Step error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeSourceAvailabilityDB SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::changeSourceAvailabilityDB SQLITE Finalize error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::changeSourceAvailabilityDB changed changeSourceAvailabilityDB of source:"), DLT_INT(sourceID), DLT_STRING("to:"), DLT_INT(availability.availability), DLT_STRING("Reason:"), DLT_INT(availability.availabilityReason));
+    logInfo("DatabaseHandler::changeSourceAvailabilityDB changed changeSourceAvailabilityDB of source:", sourceID, "to:", availability.availability, "Reason:", availability.availabilityReason);
 
     if (mDatabaseObserver && sourceVisible(sourceID))
         mDatabaseObserver->sourceAvailabilityChanged(sourceID, availability);
@@ -1099,17 +1101,17 @@ am_Error_e DatabaseHandler::changeSystemPropertyDB(const am_SystemProperty_s & p
 
     if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeSystemPropertyDB SQLITE Step error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::changeSystemPropertyDB SQLITE Step error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeSystemPropertyDB SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::changeSystemPropertyDB SQLITE Finalize error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::changeSystemPropertyDB changed system property"));
+    logInfo("DatabaseHandler::changeSystemPropertyDB changed system property");
 
     if (mDatabaseObserver)
         mDatabaseObserver->systemPropertyChanged(property);
@@ -1130,7 +1132,8 @@ am_Error_e DatabaseHandler::removeMainConnectionDB(const am_mainConnectionID_t m
     if (!sqQuery(command))
         return E_DATABASE_ERROR;
     if (!sqQuery(command1))
-        return E_DATABASE_ERROR;DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::removeMainConnectionDB removed:"), DLT_INT(mainConnectionID));
+        return E_DATABASE_ERROR;
+    logInfo("DatabaseHandler::removeMainConnectionDB removed:", mainConnectionID);
     if (mDatabaseObserver)
     {
         mDatabaseObserver->mainConnectionStateChanged(mainConnectionID, CS_DISCONNECTED);
@@ -1158,7 +1161,8 @@ am_Error_e DatabaseHandler::removeSinkDB(const am_sinkID_t sinkID)
     if (!sqQuery(command2))
         return E_DATABASE_ERROR;
     if (!sqQuery(command3))
-        return E_DATABASE_ERROR;DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::removeSinkDB removed:"), DLT_INT(sinkID));
+        return E_DATABASE_ERROR;
+    logInfo("DatabaseHandler::removeSinkDB removed:", sinkID);
 
     if (mDatabaseObserver != NULL)
         mDatabaseObserver->removedSink(sinkID);
@@ -1185,7 +1189,8 @@ am_Error_e DatabaseHandler::removeSourceDB(const am_sourceID_t sourceID)
     if (!sqQuery(command2))
         return E_DATABASE_ERROR;
     if (!sqQuery(command3))
-        return E_DATABASE_ERROR;DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::removeSourceDB removed:"), DLT_INT(sourceID));
+        return E_DATABASE_ERROR;
+    logInfo("DatabaseHandler::removeSourceDB removed:", sourceID);
     if (mDatabaseObserver)
         mDatabaseObserver->removedSource(sourceID);
     return E_OK;
@@ -1201,7 +1206,8 @@ am_Error_e DatabaseHandler::removeGatewayDB(const am_gatewayID_t gatewayID)
     }
     std::string command = "DELETE from " + std::string(GATEWAY_TABLE) + " WHERE gatewayID=" + i2s(gatewayID);
     if (!sqQuery(command))
-        return E_DATABASE_ERROR;DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::removeGatewayDB removed:"), DLT_INT(gatewayID));
+        return E_DATABASE_ERROR;
+    logInfo("DatabaseHandler::removeGatewayDB removed:", gatewayID);
     if (mDatabaseObserver)
         mDatabaseObserver->removeGateway(gatewayID);
     return E_OK;
@@ -1224,7 +1230,8 @@ am_Error_e DatabaseHandler::removeDomainDB(const am_domainID_t domainID)
     }
     std::string command = "DELETE from " + std::string(DOMAIN_TABLE) + " WHERE domainID=" + i2s(domainID);
     if (!sqQuery(command))
-        return E_DATABASE_ERROR;DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::removeDomainDB removed:"), DLT_INT(domainID));
+        return E_DATABASE_ERROR;
+    logInfo("DatabaseHandler::removeDomainDB removed:", domainID);
     if (mDatabaseObserver)
         mDatabaseObserver->removeDomain(domainID);
     return E_OK;
@@ -1245,7 +1252,7 @@ am_Error_e DatabaseHandler::removeSinkClassDB(const am_sinkClass_t sinkClassID)
     if (!sqQuery(command1))
         return E_DATABASE_ERROR;
 
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::removeSinkClassDB removed:"), DLT_INT(sinkClassID));
+    logInfo("DatabaseHandler::removeSinkClassDB removed:", sinkClassID);
     if (mDatabaseObserver)
         mDatabaseObserver->numberOfSinkClassesChanged();
 
@@ -1265,8 +1272,8 @@ am_Error_e DatabaseHandler::removeSourceClassDB(const am_sourceClass_t sourceCla
     if (!sqQuery(command))
         return E_DATABASE_ERROR;
     if (!sqQuery(command1))
-        return E_DATABASE_ERROR;DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::removeSourceClassDB removed:"), DLT_INT(sourceClassID));
-
+        return E_DATABASE_ERROR;
+    logInfo("DatabaseHandler::removeSourceClassDB removed:", sourceClassID);
     if (mDatabaseObserver)
         mDatabaseObserver->numberOfSourceClassesChanged();
     return E_OK;
@@ -1281,8 +1288,8 @@ am_Error_e DatabaseHandler::removeConnection(const am_connectionID_t connectionI
     if (!sqQuery(command))
         return E_DATABASE_ERROR;
     if (!sqQuery(command1))
-        return E_DATABASE_ERROR;DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::removeConnection removed:"), DLT_INT(connectionID));
-
+        return E_DATABASE_ERROR;
+    logInfo("DatabaseHandler::removeConnection removed:", connectionID);
     return E_OK;
 }
 
@@ -1307,13 +1314,13 @@ am_Error_e DatabaseHandler::getSourceClassInfoDB(const am_sourceID_t sourceID, a
 
     if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getSourceClassInfoDB SQLITE error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getSourceClassInfoDB SQLITE error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getSourceClassInfoDB SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getSourceClassInfoDB SQLITE Finalize error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
@@ -1327,13 +1334,13 @@ am_Error_e DatabaseHandler::getSourceClassInfoDB(const am_sourceID_t sourceID, a
 
     if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getSourceClassInfoDB SQLITE error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getSourceClassInfoDB SQLITE error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getSourceClassInfoDB SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getSourceClassInfoDB SQLITE Finalize error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
@@ -1349,13 +1356,13 @@ am_Error_e DatabaseHandler::getSourceClassInfoDB(const am_sourceID_t sourceID, a
 
     if (eCode != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getSourceClassInfoDB SQLITE error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getSourceClassInfoDB SQLITE error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getSourceClassInfoDB SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getSourceClassInfoDB SQLITE Finalize error code:", eCode);
         return E_DATABASE_ERROR;
     }
     return E_OK;
@@ -1383,7 +1390,7 @@ am_Error_e DatabaseHandler::changeSinkClassInfoDB(const am_SinkClass_s& sinkClas
         sqlite3_bind_int(query, 2, Iterator->classProperty);
         if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::setSinkClassInfoDB SQLITE Step error code:"), DLT_INT(eCode));
+            logError("DatabaseHandler::setSinkClassInfoDB SQLITE Step error code:", eCode);
             return E_DATABASE_ERROR;
         }
         sqlite3_reset(query);
@@ -1391,11 +1398,11 @@ am_Error_e DatabaseHandler::changeSinkClassInfoDB(const am_SinkClass_s& sinkClas
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::setSinkClassInfoDB SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::setSinkClassInfoDB SQLITE Finalize error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::setSinkClassInfoDB set setSinkClassInfo"));
+    logInfo("DatabaseHandler::setSinkClassInfoDB set setSinkClassInfo");
     return E_OK;
 }
 
@@ -1421,7 +1428,7 @@ am_Error_e DatabaseHandler::changeSourceClassInfoDB(const am_SourceClass_s& sour
         sqlite3_bind_int(query, 2, Iterator->classProperty);
         if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::setSinkClassInfoDB SQLITE Step error code:"), DLT_INT(eCode));
+            logError("DatabaseHandler::setSinkClassInfoDB SQLITE Step error code:", eCode);
             return E_DATABASE_ERROR;
         }
         sqlite3_reset(query);
@@ -1429,11 +1436,11 @@ am_Error_e DatabaseHandler::changeSourceClassInfoDB(const am_SourceClass_s& sour
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::setSinkClassInfoDB SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::setSinkClassInfoDB SQLITE Finalize error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::setSinkClassInfoDB set setSinkClassInfo"));
+    logInfo("DatabaseHandler::setSinkClassInfoDB set setSinkClassInfo");
     return E_OK;
 }
 
@@ -1458,13 +1465,13 @@ am_Error_e DatabaseHandler::getSinkClassInfoDB(const am_sinkID_t sinkID, am_Sink
 
     if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getSinkClassInfoDB SQLITE error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getSinkClassInfoDB SQLITE error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getSinkClassInfoDB SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getSinkClassInfoDB SQLITE Finalize error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
@@ -1478,13 +1485,13 @@ am_Error_e DatabaseHandler::getSinkClassInfoDB(const am_sinkID_t sinkID, am_Sink
 
     if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getSinkClassInfoDB SQLITE error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getSinkClassInfoDB SQLITE error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getSinkClassInfoDB SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getSinkClassInfoDB SQLITE Finalize error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
@@ -1500,13 +1507,13 @@ am_Error_e DatabaseHandler::getSinkClassInfoDB(const am_sinkID_t sinkID, am_Sink
 
     if (eCode != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getSinkClassInfoDB SQLITE error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getSinkClassInfoDB SQLITE error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getSinkClassInfoDB SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getSinkClassInfoDB SQLITE Finalize error code:", eCode);
         return E_DATABASE_ERROR;
     }
     return E_OK;
@@ -1540,7 +1547,7 @@ am_Error_e DatabaseHandler::getGatewayInfoDB(const am_gatewayID_t gatewayID, am_
         iter = mListConnectionFormat.find(gatewayData.gatewayID);
         if (iter == mListConnectionFormat.end())
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getGatewayInfoDB database error with convertionFormat"));
+            logError("DatabaseHandler::getGatewayInfoDB database error with convertionFormat");
             return E_DATABASE_ERROR;
         }
         gatewayData.convertionMatrix = iter->second;
@@ -1556,7 +1563,7 @@ am_Error_e DatabaseHandler::getGatewayInfoDB(const am_gatewayID_t gatewayID, am_
 
         if ((eCode = sqlite3_finalize(qSourceConnectionFormat)) != SQLITE_OK)
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getGatewayInfoDB SQLITE Finalize error code:"), DLT_INT(eCode));
+            logError("DatabaseHandler::getGatewayInfoDB SQLITE Finalize error code:", eCode);
             return E_DATABASE_ERROR;
         }
 
@@ -1571,7 +1578,7 @@ am_Error_e DatabaseHandler::getGatewayInfoDB(const am_gatewayID_t gatewayID, am_
 
         if ((eCode = sqlite3_finalize(qSinkConnectionFormat)) != SQLITE_OK)
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getGatewayInfoDB SQLITE Finalize error code:"), DLT_INT(eCode));
+            logError("DatabaseHandler::getGatewayInfoDB SQLITE Finalize error code:", eCode);
             return E_DATABASE_ERROR;
         }
 
@@ -1579,13 +1586,13 @@ am_Error_e DatabaseHandler::getGatewayInfoDB(const am_gatewayID_t gatewayID, am_
 
     if (eCode != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getGatewayInfoDB SQLITE error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getGatewayInfoDB SQLITE error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getGatewayInfoDB SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getGatewayInfoDB SQLITE Finalize error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
@@ -1623,13 +1630,13 @@ am_Error_e DatabaseHandler::getListSinksOfDomain(const am_domainID_t domainID, s
 
     if (eCode != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListSinksOfDomain SQLITE error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getListSinksOfDomain SQLITE error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListSinksOfDomain SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getListSinksOfDomain SQLITE Finalize error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
@@ -1659,13 +1666,13 @@ am_Error_e DatabaseHandler::getListSourcesOfDomain(const am_domainID_t domainID,
 
     if (eCode != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListSourcesOfDomain SQLITE error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getListSourcesOfDomain SQLITE error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListSourcesOfDomain SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getListSourcesOfDomain SQLITE Finalize error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
@@ -1704,13 +1711,13 @@ am_Error_e DatabaseHandler::getListGatewaysOfDomain(const am_domainID_t domainID
 
     if (eCode != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListGatewaysOfDomain SQLITE error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getListGatewaysOfDomain SQLITE error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListGatewaysOfDomain SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getListGatewaysOfDomain SQLITE Finalize error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
@@ -1759,13 +1766,13 @@ am_Error_e DatabaseHandler::getListMainConnections(std::vector<am_MainConnection
 
     if (eCode != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListMainConnections SQLITE error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getListMainConnections SQLITE error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListMainConnections SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getListMainConnections SQLITE Finalize error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
@@ -1795,13 +1802,15 @@ am_Error_e DatabaseHandler::getListDomains(std::vector<am_Domain_s> & listDomain
 
     if (eCode != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListDomains SQLITE error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getListDomains SQLITE error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListDomains SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getListDomains SQLITE Finalize error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
@@ -1829,13 +1838,13 @@ am_Error_e DatabaseHandler::getListConnections(std::vector<am_Connection_s> & li
 
     if (eCode != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListConnections SQLITE error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getListConnections SQLITE error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListConnections SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getListConnections SQLITE Finalize error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
@@ -1878,7 +1887,8 @@ am_Error_e DatabaseHandler::getListSinks(std::vector<am_Sink_s> & listSinks) con
 
         if ((eCode = sqlite3_finalize(qConnectionFormat)) != SQLITE_OK)
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListSinks SQLITE Finalize error code:"), DLT_INT(eCode));
+            logError("DatabaseHandler::getListSinks SQLITE Finalize error code:", eCode);
+
             return E_DATABASE_ERROR;
         }
 
@@ -1894,7 +1904,8 @@ am_Error_e DatabaseHandler::getListSinks(std::vector<am_Sink_s> & listSinks) con
 
         if ((eCode = sqlite3_finalize(qSoundProperty)) != SQLITE_OK)
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListSinks SQLITE Finalize error code:"), DLT_INT(eCode));
+            logError("DatabaseHandler::getListSinks SQLITE Finalize error code:", eCode);
+
             return E_DATABASE_ERROR;
         }
 
@@ -1910,7 +1921,8 @@ am_Error_e DatabaseHandler::getListSinks(std::vector<am_Sink_s> & listSinks) con
 
         if ((eCode = sqlite3_finalize(qMAinSoundProperty)) != SQLITE_OK)
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListSinks SQLITE Finalize error code:"), DLT_INT(eCode));
+            logError("DatabaseHandler::getListSinks SQLITE Finalize error code:", eCode);
+
             return E_DATABASE_ERROR;
         }
         listSinks.push_back(temp);
@@ -1921,13 +1933,15 @@ am_Error_e DatabaseHandler::getListSinks(std::vector<am_Sink_s> & listSinks) con
 
     if (eCode != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListSinks SQLITE error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getListSinks SQLITE error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListSinks SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getListSinks SQLITE Finalize error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
@@ -1970,7 +1984,8 @@ am_Error_e DatabaseHandler::getListSources(std::vector<am_Source_s> & listSource
 
         if ((eCode = sqlite3_finalize(qConnectionFormat)) != SQLITE_OK)
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListSources SQLITE Finalize error code:"), DLT_INT(eCode));
+            logError("DatabaseHandler::getListSources SQLITE Finalize error code:", eCode);
+
             return E_DATABASE_ERROR;
         }
 
@@ -1986,7 +2001,8 @@ am_Error_e DatabaseHandler::getListSources(std::vector<am_Source_s> & listSource
 
         if ((eCode = sqlite3_finalize(qSoundProperty)) != SQLITE_OK)
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListSources SQLITE Finalize error code:"), DLT_INT(eCode));
+            logError("DatabaseHandler::getListSources SQLITE Finalize error code:", eCode);
+
             return E_DATABASE_ERROR;
         }
 
@@ -2002,7 +2018,8 @@ am_Error_e DatabaseHandler::getListSources(std::vector<am_Source_s> & listSource
 
         if ((eCode = sqlite3_finalize(qMAinSoundProperty)) != SQLITE_OK)
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListSources SQLITE Finalize error code:"), DLT_INT(eCode));
+            logError("DatabaseHandler::getListSources SQLITE Finalize error code:", eCode);
+
             return E_DATABASE_ERROR;
         }
         listSources.push_back(temp);
@@ -2013,13 +2030,15 @@ am_Error_e DatabaseHandler::getListSources(std::vector<am_Source_s> & listSource
 
     if (eCode != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListSources SQLITE error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getListSources SQLITE error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListSources SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getListSources SQLITE Finalize error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
@@ -2057,13 +2076,15 @@ am_Error_e DatabaseHandler::getListSourceClasses(std::vector<am_SourceClass_s> &
 
         if (eCode1 != SQLITE_DONE)
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListSourceClasses SQLITE error code:"), DLT_INT(eCode1));
+            logError("DatabaseHandler::getListSourceClasses SQLITE error code:", eCode1);
+
             return E_DATABASE_ERROR;
         }
 
         if ((eCode1 = sqlite3_finalize(subQuery)) != SQLITE_OK)
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListSourceClasses SQLITE Finalize error code:"), DLT_INT(eCode1));
+            logError("DatabaseHandler::getListSourceClasses SQLITE Finalize error code:", eCode1);
+
             return E_DATABASE_ERROR;
         }
         listSourceClasses.push_back(classTemp);
@@ -2071,13 +2092,15 @@ am_Error_e DatabaseHandler::getListSourceClasses(std::vector<am_SourceClass_s> &
 
     if (eCode != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListSourceClasses SQLITE error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getListSourceClasses SQLITE error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListSourceClasses SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getListSourceClasses SQLITE Finalize error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
@@ -2117,7 +2140,8 @@ am_Error_e DatabaseHandler::getListGateways(std::vector<am_Gateway_s> & listGate
         iter = mListConnectionFormat.find(temp.gatewayID);
         if (iter == mListConnectionFormat.end())
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListGateways database error with convertionFormat"));
+            logError("DatabaseHandler::getListGateways database error with convertionFormat");
+
             return E_DATABASE_ERROR;
         }
         temp.convertionMatrix = iter->second;
@@ -2133,7 +2157,8 @@ am_Error_e DatabaseHandler::getListGateways(std::vector<am_Gateway_s> & listGate
 
         if ((eCode = sqlite3_finalize(qSourceConnectionFormat)) != SQLITE_OK)
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListGateways SQLITE Finalize error code:"), DLT_INT(eCode));
+            logError("DatabaseHandler::getListGateways SQLITE Finalize error code:", eCode);
+
             return E_DATABASE_ERROR;
         }
 
@@ -2148,7 +2173,8 @@ am_Error_e DatabaseHandler::getListGateways(std::vector<am_Gateway_s> & listGate
 
         if ((eCode = sqlite3_finalize(qSinkConnectionFormat)) != SQLITE_OK)
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListGateways SQLITE Finalize error code:"), DLT_INT(eCode));
+            logError("DatabaseHandler::getListGateways SQLITE Finalize error code:", eCode);
+
             return E_DATABASE_ERROR;
         }
 
@@ -2159,13 +2185,15 @@ am_Error_e DatabaseHandler::getListGateways(std::vector<am_Gateway_s> & listGate
 
     if (eCode != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListGateways SQLITE error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getListGateways SQLITE error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListGateways SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getListGateways SQLITE Finalize error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
@@ -2203,13 +2231,15 @@ am_Error_e DatabaseHandler::getListSinkClasses(std::vector<am_SinkClass_s> & lis
 
         if (eCode != SQLITE_DONE)
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListSourceClasses SQLITE error code:"), DLT_INT(eCode));
+            logError("DatabaseHandler::getListSourceClasses SQLITE error code:", eCode);
+
             return E_DATABASE_ERROR;
         }
 
         if ((eCode = sqlite3_finalize(subQuery)) != SQLITE_OK)
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListSourceClasses SQLITE Finalize error code:"), DLT_INT(eCode));
+            logError("DatabaseHandler::getListSourceClasses SQLITE Finalize error code:", eCode);
+
             return E_DATABASE_ERROR;
         }
         listSinkClasses.push_back(classTemp);
@@ -2217,13 +2247,15 @@ am_Error_e DatabaseHandler::getListSinkClasses(std::vector<am_SinkClass_s> & lis
 
     if (eCode != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListSourceClasses SQLITE error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getListSourceClasses SQLITE error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListSourceClasses SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getListSourceClasses SQLITE Finalize error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
@@ -2252,13 +2284,15 @@ am_Error_e DatabaseHandler::getListVisibleMainConnections(std::vector<am_MainCon
 
     if (eCode != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListVisibleMainConnections SQLITE error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getListVisibleMainConnections SQLITE error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListVisibleMainConnections SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getListVisibleMainConnections SQLITE Finalize error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
@@ -2289,13 +2323,15 @@ am_Error_e DatabaseHandler::getListMainSinks(std::vector<am_SinkType_s> & listMa
 
     if (eCode != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListSinks SQLITE error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getListSinks SQLITE error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListSinks SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getListSinks SQLITE Finalize error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
@@ -2324,13 +2360,15 @@ am_Error_e DatabaseHandler::getListMainSources(std::vector<am_SourceType_s> & li
 
     if (eCode != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListSources SQLITE error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getListSources SQLITE error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListSources SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getListSources SQLITE Finalize error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
@@ -2359,13 +2397,15 @@ am_Error_e DatabaseHandler::getListMainSinkSoundProperties(const am_sinkID_t sin
 
     if (eCode != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListMainSinkSoundProperties SQLITE error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getListMainSinkSoundProperties SQLITE error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListMainSinkSoundProperties SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getListMainSinkSoundProperties SQLITE Finalize error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
@@ -2394,13 +2434,15 @@ am_Error_e DatabaseHandler::getListMainSourceSoundProperties(const am_sourceID_t
 
     if (eCode != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListMainSinkSoundProperties SQLITE error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getListMainSinkSoundProperties SQLITE error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListMainSinkSoundProperties SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getListMainSinkSoundProperties SQLITE Finalize error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
@@ -2426,13 +2468,15 @@ am_Error_e DatabaseHandler::getListSystemProperties(std::vector<am_SystemPropert
 
     if (eCode != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListSystemProperties SQLITE error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getListSystemProperties SQLITE error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListSystemProperties SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getListSystemProperties SQLITE Finalize error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
@@ -2455,7 +2499,8 @@ am_Error_e am::DatabaseHandler::getListSinkConnectionFormats(const am_sinkID_t s
 
     if ((eCode = sqlite3_finalize(qConnectionFormat)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListSinkConnectionFormats SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getListSinkConnectionFormats SQLITE Finalize error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
@@ -2480,7 +2525,8 @@ am_Error_e am::DatabaseHandler::getListSourceConnectionFormats(const am_sourceID
 
     if ((eCode = sqlite3_finalize(qConnectionFormat)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListSources SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getListSources SQLITE Finalize error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
@@ -2493,7 +2539,8 @@ am_Error_e am::DatabaseHandler::getListGatewayConnectionFormats(const am_gateway
     iter = mListConnectionFormat.find(gatewayID);
     if (iter == mListConnectionFormat.end())
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getListGatewayConnectionFormats database error with convertionFormat"));
+        logError("DatabaseHandler::getListGatewayConnectionFormats database error with convertionFormat");
+
         return (E_DATABASE_ERROR);
     }
     listConnectionFormat = iter->second;
@@ -2518,13 +2565,15 @@ am_Error_e DatabaseHandler::getTimingInformation(const am_mainConnectionID_t mai
 
     if (eCode != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getTimingInformation SQLITE error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getTimingInformation SQLITE error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getTimingInformation SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getTimingInformation SQLITE Finalize error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
@@ -2540,7 +2589,7 @@ bool DatabaseHandler::sqQuery(const std::string& query)
     int eCode = 0;
     if ((eCode = sqlite3_exec(mDatabase, query.c_str(), NULL, &statement, NULL)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::sqQuery SQL Query failed:"), DLT_STRING(query.c_str()), DLT_STRING("error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::sqQuery SQL Query failed:", query.c_str(), "error code:", eCode);
         return false;
     }
     return true;
@@ -2550,9 +2599,10 @@ bool DatabaseHandler::openDatabase()
 {
     if (sqlite3_open_v2(mPath.c_str(), &mDatabase, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX, NULL) == SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::openDatabase opened database"));
+        logInfo("DatabaseHandler::openDatabase opened database");
         return true;
-    }DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::openDatabase failed to open database"));
+    }
+    logError("DatabaseHandler::openDatabase failed to open database");
     return false;
 }
 
@@ -2578,13 +2628,15 @@ am_Error_e DatabaseHandler::changeDelayMainConnection(const am_timeSync_t & dela
 
     if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeDelayMainConnection SQLITE Step error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::changeDelayMainConnection SQLITE Step error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeDelayMainConnection SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::changeDelayMainConnection SQLITE Finalize error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
@@ -2614,19 +2666,21 @@ am_Error_e DatabaseHandler::enterConnectionDB(const am_Connection_s& connection,
 
     if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::enterConnectionDB SQLITE Step error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::enterConnectionDB SQLITE Step error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::enterConnectionDB SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::enterConnectionDB SQLITE Finalize error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
     connectionID = sqlite3_last_insert_rowid(mDatabase);
 
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::enterConnectionDB entered new connection sourceID:"), DLT_INT16(connection.sourceID), DLT_STRING("sinkID:"), DLT_INT16(connection.sinkID), DLT_STRING("sourceID:"), DLT_INT16(connection.sourceID), DLT_STRING("delay:"), DLT_INT16(connection.delay), DLT_STRING("connectionFormat:"), DLT_INT16(connection.connectionFormat), DLT_STRING("assigned ID:"), DLT_INT16(connectionID));
+    logInfo("DatabaseHandler::enterConnectionDB entered new connection sourceID=", connection.sourceID, "sinkID=", connection.sinkID, "sourceID=", connection.sourceID, "connectionFormat=", connection.connectionFormat, "assigned ID=", connectionID);
     return E_OK;
 }
 
@@ -2671,13 +2725,15 @@ am_Error_e DatabaseHandler::enterSinkClassDB(const am_SinkClass_s & sinkClass, a
 
     if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::enterSinkClassDB SQLITE Step error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::enterSinkClassDB SQLITE Step error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::enterSinkClassDB SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::enterSinkClassDB SQLITE Finalize error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
@@ -2697,7 +2753,8 @@ am_Error_e DatabaseHandler::enterSinkClassDB(const am_SinkClass_s & sinkClass, a
         sqlite3_bind_int(query, 2, Iterator->value);
         if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::enterSinkClassDB SQLITE Step error code:"), DLT_INT(eCode));
+            logError("DatabaseHandler::enterSinkClassDB SQLITE Step error code:", eCode);
+
             return E_DATABASE_ERROR;
         }
         sqlite3_reset(query);
@@ -2705,11 +2762,12 @@ am_Error_e DatabaseHandler::enterSinkClassDB(const am_SinkClass_s & sinkClass, a
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::enterSinkClassDB SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::enterSinkClassDB SQLITE Finalize error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::enterSinkClassDB entered new sinkClass"));
+    logInfo("DatabaseHandler::enterSinkClassDB entered new sinkClass");
     if (mDatabaseObserver)
         mDatabaseObserver->numberOfSinkClassesChanged();
     return E_OK;
@@ -2756,13 +2814,15 @@ am_Error_e DatabaseHandler::enterSourceClassDB(am_sourceClass_t & sourceClassID,
 
     if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::enterSourceClassDB SQLITE Step error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::enterSourceClassDB SQLITE Step error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::enterSourceClassDB SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::enterSourceClassDB SQLITE Finalize error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
@@ -2782,7 +2842,8 @@ am_Error_e DatabaseHandler::enterSourceClassDB(am_sourceClass_t & sourceClassID,
         sqlite3_bind_int(query, 2, Iterator->value);
         if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::enterSourceClassDB SQLITE Step error code:"), DLT_INT(eCode));
+            logError("DatabaseHandler::enterSourceClassDB SQLITE Step error code:", eCode);
+
             return E_DATABASE_ERROR;
         }
         sqlite3_reset(query);
@@ -2790,11 +2851,12 @@ am_Error_e DatabaseHandler::enterSourceClassDB(am_sourceClass_t & sourceClassID,
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::enterSourceClassDB SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::enterSourceClassDB SQLITE Finalize error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::enterSourceClassDB entered new sourceClass"));
+    logInfo("DatabaseHandler::enterSourceClassDB entered new sourceClass");
 
     if (mDatabaseObserver)
         mDatabaseObserver->numberOfSourceClassesChanged();
@@ -2819,7 +2881,8 @@ am_Error_e DatabaseHandler::enterSystemProperties(const std::vector<am_SystemPro
 
         if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::enterSystemProperties SQLITE Step error code:"), DLT_INT(eCode));
+            logError("DatabaseHandler::enterSystemProperties SQLITE Step error code:", eCode);
+
             return E_DATABASE_ERROR;
         }
 
@@ -2828,11 +2891,12 @@ am_Error_e DatabaseHandler::enterSystemProperties(const std::vector<am_SystemPro
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::enterSystemProperties SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::enterSystemProperties SQLITE Finalize error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::enterSystemProperties entered system properties"));
+    logInfo("DatabaseHandler::enterSystemProperties entered system properties");
     return E_OK;
 }
 
@@ -2848,7 +2912,7 @@ bool DatabaseHandler::existMainConnection(const am_mainConnectionID_t mainConnec
     else if (eCode != SQLITE_ROW)
     {
         returnVal = false;
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::existMainConnection database error!:"), DLT_INT(eCode))
+        logError("DatabaseHandler::existMainConnection database error!:", eCode);
     }
     sqlite3_finalize(query);
     return returnVal;
@@ -2866,7 +2930,7 @@ bool DatabaseHandler::existSource(const am_sourceID_t sourceID) const
     else if (eCode != SQLITE_ROW)
     {
         returnVal = false;
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::existSource database error!:"), DLT_INT(eCode))
+        logError("DatabaseHandler::existSource database error!:", eCode);
     }
     sqlite3_finalize(query);
     return returnVal;
@@ -2886,7 +2950,7 @@ bool DatabaseHandler::existSourceNameOrID(const am_sourceID_t sourceID, const st
     else if (eCode != SQLITE_ROW)
     {
         returnVal = false;
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::existSource database error!:"), DLT_INT(eCode))
+        logError("DatabaseHandler::existSource database error!:", eCode);
     }
     sqlite3_finalize(query);
     return returnVal;
@@ -2905,7 +2969,7 @@ bool DatabaseHandler::existSourceName(const std::string & name) const
     else if (eCode != SQLITE_ROW)
     {
         returnVal = false;
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::existSource database error!:"), DLT_INT(eCode))
+        logError("DatabaseHandler::existSource database error!:", eCode);
     }
     sqlite3_finalize(query);
     return returnVal;
@@ -2923,7 +2987,7 @@ bool DatabaseHandler::existSink(const am_sinkID_t sinkID) const
     else if (eCode != SQLITE_ROW)
     {
         returnVal = false;
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::existSink database error!:"), DLT_INT(eCode))
+        logError("DatabaseHandler::existSink database error!:", eCode);
     }
     sqlite3_finalize(query);
     return returnVal;
@@ -2943,7 +3007,7 @@ bool DatabaseHandler::existSinkNameOrID(const am_sinkID_t sinkID, const std::str
     else if (eCode != SQLITE_ROW)
     {
         returnVal = false;
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::existSink database error!:"), DLT_INT(eCode))
+        logError("DatabaseHandler::existSink database error!:", eCode);
     }
     sqlite3_finalize(query);
     return returnVal;
@@ -2962,7 +3026,7 @@ bool DatabaseHandler::existSinkName(const std::string & name) const
     else if (eCode != SQLITE_ROW)
     {
         returnVal = false;
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::existSink database error!:"), DLT_INT(eCode))
+        logError("DatabaseHandler::existSink database error!:", eCode);
     }
     sqlite3_finalize(query);
     return returnVal;
@@ -2980,7 +3044,7 @@ bool DatabaseHandler::existDomain(const am_domainID_t domainID) const
     else if (eCode != SQLITE_ROW)
     {
         returnVal = false;
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::existDomain database error!:"), DLT_INT(eCode))
+        logError("DatabaseHandler::existDomain database error!:", eCode);
     }
     sqlite3_finalize(query);
     return returnVal;
@@ -2998,7 +3062,7 @@ bool DatabaseHandler::existGateway(const am_gatewayID_t gatewayID) const
     else if (eCode != SQLITE_ROW)
     {
         returnVal = false;
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::existGateway database error!:"), DLT_INT(eCode))
+        logError("DatabaseHandler::existGateway database error!:", eCode);
     }
     sqlite3_finalize(query);
     return returnVal;
@@ -3020,7 +3084,7 @@ am_Error_e DatabaseHandler::getDomainOfSource(const am_sourceID_t sourceID, am_d
     }
     else
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getDomainOfSource database error!:"), DLT_INT(eCode))
+        logError("DatabaseHandler::getDomainOfSource database error!:", eCode);
     }
     sqlite3_finalize(query);
     return (returnVal);
@@ -3042,7 +3106,7 @@ am_Error_e am::DatabaseHandler::getDomainOfSink(const am_sinkID_t sinkID, am_dom
     }
     else
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getDomainOfSink database error!:"), DLT_INT(eCode))
+        logError("DatabaseHandler::getDomainOfSink database error!:", eCode);
     }
     sqlite3_finalize(query);
     return (returnVal);
@@ -3060,7 +3124,7 @@ bool DatabaseHandler::existSinkClass(const am_sinkClass_t sinkClassID) const
     else if (eCode != SQLITE_ROW)
     {
         returnVal = false;
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::existSinkClass database error!:"), DLT_INT(eCode))
+        logError("DatabaseHandler::existSinkClass database error!:", eCode);
     }
     sqlite3_finalize(query);
     return returnVal;
@@ -3078,7 +3142,7 @@ bool DatabaseHandler::existSourceClass(const am_sourceClass_t sourceClassID) con
     else if (eCode != SQLITE_ROW)
     {
         returnVal = false;
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::existSinkClass database error!:"), DLT_INT(eCode))
+        logError("DatabaseHandler::existSinkClass database error!:", eCode);
     }
     sqlite3_finalize(query);
     return returnVal;
@@ -3098,13 +3162,15 @@ am_Error_e DatabaseHandler::changeConnectionTimingInformation(const am_connectio
 
     if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeConnectionTimingInformation SQLITE Step error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::changeConnectionTimingInformation SQLITE Step error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeConnectionTimingInformation SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::changeConnectionTimingInformation SQLITE Finalize error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
@@ -3129,20 +3195,23 @@ am_Error_e DatabaseHandler::changeConnectionTimingInformation(const am_connectio
         }
         else if (eCode1 != SQLITE_DONE)
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeConnectionTimingInformation SQLITE error code:"), DLT_INT(eCode1));
+            logError("DatabaseHandler::changeConnectionTimingInformation SQLITE error code:", eCode1);
+
             return E_DATABASE_ERROR;
         }
     }
 
     if (eCode != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeConnectionTimingInformation SQLITE error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::changeConnectionTimingInformation SQLITE error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(queryMainConnections)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeConnectionTimingInformation SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::changeConnectionTimingInformation SQLITE Finalize error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
@@ -3162,13 +3231,15 @@ am_Error_e DatabaseHandler::changeConnectionFinal(const am_connectionID_t connec
 
     if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeConnectionFinal SQLITE Step error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::changeConnectionFinal SQLITE Step error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeConnectionFinal SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::changeConnectionFinal SQLITE Finalize error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
     return E_OK;
@@ -3190,13 +3261,15 @@ am_timeSync_t DatabaseHandler::calculateMainConnectionDelay(const am_mainConnect
     }
     if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::calculateMainConnectionDelay SQLITE Step error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::calculateMainConnectionDelay SQLITE Step error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::calculateMainConnectionDelay SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::calculateMainConnectionDelay SQLITE Finalize error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
     if (min < 0)
@@ -3226,7 +3299,7 @@ bool DatabaseHandler::sourceVisible(const am_sourceID_t sourceID) const
     else if (eCode != SQLITE_ROW)
     {
         returnVal = false;
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::sourceVisible database error!:"), DLT_INT(eCode))
+        logError("DatabaseHandler::sourceVisible database error!:", eCode);
     }
     sqlite3_finalize(query);
     return returnVal;
@@ -3246,7 +3319,7 @@ bool DatabaseHandler::sinkVisible(const am_sinkID_t sinkID) const
     else if (eCode != SQLITE_ROW)
     {
         returnVal = false;
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::sinkVisible database error!:"), DLT_INT(eCode))
+        logError("DatabaseHandler::sinkVisible database error!:", eCode);
     }
     sqlite3_finalize(query);
     return returnVal;
@@ -3267,7 +3340,7 @@ bool DatabaseHandler::existConnection(const am_Connection_s connection)
     else if (eCode != SQLITE_ROW)
     {
         returnVal = false;
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::existMainConnection database error!:"), DLT_INT(eCode))
+        logError("DatabaseHandler::existMainConnection database error!:", eCode);
     }
     sqlite3_finalize(query);
     return returnVal;
@@ -3286,7 +3359,7 @@ bool DatabaseHandler::existConnectionID(const am_connectionID_t connectionID)
     else if (eCode != SQLITE_ROW)
     {
         returnVal = false;
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::existMainConnection database error!:"), DLT_INT(eCode))
+        logError("DatabaseHandler::existMainConnection database error!:", eCode);
     }
     sqlite3_finalize(query);
     return returnVal;
@@ -3305,7 +3378,7 @@ bool DatabaseHandler::existcrossFader(const am_crossfaderID_t crossfaderID) cons
     else if (eCode != SQLITE_ROW)
     {
         returnVal = false;
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::existMainConnection database error!:"), DLT_INT(eCode))
+        logError("DatabaseHandler::existMainConnection database error!:", eCode);
     }
     sqlite3_finalize(query);
     return returnVal;
@@ -3325,8 +3398,7 @@ am_Error_e DatabaseHandler::getSoureState(const am_sourceID_t sourceID, am_Sourc
     }
     else if ((eCode = sqlite3_step(query)) == SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getSoureState database error!:"), DLT_INT(eCode))
-
+        logError("DatabaseHandler::getSoureState database error!:", eCode);
     }
     sqlite3_finalize(query);
     return E_OK;
@@ -3342,13 +3414,15 @@ am_Error_e DatabaseHandler::changeSourceState(const am_sourceID_t sourceID, cons
     sqlite3_bind_int(query, 1, sourceState);
     if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeSourceState SQLITE Step error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::changeSourceState SQLITE Step error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeSourceState SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::changeSourceState SQLITE Finalize error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
     return E_OK;
@@ -3368,8 +3442,7 @@ am_Error_e DatabaseHandler::getSinkVolume(const am_sinkID_t sinkID, am_volume_t 
     }
     else if ((eCode = sqlite3_step(query)) == SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getSinkVolume database error!:"), DLT_INT(eCode))
-
+        logError("DatabaseHandler::getSinkVolume database error!:", eCode);
     }
     sqlite3_finalize(query);
     return E_OK;
@@ -3389,7 +3462,7 @@ am_Error_e DatabaseHandler::getSourceVolume(const am_sourceID_t sourceID, am_vol
     }
     else if ((eCode = sqlite3_step(query)) == SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getSourceVolume database error!:"), DLT_INT(eCode))
+        logError("DatabaseHandler::getSourceVolume database error!:", eCode);
     }
     sqlite3_finalize(query);
     return E_OK;
@@ -3413,13 +3486,15 @@ am_Error_e DatabaseHandler::getSinkSoundPropertyValue(const am_sinkID_t sinkID, 
 
     if (eCode != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getSinkSoundPropertyValue SQLITE error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getSinkSoundPropertyValue SQLITE error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getSinkSoundPropertyValue SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getSinkSoundPropertyValue SQLITE Finalize error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
@@ -3444,13 +3519,15 @@ am_Error_e DatabaseHandler::getSourceSoundPropertyValue(const am_sourceID_t sour
 
     if (eCode != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getSinkSoundPropertyValue SQLITE error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getSinkSoundPropertyValue SQLITE error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getSinkSoundPropertyValue SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::getSinkSoundPropertyValue SQLITE Finalize error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
@@ -3471,8 +3548,7 @@ am_Error_e DatabaseHandler::getDomainState(const am_domainID_t domainID, am_Doma
     }
     else if ((eCode = sqlite3_step(query)) == SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getDomainState database error!:"), DLT_INT(eCode))
-
+        logError("DatabaseHandler::getDomainState database error!:", eCode);
     }
     sqlite3_finalize(query);
     return E_OK;
@@ -3492,7 +3568,7 @@ am_Error_e DatabaseHandler::peekDomain(const std::string & name, am_domainID_t &
     }
     else if (eCode != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::peekDomain database error!:"), DLT_INT(eCode))
+        logError("DatabaseHandler::peekDomain database error!:", eCode);
         return E_DATABASE_ERROR;
     }
     else
@@ -3503,13 +3579,13 @@ am_Error_e DatabaseHandler::peekDomain(const std::string & name, am_domainID_t &
         sqlite3_bind_int(queryInsert, 2, 1); //reservation flag
         if ((eCode1 = sqlite3_step(queryInsert)) != SQLITE_DONE)
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::peekDomain SQLITE Step error code:"), DLT_INT(eCode1));
+            logError("DatabaseHandler::peekDomain SQLITE Step error code:", eCode1);
             return E_DATABASE_ERROR;
         }
 
         if ((eCode1 = sqlite3_finalize(queryInsert)) != SQLITE_OK)
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::peekDomain SQLITE Finalize error code:"), DLT_INT(eCode1));
+            logError("DatabaseHandler::peekDomain SQLITE Finalize error code:", eCode1);
             return E_DATABASE_ERROR;
         }
         domainID = sqlite3_last_insert_rowid(mDatabase);
@@ -3531,7 +3607,7 @@ am_Error_e DatabaseHandler::peekSink(const std::string & name, am_sinkID_t & sin
     }
     else if (eCode != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::peekSink database error!:"), DLT_INT(eCode))
+        logError("DatabaseHandler::peekSink database error!:", eCode);
         return E_DATABASE_ERROR;
     }
     else
@@ -3550,13 +3626,13 @@ am_Error_e DatabaseHandler::peekSink(const std::string & name, am_sinkID_t & sin
         sqlite3_bind_int(queryInsert, 2, 1); //reservation flag
         if ((eCode1 = sqlite3_step(queryInsert)) != SQLITE_DONE)
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::peekSink SQLITE Step error code:"), DLT_INT(eCode1));
+            logError("DatabaseHandler::peekSink SQLITE Step error code:", eCode1);
             return E_DATABASE_ERROR;
         }
 
         if ((eCode1 = sqlite3_finalize(queryInsert)) != SQLITE_OK)
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::peekDomain SQLITE Finalize error code:"), DLT_INT(eCode1));
+            logError("DatabaseHandler::peekDomain SQLITE Finalize error code:", eCode1);
             return E_DATABASE_ERROR;
         }
         sinkID = sqlite3_last_insert_rowid(mDatabase);
@@ -3578,7 +3654,7 @@ am_Error_e DatabaseHandler::peekSource(const std::string & name, am_sourceID_t &
     }
     else if (eCode != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::peekSink database error!:"), DLT_INT(eCode))
+        logError("DatabaseHandler::peekSink database error!:", eCode);
         return E_DATABASE_ERROR;
     }
     else
@@ -3597,13 +3673,13 @@ am_Error_e DatabaseHandler::peekSource(const std::string & name, am_sourceID_t &
         sqlite3_bind_int(queryInsert, 2, 1); //reservation flag
         if ((eCode1 = sqlite3_step(queryInsert)) != SQLITE_DONE)
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::peekSink SQLITE Step error code:"), DLT_INT(eCode1));
+            logError("DatabaseHandler::peekSink SQLITE Step error code:", eCode1);
             return E_DATABASE_ERROR;
         }
 
         if ((eCode1 = sqlite3_finalize(queryInsert)) != SQLITE_OK)
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::peekDomain SQLITE Finalize error code:"), DLT_INT(eCode1));
+            logError("DatabaseHandler::peekDomain SQLITE Finalize error code:", eCode1);
             return E_DATABASE_ERROR;
         }
         sourceID = sqlite3_last_insert_rowid(mDatabase);
@@ -3629,16 +3705,18 @@ am_Error_e DatabaseHandler::changeSinkVolume(const am_sinkID_t sinkID, const am_
     sqlite3_bind_int(query, 1, volume);
     if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeSinkVolume SQLITE Step error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::changeSinkVolume SQLITE Step error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeSinkVolume SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::changeSinkVolume SQLITE Finalize error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::changeSinkVolume changed volume of sink:"), DLT_INT(sinkID), DLT_STRING("to:"), DLT_INT(volume));
+    logInfo("DatabaseHandler::changeSinkVolume changed volume of sink:", sinkID, "to:", volume);
 
     return E_OK;
 }
@@ -3660,16 +3738,18 @@ am_Error_e DatabaseHandler::changeSourceVolume(const am_sourceID_t sourceID, con
     sqlite3_bind_int(query, 1, volume);
     if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeSourceVolume SQLITE Step error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::changeSourceVolume SQLITE Step error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeSourceVolume SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::changeSourceVolume SQLITE Finalize error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::changeSourceVolume changed volume of source=:"), DLT_INT(sourceID), DLT_STRING("to:"), DLT_INT(volume));
+    logInfo("DatabaseHandler::changeSourceVolume changed volume of source=:", sourceID, "to:", volume);
 
     return E_OK;
 }
@@ -3692,17 +3772,19 @@ am_Error_e DatabaseHandler::changeSourceSoundPropertyDB(const am_SoundProperty_s
     sqlite3_bind_int(query, 1, soundProperty.value);
     if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeSourceSoundPropertyDB SQLITE Step error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::changeSourceSoundPropertyDB SQLITE Step error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeSourceSoundPropertyDB SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::changeSourceSoundPropertyDB SQLITE Finalize error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::changeSourceSoundPropertyDB changed SourceSoundProperty of source:"), DLT_INT(sourceID), DLT_STRING("type:"), DLT_INT(soundProperty.type), DLT_STRING("to:"), DLT_INT(soundProperty.value));
+    logInfo("DatabaseHandler::changeSourceSoundPropertyDB changed SourceSoundProperty of source:", sourceID, "type:", soundProperty.type, "to:", soundProperty.value);
 
     return E_OK;
 }
@@ -3725,17 +3807,17 @@ am_Error_e DatabaseHandler::changeSinkSoundPropertyDB(const am_SoundProperty_s &
     sqlite3_bind_int(query, 1, soundProperty.value);
     if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeSinkSoundPropertyDB SQLITE Step error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::changeSinkSoundPropertyDB SQLITE Step error code:", eCode);
         return E_DATABASE_ERROR;
     }assert(sinkID!=0);
 
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeSinkSoundPropertyDB SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::changeSinkSoundPropertyDB SQLITE Finalize error code:", eCode);
         return E_DATABASE_ERROR;
     }
 
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::changeSinkSoundPropertyDB changed MainSinkSoundProperty of sink:"), DLT_INT(sinkID), DLT_STRING("type:"), DLT_INT(soundProperty.type), DLT_STRING("to:"), DLT_INT(soundProperty.value));
+    logInfo("DatabaseHandler::changeSinkSoundPropertyDB changed MainSinkSoundProperty of sink:", sinkID, "type:", soundProperty.type, "to:", soundProperty.value);
 
     return E_OK;
 }
@@ -3757,17 +3839,18 @@ am_Error_e DatabaseHandler::changeCrossFaderHotSink(const am_crossfaderID_t cros
     sqlite3_bind_int(query, 1, hotsink);
     if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeCrossFaderHotSink SQLITE Step error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::changeCrossFaderHotSink SQLITE Step error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::changeCrossFaderHotSink SQLITE Finalize error code:"), DLT_INT(eCode));
+        logError("DatabaseHandler::changeCrossFaderHotSink SQLITE Finalize error code:", eCode);
+
         return E_DATABASE_ERROR;
     }
 
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DatabaseHandler::changeCrossFaderHotSink changed hotsink of crossfader="), DLT_INT(crossfaderID), DLT_STRING("to:"), DLT_INT(hotsink));
-
+    logInfo("DatabaseHandler::changeCrossFaderHotSink changed hotsink of crossfader=", crossfaderID, "to:", hotsink);
     return E_OK;
 }
 
@@ -3800,13 +3883,15 @@ am_Error_e DatabaseHandler::getRoutingTree(bool onlyfree, RoutingTree& tree, std
 
         if (eCode != SQLITE_DONE)
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getRoutingTree SQLITE error code:"), DLT_INT(eCode));
+            logError("DatabaseHandler::getRoutingTree SQLITE error code:", eCode);
+
             return (E_DATABASE_ERROR);
         }
 
         if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DatabaseHandler::getRoutingTree SQLITE Finalize error code:"), DLT_INT(eCode));
+            logError("DatabaseHandler::getRoutingTree SQLITE Finalize error code:", eCode);
+
             return (E_DATABASE_ERROR);
         }
         i++;

@@ -1,9 +1,18 @@
-commit 002295bee9b1a4b4b97060458be4ab8d4cb43eda
+commit bef6b6f38de4f6b201a1b6ce24855c8894031602
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * fixed non reference in routing interface peeksourceclassID and peeksinkclassID
+    * fixed bug in complexer usage of routing algorithm
+    * added more router tests
+
+commit 58d62c4af578c10375bf9baa946e33f340c42a1f
 Author: christian mueller <christian.ei.mueller@bmw.de>
 
     * regenerated EA code based on Conti Feedback.
     * changed paths of audiomanagertypes include in generated files
     * changed order of parameters in asyncSetSinkSoundProperty / asyncSetSourceSoundProperty / cbTimingInformationChanged  to have common style over all interfaces.
+    * changed default include paths for Controller etc...
+    * cleanup of warnings
 
 commit 93c6b1973d59ce225e9cb5d2bcaea7d01c5fda52
 Author: christian mueller <christian.ei.mueller@bmw.de>

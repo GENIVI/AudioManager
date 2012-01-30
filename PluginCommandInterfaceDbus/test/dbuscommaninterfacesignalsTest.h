@@ -27,7 +27,6 @@
 #define DBUSCOMMANINTERFACESIGNALSTEST_H_
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include <dlt/dlt.h>
 #include <algorithm>
 #include <string>
 #include <vector>

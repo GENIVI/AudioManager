@@ -23,12 +23,10 @@
  */
 
 #include "ControlSender.h"
-#include <assert.h>
-#include <dlt/dlt.h>
-#include <fstream>
 #include "PluginTemplate.h"
-
-DLT_IMPORT_CONTEXT(AudioManager)
+#include "DLTWrapper.h"
+#include <assert.h>
+#include <fstream>
 
 using namespace am;
 
@@ -41,7 +39,7 @@ ControlSender::ControlSender(std::string controlPluginFile) :
     std::ifstream isfile(controlPluginFile.c_str());
     if (!isfile)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("ControlSender::ControlSender: Controller plugin not found:"), DLT_STRING(controlPluginFile.c_str()));
+        logError("ControlSender::ControlSender: Controller plugin not found:",controlPluginFile);
     }
     else if (!controlPluginFile.empty())
     {
@@ -55,7 +53,7 @@ ControlSender::ControlSender(std::string controlPluginFile) :
     }
     else
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("ControlSender::ControlSender: No controller loaded !"));
+        logError("ControlSender::ControlSender: No controller loaded !");
     }
 }
 

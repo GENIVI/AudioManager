@@ -72,8 +72,8 @@ public:
     am_Error_e deregisterSource(const am_sourceID_t sourceID);
     am_Error_e registerCrossfader(const am_Crossfader_s& crossfaderData, am_crossfaderID_t& crossfaderID);
     am_Error_e deregisterCrossfader(const am_crossfaderID_t crossfaderID);
-    am_Error_e peekSinkClassID(const std::string name, const am_sinkClass_t& sinkClassID);
-    am_Error_e peekSourceClassID(const std::string name, const am_sourceClass_t& sourceClassID);
+    am_Error_e peekSinkClassID(const std::string& name, const am_sinkClass_t& sinkClassID);
+    am_Error_e peekSourceClassID(const std::string& name, const am_sourceClass_t& sourceClassID);
     void hookInterruptStatusChange(const am_sourceID_t sourceID, const am_InterruptState_e interruptState);
     void hookDomainRegistrationComplete(const am_domainID_t domainID);
     void hookSinkAvailablityStatusChange(const am_sinkID_t sinkID, const am_Availability_s& availability);

@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 2.6)
 
 PROJECT(PluginCommandInterfaceDbus)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -DDLT_CONTEXT=CommandPluginDbus")
-
 set(LIBRARY_OUTPUT_PATH ${PLUGINS_OUTPUT_PATH}/command)
 set(DOC_OUTPUT_PATH ${DOC_OUTPUT_PATH}/CommandDBusPlugin)
 set(INCLUDES_FOLDER "include")
@@ -33,7 +31,6 @@ add_library(PluginCommandInterfaceDbus SHARED ${PLUGINDBUS_SRCS_CXX})
 SET_TARGET_PROPERTIES(PluginCommandInterfaceDbus PROPERTIES 
                                             SOVERSION "${LIB_INTERFACE_VERSION}"
 )
-
 
 TARGET_LINK_LIBRARIES(PluginCommandInterfaceDbus 
     ${DLT_LIBRARIES}

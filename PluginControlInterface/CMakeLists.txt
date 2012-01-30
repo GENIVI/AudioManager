@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 2.6)
 
 PROJECT(PluginControlInterface)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -DDLT_CONTEXT=ControlPluginDbus")
-
 set(LIBRARY_OUTPUT_PATH ${PLUGINS_OUTPUT_PATH}/control)
 set(DOC_OUTPUT_PATH ${DOC_OUTPUT_PATH}/ControlPlugin)
 set(INCLUDES_FOLDER "include")

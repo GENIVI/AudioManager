@@ -29,7 +29,6 @@
 #include <sys/ioctl.h>
 #include <string.h>
 #include <netdb.h>
-#include <dlt/dlt.h>
 #include <config.h>
 #include <errno.h>
 #include <sstream>
@@ -40,8 +39,6 @@
 #include "RoutingSender.h"
 
 using namespace am;
-
-DLT_IMPORT_CONTEXT(AudioManager)
 
 TelnetServer* TelnetServer::instance = NULL;
 
@@ -92,11 +89,6 @@ TelnetServer::TelnetServer(SocketHandler *iSocketHandler, CommandSender *iComman
     servAddr.sin_addr.s_addr = INADDR_ANY;
     servAddr.sin_port = htons(servPort);
     bind(mConnectFD, (struct sockaddr *) &servAddr, sizeof(servAddr));
-
-    if (listen(mConnectFD, mMaxConnections) < 0)
-    {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("TelnetServer::TelnetServerk cannot listen "), DLT_INT(errno));
-    }DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("TelnetServer::TelnetServerk started listening on port"), DLT_INT(mServerPort));
 
     int a = 1;
     ioctl(mConnectFD, FIONBIO, (char *) &a);

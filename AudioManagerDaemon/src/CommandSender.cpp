@@ -25,13 +25,11 @@
 #include "CommandSender.h"
 #include "command/CommandReceiveInterface.h"
 #include <dirent.h>
-#include <dlt/dlt.h>
 #include "PluginTemplate.h"
+#include "DLTWrapper.h"
 using namespace am;
 
 #define REQUIRED_INTERFACE_VERSION 1
-
-DLT_IMPORT_CONTEXT(AudioManager)
 
 //!< macro to call all interfaces
 #define CALL_ALL_INTERFACES(...) 														 \
@@ -54,12 +52,12 @@ CommandSender::CommandSender(const std::vector<std::string>& listOfPluginDirecto
     for (; dirIter < dirIterEnd; ++dirIter)
     {
         const char* directoryName = dirIter->c_str();
-        DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("Searching for CommandPlugins in"), DLT_STRING(directoryName));
+        logInfo("Searching for CommandPlugins in",directoryName);
         DIR *directory = opendir(directoryName);
 
         if (!directory)
         {
-            DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("Error opening directory "), DLT_STRING(directoryName));
+            logInfo("Error opening directory ",directoryName);
             continue;
         }
 
@@ -88,14 +86,14 @@ CommandSender::CommandSender(const std::vector<std::string>& listOfPluginDirecto
 
     for (; iter < iterEnd; ++iter)
     {
-        DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("Loading CommandSender plugin"), DLT_STRING(iter->c_str()));
+        logInfo("Loading CommandSender plugin",*iter);
         CommandSendInterface* (*createFunc)();
         void* tempLibHandle = NULL;
         createFunc = getCreateFunction<CommandSendInterface*()>(*iter, tempLibHandle);
 
         if (!createFunc)
         {
-            DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("Entry point of CommandPlugin not found"), DLT_STRING(iter->c_str()));
+            logInfo("Entry point of CommandPlugin not found",*iter);
             continue;
         }
 
@@ -103,14 +101,14 @@ CommandSender::CommandSender(const std::vector<std::string>& listOfPluginDirecto
 
         if (!commander)
         {
-            DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("CommandPlugin initialization failed. Entry Function not callable"));
+            logInfo("CommandPlugin initialization failed. Entry Function not callable");
             continue;
         }
 
         //check libversion
         if (commander->getInterfaceVersion() < REQUIRED_INTERFACE_VERSION)
         {
-            DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("RoutingPlugin initialization failed. Version of Interface to old"));
+            logInfo("RoutingPlugin initialization failed. Version of Interface to old");
             continue;
         }
 

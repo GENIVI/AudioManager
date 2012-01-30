@@ -28,13 +28,11 @@
 #include <fstream>
 #include <sstream>
 #include <string>
-#include <dlt/dlt.h>
 #include <assert.h>
 #include <stdlib.h>
+#include "DLTWrapper.h"
 
 using namespace am;
-
-DLT_IMPORT_CONTEXT(AudioManager)
 
 #define ROOT_INTROSPECT_XML												\
 DBUS_INTROSPECT_1_0_XML_DOCTYPE_DECL_NODE								\
@@ -58,16 +56,16 @@ DBusWrapper::DBusWrapper() :
         mListTimerhandlePointer()
 {
     dbus_error_init(&mDBusError);
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DBusWrapper::DBusWrapper Opening DBus connection"));
+    logInfo("DBusWrapper::DBusWrapper Opening DBus connection");
     mDbusConnection = dbus_bus_get(DBUS_BUS_SESSION, &mDBusError);
     if (dbus_error_is_set(&mDBusError))
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DBusWrapper::DBusWrapper Error while getting the DBus"));
+        logError("DBusWrapper::DBusWrapper Error while getting the DBus");
         dbus_error_free(&mDBusError);
     }
     if (NULL == mDbusConnection)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DBusWrapper::DBusWrapper DBus Connection is null"));
+        logError("DBusWrapper::DBusWrapper DBus Connection is null");
     }
 
     //first, we are old enought to live longer then the connection:
@@ -78,12 +76,12 @@ DBusWrapper::DBusWrapper() :
     int ret = dbus_bus_request_name(mDbusConnection, DBUS_SERVICE_PREFIX, DBUS_NAME_FLAG_DO_NOT_QUEUE, &mDBusError);
     if (dbus_error_is_set(&mDBusError))
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DBusWrapper::DBusWrapper Name Error"), DLT_STRING(mDBusError.message));
+        logError("DBusWrapper::DBusWrapper Name Error",mDBusError.message);
         dbus_error_free(&mDBusError);
     }
     if (DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER != ret)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DBusWrapper::DBusWrapper Wrapper is not the Primary Owner"), DLT_INT(ret));
+        logError("DBusWrapper::DBusWrapper Wrapper is not the Primary Owner",ret);
         exit(1);
     }
 }
@@ -102,16 +100,16 @@ DBusWrapper::DBusWrapper(SocketHandler* socketHandler) :
     assert(mSocketHandler!=0);
 
     dbus_error_init(&mDBusError);
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DBusWrapper::DBusWrapper Opening DBus connection"));
+    logInfo("DBusWrapper::DBusWrapper Opening DBus connection");
     mDbusConnection = dbus_bus_get(DBUS_BUS_SESSION, &mDBusError);
     if (dbus_error_is_set(&mDBusError))
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DBusWrapper::DBusWrapper Error while getting the DBus"));
+        logError("DBusWrapper::DBusWrapper Error while getting the DBus");
         dbus_error_free(&mDBusError);
     }
     if (NULL == mDbusConnection)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DBusWrapper::DBusWrapper DBus Connection is null"));
+        logError("DBusWrapper::DBusWrapper DBus Connection is null");
     }
 
     //then we need to adopt the dbus to our mainloop:
@@ -125,14 +123,14 @@ DBusWrapper::DBusWrapper(SocketHandler* socketHandler) :
     dbus_bool_t watch = dbus_connection_set_watch_functions(mDbusConnection, addWatch, removeWatch, toogleWatch, this, NULL);
     if (!watch)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DBusWrapper::DBusWrapper Registering of watch functions failed"));
+        logError("DBusWrapper::DBusWrapper Registering of watch functions failed");
     }
 
     //add timer functions:
     dbus_bool_t timer = dbus_connection_set_timeout_functions(mDbusConnection, addTimeout, removeTimeout, toggleTimeout, this, NULL);
     if (!timer)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DBusWrapper::DBusWrapper Registering of timer functions failed"));
+        logError("DBusWrapper::DBusWrapper Registering of timer functions failed");
     }
 
     //register callback for Introspectio
@@ -141,12 +139,12 @@ DBusWrapper::DBusWrapper(SocketHandler* socketHandler) :
     int ret = dbus_bus_request_name(mDbusConnection, DBUS_SERVICE_PREFIX, DBUS_NAME_FLAG_DO_NOT_QUEUE, &mDBusError);
     if (dbus_error_is_set(&mDBusError))
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DBusWrapper::DBusWrapper Name Error"), DLT_STRING(mDBusError.message));
+        logError("DBusWrapper::DBusWrapper Name Error",mDBusError.message);
         dbus_error_free(&mDBusError);
     }
     if (DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER != ret)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DBusWrapper::DBusWrapper Wrapper is not the Primary Owner"), DLT_INT(ret));
+        logError("DBusWrapper::DBusWrapper Wrapper is not the Primary Owner",ret);
         exit(1);
     }
 }
@@ -154,7 +152,7 @@ DBusWrapper::DBusWrapper(SocketHandler* socketHandler) :
 DBusWrapper::~DBusWrapper()
 {
     //close the connection again
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DBusWrapper::~DBusWrapper Closing DBus connection"));
+    logInfo("DBusWrapper::~DBusWrapper Closing DBus connection");
     dbus_connection_unref(mDbusConnection);
 
     //clean up all timerhandles we created but did not delete before
@@ -167,7 +165,7 @@ DBusWrapper::~DBusWrapper()
 
 void DBusWrapper::registerCallback(const DBusObjectPathVTable* vtable, const std::string& path, void* userdata)
 {
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DBusWrapper::~registerCallback register callback:"), DLT_STRING(path.c_str()));
+    logInfo("DBusWrapper::~registerCallback register callback:",path);
 
     std::string completePath = std::string(DBUS_SERVICE_OBJECT_PATH) + "/" + path;
     dbus_error_init(&mDBusError);
@@ -175,7 +173,7 @@ void DBusWrapper::registerCallback(const DBusObjectPathVTable* vtable, const std
     dbus_connection_register_object_path(mDbusConnection, completePath.c_str(), vtable, userdata);
     if (dbus_error_is_set(&mDBusError))
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DBusWrapper::registerCallack error: "), DLT_STRING(mDBusError.message));
+        logError("DBusWrapper::registerCallack error: ",mDBusError.message);
         dbus_error_free(&mDBusError);
     }
     mNodesList.push_back(path);
@@ -183,7 +181,7 @@ void DBusWrapper::registerCallback(const DBusObjectPathVTable* vtable, const std
 
 DBusHandlerResult DBusWrapper::cbRootIntrospection(DBusConnection *conn, DBusMessage *msg, void *reference)
 {
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DBusWrapper::~cbRootIntrospection called:"));
+    logInfo("DBusWrapper::~cbRootIntrospection called:");
 
     mReference = (DBusWrapper*) reference;
     std::list<std::string> nodesList = mReference->mNodesList;
@@ -210,13 +208,13 @@ DBusHandlerResult DBusWrapper::cbRootIntrospection(DBusConnection *conn, DBusMes
         dbus_message_iter_init_append(reply, &args);
         if (!dbus_message_iter_append_basic(&args, DBUS_TYPE_STRING, &string))
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DBusWrapper::~cbRootIntrospection DBUS Out Of Memory!"));
+            logError("DBusWrapper::~cbRootIntrospection DBUS Out Of Memory!");
         }
 
         // send the reply && flush the connection
         if (!dbus_connection_send(conn, reply, &serial))
         {
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DBusWrapper::~cbRootIntrospection DBUS Out Of Memory!"));
+            logError("DBusWrapper::~cbRootIntrospection DBUS Out Of Memory!");
         }
         dbus_connection_flush(conn);
         // free the reply
@@ -232,7 +230,7 @@ DBusHandlerResult DBusWrapper::cbRootIntrospection(DBusConnection *conn, DBusMes
 
 void DBusWrapper::dbusMainLoop()
 {
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DBusWrapper::dbusMainLoop Entering MainLoop"));
+    logInfo("DBusWrapper::dbusMainLoop Entering MainLoop");
 
     while (dbus_connection_read_write_dispatch(mDbusConnection, -1))
     {
@@ -268,7 +266,7 @@ dbus_bool_t DBusWrapper::addWatchDelegate(DBusWatch * watch, void* userData)
             event |= POLLOUT;
     }
 
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DBusWrapper::addWatchDelegate entered new watch, fd="), DLT_INT(dbus_watch_get_unix_fd(watch)), DLT_STRING("event flag="), DLT_INT(event));
+    logInfo("DBusWrapper::addWatchDelegate entered new watch, fd=",dbus_watch_get_unix_fd(watch),"event flag=",event);
     am_Error_e error = mSocketHandler->addFDPoll(dbus_watch_get_unix_fd(watch), event, NULL, &pDbusFireCallback, &pDbusCheckCallback, &pDbusDispatchCallback, watch, handle);
 
     //if everything is alright, add the watch and the handle to our map so we know this relationship
@@ -276,7 +274,8 @@ dbus_bool_t DBusWrapper::addWatchDelegate(DBusWatch * watch, void* userData)
     {
         mMapHandleWatch.insert(std::make_pair(watch, handle));
         return true;
-    }DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("DBusWrapper::addWatchDelegate entering watch failed"));
+    }
+    logError("DBusWrapper::addWatchDelegate entering watch failed");
     return (true);
 }
 
@@ -294,7 +293,7 @@ void DBusWrapper::removeWatchDelegate(DBusWatch *watch, void *userData)
     iterator = mMapHandleWatch.find(watch);
     if (iterator != mMapHandleWatch.end())
         mSocketHandler->removeFDPoll(iterator->second);
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DBusWrapper::removeWatch removed watch with handle"), DLT_INT(iterator->second));
+    logInfo("DBusWrapper::removeWatch removed watch with handle",iterator->second);
     mMapHandleWatch.erase(iterator);
 }
 
@@ -323,7 +322,7 @@ void DBusWrapper::toogleWatchDelegate(DBusWatch *watch, void *userData)
     iterator = mMapHandleWatch.find(watch);
     if (iterator != mMapHandleWatch.end())
         mSocketHandler->updateEventFlags(iterator->second, event);
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DBusWrapper::toogleWatchDelegate watch was toggeled"));
+    logInfo("DBusWrapper::toogleWatchDelegate watch was toggeled");
 }
 
 dbus_bool_t DBusWrapper::addTimeout(DBusTimeout *timeout, void* userData)
@@ -357,7 +356,7 @@ dbus_bool_t DBusWrapper::addTimeoutDelegate(DBusTimeout *timeout, void* userData
 
     //save timeout in Socket context
     userData = timeout;
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DBusWrapper::addTimeoutDelegate a timeout was added"));
+    logInfo("DBusWrapper::addTimeoutDelegate a timeout was added");
     return true;
 }
 
@@ -386,7 +385,7 @@ void DBusWrapper::removeTimeoutDelegate(DBusTimeout *timeout, void* userData)
         }
     }
     delete handle;
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DBusWrapper::removeTimeoutDelegate a timeout was removed"));
+    logInfo("DBusWrapper::removeTimeoutDelegate a timeout was removed");
 }
 
 void DBusWrapper::toggleTimeout(DBusTimeout *timeout, void* userData)
@@ -405,7 +404,7 @@ bool am::DBusWrapper::dbusDispatchCallback(const sh_pollHandle_t handle, void *u
     if (dbus_connection_dispatch(mDbusConnection) == DBUS_DISPATCH_COMPLETE)
         returnVal = false;
     dbus_connection_unref(mDbusConnection);
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DBusWrapper::dbusDispatchCallback was called"));
+    logInfo("DBusWrapper::dbusDispatchCallback was called");
     return returnVal;
 }
 
@@ -418,7 +417,7 @@ bool am::DBusWrapper::dbusCheckCallback(const sh_pollHandle_t handle, void *user
     if (dbus_connection_get_dispatch_status(mDbusConnection) == DBUS_DISPATCH_DATA_REMAINS)
         returnVal = true;
     dbus_connection_unref(mDbusConnection);
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DBusWrapper::dbusCheckCallback was called"));
+    logInfo("DBusWrapper::dbusCheckCallback was called");
     return returnVal;
 }
 
@@ -443,7 +442,7 @@ void am::DBusWrapper::dbusFireCallback(const pollfd pollfd, const sh_pollHandle_
     dbus_connection_ref(mDbusConnection);
     dbus_watch_handle(watch, flags);
     dbus_connection_unref(mDbusConnection);
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DBusWrapper::dbusFireCallback was called"));
+    logInfo("DBusWrapper::dbusFireCallback was called");
 }
 
 void DBusWrapper::toggleTimeoutDelegate(DBusTimeout *timeout, void* userData)
@@ -465,7 +464,7 @@ void DBusWrapper::toggleTimeoutDelegate(DBusTimeout *timeout, void* userData)
     else
     {
         mSocketHandler->stopTimer(*handle);
-    }DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DBusWrapper::toggleTimeoutDelegate was called"));
+    }logInfo("DBusWrapper::toggleTimeoutDelegate was called");
 }
 
 void DBusWrapper::dbusTimerCallback(sh_timerHandle_t handle, void *userData)
@@ -479,6 +478,6 @@ void DBusWrapper::dbusTimerCallback(sh_timerHandle_t handle, void *userData)
         mSocketHandler->restartTimer(handle, ts);
     }
     dbus_timeout_handle((DBusTimeout*) userData);
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("DBusWrapper::dbusTimerCallback was called"));
+    logInfo("DBusWrapper::dbusTimerCallback was called");
 }
 

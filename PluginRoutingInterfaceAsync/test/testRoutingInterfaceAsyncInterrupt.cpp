@@ -26,11 +26,10 @@
 
 #include "testRoutingInterfaceAsync.h"
 #include "config.h"
+#include "DLTWrapper.h"
 
 using namespace am;
 using namespace testing;
-
-DLT_DECLARE_CONTEXT(DLT_CONTEXT)
 
 std::vector<std::string> testRoutingInterfaceAsync::pListRoutingPluginDirs = returnListPlugins();
 am_domainID_t testRoutingInterfaceAsync::mDomainIDCount = 0;
@@ -49,9 +48,7 @@ testRoutingInterfaceAsync::~testRoutingInterfaceAsync()
 
 void testRoutingInterfaceAsync::SetUp()
 {
-    DLT_REGISTER_APP("DPtest", "RoutingInterfacetest");
-    DLT_REGISTER_CONTEXT(DLT_CONTEXT, "Main", "Main Context");
-    DLT_LOG(DLT_CONTEXT, DLT_LOG_INFO, DLT_STRING("RoutingSendInterface Test started "));
+    logInfo("RoutingSendInterface Test started ");
 
     std::vector<int> domainIDs;
     domainIDs.push_back(0);
@@ -115,7 +112,6 @@ void testRoutingInterfaceAsync::timerCallback(sh_timerHandle_t handle, void *use
 
 void testRoutingInterfaceAsync::TearDown()
 {
-    DLT_UNREGISTER_CONTEXT(DLT_CONTEXT);
 }
 
 std::string DBUSCOMMAND = "dbus-send --session --print-reply --dest=org.genivi.test /org/genivi/test org.genivi.test.";

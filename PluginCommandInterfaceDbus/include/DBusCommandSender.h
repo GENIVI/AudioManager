@@ -79,6 +79,7 @@ private:
     DBusWrapper* mDBusWrapper;
     CommandReceiveInterface* mCommandReceiveInterface;
 
+
     /**
      * list of sinks, needed to send out only deltas
      */

@@ -23,7 +23,7 @@
  */
 
 #include "RoutingSenderAsyn.h"
-#include "DltContext.h"
+#include "DLTWrapper.h"
 #include <algorithm>
 #include <vector>
 #include <poll.h>
@@ -237,7 +237,7 @@ pPool(pool), //
             timespec temp;
             if(clock_gettime(0, &temp)==-1)
             {
-                DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("Worker::timedWait error on getting time"));
+                logError("Worker::timedWait error on getting time");
             }
             temp.tv_nsec+=timer.tv_nsec;
             temp.tv_sec+=timer.tv_sec;
@@ -247,16 +247,16 @@ pPool(pool), //
             //a timeout happened
             if(errno == ETIMEDOUT)
             {
-                DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("Worker::timedWait timeout waiting error"));
+                logError("Worker::timedWait timeout waiting error");
                 return (false);
             }
             else //failure in waiting, nevertheless, we quit the thread...
             {
-                DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("Worker::timedWait semaphore waiting error"));
+                logError("Worker::timedWait semaphore waiting error");
                 return (true);
             }
         }
-        DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("Worker::timedWait semaphore waiting error"));
+        logError("Worker::timedWait semaphore waiting error");
         this->cancelWork();
         return (true);
     }
@@ -272,8 +272,6 @@ mMapHandleWorker ( ), //
 mMapConnectionIDRoute(),//
 mPool(10)
 {
-    DLT_REGISTER_CONTEXT(PluginRoutingAsync,"ASY","Async Plugin");
-    DLT_LOG(PluginRoutingAsync,DLT_LOG_INFO, DLT_STRING("AsyncRoutingSender constructed"));
 }
 
 AsyncRoutingSender::~AsyncRoutingSender()
@@ -299,7 +297,7 @@ void AsyncRoutingSender::routingInterfacesReady()
         am_domainID_t domainID;
         if ((eCode = mReceiveInterface->registerDomain(*domainIter, domainID)) != E_OK)
         {
-            DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("AsyncRoutingSender::routingInterfacesReady error on registering domain, failed with"), DLT_INT(eCode));
+            logError("AsyncRoutingSender::routingInterfacesReady error on registering domain, failed with", eCode);
         }
         domainIter->domainID = domainID;
     }
@@ -313,7 +311,7 @@ void AsyncRoutingSender::routingInterfacesReady()
         sourceIter->domainID = mDomains[0].domainID;
         if ((eCode = mReceiveInterface->registerSource(*sourceIter, sourceID)) != E_OK)
         {
-            DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("AsyncRoutingSender::routingInterfacesReady error on registering source, failed with"), DLT_INT(eCode));
+            logError("AsyncRoutingSender::routingInterfacesReady error on registering source, failed with", eCode);
         }
     }
 
@@ -326,7 +324,7 @@ void AsyncRoutingSender::routingInterfacesReady()
         sinkIter->domainID = mDomains[0].domainID;
         if ((eCode = mReceiveInterface->registerSink(*sinkIter, sinkID)) != E_OK)
         {
-            DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("AsyncRoutingSender::routingInterfacesReady error on registering sink, failed with"), DLT_INT(eCode));
+            logError("AsyncRoutingSender::routingInterfacesReady error on registering sink, failed with", eCode);
         }
     }
 
@@ -340,7 +338,7 @@ void AsyncRoutingSender::routingInterfacesReady()
 //		gatewayIter->controlDomainID=mDomains[0].domainID;
 //		if((eCode=mReceiveInterface->registerGateway(*gatewayIter,gatewayID))!=E_OK)
 //		{
-//			DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("AsyncRoutingSender::routingInterfacesReady error on registering gateway, failed with"), DLT_INT(eCode));
+//			logError("AsyncRoutingSender::routingInterfacesReady error on registering gateway, failed with",eCode));
 //		}
 //		gatewayIter->gatewayID=gatewayID;
 //	}
@@ -426,7 +424,7 @@ am_Error_e AsyncRoutingSender::asyncConnect(const am_Handle_s handle, const am_c
     asycConnectWorker *worker = new asycConnectWorker(this, &mPool, &mShadow, handle, connectionID, sourceID, sinkID, connectionFormat);
     if ((work = mPool.startWork(worker)) == -1)
     {
-        DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("AsyncRoutingSender::asyncConnect not enough threads!"));
+        logError("AsyncRoutingSender::asyncConnect not enough threads!");
         delete worker;
         return (E_NOT_POSSIBLE);
     }
@@ -461,7 +459,7 @@ am_Error_e AsyncRoutingSender::asyncDisconnect(const am_Handle_s handle, const a
     asycDisConnectWorker *worker = new asycDisConnectWorker(this, &mPool, &mShadow, handle, connectionID);
     if ((work = mPool.startWork(worker)) == -1)
     {
-        DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("AsyncRoutingSender::asyncDisconnect not enough threads!"));
+        logError("AsyncRoutingSender::asyncDisconnect not enough threads!");
         delete worker;
         return (E_NOT_POSSIBLE);
     }
@@ -503,7 +501,7 @@ am_Error_e AsyncRoutingSender::asyncSetSinkVolume(const am_Handle_s handle, cons
     asyncSetSinkVolumeWorker *worker = new asyncSetSinkVolumeWorker(this, &mPool, &mShadow, sinkIter->volume, handle, sinkID, volume, ramp, time);
     if ((work = mPool.startWork(worker)) == -1)
     {
-        DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("AsyncRoutingSender::asyncSetSinkVolume not enough threads!"));
+        logError("AsyncRoutingSender::asyncSetSinkVolume not enough threads!");
         delete worker;
         return (E_NOT_POSSIBLE);
     }
@@ -545,7 +543,7 @@ am_Error_e AsyncRoutingSender::asyncSetSourceVolume(const am_Handle_s handle, co
     asyncSetSourceVolumeWorker *worker = new asyncSetSourceVolumeWorker(this, &mPool, &mShadow, sourceIter->volume, handle, sourceID, volume, ramp, time);
     if ((work = mPool.startWork(worker)) == -1)
     {
-        DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("AsyncRoutingSender::asyncSetSourceVolume not enough threads!"));
+        logError("AsyncRoutingSender::asyncSetSourceVolume not enough threads!");
         delete worker;
         return (E_NOT_POSSIBLE);
     }
@@ -587,7 +585,7 @@ am_Error_e AsyncRoutingSender::asyncSetSourceState(const am_Handle_s handle, con
     asyncSetSourceStateWorker *worker = new asyncSetSourceStateWorker(this, &mPool, &mShadow, handle, sourceID, state);
     if ((work = mPool.startWork(worker)) == -1)
     {
-        DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("AsyncRoutingSender::asyncSetSourceState not enough threads!"));
+        logError("AsyncRoutingSender::asyncSetSourceState not enough threads!");
         delete worker;
         return (E_NOT_POSSIBLE);
     }
@@ -629,7 +627,7 @@ am_Error_e AsyncRoutingSender::asyncSetSinkSoundProperty(const am_Handle_s handl
     asyncSetSinkSoundPropertyWorker *worker = new asyncSetSinkSoundPropertyWorker(this, &mPool, &mShadow, handle, soundProperty, sinkID);
     if ((work = mPool.startWork(worker)) == -1)
     {
-        DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("AsyncRoutingSender::asyncSetSinkSoundProperty not enough threads!"));
+        logError("AsyncRoutingSender::asyncSetSinkSoundProperty not enough threads!");
         delete worker;
         return (E_NOT_POSSIBLE);
     }
@@ -680,7 +678,7 @@ am_Error_e AsyncRoutingSender::setDomainState(const am_domainID_t domainID, cons
     asyncDomainStateChangeWorker *worker = new asyncDomainStateChangeWorker(this, &mPool, &mShadow, domainID, domainState);
     if ((work = mPool.startWork(worker)) == -1)
     {
-        DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("AsyncRoutingSender::setDomainState not enough threads!"));
+        logError("AsyncRoutingSender::setDomainState not enough threads!");
         delete worker;
         return (E_NOT_POSSIBLE);
     }
@@ -718,7 +716,7 @@ am_Error_e AsyncRoutingSender::asyncSetSourceSoundProperty(const am_Handle_s han
     asyncSetSourceSoundPropertyWorker *worker = new asyncSetSourceSoundPropertyWorker(this, &mPool, &mShadow, handle, soundProperty, sourceID);
     if ((work = mPool.startWork(worker)) == -1)
     {
-        DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("AsyncRoutingSender::asyncSetSourceState not enough threads!"));
+        logError("AsyncRoutingSender::asyncSetSourceState not enough threads!");
         delete worker;
         return (E_NOT_POSSIBLE);
     }
@@ -817,7 +815,7 @@ void AsyncRoutingSender::removeHandleSafe(uint16_t handle)
     pthread_mutex_lock(&mMapHandleWorkerMutex);
     if (mMapHandleWorker.erase(handle))
     {
-        DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("AsyncRoutingSender::removeHandle could not remove handle"));
+        logError("AsyncRoutingSender::removeHandle could not remove handle");
     }
     pthread_mutex_unlock(&mMapHandleWorkerMutex);
 }
@@ -827,7 +825,7 @@ void AsyncRoutingSender::removeConnectionSafe(am_connectionID_t connectionID)
     pthread_mutex_lock(&mMapConnectionMutex);
     if (mMapConnectionIDRoute.erase(connectionID))
     {
-        DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("AsyncRoutingSender::removeConnectionSafe could not remove connection"));
+        logError("AsyncRoutingSender::removeConnectionSafe could not remove connection");
     }
     pthread_mutex_unlock(&mMapConnectionMutex);
 }
@@ -984,7 +982,7 @@ asycConnectWorker::asycConnectWorker(AsyncRoutingSender * asyncSender, WorkerThr
 
 void asycConnectWorker::start2work()
 {
-    DLT_LOG(PluginRoutingAsync, DLT_LOG_INFO, DLT_STRING("Start connecting"));
+    logInfo("Start connecting");
     timespec t;
     t.tv_nsec = 0;
     t.tv_sec = 1;
@@ -1024,7 +1022,7 @@ asycDisConnectWorker::asycDisConnectWorker(AsyncRoutingSender *asyncSender, Work
 
 void asycDisConnectWorker::start2work()
 {
-    DLT_LOG(PluginRoutingAsync, DLT_LOG_INFO, DLT_STRING("Start disconnecting"));
+    logInfo("Start disconnecting");
     timespec t;
     t.tv_nsec = 0;
     t.tv_sec = 1;
@@ -1067,7 +1065,7 @@ asyncSetSinkVolumeWorker::asyncSetSinkVolumeWorker(AsyncRoutingSender *asyncSend
 void asyncSetSinkVolumeWorker::start2work()
 {
     //todo: this implementation does not respect time and ramp....
-    DLT_LOG(PluginRoutingAsync, DLT_LOG_INFO, DLT_STRING("Start setting sink volume"));
+    logInfo("Start setting sink volume");
     timespec t;
     t.tv_nsec = 10000000;
     t.tv_sec = 0;
@@ -1116,7 +1114,7 @@ asyncSetSourceVolumeWorker::asyncSetSourceVolumeWorker(AsyncRoutingSender *async
 void asyncSetSourceVolumeWorker::start2work()
 {
     //todo: this implementation does not respect time and ramp....
-    DLT_LOG(PluginRoutingAsync, DLT_LOG_INFO, DLT_STRING("Start setting source volume"));
+    logInfo("Start setting source volume");
     timespec t;
     t.tv_nsec = 10000000;
     t.tv_sec = 0;
@@ -1161,7 +1159,7 @@ asyncSetSourceStateWorker::asyncSetSourceStateWorker(AsyncRoutingSender *asyncSe
 
 void asyncSetSourceStateWorker::start2work()
 {
-    DLT_LOG(PluginRoutingAsync, DLT_LOG_INFO, DLT_STRING("Start setting source state"));
+    logInfo("Start setting source state");
     timespec t;
     t.tv_nsec = 0;
     t.tv_sec = 1;
@@ -1201,7 +1199,7 @@ asyncSetSinkSoundPropertyWorker::asyncSetSinkSoundPropertyWorker(AsyncRoutingSen
 
 void asyncSetSinkSoundPropertyWorker::start2work()
 {
-    DLT_LOG(PluginRoutingAsync, DLT_LOG_INFO, DLT_STRING("Start setting sink sound property"));
+    logInfo("Start setting sink sound property");
     timespec t;
     t.tv_nsec = 0;
     t.tv_sec = 1;
@@ -1241,7 +1239,7 @@ asyncSetSourceSoundPropertyWorker::asyncSetSourceSoundPropertyWorker(AsyncRoutin
 
 void asyncSetSourceSoundPropertyWorker::start2work()
 {
-    DLT_LOG(PluginRoutingAsync, DLT_LOG_INFO, DLT_STRING("Start setting source sound property"));
+    logInfo("Start setting source sound property");
     timespec t;
     t.tv_nsec = 0;
     t.tv_sec = 1;
@@ -1281,7 +1279,7 @@ asyncDomainStateChangeWorker::asyncDomainStateChangeWorker(AsyncRoutingSender *a
 void asyncDomainStateChangeWorker::start2work()
 {
     //todo: sendchanged data must be in here !
-    DLT_LOG(PluginRoutingAsync, DLT_LOG_INFO, DLT_STRING("Start setting source sound property"));
+    logInfo("Start setting source sound property");
     timespec t;
     t.tv_nsec = 0;
     t.tv_sec = 1;

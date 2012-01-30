@@ -53,6 +53,7 @@ file(GLOB CONTROL_INTERFACE_SRCS_CXX
     "../../src/ControlReceiver.cpp"
     "../../src/ControlSender.cpp"
     "../../src/Router.cpp"
+    "../../src/DLTWrapper.cpp"
     "../CommonFunctions.cpp" 
     "*.cpp"    
 )

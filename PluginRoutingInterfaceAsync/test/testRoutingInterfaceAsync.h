@@ -27,7 +27,6 @@
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include <dlt/dlt.h>
 #include "mocklnterfaces.h"
 #include "SocketHandler.h"
 #include "../../AudioManagerDaemon/include/RoutingSender.h"

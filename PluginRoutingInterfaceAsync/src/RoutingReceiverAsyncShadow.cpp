@@ -23,7 +23,6 @@
  */
 
 #include "RoutingReceiverAsyncShadow.h"
-#include "DltContext.h"
 #include <assert.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
@@ -32,6 +31,7 @@
 #include <fcntl.h>
 #include <sys/un.h>
 #include <errno.h>
+#include "DLTWrapper.h"
 
 using namespace am;
 
@@ -73,7 +73,7 @@ void RoutingReceiverAsyncShadow::ackConnect(const am_Handle_s handle, const am_c
     //ok, fire the signal that data needs to be received !
     if (write(mPipe[1], &msg.msgID, sizeof(msgID_e)) == -1)
     {
-        DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("RoutingReceiverAsyncShadow::ackConnect write failed, error code:"), DLT_STRING(strerror(errno)));
+        logError("RoutingReceiverAsyncShadow::ackConnect write failed, error code:",strerror(errno));
     }
 }
 
@@ -97,7 +97,7 @@ void RoutingReceiverAsyncShadow::ackDisconnect(const am_Handle_s handle, const a
     //ok, fire the signal that data needs to be received !
     if (write(mPipe[1], &msg.msgID, sizeof(msgID_e)) == -1)
     {
-        DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("RoutingReceiverAsyncShadow::ackDisconnect write failed, error code:"), DLT_STRING(strerror(errno)));
+        logError("RoutingReceiverAsyncShadow::ackDisconnect write failed, error code:",strerror(errno));
     }
 }
 
@@ -121,7 +121,7 @@ void RoutingReceiverAsyncShadow::ackSetSinkVolumeChange(const am_Handle_s handle
     //ok, fire the signal that data needs to be received !
     if (write(mPipe[1], &msg.msgID, sizeof(msgID_e)) == -1)
     {
-        DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("RoutingReceiverAsyncShadow::ackSetSinkVolumeChange write failed, error code:"), DLT_STRING(strerror(errno)));
+        logError("RoutingReceiverAsyncShadow::ackSetSinkVolumeChange write failed, error code:",strerror(errno));
     }
 }
 
@@ -145,7 +145,7 @@ void RoutingReceiverAsyncShadow::ackSetSourceVolumeChange(const am_Handle_s hand
     //ok, fire the signal that data needs to be received !
     if (write(mPipe[1], &msg.msgID, sizeof(msgID_e)) == -1)
     {
-        DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("RoutingReceiverAsyncShadow::ackSetSourceVolumeChange write failed, error code:"), DLT_STRING(strerror(errno)));
+        logError("RoutingReceiverAsyncShadow::ackSetSourceVolumeChange write failed, error code:",strerror(errno));
     }
 }
 
@@ -168,7 +168,7 @@ void RoutingReceiverAsyncShadow::ackSetSourceState(const am_Handle_s handle, con
     //ok, fire the signal that data needs to be received !
     if (write(mPipe[1], &msg.msgID, sizeof(msgID_e)) == -1)
     {
-        DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("RoutingReceiverAsyncShadow::ackSetSourceState write failed, error code:"), DLT_STRING(strerror(errno)));
+        logError("RoutingReceiverAsyncShadow::ackSetSourceState write failed, error code:",strerror(errno));
     }
 }
 
@@ -191,7 +191,7 @@ void RoutingReceiverAsyncShadow::ackSetSinkSoundProperty(const am_Handle_s handl
     //ok, fire the signal that data needs to be received !
     if (write(mPipe[1], &msg.msgID, sizeof(msgID_e)) == -1)
     {
-        DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("RoutingReceiverAsyncShadow::ackSetSinkSoundProperty write failed, error code:"), DLT_STRING(strerror(errno)));
+        logError("RoutingReceiverAsyncShadow::ackSetSinkSoundProperty write failed, error code:",strerror(errno));
     }
 }
 
@@ -214,7 +214,7 @@ void RoutingReceiverAsyncShadow::ackSetSourceSoundProperty(const am_Handle_s han
     //ok, fire the signal that data needs to be received !
     if (write(mPipe[1], &msg.msgID, sizeof(msgID_e)) == -1)
     {
-        DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("RoutingReceiverAsyncShadow::ackSetSourceSoundProperty write failed, error code:"), DLT_STRING(strerror(errno)));
+        logError("RoutingReceiverAsyncShadow::ackSetSourceSoundProperty write failed, error code:",strerror(errno));
     }
 }
 
@@ -238,7 +238,7 @@ void RoutingReceiverAsyncShadow::ackCrossFading(const am_Handle_s handle, const 
     //ok, fire the signal that data needs to be received !
     if (write(mPipe[1], &msg.msgID, sizeof(msgID_e)) == -1)
     {
-        DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("RoutingReceiverAsyncShadow::ackCrossFading write failed, error code:"), DLT_STRING(strerror(errno)));
+        logError("RoutingReceiverAsyncShadow::ackCrossFading write failed, error code:",strerror(errno));
     }
 }
 
@@ -262,7 +262,7 @@ void RoutingReceiverAsyncShadow::ackSourceVolumeTick(const am_Handle_s handle, c
     //ok, fire the signal that data needs to be received !
     if (write(mPipe[1], &msg.msgID, sizeof(msgID_e)) == -1)
     {
-        DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("RoutingReceiverAsyncShadow::ackSourceVolumeTick write failed, error code:"), DLT_STRING(strerror(errno)));
+        logError("RoutingReceiverAsyncShadow::ackSourceVolumeTick write failed, error code:",strerror(errno));
     }
 }
 
@@ -286,7 +286,7 @@ void RoutingReceiverAsyncShadow::ackSinkVolumeTick(const am_Handle_s handle, con
     //ok, fire the signal that data needs to be received !
     if (write(mPipe[1], &msg.msgID, sizeof(msgID_e)) == -1)
     {
-        DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("RoutingReceiverAsyncShadow::ackSinkVolumeTick write failed, error code:"), DLT_STRING(strerror(errno)));
+        logError("RoutingReceiverAsyncShadow::ackSinkVolumeTick write failed, error code:",strerror(errno));
     }
 }
 
@@ -310,7 +310,7 @@ void RoutingReceiverAsyncShadow::hookInterruptStatusChange(const am_sourceID_t s
     //ok, fire the signal that data needs to be received !
     if (write(mPipe[1], &msg.msgID, sizeof(msgID_e)) == -1)
     {
-        DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("RoutingReceiverAsyncShadow::hookInterruptStatusChange write failed, error code:"), DLT_STRING(strerror(errno)));
+        logError("RoutingReceiverAsyncShadow::hookInterruptStatusChange write failed, error code:",strerror(errno));
     }
 }
 
@@ -334,7 +334,7 @@ void RoutingReceiverAsyncShadow::hookSinkAvailablityStatusChange(const am_sinkID
     //ok, fire the signal that data needs to be received !
     if (write(mPipe[1], &msg.msgID, sizeof(msgID_e)) == -1)
     {
-        DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("RoutingReceiverAsyncShadow::hookSinkAvailablityStatusChange write failed, error code:"), DLT_STRING(strerror(errno)));
+        logError("RoutingReceiverAsyncShadow::hookSinkAvailablityStatusChange write failed, error code:",strerror(errno));
     }
 }
 
@@ -358,7 +358,7 @@ void RoutingReceiverAsyncShadow::hookSourceAvailablityStatusChange(const am_sour
     //ok, fire the signal that data needs to be received !
     if (write(mPipe[1], &msg.msgID, sizeof(msgID_e)) == -1)
     {
-        DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("RoutingReceiverAsyncShadow::hookSourceAvailablityStatusChange write failed, error code:"), DLT_STRING(strerror(errno)));
+        logError("RoutingReceiverAsyncShadow::hookSourceAvailablityStatusChange write failed, error code:",strerror(errno));
     }
 }
 
@@ -382,7 +382,7 @@ void RoutingReceiverAsyncShadow::hookDomainStateChange(const am_domainID_t domai
     //ok, fire the signal that data needs to be received !
     if (write(mPipe[1], &msg.msgID, sizeof(msgID_e)) == -1)
     {
-        DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("RoutingReceiverAsyncShadow::hookDomainStateChange write failed, error code:"), DLT_STRING(strerror(errno)));
+        logError("RoutingReceiverAsyncShadow::hookDomainStateChange write failed, error code:",strerror(errno));
     }
 }
 
@@ -406,7 +406,7 @@ void RoutingReceiverAsyncShadow::hookTimingInformationChanged(const am_connectio
     //ok, fire the signal that data needs to be received !
     if (write(mPipe[1], &msg.msgID, sizeof(msgID_e)) == -1)
     {
-        DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("RoutingReceiverAsyncShadow::hookTimingInformationChanged write failed, error code:"), DLT_STRING(strerror(errno)));
+        logError("RoutingReceiverAsyncShadow::hookTimingInformationChanged write failed, error code:",strerror(errno));
     }
 }
 
@@ -418,7 +418,7 @@ void RoutingReceiverAsyncShadow::asyncMsgReceiver(const pollfd pollfd, const sh_
     char buffer[10];
     if (read(pollfd.fd, buffer, 10) == -1)
     {
-        DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("RoutingReceiverAsyncShadow::asyncMsgReceiver could not read!"));
+        logError("RoutingReceiverAsyncShadow::asyncMsgReceiver could not read!");
     }
 }
 
@@ -483,7 +483,7 @@ bool RoutingReceiverAsyncShadow::asyncDispatcher(const sh_pollHandle_t handle, v
         mRoutingReceiveInterface->hookTimingInformationChanged(msg.parameters.timingInfoChange.connectionID, msg.parameters.timingInfoChange.delay);
         break;
     default:
-        DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("RoutingReceiverAsyncShadow::asyncDispatcher unknown message was received:"), DLT_INT(msg.msgID));
+        logError("RoutingReceiverAsyncShadow::asyncDispatcher unknown message was received:",msg.msgID);
         break;
     }
 
@@ -515,7 +515,7 @@ am_Error_e RoutingReceiverAsyncShadow::setRoutingInterface(RoutingReceiveInterfa
     mRoutingReceiveInterface->getSocketHandler(mSocketHandler);
     if (pipe(mPipe) == -1)
     {
-        DLT_LOG(PluginRoutingAsync, DLT_LOG_ERROR, DLT_STRING("RoutingReceiverAsyncShadow::setRoutingInterface could not create pipe!:"));
+        logError("RoutingReceiverAsyncShadow::setRoutingInterface could not create pipe!:");
         return (E_UNKNOWN);
     }
 

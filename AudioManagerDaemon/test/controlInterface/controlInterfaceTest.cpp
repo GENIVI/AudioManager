@@ -27,11 +27,10 @@
 #include <string>
 #include <vector>
 #include <set>
+#include "DLTWrapper.h"
 
 using namespace am;
 using namespace testing;
-
-DLT_DECLARE_CONTEXT(DLT_CONTEXT)
 
 controlInterfaceTest::controlInterfaceTest() :
         pDBusWrapper((DBusWrapper*) 1), //
@@ -63,15 +62,11 @@ controlInterfaceTest::~controlInterfaceTest()
 
 void controlInterfaceTest::SetUp()
 {
-    DLT_REGISTER_APP("Rtest", "RoutingInterfacetest");
-    DLT_REGISTER_CONTEXT(DLT_CONTEXT, "Main", "Main Context");
-    DLT_LOG(DLT_CONTEXT, DLT_LOG_INFO, DLT_STRING("RoutingSendInterface Test started "));
-
+    logInfo("RoutingSendInterface Test started");
 }
 
 void controlInterfaceTest::TearDown()
 {
-    DLT_UNREGISTER_CONTEXT(DLT_CONTEXT);
 }
 
 TEST_F(controlInterfaceTest,registerDomain)

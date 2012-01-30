@@ -29,7 +29,6 @@
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include <dlt/dlt.h>
 #include <algorithm>
 #include <string>
 #include <vector>
@@ -38,6 +37,7 @@
 #include "CommandSender.h"
 #include "MockInterfaces.h"
 #include "DbusCommandInterfaceBackdoor.h"
+
 
 #define UNIT_TEST 1
 

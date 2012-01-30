@@ -32,11 +32,10 @@
 #include "../ControlInterfaceBackdoor.h"
 #include "../CommandInterfaceBackdoor.h"
 #include "../CommonFunctions.h"
+#include "DLTWrapper.h"
 
 using namespace am;
 using namespace testing;
-
-DLT_DECLARE_CONTEXT(DLT_CONTEXT)
 
 //extern int GetRandomNumber(int nLow, int nHigh);
 //extern bool equalSoundProperty (const am_SoundProperty_s a, const am_SoundProperty_s b);
@@ -54,8 +53,8 @@ routingTest::routingTest() :
         pMockInterface(), //
         pRoutingInterfaceBackdoor(), //
         pCommandInterfaceBackdoor(), //
-        pControlSender(""),//
-        pRouter(&pDatabaseHandler,&pControlSender), //
+        pControlSender(""), //
+        pRouter(&pDatabaseHandler, &pControlSender), //
         pControlReceiver(&pDatabaseHandler, &pRoutingSender, &pCommandSender, &pRouter), //
         pObserver(&pCommandSender, &pRoutingSender)
 {
@@ -148,14 +147,11 @@ void routingTest::createMainConnectionSetup()
 
 void routingTest::SetUp()
 {
-    DLT_REGISTER_APP("Dtest", "AudioManagerDeamon");
-    DLT_REGISTER_CONTEXT(DLT_CONTEXT, "Main", "Main Context");
-    DLT_LOG(DLT_CONTEXT, DLT_LOG_INFO, DLT_STRING("Database Test started "));
+    logInfo("Database Test started ");
 }
 
 void routingTest::TearDown()
 {
-    DLT_UNREGISTER_CONTEXT(DLT_CONTEXT);
 }
 
 TEST_F(routingTest,crossfaders)

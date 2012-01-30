@@ -31,13 +31,10 @@
 #include <algorithm>
 #include <time.h>
 #include <features.h>
-#include <dlt/dlt.h>
 #include <signal.h>
+#include "DLTWrapper.h"
 
-#include <iostream>
 //todo: implement time correction if timer was interrupted by call
-
-DLT_IMPORT_CONTEXT(AudioManager)
 
 using namespace am;
 
@@ -112,7 +109,7 @@ void SocketHandler::start_listenting()
             }
             else
             {
-                DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("SocketHandler::start_listenting ppoll returned with error"), DLT_INT(errno));
+                logError("SocketHandler::start_listenting ppoll returned with error",errno);
                 exit(0);
             }
         }
@@ -128,7 +125,7 @@ void SocketHandler::start_listenting()
                 //todo: add things to do here before going to sleep
                 exit(0);
             }
-            DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("SocketHandler::start_listenting poll returned with error"),DLT_INT(errno));
+            logError("SocketHandler::start_listenting poll returned with error",errno);
             exit(0);
         }
         //sigprocmask (SIG_SETMASK, &oldmask, NULL);

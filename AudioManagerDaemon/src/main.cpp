@@ -50,6 +50,7 @@
 #include "DatabaseObserver.h"
 #include "TelnetServer.h"
 #include "Router.h"
+#include "DLTWrapper.h"
 #include <sys/resource.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -60,8 +61,6 @@
 #include <signal.h>
 #include <string.h>
 #include <stdio.h>
-
-#include <dlt/dlt.h>
 
 DLT_DECLARE_CONTEXT(AudioManager)
 
@@ -98,13 +97,13 @@ void daemonize()
     rlimit rl;
     if (getrlimit(RLIMIT_NOFILE, &rl) < 0)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("can't get file limit "));
+        logError("can't get file limit ");
     }
 
     pid_t pid;
     if ((pid = fork()) < 0)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("cannot fork!"));
+        logError("cannot fork!");
     }
     else if (pid != 0)
     {
@@ -115,7 +114,7 @@ void daemonize()
 
     if (!dir.empty() && chdir(dir.c_str()) < 0)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("couldn't chdir to the new directory"));
+        logError("couldn't chdir to the new directory");
     }
 
     if (rl.rlim_max == RLIM_INFINITY)
@@ -134,7 +133,7 @@ void daemonize()
 
     if (fd0 != STDIN_FILENO || fd1 != STDOUT_FILENO || fd2 != STDERR_FILENO)
     {
-        DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("new standard file descriptors were not opened"));
+        logError("new standard file descriptors were not opened");
     }
 }
 
@@ -209,7 +208,7 @@ static void signalHandler(int sig, siginfo_t *siginfo, void *context)
     (void) sig;
     (void) siginfo;
     (void) context;
-    DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("signal handler was called, exit now..."));
+    logError("signal handler was called, exit now...");
     gDispatchDone = 1;
     //todo: maually fire the mainloop
     //todo: ifdef no sockethandler
@@ -218,9 +217,10 @@ static void signalHandler(int sig, siginfo_t *siginfo, void *context)
 
 int main(int argc, char *argv[])
 {
-    DLT_REGISTER_APP("AudioManagerDeamon", "AudioManagerDeamon");
-    DLT_REGISTER_CONTEXT(AudioManager, "Main", "Main Context");
-    DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("The AudioManager is started, "), DLT_STRING(DAEMONVERSION));
+    DLTWrapper::instance()->registerApp("AudioManagerDeamon", "AudioManagerDeamon");
+    DLTWrapper::instance()->registerContext(AudioManager,"Main", "Main Context");
+    logInfo("The Audiomanager is started");
+    log(&AudioManager,DLT_LOG_ERROR,"The version of the Audiomanager",DAEMONVERSION);
 
     listCommandPluginDirs.push_back(std::string(DEFAULT_PLUGIN_COMMAND_DIR));
     listRoutingPluginDirs.push_back(std::string(DEFAULT_PLUGIN_ROUTING_DIR));

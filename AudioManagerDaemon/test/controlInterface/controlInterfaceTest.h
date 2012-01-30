@@ -28,7 +28,6 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <dbus/DBusWrapper.h>
-#include <dlt/dlt.h>
 #include "MockInterfaces.h"
 #include "DatabaseHandler.h"
 #include "ControlReceiver.h"

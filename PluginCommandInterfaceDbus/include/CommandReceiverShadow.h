@@ -30,7 +30,6 @@
 #include <command/CommandReceiveInterface.h>
 #include <dbus/DBusWrapper.h>
 #include <dbus/dbus.h>
-#include <dlt/dlt.h>
 #include <map>
 #include "DBusMessageHandler.h"
 

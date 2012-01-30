@@ -32,6 +32,7 @@
 #include "../include/DBusMessageHandler.h"
 #include "DbusCommandInterfaceBackdoor.h"
 #include "MockInterfaces.h"
+#include "DLTWrapper.h"
 
 using namespace am;
 using namespace testing;
@@ -49,6 +50,7 @@ void* run_the_loop(void* wrapper)
 
 dbuscommandpluginInterfaceTest::dbuscommandpluginInterfaceTest()
 {
+    DLTWrapper::instance()->registerApp("dbusTest","dbusTest");
 }
 
 dbuscommandpluginInterfaceTest::~dbuscommandpluginInterfaceTest()
