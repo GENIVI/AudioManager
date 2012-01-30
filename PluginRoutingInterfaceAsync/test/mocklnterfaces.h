@@ -82,9 +82,9 @@ class MockRoutingReceiveInterface : public RoutingReceiveInterface {
   MOCK_METHOD1(deregisterCrossfader,
       am_Error_e(const am_crossfaderID_t crossfaderID));
   MOCK_METHOD2(peekSourceClassID,
-      am_Error_e(const std::string name, const am_sourceClass_t& sourceClassID));
+      am_Error_e(const std::string& name, const am_sourceClass_t& sourceClassID));
   MOCK_METHOD2(peekSinkClassID,
-      am_Error_e(const std::string name, const am_sinkClass_t& sinkClassID));
+      am_Error_e(const std::string& name, const am_sinkClass_t& sinkClassID));
   MOCK_METHOD2(hookInterruptStatusChange,
       void(const am_sourceID_t sourceID, const am_InterruptState_e interruptState));
   MOCK_METHOD1(hookDomainRegistrationComplete,
