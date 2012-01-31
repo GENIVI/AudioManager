@@ -1,3 +1,20 @@
+commit 0538d699f441beb81ab64b7f59cb87329667287a
+Merge: 1b65963 bef6b6f
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    Merge branch 'master' of https://git.genivi.org/srv/git/AudioManager
+
+commit 1b659632bc7fa0c1daa021a2d52da390cedec9a7
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * weired git error .. anyway should be ok now
+
+commit ad0c452e9890a35a1b7a6c2e2421e092c5cf2c2d
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * wrapping DLT calls in a new Class because of performance, codesize and lazyness reasons
+    * the whole project now compiles without a warning with -pedantic
+
 commit bef6b6f38de4f6b201a1b6ce24855c8894031602
 Author: christian mueller <christian.ei.mueller@bmw.de>
 
