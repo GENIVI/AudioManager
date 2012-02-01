@@ -45,7 +45,6 @@ class RoutingTreeItem;
 //todo: exchange last_insert_row id to be more safe
 //todo: create test to ensure uniqueness of names throughout the database
 //todo: enforce the uniqueness of names
-//todo: set isUsed flag for gateways!
 
 /**
  * This class handles and abstracts the database
@@ -268,6 +267,7 @@ private:
     bool mFirstStaticGateway;
     bool mFirstStaticSinkClass;
     bool mFirstStaticSourceClass;
+    bool mFirstStaticCrossfader;
     typedef std::map<am_gatewayID_t, std::vector<bool> > ListConnectionFormat; //!< type for list of connection formats
     ListConnectionFormat mListConnectionFormat; //!< list of connection formats
 };

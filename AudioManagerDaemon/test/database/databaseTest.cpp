@@ -203,7 +203,85 @@ TEST_F(routingTest, peekSinkID)
 
 TEST_F(routingTest,crossfaders)
 {
-    //todo:implement crossfader tests
+
+    EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(2);
+    EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(1);
+    am_Crossfader_s crossfader;
+    am_crossfaderID_t crossfaderID;
+    am_Sink_s sinkA, sinkB;
+    am_Source_s source;
+    am_sourceID_t sourceID;
+    am_sinkID_t sinkAID, sinkBID;
+    pCF.createSink(sinkA);
+    pCF.createSink(sinkB);
+    sinkB.name = "sinkB";
+    pCF.createSource(source);
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sinkA,sinkAID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sinkB,sinkBID));
+
+    crossfader.crossfaderID = 0;
+    crossfader.hotSink = HS_SINKA;
+    crossfader.sinkID_A = sinkAID;
+    crossfader.sinkID_B = sinkBID;
+    crossfader.sourceID = sourceID;
+    crossfader.name = "Crossfader";
+    crossfader.hotSink = HS_MIN;
+
+    std::vector<am_Crossfader_s> listCrossfaders;
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterCrossfaderDB(crossfader,crossfaderID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.getListCrossfaders(listCrossfaders));
+    ASSERT_EQ(crossfader.sinkID_A, listCrossfaders[0].sinkID_A);
+    ASSERT_EQ(crossfader.sinkID_B, listCrossfaders[0].sinkID_B);
+    ASSERT_EQ(crossfader.sourceID, listCrossfaders[0].sourceID);
+    ASSERT_EQ(crossfader.hotSink, listCrossfaders[0].hotSink);
+    ASSERT_EQ(100, listCrossfaders[0].crossfaderID);
+    ASSERT_EQ(crossfader.name.compare(listCrossfaders[0].name), 0);
+}
+
+TEST_F(routingTest,crossfadersGetFromDomain)
+{
+
+    EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(2);
+    EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(1);
+    am_Crossfader_s crossfader;
+    am_crossfaderID_t crossfaderID;
+    am_Sink_s sinkA, sinkB;
+    am_Source_s source;
+    am_sourceID_t sourceID;
+    am_sinkID_t sinkAID, sinkBID;
+    am_domainID_t domainID;
+    am_Domain_s domain;
+    pCF.createSink(sinkA);
+    pCF.createSink(sinkB);
+    pCF.createDomain(domain);
+    sinkB.name = "sinkB";
+    pCF.createSource(source);
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
+    source.domainID=domainID;
+    sinkA.domainID=domainID;
+    sinkB.domainID=domainID;
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sinkA,sinkAID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sinkB,sinkBID));
+
+    crossfader.crossfaderID = 0;
+    crossfader.hotSink = HS_SINKA;
+    crossfader.sinkID_A = sinkAID;
+    crossfader.sinkID_B = sinkBID;
+    crossfader.sourceID = sourceID;
+    crossfader.name = "Crossfader";
+    crossfader.hotSink = HS_MIN;
+
+    std::vector<am_crossfaderID_t> listCrossfaders;
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterCrossfaderDB(crossfader,crossfaderID));
+    ASSERT_EQ(E_OK,pDatabaseHandler.getListCrossfadersOfDomain(source.domainID,listCrossfaders));
+    ASSERT_EQ(100, listCrossfaders[0]);
+
 }
 
 TEST_F(routingTest,sourceState)
@@ -1223,6 +1301,8 @@ TEST_F(routingTest,getListSinksOfDomain)
 
 TEST_F(routingTest,getListGatewaysOfDomain)
 {
+    EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(1);
+    EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(1);
     am_Gateway_s gateway, gateway2;
     am_gatewayID_t gatewayID;
     am_domainID_t domainID;
@@ -1246,6 +1326,16 @@ TEST_F(routingTest,getListGatewaysOfDomain)
     gateway2.domainSourceID = 1;
     pCF.createDomain(domain);
     gatewayCheckList.push_back(gateway.gatewayID);
+    am_Sink_s sink;
+    am_Source_s source;
+    am_sinkID_t sinkID;
+    am_sourceID_t sourceID;
+    pCF.createSink(sink);
+    pCF.createSource(source);
+    sink.sinkID = 1;
+    source.sourceID = 1;
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
     ASSERT_EQ(E_OK,pDatabaseHandler.enterGatewayDB(gateway,gatewayID))
         << "ERROR: database error";
@@ -1275,10 +1365,22 @@ TEST_F(routingTest,removeDomain)
 
 TEST_F(routingTest,removeGateway)
 {
+    EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(1);
+    EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(1);
     am_Gateway_s gateway;
     am_gatewayID_t gatewayID;
     std::vector<am_Gateway_s> listGateways;
     pCF.createGateway(gateway);
+    am_Sink_s sink;
+    am_Source_s source;
+    am_sinkID_t sinkID;
+    am_sourceID_t sourceID;
+    pCF.createSink(sink);
+    pCF.createSource(source);
+    sink.sinkID = 1;
+    source.sourceID = 2;
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     ASSERT_EQ(E_OK,pDatabaseHandler.enterGatewayDB(gateway,gatewayID))
         << "ERROR: database error";
     ASSERT_EQ(E_OK,pDatabaseHandler.removeGatewayDB(gatewayID))
@@ -1357,6 +1459,8 @@ TEST_F(routingTest,removeNonexistentGateway)
 
 TEST_F(routingTest,registerGatewayCorrect)
 {
+    EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(1);
+    EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(1);
     //initialize gateway
     std::vector<am_Gateway_s> returnList;
     am_Gateway_s gateway, gateway1, gateway2;
@@ -1366,7 +1470,16 @@ TEST_F(routingTest,registerGatewayCorrect)
     pCF.createGateway(gateway1);
     gateway1.gatewayID = 20;
     pCF.createGateway(gateway2);
-
+    am_Sink_s sink;
+    am_Source_s source;
+    am_sinkID_t sinkID;
+    am_sourceID_t sourceID;
+    pCF.createSink(sink);
+    pCF.createSource(source);
+    sink.sinkID = 1;
+    source.sourceID = 2;
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     ASSERT_EQ(E_OK,pDatabaseHandler.enterGatewayDB(gateway,gatewayID))
         << "ERROR: database error";
     ASSERT_EQ(100,gatewayID)
@@ -1410,6 +1523,8 @@ TEST_F(routingTest,registerGatewayCorrect)
 
 TEST_F(routingTest,getGatewayInfo)
 {
+    EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(1);
+    EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(1);
     //initialize gateway
     std::vector<am_Gateway_s> returnList;
     am_Gateway_s gateway, gateway1, gateway2;
@@ -1419,7 +1534,16 @@ TEST_F(routingTest,getGatewayInfo)
     pCF.createGateway(gateway1);
     gateway1.gatewayID = 20;
     pCF.createGateway(gateway2);
-
+    am_Sink_s sink;
+    am_Source_s source;
+    am_sinkID_t sinkID;
+    am_sourceID_t sourceID;
+    pCF.createSink(sink);
+    pCF.createSource(source);
+    sink.sinkID = 1;
+    source.sourceID = 2;
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     ASSERT_EQ(E_OK,pDatabaseHandler.enterGatewayDB(gateway,gatewayID))
         << "ERROR: database error";
     ASSERT_EQ(100,gatewayID)

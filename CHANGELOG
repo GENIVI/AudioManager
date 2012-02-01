@@ -1,3 +1,23 @@
+commit af25985a8ccf00bb7fb080aaac33a47614f5f222
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * add an out of memory handler
+
+commit 9f4c15a8e89d798077ca3edf7f786dbc740aa176
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * implemented peeksinkclassIDs and peeksourceclassIDs
+    * changed interface of both from const to non-const
+    * corrected include headers to c++ style, eg. <cassert>
+    * corrected sendChangedData return type to void
+    * implemented tests for sinkclass and sourceclass peeking
+    * fixed bug in sockethandler (FD could not be removed) thanks to Frank
+
+commit 52a769615e476860f3e4c0196fdf7e5159a7a7c1
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * still the weired error but now really ok.
+
 commit 0538d699f441beb81ab64b7f59cb87329667287a
 Merge: 1b65963 bef6b6f
 Author: christian mueller <christian.ei.mueller@bmw.de>

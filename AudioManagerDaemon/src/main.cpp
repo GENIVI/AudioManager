@@ -59,6 +59,7 @@
 #include <csignal>
 #include <cstring>
 #include <cstdio>
+#include <new>
 
 DLT_DECLARE_CONTEXT(AudioManager)
 
@@ -86,6 +87,13 @@ std::string databasePath = std::string(":memory:");
 unsigned int telnetport = DEFAULT_TELNETPORT;
 unsigned int maxConnections = MAX_TELNETCONNECTIONS;
 int fd0, fd1, fd2;
+
+void OutOfMemoryHandler ()
+{
+    logError("No more memory - bye");
+    //todo: add gracefull dead here. Do what can be done persistence wise
+    exit (1);
+}
 
 void daemonize()
 {
@@ -241,6 +249,9 @@ int main(int argc, char *argv[])
     memset(&signalChildAction, '\0', sizeof(signalChildAction));
     signalChildAction.sa_flags = SA_NOCLDWAIT;
     sigaction(SIGCHLD, &signalChildAction, NULL);
+
+    //register new out of memory handler
+    std::set_new_handler(&OutOfMemoryHandler);
 
     //Instantiate all classes. Keep in same order !
 #ifdef WITH_SOCKETHANDLER_LOOP

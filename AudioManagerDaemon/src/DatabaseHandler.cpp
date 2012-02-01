@@ -81,6 +81,7 @@ DatabaseHandler::DatabaseHandler(std::string databasePath) :
         mFirstStaticGateway(true), //
         mFirstStaticSinkClass(true), //
         mFirstStaticSourceClass(true), //
+        mFirstStaticCrossfader(true), //
         mListConnectionFormat()
 {
 
@@ -455,10 +456,89 @@ am_Error_e DatabaseHandler::enterSinkDB(const am_Sink_s & sinkData, am_sinkID_t 
 
 am_Error_e DatabaseHandler::enterCrossfaderDB(const am_Crossfader_s & crossfaderData, am_crossfaderID_t & crossfaderID)
 {
-    //todo: implement crossfader
-    (void) crossfaderData;
-    (void) crossfaderID;
-    return E_UNKNOWN;
+    assert(crossfaderData.crossfaderID<DYNAMIC_ID_BOUNDARY);
+    assert(crossfaderData.hotSink>=HS_MIN && crossfaderData.hotSink<=HS_MAX);
+    assert(!crossfaderData.name.empty());
+    assert(existSink(crossfaderData.sinkID_A));
+    assert(existSink(crossfaderData.sinkID_B));
+    assert(existSource(crossfaderData.sourceID));
+
+    sqlite3_stmt* query = NULL;
+    int eCode = 0;
+    std::string command;
+
+    //if gatewayData is zero and the first Static Sink was already entered, the ID is created
+    if (crossfaderData.crossfaderID == 0 && !mFirstStaticCrossfader)
+    {
+        command = "INSERT INTO " + std::string(CROSSFADER_TABLE) + "(name, sinkID_A, sinkID_B, sourceID, hotSink) VALUES (?,?,?,?,?)";
+    }
+    else
+    {
+        //check if the ID already exists
+        if (existcrossFader(crossfaderData.crossfaderID))
+            return E_ALREADY_EXISTS;
+        command = "INSERT INTO " + std::string(CROSSFADER_TABLE) + "(name, sinkID_A, sinkID_B, sourceID, hotSink, crossfaderID) VALUES (?,?,?,?,?,?)";
+    }
+
+    sqlite3_prepare_v2(mDatabase, command.c_str(), -1, &query, NULL);
+
+    sqlite3_bind_text(query, 1, crossfaderData.name.c_str(), crossfaderData.name.size(), SQLITE_STATIC);
+    sqlite3_bind_int(query, 2, crossfaderData.sinkID_A);
+    sqlite3_bind_int(query, 3, crossfaderData.sinkID_B);
+    sqlite3_bind_int(query, 4, crossfaderData.sourceID);
+    sqlite3_bind_int(query, 5, crossfaderData.hotSink);
+
+    //if the ID is not created, we add it to the query
+    if (crossfaderData.crossfaderID != 0)
+    {
+        sqlite3_bind_int(query, 6, crossfaderData.crossfaderID);
+    }
+
+    //if the first static sink is entered, we need to set it onto the boundary
+    else if (mFirstStaticCrossfader)
+    {
+        sqlite3_bind_int(query, 6, DYNAMIC_ID_BOUNDARY);
+        mFirstStaticCrossfader = false;
+    }
+
+    if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
+    {
+        logError("DatabaseHandler::enterCrossfaderDB SQLITE Step error code:", eCode);
+        sqlite3_finalize(query);
+        return E_DATABASE_ERROR;
+    }
+
+    if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
+    {
+        logError("DatabaseHandler::enterCrossfaderDB SQLITE Finalize error code:", eCode);
+        sqlite3_finalize(query);
+        return E_DATABASE_ERROR;
+    }
+
+    //now read back the crossfaderID
+    command = "SELECT crossfaderID FROM " + std::string(CROSSFADER_TABLE) + " WHERE name=?";
+    sqlite3_prepare_v2(mDatabase, command.c_str(), -1, &query, NULL);
+    sqlite3_bind_text(query, 1, crossfaderData.name.c_str(), crossfaderData.name.size(), SQLITE_STATIC);
+    if ((eCode = sqlite3_step(query)) == SQLITE_ROW)
+    {
+        crossfaderID = sqlite3_column_int(query, 0);
+    }
+    else
+    {
+        crossfaderID = 0;
+        logError("DatabaseHandler::enterCrossfaderDB database error!:", eCode);
+        sqlite3_finalize(query);
+        return E_DATABASE_ERROR;
+    }
+    sqlite3_finalize(query);
+
+    logInfo("DatabaseHandler::enterCrossfaderDB entered new crossfader with name=", crossfaderData.name, "sinkA= ", crossfaderData.sinkID_A, "sinkB=", crossfaderData.sinkID_B, "source=", crossfaderData.sourceID, "assigned ID:", crossfaderID);
+
+    am_Crossfader_s crossfader(crossfaderData);
+    crossfader.crossfaderID = crossfaderID;
+    if (mDatabaseObserver)
+        mDatabaseObserver->newCrossfader(crossfader);
+    return E_OK;
 }
 
 am_Error_e DatabaseHandler::enterGatewayDB(const am_Gateway_s & gatewayData, am_gatewayID_t & gatewayID)
@@ -473,12 +553,14 @@ am_Error_e DatabaseHandler::enterGatewayDB(const am_Gateway_s & gatewayData, am_
     assert(!gatewayData.convertionMatrix.empty());
     assert(!gatewayData.listSinkFormats.empty());
     assert(!gatewayData.listSourceFormats.empty());
+    assert(existSink(gatewayData.sinkID));
+    assert(existSource(gatewayData.sourceID));
 
     sqlite3_stmt* query = NULL;
     int eCode = 0;
     std::string command;
 
-    //if sinkID is zero and the first Static Sink was already entered, the ID is created
+    //if gatewayData is zero and the first Static Sink was already entered, the ID is created
     if (gatewayData.gatewayID == 0 && !mFirstStaticGateway)
     {
         command = "INSERT INTO " + std::string(GATEWAY_TABLE) + "(name, sinkID, sourceID, domainSinkID, domainSourceID, controlDomainID) VALUES (?,?,?,?,?,?)";
@@ -1232,9 +1314,19 @@ am_Error_e DatabaseHandler::removeGatewayDB(const am_gatewayID_t gatewayID)
 
 am_Error_e DatabaseHandler::removeCrossfaderDB(const am_crossfaderID_t crossfaderID)
 {
-    //todo: implement crossdfader
-    (void) crossfaderID;
-    return E_UNKNOWN;
+    assert(crossfaderID!=0);
+
+    if (!existcrossFader(crossfaderID))
+    {
+        return E_NON_EXISTENT;
+    }
+    std::string command = "DELETE from " + std::string(CROSSFADER_TABLE) + " WHERE crossfaderID=" + i2s(crossfaderID);
+    if (!sqQuery(command))
+        return E_DATABASE_ERROR;
+    logInfo("DatabaseHandler::removeDomainDB removed:", crossfaderID);
+    if (mDatabaseObserver)
+        mDatabaseObserver->removeCrossfader(crossfaderID);
+    return E_OK;
 }
 
 am_Error_e DatabaseHandler::removeDomainDB(const am_domainID_t domainID)
@@ -1619,10 +1711,39 @@ am_Error_e DatabaseHandler::getGatewayInfoDB(const am_gatewayID_t gatewayID, am_
 
 am_Error_e DatabaseHandler::getCrossfaderInfoDB(const am_crossfaderID_t crossfaderID, am_Crossfader_s & crossfaderData) const
 {
-    //todo: implement crossfader
-    (void) crossfaderID;
-    (void) crossfaderData;
-    return E_UNKNOWN;
+    assert(crossfaderID!=0);
+    if (!existcrossFader(crossfaderID))
+    {
+        return E_NON_EXISTENT;
+    }
+    sqlite3_stmt* query = NULL;
+    int eCode = 0;
+    std::string command = "SELECT name, sinkID_A, sinkID_B, sourceID, hotSink,crossfaderID FROM " + std::string(CROSSFADER_TABLE) + " WHERE crossfaderID=" + i2s(crossfaderID);
+    sqlite3_prepare_v2(mDatabase, command.c_str(), -1, &query, NULL);
+
+    while ((eCode = sqlite3_step(query)) == SQLITE_ROW)
+    {
+        crossfaderData.name = std::string((const char*) sqlite3_column_text(query, 0));
+        crossfaderData.sinkID_A = sqlite3_column_int(query, 1);
+        crossfaderData.sinkID_B = sqlite3_column_int(query, 2);
+        crossfaderData.sourceID = sqlite3_column_int(query, 3);
+        crossfaderData.hotSink = static_cast<am_HotSink_e>(sqlite3_column_int(query, 4));
+        crossfaderData.crossfaderID = sqlite3_column_int(query, 5);
+    }
+
+    if (eCode != SQLITE_DONE)
+    {
+        logError("DatabaseHandler::getCrossfaderInfoDB SQLITE error code:", eCode);
+        return E_DATABASE_ERROR;
+    }
+
+    if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
+    {
+        logError("DatabaseHandler::getCrossfaderInfoDB SQLITE Finalize error code:", eCode);
+        return E_DATABASE_ERROR;
+    }
+
+    return E_OK;
 }
 
 am_Error_e DatabaseHandler::getListSinksOfDomain(const am_domainID_t domainID, std::vector<am_sinkID_t> & listSinkID) const
@@ -1696,12 +1817,40 @@ am_Error_e DatabaseHandler::getListSourcesOfDomain(const am_domainID_t domainID,
     return E_OK;
 }
 
-am_Error_e DatabaseHandler::getListCrossfadersOfDomain(const am_domainID_t domainID, std::vector<am_crossfaderID_t> & listGatewaysID) const
+am_Error_e DatabaseHandler::getListCrossfadersOfDomain(const am_domainID_t domainID, std::vector<am_crossfaderID_t> & listCrossfader) const
 {
-    //todo: implement crossfader
-    (void) listGatewaysID;
-    (void) domainID;
-    return E_UNKNOWN;
+    assert(domainID!=0);
+    listCrossfader.clear();
+    if (!existDomain(domainID))
+    {
+        return E_NON_EXISTENT;
+    }
+    sqlite3_stmt* query = NULL;
+    int eCode = 0;
+    am_crossfaderID_t temp;
+
+    std::string command = "SELECT c.crossfaderID FROM " + std::string(CROSSFADER_TABLE) + " c," + std::string(SOURCE_TABLE) + " s WHERE c.sourceID=s.sourceID AND s.domainID=" + i2s(domainID);
+    sqlite3_prepare_v2(mDatabase, command.c_str(), -1, &query, NULL);
+
+    while ((eCode = sqlite3_step(query)) == SQLITE_ROW)
+    {
+        temp = sqlite3_column_int(query, 0);
+        listCrossfader.push_back(temp);
+    }
+
+    if (eCode != SQLITE_DONE)
+    {
+        logError("DatabaseHandler::getListCrossfadersOfDomain SQLITE error code:", eCode);
+        return E_DATABASE_ERROR;
+    }
+
+    if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
+    {
+        logError("DatabaseHandler::getListCrossfadersOfDomain SQLITE Finalize error code:", eCode);
+        return E_DATABASE_ERROR;
+    }
+
+    return E_OK;
 
 }
 
@@ -2126,9 +2275,37 @@ am_Error_e DatabaseHandler::getListSourceClasses(std::vector<am_SourceClass_s> &
 
 am_Error_e DatabaseHandler::getListCrossfaders(std::vector<am_Crossfader_s> & listCrossfaders) const
 {
-    //todo: implement crossfaders
-    (void) listCrossfaders;
-    return E_UNKNOWN;
+    listCrossfaders.clear();
+    sqlite3_stmt* query = NULL;
+    int eCode = 0;
+    am_Crossfader_s tempData;
+    std::string command = "SELECT name, sinkID_A, sinkID_B, sourceID, hotSink,crossfaderID FROM " + std::string(CROSSFADER_TABLE);
+    sqlite3_prepare_v2(mDatabase, command.c_str(), -1, &query, NULL);
+
+    while ((eCode = sqlite3_step(query)) == SQLITE_ROW)
+    {
+        tempData.name = std::string((const char*) sqlite3_column_text(query, 0));
+        tempData.sinkID_A = sqlite3_column_int(query, 1);
+        tempData.sinkID_B = sqlite3_column_int(query, 2);
+        tempData.sourceID = sqlite3_column_int(query, 3);
+        tempData.hotSink = static_cast<am_HotSink_e>(sqlite3_column_int(query, 4));
+        tempData.crossfaderID = sqlite3_column_int(query, 5);
+        listCrossfaders.push_back(tempData);
+    }
+
+    if (eCode != SQLITE_DONE)
+    {
+        logError("DatabaseHandler::getListCrossfaders SQLITE error code:", eCode);
+        return E_DATABASE_ERROR;
+    }
+
+    if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
+    {
+        logError("DatabaseHandler::getListCrossfaders SQLITE Finalize error code:", eCode);
+        return E_DATABASE_ERROR;
+    }
+
+    return E_OK;
 }
 
 am_Error_e DatabaseHandler::getListGateways(std::vector<am_Gateway_s> & listGateways) const

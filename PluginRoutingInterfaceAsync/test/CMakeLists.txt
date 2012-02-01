@@ -67,7 +67,7 @@ file(GLOB ASYNC_PLUGIN_INTERFACE_INTERRUPT_SRCS_CXX
 )
 
 ADD_EXECUTABLE(asyncRoutingInterfaceTest ${ASYNC_PLUGIN_INTERFACE_SRCS_CXX})
-ADD_EXECUTABLE(asyncRoutingInterfaceInterruptTest ${ASYNC_PLUGIN_INTERFACE_INTERRUPT_SRCS_CXX})
+#ADD_EXECUTABLE(asyncRoutingInterfaceInterruptTest ${ASYNC_PLUGIN_INTERFACE_INTERRUPT_SRCS_CXX})
 
 
 TARGET_LINK_LIBRARIES(asyncRoutingInterfaceTest 
@@ -79,16 +79,16 @@ TARGET_LINK_LIBRARIES(asyncRoutingInterfaceTest
     gmock
 )
 
-TARGET_LINK_LIBRARIES(asyncRoutingInterfaceInterruptTest 
-    ${DLT_LIBRARIES}
-    ${CMAKE_DL_LIBS}
-    ${CMAKE_THREAD_LIBS_INIT}
-    ${GTEST_LIBRARIES}
-    ${DBUS_LIBRARY}
-    gmock
-)
+#TARGET_LINK_LIBRARIES(asyncRoutingInterfaceInterruptTest 
+#    ${DLT_LIBRARIES}
+#    ${CMAKE_DL_LIBS}
+#    ${CMAKE_THREAD_LIBS_INIT}
+#    ${GTEST_LIBRARIES}
+#    ${DBUS_LIBRARY}
+#    gmock
+#)
 
-INSTALL(TARGETS asyncRoutingInterfaceInterruptTest 
+INSTALL(TARGETS asyncRoutingInterfaceTest 
         DESTINATION "~/AudioManagerTest/"
         PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
         COMPONENT tests
