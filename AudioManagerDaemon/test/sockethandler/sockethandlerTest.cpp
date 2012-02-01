@@ -15,6 +15,9 @@
 #include <fcntl.h>
 #include <sys/un.h>
 
+//todo: expand test, implement more usecases
+//todo: test removeFD
+
 #define SOCK_PATH "/tmp/mysock"
 
 using namespace testing;

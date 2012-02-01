@@ -77,6 +77,238 @@ ACTION(returnConnectionFormat){
 arg3=arg2;
 }
 
+//test that checks just 2 domains, one sink one source with only one connection format each
+TEST_F(routingTest,simpleRoute2DomainsOnlyFree)
+{
+    EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(2);
+    EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(2);
+    EXPECT_CALL(pMockControlInterface,getConnectionFormatChoice(_,_,_,_)).WillRepeatedly(DoAll(returnConnectionFormat(), Return(E_OK)));
+
+    //initialize 2 domains
+    am_Domain_s domain1, domain2;
+    am_domainID_t domainID1, domainID2;
+
+    domain1.domainID = 0;
+    domain1.name = "domain1";
+    domain1.busname = "domain1bus";
+    domain1.state = DS_CONTROLLED;
+    domain2.domainID = 0;
+    domain2.name = "domain2";
+    domain2.busname = "domain2bus";
+    domain2.state = DS_CONTROLLED;
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain1,domainID1));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain2,domainID2));
+
+    am_Source_s source, gwSource;
+    am_sourceID_t sourceID, gwSourceID;
+
+    source.domainID = domainID1;
+    source.name = "source1";
+    source.sourceState = SS_ON;
+    source.sourceID = 0;
+    source.sourceClassID = 5;
+    source.listConnectionFormats.push_back(CF_ANALOG);
+
+    gwSource.domainID = domainID2;
+    gwSource.name = "gwsource1";
+    gwSource.sourceState = SS_ON;
+    gwSource.sourceID = 0;
+    gwSource.sourceClassID = 5;
+    gwSource.listConnectionFormats.push_back(CF_MONO);
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(gwSource,gwSourceID));
+
+    am_Sink_s sink, gwSink;
+    am_sinkID_t sinkID, gwSinkID;
+
+    sink.domainID = domainID2;
+    sink.name = "sink1";
+    sink.sinkID = 0;
+    sink.sinkClassID = 5;
+    sink.muteState = MS_MUTED;
+    sink.listConnectionFormats.push_back(CF_MONO);
+
+    gwSink.domainID = domainID1;
+    gwSink.name = "gwSink";
+    gwSink.sinkID = 0;
+    gwSink.sinkClassID = 5;
+    gwSink.muteState = MS_MUTED;
+    gwSink.listConnectionFormats.push_back(CF_ANALOG);
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(gwSink,gwSinkID));
+
+    am_Gateway_s gateway;
+    am_gatewayID_t gatewayID;
+
+    gateway.controlDomainID = domainID1;
+    gateway.gatewayID = 0;
+    gateway.sinkID = gwSinkID;
+    gateway.sourceID = gwSourceID;
+    gateway.domainSourceID = domainID2;
+    gateway.domainSinkID = domainID1;
+    gateway.listSinkFormats = gwSink.listConnectionFormats;
+    gateway.listSourceFormats = gwSource.listConnectionFormats;
+    gateway.convertionMatrix.push_back(true);
+    gateway.name = "gateway";
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterGatewayDB(gateway,gatewayID));
+
+    std::vector<am_Route_s> listRoutes;
+    std::vector<am_RoutingElement_s> listRoutingElements;
+    am_RoutingElement_s hopp1;
+    am_RoutingElement_s hopp2;
+
+    hopp1.sinkID = gwSinkID;
+    hopp1.sourceID = sourceID;
+    hopp1.domainID = domainID1;
+    hopp1.connectionFormat = source.listConnectionFormats[0];
+
+    hopp2.sinkID = sinkID;
+    hopp2.sourceID = gwSourceID;
+    hopp2.domainID = domainID2;
+    hopp2.connectionFormat = sink.listConnectionFormats[0];
+
+    listRoutingElements.push_back(hopp1);
+    listRoutingElements.push_back(hopp2);
+
+    am_Route_s compareRoute;
+    compareRoute.route = listRoutingElements;
+    compareRoute.sinkID = sinkID;
+    compareRoute.sourceID = sourceID;
+
+    ASSERT_EQ(E_OK, pRouter.getRoute(true,sourceID,sinkID,listRoutes));
+    ASSERT_EQ(1, listRoutes.size());
+    ASSERT_TRUE(pCF.compareRoute(compareRoute,listRoutes[0]));
+
+}
+
+//test that checks just 2 domains, one sink one source with only one connection format each
+TEST_F(routingTest,simpleRoute2DomainsOnlyFreeNotFree)
+{
+    EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(2);
+    EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(2);
+    EXPECT_CALL(pMockControlInterface,getConnectionFormatChoice(_,_,_,_)).WillRepeatedly(DoAll(returnConnectionFormat(), Return(E_OK)));
+
+    //initialize 2 domains
+    am_Domain_s domain1, domain2;
+    am_domainID_t domainID1, domainID2;
+
+    domain1.domainID = 0;
+    domain1.name = "domain1";
+    domain1.busname = "domain1bus";
+    domain1.state = DS_CONTROLLED;
+    domain2.domainID = 0;
+    domain2.name = "domain2";
+    domain2.busname = "domain2bus";
+    domain2.state = DS_CONTROLLED;
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain1,domainID1));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain2,domainID2));
+
+    am_Source_s source, gwSource;
+    am_sourceID_t sourceID, gwSourceID;
+
+    source.domainID = domainID1;
+    source.name = "source1";
+    source.sourceState = SS_ON;
+    source.sourceID = 0;
+    source.sourceClassID = 5;
+    source.listConnectionFormats.push_back(CF_ANALOG);
+
+    gwSource.domainID = domainID2;
+    gwSource.name = "gwsource1";
+    gwSource.sourceState = SS_ON;
+    gwSource.sourceID = 0;
+    gwSource.sourceClassID = 5;
+    gwSource.listConnectionFormats.push_back(CF_MONO);
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(gwSource,gwSourceID));
+
+    am_Sink_s sink, gwSink;
+    am_sinkID_t sinkID, gwSinkID;
+
+    sink.domainID = domainID2;
+    sink.name = "sink1";
+    sink.sinkID = 0;
+    sink.sinkClassID = 5;
+    sink.muteState = MS_MUTED;
+    sink.listConnectionFormats.push_back(CF_MONO);
+
+    gwSink.domainID = domainID1;
+    gwSink.name = "gwSink";
+    gwSink.sinkID = 0;
+    gwSink.sinkClassID = 5;
+    gwSink.muteState = MS_MUTED;
+    gwSink.listConnectionFormats.push_back(CF_ANALOG);
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(gwSink,gwSinkID));
+
+    am_Gateway_s gateway;
+    am_gatewayID_t gatewayID;
+
+    gateway.controlDomainID = domainID1;
+    gateway.gatewayID = 0;
+    gateway.sinkID = gwSinkID;
+    gateway.sourceID = gwSourceID;
+    gateway.domainSourceID = domainID2;
+    gateway.domainSinkID = domainID1;
+    gateway.listSinkFormats = gwSink.listConnectionFormats;
+    gateway.listSourceFormats = gwSource.listConnectionFormats;
+    gateway.convertionMatrix.push_back(true);
+    gateway.name = "gateway";
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterGatewayDB(gateway,gatewayID));
+
+    std::vector<am_Route_s> listRoutes;
+    std::vector<am_RoutingElement_s> listRoutingElements;
+    am_RoutingElement_s hopp1;
+    am_RoutingElement_s hopp2;
+
+    hopp1.sinkID = gwSinkID;
+    hopp1.sourceID = sourceID;
+    hopp1.domainID = domainID1;
+    hopp1.connectionFormat = source.listConnectionFormats[0];
+
+    hopp2.sinkID = sinkID;
+    hopp2.sourceID = gwSourceID;
+    hopp2.domainID = domainID2;
+    hopp2.connectionFormat = sink.listConnectionFormats[0];
+
+    listRoutingElements.push_back(hopp1);
+    listRoutingElements.push_back(hopp2);
+
+    am_Route_s compareRoute;
+    compareRoute.route = listRoutingElements;
+    compareRoute.sinkID = sinkID;
+    compareRoute.sourceID = sourceID;
+
+    am_Connection_s connection,connection1;
+    am_connectionID_t id1,id2;
+    connection.sourceID=sourceID;
+    connection.sinkID=gwSinkID;
+    connection.connectionFormat=CF_ANALOG;
+    connection.connectionID=0;
+    connection1.sourceID=gwSourceID;
+    connection1.sinkID=sinkID;
+    connection1.connectionFormat=CF_ANALOG;
+    connection1.connectionID=0;
+
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterConnectionDB(connection,id1));
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterConnectionDB(connection1,id2));
+
+    ASSERT_EQ(E_OK, pRouter.getRoute(true,sourceID,sinkID,listRoutes));
+    ASSERT_EQ(0, listRoutes.size());
+
+    ASSERT_EQ(E_OK, pRouter.getRoute(false,sourceID,sinkID,listRoutes));
+    ASSERT_EQ(1, listRoutes.size());
+    ASSERT_TRUE(pCF.compareRoute(compareRoute,listRoutes[0]));
+}
+
 //test that checks 3 domains, one sink one source, longer lists of connectionformats.
 TEST_F(routingTest,simpleRoute3DomainsListConnectionFormats_2)
 {
@@ -1477,6 +1709,8 @@ TEST_F(routingTest,simpleRoute4Domains)
 
 int main(int argc, char **argv)
 {
+    DLTWrapper::instance()->registerApp("routing", "routingtest");
+    logInfo("Routing Test started ");
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }

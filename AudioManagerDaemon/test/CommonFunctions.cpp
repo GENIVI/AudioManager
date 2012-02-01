@@ -27,7 +27,7 @@
 #include "CommandInterfaceBackdoor.h"
 #include "RoutingInterfaceBackdoor.h"
 #include "ControlInterfaceBackdoor.h"
-#include <assert.h>
+#include <cassert>
 #include <sstream>
 
 using namespace am;
@@ -54,7 +54,7 @@ bool CommandInterfaceBackdoor::injectInterface(CommandSender *CommandSender, Com
     assert(CommandSender != NULL);
     assert(CommandSendInterface != NULL);
     CommandSender->mListInterfaces.push_back(CommandSendInterface);
-    return true; //todo: check if it worked
+    return true;
 }
 
 RoutingInterfaceBackdoor::RoutingInterfaceBackdoor()
@@ -83,7 +83,7 @@ bool RoutingInterfaceBackdoor::injectInterface(RoutingSender *RoutingSender, Rou
     newInterfacePair.routingInterface = newInterface;
     newInterfacePair.busName = busname;
     RoutingSender->mListInterfaces.push_back(newInterfacePair);
-    return true; //todo: check if it worked
+    return true;
 }
 
 ControlInterfaceBackdoor::ControlInterfaceBackdoor()

@@ -25,7 +25,7 @@
 #include "Router.h"
 #include "DatabaseHandler.h"
 #include "ControlSender.h"
-#include <assert.h>
+#include <cassert>
 #include <algorithm>
 #include <vector>
 #include <iterator>

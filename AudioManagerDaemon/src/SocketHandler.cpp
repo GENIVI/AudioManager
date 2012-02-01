@@ -24,14 +24,14 @@
 
 #include "SocketHandler.h"
 #include <config.h>
-#include <assert.h>
+#include <cassert>
 #include <sys/fcntl.h>
 #include <sys/errno.h>
 #include <sys/poll.h>
 #include <algorithm>
 #include <time.h>
 #include <features.h>
-#include <signal.h>
+#include <csignal>
 #include "DLTWrapper.h"
 
 //todo: implement time correction if timer was interrupted by call
@@ -135,6 +135,9 @@ void SocketHandler::start_listenting()
         {
             //todo: here could be a timer that makes sure naughty plugins return!
 
+            //freeze mListPoll by copying it - otherwise we get problems when we want to manipulate it during the next lines
+            mListPoll_t listPoll(mListPoll);
+
             //get all indexes of the fired events and save them int hitList
             hitList.clear();
             std::vector<pollfd>::iterator it = mfdPollingArray.begin();
@@ -150,7 +153,7 @@ void SocketHandler::start_listenting()
             for (; hListIt != hitList.end(); ++hListIt)
             {
                 shPollFired* fire = NULL;
-                if ((fire = mListPoll.at(*hListIt).firedCB) != NULL) fire->Call(mfdPollingArray.at(*hListIt), mListPoll.at(*hListIt).handle, mListPoll.at(*hListIt).userData);
+                if ((fire = listPoll.at(*hListIt).firedCB) != NULL) fire->Call(mfdPollingArray.at(*hListIt), listPoll.at(*hListIt).handle, listPoll.at(*hListIt).userData);
             }
 
             //stage 2, lets ask around if some dispatching is necessary, if not, they are taken from the hitlist
@@ -158,9 +161,9 @@ void SocketHandler::start_listenting()
             for (; hListIt != hitList.end(); ++hListIt)
             {
                 shPollCheck* check = NULL;
-                if ((check = mListPoll.at(*hListIt).checkCB) != NULL)
+                if ((check = listPoll.at(*hListIt).checkCB) != NULL)
                 {
-                    if (!check->Call(mListPoll.at(*hListIt).handle, mListPoll.at(*hListIt).userData))
+                    if (!check->Call(listPoll.at(*hListIt).handle, listPoll.at(*hListIt).userData))
                     {
                         hListIt = hitList.erase(hListIt);
                     }
@@ -174,9 +177,9 @@ void SocketHandler::start_listenting()
                 for (; hListIt != hitList.end(); ++hListIt)
                 {
                     shPollDispatch *dispatch = NULL;
-                    if ((dispatch = mListPoll.at(*hListIt).dispatchCB) != NULL)
+                    if ((dispatch = listPoll.at(*hListIt).dispatchCB) != NULL)
                     {
-                        if (!dispatch->Call(mListPoll.at(*hListIt).handle, mListPoll.at(*hListIt).userData))
+                        if (!dispatch->Call(listPoll.at(*hListIt).handle, listPoll.at(*hListIt).userData))
                         {
                             hListIt = hitList.erase(hListIt);
                         }

@@ -38,7 +38,6 @@ class RoutingTree;
 class RoutingTreeItem;
 
 #define DYNAMIC_ID_BOUNDARY 100 //!< the value below is reserved for staticIDs, the value above will be assigned to dynamically registered items
-//todo: we do not have to create MainSoundProperty tables if visible = false.
 //todo: check the enum values before entering & changing in the database.
 //todo: change asserts for dynamic boundary checks into failure answers.#
 //todo: check autoincrement boundary and set to 16bit limits
@@ -135,6 +134,8 @@ public:
     am_Error_e peekDomain(const std::string& name, am_domainID_t& domainID);
     am_Error_e peekSink(const std::string& name, am_sinkID_t& sinkID);
     am_Error_e peekSource(const std::string& name, am_sourceID_t& sourceID);
+    am_Error_e peekSinkClassID(const std::string& name, am_sinkClass_t& sinkClassID);
+    am_Error_e peekSourceClassID(const std::string& name, am_sourceClass_t& sourceClassID);
     /**
      * checks for a certain mainConnection
      * @param mainConnectionID to be checked for

@@ -31,7 +31,7 @@
 #include <algorithm>
 #include <string>
 #include <vector>
-#include <assert.h>
+#include <cassert>
 #include <set>
 
 DLT_DECLARE_CONTEXT(commandDbus)

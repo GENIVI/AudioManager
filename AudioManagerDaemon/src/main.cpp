@@ -26,13 +26,11 @@
  * Please make sure to have read the documentation on genivi.org!
  */
 
-//todo: make real daemon out of it- systemd conform
-//todo: versioning of PluginInterfaces on linux level (.symver stuff)
+//todo: create systemd compatibility
 //todo: all communication like all plugins loaded etc...
 //todo: seperate documentation of test from normal project
 //todo: check the startup sequence. Dbus shall be activated last...
 //todo: there is a bug in the visible flags of sinks and sources. fix it.
-//todo: make sure that iterators have a fixed end to prevent crashed while adding vectors while iterating on critical vectors
 //todo: make sure all configurations are tested
 //todo: clean up startup sequences controller, command and routing interfaces----
 #include <config.h>
@@ -54,13 +52,13 @@
 #include <sys/resource.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <stdlib.h>
 #include <cstdlib>
-#include <assert.h>
+#include <cstdlib>
+#include <cassert>
 #include <fcntl.h>
-#include <signal.h>
-#include <string.h>
-#include <stdio.h>
+#include <csignal>
+#include <cstring>
+#include <cstdio>
 
 DLT_DECLARE_CONTEXT(AudioManager)
 

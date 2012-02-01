@@ -147,11 +147,58 @@ void routingTest::createMainConnectionSetup()
 
 void routingTest::SetUp()
 {
-    logInfo("Database Test started ");
 }
 
 void routingTest::TearDown()
 {
+}
+
+TEST_F(routingTest, peekSourceID)
+{
+    EXPECT_CALL(pMockInterface,cbNumberOfSourceClassesChanged()).Times(1);
+    std::string sourceName("myClassID");
+    am_sourceClass_t sourceClassID, peekID;
+    am_SourceClass_s sourceClass;
+    am_ClassProperty_s classProperty;
+    classProperty.classProperty = CP_SOURCE_TYPE;
+    classProperty.value = 13;
+    sourceClass.name = sourceName;
+    sourceClass.sourceClassID = 0;
+    sourceClass.listClassProperties.push_back(classProperty);
+
+    //first we peek without an existing class
+    ASSERT_EQ(E_NON_EXISTENT, pDatabaseHandler.peekSourceClassID(sourceName,sourceClassID));
+
+    //now we enter the class into the database
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceClassDB(sourceClassID,sourceClass));
+
+    //first we peek without an existing class
+    ASSERT_EQ(E_OK, pDatabaseHandler.peekSourceClassID(sourceName,peekID));
+    ASSERT_EQ(sourceClassID, peekID);
+}
+
+TEST_F(routingTest, peekSinkID)
+{
+    EXPECT_CALL(pMockInterface,cbNumberOfSinkClassesChanged()).Times(1);
+    std::string sinkName("myClassID");
+    am_sinkClass_t sinkClassID, peekID;
+    am_SinkClass_s sinkClass;
+    am_ClassProperty_s classProperty;
+    classProperty.classProperty = CP_SOURCE_TYPE;
+    classProperty.value = 13;
+    sinkClass.name = sinkName;
+    sinkClass.sinkClassID = 0;
+    sinkClass.listClassProperties.push_back(classProperty);
+
+    //first we peek without an existing class
+    ASSERT_EQ(E_NON_EXISTENT, pDatabaseHandler.peekSinkClassID(sinkName,sinkClassID));
+
+    //now we enter the class into the database
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkClassDB(sinkClass,sinkClassID));
+
+    //first we peek without an existing class
+    ASSERT_EQ(E_OK, pDatabaseHandler.peekSinkClassID(sinkName,peekID));
+    ASSERT_EQ(sinkClassID, peekID);
 }
 
 TEST_F(routingTest,crossfaders)
@@ -1592,6 +1639,8 @@ TEST_F(routingTest,enterSinksCorrect)
 
 int main(int argc, char **argv)
 {
+    DLTWrapper::instance()->registerApp("databse", "databasetest");
+    logInfo("Database Test started ");
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }

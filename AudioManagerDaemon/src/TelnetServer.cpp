@@ -23,7 +23,7 @@
  */
 
 #include "TelnetServer.h"
-#include <assert.h>
+#include <cassert>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <sys/ioctl.h>

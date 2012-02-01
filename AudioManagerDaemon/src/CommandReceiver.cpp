@@ -28,7 +28,7 @@
 #include "DLTWrapper.h"
 #include <SocketHandler.h>
 #include <config.h>
-#include <assert.h>
+#include <cassert>
 
 using namespace am;
 

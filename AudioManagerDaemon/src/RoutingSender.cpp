@@ -26,7 +26,7 @@
 #include <utility>
 #include <dirent.h>
 #include <dlfcn.h>
-#include <assert.h>
+#include <cassert>
 #include "PluginTemplate.h"
 #include "DLTWrapper.h"
 

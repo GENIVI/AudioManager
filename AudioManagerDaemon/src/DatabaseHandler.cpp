@@ -24,7 +24,7 @@
 
 #include "DatabaseHandler.h"
 #include "DatabaseObserver.h"
-#include <assert.h>
+#include <cassert>
 #include <vector>
 #include <fstream>
 #include <sstream>
@@ -48,12 +48,16 @@
 using namespace am;
 
 const std::string databaseTables[] =
-{ //
-        " Domains (domainID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, name VARCHAR(50), busname VARCHAR(50), nodename VARCHAR(50), early BOOL, complete BOOL, state INTEGER, reserved BOOL);", " SourceClasses (sourceClassID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, name VARCHAR(50));", " SinkClasses (sinkClassID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, name VARCHAR(50));",
-                " Sources (sourceID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, domainID INTEGER, name VARCHAR(50), sourceClassID INTEGER, sourceState INTEGER, volume INTEGER, visible BOOL, availability INTEGER, availabilityReason INTEGER, interruptState INTEGER, reserved BOOL);", //
-                " Sinks (sinkID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, name VARCHAR(50), domainID INTEGER, sinkClassID INTEGER, volume INTEGER, visible BOOL, availability INTEGER, availabilityReason INTEGER, muteState INTEGER, mainVolume INTEGER, reserved BOOL);", " Gateways (gatewayID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, name VARCHAR(50), sinkID INTEGER, sourceID INTEGER, domainSinkID INTEGER, domainSourceID INTEGER, controlDomainID INTEGER, inUse BOOL);", " Crossfaders (crossfaderID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, name VARCHAR(50), sinkID_A INTEGER, sinkID_B INTEGER, sourceID INTEGER, hotSink INTEGER);",
-                " Connections (connectionID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, sourceID INTEGER, sinkID INTEGER, delay INTEGER, connectionFormat INTEGER, reserved BOOL);", //
-                " MainConnections (mainConnectionID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, sourceID INTEGER, sinkID INTEGER, connectionState INTEGER, delay INTEGER);", " SystemProperties (type INTEGER PRIMARY KEY, value INTEGER);" };
+{ " Domains (domainID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, name VARCHAR(50), busname VARCHAR(50), nodename VARCHAR(50), early BOOL, complete BOOL, state INTEGER, reserved BOOL);", //
+        " SourceClasses (sourceClassID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, name VARCHAR(50));", //
+        " SinkClasses (sinkClassID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, name VARCHAR(50));", //
+        " Sources (sourceID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, domainID INTEGER, name VARCHAR(50), sourceClassID INTEGER, sourceState INTEGER, volume INTEGER, visible BOOL, availability INTEGER, availabilityReason INTEGER, interruptState INTEGER, reserved BOOL);", //
+        " Sinks (sinkID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, name VARCHAR(50), domainID INTEGER, sinkClassID INTEGER, volume INTEGER, visible BOOL, availability INTEGER, availabilityReason INTEGER, muteState INTEGER, mainVolume INTEGER, reserved BOOL);", //
+        " Gateways (gatewayID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, name VARCHAR(50), sinkID INTEGER, sourceID INTEGER, domainSinkID INTEGER, domainSourceID INTEGER, controlDomainID INTEGER);", //
+        " Crossfaders (crossfaderID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, name VARCHAR(50), sinkID_A INTEGER, sinkID_B INTEGER, sourceID INTEGER, hotSink INTEGER);", //
+        " Connections (connectionID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, sourceID INTEGER, sinkID INTEGER, delay INTEGER, connectionFormat INTEGER, reserved BOOL);", //
+        " MainConnections (mainConnectionID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, sourceID INTEGER, sinkID INTEGER, connectionState INTEGER, delay INTEGER);", //
+        " SystemProperties (type INTEGER PRIMARY KEY, value INTEGER);" };
 
 /**
  * template to converts T to std::string
@@ -80,9 +84,6 @@ DatabaseHandler::DatabaseHandler(std::string databasePath) :
         mListConnectionFormat()
 {
 
-    /**
-     *\todo: this erases the database. just for testing!
-     */
     std::ifstream infile(mPath.c_str());
 
     if (infile)
@@ -111,7 +112,7 @@ am_Error_e DatabaseHandler::enterDomainDB(const am_Domain_s & domainData, am_dom
     assert(domainData.domainID==0);
     assert(!domainData.name.empty());
     assert(!domainData.busname.empty());
-    assert(domainData.state>=DS_CONTROLLED && domainData.state<=DS_INDEPENDENT_RUNDOWN);
+    assert(domainData.state>=DS_MIN && domainData.state<=DS_MAX);
 
     //first check for a reserved domain
     sqlite3_stmt* query = NULL, *queryFinal;
@@ -175,7 +176,7 @@ am_Error_e DatabaseHandler::enterDomainDB(const am_Domain_s & domainData, am_dom
 am_Error_e DatabaseHandler::enterMainConnectionDB(const am_MainConnection_s & mainConnectionData, am_mainConnectionID_t & connectionID)
 {
     assert(mainConnectionData.connectionID==0);
-    assert(mainConnectionData.connectionState>=CS_CONNECTING && mainConnectionData.connectionState<=CS_SUSPENDED);
+    assert(mainConnectionData.connectionState>=CS_MIN && mainConnectionData.connectionState<=CS_MAX);
     assert(mainConnectionData.route.sinkID!=0);
     assert(mainConnectionData.route.sourceID!=0);
 
@@ -283,7 +284,7 @@ am_Error_e DatabaseHandler::enterSinkDB(const am_Sink_s & sinkData, am_sinkID_t 
     assert(sinkData.sinkClassID!=0);
     // \todo: need to check if class exists?
     assert(!sinkData.listConnectionFormats.empty());
-    assert(sinkData.muteState>=MS_MUTED && sinkData.muteState<=MS_UNMUTED);
+    assert(sinkData.muteState>=MS_MIN && sinkData.muteState<=MS_MAX);
 
     sqlite3_stmt *query = NULL, *queryFinal = NULL;
     int eCode = 0;
@@ -385,8 +386,6 @@ am_Error_e DatabaseHandler::enterSinkDB(const am_Sink_s & sinkData, am_sinkID_t 
     //now we need to create the additional tables:
     command = "CREATE TABLE SinkConnectionFormat" + i2s(sinkID) + std::string("(soundFormat INTEGER)");
     assert(this->sqQuery(command));
-    command = "CREATE TABLE SinkMainSoundProperty" + i2s(sinkID) + std::string("(soundPropertyType INTEGER, value INTEGER)");
-    assert(this->sqQuery(command));
     command = "CREATE TABLE SinkSoundProperty" + i2s(sinkID) + std::string("(soundPropertyType INTEGER, value INTEGER)");
     assert(this->sqQuery(command));
 
@@ -397,23 +396,6 @@ am_Error_e DatabaseHandler::enterSinkDB(const am_Sink_s & sinkData, am_sinkID_t 
     for (; connectionFormatIterator < sinkData.listConnectionFormats.end(); ++connectionFormatIterator)
     {
         sqlite3_bind_int(query, 1, *connectionFormatIterator);
-        if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
-        {
-            logError("DatabaseHandler::enterSinkDB SQLITE Step error code:", eCode);
-            sqlite3_finalize(query);
-            return E_DATABASE_ERROR;
-        }
-        sqlite3_reset(query);
-    }
-
-    //Fill MainSinkSoundProperties
-    command = "INSERT INTO SinkMainSoundProperty" + i2s(sinkID) + std::string("(soundPropertyType,value) VALUES (?,?)");
-    sqlite3_prepare_v2(mDatabase, command.c_str(), -1, &query, NULL);
-    std::vector<am_MainSoundProperty_s>::const_iterator mainSoundPropertyIterator = sinkData.listMainSoundProperties.begin();
-    for (; mainSoundPropertyIterator < sinkData.listMainSoundProperties.end(); ++mainSoundPropertyIterator)
-    {
-        sqlite3_bind_int(query, 1, mainSoundPropertyIterator->type);
-        sqlite3_bind_int(query, 2, mainSoundPropertyIterator->value);
         if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
         {
             logError("DatabaseHandler::enterSinkDB SQLITE Step error code:", eCode);
@@ -438,6 +420,29 @@ am_Error_e DatabaseHandler::enterSinkDB(const am_Sink_s & sinkData, am_sinkID_t 
             return E_DATABASE_ERROR;
         }
         sqlite3_reset(query);
+    }
+
+    if (sinkData.visible == true)
+    {
+        command = "CREATE TABLE SinkMainSoundProperty" + i2s(sinkID) + std::string("(soundPropertyType INTEGER, value INTEGER)");
+        assert(this->sqQuery(command));
+
+        //Fill MainSinkSoundProperties
+        command = "INSERT INTO SinkMainSoundProperty" + i2s(sinkID) + std::string("(soundPropertyType,value) VALUES (?,?)");
+        sqlite3_prepare_v2(mDatabase, command.c_str(), -1, &query, NULL);
+        std::vector<am_MainSoundProperty_s>::const_iterator mainSoundPropertyIterator = sinkData.listMainSoundProperties.begin();
+        for (; mainSoundPropertyIterator < sinkData.listMainSoundProperties.end(); ++mainSoundPropertyIterator)
+        {
+            sqlite3_bind_int(query, 1, mainSoundPropertyIterator->type);
+            sqlite3_bind_int(query, 2, mainSoundPropertyIterator->value);
+            if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
+            {
+                logError("DatabaseHandler::enterSinkDB SQLITE Step error code:", eCode);
+                sqlite3_finalize(query);
+                return E_DATABASE_ERROR;
+            }
+            sqlite3_reset(query);
+        }
     }
 
     logInfo("DatabaseHandler::enterSinkDB entered new sink with name", sinkData.name, "domainID:", sinkData.domainID, "classID:", sinkData.sinkClassID, "volume:", sinkData.volume, "assigned ID:", sinkID);
@@ -476,14 +481,14 @@ am_Error_e DatabaseHandler::enterGatewayDB(const am_Gateway_s & gatewayData, am_
     //if sinkID is zero and the first Static Sink was already entered, the ID is created
     if (gatewayData.gatewayID == 0 && !mFirstStaticGateway)
     {
-        command = "INSERT INTO " + std::string(GATEWAY_TABLE) + "(name, sinkID, sourceID, domainSinkID, domainSourceID, controlDomainID, inUse) VALUES (?,?,?,?,?,?,0)";
+        command = "INSERT INTO " + std::string(GATEWAY_TABLE) + "(name, sinkID, sourceID, domainSinkID, domainSourceID, controlDomainID) VALUES (?,?,?,?,?,?)";
     }
     else
     {
         //check if the ID already exists
         if (existGateway(gatewayData.gatewayID))
             return E_ALREADY_EXISTS;
-        command = "INSERT INTO " + std::string(GATEWAY_TABLE) + "(name, sinkID, sourceID, domainSinkID, domainSourceID, controlDomainID, gatewayID, inUse) VALUES (?,?,?,?,?,?,?,0)";
+        command = "INSERT INTO " + std::string(GATEWAY_TABLE) + "(name, sinkID, sourceID, domainSinkID, domainSourceID, controlDomainID, gatewayID) VALUES (?,?,?,?,?,?,?)";
     }
 
     sqlite3_prepare_v2(mDatabase, command.c_str(), -1, &query, NULL);
@@ -574,7 +579,7 @@ am_Error_e DatabaseHandler::enterSourceDB(const am_Source_s & sourceData, am_sou
     assert(sourceData.sourceClassID!=0);
     // \todo: need to check if class exists?
     assert(!sourceData.listConnectionFormats.empty());
-    assert(sourceData.sourceState>=SS_ON && sourceData.sourceState<=SS_PAUSED);
+    assert(sourceData.sourceState>=SS_MIN && sourceData.sourceState<=SS_MAX);
 
     sqlite3_stmt* query = NULL, *queryFinal = NULL;
     ;
@@ -677,8 +682,6 @@ am_Error_e DatabaseHandler::enterSourceDB(const am_Source_s & sourceData, am_sou
     //now we need to create the additional tables:
     command = "CREATE TABLE SourceConnectionFormat" + i2s(sourceID) + std::string("(soundFormat INTEGER)");
     assert(this->sqQuery(command));
-    command = "CREATE TABLE SourceMainSoundProperty" + i2s(sourceID) + std::string("(soundPropertyType INTEGER, value INTEGER)");
-    assert(this->sqQuery(command));
     command = "CREATE TABLE SourceSoundProperty" + i2s(sourceID) + std::string("(soundPropertyType INTEGER, value INTEGER)");
     assert(this->sqQuery(command));
 
@@ -689,23 +692,6 @@ am_Error_e DatabaseHandler::enterSourceDB(const am_Source_s & sourceData, am_sou
     for (; connectionFormatIterator < sourceData.listConnectionFormats.end(); ++connectionFormatIterator)
     {
         sqlite3_bind_int(query, 1, *connectionFormatIterator);
-        if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
-        {
-            logError("DatabaseHandler::enterSourceDB SQLITE Step error code:", eCode);
-            sqlite3_finalize(query);
-            return E_DATABASE_ERROR;
-        }
-        sqlite3_reset(query);
-    }
-
-    //Fill MainSinkSoundProperties
-    command = "INSERT INTO SourceMainSoundProperty" + i2s(sourceID) + std::string("(soundPropertyType,value) VALUES (?,?)");
-    sqlite3_prepare_v2(mDatabase, command.c_str(), -1, &query, NULL);
-    std::vector<am_MainSoundProperty_s>::const_iterator mainSoundPropertyIterator = sourceData.listMainSoundProperties.begin();
-    for (; mainSoundPropertyIterator < sourceData.listMainSoundProperties.end(); ++mainSoundPropertyIterator)
-    {
-        sqlite3_bind_int(query, 1, mainSoundPropertyIterator->type);
-        sqlite3_bind_int(query, 2, mainSoundPropertyIterator->value);
         if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
         {
             logError("DatabaseHandler::enterSourceDB SQLITE Step error code:", eCode);
@@ -730,6 +716,29 @@ am_Error_e DatabaseHandler::enterSourceDB(const am_Source_s & sourceData, am_sou
             return E_DATABASE_ERROR;
         }
         sqlite3_reset(query);
+    }
+
+    if (sourceData.visible == true)
+    {
+        command = "CREATE TABLE SourceMainSoundProperty" + i2s(sourceID) + std::string("(soundPropertyType INTEGER, value INTEGER)");
+        assert(this->sqQuery(command));
+
+        //Fill MainSinkSoundProperties
+        command = "INSERT INTO SourceMainSoundProperty" + i2s(sourceID) + std::string("(soundPropertyType,value) VALUES (?,?)");
+        sqlite3_prepare_v2(mDatabase, command.c_str(), -1, &query, NULL);
+        std::vector<am_MainSoundProperty_s>::const_iterator mainSoundPropertyIterator = sourceData.listMainSoundProperties.begin();
+        for (; mainSoundPropertyIterator < sourceData.listMainSoundProperties.end(); ++mainSoundPropertyIterator)
+        {
+            sqlite3_bind_int(query, 1, mainSoundPropertyIterator->type);
+            sqlite3_bind_int(query, 2, mainSoundPropertyIterator->value);
+            if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
+            {
+                logError("DatabaseHandler::enterSourceDB SQLITE Step error code:", eCode);
+                sqlite3_finalize(query);
+                return E_DATABASE_ERROR;
+            }
+            sqlite3_reset(query);
+        }
     }
 
     logInfo("DatabaseHandler::enterSinkDB entered new source with name", sourceData.name, "domainID:", sourceData.domainID, "classID:", sourceData.sourceClassID, "visible:", sourceData.visible, "assigned ID:", sourceID);
@@ -820,6 +829,7 @@ am_Error_e DatabaseHandler::changeMainConnectionRouteDB(const am_mainConnectionI
 am_Error_e DatabaseHandler::changeMainConnectionStateDB(const am_mainConnectionID_t mainconnectionID, const am_ConnectionState_e connectionState)
 {
     assert(mainconnectionID!=0);
+    assert(connectionState>=CS_MIN && connectionState<=CS_MAX);
 
     sqlite3_stmt* query = NULL;
     int eCode = 0;
@@ -886,6 +896,8 @@ am_Error_e DatabaseHandler::changeSinkMainVolumeDB(const am_mainVolume_t mainVol
 am_Error_e DatabaseHandler::changeSinkAvailabilityDB(const am_Availability_s & availability, const am_sinkID_t sinkID)
 {
     assert(sinkID!=0);
+    assert(availability.availability>=A_MIN && availability.availability<=A_MAX);
+    assert(availability.availabilityReason>=AR_MIN && availability.availabilityReason<=AR_MAX);
 
     sqlite3_stmt* query = NULL;
     int eCode = 0;
@@ -921,6 +933,7 @@ am_Error_e DatabaseHandler::changeSinkAvailabilityDB(const am_Availability_s & a
 am_Error_e DatabaseHandler::changDomainStateDB(const am_DomainState_e domainState, const am_domainID_t domainID)
 {
     assert(domainID!=0);
+    assert(domainState>=DS_MIN && domainState<=DS_MAX);
 
     sqlite3_stmt* query = NULL;
     int eCode = 0;
@@ -953,6 +966,7 @@ am_Error_e DatabaseHandler::changDomainStateDB(const am_DomainState_e domainStat
 am_Error_e DatabaseHandler::changeSinkMuteStateDB(const am_MuteState_e muteState, const am_sinkID_t sinkID)
 {
     assert(sinkID!=0);
+    assert(muteState>=MS_MIN && muteState<=MS_MAX);
 
     sqlite3_stmt* query = NULL;
     int eCode = 0;
@@ -987,7 +1001,7 @@ am_Error_e DatabaseHandler::changeSinkMuteStateDB(const am_MuteState_e muteState
 
 am_Error_e DatabaseHandler::changeMainSinkSoundPropertyDB(const am_MainSoundProperty_s & soundProperty, const am_sinkID_t sinkID)
 {
-    //todo: add checks if soundproperty exists!
+    assert(soundProperty.type>=MSP_MIN && soundProperty.type<=MSP_MAX);
     assert(sinkID!=0);
 
     sqlite3_stmt* query = NULL;
@@ -1021,7 +1035,7 @@ am_Error_e DatabaseHandler::changeMainSinkSoundPropertyDB(const am_MainSoundProp
 
 am_Error_e DatabaseHandler::changeMainSourceSoundPropertyDB(const am_MainSoundProperty_s & soundProperty, const am_sourceID_t sourceID)
 {
-    //todo: add checks if soundproperty exists!
+    assert(soundProperty.type>=MSP_MIN && soundProperty.type<=MSP_MAX);
     assert(sourceID!=0);
 
     sqlite3_stmt* query = NULL;
@@ -1057,6 +1071,8 @@ am_Error_e DatabaseHandler::changeMainSourceSoundPropertyDB(const am_MainSoundPr
 am_Error_e DatabaseHandler::changeSourceAvailabilityDB(const am_Availability_s & availability, const am_sourceID_t sourceID)
 {
     assert(sourceID!=0);
+    assert(availability.availability>=A_MIN && availability.availability<=A_MAX);
+    assert(availability.availabilityReason>=AR_MIN && availability.availabilityReason<=AR_MAX);
 
     sqlite3_stmt* query = NULL;
     int eCode = 0;
@@ -1091,6 +1107,7 @@ am_Error_e DatabaseHandler::changeSourceAvailabilityDB(const am_Availability_s &
 
 am_Error_e DatabaseHandler::changeSystemPropertyDB(const am_SystemProperty_s & property)
 {
+    assert(property.type>=SYP_MIN && property.type<=SYP_MAX);
     sqlite3_stmt* query = NULL;
     int eCode = 0;
     std::string command = "UPDATE " + std::string(SYSTEM_TABLE) + " set value=? WHERE type=?";
@@ -1747,7 +1764,7 @@ am_Error_e DatabaseHandler::getListMainConnections(std::vector<am_MainConnection
         temp.delay = sqlite3_column_int(query, 4);
         std::string statement = command1 + i2s(temp.connectionID);
         sqlite3_prepare_v2(mDatabase, statement.c_str(), -1, &query1, NULL);
-        while ((eCode = sqlite3_step(query1)) == SQLITE_ROW) //todo: check results of eCode1, eCode2
+        while ((eCode = sqlite3_step(query1)) == SQLITE_ROW)
         {
             int k = sqlite3_column_int(query1, 0);
             sqlite3_bind_int(query2, 1, k);
@@ -2865,6 +2882,7 @@ am_Error_e DatabaseHandler::enterSourceClassDB(am_sourceClass_t & sourceClassID,
 
 am_Error_e DatabaseHandler::enterSystemProperties(const std::vector<am_SystemProperty_s> & listSystemProperties)
 {
+    assert(!listSystemProperties.empty());
     sqlite3_stmt* query = NULL;
     int eCode = 0;
     std::vector<am_SystemProperty_s>::const_iterator listIterator = listSystemProperties.begin();
@@ -3407,6 +3425,7 @@ am_Error_e DatabaseHandler::getSoureState(const am_sourceID_t sourceID, am_Sourc
 am_Error_e DatabaseHandler::changeSourceState(const am_sourceID_t sourceID, const am_SourceState_e sourceState)
 {
     assert(sourceID!=0);
+    assert(sourceState>=SS_MIN && sourceState<=SS_MAX);
     sqlite3_stmt* query = NULL;
     std::string command = "UPDATE " + std::string(SOURCE_TABLE) + " SET sourceState=? WHERE sourceID=" + i2s(sourceID);
     int eCode = 0;
@@ -3756,7 +3775,7 @@ am_Error_e DatabaseHandler::changeSourceVolume(const am_sourceID_t sourceID, con
 
 am_Error_e DatabaseHandler::changeSourceSoundPropertyDB(const am_SoundProperty_s & soundProperty, const am_sourceID_t sourceID)
 {
-    //todo: add checks if soundproperty exists!
+    assert(soundProperty.type>=SP_MIN && soundProperty.type<=SP_MAX);
     assert(sourceID!=0);
 
     sqlite3_stmt* query = NULL;
@@ -3791,7 +3810,7 @@ am_Error_e DatabaseHandler::changeSourceSoundPropertyDB(const am_SoundProperty_s
 
 am_Error_e DatabaseHandler::changeSinkSoundPropertyDB(const am_SoundProperty_s & soundProperty, const am_sinkID_t sinkID)
 {
-    //todo: add checks if soundproperty exists!
+    assert(soundProperty.type>=SP_MIN && soundProperty.type<=SP_MAX);
     assert(sinkID!=0);
 
     sqlite3_stmt* query = NULL;
@@ -3825,6 +3844,7 @@ am_Error_e DatabaseHandler::changeSinkSoundPropertyDB(const am_SoundProperty_s &
 am_Error_e DatabaseHandler::changeCrossFaderHotSink(const am_crossfaderID_t crossfaderID, const am_HotSink_e hotsink)
 {
     assert(crossfaderID!=0);
+    assert(hotsink>=HS_MIN && hotsink>=HS_MAX);
 
     sqlite3_stmt* query = NULL;
     int eCode = 0;
@@ -3863,7 +3883,14 @@ am_Error_e DatabaseHandler::getRoutingTree(bool onlyfree, RoutingTree& tree, std
     am_domainID_t rootID = tree.returnRootDomainID();
     RoutingTreeItem *parent = tree.returnRootItem();
 
-    command = "SELECT domainSourceID,gatewayID FROM " + std::string(GATEWAY_TABLE) + " WHERE domainSinkID=? AND inUse=?";
+    if (onlyfree)
+    {
+        command = "SELECT g.domainSourceID,g.gatewayID FROM " + std::string(GATEWAY_TABLE) + " g WHERE domainSinkID=? AND NOT EXISTS (SELECT  NULL FROM " + std::string(CONNECTION_TABLE) + " c WHERE c.sinkID = g.sinkID OR c.sourceID = g.sourceID )";
+    }
+    else
+    {
+        command = "SELECT domainSourceID,gatewayID FROM " + std::string(GATEWAY_TABLE) + " WHERE domainSinkID=?";
+    }
 
     do
     {
@@ -3874,7 +3901,6 @@ am_Error_e DatabaseHandler::getRoutingTree(bool onlyfree, RoutingTree& tree, std
         }
         sqlite3_prepare_v2(mDatabase, command.c_str(), -1, &query, NULL);
         sqlite3_bind_int(query, 1, rootID);
-        sqlite3_bind_int(query, 2, onlyfree);
 
         while ((eCode = sqlite3_step(query)) == SQLITE_ROW)
         {
@@ -3898,6 +3924,70 @@ am_Error_e DatabaseHandler::getRoutingTree(bool onlyfree, RoutingTree& tree, std
     } while (flatTree.size() > (i - 1));
 
     return (E_OK);
+}
+
+am_Error_e am::DatabaseHandler::peekSinkClassID(const std::string & name, am_sinkClass_t & sinkClassID)
+{
+    if (name.empty())
+        return E_NON_EXISTENT;
+
+    am_Error_e returnVal = E_NON_EXISTENT;
+    sqlite3_stmt* query = NULL;
+    int eCode = 0;
+    std::string command = "SELECT sinkClassID FROM " + std::string(SINK_CLASS_TABLE) + " WHERE name=?";
+    sqlite3_prepare_v2(mDatabase, command.c_str(), -1, &query, NULL);
+    sqlite3_bind_text(query, 1, name.c_str(), name.size(), SQLITE_STATIC);
+
+    if ((eCode = sqlite3_step(query)) == SQLITE_ROW)
+    {
+        sinkClassID = sqlite3_column_int(query, 0);
+        returnVal = E_OK;
+    }
+    else if (eCode != SQLITE_DONE)
+    {
+        sinkClassID = 0;
+        logError("DatabaseHandler::peekSinkClassID SQLITE error code:", eCode);
+        returnVal = E_DATABASE_ERROR;
+    }
+
+    if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
+    {
+        logError("DatabaseHandler::peekSinkClassID SQLITE Finalize error code:", eCode);
+        returnVal = E_DATABASE_ERROR;
+    }
+    return returnVal;
+}
+
+am_Error_e am::DatabaseHandler::peekSourceClassID(const std::string & name, am_sourceClass_t & sourceClassID)
+{
+    if (name.empty())
+        return E_NON_EXISTENT;
+
+    am_Error_e returnVal = E_NON_EXISTENT;
+    sqlite3_stmt* query = NULL;
+    int eCode = 0;
+    std::string command = "SELECT sourceClassID FROM " + std::string(SOURCE_CLASS_TABLE) + " WHERE name=?";
+    sqlite3_prepare_v2(mDatabase, command.c_str(), -1, &query, NULL);
+    sqlite3_bind_text(query, 1, name.c_str(), name.size(), SQLITE_STATIC);
+
+    if ((eCode = sqlite3_step(query)) == SQLITE_ROW)
+    {
+        sourceClassID = sqlite3_column_int(query, 0);
+        returnVal = E_OK;
+    }
+    else if (eCode != SQLITE_DONE)
+    {
+        sourceClassID = 0;
+        logError("DatabaseHandler::peekSourceClassID SQLITE error code:", eCode);
+        returnVal = E_DATABASE_ERROR;
+    }
+
+    if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
+    {
+        logError("DatabaseHandler::peekSourceClassID SQLITE Finalize error code:", eCode);
+        returnVal = E_DATABASE_ERROR;
+    }
+    return returnVal;
 }
 
 void DatabaseHandler::createTables()

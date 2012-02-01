@@ -25,7 +25,7 @@
 #include "ControlSender.h"
 #include "PluginTemplate.h"
 #include "DLTWrapper.h"
-#include <assert.h>
+#include <cassert>
 #include <fstream>
 
 using namespace am;

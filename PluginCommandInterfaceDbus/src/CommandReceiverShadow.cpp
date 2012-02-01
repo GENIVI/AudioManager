@@ -26,7 +26,7 @@
 #include <audiomanagertypes.h>
 #include <string>
 #include <fstream>
-#include <assert.h>
+#include <cassert>
 #include "CommandReceiverShadow.h"
 #include "DBusCommandSender.h"
 #include "DLTWrapper.h"

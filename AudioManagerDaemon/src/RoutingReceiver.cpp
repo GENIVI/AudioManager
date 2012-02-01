@@ -31,7 +31,7 @@
 #include "DatabaseHandler.h"
 #include "RoutingSender.h"
 #include "ControlSender.h"
-#include <assert.h>
+#include <cassert>
 
 using namespace am;
 
@@ -310,27 +310,19 @@ void RoutingReceiver::hookTimingInformationChanged(const am_connectionID_t conne
     mDatabaseHandler->changeConnectionTimingInformation(connectionID, delay);
 }
 
-am_Error_e RoutingReceiver::sendChangedData(const std::vector<am_EarlyData_s> & earlyData)
+void RoutingReceiver::sendChangedData(const std::vector<am_EarlyData_s> & earlyData)
 {
     mControlSender->hookSystemReceiveEarlyData(earlyData);
-    return E_OK;
-//todo: change return type to void in EA model
 }
 
-am_Error_e RoutingReceiver::peekSinkClassID(const std::string& name, const am_sinkClass_t& sinkClassID)
+am_Error_e RoutingReceiver::peekSinkClassID(const std::string& name, am_sinkClass_t& sinkClassID)
 {
-    (void) name;
-    (void) sinkClassID;
-//todo: implement
-    return E_NOT_USED;
+    return mDatabaseHandler->peekSinkClassID(name,sinkClassID);
 }
 
-am_Error_e RoutingReceiver::peekSourceClassID(const std::string& name, const am_sourceClass_t& sourceClassID)
+am_Error_e RoutingReceiver::peekSourceClassID(const std::string& name, am_sourceClass_t& sourceClassID)
 {
-    (void) name;
-    (void) sourceClassID;
-//todo: implement
-    return E_NOT_USED;
+    return mDatabaseHandler->peekSourceClassID(name,sourceClassID);
 }
 
 am_Error_e RoutingReceiver::getDBusConnectionWrapper(DBusWrapper *& dbusConnectionWrapper) const

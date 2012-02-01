@@ -28,8 +28,8 @@
 #include <fstream>
 #include <sstream>
 #include <string>
-#include <assert.h>
-#include <stdlib.h>
+#include <cassert>
+#include <cstdlib>
 #include "DLTWrapper.h"
 
 using namespace am;

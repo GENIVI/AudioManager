@@ -26,7 +26,7 @@
 #include "CommandSender.h"
 #include "RoutingSender.h"
 #include "TelnetServer.h"
-#include <assert.h>
+#include <cassert>
 
 using namespace am;
 
@@ -50,7 +50,6 @@ DatabaseObserver::DatabaseObserver(CommandSender *iCommandSender, RoutingSender 
 
 DatabaseObserver::~DatabaseObserver()
 {
-    // TODO Auto-generated destructor stub
 }
 
 void DatabaseObserver::newSink(am_Sink_s sink)

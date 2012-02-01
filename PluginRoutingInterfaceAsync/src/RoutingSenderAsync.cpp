@@ -29,7 +29,7 @@
 #include <poll.h>
 #include <errno.h>
 #include <time.h>
-#include <assert.h>
+#include <cassert>
 #include <sstream>
 #include <string>
 #include <dbus/dbus.h>

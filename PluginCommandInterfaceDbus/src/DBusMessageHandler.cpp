@@ -27,7 +27,7 @@
 #include "DBusCommandSender.h"
 #include "DLTWrapper.h"
 #include <stdlib.h>
-#include <assert.h>
+#include <cassert>
 #include <vector>
 
 DLT_IMPORT_CONTEXT(commandDbus)
