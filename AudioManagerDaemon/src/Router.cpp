@@ -42,6 +42,7 @@ Router::Router(DatabaseHandler* iDatabaseHandler, ControlSender* iSender) :
 
 am_Error_e Router::getRoute(const bool onlyfree, const am_sourceID_t sourceID, const am_sinkID_t sinkID, std::vector<am_Route_s> & returnList)
 {
+    returnList.clear();
     //first find out in which domains the source and sink are
     am_domainID_t sourceDomainID;
     am_domainID_t sinkDomainID;
@@ -50,6 +51,37 @@ am_Error_e Router::getRoute(const bool onlyfree, const am_sourceID_t sourceID, c
     if (mDatabaseHandler->getDomainOfSink(sinkID, sinkDomainID) != E_OK)
         return (E_NON_EXISTENT);
 
+    if (sourceDomainID == sinkDomainID) //shortcut if the domains are the same...
+    {
+        //first get the list of possible connection formats
+        std::vector<am_ConnectionFormat_e> listFormats, listPriorityConnectionFormats;
+        listPossibleConnectionFormats(sourceID, sinkID, listFormats);
+
+        //get the prio of the Controller:
+        mControlSender->getConnectionFormatChoice(sourceID, sinkID, listFormats, listPriorityConnectionFormats);
+
+        //no possible connection, so no route !
+        if (listPriorityConnectionFormats.empty())
+            return E_NOT_POSSIBLE;
+
+        //return the first item as route:
+        am_RoutingElement_s routingElement;
+        routingElement.sourceID = sourceID;
+        routingElement.sinkID = sinkID;
+        routingElement.connectionFormat = listPriorityConnectionFormats[0];
+        routingElement.domainID = sourceDomainID;
+
+        //Now get a route:
+        am_Route_s actualRoute;
+        actualRoute.route.push_back(routingElement);
+        actualRoute.sourceID = sourceID;
+        actualRoute.sinkID = sinkID;
+
+        //push it to the return list - we are done here ...
+        returnList.push_back(actualRoute);
+        return E_OK;
+
+    }
     RoutingTree routingtree(sourceDomainID); //Build up a Tree from the Source_Domain to every other domain.
     std::vector<RoutingTreeItem*> flattree; //This list is the flat tree
     std::vector<RoutingTreeItem*> matchtree;
@@ -132,8 +164,8 @@ void Router::listPossibleConnectionFormats(const am_sourceID_t sourceID, const a
     std::vector<am_ConnectionFormat_e> listSinkFormats;
     mDatabaseHandler->getListSinkConnectionFormats(sinkID, listSinkFormats);
     mDatabaseHandler->getListSourceConnectionFormats(sourceID, listSourceFormats);
-    std::sort(listSinkFormats.begin(),listSinkFormats.end()); //todo: this might be not needed if we use strictly sorted input
-    std::sort(listSourceFormats.begin(),listSourceFormats.end()); //todo: this might be not needed if we use strictly sorted input
+    std::sort(listSinkFormats.begin(), listSinkFormats.end()); //todo: this might be not needed if we use strictly sorted input
+    std::sort(listSourceFormats.begin(), listSourceFormats.end()); //todo: this might be not needed if we use strictly sorted input
     std::insert_iterator<std::vector<am_ConnectionFormat_e> > inserter(listFormats, listFormats.begin());
     set_intersection(listSourceFormats.begin(), listSourceFormats.end(), listSinkFormats.begin(), listSinkFormats.end(), inserter);
 }
@@ -157,7 +189,7 @@ am_Error_e Router::findBestWay(std::vector<am_RoutingElement_s> & listRoute, std
         std::vector<am_RoutingElement_s>::iterator tempIterator(routeIterator);
         tempIterator--;
         listRestrictedOutputFormatsGateways(*gatewayIterator, (tempIterator)->connectionFormat, listRestrictedConnectionFormats);
-        std::sort(listRestrictedConnectionFormats.begin(),listRestrictedConnectionFormats.end());           //todo: this might be not needed if we use strictly sorted input
+        std::sort(listRestrictedConnectionFormats.begin(), listRestrictedConnectionFormats.end()); //todo: this might be not needed if we use strictly sorted input
         set_intersection(listConnectionFormats.begin(), listConnectionFormats.end(), listRestrictedConnectionFormats.begin(), listRestrictedConnectionFormats.end(), inserter);
         gatewayIterator++;
     }
