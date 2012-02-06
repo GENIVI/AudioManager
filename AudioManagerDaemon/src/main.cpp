@@ -300,13 +300,13 @@ int main(int argc, char *argv[])
     DatabaseObserver iObserver(&iCommandSender, &iRoutingSender);
 #endif
 
-    //since the plugins have been loaded by the *Senders before, we can tell the Controller this:
-    iControlSender.hookAllPluginsLoaded();
-
-    //the controller should startup the interfaces - this is just for testing
+    //startup all the Plugins and Interfaces
+    iControlSender.startupController(&iControlReceiver);
     iCommandSender.startupInterface(&iCommandReceiver);
     iRoutingSender.startupRoutingInterface(&iRoutingReceiver);
-    iRoutingSender.routingInterfacesReady();
+
+    //when the routingInterface is done, all plugins are loaded:
+    iControlSender.hookAllPluginsLoaded();
 
 #ifdef WITH_SOCKETHANDLER_LOOP
     iSocketHandler.start_listenting();

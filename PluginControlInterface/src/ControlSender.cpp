@@ -24,6 +24,10 @@
  */
 
 #include "ControlSender.h"
+#include "control/ControlReceiveInterface.h"
+#include <cassert>
+
+using namespace am;
 
 extern "C" ControlSendInterface* PluginControlInterfaceFactory()
 {
@@ -35,7 +39,8 @@ extern "C" void destroyControlPluginInterface(ControlSendInterface* controlSendI
     delete controlSendInterface;
 }
 
-ControlSenderPlugin::ControlSenderPlugin()
+ControlSenderPlugin::ControlSenderPlugin() :
+        mControlReceiveInterface(NULL)
 {
 }
 
@@ -45,7 +50,9 @@ ControlSenderPlugin::~ControlSenderPlugin()
 
 am_Error_e ControlSenderPlugin::startupController(ControlReceiveInterface *controlreceiveinterface)
 {
-    (void) controlreceiveinterface;
+    assert(controlreceiveinterface);
+    mControlReceiveInterface = controlreceiveinterface;
+    //here is a good place to insert SystemProperties into the database...
     return E_NOT_USED;
 }
 
@@ -56,6 +63,9 @@ am_Error_e ControlSenderPlugin::stopController()
 
 void ControlSenderPlugin::hookAllPluginsLoaded()
 {
+    //here is a good place to insert Source and SinkClasses into the database...
+    mControlReceiveInterface->setRoutingReady();
+    mControlReceiveInterface->setCommandReady();
 }
 
 am_Error_e ControlSenderPlugin::hookUserConnectionRequest(const am_sourceID_t sourceID, const am_sinkID_t sinkID, am_mainConnectionID_t & mainConnectionID)

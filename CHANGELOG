@@ -1,4 +1,4 @@
-commit af25985a8ccf00bb7fb080aaac33a47614f5f222
+commit 74cf9b985164be8c28a3cd1b11076900792594f8
 Author: christian mueller <christian.ei.mueller@bmw.de>
 
     * add an out of memory handler

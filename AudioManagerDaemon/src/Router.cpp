@@ -58,7 +58,6 @@ am_Error_e Router::getRoute(const bool onlyfree, const am_sourceID_t sourceID, c
     am_Route_s actualRoute; //holds the actual Route
     am_sourceID_t lastSource = 0;
 
-    //TODO: kind of unclean. The separation between database and router could be better.
     mDatabaseHandler->getRoutingTree(onlyfree, routingtree, flattree); //Build up the tree out of the database as
 
     //we go through the returned flattree and look for our sink, after that flattree holds only treeItems that match

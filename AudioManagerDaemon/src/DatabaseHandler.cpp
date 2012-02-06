@@ -2881,7 +2881,6 @@ am_Error_e DatabaseHandler::enterConnectionDB(const am_Connection_s& connection,
 am_Error_e DatabaseHandler::enterSinkClassDB(const am_SinkClass_s & sinkClass, am_sinkClass_t & sinkClassID)
 {
     assert(sinkClass.sinkClassID<DYNAMIC_ID_BOUNDARY);
-    assert(!sinkClass.listClassProperties.empty());
     assert(!sinkClass.name.empty());
 
     sqlite3_stmt* query = NULL;
@@ -2970,7 +2969,6 @@ am_Error_e DatabaseHandler::enterSinkClassDB(const am_SinkClass_s & sinkClass, a
 am_Error_e DatabaseHandler::enterSourceClassDB(am_sourceClass_t & sourceClassID, const am_SourceClass_s & sourceClass)
 {
     assert(sourceClass.sourceClassID<DYNAMIC_ID_BOUNDARY);
-    assert(!sourceClass.listClassProperties.empty());
     assert(!sourceClass.name.empty());
 
     sqlite3_stmt* query = NULL;

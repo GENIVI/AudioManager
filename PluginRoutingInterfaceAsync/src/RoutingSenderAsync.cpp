@@ -774,6 +774,8 @@ std::vector<am_Sink_s> AsyncRoutingSender::createSinkTable()
         item.sinkID = i; //take fixed ids to make thins easy
         item.sinkClassID = 1;
         item.volume = 0;
+        item.available.availability = A_AVAILABLE;
+        item.available.availabilityReason = AR_UNKNOWN;
         item.listSoundProperties.push_back(sp);
         item.visible = true;
         item.listConnectionFormats.push_back(CF_ANALOG);
@@ -793,10 +795,13 @@ std::vector<am_Source_s> AsyncRoutingSender::createSourceTable()
         temp << i;
         item.domainID = 0; //we cannot know this when the table is created !
         item.name = "mySource" + temp.str();
+        item.sourceState = SS_OFF;
         item.sourceID = i; //take fixed ids to make thins easy
         item.sourceClassID = 1;
         item.volume = 0;
         item.visible = true;
+        item.available.availability = A_AVAILABLE;
+        item.available.availabilityReason = AR_UNKNOWN;
         item.listConnectionFormats.push_back(CF_ANALOG);
         table.push_back(item);
     }
