@@ -114,11 +114,10 @@ pkg_check_modules(DLT REQUIRED automotive-dlt)
 
 IF(WITH_DOCUMENTATION)
 	find_package(Doxygen)
-	file(MAKE_DIRECTORY ${DOC_OUTPUT_PATH}/Interfaces)
-	configure_file(${DOXY_FILE}  ${DOC_OUTPUT_PATH}/Interfaces/Doxyfile  @ONLY IMMEDIATE)
-  	add_custom_target (Interfaces ALL 
-  		COMMAND ${DOXYGEN_EXECUTABLE} ${DOC_OUTPUT_PATH}/Interfaces/Doxyfile WORKING_DIRECTORY ${DOC_OUTPUT_PATH}/Interfaces
-  		SOURCES ${AUDIO_INCLUDES_FOLDER} ${DOC_OUTPUT_PATH}/Interfaces/Doxyfile
+	configure_file(${DOXY_FILE}  ${DOC_OUTPUT_PATH}/Doxyfile  @ONLY IMMEDIATE)
+  	add_custom_target (AudioManangerDoku ALL 
+  		COMMAND ${DOXYGEN_EXECUTABLE} ${DOC_OUTPUT_PATH}/Doxyfile WORKING_DIRECTORY ${DOC_OUTPUT_PATH}
+  		SOURCES ${AUDIO_INCLUDES_FOLDER} ${DOC_OUTPUT_PATH}/Doxyfile
 	)
 ENDIF(WITH_DOCUMENTATION)
 

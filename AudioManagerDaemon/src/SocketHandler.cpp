@@ -35,6 +35,7 @@
 #include "DLTWrapper.h"
 
 //todo: implement time correction if timer was interrupted by call
+//todo: change hitlist to a list that holds all information, because entering and removing items will be cheaper than with std::vector
 
 using namespace am;
 
@@ -85,7 +86,8 @@ void SocketHandler::start_listenting()
         shPollPrepare *prep = NULL;
         for (; prepIter != mListPoll.end(); ++prepIter)
         {
-            if ((prep = prepIter->prepareCB) != NULL) prep->Call(prepIter->handle, prepIter->userData);
+            if ((prep = prepIter->prepareCB) != NULL)
+                prep->Call(prepIter->handle, prepIter->userData);
         }
 
         if (mRecreatePollfds)
@@ -100,7 +102,7 @@ void SocketHandler::start_listenting()
 #ifdef WITH_PPOLL
 
         timespec buffertime;
-        if ((pollStatus = ppoll(&mfdPollingArray.front(), mfdPollingArray.size(), insertTime(buffertime), &sigmask)) < 0)
+        if ((pollStatus = ppoll(&mfdPollingArray[0], mfdPollingArray.size(), insertTime(buffertime), &sigmask)) < 0)
         {
             if (errno == EINTR)
             {
@@ -109,14 +111,14 @@ void SocketHandler::start_listenting()
             }
             else
             {
-                logError("SocketHandler::start_listenting ppoll returned with error",errno);
+                logError("SocketHandler::start_listenting ppoll returned with error", errno);
                 exit(0);
             }
         }
 
 #else
         //sigprocmask (SIG_SETMASK, &mask, &oldmask);
-        if((pollStatus=poll(&mfdPollingArray.front(),mfdPollingArray.size(),timespec2ms(mTimeout)))<0)
+        if((pollStatus=poll(&mfdPollingArray[0],mfdPollingArray.size(),timespec2ms(mTimeout)))<0)
         {
 
             if(errno==EINTR)
@@ -144,7 +146,8 @@ void SocketHandler::start_listenting()
             do
             {
                 it = std::find_if(it, mfdPollingArray.end(), onlyFiredEvents);
-                if (it != mfdPollingArray.end()) hitList.push_back(std::distance(mfdPollingArray.begin(), it++));
+                if (it != mfdPollingArray.end())
+                    hitList.push_back(std::distance(mfdPollingArray.begin(), it++));
 
             } while (it != mfdPollingArray.end());
 
@@ -153,7 +156,8 @@ void SocketHandler::start_listenting()
             for (; hListIt != hitList.end(); ++hListIt)
             {
                 shPollFired* fire = NULL;
-                if ((fire = listPoll.at(*hListIt).firedCB) != NULL) fire->Call(mfdPollingArray.at(*hListIt), listPoll.at(*hListIt).handle, listPoll.at(*hListIt).userData);
+                if ((fire = listPoll.at(*hListIt).firedCB) != NULL)
+                    fire->Call(mfdPollingArray.at(*hListIt), listPoll.at(*hListIt).handle, listPoll.at(*hListIt).userData);
             }
 
             //stage 2, lets ask around if some dispatching is necessary, if not, they are taken from the hitlist
@@ -217,7 +221,8 @@ void SocketHandler::stop_listening()
  */
 am_Error_e SocketHandler::addFDPoll(const int fd, const int16_t event, shPollPrepare *prepare, shPollFired *fired, shPollCheck *check, shPollDispatch *dispatch, void* userData, sh_pollHandle_t& handle)
 {
-    if (!fdIsValid(fd)) return E_NON_EXISTENT;
+    if (!fdIsValid(fd))
+        return E_NON_EXISTENT;
 
     sh_poll_s pollData;
     pollData.pollfdValue.fd = fd;

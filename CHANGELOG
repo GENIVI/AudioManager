@@ -1,3 +1,14 @@
+commit e6b739cc7e901ca8637bf3f5a72f5956cd764249
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * added function to routing algorithm that takes care of the route in case source and sink are in the same domain...
+
+commit ba9e8ff6cfc7de6fadce914b356b6e4b398d5ab3
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * worked in feedback from Thomas Goering towards integration tests
+    * corrected startup sequence and modified the testplugin so that the startup sequences match
+
 commit 74cf9b985164be8c28a3cd1b11076900792594f8
 Author: christian mueller <christian.ei.mueller@bmw.de>
 
