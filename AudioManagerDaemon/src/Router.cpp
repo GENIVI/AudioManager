@@ -60,9 +60,9 @@ am_Error_e Router::getRoute(const bool onlyfree, const am_sourceID_t sourceID, c
         //get the prio of the Controller:
         mControlSender->getConnectionFormatChoice(sourceID, sinkID, listFormats, listPriorityConnectionFormats);
 
-        //no possible connection, so no route !
+        //no possible connection, so no route ! But we report OK since there is no fault ...
         if (listPriorityConnectionFormats.empty())
-            return E_NOT_POSSIBLE;
+            return E_OK;
 
         //return the first item as route:
         am_RoutingElement_s routingElement;

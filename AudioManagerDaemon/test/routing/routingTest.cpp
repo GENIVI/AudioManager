@@ -77,6 +77,69 @@ ACTION(returnConnectionFormat){
 arg3=arg2;
 }
 
+//test that checks just sinks and source in a domain but connectionformats do not match
+TEST_F(routingTest,simpleRoute2withDomainNoMatchFormats)
+{
+    EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(1);
+    EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(1);
+    EXPECT_CALL(pMockControlInterface,getConnectionFormatChoice(_,_,_,_)).WillRepeatedly(DoAll(returnConnectionFormat(), Return(E_OK)));
+
+    //initialize 2 domains
+    am_Domain_s domain1;
+    am_domainID_t domainID1;
+
+    domain1.domainID = 0;
+    domain1.name = "domain1";
+    domain1.busname = "domain1bus";
+    domain1.state = DS_CONTROLLED;
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain1,domainID1));
+
+    am_Source_s source;
+    am_sourceID_t sourceID;
+
+    source.domainID = domainID1;
+    source.name = "source1";
+    source.sourceState = SS_ON;
+    source.sourceID = 0;
+    source.sourceClassID = 5;
+    source.listConnectionFormats.push_back(CF_MONO);
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
+
+    am_Sink_s sink;
+    am_sinkID_t sinkID;
+
+    sink.domainID = domainID1;
+    sink.name = "sink1";
+    sink.sinkID = 0;
+    sink.sinkClassID = 5;
+    sink.muteState = MS_MUTED;
+    sink.listConnectionFormats.push_back(CF_ANALOG);
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
+
+    std::vector<am_Route_s> listRoutes;
+    std::vector<am_RoutingElement_s> listRoutingElements;
+    am_RoutingElement_s hopp1;
+
+    hopp1.sinkID = sinkID;
+    hopp1.sourceID = sourceID;
+    hopp1.domainID = domainID1;
+    hopp1.connectionFormat = source.listConnectionFormats[0];
+
+    listRoutingElements.push_back(hopp1);
+
+    am_Route_s compareRoute;
+    compareRoute.route = listRoutingElements;
+    compareRoute.sinkID = sinkID;
+    compareRoute.sourceID = sourceID;
+
+    ASSERT_EQ(E_OK, pRouter.getRoute(true,sourceID,sinkID,listRoutes));
+    ASSERT_EQ(0, listRoutes.size());
+
+}
+
 //test that checks just sinks and source in a domain
 TEST_F(routingTest,simpleRoute2withDomain)
 {
