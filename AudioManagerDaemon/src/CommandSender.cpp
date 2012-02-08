@@ -27,9 +27,12 @@
 #include <dirent.h>
 #include "PluginTemplate.h"
 #include "DLTWrapper.h"
+
 using namespace am;
 
 #define REQUIRED_INTERFACE_VERSION 1
+
+DLT_IMPORT_CONTEXT(AudioManager)
 
 //!< macro to call all interfaces
 #define CALL_ALL_INTERFACES(...) 														 \
@@ -42,7 +45,8 @@ using namespace am;
 
 CommandSender::CommandSender(const std::vector<std::string>& listOfPluginDirectories) :
         mListInterfaces(), //
-        mListLibraryHandles()
+        mListLibraryHandles(),
+        mListLibraryNames()
 {
     std::vector<std::string> sharedLibraryNameList;
     std::vector<std::string>::const_iterator dirIter = listOfPluginDirectories.begin();
@@ -52,12 +56,12 @@ CommandSender::CommandSender(const std::vector<std::string>& listOfPluginDirecto
     for (; dirIter < dirIterEnd; ++dirIter)
     {
         const char* directoryName = dirIter->c_str();
-        logInfo("Searching for CommandPlugins in",directoryName);
+        logInfo("Searching for CommandPlugins in" , *dirIter);
         DIR *directory = opendir(directoryName);
 
         if (!directory)
         {
-            logInfo("Error opening directory ",directoryName);
+            logError("Error opening directory ",*dirIter);
             continue;
         }
 
@@ -86,14 +90,14 @@ CommandSender::CommandSender(const std::vector<std::string>& listOfPluginDirecto
 
     for (; iter < iterEnd; ++iter)
     {
-        logInfo("Loading CommandSender plugin",*iter);
+        logInfo("Loading CommandSender plugin", *iter);
         CommandSendInterface* (*createFunc)();
         void* tempLibHandle = NULL;
         createFunc = getCreateFunction<CommandSendInterface*()>(*iter, tempLibHandle);
 
         if (!createFunc)
         {
-            logInfo("Entry point of CommandPlugin not found",*iter);
+            logInfo("Entry point of CommandPlugin not found", *iter);
             continue;
         }
 
@@ -114,6 +118,7 @@ CommandSender::CommandSender(const std::vector<std::string>& listOfPluginDirecto
 
         mListInterfaces.push_back(commander);
         mListLibraryHandles.push_back(tempLibHandle);
+        mListLibraryNames.push_back(iter->c_str());
     }
 }
 
@@ -234,6 +239,12 @@ void CommandSender::cbSystemPropertyChanged(const am_SystemProperty_s & SystemPr
 void CommandSender::cbTimingInformationChanged(const am_mainConnectionID_t mainConnection, const am_timeSync_t time)
 {
     CALL_ALL_INTERFACES(cbTimingInformationChanged(mainConnection,time))
+}
+
+am_Error_e am::CommandSender::getListPlugins(std::vector<std::string> & interfaces) const
+{
+   interfaces = mListLibraryNames;
+   return E_OK;
 }
 
 void CommandSender::unloadLibraries(void)

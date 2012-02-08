@@ -26,6 +26,7 @@
 #define TELNETSERVER_H_
 
 #include "SocketHandler.h"
+#include "CAmTelnetMenuHelper.h"
 #include <queue>
 #include <map>
 
@@ -39,13 +40,25 @@ class ControlSender;
 class CommandReceiver;
 class RoutingReceiver;
 class ControlReceiver;
+class Router;
 
 class TelnetServer
 {
 public:
-    TelnetServer(SocketHandler *iSocketHandler, CommandSender *iCommandSender, CommandReceiver *iCommandReceiver, RoutingSender *iRoutingSender, RoutingReceiver *iRoutingReceiver, ControlSender *iControlSender, ControlReceiver *iControlReceiver, DatabaseHandler *iDatabasehandler, unsigned int servPort, unsigned int maxConnections);
+    TelnetServer(SocketHandler *iSocketHandler,
+                 CommandSender *iCommandSender,
+                 CommandReceiver *iCommandReceiver,
+                 RoutingSender *iRoutingSender,
+                 RoutingReceiver *iRoutingReceiver,
+                 ControlSender *iControlSender,
+                 ControlReceiver *iControlReceiver,
+                 DatabaseHandler *iDatabasehandler,
+                 Router *iRouter,
+                 unsigned int servPort,
+                 unsigned int maxConnections);
     virtual ~TelnetServer();
     void connectSocket(const pollfd pfd, const sh_pollHandle_t handle, void* userData);
+    void disconnectClient(int filedescriptor);
     void receiveData(const pollfd pfd, const sh_pollHandle_t handle, void* userData);
     bool dispatchData(const sh_pollHandle_t handle, void* userData);
     bool check(const sh_pollHandle_t handle, void* userData);
@@ -54,34 +67,45 @@ public:
     shPollDispatch_T<TelnetServer> telnetDispatchCB;
     shPollCheck_T<TelnetServer> telnetCheckCB;
 private:
-    typedef void (*CommandPrototype)(std::vector<std::string>& msg, int filedescriptor);
-    typedef std::map<std::string, CommandPrototype> mMapCommand_t;
-    static void listCommand(std::vector<std::string>& msg, int filedescriptor);
-    void listCommandShadow(std::vector<std::string>& msg, int filedescriptor);
-    void sliceCommand(const std::string& string, std::string& command, std::vector<std::string>& msg);
-    mMapCommand_t createCommandMap();
-    struct connection_s
-    {
-        int filedescriptor;
-        sh_pollHandle_t handle;
-    };
 
-    static TelnetServer* instance;
-    SocketHandler *mSocketHandler;
-    CommandSender *mCommandSender;
-    CommandReceiver *mCommandReceiver;
-    RoutingSender *mRoutingSender;
-    RoutingReceiver *mRoutingReceiver;
-    ControlSender *mControlSender;
-    ControlReceiver *mControlReceiver;
-    DatabaseHandler *mDatabasehandler;
-    sh_pollHandle_t mConnecthandle;
-    std::queue<std::string> msgList;
-    std::vector<connection_s> mListConnections;
-    int mConnectFD;
-    unsigned int mServerPort;
-    unsigned int mMaxConnections;
-    mMapCommand_t mMapCommands;
+	typedef void (*CommandPrototype)(std::vector<std::string>& msg,int filedescriptor);
+	typedef std::map<std::string,CommandPrototype> mMapCommand_t;
+
+	static void listCommand(std::vector<std::string>& msg,int filedescriptor);
+	void listCommandShadow(std::vector<std::string>& msg,int filedescriptor);
+
+	static void dbCommand(std::vector<std::string>& msg,int filedescriptor);
+	void dbCommandShadow(std::vector<std::string>& msg,int filedescriptor);
+
+	static void helpCommand(std::vector<std::string>& msg,int filedescriptor);
+	void helpCommandShadow(std::vector<std::string>& msg,int filedescriptor);
+
+	void sliceCommand(const std::string& string,std::string& command,std::queue<std::string>& msg);
+	mMapCommand_t createCommandMap();
+	struct connection_s
+	{
+		int filedescriptor;
+		sh_pollHandle_t handle;
+	};
+
+	static TelnetServer* instance;
+	SocketHandler *mSocketHandler;
+	CommandSender *mCommandSender;
+	CommandReceiver *mCommandReceiver;
+	RoutingSender *mRoutingSender;
+	RoutingReceiver *mRoutingReceiver;
+	ControlSender *mControlSender;
+	ControlReceiver *mControlReceiver;
+	DatabaseHandler *mDatabasehandler;
+	Router *mRouter;
+	sh_pollHandle_t mConnecthandle;
+	std::queue<std::string> mMsgList;
+	std::vector<connection_s> mListConnections;
+	int mConnectFD;
+	unsigned int mServerPort;
+	unsigned int mMaxConnections;
+	mMapCommand_t mMapCommands;
+	CAmTelnetMenuHelper mTelnetMenuHelper;
 
 };
 

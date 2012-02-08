@@ -23,12 +23,14 @@
  */
 
 #include "TelnetServer.h"
-#include <cassert>
+#include "CAmTelnetMenuHelper.h"
+#include <assert.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <sys/ioctl.h>
 #include <string.h>
 #include <netdb.h>
+#include <dlt/dlt.h>
 #include <config.h>
 #include <errno.h>
 #include <sstream>
@@ -40,62 +42,74 @@
 
 using namespace am;
 
+DLT_IMPORT_CONTEXT(AudioManager)
+
 TelnetServer* TelnetServer::instance = NULL;
 
 #define PRINT_BOOL(var) var ? output+="true\t\t" : output+="false\t\t";
 
-TelnetServer::TelnetServer(SocketHandler *iSocketHandler, CommandSender *iCommandSender, CommandReceiver *iCommandReceiver, RoutingSender *iRoutingSender, RoutingReceiver *iRoutingReceiver, ControlSender *iControlSender, ControlReceiver *iControlReceiver, DatabaseHandler *iDatabasehandler, unsigned int servPort, unsigned int maxConnections) :
-        telnetConnectFiredCB(this, &TelnetServer::connectSocket), //
-        telnetReceiveFiredCB(this, &TelnetServer::receiveData), //
-        telnetDispatchCB(this, &TelnetServer::dispatchData), //
-        telnetCheckCB(this, &TelnetServer::check), //
-        mSocketHandler(iSocketHandler), //
-        mCommandSender(iCommandSender), //
-        mCommandReceiver(iCommandReceiver), //
-        mRoutingSender(iRoutingSender), //
-        mRoutingReceiver(iRoutingReceiver), //
-        mControlSender(iControlSender), //
-        mControlReceiver(iControlReceiver), //
-        mDatabasehandler(iDatabasehandler), //
-        mConnecthandle(), //
-        msgList(), //
-        mListConnections(), //
-        mConnectFD(NULL), //
-        mServerPort(servPort), //
-        mMaxConnections(maxConnections), //
-        mMapCommands(createCommandMap())
+TelnetServer::TelnetServer(SocketHandler *iSocketHandler, CommandSender *iCommandSender, CommandReceiver *iCommandReceiver, RoutingSender *iRoutingSender, RoutingReceiver *iRoutingReceiver, ControlSender *iControlSender, ControlReceiver *iControlReceiver, DatabaseHandler *iDatabasehandler, Router *iRouter, unsigned int servPort, unsigned int maxConnections)
+   :telnetConnectFiredCB(this,&TelnetServer::connectSocket),
+   telnetReceiveFiredCB(this,&TelnetServer::receiveData),
+   telnetDispatchCB(this,&TelnetServer::dispatchData),
+   telnetCheckCB(this,&TelnetServer::check),
+   mSocketHandler(iSocketHandler),
+   mCommandSender(iCommandSender),
+   mCommandReceiver(iCommandReceiver),
+   mRoutingSender(iRoutingSender),
+   mRoutingReceiver(iRoutingReceiver),
+   mControlSender(iControlSender),
+   mControlReceiver(iControlReceiver),
+   mDatabasehandler(iDatabasehandler),
+   mRouter(iRouter),
+   mConnecthandle(),
+   mMsgList(),
+   mListConnections(),
+   mConnectFD(NULL),
+   mServerPort(servPort),
+   mMaxConnections(maxConnections),
+   mMapCommands(createCommandMap()),
+   mTelnetMenuHelper(iSocketHandler,iCommandSender,iCommandReceiver,iRoutingSender,iRoutingReceiver,iControlSender,iControlReceiver,iDatabasehandler,iRouter)
 {
-    assert(mSocketHandler!=NULL);
-    assert(mCommandReceiver!=NULL);
-    assert(mCommandSender!=NULL);
-    assert(mControlSender!=NULL);
-    assert(mControlReceiver!=NULL);
-    assert(mRoutingSender!=NULL);
-    assert(mRoutingReceiver!=NULL);
-    assert(mDatabasehandler!=NULL);
-    assert(servPort!=0);
-    assert(mMaxConnections!=0);
+	assert(mSocketHandler!=NULL);
+	assert(mCommandReceiver!=NULL);
+	assert(mCommandSender!=NULL);
+	assert(mControlSender!=NULL);
+	assert(mControlReceiver!=NULL);
+	assert(mRoutingSender!=NULL);
+	assert(mRoutingReceiver!=NULL);
+	assert(mDatabasehandler!=NULL);
+	assert(servPort!=0);
+	assert(mMaxConnections!=0);
 
-    instance = this;
+	instance = this;
+	mTelnetMenuHelper.setTelnetServer(this);
 
-    int yes = 1;
-    struct sockaddr_in servAddr;
+	int yes = 1;
+	struct sockaddr_in servAddr;
 
-    //setup the port Listener
-    mConnectFD = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
-    setsockopt(mConnectFD, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int));
-    memset(&servAddr, 0, sizeof(servAddr));
-    servAddr.sin_family = AF_INET;
-    servAddr.sin_addr.s_addr = INADDR_ANY;
-    servAddr.sin_port = htons(servPort);
-    bind(mConnectFD, (struct sockaddr *) &servAddr, sizeof(servAddr));
+   //setup the port Listener
+   mConnectFD = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+   setsockopt(mConnectFD, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int));
+   memset(&servAddr, 0, sizeof(servAddr));
+   servAddr.sin_family      = AF_INET;
+   servAddr.sin_addr.s_addr = INADDR_ANY;
+   servAddr.sin_port        = htons(servPort);
+   bind(mConnectFD, (struct sockaddr *) &servAddr, sizeof(servAddr));
 
-    int a = 1;
-    ioctl(mConnectFD, FIONBIO, (char *) &a);
-    setsockopt(mConnectFD, SOL_SOCKET, SO_KEEPALIVE, (char *) &a, sizeof(a));
+   if (listen(mConnectFD,mMaxConnections) < 0)
+   {
+      DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("TelnetServer::TelnetServerk cannot listen "),DLT_INT(errno));
+   }
+   DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("TelnetServer::TelnetServerk started listening on port"),DLT_INT(mServerPort));
+
+	int a=1;
+	ioctl (mConnectFD, FIONBIO, (char *) &a); // should we use the posix call fcntl(mConnectFD, F_SETFL, O_NONBLOCK)
+	setsockopt (mConnectFD, SOL_SOCKET, SO_KEEPALIVE, (char *) &a, sizeof (a));
 
     short events = 0;
     events |= POLLIN;
+    std::cout << "TN: " << "mConnectFD: " << mConnectFD << std::endl;
     mSocketHandler->addFDPoll(mConnectFD, events, NULL, &telnetConnectFiredCB, NULL, NULL, NULL, mConnecthandle);
 }
 
@@ -105,75 +119,118 @@ TelnetServer::~TelnetServer()
 
 void TelnetServer::connectSocket(const pollfd pfd, const sh_pollHandle_t handle, void *userData)
 {
-    (void) handle;
-    (void) userData;
-    //first, accept the connection, create a new filedescriptor
-    struct sockaddr answer;
-    socklen_t len = sizeof(answer);
-    connection_s connection;
-    connection.filedescriptor = accept(pfd.fd, (struct sockaddr*) &answer, &len);
+   //first, accept the connection, create a new filedescriptor
+	struct sockaddr answer;
+	socklen_t len=sizeof(answer);
+	connection_s connection;
+	connection.handle = 0;
+	connection.filedescriptor = accept(pfd.fd, (struct sockaddr*)&answer, &len);
 
-    mListConnections.push_back(connection);
+	// Notiy menuhelper
+	mTelnetMenuHelper.newSocketConnection(connection.filedescriptor);
 
-    //set the correct event:
-    short event = 0;
-    event |= POLLIN;
+	//set the correct event:
+	short event = 0;
+	event |=POLLIN;
 
-    //aded the filedescriptor to the sockethandler and register the callbacks for receiving the data
-    mSocketHandler->addFDPoll(mListConnections.back().filedescriptor, event, NULL, &telnetReceiveFiredCB, &telnetCheckCB, &telnetDispatchCB, NULL, mListConnections.back().handle);
+	//aded the filedescriptor to the sockethandler and register the callbacks for receiving the data
+	mSocketHandler->addFDPoll(connection.filedescriptor,event,NULL,&telnetReceiveFiredCB,&telnetCheckCB,&telnetDispatchCB,NULL,connection.handle);
+	std::cout << "New client connection, fd = " << connection.filedescriptor << "; pollhandle = " << connection.handle << std::endl;
+	mListConnections.push_back(connection);
+}
+
+void TelnetServer::disconnectClient(int filedescriptor)
+{
+
+   std::vector<connection_s>::iterator iter = mListConnections.begin();
+
+   std::cout << "Looking for filedescriptor " << filedescriptor << "..." << std::endl;
+   while(iter != mListConnections.end())
+   {
+      std::cout << "fd = " << iter->filedescriptor << "; pollhandle = " << iter->handle << std::endl;
+      if( filedescriptor == iter->filedescriptor )
+      {
+         std::cout << "fd = " << filedescriptor << " found, pollhandle = " << iter->handle << std::endl;
+         if( E_OK == mSocketHandler->removeFDPoll(iter->handle))
+         {
+            std::cout << "Removing connection, fd = " << iter->filedescriptor << "; pollhandle = " << iter->handle << std::endl;
+            mListConnections.erase(iter);
+            close(filedescriptor);
+         }
+         else
+         {
+            std::cout << "Error removing FDPoll ("<< iter->handle << "), can't close telnet session!" << std::endl;
+         }
+         break;
+      }
+      iter++;
+   }
 }
 
 void TelnetServer::receiveData(const pollfd pollfd, const sh_pollHandle_t handle, void *userData)
 {
-    (void)handle;
-    (void)userData;
-    //initialize buffer
-    char buffer[100];
-    //read until buffer is full or no more data is there
-    int read = recv(pollfd.fd, buffer, 100, NULL);
-    if (read > 1)
-    {
-        //read the message and store it in a queue - its a telnet connection so data will be sent on enter !
-        std::string msg = std::string(buffer, read);
-        msgList.push(msg);
-    }
+	//initialize buffer
+	char buffer[100];
+	//read until buffer is full or no more data is there
+	int read=recv(pollfd.fd,buffer,100,NULL);
+	if (read>1)
+	{
+		//read the message and store it in a queue - its a telnet connection so data will be sent on enter !
+		std::string msg=std::string(buffer,read);
+		mMsgList.push(msg);
+	}
 }
 
 bool TelnetServer::dispatchData(const sh_pollHandle_t handle, void *userData)
 {
-    (void)handle;
-    (void)userData;
-    std::vector<connection_s>::iterator iterator = mListConnections.begin();
-    for (; iterator != mListConnections.end(); ++iterator)
-    {
-        if (iterator->handle == handle) break;
-    }
-    if (iterator == mListConnections.end()) return false;
+   std::cout << "TelnetServer::dispatchData -> handle: " << handle << " userData: " << userData << std::endl;
+	std::vector<connection_s>::iterator iterator=mListConnections.begin();
+	std::cout << "mListConnections: " << mListConnections.size() << std::endl;
+	for(;iterator!=mListConnections.end();++iterator)
+	{
+		if(iterator->handle==handle) break;
+	}
+	//if (iterator==mListConnections.end()) return false;
 
-    std::string command;
-    std::vector<std::string> msg;
-    sliceCommand(msgList.front(), command, msg);
-    msgList.pop();
-    mMapCommand_t::iterator commandIter = mMapCommands.find(command);
-    if (commandIter == mMapCommands.end())
-    {
-        send(iterator->filedescriptor, "Command not found!\n", 20, 0);
-    }
-    else
-    {
-        (*commandIter).second(msg, iterator->filedescriptor);
-    }
+	std::string command;
+	std::queue<std::string> MsgQueue;
+	if(!mMsgList.empty())
+	{
+	   sliceCommand(mMsgList.front(),command,MsgQueue);
+	   mMsgList.pop();
+	}
 
-    //remove the message from the queue and return false if there is no more message to read.
-    if (msgList.size() != 0) return true;
-    return false;
+	mTelnetMenuHelper.enterCmdQueue(MsgQueue,iterator->filedescriptor);
+
+	std::cout << "<<" << std::endl;
+
+	// must return false to stop endless polling
+	return false;
+
+	/*
+	mMsgList.pop();
+	mMapCommand_t::iterator commandIter=mMapCommands.find(command);
+	if (commandIter==mMapCommands.end())
+	{
+		send(iterator->filedescriptor,"Command not found!\n",20,0);
+	}
+	else
+	{
+	   commandIter->second(msg,iterator->filedescriptor);
+		//(*commandIter).second(msg,iterator->filedescriptor);
+	}
+
+	//remove the message from the queue and return false if there is no more message to read.
+	if (mMsgList.size()!=0) return true;
+	return false;
+	*/
 }
 
 bool TelnetServer::check(const sh_pollHandle_t handle, void *userData)
 {
     (void)handle;
     (void)userData;
-    if (msgList.size() != 0) return true;
+    if (mMsgList.size() != 0) return true;
     return false;
 }
 
@@ -238,19 +295,119 @@ void TelnetServer::listCommandShadow(std::vector<std::string> & msg, int filedes
     send(filedescriptor, output.c_str(), output.size(), 0);
 }
 
-void am::TelnetServer::sliceCommand(const std::string & string, std::string & command, std::vector<std::string> & msg)
+void am::TelnetServer::sliceCommand(const std::string & string, std::string & command, std::queue<std::string> & MsgQueue)
 {
     std::stringstream stream(string);
     std::istream_iterator<std::string> begin(stream);
     std::istream_iterator<std::string> end;
+    std::string cmd;
+    bool endOfStream = false;
+
+    int c = 0;
+    std::cout << "Size of mMsgList: " << mMsgList.size() << std::endl;
+
+    while(!endOfStream)
+    {
+       cmd = *begin;
+       MsgQueue.push(cmd);
+       std::cout << "(" << c << ")" << "Cmd: " << cmd << "--" << std::endl;
+       begin++;
+
+       if(begin == end )
+       {
+          endOfStream = true;
+       }
+       c++;
+    }
+
+
+    /*
     command = *begin++;
     msg = std::vector<std::string>(begin, end);
+    */
+}
+
+void am::TelnetServer::dbCommandShadow(std::vector<std::string> & msg, int filedescriptor)
+{
+   std::string output;
+   std::string minorDBCmd;
+
+   if(msg.empty())
+   {
+      output+="No second parameter given after db, please enter\n";
+   }
+   else
+   {
+      minorDBCmd = msg.front();
+
+      msg.erase(msg.begin());
+
+      if(minorDBCmd.compare("list")==0)
+      {
+         minorDBCmd = msg.front();
+         msg.erase(msg.begin());
+         if(minorDBCmd.compare("connections") == 0)
+         {
+            std::vector<am_Connection_s> listConnections;
+            //std::vector<am_Connection_s>::iterator iter = listConnections.begin();
+            unsigned int i = 0;
+            mDatabasehandler->getListConnections(listConnections);
+            output += "ID \tSourceID \tSinkID \tdelay\n";
+            if(listConnections.size() > 0)
+            {
+               for(; i < listConnections.size(); i++)
+               {
+
+                  output += listConnections[i].connectionID+"\t ";
+                  output += listConnections[i].sourceID+"\t ";
+                  output += listConnections[i].sinkID+"\t ";
+                  output += listConnections[i].delay+"\n ";
+               }
+            }
+            else
+            {
+               output += "No active connections!\n";
+            }
+
+
+         }
+         else
+         {
+            output+="Unknown db list command!\n";
+         }
+
+      }
+      else
+      {
+         output+="Unknown db command\n";
+      }
+
+   }
+   send(filedescriptor,output.c_str(),output.size(),0);
+   output = ">";
+   send(filedescriptor,output.c_str(),output.size(),0);
+}
+
+void am::TelnetServer::dbCommand(std::vector<std::string> & msg, int filedescriptor)
+{
+   instance->dbCommandShadow(msg,filedescriptor);
+}
+
+void am::TelnetServer::helpCommandShadow(std::vector<std::string> & msg, int filedescriptor)
+{
+}
+
+void am::TelnetServer::helpCommand(std::vector<std::string> & msg, int filedescriptor)
+{
+   instance->helpCommandShadow(msg,filedescriptor);
 }
 
 TelnetServer::mMapCommand_t TelnetServer::createCommandMap()
 {
-    mMapCommand_t commands;
-    commands.insert(std::make_pair("list", &TelnetServer::listCommand));
-    return commands;
+	mMapCommand_t commands;
+	commands.insert(std::make_pair("help",&TelnetServer::helpCommand));
+	commands.insert(std::make_pair("list",&TelnetServer::listCommand));
+	commands.insert(std::make_pair("db",&TelnetServer::dbCommand));
+	return commands;
 }
 

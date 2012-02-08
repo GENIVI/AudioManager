@@ -62,6 +62,7 @@ public:
     void cbSystemPropertyChanged(const am_SystemProperty_s& SystemProperty);
     void cbTimingInformationChanged(const am_mainConnectionID_t mainConnection, const am_timeSync_t time);
     uint16_t getInterfaceVersion() const;
+    am_Error_e getListPlugins(std::vector<std::string>& interfaces) const;
 #ifdef UNIT_TEST
     friend class CommandInterfaceBackdoor; //this is to get access to the loaded plugins and be able to exchange the interfaces
 #endif
@@ -69,6 +70,7 @@ private:
     void unloadLibraries(void); //!< unload the shared libraries
     std::vector<CommandSendInterface*> mListInterfaces; //!< list of all interfaces
     std::vector<void*> mListLibraryHandles; //!< list of all library handles. This information is used to unload the plugins correctly.
+    std::vector<std::string> mListLibraryNames; //!< list of all library anmes. This information is used for getListPlugins.
 };
 
 }
