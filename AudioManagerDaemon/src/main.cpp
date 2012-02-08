@@ -300,6 +300,8 @@ int main(int argc, char *argv[])
     DatabaseObserver iObserver(&iCommandSender, &iRoutingSender);
 #endif
 
+    iDatabaseHandler.registerObserver(&iObserver);
+
     //startup all the Plugins and Interfaces
     iControlSender.startupController(&iControlReceiver);
     iCommandSender.startupInterface(&iCommandReceiver);

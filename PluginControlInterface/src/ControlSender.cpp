@@ -125,15 +125,14 @@ am_Error_e ControlSenderPlugin::hookUserSetSinkMuteState(const am_sinkID_t sinkI
 
 am_Error_e ControlSenderPlugin::hookSystemRegisterDomain(const am_Domain_s & domainData, am_domainID_t & domainID)
 {
-    (void) domainData;
-    (void) domainID;
-    return E_NOT_USED;
+    //this application does not do anything with it -> but some product might want to take influence here
+    return mControlReceiveInterface->enterDomainDB(domainData,domainID);
 }
 
 am_Error_e ControlSenderPlugin::hookSystemDeregisterDomain(const am_domainID_t domainID)
 {
-    (void) domainID;
-    return E_NOT_USED;
+    //this application does not do anything with it -> but some product might want to take influence here
+    return mControlReceiveInterface->removeDomainDB(domainID);
 }
 
 void ControlSenderPlugin::hookSystemDomainRegistrationComplete(const am_domainID_t domainID)
@@ -143,54 +142,50 @@ void ControlSenderPlugin::hookSystemDomainRegistrationComplete(const am_domainID
 
 am_Error_e ControlSenderPlugin::hookSystemRegisterSink(const am_Sink_s & sinkData, am_sinkID_t & sinkID)
 {
-    (void) sinkID;
-    (void) sinkData;
-    return E_NOT_USED;
+    //this application does not do anything with it -> but some product might want to take influence here
+    return mControlReceiveInterface->enterSinkDB(sinkData,sinkID);
 }
 
 am_Error_e ControlSenderPlugin::hookSystemDeregisterSink(const am_sinkID_t sinkID)
 {
-    (void) sinkID;
-    return E_NOT_USED;
+    //this application does not do anything with it -> but some product might want to take influence here
+    return mControlReceiveInterface->removeSinkDB(sinkID);
 }
 
 am_Error_e ControlSenderPlugin::hookSystemRegisterSource(const am_Source_s & sourceData, am_sourceID_t & sourceID)
 {
-    (void) sourceData;
-    (void) sourceID;
-    return E_NOT_USED;
+    //this application does not do anything with it -> but some product might want to take influence here
+    return mControlReceiveInterface->enterSourceDB(sourceData,sourceID);
 }
 
 am_Error_e ControlSenderPlugin::hookSystemDeregisterSource(const am_sourceID_t sourceID)
 {
-    (void) sourceID;
-    return E_NOT_USED;
+    //this application does not do anything with it -> but some product might want to take influence here
+    return mControlReceiveInterface->removeSourceDB(sourceID);
 }
 
 am_Error_e ControlSenderPlugin::hookSystemRegisterGateway(const am_Gateway_s & gatewayData, am_gatewayID_t & gatewayID)
 {
-    (void) gatewayData;
-    (void) gatewayID;
-    return E_NOT_USED;
+    //this application does not do anything with it -> but some product might want to take influence here
+    return mControlReceiveInterface->enterGatewayDB(gatewayData,gatewayID);
 }
 
 am_Error_e ControlSenderPlugin::hookSystemDeregisterGateway(const am_gatewayID_t gatewayID)
 {
-    (void) gatewayID;
-    return E_NOT_USED;
+    //this application does not do anything with it -> but some product might want to take influence here
+    return mControlReceiveInterface->removeGatewayDB(gatewayID);
 }
 
 am_Error_e ControlSenderPlugin::hookSystemRegisterCrossfader(const am_Crossfader_s & crossfaderData, am_crossfaderID_t & crossfaderID)
 {
-    (void) crossfaderData;
-    (void) crossfaderID;
-    return E_NOT_USED;
+    //this application does not do anything with it -> but some product might want to take influence here
+    return mControlReceiveInterface->enterCrossfaderDB(crossfaderData,crossfaderID);
 }
 
 am_Error_e ControlSenderPlugin::hookSystemDeregisterCrossfader(const am_crossfaderID_t crossfaderID)
 {
-    (void) crossfaderID;
-    return E_NOT_USED;
+    //this application does not do anything with it -> but some product might want to take influence here
+    return mControlReceiveInterface->removeCrossfaderDB(crossfaderID);
 }
 
 void ControlSenderPlugin::hookSystemSinkVolumeTick(const am_Handle_s handle, const am_sinkID_t sinkID, const am_volume_t volume)

@@ -779,6 +779,7 @@ std::vector<am_Sink_s> AsyncRoutingSender::createSinkTable()
         item.listSoundProperties.push_back(sp);
         item.visible = true;
         item.listConnectionFormats.push_back(CF_ANALOG);
+        item.muteState=MS_MUTED;
         table.push_back(item);
     }
     return (table);

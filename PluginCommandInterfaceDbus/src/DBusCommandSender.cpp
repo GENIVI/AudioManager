@@ -78,6 +78,9 @@ am_Error_e DbusCommandSender::startupInterface(CommandReceiveInterface* commandr
     mCommandReceiverShadow.setCommandReceiver(mCommandReceiveInterface);
     mCommandReceiveInterface->getDBusConnectionWrapper(mDBusWrapper);
     assert(mDBusWrapper!=NULL);
+    DBusConnection * connection;
+    mDBusWrapper->getDBusConnection(connection);
+    mDBUSMessageHandler.setDBusConnection(connection);
     return (E_OK);
 }
 
