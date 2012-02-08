@@ -1,3 +1,19 @@
+commit 9f9f6fc7d283c60166431c5175b6bbaa53a23c9c
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * change doc path
+
+commit d461527cb74c2fa42202a4466a6eeb07c0848a3a
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * renaming of databasetest - copy paste fault
+
+commit 8a2db276ede7516038eb5d2bf13b89cc3ff185a7
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * add another routing test
+    * change answer in case routing can not be done on only one domain
+
 commit f00468f45b72e2693b79af30665f683967deb5a7
 Author: christian mueller <christian.ei.mueller@bmw.de>
 

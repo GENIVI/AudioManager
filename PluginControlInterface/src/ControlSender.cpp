@@ -70,10 +70,30 @@ void ControlSenderPlugin::hookAllPluginsLoaded()
 
 am_Error_e ControlSenderPlugin::hookUserConnectionRequest(const am_sourceID_t sourceID, const am_sinkID_t sinkID, am_mainConnectionID_t & mainConnectionID)
 {
-    (void) sourceID;
-    (void) sinkID;
-    (void) mainConnectionID;
-    return E_NOT_USED;
+    std::vector<am_Route_s> listRoutes;
+    am_Handle_s handle;
+    am_connectionID_t connectionID;
+    mControlReceiveInterface->getRoute(true, sourceID, sinkID, listRoutes);
+    if (listRoutes.empty())
+        return E_NOT_POSSIBLE;
+    std::vector<am_RoutingElement_s>::iterator it(listRoutes[0].route.begin());
+    for (; it != listRoutes[0].route.end(); ++it)
+    {
+        mControlReceiveInterface->connect(handle, connectionID, it->connectionFormat, it->sourceID, it->sinkID);
+        //this is primitive and works only for one connect at a time... otherwise the handles get mixed up!
+        handleStack stack;
+        stack.handle=handle;
+        stack.ok=false;
+        mListOpenHandles.push_back(stack);
+    }
+    am_MainConnection_s mainConnectionData;
+    mainConnectionData.connectionID=0;
+    mainConnectionData.connectionState=CS_CONNECTING;
+    mainConnectionData.delay=0;
+    mainConnectionData.route=listRoutes[0];
+    mControlReceiveInterface->enterMainConnectionDB(mainConnectionData,mainConnectionID);
+    mCurrentID=mainConnectionID;
+    return E_OK;
 }
 
 am_Error_e ControlSenderPlugin::hookUserDisconnectionRequest(const am_mainConnectionID_t connectionID)
@@ -126,7 +146,7 @@ am_Error_e ControlSenderPlugin::hookUserSetSinkMuteState(const am_sinkID_t sinkI
 am_Error_e ControlSenderPlugin::hookSystemRegisterDomain(const am_Domain_s & domainData, am_domainID_t & domainID)
 {
     //this application does not do anything with it -> but some product might want to take influence here
-    return mControlReceiveInterface->enterDomainDB(domainData,domainID);
+    return mControlReceiveInterface->enterDomainDB(domainData, domainID);
 }
 
 am_Error_e ControlSenderPlugin::hookSystemDeregisterDomain(const am_domainID_t domainID)
@@ -143,7 +163,7 @@ void ControlSenderPlugin::hookSystemDomainRegistrationComplete(const am_domainID
 am_Error_e ControlSenderPlugin::hookSystemRegisterSink(const am_Sink_s & sinkData, am_sinkID_t & sinkID)
 {
     //this application does not do anything with it -> but some product might want to take influence here
-    return mControlReceiveInterface->enterSinkDB(sinkData,sinkID);
+    return mControlReceiveInterface->enterSinkDB(sinkData, sinkID);
 }
 
 am_Error_e ControlSenderPlugin::hookSystemDeregisterSink(const am_sinkID_t sinkID)
@@ -155,7 +175,7 @@ am_Error_e ControlSenderPlugin::hookSystemDeregisterSink(const am_sinkID_t sinkI
 am_Error_e ControlSenderPlugin::hookSystemRegisterSource(const am_Source_s & sourceData, am_sourceID_t & sourceID)
 {
     //this application does not do anything with it -> but some product might want to take influence here
-    return mControlReceiveInterface->enterSourceDB(sourceData,sourceID);
+    return mControlReceiveInterface->enterSourceDB(sourceData, sourceID);
 }
 
 am_Error_e ControlSenderPlugin::hookSystemDeregisterSource(const am_sourceID_t sourceID)
@@ -167,7 +187,7 @@ am_Error_e ControlSenderPlugin::hookSystemDeregisterSource(const am_sourceID_t s
 am_Error_e ControlSenderPlugin::hookSystemRegisterGateway(const am_Gateway_s & gatewayData, am_gatewayID_t & gatewayID)
 {
     //this application does not do anything with it -> but some product might want to take influence here
-    return mControlReceiveInterface->enterGatewayDB(gatewayData,gatewayID);
+    return mControlReceiveInterface->enterGatewayDB(gatewayData, gatewayID);
 }
 
 am_Error_e ControlSenderPlugin::hookSystemDeregisterGateway(const am_gatewayID_t gatewayID)
@@ -179,7 +199,7 @@ am_Error_e ControlSenderPlugin::hookSystemDeregisterGateway(const am_gatewayID_t
 am_Error_e ControlSenderPlugin::hookSystemRegisterCrossfader(const am_Crossfader_s & crossfaderData, am_crossfaderID_t & crossfaderID)
 {
     //this application does not do anything with it -> but some product might want to take influence here
-    return mControlReceiveInterface->enterCrossfaderDB(crossfaderData,crossfaderID);
+    return mControlReceiveInterface->enterCrossfaderDB(crossfaderData, crossfaderID);
 }
 
 am_Error_e ControlSenderPlugin::hookSystemDeregisterCrossfader(const am_crossfaderID_t crossfaderID)
@@ -244,8 +264,24 @@ void ControlSenderPlugin::hookSystemTimingInformationChanged(const am_mainConnec
 
 void ControlSenderPlugin::cbAckConnect(const am_Handle_s handle, const am_Error_e errorID)
 {
-    (void) handle;
-    (void) errorID;
+    (void)errorID;
+    //here is no error check !!!!
+    //\todo: add error check here
+    //\todo: algorith can be much better written here
+    bool allOk = true;
+    std::list<handleStack>::iterator it(mListOpenHandles.begin());
+
+    for (; it != mListOpenHandles.end(); ++it)
+    {
+        if (it->handle.handle == handle.handle)
+            it->ok = true;
+        allOk = allOk && it->ok;
+    }
+
+    if (allOk)
+    {
+        mControlReceiveInterface->changeMainConnectionStateDB(mCurrentID,CS_CONNECTED);
+    }
 }
 
 void ControlSenderPlugin::cbAckDisconnect(const am_Handle_s handle, const am_Error_e errorID)
@@ -309,6 +345,7 @@ am_Error_e ControlSenderPlugin::getConnectionFormatChoice(const am_sourceID_t so
 {
     (void) sourceID;
     (void) sinkID;
+    //ok, this is cheap. In a real product you have your preferences, right?
     listPrioConnectionFormats = listPossibleConnectionFormats;
     return (E_OK);
 }

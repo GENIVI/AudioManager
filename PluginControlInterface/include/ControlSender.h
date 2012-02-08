@@ -27,6 +27,7 @@
 #define CONTROLSENDER_H_
 
 #include <control/ControlSendInterface.h>
+#include <list>
 
 using namespace am;
 
@@ -81,6 +82,13 @@ public:
 
 private:
     ControlReceiveInterface * mControlReceiveInterface;
+    struct handleStack
+    {
+        bool ok;
+        am_Handle_s handle;
+    };
+    std::list<handleStack> mListOpenHandles;
+    am_mainConnectionID_t mCurrentID;
 };
 
 #endif /* CONTROLSENDER_H_ */
