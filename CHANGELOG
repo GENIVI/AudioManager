@@ -1,3 +1,10 @@
+commit f00468f45b72e2693b79af30665f683967deb5a7
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * restructered document generation. Now only the functions of the daemon are generated
+    * sockethandler: take [0] instead of .front. added todo to make sockethandler faster
+    * added test for local routing
+
 commit e6b739cc7e901ca8637bf3f5a72f5956cd764249
 Author: christian mueller <christian.ei.mueller@bmw.de>
 

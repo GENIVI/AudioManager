@@ -49,11 +49,11 @@
 namespace am
 {
 
-class routingTest: public ::testing::Test
+class databasetest: public ::testing::Test
 {
 public:
-    routingTest();
-    ~routingTest();
+    databasetest();
+    ~databasetest();
     std::vector<std::string> plistRoutingPluginDirs;
     std::vector<std::string> plistCommandPluginDirs;
     DatabaseHandler pDatabaseHandler;

@@ -44,7 +44,7 @@ extern bool equalRoutingElement(const am_RoutingElement_s a, const am_RoutingEle
 extern bool equalClassProperties(const am_ClassProperty_s a, const am_ClassProperty_s b);
 extern std::string int2string(int i);
 
-routingTest::routingTest() :
+databasetest::databasetest() :
         plistRoutingPluginDirs(), //
         plistCommandPluginDirs(), //
         pDatabaseHandler(std::string(":memory:")), //
@@ -62,11 +62,11 @@ routingTest::routingTest() :
     pCommandInterfaceBackdoor.injectInterface(&pCommandSender, &pMockInterface);
 }
 
-routingTest::~routingTest()
+databasetest::~databasetest()
 {
 }
 
-void routingTest::createMainConnectionSetup()
+void databasetest::createMainConnectionSetup()
 {
     //fill the connection database
     am_Connection_s connection;
@@ -145,15 +145,15 @@ void routingTest::createMainConnectionSetup()
     ASSERT_EQ(true, equal);
 }
 
-void routingTest::SetUp()
+void databasetest::SetUp()
 {
 }
 
-void routingTest::TearDown()
+void databasetest::TearDown()
 {
 }
 
-TEST_F(routingTest, peekSourceID)
+TEST_F(databasetest, peekSourceID)
 {
     EXPECT_CALL(pMockInterface,cbNumberOfSourceClassesChanged()).Times(1);
     std::string sourceName("myClassID");
@@ -177,7 +177,7 @@ TEST_F(routingTest, peekSourceID)
     ASSERT_EQ(sourceClassID, peekID);
 }
 
-TEST_F(routingTest, peekSinkID)
+TEST_F(databasetest, peekSinkID)
 {
     EXPECT_CALL(pMockInterface,cbNumberOfSinkClassesChanged()).Times(1);
     std::string sinkName("myClassID");
@@ -201,7 +201,7 @@ TEST_F(routingTest, peekSinkID)
     ASSERT_EQ(sinkClassID, peekID);
 }
 
-TEST_F(routingTest,crossfaders)
+TEST_F(databasetest,crossfaders)
 {
 
     EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(2);
@@ -241,7 +241,7 @@ TEST_F(routingTest,crossfaders)
     ASSERT_EQ(crossfader.name.compare(listCrossfaders[0].name), 0);
 }
 
-TEST_F(routingTest,crossfadersGetFromDomain)
+TEST_F(databasetest,crossfadersGetFromDomain)
 {
 
     EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(2);
@@ -284,7 +284,7 @@ TEST_F(routingTest,crossfadersGetFromDomain)
 
 }
 
-TEST_F(routingTest,sourceState)
+TEST_F(databasetest,sourceState)
 {
     am_Source_s source;
     am_sourceID_t sourceID;
@@ -304,7 +304,7 @@ TEST_F(routingTest,sourceState)
     ASSERT_EQ(listSources[0].sourceState, SS_ON);
 }
 
-TEST_F(routingTest,sinkVolumeChange)
+TEST_F(databasetest,sinkVolumeChange)
 {
     am_Sink_s sink;
     am_sinkID_t sinkID;
@@ -322,7 +322,7 @@ TEST_F(routingTest,sinkVolumeChange)
     ASSERT_EQ(listSinks[0].volume, 34);
 }
 
-TEST_F(routingTest,sourceVolumeChange)
+TEST_F(databasetest,sourceVolumeChange)
 {
     am_Source_s source;
     am_sourceID_t sourceID;
@@ -340,7 +340,7 @@ TEST_F(routingTest,sourceVolumeChange)
     ASSERT_EQ(listSources[0].volume, 34);
 }
 
-TEST_F(routingTest, peekSource)
+TEST_F(databasetest, peekSource)
 {
     std::vector<am_Source_s> listSources;
     am_sourceID_t sourceID, source2ID, source3ID;
@@ -371,7 +371,7 @@ TEST_F(routingTest, peekSource)
     ASSERT_EQ(source3ID, source2ID);
 }
 
-TEST_F(routingTest, peekSourceDouble)
+TEST_F(databasetest, peekSourceDouble)
 {
     std::vector<am_Source_s> listSources;
     am_sourceID_t sourceID;
@@ -402,7 +402,7 @@ TEST_F(routingTest, peekSourceDouble)
     ASSERT_TRUE(listSources[0].sourceID==sourceID);
 }
 
-TEST_F(routingTest, peekSink)
+TEST_F(databasetest, peekSink)
 {
     std::vector<am_Sink_s> listSinks;
     am_sinkID_t sinkID, sink2ID, sink3ID;
@@ -433,7 +433,7 @@ TEST_F(routingTest, peekSink)
     ASSERT_EQ(sink3ID, sink2ID);
 }
 
-TEST_F(routingTest, peekSinkDouble)
+TEST_F(databasetest, peekSinkDouble)
 {
     std::vector<am_Sink_s> listSinks;
     am_sinkID_t sinkID;
@@ -464,7 +464,7 @@ TEST_F(routingTest, peekSinkDouble)
     ASSERT_TRUE(listSinks[0].sinkID==sinkID);
 }
 
-TEST_F(routingTest,changeConnectionTimingInformationCheckMainConnection)
+TEST_F(databasetest,changeConnectionTimingInformationCheckMainConnection)
 {
     am_Connection_s connection;
     std::vector<am_Connection_s> connectionList;
@@ -492,7 +492,7 @@ TEST_F(routingTest,changeConnectionTimingInformationCheckMainConnection)
     ASSERT_EQ(mainList[0].delay, 216);
 }
 
-TEST_F(routingTest,changeConnectionTimingInformation)
+TEST_F(databasetest,changeConnectionTimingInformation)
 {
     am_Connection_s connection;
     am_connectionID_t connectionID;
@@ -509,7 +509,7 @@ TEST_F(routingTest,changeConnectionTimingInformation)
     ASSERT_TRUE(connectionList[0].delay==24);
 }
 
-TEST_F(routingTest,getSinkClassOfSink)
+TEST_F(databasetest,getSinkClassOfSink)
 {
     std::vector<am_SinkClass_s> sinkClassList;
     std::vector<am_ClassProperty_s> classPropertyList;
@@ -547,7 +547,7 @@ TEST_F(routingTest,getSinkClassOfSink)
     ASSERT_TRUE(std::equal(sinkClassList[0].listClassProperties.begin(),sinkClassList[0].listClassProperties.end(),returnClass.listClassProperties.begin(),equalClassProperties));
 }
 
-TEST_F(routingTest,getSourceClassOfSource)
+TEST_F(databasetest,getSourceClassOfSource)
 {
     std::vector<am_SourceClass_s> sourceClassList;
     std::vector<am_ClassProperty_s> classPropertyList;
@@ -581,7 +581,7 @@ TEST_F(routingTest,getSourceClassOfSource)
     ASSERT_TRUE(std::equal(sourceClassList[0].listClassProperties.begin(),sourceClassList[0].listClassProperties.end(),sinkSourceClass.listClassProperties.begin(),equalClassProperties));
 }
 
-TEST_F(routingTest,removeSourceClass)
+TEST_F(databasetest,removeSourceClass)
 {
     std::vector<am_SourceClass_s> sourceClassList;
     std::vector<am_ClassProperty_s> classPropertyList;
@@ -609,7 +609,7 @@ TEST_F(routingTest,removeSourceClass)
     ASSERT_TRUE(sourceClassList.empty());
 }
 
-TEST_F(routingTest,updateSourceClass)
+TEST_F(databasetest,updateSourceClass)
 {
     std::vector<am_SourceClass_s> sourceClassList;
     std::vector<am_ClassProperty_s> classPropertyList, changedPropertyList;
@@ -642,7 +642,7 @@ TEST_F(routingTest,updateSourceClass)
     ASSERT_TRUE(std::equal(sourceClassList[0].listClassProperties.begin(),sourceClassList[0].listClassProperties.end(),changedPropertyList.begin(),equalClassProperties));
 }
 
-TEST_F(routingTest,enterSourceClass)
+TEST_F(databasetest,enterSourceClass)
 {
     std::vector<am_SourceClass_s> sourceClassList;
     std::vector<am_ClassProperty_s> classPropertyList;
@@ -667,7 +667,7 @@ TEST_F(routingTest,enterSourceClass)
     ASSERT_TRUE(std::equal(sourceClassList[0].listClassProperties.begin(),sourceClassList[0].listClassProperties.end(),classPropertyList.begin(),equalClassProperties));
 }
 
-TEST_F(routingTest,enterSourceClassStatic)
+TEST_F(databasetest,enterSourceClassStatic)
 {
     std::vector<am_SourceClass_s> sourceClassList;
     std::vector<am_ClassProperty_s> classPropertyList;
@@ -692,7 +692,7 @@ TEST_F(routingTest,enterSourceClassStatic)
     ASSERT_TRUE(std::equal(sourceClassList[0].listClassProperties.begin(),sourceClassList[0].listClassProperties.end(),classPropertyList.begin(),equalClassProperties));
 }
 
-TEST_F(routingTest,removeSinkClass)
+TEST_F(databasetest,removeSinkClass)
 {
     std::vector<am_SinkClass_s> sinkClassList;
     std::vector<am_ClassProperty_s> classPropertyList;
@@ -720,7 +720,7 @@ TEST_F(routingTest,removeSinkClass)
     ASSERT_TRUE(sinkClassList.empty());
 }
 
-TEST_F(routingTest,updateSinkClass)
+TEST_F(databasetest,updateSinkClass)
 {
     std::vector<am_SinkClass_s> sinkClassList;
     std::vector<am_ClassProperty_s> classPropertyList, changedPropertyList;
@@ -753,7 +753,7 @@ TEST_F(routingTest,updateSinkClass)
     ASSERT_TRUE(std::equal(sinkClassList[0].listClassProperties.begin(),sinkClassList[0].listClassProperties.end(),changedPropertyList.begin(),equalClassProperties));
 }
 
-TEST_F(routingTest,enterSinkClass)
+TEST_F(databasetest,enterSinkClass)
 {
     std::vector<am_SinkClass_s> sinkClassList;
     std::vector<am_ClassProperty_s> classPropertyList;
@@ -778,7 +778,7 @@ TEST_F(routingTest,enterSinkClass)
     ASSERT_TRUE(std::equal(sinkClassList[0].listClassProperties.begin(),sinkClassList[0].listClassProperties.end(),classPropertyList.begin(),equalClassProperties));
 }
 
-TEST_F(routingTest,enterSinkClassStatic)
+TEST_F(databasetest,enterSinkClassStatic)
 {
     std::vector<am_SinkClass_s> sinkClassList;
     std::vector<am_ClassProperty_s> classPropertyList;
@@ -803,7 +803,7 @@ TEST_F(routingTest,enterSinkClassStatic)
     ASSERT_TRUE(std::equal(sinkClassList[0].listClassProperties.begin(),sinkClassList[0].listClassProperties.end(),classPropertyList.begin(),equalClassProperties));
 }
 
-TEST_F(routingTest, changeSystemProperty)
+TEST_F(databasetest, changeSystemProperty)
 {
     std::vector<am_SystemProperty_s> listSystemProperties, listReturn;
     am_SystemProperty_s systemProperty;
@@ -820,7 +820,7 @@ TEST_F(routingTest, changeSystemProperty)
     ASSERT_EQ(listReturn[0].value, systemProperty.value);
 }
 
-TEST_F(routingTest, systemProperties)
+TEST_F(databasetest, systemProperties)
 {
     std::vector<am_SystemProperty_s> listSystemProperties, listReturn;
     am_SystemProperty_s systemProperty;
@@ -835,7 +835,7 @@ TEST_F(routingTest, systemProperties)
     ASSERT_EQ(listReturn[0].value, systemProperty.value);
 }
 
-TEST_F(routingTest,enterSourcesCorrect)
+TEST_F(databasetest,enterSourcesCorrect)
 {
     //fill the connection database
     am_Source_s staticSource, firstDynamicSource, secondDynamicSource;
@@ -895,7 +895,7 @@ TEST_F(routingTest,enterSourcesCorrect)
     ASSERT_EQ(true, equal);
 }
 
-TEST_F(routingTest, changeSourceMainSoundProperty)
+TEST_F(databasetest, changeSourceMainSoundProperty)
 {
     std::vector<am_Source_s> listSources;
     am_Source_s source;
@@ -920,7 +920,7 @@ TEST_F(routingTest, changeSourceMainSoundProperty)
     }
 }
 
-TEST_F(routingTest, changeSinkMuteState)
+TEST_F(databasetest, changeSinkMuteState)
 {
     std::vector<am_Sink_s> listSinks;
     am_Sink_s sink;
@@ -936,7 +936,7 @@ TEST_F(routingTest, changeSinkMuteState)
     ASSERT_EQ(muteState, listSinks[0].muteState);
 }
 
-TEST_F(routingTest, changeSinkMainSoundProperty)
+TEST_F(databasetest, changeSinkMainSoundProperty)
 {
     std::vector<am_Sink_s> listSinks;
     am_Sink_s sink;
@@ -962,7 +962,7 @@ TEST_F(routingTest, changeSinkMainSoundProperty)
     }
 }
 
-TEST_F(routingTest, peekDomain)
+TEST_F(databasetest, peekDomain)
 {
     std::vector<am_Domain_s> listDomains;
     am_Domain_s domain;
@@ -980,7 +980,7 @@ TEST_F(routingTest, peekDomain)
     ASSERT_TRUE(listDomains[0].domainID==domainID);
 }
 
-TEST_F(routingTest, peekDomainFirstEntered)
+TEST_F(databasetest, peekDomainFirstEntered)
 {
     std::vector<am_Domain_s> listDomains;
     am_Domain_s domain;
@@ -995,7 +995,7 @@ TEST_F(routingTest, peekDomainFirstEntered)
     ASSERT_TRUE(listDomains.size()==1);
 }
 
-TEST_F(routingTest, changeDomainState)
+TEST_F(databasetest, changeDomainState)
 {
     std::vector<am_Domain_s> listDomains;
     am_Domain_s domain;
@@ -1008,7 +1008,7 @@ TEST_F(routingTest, changeDomainState)
     ASSERT_EQ(newState, listDomains[0].state);
 }
 
-TEST_F(routingTest, changeMainConnectionState)
+TEST_F(databasetest, changeMainConnectionState)
 {
     std::vector<am_MainConnection_s> listMainConnections;
     createMainConnectionSetup();
@@ -1018,7 +1018,7 @@ TEST_F(routingTest, changeMainConnectionState)
     ASSERT_EQ(CS_DISCONNECTING, listMainConnections[0].connectionState);
 }
 
-TEST_F(routingTest, changeSinkAvailability)
+TEST_F(databasetest, changeSinkAvailability)
 {
     std::vector<am_Sink_s> listSinks;
     am_Sink_s sink;
@@ -1036,7 +1036,7 @@ TEST_F(routingTest, changeSinkAvailability)
     ASSERT_EQ(availability.availabilityReason, listSinks[0].available.availabilityReason);
 }
 
-TEST_F(routingTest, changeSourceAvailability)
+TEST_F(databasetest, changeSourceAvailability)
 {
     std::vector<am_Source_s> listSources;
     am_Source_s source;
@@ -1055,7 +1055,7 @@ TEST_F(routingTest, changeSourceAvailability)
     ASSERT_EQ(availability.availabilityReason, listSources[0].available.availabilityReason);
 }
 
-TEST_F(routingTest,changeMainConnectionRoute)
+TEST_F(databasetest,changeMainConnectionRoute)
 {
     std::vector<am_MainConnection_s> originalList;
     std::vector<am_MainConnection_s> newList;
@@ -1116,7 +1116,7 @@ TEST_F(routingTest,changeMainConnectionRoute)
     ASSERT_FALSE(std::equal(newList[0].route.route.begin(),newList[0].route.route.end(),originalList[0].route.route.begin(),equalRoutingElement));
 }
 
-TEST_F(routingTest,changeMainSinkVolume)
+TEST_F(databasetest,changeMainSinkVolume)
 {
     am_Sink_s sink;
     am_sinkID_t sinkID;
@@ -1133,7 +1133,7 @@ TEST_F(routingTest,changeMainSinkVolume)
     ASSERT_EQ(listSinks[0].mainVolume, newVol);
 }
 
-TEST_F(routingTest,getMainSourceSoundProperties)
+TEST_F(databasetest,getMainSourceSoundProperties)
 {
     am_Source_s source;
     am_sourceID_t sourceID;
@@ -1147,7 +1147,7 @@ TEST_F(routingTest,getMainSourceSoundProperties)
     ASSERT_TRUE(std::equal(mainSoundProperties.begin(),mainSoundProperties.end(),listMainSoundProperties.begin(),equalMainSoundProperty));
 }
 
-TEST_F(routingTest,getMainSinkSoundProperties)
+TEST_F(databasetest,getMainSinkSoundProperties)
 {
     am_Sink_s sink;
     am_sinkID_t sinkID;
@@ -1161,7 +1161,7 @@ TEST_F(routingTest,getMainSinkSoundProperties)
     ASSERT_TRUE(std::equal(mainSoundProperties.begin(),mainSoundProperties.end(),listMainSoundProperties.begin(),equalMainSoundProperty));
 }
 
-TEST_F(routingTest,getMainSources)
+TEST_F(databasetest,getMainSources)
 {
     am_Source_s source, source1, source2;
     am_sourceID_t sourceID;
@@ -1193,7 +1193,7 @@ TEST_F(routingTest,getMainSources)
     ASSERT_TRUE(equal);
 }
 
-TEST_F(routingTest,getMainSinks)
+TEST_F(databasetest,getMainSinks)
 {
     am_Sink_s sink, sink1, sink2;
     am_sinkID_t sinkID;
@@ -1224,7 +1224,7 @@ TEST_F(routingTest,getMainSinks)
     ASSERT_TRUE(equal);
 }
 
-TEST_F(routingTest,getVisibleMainConnections)
+TEST_F(databasetest,getVisibleMainConnections)
 {
     createMainConnectionSetup();
     am_MainConnection_s mainConnection;
@@ -1239,7 +1239,7 @@ TEST_F(routingTest,getVisibleMainConnections)
     ASSERT_TRUE(1==visibleMainConnection[0].sourceID);
 }
 
-TEST_F(routingTest,getListSourcesOfDomain)
+TEST_F(databasetest,getListSourcesOfDomain)
 {
     am_Source_s source, source2;
     am_Domain_s domain;
@@ -1270,7 +1270,7 @@ TEST_F(routingTest,getListSourcesOfDomain)
     ASSERT_TRUE(std::equal(sourceList.begin(),sourceList.end(),sourceCheckList.begin()) && !sourceList.empty());
 }
 
-TEST_F(routingTest,getListSinksOfDomain)
+TEST_F(databasetest,getListSinksOfDomain)
 {
     am_Sink_s sink, sink2;
     am_Domain_s domain;
@@ -1299,7 +1299,7 @@ TEST_F(routingTest,getListSinksOfDomain)
     ASSERT_TRUE(std::equal(sinkList.begin(),sinkList.end(),sinkCheckList.begin()) && !sinkList.empty());
 }
 
-TEST_F(routingTest,getListGatewaysOfDomain)
+TEST_F(databasetest,getListGatewaysOfDomain)
 {
     EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(1);
     EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(1);
@@ -1348,7 +1348,7 @@ TEST_F(routingTest,getListGatewaysOfDomain)
     ASSERT_TRUE(std::equal(gatewayList.begin(),gatewayList.end(),gatewayCheckList.begin()) && !gatewayList.empty());
 }
 
-TEST_F(routingTest,removeDomain)
+TEST_F(databasetest,removeDomain)
 {
     am_Domain_s domain;
     am_domainID_t domainID;
@@ -1363,7 +1363,7 @@ TEST_F(routingTest,removeDomain)
     ASSERT_TRUE(listDomains.empty());
 }
 
-TEST_F(routingTest,removeGateway)
+TEST_F(databasetest,removeGateway)
 {
     EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(1);
     EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(1);
@@ -1390,7 +1390,7 @@ TEST_F(routingTest,removeGateway)
     ASSERT_TRUE(listGateways.empty());
 }
 
-TEST_F(routingTest,removeSink)
+TEST_F(databasetest,removeSink)
 {
     am_Sink_s sink;
     am_sinkID_t sinkID;
@@ -1406,7 +1406,7 @@ TEST_F(routingTest,removeSink)
     ASSERT_TRUE(listSinks.empty());
 }
 
-TEST_F(routingTest,removeSource)
+TEST_F(databasetest,removeSource)
 {
     //fill the connection database
     am_Source_s source;
@@ -1424,7 +1424,7 @@ TEST_F(routingTest,removeSource)
     ASSERT_TRUE(listSources.empty());
 }
 
-TEST_F(routingTest, removeMainConnection)
+TEST_F(databasetest, removeMainConnection)
 {
     createMainConnectionSetup();
     EXPECT_CALL(pMockInterface,cbNumberOfMainConnectionsChanged()).Times(1);
@@ -1433,31 +1433,31 @@ TEST_F(routingTest, removeMainConnection)
         << "ERROR: database error";
 }
 
-TEST_F(routingTest,removeNonexistentMainConnectionFail)
+TEST_F(databasetest,removeNonexistentMainConnectionFail)
 {
     ASSERT_EQ(E_NON_EXISTENT,pDatabaseHandler.removeMainConnectionDB(34))
         << "ERROR: database error";
 }
 
-TEST_F(routingTest,removeNonexistentSource)
+TEST_F(databasetest,removeNonexistentSource)
 {
     ASSERT_EQ(E_NON_EXISTENT,pDatabaseHandler.removeSourceDB(3))
         << "ERROR: database error";
 }
 
-TEST_F(routingTest,removeNonexistentSink)
+TEST_F(databasetest,removeNonexistentSink)
 {
     ASSERT_EQ(E_NON_EXISTENT,pDatabaseHandler.removeSinkDB(2))
         << "ERROR: database error";
 }
 
-TEST_F(routingTest,removeNonexistentGateway)
+TEST_F(databasetest,removeNonexistentGateway)
 {
     ASSERT_EQ(E_NON_EXISTENT,pDatabaseHandler.removeGatewayDB(12))
         << "ERROR: database error";
 }
 
-TEST_F(routingTest,registerGatewayCorrect)
+TEST_F(databasetest,registerGatewayCorrect)
 {
     EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(1);
     EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(1);
@@ -1521,7 +1521,7 @@ TEST_F(routingTest,registerGatewayCorrect)
     ASSERT_EQ(true, equal);
 }
 
-TEST_F(routingTest,getGatewayInfo)
+TEST_F(databasetest,getGatewayInfo)
 {
     EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(1);
     EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(1);
@@ -1590,7 +1590,7 @@ TEST_F(routingTest,getGatewayInfo)
 
 }
 
-TEST_F(routingTest,enterSinkThatAlreadyExistFail)
+TEST_F(databasetest,enterSinkThatAlreadyExistFail)
 {
     //fill the connection database
     am_Sink_s staticSink, SecondSink;
@@ -1614,7 +1614,7 @@ TEST_F(routingTest,enterSinkThatAlreadyExistFail)
         << "ERROR: database error";
 }
 
-TEST_F(routingTest,enterSourcesThatAlreadyExistFail)
+TEST_F(databasetest,enterSourcesThatAlreadyExistFail)
 {
     //fill the connection database
     am_Source_s staticSource, SecondSource;
@@ -1635,7 +1635,7 @@ TEST_F(routingTest,enterSourcesThatAlreadyExistFail)
         << "ERROR: database error";
 }
 
-TEST_F(routingTest,registerDomainCorrect)
+TEST_F(databasetest,registerDomainCorrect)
 {
     //initialize domain
     std::vector<am_Domain_s> returnList;
@@ -1662,7 +1662,7 @@ TEST_F(routingTest,registerDomainCorrect)
     ASSERT_EQ(true, equal);
 }
 
-TEST_F(routingTest,registerConnectionCorrect)
+TEST_F(databasetest,registerConnectionCorrect)
 {
     am_Connection_s connection;
     am_connectionID_t connectionID;
@@ -1689,12 +1689,12 @@ TEST_F(routingTest,registerConnectionCorrect)
     ASSERT_EQ(true, equal);
 }
 
-TEST_F(routingTest,enterMainConnectionCorrect)
+TEST_F(databasetest,enterMainConnectionCorrect)
 {
     createMainConnectionSetup();
 }
 
-TEST_F(routingTest,enterSinksCorrect)
+TEST_F(databasetest,enterSinksCorrect)
 {
     //fill the connection database
     am_Sink_s staticSink, firstDynamicSink, secondDynamicSink;
