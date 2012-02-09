@@ -765,6 +765,16 @@ std::vector<am_Sink_s> AsyncRoutingSender::createSinkTable()
     am_SoundProperty_s sp;
     sp.type = SP_BASS;
     sp.value = 0;
+
+    std::vector<am_MainSoundProperty_s> listMainSoundProperties;
+    am_MainSoundProperty_s msp;
+    msp.type=MSP_BASS;
+    msp.value=5;
+    listMainSoundProperties.push_back(msp);
+    msp.type=MSP_MID;
+    listMainSoundProperties.push_back(msp);
+    msp.type=MSP_TREBLE;
+    listMainSoundProperties.push_back(msp);
     for (int16_t i = 0; i <= 10; i++)
     {
         std::stringstream temp;
@@ -777,9 +787,11 @@ std::vector<am_Sink_s> AsyncRoutingSender::createSinkTable()
         item.available.availability = A_AVAILABLE;
         item.available.availabilityReason = AR_UNKNOWN;
         item.listSoundProperties.push_back(sp);
+        item.listMainSoundProperties=listMainSoundProperties;
         item.visible = true;
         item.listConnectionFormats.push_back(CF_ANALOG);
         item.muteState=MS_MUTED;
+        item.mainVolume=0;
         table.push_back(item);
     }
     return (table);

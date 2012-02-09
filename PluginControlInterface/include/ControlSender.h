@@ -82,13 +82,34 @@ public:
 
 private:
     ControlReceiveInterface * mControlReceiveInterface;
-    struct handleStack
+    struct handleStatus
     {
-        bool ok;
+        bool status;
         am_Handle_s handle;
     };
-    std::list<handleStack> mListOpenHandles;
-    am_mainConnectionID_t mCurrentID;
+
+    struct mainConnectionSet
+    {
+        am_mainConnectionID_t connectionID;
+        std::vector<handleStatus> listHandleStaus;
+    };
+
+    class findHandle
+    {
+        am_Handle_s mHandle;
+    public:
+        explicit findHandle(am_Handle_s handle) :
+                mHandle(handle)
+        {
+        }
+        bool operator()(handleStatus* handle) const
+        {
+            return (handle->handle.handle == mHandle.handle);
+        }
+    };
+
+    std::vector<mainConnectionSet> mListOpenConnections;
+    ;
 };
 
 #endif /* CONTROLSENDER_H_ */

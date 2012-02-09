@@ -1,3 +1,15 @@
+commit 8d3ad577f57e0a45ef9c0e2f1ce99957445f0eb8
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * more changes regarding test controller. Now a very basic connect is supported
+
+commit e924eb3ec4717647d61e9ec4d5cc74f81ea749b9
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * changed main to register observer (thanks TGO)
+    * changed command DBUSplugin to register Connection at 2nd DBUSMessageHandler Instance (thanks TGO)
+    * Expanded dummyController functionality
+
 commit 9f9f6fc7d283c60166431c5175b6bbaa53a23c9c
 Author: christian mueller <christian.ei.mueller@bmw.de>
 

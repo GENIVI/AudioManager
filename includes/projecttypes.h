@@ -130,7 +130,10 @@ namespace am {
 		 */
 		MSP_NAVIGATION_OFFSET = 0,
 		MSP_TEST = 1,
-		MSP_MAX = 2,
+		MSP_BASS = 2,
+		MSP_TREBLE = 3,
+		MSP_MID = 4,
+		MSP_MAX = 5,
 		MSP_MIN = MSP_NAVIGATION_OFFSET
 	};
 

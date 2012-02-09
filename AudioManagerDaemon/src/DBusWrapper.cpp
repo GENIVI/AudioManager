@@ -404,7 +404,7 @@ bool am::DBusWrapper::dbusDispatchCallback(const sh_pollHandle_t handle, void *u
     if (dbus_connection_dispatch(mDbusConnection) == DBUS_DISPATCH_COMPLETE)
         returnVal = false;
     dbus_connection_unref(mDbusConnection);
-    logInfo("DBusWrapper::dbusDispatchCallback was called");
+//    logInfo("DBusWrapper::dbusDispatchCallback was called");
     return returnVal;
 }
 
@@ -417,7 +417,7 @@ bool am::DBusWrapper::dbusCheckCallback(const sh_pollHandle_t handle, void *user
     if (dbus_connection_get_dispatch_status(mDbusConnection) == DBUS_DISPATCH_DATA_REMAINS)
         returnVal = true;
     dbus_connection_unref(mDbusConnection);
-    logInfo("DBusWrapper::dbusCheckCallback was called");
+//    logInfo("DBusWrapper::dbusCheckCallback was called");
     return returnVal;
 }
 
@@ -442,7 +442,7 @@ void am::DBusWrapper::dbusFireCallback(const pollfd pollfd, const sh_pollHandle_
     dbus_connection_ref(mDbusConnection);
     dbus_watch_handle(watch, flags);
     dbus_connection_unref(mDbusConnection);
-    logInfo("DBusWrapper::dbusFireCallback was called");
+//    logInfo("DBusWrapper::dbusFireCallback was called");
 }
 
 void DBusWrapper::toggleTimeoutDelegate(DBusTimeout *timeout, void* userData)
