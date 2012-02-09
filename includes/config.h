@@ -1,7 +1,7 @@
 #ifndef _CONFIG_H
 #define _CONFIG_H
 
-#define DAEMONVERSION "ver-0.0.9-11-gd462790"
+#define DAEMONVERSION "ver-0.0.1-37-ga004215"
 
 #define WITH_DBUS_WRAPPER
 #define WITH_SOCKETHANDLER_LOOP 

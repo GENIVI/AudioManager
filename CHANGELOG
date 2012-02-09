@@ -1,3 +1,13 @@
+commit a0042153abf05408409d06c5183efe0905b18055
+Author: Frank Herchet <frank.fh.herchet@bmw.de>
+
+    * merge local changes with updated master
+
+commit 66ce11e941986259e4c403364e3ee7c8b09864f4
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * fix list domains in telnetserver
+
 commit d4627908f2f405b7b184bd47b2216adf5d4df486
 Merge: 84b9046 40ade5d
 Author: christian mueller <christian.ei.mueller@bmw.de>
@@ -40,6 +50,12 @@ commit d461527cb74c2fa42202a4466a6eeb07c0848a3a
 Author: christian mueller <christian.ei.mueller@bmw.de>
 
     * renaming of databasetest - copy paste fault
+
+commit 3a11cd051607c19d91a0eb8118fac87e937de929
+Author: Grape R5 <demo@ubuntu.(none)>
+
+    * TelnetServer Implementation.
+    * TelnetServerTest Implementation
 
 commit 8a2db276ede7516038eb5d2bf13b89cc3ff185a7
 Author: christian mueller <christian.ei.mueller@bmw.de>
