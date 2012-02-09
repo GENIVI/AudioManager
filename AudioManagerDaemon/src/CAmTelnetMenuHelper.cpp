@@ -24,6 +24,10 @@
 
 #include "CAmTelnetMenuHelper.h"
 #include <dlt/dlt.h>
+#include <cassert>
+
+#define DEBUG_ON false
+
 using namespace am;
 
 DLT_IMPORT_CONTEXT(AudioManager)
@@ -291,7 +295,7 @@ void CAmTelnetMenuHelper::oneStepBackCommandExec(std::queue<std::string> & CmdQu
    it = mCurrentMainStateMap.find(filedescriptor);
    if( it != mCurrentMainStateMap.end())
    {
-      std::cout << "old state: " << it->second;
+      if(DEBUG_ON)std::cout << "old state: " << it->second;
       switch(it->second)
       {
          case eRootState:
@@ -313,8 +317,8 @@ void CAmTelnetMenuHelper::oneStepBackCommandExec(std::queue<std::string> & CmdQu
             it->second = eRootState;
             break;
       }
-      std::cout << "new state: " << it->second << std::endl;
-      enterCmdQueue(CmdQueue,filedescriptor);
+      if(DEBUG_ON)std::cout << "new state: " << it->second << std::endl;
+      //enterCmdQueue(CmdQueue,filedescriptor);
    }
 }
 
@@ -342,9 +346,18 @@ void CAmTelnetMenuHelper::exitCommandExec(std::queue<std::string> & CmdQueue, in
    it = mCurrentMainStateMap.find(filedescriptor);
    if( it != mCurrentMainStateMap.end())
    {
-      std::cout << "removing client connection " << filedescriptor << std::endl;
-      mTelenetServer->disconnectClient(filedescriptor);
-      mCurrentMainStateMap.erase(it);
+      if(DEBUG_ON)std::cout << "removing client connection " << filedescriptor << std::endl;
+
+      if(NULL != mTelenetServer)
+      {
+         mTelenetServer->disconnectClient(filedescriptor);
+         mCurrentMainStateMap.erase(it);
+      }
+      else
+      {
+         // ASSERT mTelenetServer == NULL
+         if(DEBUG_ON)std::cout << "mTelenetServer";
+      }
    }
 }
 
@@ -415,7 +428,7 @@ void CAmTelnetMenuHelper::helpCommandExec(std::queue<std::string> & CmdQueue, in
             break;
       }
       sendTelnetLine(filedescriptor,line);
-      enterCmdQueue(CmdQueue,filedescriptor);
+      //enterCmdQueue(CmdQueue,filedescriptor);
    }
 }
 
@@ -435,7 +448,7 @@ void CAmTelnetMenuHelper::rootGetCommandExec(std::queue<std::string> & CmdQueue,
    if( it != mCurrentMainStateMap.end())
    {
       it->second = eGetState;
-      enterCmdQueue(CmdQueue,filedescriptor);
+      //enterCmdQueue(CmdQueue,filedescriptor);
    }
 }
 
@@ -455,7 +468,7 @@ void CAmTelnetMenuHelper::rootSetCommandExec(std::queue<std::string> & CmdQueue,
    if( it != mCurrentMainStateMap.end())
    {
       it->second = eSetState;
-      enterCmdQueue(CmdQueue,filedescriptor);
+      //enterCmdQueue(CmdQueue,filedescriptor);
    }
 }
 
@@ -475,7 +488,7 @@ void CAmTelnetMenuHelper::rootListCommandExec(std::queue<std::string> & CmdQueue
    if( it != mCurrentMainStateMap.end())
    {
       it->second = eListState;
-      enterCmdQueue(CmdQueue,filedescriptor);
+      //enterCmdQueue(CmdQueue,filedescriptor);
    }
 }
 
@@ -495,7 +508,7 @@ void CAmTelnetMenuHelper::rootInfoCommandExec(std::queue<std::string> & CmdQueue
    if( it != mCurrentMainStateMap.end())
    {
       it->second = eInfoState;
-      enterCmdQueue(CmdQueue,filedescriptor);
+      //enterCmdQueue(CmdQueue,filedescriptor);
    }
 }
 
@@ -532,9 +545,6 @@ void CAmTelnetMenuHelper::listConnectionsCommandExec(std::queue<std::string> & C
       sendTelnetLine(filedescriptor,line);
       it++;
    }
-
-   if(!CmdQueue.empty())
-         enterCmdQueue(CmdQueue,filedescriptor);
 }
 
 /****************************************************************************/
@@ -569,9 +579,6 @@ void CAmTelnetMenuHelper::listSourcesCommandExec(std::queue<std::string> & CmdQu
       sendTelnetLine(filedescriptor,line);
       it++;
    }
-
-   if(!CmdQueue.empty())
-         enterCmdQueue(CmdQueue,filedescriptor);
 }
 
 /****************************************************************************/
@@ -606,9 +613,6 @@ void CAmTelnetMenuHelper::listSinksCommandsExec(std::queue<std::string> & CmdQue
       sendTelnetLine(filedescriptor,line);
       it++;
    }
-
-   if(!CmdQueue.empty())
-         enterCmdQueue(CmdQueue,filedescriptor);
 }
 
 /****************************************************************************/
@@ -641,9 +645,6 @@ void CAmTelnetMenuHelper::listCrossfadersExec(std::queue<std::string> & CmdQueue
       sendTelnetLine(filedescriptor,line);
       it++;
    }
-
-   if(!CmdQueue.empty())
-         enterCmdQueue(CmdQueue,filedescriptor);
 }
 
 /****************************************************************************/
@@ -767,9 +768,6 @@ void CAmTelnetMenuHelper::getSenderversionCommandExec(std::queue<std::string> & 
         << "Routing: "  << mRoutingSender->getInterfaceVersion();
 
    sendTelnetLine(filedescriptor,line);
-
-   if(!CmdQueue.empty())
-         enterCmdQueue(CmdQueue,filedescriptor);
 }
 
 /****************************************************************************/
@@ -791,9 +789,6 @@ void CAmTelnetMenuHelper::getReceiverversionCommandExec(std::queue<std::string> 
         << "Routing: "  << mRoutingReceiver->getInterfaceVersion();
 
    sendTelnetLine(filedescriptor,line);
-
-   if(!CmdQueue.empty())
-      enterCmdQueue(CmdQueue,filedescriptor);
 
 }
 
@@ -823,9 +818,6 @@ void CAmTelnetMenuHelper::infoSystempropertiesCommandExec(std::queue<std::string
       line << "Type: " <<  it->type << " Value: " << it->value;
       sendTelnetLine(filedescriptor,line);
    }
-
-   if(!CmdQueue.empty())
-         enterCmdQueue(CmdQueue,filedescriptor);
 }
 
 /****************************************************************************/
@@ -867,7 +859,7 @@ void CAmTelnetMenuHelper::setRoutingCommandExec(std::queue<std::string> & CmdQue
          return;
       }
 
-      std::cout << "setRoutingCommandExec(sourceID: " << sourceID << ",sinkID: " << sinkID << ")" << std::endl;
+      if(DEBUG_ON)std::cout << "setRoutingCommandExec(sourceID: " << sourceID << ",sinkID: " << sinkID << ")" << std::endl;
 
       rError = mRouter->getRoute(true,sourceID,sinkID,routingList);
 

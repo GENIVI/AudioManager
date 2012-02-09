@@ -56,6 +56,7 @@ public:
                  Router *iRouter,
                  unsigned int servPort,
                  unsigned int maxConnections);
+
     virtual ~TelnetServer();
     void connectSocket(const pollfd pfd, const sh_pollHandle_t handle, void* userData);
     void disconnectClient(int filedescriptor);
@@ -70,15 +71,6 @@ private:
 
 	typedef void (*CommandPrototype)(std::vector<std::string>& msg,int filedescriptor);
 	typedef std::map<std::string,CommandPrototype> mMapCommand_t;
-
-	static void listCommand(std::vector<std::string>& msg,int filedescriptor);
-	void listCommandShadow(std::vector<std::string>& msg,int filedescriptor);
-
-	static void dbCommand(std::vector<std::string>& msg,int filedescriptor);
-	void dbCommandShadow(std::vector<std::string>& msg,int filedescriptor);
-
-	static void helpCommand(std::vector<std::string>& msg,int filedescriptor);
-	void helpCommandShadow(std::vector<std::string>& msg,int filedescriptor);
 
 	void sliceCommand(const std::string& string,std::string& command,std::queue<std::string>& msg);
 	mMapCommand_t createCommandMap();
@@ -104,7 +96,6 @@ private:
 	int mConnectFD;
 	unsigned int mServerPort;
 	unsigned int mMaxConnections;
-	mMapCommand_t mMapCommands;
 	CAmTelnetMenuHelper mTelnetMenuHelper;
 
 };

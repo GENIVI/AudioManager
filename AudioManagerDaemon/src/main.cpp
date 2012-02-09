@@ -278,7 +278,7 @@ int main(int argc, char *argv[])
     RoutingReceiver iRoutingReceiver(&iDatabaseHandler, &iRoutingSender, &iControlSender, &iSocketHandler, &iDBusWrapper);
     ControlReceiver iControlReceiver(&iDatabaseHandler, &iRoutingSender, &iCommandSender, &iSocketHandler, &iRouter);
 #ifdef WITH_TELNET
-    TelnetServer iTelnetServer(&iSocketHandler,&iCommandSender,&iCommandReceiver,&iRoutingSender,&iRoutingReceiver,&iControlSender,&iControlReceiver,&iDatabaseHandler,telnetport,maxConnections);
+    TelnetServer iTelnetServer(&iSocketHandler,&iCommandSender,&iCommandReceiver,&iRoutingSender,&iRoutingReceiver,&iControlSender,&iControlReceiver,&iDatabaseHandler,&iRouter,telnetport,maxConnections);
 #endif
 #else /*WITH_SOCKETHANDLER_LOOP */
     CommandReceiver iCommandReceiver(&iDatabaseHandler,&iControlSender,&iDBusWrapper);
