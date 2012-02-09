@@ -41,12 +41,6 @@ Author: christian mueller <christian.ei.mueller@bmw.de>
 
     * renaming of databasetest - copy paste fault
 
-commit 3a11cd051607c19d91a0eb8118fac87e937de929
-Author: Grape R5 <demo@ubuntu.(none)>
-
-    * TelnetServer Implementation.
-    * TelnetServerTest Implementation
-
 commit 8a2db276ede7516038eb5d2bf13b89cc3ff185a7
 Author: christian mueller <christian.ei.mueller@bmw.de>
 

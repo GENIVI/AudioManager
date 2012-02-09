@@ -9,6 +9,7 @@
 #define CAMTELNETSERVERTEST_H_
 
 #include "gtest/gtest.h"
+#include "TelnetServer.h"
 
 
 namespace am {
@@ -22,6 +23,22 @@ class CAmTelnetServerTest : public ::testing::Test{
    virtual void SetUp() ;
 
    virtual void TearDown() ;
+
+   std::vector<std::string> mlistRoutingPluginDirs;
+   std::vector<std::string> mlistCommandPluginDirs;
+
+   SocketHandler     mSocketHandler;
+   DatabaseHandler   mDatabasehandler;
+   RoutingSender     mRoutingSender;
+   CommandSender     mCommandSender;
+   ControlSender     mControlSender;
+   Router            mRouter;
+
+   CommandReceiver   mCommandReceiver;
+   RoutingReceiver   mRoutingReceiver;
+   ControlReceiver   mControlReceiver;
+
+   TelnetServer      mTelnetServer;
 
 };
 
