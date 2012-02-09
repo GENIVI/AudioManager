@@ -659,22 +659,23 @@ void CAmTelnetMenuHelper::listDomainsCommandExec(std::queue<std::string> & CmdQu
 /****************************************************************************/
 {
    std::vector<am_Domain_s> listDomains;
-   std::vector<am_Domain_s>::iterator it;
    std::stringstream line;
 
    mDatabasehandler->getListDomains(listDomains);
 
-   line << "Current domains: " << listDomains.size();
+   line << "\tCurrent domains: " << listDomains.size()<<std::endl;
    sendTelnetLine(filedescriptor,line);
 
+   std::vector<am_Domain_s>::iterator it(listDomains.begin());
    while(it != listDomains.end())
    {
-      line.clear();
+      line.str("");
       line << "\tID: "  << it->domainID
            << "\tName: "  << it->name
            << "\tBusname: " << it->busname
            << "\tNodename: " << it->nodename
-           << "\tState: " << it->state;
+           << "\tState: " << static_cast<int>(it->state)
+           << std::endl;
 
       sendTelnetLine(filedescriptor,line);
       it++;

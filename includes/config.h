@@ -1,13 +1,13 @@
 #ifndef _CONFIG_H
 #define _CONFIG_H
 
-#define DAEMONVERSION "ver-0.0.9-7-g8d3ad57"
+#define DAEMONVERSION "ver-0.0.9-11-gd462790"
 
 #define WITH_DBUS_WRAPPER
 #define WITH_SOCKETHANDLER_LOOP 
 /* #undef WITH_SIMPLEDBUS_LOOP */
 #define WITH_PPOLL
-/* #undef WITH_TELNET */
+#define WITH_TELNET
 #define GLIB_DBUS_TYPES_TOLERANT
 
 #define DEFAULT_PLUGIN_COMMAND_DIR "/home/christian/workspace/AudioManager/bin/plugins/command"

@@ -1,3 +1,24 @@
+commit d4627908f2f405b7b184bd47b2216adf5d4df486
+Merge: 84b9046 40ade5d
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    Merge branch 'telnetserver'
+
+commit 84b90467e8e9dcaafaf75738f4bf9840365424b9
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * adoption of RoutinInterfaceAsync to testHMI
+    * adoption of projekttypes.h to HMI
+    * comment out wrapper dlt messages because too much pollution
+
+commit 40ade5d852e6d4c781f33a20d8e4340d59ec07a8
+Author: Frank Herchet <frank.fh.herchet@bmw.de>
+
+    * remove duplicate current command prompt
+    * remove debug output of TelnetServer.h
+    * fix compile error in main.cpp
+    * remove unused methods in TelnetServer.h
+
 commit 8d3ad577f57e0a45ef9c0e2f1ce99957445f0eb8
 Author: christian mueller <christian.ei.mueller@bmw.de>
 
@@ -19,6 +40,12 @@ commit d461527cb74c2fa42202a4466a6eeb07c0848a3a
 Author: christian mueller <christian.ei.mueller@bmw.de>
 
     * renaming of databasetest - copy paste fault
+
+commit 3a11cd051607c19d91a0eb8118fac87e937de929
+Author: Grape R5 <demo@ubuntu.(none)>
+
+    * TelnetServer Implementation.
+    * TelnetServerTest Implementation
 
 commit 8a2db276ede7516038eb5d2bf13b89cc3ff185a7
 Author: christian mueller <christian.ei.mueller@bmw.de>
