@@ -96,20 +96,49 @@ private:
 
     class findHandle
     {
-        am_Handle_s mHandle;
+        handleStatus mHandle;
     public:
-        explicit findHandle(am_Handle_s handle) :
+        explicit findHandle(handleStatus handle) :
                 mHandle(handle)
         {
         }
-        bool operator()(handleStatus* handle) const
+        bool operator()(const handleStatus& handle) const
         {
-            return (handle->handle.handle == mHandle.handle);
+            return (handle.handle.handle == mHandle.handle.handle);
+        }
+    };
+
+    struct checkHandle
+    {
+
+        handleStatus mHandleStatus;
+        explicit checkHandle(const handleStatus& value) :
+                mHandleStatus(value)
+        {
+        }
+
+        bool operator()(const handleStatus &value)
+        {
+            return !value.status;
+        }
+    };
+
+    struct checkMainConnectionID
+    {
+        am_MainConnection_s mMainConnection;
+        explicit checkMainConnectionID(const am_MainConnection_s& mainConnection) :
+                mMainConnection(mainConnection)
+        {
+        }
+        bool operator()(const am_MainConnection_s& mainConnection)
+        {
+            if (mMainConnection.connectionID == mainConnection.connectionID)
+                return true;
+            return false;
         }
     };
 
     std::vector<mainConnectionSet> mListOpenConnections;
-    ;
 };
 
 #endif /* CONTROLSENDER_H_ */

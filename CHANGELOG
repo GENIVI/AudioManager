@@ -1,3 +1,8 @@
+commit 2ddacca29eccd4192add2b17ad6af357b52ea29b
+Author: Frank Herchet <frank.fh.herchet@bmw.de>
+
+    * fix some methods in CAmTelnetMenuHelper
+
 commit a0042153abf05408409d06c5183efe0905b18055
 Author: Frank Herchet <frank.fh.herchet@bmw.de>
 

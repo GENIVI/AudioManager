@@ -247,7 +247,7 @@ pPool(pool), //
             //a timeout happened
             if(errno == ETIMEDOUT)
             {
-                logError("Worker::timedWait timeout waiting error");
+                logInfo("Worker::timedWait timed out - no bug !");
                 return (false);
             }
             else //failure in waiting, nevertheless, we quit the thread...
@@ -768,12 +768,12 @@ std::vector<am_Sink_s> AsyncRoutingSender::createSinkTable()
 
     std::vector<am_MainSoundProperty_s> listMainSoundProperties;
     am_MainSoundProperty_s msp;
-    msp.type=MSP_BASS;
-    msp.value=5;
+    msp.type = MSP_BASS;
+    msp.value = 5;
     listMainSoundProperties.push_back(msp);
-    msp.type=MSP_MID;
+    msp.type = MSP_MID;
     listMainSoundProperties.push_back(msp);
-    msp.type=MSP_TREBLE;
+    msp.type = MSP_TREBLE;
     listMainSoundProperties.push_back(msp);
     for (int16_t i = 0; i <= 10; i++)
     {
@@ -787,11 +787,11 @@ std::vector<am_Sink_s> AsyncRoutingSender::createSinkTable()
         item.available.availability = A_AVAILABLE;
         item.available.availabilityReason = AR_UNKNOWN;
         item.listSoundProperties.push_back(sp);
-        item.listMainSoundProperties=listMainSoundProperties;
+        item.listMainSoundProperties = listMainSoundProperties;
         item.visible = true;
         item.listConnectionFormats.push_back(CF_ANALOG);
-        item.muteState=MS_MUTED;
-        item.mainVolume=0;
+        item.muteState = MS_MUTED;
+        item.mainVolume = 0;
         table.push_back(item);
     }
     return (table);
@@ -831,7 +831,7 @@ void AsyncRoutingSender::insertConnectionSafe(am_connectionID_t connectionID, am
 void AsyncRoutingSender::removeHandleSafe(uint16_t handle)
 {
     pthread_mutex_lock(&mMapHandleWorkerMutex);
-    if (mMapHandleWorker.erase(handle))
+    if (!mMapHandleWorker.erase(handle))
     {
         logError("AsyncRoutingSender::removeHandle could not remove handle");
     }
@@ -841,7 +841,7 @@ void AsyncRoutingSender::removeHandleSafe(uint16_t handle)
 void AsyncRoutingSender::removeConnectionSafe(am_connectionID_t connectionID)
 {
     pthread_mutex_lock(&mMapConnectionMutex);
-    if (mMapConnectionIDRoute.erase(connectionID))
+    if (!mMapConnectionIDRoute.erase(connectionID))
     {
         logError("AsyncRoutingSender::removeConnectionSafe could not remove connection");
     }

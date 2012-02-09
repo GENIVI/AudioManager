@@ -26,6 +26,7 @@
 #include "ControlSender.h"
 #include "control/ControlReceiveInterface.h"
 #include <cassert>
+#include <algorithm>
 
 using namespace am;
 
@@ -40,8 +41,7 @@ extern "C" void destroyControlPluginInterface(ControlSendInterface* controlSendI
 }
 
 ControlSenderPlugin::ControlSenderPlugin() :
-        mControlReceiveInterface(NULL),
-        mListOpenConnections()
+        mControlReceiveInterface(NULL), mListOpenConnections()
 {
 }
 
@@ -83,29 +83,40 @@ am_Error_e ControlSenderPlugin::hookUserConnectionRequest(const am_sourceID_t so
     for (; it != listRoutes[0].route.end(); ++it)
     {
         mControlReceiveInterface->connect(handle, connectionID, it->connectionFormat, it->sourceID, it->sinkID);
-        //this is primitive and works only for one connect at a time... otherwise the handles get mixed up!
         handleStatus status;
-        status.handle=handle;
-        status.status=false;
+        status.handle = handle;
+        status.status = false;
         listHandleStaus.push_back(status);
     }
     am_MainConnection_s mainConnectionData;
-    mainConnectionData.connectionID=0;
-    mainConnectionData.connectionState=CS_CONNECTING;
-    mainConnectionData.delay=0;
-    mainConnectionData.route=listRoutes[0];
-    mControlReceiveInterface->enterMainConnectionDB(mainConnectionData,mainConnectionID);
+    mainConnectionData.connectionID = 0;
+    mainConnectionData.connectionState = CS_CONNECTING;
+    mainConnectionData.delay = 0;
+    mainConnectionData.route = listRoutes[0];
+    mControlReceiveInterface->enterMainConnectionDB(mainConnectionData, mainConnectionID);
     mainConnectionSet set;
-    set.connectionID=mainConnectionID;
-    set.listHandleStaus=listHandleStaus;
+    set.connectionID = mainConnectionID;
+    set.listHandleStaus = listHandleStaus;
     mListOpenConnections.push_back(set);
     return E_OK;
 }
 
 am_Error_e ControlSenderPlugin::hookUserDisconnectionRequest(const am_mainConnectionID_t connectionID)
 {
-    (void) connectionID;
-    return E_NOT_USED;
+//    //first check if there is a connectionID like that
+//    std::vector<am_MainConnection_s> listMainConnections;
+//    mControlReceiveInterface->getListMainConnections(listMainConnections);
+//    std::vector<am_MainConnection_s>::iterator it(listMainConnections.begin());
+//    am_MainConnection_s mainConnection;
+//    mainConnection=connectionID;
+//    if(listMainConnections.end()==(it=std::find(listMainConnections.begin(),listMainConnections.end(),checkMainConnectionID(mainConnection))))
+//        return E_NON_EXISTENT;
+//
+//    std::vector<am_RoutingElement_s>::iterator routeIterator(it->route.route.begin());
+//    for(;routeIterator!=it->route.route.end();++routeIterator)
+//    {
+//        mControlReceiveInterface->disconnect(handle,routeIterator->)
+//    }
 }
 
 am_Error_e ControlSenderPlugin::hookUserSetMainSinkSoundProperty(const am_sinkID_t sinkID, const am_MainSoundProperty_s & soundProperty)
@@ -270,31 +281,26 @@ void ControlSenderPlugin::hookSystemTimingInformationChanged(const am_mainConnec
 
 void ControlSenderPlugin::cbAckConnect(const am_Handle_s handle, const am_Error_e errorID)
 {
-    (void)errorID;
-    //here is no error check !!!!
-    //\todo: add error check here
-    //\todo: algorith can be much better written here
+    (void) errorID;
+    //\todo:error checking
     std::vector<mainConnectionSet>::iterator it(mListOpenConnections.begin());
-//    for(;it!=mListOpenConnections.end();++it)
-//    {
-//        std::vector<handleStatus>::iterator hit;
-//        hit=std::find_if(it->listHandleStaus.begin(),it->listHandleStaus.end(),findHandle);
-//    }
-//
-//    bool allOk = true;
-//    std::list<handleStack>::iterator it(mListOpenHandles.begin());
-//
-//    for (; it != mListOpenHandles.end(); ++it)
-//    {
-//        if (it->handle.handle == handle.handle)
-//            it->ok = true;
-//        allOk = allOk && it->ok;
-//    }
-//
-//    if (allOk)
-//    {
-//        mControlReceiveInterface->changeMainConnectionStateDB(mCurrentID,CS_CONNECTED);
-//    }
+    for (; it != mListOpenConnections.end(); ++it)
+    {
+        std::vector<handleStatus>::iterator hit;
+        handleStatus status;
+        status.status=true;
+        status.handle=handle;
+        hit = std::find_if(it->listHandleStaus.begin(), it->listHandleStaus.end(), findHandle(status));
+        if (hit == it->listHandleStaus.end())
+            continue;
+        hit->status=true;
+        if (it->listHandleStaus.end()==std::find_if(it->listHandleStaus.begin(),it->listHandleStaus.end(),checkHandle(status)))
+        {
+            mControlReceiveInterface->changeMainConnectionStateDB(it->connectionID, CS_CONNECTED);
+            mListOpenConnections.erase(it);
+            break;
+        }
+    }
 }
 
 void ControlSenderPlugin::cbAckDisconnect(const am_Handle_s handle, const am_Error_e errorID)

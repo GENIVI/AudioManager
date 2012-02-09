@@ -33,6 +33,7 @@
 //todo: there is a bug in the visible flags of sinks and sources. fix it.
 //todo: make sure all configurations are tested
 //todo: clean up startup sequences controller, command and routing interfaces----
+//todo: add getMainConnectionData in commandreceive interface to retrieve infos about mainconnections
 #include <config.h>
 #include <SocketHandler.h>
 #ifdef WITH_DBUS_WRAPPER
