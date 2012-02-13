@@ -94,6 +94,20 @@ private:
         std::vector<handleStatus> listHandleStaus;
     };
 
+    struct mainVolumeSet
+    {
+        am_sinkID_t sinkID;
+        am_Handle_s handle;
+        am_mainVolume_t mainVolume;
+    };
+
+    struct mainSinkSoundPropertySet
+    {
+        am_sinkID_t sinkID;
+        am_Handle_s handle;
+        am_MainSoundProperty_s mainSoundProperty;
+    };
+
     class findHandle
     {
         handleStatus mHandle;
@@ -139,6 +153,9 @@ private:
     };
 
     std::vector<mainConnectionSet> mListOpenConnections;
+    std::vector<mainConnectionSet> mListOpenDisconnections;
+    std::vector<mainVolumeSet> mListOpenVolumeChanges;
+    std::vector<mainSinkSoundPropertySet> mListMainSoundPropertyChanges;
 };
 
 #endif /* CONTROLSENDER_H_ */

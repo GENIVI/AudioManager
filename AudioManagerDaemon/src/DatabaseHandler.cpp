@@ -1384,10 +1384,7 @@ am_Error_e DatabaseHandler::removeConnection(const am_connectionID_t connectionI
     assert(connectionID!=0);
 
     std::string command = "DELETE from " + std::string(CONNECTION_TABLE) + " WHERE connectionID=" + i2s(connectionID);
-    std::string command1 = "DROP table SourceClassProperties" + i2s(connectionID);
     if (!sqQuery(command))
-        return E_DATABASE_ERROR;
-    if (!sqQuery(command1))
         return E_DATABASE_ERROR;
     logInfo("DatabaseHandler::removeConnection removed:", connectionID);
     return E_OK;
