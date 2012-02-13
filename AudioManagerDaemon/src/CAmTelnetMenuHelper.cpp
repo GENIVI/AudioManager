@@ -23,14 +23,21 @@
 */
 
 #include "CAmTelnetMenuHelper.h"
-#include <dlt/dlt.h>
+#include "TelnetServer.h"
+#include "DatabaseHandler.h"
+#include "ControlSender.h"
+#include "CommandSender.h"
+#include "RoutingSender.h"
+#include "RoutingReceiver.h"
+#include "CommandReceiver.h"
+#include "ControlReceiver.h"
+#include "Router.h"
+#include "config.h"
 #include <cassert>
 
 #define DEBUG_ON false
 
 using namespace am;
-
-DLT_IMPORT_CONTEXT(AudioManager)
 
 CAmTelnetMenuHelper* CAmTelnetMenuHelper::instance = NULL;
 

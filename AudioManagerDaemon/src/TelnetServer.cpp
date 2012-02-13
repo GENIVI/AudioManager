@@ -23,14 +23,12 @@
  */
 
 #include "TelnetServer.h"
-#include "CAmTelnetMenuHelper.h"
-#include <assert.h>
+#include <cassert>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <sys/ioctl.h>
 #include <string.h>
 #include <netdb.h>
-#include <dlt/dlt.h>
 #include <config.h>
 #include <errno.h>
 #include <sstream>
@@ -39,10 +37,10 @@
 #include <iterator>
 #include "DatabaseHandler.h"
 #include "RoutingSender.h"
+#include "DLTWrapper.h"
+#include "CAmTelnetMenuHelper.h"
 
 using namespace am;
-
-DLT_IMPORT_CONTEXT(AudioManager)
 
 TelnetServer* TelnetServer::instance = NULL;
 
@@ -99,10 +97,10 @@ TelnetServer::TelnetServer(SocketHandler *iSocketHandler, CommandSender *iComman
 
    if (listen(mConnectFD,mMaxConnections) < 0)
    {
-      DLT_LOG(AudioManager, DLT_LOG_ERROR, DLT_STRING("TelnetServer::TelnetServerk cannot listen "),DLT_INT(errno));
+      logError("TelnetServer::TelnetServerk cannot listen ",errno);
    }
    else
-      DLT_LOG(AudioManager, DLT_LOG_INFO, DLT_STRING("TelnetServer::TelnetServer started listening on port"),DLT_INT(mServerPort));
+      logInfo("TelnetServer::TelnetServer started listening on port", mServerPort);
 
 	int a=1;
 	ioctl (mConnectFD, FIONBIO, (char *) &a); // should we use the posix call fcntl(mConnectFD, F_SETFL, O_NONBLOCK)

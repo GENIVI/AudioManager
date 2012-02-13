@@ -41,6 +41,7 @@ class CommandReceiver;
 class RoutingReceiver;
 class ControlReceiver;
 class Router;
+class CAmTelnetMenuHelper;
 
 class TelnetServer
 {
