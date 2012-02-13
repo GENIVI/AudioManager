@@ -32,8 +32,6 @@ using namespace am;
 
 #define REQUIRED_INTERFACE_VERSION 1
 
-DLT_IMPORT_CONTEXT(AudioManager)
-
 //!< macro to call all interfaces
 #define CALL_ALL_INTERFACES(...) 														 \
 		std::vector<CommandSendInterface*>::iterator iter = mListInterfaces.begin();	 \

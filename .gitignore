@@ -3,4 +3,6 @@ build/
 doc/
 packages/
 .*
+CHANGELOG
+includes/config.h
 

@@ -132,7 +132,7 @@ private:
         }
         bool operator()(const am_MainConnection_s& mainConnection)
         {
-            if (mMainConnection.connectionID == mainConnection.connectionID)
+            if (mMainConnection.mainConnectionID == mainConnection.mainConnectionID)
                 return true;
             return false;
         }

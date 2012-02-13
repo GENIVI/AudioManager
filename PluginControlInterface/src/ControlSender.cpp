@@ -72,8 +72,8 @@ void ControlSenderPlugin::hookAllPluginsLoaded()
 am_Error_e ControlSenderPlugin::hookUserConnectionRequest(const am_sourceID_t sourceID, const am_sinkID_t sinkID, am_mainConnectionID_t & mainConnectionID)
 {
     std::vector<am_Route_s> listRoutes;
+    std::vector<am_connectionID_t> listConnectionIDs;
     am_Handle_s handle;
-    am_connectionID_t connectionID;
     mControlReceiveInterface->getRoute(true, sourceID, sinkID, listRoutes);
     if (listRoutes.empty())
         return E_NOT_POSSIBLE;
@@ -82,17 +82,19 @@ am_Error_e ControlSenderPlugin::hookUserConnectionRequest(const am_sourceID_t so
     std::vector<am_RoutingElement_s>::iterator it(listRoutes[0].route.begin());
     for (; it != listRoutes[0].route.end(); ++it)
     {
+        am_connectionID_t connectionID;
         mControlReceiveInterface->connect(handle, connectionID, it->connectionFormat, it->sourceID, it->sinkID);
         handleStatus status;
         status.handle = handle;
         status.status = false;
         listHandleStaus.push_back(status);
+        listConnectionIDs.push_back(connectionID);
     }
     am_MainConnection_s mainConnectionData;
-    mainConnectionData.connectionID = 0;
+    mainConnectionData.mainConnectionID = 0;
     mainConnectionData.connectionState = CS_CONNECTING;
     mainConnectionData.delay = 0;
-    mainConnectionData.route = listRoutes[0];
+    mainConnectionData.listConnectionID = listConnectionIDs;
     mControlReceiveInterface->enterMainConnectionDB(mainConnectionData, mainConnectionID);
     mainConnectionSet set;
     set.connectionID = mainConnectionID;
@@ -288,13 +290,13 @@ void ControlSenderPlugin::cbAckConnect(const am_Handle_s handle, const am_Error_
     {
         std::vector<handleStatus>::iterator hit;
         handleStatus status;
-        status.status=true;
-        status.handle=handle;
+        status.status = true;
+        status.handle = handle;
         hit = std::find_if(it->listHandleStaus.begin(), it->listHandleStaus.end(), findHandle(status));
         if (hit == it->listHandleStaus.end())
             continue;
-        hit->status=true;
-        if (it->listHandleStaus.end()==std::find_if(it->listHandleStaus.begin(),it->listHandleStaus.end(),checkHandle(status)))
+        hit->status = true;
+        if (it->listHandleStaus.end() == std::find_if(it->listHandleStaus.begin(), it->listHandleStaus.end(), checkHandle(status)))
         {
             mControlReceiveInterface->changeMainConnectionStateDB(it->connectionID, CS_CONNECTED);
             mListOpenConnections.erase(it);

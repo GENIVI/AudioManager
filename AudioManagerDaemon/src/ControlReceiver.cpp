@@ -66,8 +66,7 @@ ControlReceiver::~ControlReceiver()
 
 am_Error_e ControlReceiver::getRoute(const bool onlyfree, const am_sourceID_t sourceID, const am_sinkID_t sinkID, std::vector<am_Route_s> & returnList)
 {
-    mRouter->getRoute(onlyfree, sourceID, sinkID, returnList);
-    return E_NOT_USED;
+    return mRouter->getRoute(onlyfree, sourceID, sinkID, returnList);
 }
 
 am_Error_e ControlReceiver::connect(am_Handle_s & handle, am_connectionID_t & connectionID, const am_ConnectionFormat_e format, const am_sourceID_t sourceID, const am_sinkID_t sinkID)
@@ -99,7 +98,7 @@ am_Error_e ControlReceiver::disconnect(am_Handle_s & handle, const am_connection
 
 am_Error_e ControlReceiver::crossfade(am_Handle_s & handle, const am_HotSink_e hotSource, const am_crossfaderID_t crossfaderID, const am_RampType_e rampType, const am_time_t rampTime)
 {
-    logInfo("ControlReceiver::crossfade got called, hotSource=",hotSource,"crossfaderID=",crossfaderID,"rampType=",rampType,"rampTime=",rampTime);
+    logInfo("ControlReceiver::crossfade got called, hotSource=", hotSource, "crossfaderID=", crossfaderID, "rampType=", rampType, "rampTime=", rampTime);
 
     if (!mDatabaseHandler->existcrossFader(crossfaderID))
         return E_NON_EXISTENT;
@@ -108,7 +107,7 @@ am_Error_e ControlReceiver::crossfade(am_Handle_s & handle, const am_HotSink_e h
 
 am_Error_e ControlReceiver::setSourceState(am_Handle_s & handle, const am_sourceID_t sourceID, const am_SourceState_e state)
 {
-    logInfo("ControlReceiver::setSourceState got called, sourceID=",sourceID,"state=",state);
+    logInfo("ControlReceiver::setSourceState got called, sourceID=", sourceID, "state=", state);
 
     am_SourceState_e sourceState;
     if (mDatabaseHandler->getSoureState(sourceID, sourceState) != E_OK)
@@ -120,7 +119,7 @@ am_Error_e ControlReceiver::setSourceState(am_Handle_s & handle, const am_source
 
 am_Error_e ControlReceiver::setSinkVolume(am_Handle_s & handle, const am_sinkID_t sinkID, const am_volume_t volume, const am_RampType_e ramp, const am_time_t time)
 {
-    logInfo("ControlReceiver::setSinkVolume got called, sinkID=",sinkID,"volume=",volume,"ramp=",ramp, "time=",time);
+    logInfo("ControlReceiver::setSinkVolume got called, sinkID=", sinkID, "volume=", volume, "ramp=", ramp, "time=", time);
 
     am_volume_t tempVolume;
     if (mDatabaseHandler->getSinkVolume(sinkID, tempVolume) != E_OK)
@@ -132,7 +131,7 @@ am_Error_e ControlReceiver::setSinkVolume(am_Handle_s & handle, const am_sinkID_
 
 am_Error_e ControlReceiver::setSourceVolume(am_Handle_s & handle, const am_sourceID_t sourceID, const am_volume_t volume, const am_RampType_e rampType, const am_time_t time)
 {
-    logInfo("ControlReceiver::setSourceVolume got called, sourceID=",sourceID,"volume=",volume,"ramp=",rampType,"time=",time);
+    logInfo("ControlReceiver::setSourceVolume got called, sourceID=", sourceID, "volume=", volume, "ramp=", rampType, "time=", time);
 
     am_volume_t tempVolume;
     if (mDatabaseHandler->getSourceVolume(sourceID, tempVolume) != E_OK)
@@ -144,7 +143,7 @@ am_Error_e ControlReceiver::setSourceVolume(am_Handle_s & handle, const am_sourc
 
 am_Error_e ControlReceiver::setSinkSoundProperty(am_Handle_s & handle, const am_sinkID_t sinkID, const am_SoundProperty_s & soundProperty)
 {
-    logInfo("ControlReceiver::setSinkSoundProperty got called, sinkID=",sinkID,"soundProperty.Type=",soundProperty.type,"soundProperty.value=",soundProperty.value);
+    logInfo("ControlReceiver::setSinkSoundProperty got called, sinkID=", sinkID, "soundProperty.Type=", soundProperty.type, "soundProperty.value=", soundProperty.value);
 
     uint16_t value;
     if (mDatabaseHandler->getSinkSoundPropertyValue(sinkID, soundProperty.type, value) != E_OK)
@@ -156,7 +155,7 @@ am_Error_e ControlReceiver::setSinkSoundProperty(am_Handle_s & handle, const am_
 
 am_Error_e ControlReceiver::setSinkSoundProperties(am_Handle_s & handle, const am_sinkID_t sinkID, const std::vector<am_SoundProperty_s> & listSoundProperties)
 {
-    logInfo("ControlReceiver::setSinkSoundProperties got called, sinkID=",sinkID);
+    logInfo("ControlReceiver::setSinkSoundProperties got called, sinkID=", sinkID);
 
     uint16_t value;
     bool noChange = true;
@@ -175,7 +174,7 @@ am_Error_e ControlReceiver::setSinkSoundProperties(am_Handle_s & handle, const a
 
 am_Error_e ControlReceiver::setSourceSoundProperty(am_Handle_s & handle, const am_sourceID_t sourceID, const am_SoundProperty_s & soundProperty)
 {
-    logInfo("ControlReceiver::setSourceSoundProperty got called, sourceID=",sourceID,"soundProperty.Type=",soundProperty.type,"soundProperty.value=",soundProperty.value);
+    logInfo("ControlReceiver::setSourceSoundProperty got called, sourceID=", sourceID, "soundProperty.Type=", soundProperty.type, "soundProperty.value=", soundProperty.value);
 
     uint16_t value;
     if (mDatabaseHandler->getSourceSoundPropertyValue(sourceID, soundProperty.type, value) != E_OK)
@@ -187,7 +186,7 @@ am_Error_e ControlReceiver::setSourceSoundProperty(am_Handle_s & handle, const a
 
 am_Error_e ControlReceiver::setSourceSoundProperties(am_Handle_s & handle, const am_sourceID_t sourceID, const std::vector<am_SoundProperty_s> & listSoundProperties)
 {
-    logInfo("ControlReceiver::setSourceSoundProperties got called, sourceID=",sourceID);
+    logInfo("ControlReceiver::setSourceSoundProperties got called, sourceID=", sourceID);
 
     uint16_t value;
     bool noChange = true;
@@ -206,7 +205,7 @@ am_Error_e ControlReceiver::setSourceSoundProperties(am_Handle_s & handle, const
 
 am_Error_e ControlReceiver::setDomainState(const am_domainID_t domainID, const am_DomainState_e domainState)
 {
-    logInfo("ControlReceiver::setDomainState got called, domainID=",domainID,"domainState=",domainState);
+    logInfo("ControlReceiver::setDomainState got called, domainID=", domainID, "domainState=", domainState);
 
     am_DomainState_e tempState = DS_MIN;
     if (mDatabaseHandler->getDomainState(domainID, tempState) != E_OK)
@@ -218,7 +217,7 @@ am_Error_e ControlReceiver::setDomainState(const am_domainID_t domainID, const a
 
 am_Error_e ControlReceiver::abortAction(const am_Handle_s handle)
 {
-    logInfo("ControlReceiver::abortAction got called, handle.type=",handle.handle,"handle.handleType=",handle.handleType);
+    logInfo("ControlReceiver::abortAction got called, handle.type=", handle.handle, "handle.handleType=", handle.handleType);
 
     return mRoutingSender->asyncAbort(handle);
 }
@@ -268,9 +267,9 @@ am_Error_e ControlReceiver::enterSystemPropertiesListDB(const std::vector<am_Sys
     return mDatabaseHandler->enterSystemProperties(listSystemProperties);
 }
 
-am_Error_e ControlReceiver::changeMainConnectionRouteDB(const am_mainConnectionID_t mainconnectionID, const am_Route_s & route)
+am_Error_e ControlReceiver::changeMainConnectionRouteDB(const am_mainConnectionID_t mainconnectionID, const std::vector<am_connectionID_t>& listConnectionID)
 {
-    return mDatabaseHandler->changeMainConnectionRouteDB(mainconnectionID, route);
+    return mDatabaseHandler->changeMainConnectionRouteDB(mainconnectionID, listConnectionID);
 }
 
 am_Error_e ControlReceiver::changeMainConnectionStateDB(const am_mainConnectionID_t mainconnectionID, const am_ConnectionState_e connectionState)
@@ -356,6 +355,21 @@ am_Error_e ControlReceiver::getSourceClassInfoDB(const am_sourceID_t sourceID, a
 am_Error_e ControlReceiver::getSinkClassInfoDB(const am_sinkID_t sinkID, am_SinkClass_s & sinkClass) const
 {
     return mDatabaseHandler->getSinkClassInfoDB(sinkID, sinkClass);
+}
+
+am_Error_e ControlReceiver::getSinkInfoDB(const am_sinkID_t sinkID, am_Sink_s & sinkData) const
+{
+    return mDatabaseHandler->getSinkInfoDB(sinkID, sinkData);
+}
+
+am_Error_e ControlReceiver::getSourceInfoDB(const am_sourceID_t sourceID, am_Source_s & sourceData) const
+{
+    return mDatabaseHandler->getSourceInfoDB(sourceID, sourceData);
+}
+
+am_Error_e ControlReceiver::getMainConnectionInfoDB(const am_mainConnectionID_t mainConnectionID, am_MainConnection_s & mainConnectionData) const
+{
+    return mDatabaseHandler->getMainConnectionInfoDB(mainConnectionID, mainConnectionData);
 }
 
 am_Error_e ControlReceiver::getGatewayInfoDB(const am_gatewayID_t gatewayID, am_Gateway_s & gatewayData) const

@@ -219,7 +219,8 @@ void SocketHandler::stop_listening()
  * @param callback the callback that shall be called if the filedescriptor poll succeeded
  * @return E_OK if the descriptor was added, E_NON_EXISTENT if the fd is not valid
  */
-am_Error_e SocketHandler::addFDPoll(const int fd, const int16_t event, shPollPrepare *prepare, shPollFired *fired, shPollCheck *check, shPollDispatch *dispatch, void* userData, sh_pollHandle_t& handle)
+
+am_Error_e SocketHandler::addFDPoll(const int fd, const short  event, shPollPrepare *prepare, shPollFired *fired, shPollCheck *check, shPollDispatch *dispatch, void *userData, sh_pollHandle_t & handle)
 {
     if (!fdIsValid(fd))
         return E_NON_EXISTENT;
@@ -386,7 +387,7 @@ am_Error_e SocketHandler::stopTimer(const sh_timerHandle_t handle)
  * @param event the event flags
  * @return E_OK on succsess, E_NON_EXISTENT if fd was not found
  */
-am_Error_e SocketHandler::updateEventFlags(const sh_pollHandle_t handle, const int16_t events)
+am_Error_e SocketHandler::updateEventFlags(const sh_pollHandle_t handle, const short events)
 {
     mListPoll_t::iterator iterator = mListPoll.begin();
 
