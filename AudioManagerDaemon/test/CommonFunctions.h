@@ -51,7 +51,6 @@ public:
     void createDomain(am_Domain_s& domain) const;
     void createGateway(am_Gateway_s& gateway);
     void createConnection(am_Connection_s& connection) const;
-    void createMainConnection(am_MainConnection_s& mainConnection, am_Route_s route) const;
     void connectionList2RoutingList(std::vector<am_RoutingElement_s>& routingList, const std::vector<am_Connection_s>& connectionList);
 
     struct sortBySinkID

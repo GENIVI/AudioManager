@@ -300,14 +300,6 @@ void CommonFunctions::createConnection(am_Connection_s & connection) const
     connection.connectionFormat = CF_ANALOG;
 }
 
-void CommonFunctions::createMainConnection(am_MainConnection_s & mainConnection, am_Route_s route) const
-{
-    mainConnection.connectionID = 0;
-    mainConnection.connectionState = CS_CONNECTED;
-    mainConnection.route = route;
-    mainConnection.delay = -1;
-}
-
 std::vector<bool> CommonFunctions::getStandardConvertionMatrix()
 {
     std::vector<bool> convMatrix;

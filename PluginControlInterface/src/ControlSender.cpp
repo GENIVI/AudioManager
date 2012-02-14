@@ -41,7 +41,10 @@ extern "C" void destroyControlPluginInterface(ControlSendInterface* controlSendI
 }
 
 ControlSenderPlugin::ControlSenderPlugin() :
-        mControlReceiveInterface(NULL), mListOpenConnections()
+        mControlReceiveInterface(NULL), //
+        mListOpenConnections(), //
+        mListOpenDisconnections(), //
+        mListOpenVolumeChanges()
 {
 }
 
@@ -72,8 +75,8 @@ void ControlSenderPlugin::hookAllPluginsLoaded()
 am_Error_e ControlSenderPlugin::hookUserConnectionRequest(const am_sourceID_t sourceID, const am_sinkID_t sinkID, am_mainConnectionID_t & mainConnectionID)
 {
     std::vector<am_Route_s> listRoutes;
+    std::vector<am_connectionID_t> listConnectionIDs;
     am_Handle_s handle;
-    am_connectionID_t connectionID;
     mControlReceiveInterface->getRoute(true, sourceID, sinkID, listRoutes);
     if (listRoutes.empty())
         return E_NOT_POSSIBLE;
@@ -82,17 +85,19 @@ am_Error_e ControlSenderPlugin::hookUserConnectionRequest(const am_sourceID_t so
     std::vector<am_RoutingElement_s>::iterator it(listRoutes[0].route.begin());
     for (; it != listRoutes[0].route.end(); ++it)
     {
+        am_connectionID_t connectionID;
         mControlReceiveInterface->connect(handle, connectionID, it->connectionFormat, it->sourceID, it->sinkID);
         handleStatus status;
         status.handle = handle;
         status.status = false;
         listHandleStaus.push_back(status);
+        listConnectionIDs.push_back(connectionID);
     }
     am_MainConnection_s mainConnectionData;
-    mainConnectionData.connectionID = 0;
+    mainConnectionData.mainConnectionID = 0;
     mainConnectionData.connectionState = CS_CONNECTING;
     mainConnectionData.delay = 0;
-    mainConnectionData.route = listRoutes[0];
+    mainConnectionData.listConnectionID = listConnectionIDs;
     mControlReceiveInterface->enterMainConnectionDB(mainConnectionData, mainConnectionID);
     mainConnectionSet set;
     set.connectionID = mainConnectionID;
@@ -103,27 +108,48 @@ am_Error_e ControlSenderPlugin::hookUserConnectionRequest(const am_sourceID_t so
 
 am_Error_e ControlSenderPlugin::hookUserDisconnectionRequest(const am_mainConnectionID_t connectionID)
 {
-//    //first check if there is a connectionID like that
-//    std::vector<am_MainConnection_s> listMainConnections;
-//    mControlReceiveInterface->getListMainConnections(listMainConnections);
-//    std::vector<am_MainConnection_s>::iterator it(listMainConnections.begin());
-//    am_MainConnection_s mainConnection;
-//    mainConnection=connectionID;
-//    if(listMainConnections.end()==(it=std::find(listMainConnections.begin(),listMainConnections.end(),checkMainConnectionID(mainConnection))))
-//        return E_NON_EXISTENT;
-//
-//    std::vector<am_RoutingElement_s>::iterator routeIterator(it->route.route.begin());
-//    for(;routeIterator!=it->route.route.end();++routeIterator)
-//    {
-//        mControlReceiveInterface->disconnect(handle,routeIterator->)
-//    }
+    //first check if there is a connectionID like that
+    am_MainConnection_s mainConnection;
+    am_Error_e error;
+    if ((error = mControlReceiveInterface->getMainConnectionInfoDB(connectionID, mainConnection)) != E_OK)
+    {
+        return error;
+    }
+
+    std::vector<am_connectionID_t>::iterator it(mainConnection.listConnectionID.begin());
+    std::vector<handleStatus> listHandleStaus;
+    for (; it != mainConnection.listConnectionID.end(); ++it)
+    {
+        handleStatus status;
+        status.status = false;
+        mControlReceiveInterface->disconnect(status.handle, *it);
+        listHandleStaus.push_back(status);
+    }
+    mainConnectionSet set;
+    set.connectionID = connectionID;
+    set.listHandleStaus = listHandleStaus;
+    mListOpenConnections.push_back(set);
+    return E_OK;
 }
 
 am_Error_e ControlSenderPlugin::hookUserSetMainSinkSoundProperty(const am_sinkID_t sinkID, const am_MainSoundProperty_s & soundProperty)
 {
-    (void) sinkID;
-    (void) soundProperty;
-    return E_NOT_USED;
+    if (sinkID==0) return E_NON_EXISTENT;
+
+    mainSinkSoundPropertySet set;
+    set.sinkID = sinkID;
+    set.mainSoundProperty = soundProperty;
+    am_SoundProperty_s sp;
+    //I know this is bad - just for the reference, ok?
+    sp.type = static_cast<am_SoundPropertyType_e>(soundProperty.type);
+    sp.value = soundProperty.value;
+    am_Error_e error;
+    if ((error = mControlReceiveInterface->setSinkSoundProperty(set.handle, sinkID, sp)) != E_OK)
+    {
+        return error;
+    }
+    mListMainSoundPropertyChanges.push_back(set);
+    return E_OK;
 }
 
 am_Error_e ControlSenderPlugin::hookUserSetMainSourceSoundProperty(const am_sourceID_t sourceID, const am_MainSoundProperty_s & soundProperty)
@@ -141,16 +167,34 @@ am_Error_e ControlSenderPlugin::hookUserSetSystemProperty(const am_SystemPropert
 
 am_Error_e ControlSenderPlugin::hookUserVolumeChange(const am_sinkID_t SinkID, const am_mainVolume_t newVolume)
 {
-    (void) SinkID;
-    (void) newVolume;
-    return E_NOT_USED;
+    assert(SinkID!=0);
+    mainVolumeSet set;
+    set.sinkID = SinkID;
+    set.mainVolume = newVolume;
+    am_Error_e error;
+    if ((error = mControlReceiveInterface->setSinkVolume(set.handle, SinkID, newVolume, RAMP_DIRECT, 20)) != E_OK)
+    {
+        return error;
+    }
+    mListOpenVolumeChanges.push_back(set);
+    return E_OK;
 }
 
 am_Error_e ControlSenderPlugin::hookUserVolumeStep(const am_sinkID_t SinkID, const int16_t increment)
 {
-    (void) SinkID;
-    (void) increment;
-    return E_NOT_USED;
+    assert(SinkID!=0);
+    mainVolumeSet set;
+    set.sinkID = SinkID;
+    am_Error_e error;
+    am_Sink_s sink;
+    mControlReceiveInterface->getSinkInfoDB(SinkID, sink);
+    set.mainVolume = sink.volume + increment;
+    if ((error = mControlReceiveInterface->setSinkVolume(set.handle, SinkID, set.mainVolume, RAMP_DIRECT, 20)) != E_OK)
+    {
+        return error;
+    }
+    mListOpenVolumeChanges.push_back(set);
+    return E_OK;
 }
 
 am_Error_e ControlSenderPlugin::hookUserSetSinkMuteState(const am_sinkID_t sinkID, const am_MuteState_e muteState)
@@ -288,13 +332,13 @@ void ControlSenderPlugin::cbAckConnect(const am_Handle_s handle, const am_Error_
     {
         std::vector<handleStatus>::iterator hit;
         handleStatus status;
-        status.status=true;
-        status.handle=handle;
+        status.status = true;
+        status.handle = handle;
         hit = std::find_if(it->listHandleStaus.begin(), it->listHandleStaus.end(), findHandle(status));
         if (hit == it->listHandleStaus.end())
             continue;
-        hit->status=true;
-        if (it->listHandleStaus.end()==std::find_if(it->listHandleStaus.begin(),it->listHandleStaus.end(),checkHandle(status)))
+        hit->status = true;
+        if (it->listHandleStaus.end() == std::find_if(it->listHandleStaus.begin(), it->listHandleStaus.end(), checkHandle(status)))
         {
             mControlReceiveInterface->changeMainConnectionStateDB(it->connectionID, CS_CONNECTED);
             mListOpenConnections.erase(it);
@@ -305,8 +349,26 @@ void ControlSenderPlugin::cbAckConnect(const am_Handle_s handle, const am_Error_
 
 void ControlSenderPlugin::cbAckDisconnect(const am_Handle_s handle, const am_Error_e errorID)
 {
-    (void) handle;
     (void) errorID;
+    //\todo:error checking
+    std::vector<mainConnectionSet>::iterator it(mListOpenDisconnections.begin());
+    for (; it != mListOpenDisconnections.end(); ++it)
+    {
+        std::vector<handleStatus>::iterator hit;
+        handleStatus status;
+        status.status = true;
+        status.handle = handle;
+        hit = std::find_if(it->listHandleStaus.begin(), it->listHandleStaus.end(), findHandle(status));
+        if (hit == it->listHandleStaus.end())
+            continue;
+        hit->status = true;
+        if (it->listHandleStaus.end() == std::find_if(it->listHandleStaus.begin(), it->listHandleStaus.end(), checkHandle(status)))
+        {
+            mControlReceiveInterface->removeMainConnectionDB(it->connectionID);
+            mListOpenDisconnections.erase(it);
+            break;
+        }
+    }
 }
 
 void ControlSenderPlugin::cbAckCrossFade(const am_Handle_s handle, const am_HotSink_e hostsink, const am_Error_e error)
@@ -320,7 +382,15 @@ void ControlSenderPlugin::cbAckSetSinkVolumeChange(const am_Handle_s handle, con
 {
     (void) error;
     (void) volume;
-    (void) handle;
+    //\todo:error checking
+    std::vector<mainVolumeSet>::iterator it(mListOpenVolumeChanges.begin());
+    for (; it != mListOpenVolumeChanges.end(); ++it)
+    {
+        if (handle.handle == it->handle.handle)
+        {
+            mControlReceiveInterface->changeSinkMainVolumeDB(it->mainVolume, it->sinkID);
+        }
+    }
 }
 
 void ControlSenderPlugin::cbAckSetSourceVolumeChange(const am_Handle_s handle, const am_volume_t voulme, const am_Error_e error)
@@ -345,7 +415,15 @@ void ControlSenderPlugin::cbAckSetSourceSoundProperty(const am_Handle_s handle, 
 void ControlSenderPlugin::cbAckSetSinkSoundProperty(const am_Handle_s handle, const am_Error_e error)
 {
     (void) error;
-    (void) handle;
+    //\todo:error checking
+    std::vector<mainSinkSoundPropertySet>::iterator it(mListMainSoundPropertyChanges.begin());
+    for (; it != mListMainSoundPropertyChanges.end(); ++it)
+    {
+        if (handle.handle == it->handle.handle)
+        {
+            mControlReceiveInterface->changeMainSinkSoundPropertyDB(it->mainSoundProperty, it->sinkID);
+        }
+    }
 }
 
 void ControlSenderPlugin::cbAckSetSourceSoundProperties(const am_Handle_s handle, const am_Error_e error)

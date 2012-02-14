@@ -176,17 +176,18 @@ am_Error_e DatabaseHandler::enterDomainDB(const am_Domain_s & domainData, am_dom
 
 am_Error_e DatabaseHandler::enterMainConnectionDB(const am_MainConnection_s & mainConnectionData, am_mainConnectionID_t & connectionID)
 {
-    assert(mainConnectionData.connectionID==0);
+    assert(mainConnectionData.mainConnectionID==0);
     assert(mainConnectionData.connectionState>=CS_MIN && mainConnectionData.connectionState<=CS_MAX);
-    assert(mainConnectionData.route.sinkID!=0);
-    assert(mainConnectionData.route.sourceID!=0);
+    assert(mainConnectionData.sinkID!=0);
+    assert(mainConnectionData.sourceID!=0);
 
     sqlite3_stmt* query = NULL;
     int eCode = 0;
+    int16_t delay = 0;
     std::string command = "INSERT INTO " + std::string(MAINCONNECTION_TABLE) + "(sourceID, sinkID, connectionState, delay) VALUES (?,?,?,-1)";
     sqlite3_prepare_v2(mDatabase, command.c_str(), -1, &query, NULL);
-    sqlite3_bind_int(query, 1, mainConnectionData.route.sourceID);
-    sqlite3_bind_int(query, 2, mainConnectionData.route.sinkID);
+    sqlite3_bind_int(query, 1, mainConnectionData.sourceID);
+    sqlite3_bind_int(query, 2, mainConnectionData.sinkID);
     sqlite3_bind_int(query, 3, mainConnectionData.connectionState);
 
     if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
@@ -203,21 +204,16 @@ am_Error_e DatabaseHandler::enterMainConnectionDB(const am_MainConnection_s & ma
 
     connectionID = sqlite3_last_insert_rowid(mDatabase);
 
-    //now check the connectionTable for all connections in the route. IF a particular route is not found, we return with error
-    std::vector<uint16_t> listOfConnections;
-    int16_t delay = 0;
-    command = "SELECT connectionID, delay FROM " + std::string(CONNECTION_TABLE) + (" WHERE sourceID=? AND sinkID=? AND connectionFormat=?");
+    //now check the connectionTable for all connections in the route. IF connectionID exist
+    command = "SELECT delay FROM " + std::string(CONNECTION_TABLE) + (" WHERE connectionID=?");
     sqlite3_prepare_v2(mDatabase, command.c_str(), -1, &query, NULL);
-    std::vector<am_RoutingElement_s>::const_iterator elementIterator = mainConnectionData.route.route.begin();
-    for (; elementIterator < mainConnectionData.route.route.end(); ++elementIterator)
+    std::vector<am_connectionID_t>::const_iterator elementIterator = mainConnectionData.listConnectionID.begin();
+    for (; elementIterator < mainConnectionData.listConnectionID.end(); ++elementIterator)
     {
-        sqlite3_bind_int(query, 1, elementIterator->sourceID);
-        sqlite3_bind_int(query, 2, elementIterator->sinkID);
-        sqlite3_bind_int(query, 3, elementIterator->connectionFormat);
+        sqlite3_bind_int(query, 1, *elementIterator);
 
         if ((eCode = sqlite3_step(query)) == SQLITE_ROW)
         {
-            listOfConnections.push_back(sqlite3_column_int(query, 0));
             int16_t temp_delay = sqlite3_column_int(query, 1);
             if (temp_delay != -1 && delay != -1)
                 delay += temp_delay;
@@ -227,7 +223,6 @@ am_Error_e DatabaseHandler::enterMainConnectionDB(const am_MainConnection_s & ma
         else
         {
             logError("DatabaseHandler::enterMainConnectionDB did not find route for MainConnection:", eCode);
-
             return E_DATABASE_ERROR;
         }
         sqlite3_reset(query);
@@ -245,8 +240,8 @@ am_Error_e DatabaseHandler::enterMainConnectionDB(const am_MainConnection_s & ma
 
     command = "INSERT INTO MainConnectionRoute" + i2s(connectionID) + "(connectionID) VALUES (?)";
     sqlite3_prepare_v2(mDatabase, command.c_str(), -1, &query, NULL);
-    std::vector<uint16_t>::iterator listConnectionIterator = listOfConnections.begin();
-    for (; listConnectionIterator < listOfConnections.end(); ++listConnectionIterator)
+    std::vector<am_connectionID_t>::const_iterator listConnectionIterator(mainConnectionData.listConnectionID.begin());
+    for (; listConnectionIterator < mainConnectionData.listConnectionID.end(); ++listConnectionIterator)
     {
         sqlite3_bind_int(query, 1, *listConnectionIterator);
         if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
@@ -263,7 +258,7 @@ am_Error_e DatabaseHandler::enterMainConnectionDB(const am_MainConnection_s & ma
         return E_DATABASE_ERROR;
     }
 
-    logInfo("DatabaseHandler::enterMainConnectionDB entered new mainConnection with sourceID", mainConnectionData.route.sourceID, "sinkID:", mainConnectionData.route.sinkID, "delay:", delay, "assigned ID:", connectionID);
+    logInfo("DatabaseHandler::enterMainConnectionDB entered new mainConnection with sourceID", mainConnectionData.sourceID, "sinkID:", mainConnectionData.sinkID, "delay:", delay, "assigned ID:", connectionID);
 
     if (mDatabaseObserver)
     {
@@ -832,7 +827,7 @@ am_Error_e DatabaseHandler::enterSourceDB(const am_Source_s & sourceData, am_sou
     return E_OK;
 }
 
-am_Error_e DatabaseHandler::changeMainConnectionRouteDB(const am_mainConnectionID_t mainconnectionID, const am_Route_s & route)
+am_Error_e DatabaseHandler::changeMainConnectionRouteDB(const am_mainConnectionID_t mainconnectionID, const std::vector<am_connectionID_t>& listConnectionID)
 {
     assert(mainconnectionID!=0);
     if (!existMainConnection(mainconnectionID))
@@ -843,20 +838,16 @@ am_Error_e DatabaseHandler::changeMainConnectionRouteDB(const am_mainConnectionI
     int eCode = 0;
     std::string command;
 
-    std::vector<uint16_t> listOfConnections;
     int16_t delay = 0;
-    command = "SELECT connectionID, delay FROM " + std::string(CONNECTION_TABLE) + (" WHERE sourceID=? AND sinkID=? AND connectionFormat=?");
+    command = "SELECT delay FROM " + std::string(CONNECTION_TABLE) + (" WHERE connectionID=?");
     sqlite3_prepare_v2(mDatabase, command.c_str(), -1, &query, NULL);
-    std::vector<am_RoutingElement_s>::const_iterator elementIterator = route.route.begin();
-    for (; elementIterator < route.route.end(); ++elementIterator)
+    std::vector<am_connectionID_t>::const_iterator elementIterator = listConnectionID.begin();
+    for (; elementIterator < listConnectionID.end(); ++elementIterator)
     {
-        sqlite3_bind_int(query, 1, elementIterator->sourceID);
-        sqlite3_bind_int(query, 2, elementIterator->sinkID);
-        sqlite3_bind_int(query, 3, elementIterator->connectionFormat);
+        sqlite3_bind_int(query, 1, *elementIterator);
 
         if ((eCode = sqlite3_step(query)) == SQLITE_ROW)
         {
-            listOfConnections.push_back(sqlite3_column_int(query, 0));
             int16_t temp_delay = sqlite3_column_int(query, 1);
             if (temp_delay != -1 && delay != -1)
                 delay += temp_delay;
@@ -885,8 +876,8 @@ am_Error_e DatabaseHandler::changeMainConnectionRouteDB(const am_mainConnectionI
 
     command = "INSERT INTO MainConnectionRoute" + i2s(mainconnectionID) + "(connectionID) VALUES (?)";
     sqlite3_prepare_v2(mDatabase, command.c_str(), -1, &query, NULL);
-    std::vector<uint16_t>::iterator listConnectionIterator = listOfConnections.begin();
-    for (; listConnectionIterator < listOfConnections.end(); ++listConnectionIterator)
+    std::vector<am_connectionID_t>::const_iterator listConnectionIterator(listConnectionID.begin());
+    for (; listConnectionIterator != listConnectionID.end(); ++listConnectionIterator)
     {
         sqlite3_bind_int(query, 1, *listConnectionIterator);
         if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
@@ -1393,10 +1384,7 @@ am_Error_e DatabaseHandler::removeConnection(const am_connectionID_t connectionI
     assert(connectionID!=0);
 
     std::string command = "DELETE from " + std::string(CONNECTION_TABLE) + " WHERE connectionID=" + i2s(connectionID);
-    std::string command1 = "DROP table SourceClassProperties" + i2s(connectionID);
     if (!sqQuery(command))
-        return E_DATABASE_ERROR;
-    if (!sqQuery(command1))
         return E_DATABASE_ERROR;
     logInfo("DatabaseHandler::removeConnection removed:", connectionID);
     return E_OK;
@@ -1474,6 +1462,246 @@ am_Error_e DatabaseHandler::getSourceClassInfoDB(const am_sourceID_t sourceID, a
         logError("DatabaseHandler::getSourceClassInfoDB SQLITE Finalize error code:", eCode);
         return E_DATABASE_ERROR;
     }
+    return E_OK;
+}
+
+am_Error_e DatabaseHandler::getSinkInfoDB(const am_sinkID_t sinkID, am_Sink_s & sinkData) const
+{
+
+    assert(sinkID!=0);
+
+    if (!existSink(sinkID))
+    {
+        return E_NON_EXISTENT;
+    }
+
+    sqlite3_stmt* query = NULL, *qConnectionFormat = NULL, *qSoundProperty = NULL, *qMAinSoundProperty = NULL;
+    int eCode = 0;
+    am_ConnectionFormat_e tempConnectionFormat;
+    am_SoundProperty_s tempSoundProperty;
+    am_MainSoundProperty_s tempMainSoundProperty;
+    std::string command = "SELECT name, domainID, sinkClassID, volume, visible, availability, availabilityReason, muteState, mainVolume, sinkID FROM " + std::string(SINK_TABLE) + " WHERE reserved=0 and sinkID=" + i2s(sinkID);
+    sqlite3_prepare_v2(mDatabase, command.c_str(), -1, &query, NULL);
+
+    if ((eCode = sqlite3_step(query)) == SQLITE_ROW)
+    {
+        sinkData.name = std::string((const char*) sqlite3_column_text(query, 0));
+        sinkData.domainID = sqlite3_column_int(query, 1);
+        sinkData.sinkClassID = sqlite3_column_int(query, 2);
+        sinkData.volume = sqlite3_column_int(query, 3);
+        sinkData.visible = sqlite3_column_int(query, 4);
+        sinkData.available.availability = (am_Availablility_e) sqlite3_column_int(query, 5);
+        sinkData.available.availabilityReason = (am_AvailabilityReason_e) sqlite3_column_int(query, 6);
+        sinkData.muteState = (am_MuteState_e) sqlite3_column_int(query, 7);
+        sinkData.mainVolume = sqlite3_column_int(query, 8);
+        sinkData.sinkID = sqlite3_column_int(query, 9);
+
+        //read out the connectionFormats
+        std::string commandConnectionFormat = "SELECT soundFormat FROM SinkConnectionFormat" + i2s(sinkID);
+        sqlite3_prepare_v2(mDatabase, commandConnectionFormat.c_str(), -1, &qConnectionFormat, NULL);
+        while ((eCode = sqlite3_step(qConnectionFormat)) == SQLITE_ROW)
+        {
+            tempConnectionFormat = (am_ConnectionFormat_e) sqlite3_column_int(qConnectionFormat, 0);
+            sinkData.listConnectionFormats.push_back(tempConnectionFormat);
+        }
+
+        if ((eCode = sqlite3_finalize(qConnectionFormat)) != SQLITE_OK)
+        {
+            logError("DatabaseHandler::getSinkInfoDB SQLITE Finalize error code:", eCode);
+
+            return E_DATABASE_ERROR;
+        }
+
+        //read out sound properties
+        std::string commandSoundProperty = "SELECT soundPropertyType, value FROM SinkSoundProperty" + i2s(sinkID);
+        sqlite3_prepare_v2(mDatabase, commandSoundProperty.c_str(), -1, &qSoundProperty, NULL);
+        while ((eCode = sqlite3_step(qSoundProperty)) == SQLITE_ROW)
+        {
+            tempSoundProperty.type = (am_SoundPropertyType_e) sqlite3_column_int(qSoundProperty, 0);
+            tempSoundProperty.value = sqlite3_column_int(qSoundProperty, 1);
+            sinkData.listSoundProperties.push_back(tempSoundProperty);
+        }
+
+        if ((eCode = sqlite3_finalize(qSoundProperty)) != SQLITE_OK)
+        {
+            logError("DatabaseHandler::getSinkInfoDB SQLITE Finalize error code:", eCode);
+
+            return E_DATABASE_ERROR;
+        }
+
+        //read out MainSoundProperties
+        std::string commandMainSoundProperty = "SELECT soundPropertyType, value FROM SinkMainSoundProperty" + i2s(sinkID);
+        sqlite3_prepare_v2(mDatabase, commandMainSoundProperty.c_str(), -1, &qMAinSoundProperty, NULL);
+        while ((eCode = sqlite3_step(qMAinSoundProperty)) == SQLITE_ROW)
+        {
+            tempMainSoundProperty.type = (am_MainSoundPropertyType_e) sqlite3_column_int(qMAinSoundProperty, 0);
+            tempMainSoundProperty.value = sqlite3_column_int(qMAinSoundProperty, 1);
+            sinkData.listMainSoundProperties.push_back(tempMainSoundProperty);
+        }
+
+        if ((eCode = sqlite3_finalize(qMAinSoundProperty)) != SQLITE_OK)
+        {
+            logError("DatabaseHandler::getSinkInfoDB SQLITE Finalize error code:", eCode);
+
+            return E_DATABASE_ERROR;
+        }
+    }
+
+    else if (eCode != SQLITE_DONE)
+    {
+        logError("DatabaseHandler::getSinkInfoDB SQLITE error code:", eCode);
+
+        return E_DATABASE_ERROR;
+    }
+
+    if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
+    {
+        logError("DatabaseHandler::getSinkInfoDB SQLITE Finalize error code:", eCode);
+
+        return E_DATABASE_ERROR;
+    }
+
+    return E_OK;
+}
+
+am_Error_e DatabaseHandler::getSourceInfoDB(const am_sourceID_t sourceID, am_Source_s & sourceData) const
+{
+    assert(sourceID!=0);
+
+    if (!existSource(sourceID))
+    {
+        return E_NON_EXISTENT;
+    }
+
+    sqlite3_stmt* query = NULL, *qConnectionFormat = NULL, *qSoundProperty = NULL, *qMAinSoundProperty = NULL;
+    int eCode = 0;
+    am_ConnectionFormat_e tempConnectionFormat;
+    am_SoundProperty_s tempSoundProperty;
+    am_MainSoundProperty_s tempMainSoundProperty;
+    std::string command = "SELECT name, domainID, sourceClassID, sourceState, volume, visible, availability, availabilityReason, interruptState, sourceID FROM " + std::string(SOURCE_TABLE) + " WHERE reserved=0 AND sourceID=" + i2s(sourceID);
+    sqlite3_prepare_v2(mDatabase, command.c_str(), -1, &query, NULL);
+
+    if ((eCode = sqlite3_step(query)) == SQLITE_ROW)
+    {
+        sourceData.name = std::string((const char*) sqlite3_column_text(query, 0));
+        sourceData.domainID = sqlite3_column_int(query, 1);
+        sourceData.sourceClassID = sqlite3_column_int(query, 2);
+        sourceData.sourceState = (am_SourceState_e) sqlite3_column_int(query, 3);
+        sourceData.volume = sqlite3_column_int(query, 4);
+        sourceData.visible = sqlite3_column_int(query, 5);
+        sourceData.available.availability = (am_Availablility_e) sqlite3_column_int(query, 6);
+        sourceData.available.availabilityReason = (am_AvailabilityReason_e) sqlite3_column_int(query, 7);
+        sourceData.interruptState = (am_InterruptState_e) sqlite3_column_int(query, 8);
+        sourceData.sourceID = sqlite3_column_int(query, 9);
+
+        //read out the connectionFormats
+        std::string commandConnectionFormat = "SELECT soundFormat FROM SourceConnectionFormat" + i2s(sourceID);
+        sqlite3_prepare_v2(mDatabase, commandConnectionFormat.c_str(), -1, &qConnectionFormat, NULL);
+        while ((eCode = sqlite3_step(qConnectionFormat)) == SQLITE_ROW)
+        {
+            tempConnectionFormat = (am_ConnectionFormat_e) sqlite3_column_int(qConnectionFormat, 0);
+            sourceData.listConnectionFormats.push_back(tempConnectionFormat);
+        }
+
+        if ((eCode = sqlite3_finalize(qConnectionFormat)) != SQLITE_OK)
+        {
+            logError("DatabaseHandler::getListSources SQLITE Finalize error code:", eCode);
+
+            return E_DATABASE_ERROR;
+        }
+
+        //read out sound properties
+        std::string commandSoundProperty = "SELECT soundPropertyType, value FROM SourceSoundProperty" + i2s(sourceID);
+        sqlite3_prepare_v2(mDatabase, commandSoundProperty.c_str(), -1, &qSoundProperty, NULL);
+        while ((eCode = sqlite3_step(qSoundProperty)) == SQLITE_ROW)
+        {
+            tempSoundProperty.type = (am_SoundPropertyType_e) sqlite3_column_int(qSoundProperty, 0);
+            tempSoundProperty.value = sqlite3_column_int(qSoundProperty, 1);
+            sourceData.listSoundProperties.push_back(tempSoundProperty);
+        }
+
+        if ((eCode = sqlite3_finalize(qSoundProperty)) != SQLITE_OK)
+        {
+            logError("DatabaseHandler::getSourceInfoDB SQLITE Finalize error code:", eCode);
+
+            return E_DATABASE_ERROR;
+        }
+
+        //read out MainSoundProperties
+        std::string commandMainSoundProperty = "SELECT soundPropertyType, value FROM SourceMainSoundProperty" + i2s(sourceID);
+        sqlite3_prepare_v2(mDatabase, commandMainSoundProperty.c_str(), -1, &qMAinSoundProperty, NULL);
+        while ((eCode = sqlite3_step(qMAinSoundProperty)) == SQLITE_ROW)
+        {
+            tempMainSoundProperty.type = (am_MainSoundPropertyType_e) sqlite3_column_int(qMAinSoundProperty, 0);
+            tempMainSoundProperty.value = sqlite3_column_int(qMAinSoundProperty, 1);
+            sourceData.listMainSoundProperties.push_back(tempMainSoundProperty);
+        }
+
+        if ((eCode = sqlite3_finalize(qMAinSoundProperty)) != SQLITE_OK)
+        {
+            logError("DatabaseHandler::getSourceInfoDB SQLITE Finalize error code:", eCode);
+
+            return E_DATABASE_ERROR;
+        }
+    }
+    else if (eCode != SQLITE_DONE)
+    {
+        logError("DatabaseHandler::getSourceInfoDB SQLITE error code:", eCode);
+
+        return E_DATABASE_ERROR;
+    }
+
+    if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
+    {
+        logError("DatabaseHandler::getSourceInfoDB SQLITE Finalize error code:", eCode);
+
+        return E_DATABASE_ERROR;
+    }
+
+    return E_OK;
+}
+
+am_Error_e am::DatabaseHandler::getMainConnectionInfoDB(const am_mainConnectionID_t mainConnectionID, am_MainConnection_s & mainConnectionData) const
+{
+    assert(mainConnectionID!=0);
+    if (!existMainConnection(mainConnectionID))
+    {
+        return E_NON_EXISTENT;
+    }
+    sqlite3_stmt *query = NULL, *query1 = NULL;
+    int eCode = 0;
+    am_MainConnection_s temp;
+    std::string command = "SELECT mainConnectionID, sourceID, sinkID, connectionState, delay FROM " + std::string(MAINCONNECTION_TABLE) + " WHERE mainConnectionID=" + i2s(mainConnectionID);
+    std::string command1 = "SELECT connectionID FROM MainConnectionRoute";
+    sqlite3_prepare_v2(mDatabase, command.c_str(), -1, &query, NULL);
+
+    while ((eCode = sqlite3_step(query)) == SQLITE_ROW)
+    {
+        mainConnectionData.mainConnectionID = sqlite3_column_int(query, 0);
+        mainConnectionData.sourceID = sqlite3_column_int(query, 1);
+        mainConnectionData.sinkID = sqlite3_column_int(query, 2);
+        mainConnectionData.connectionState = (am_ConnectionState_e) sqlite3_column_int(query, 3);
+        mainConnectionData.delay = sqlite3_column_int(query, 4);
+        std::string statement = command1 + i2s(mainConnectionID);
+        sqlite3_prepare_v2(mDatabase, statement.c_str(), -1, &query1, NULL);
+        while ((eCode = sqlite3_step(query1)) == SQLITE_ROW)
+        {
+            mainConnectionData.listConnectionID.push_back(sqlite3_column_int(query1, 0));
+        }
+    }
+
+    if (eCode != SQLITE_DONE)
+    {
+        logError("DatabaseHandler::getMainConnectionInfoDB SQLITE error code:", eCode);
+        return E_DATABASE_ERROR;
+    }
+
+    if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
+    {
+        logError("DatabaseHandler::getMainConnectionInfoDB SQLITE Finalize error code:", eCode);
+        return E_DATABASE_ERROR;
+    }
+
     return E_OK;
 }
 
@@ -1893,39 +2121,25 @@ am_Error_e DatabaseHandler::getListGatewaysOfDomain(const am_domainID_t domainID
 am_Error_e DatabaseHandler::getListMainConnections(std::vector<am_MainConnection_s> & listMainConnections) const
 {
     listMainConnections.clear();
-    sqlite3_stmt *query = NULL, *query1 = NULL, *query2 = NULL;
+    sqlite3_stmt *query = NULL, *query1 = NULL;
     int eCode = 0;
     am_MainConnection_s temp;
-    am_RoutingElement_s tempRoute;
-
     std::string command = "SELECT mainConnectionID, sourceID, sinkID, connectionState, delay FROM " + std::string(MAINCONNECTION_TABLE);
     std::string command1 = "SELECT connectionID FROM MainConnectionRoute";
-    std::string command2 = "SELECT sourceID, sinkID, connectionFormat FROM " + std::string(CONNECTION_TABLE) + " WHERE connectionID=?";
     sqlite3_prepare_v2(mDatabase, command.c_str(), -1, &query, NULL);
-    sqlite3_prepare_v2(mDatabase, command2.c_str(), -1, &query2, NULL);
 
     while ((eCode = sqlite3_step(query)) == SQLITE_ROW)
     {
-        temp.connectionID = sqlite3_column_int(query, 0);
-        temp.route.sourceID = sqlite3_column_int(query, 1);
-        temp.route.sinkID = sqlite3_column_int(query, 2);
+        temp.mainConnectionID = sqlite3_column_int(query, 0);
+        temp.sourceID = sqlite3_column_int(query, 1);
+        temp.sinkID = sqlite3_column_int(query, 2);
         temp.connectionState = (am_ConnectionState_e) sqlite3_column_int(query, 3);
         temp.delay = sqlite3_column_int(query, 4);
-        std::string statement = command1 + i2s(temp.connectionID);
+        std::string statement = command1 + i2s(temp.mainConnectionID);
         sqlite3_prepare_v2(mDatabase, statement.c_str(), -1, &query1, NULL);
         while ((eCode = sqlite3_step(query1)) == SQLITE_ROW)
         {
-            int k = sqlite3_column_int(query1, 0);
-            sqlite3_bind_int(query2, 1, k);
-            while ((eCode = sqlite3_step(query2)) == SQLITE_ROW)
-            {
-                tempRoute.sourceID = sqlite3_column_int(query2, 0);
-                tempRoute.sinkID = sqlite3_column_int(query2, 1);
-                tempRoute.connectionFormat = (am_ConnectionFormat_e) sqlite3_column_int(query2, 2);
-                getDomainOfSource(tempRoute.sourceID, tempRoute.domainID);
-                temp.route.route.push_back(tempRoute);
-            }
-            sqlite3_reset(query2);
+            temp.listConnectionID.push_back(sqlite3_column_int(query1, 0));
         }
         listMainConnections.push_back(temp);
     }

@@ -57,7 +57,7 @@ OPTION( WITH_PPOLL
 	"libc supports ppoll" ON)
 
 OPTION( WITH_TELNET
-	"build with Telnetserver" ON)
+	"build with Telnetserver (can only work with SocketHandler)" ON)
 	
 OPTION ( USE_BUILD_LIBS
 	"build with default library path = build path" ON)

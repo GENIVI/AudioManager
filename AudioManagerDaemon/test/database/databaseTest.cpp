@@ -40,7 +40,7 @@ using namespace testing;
 //extern int GetRandomNumber(int nLow, int nHigh);
 //extern bool equalSoundProperty (const am_SoundProperty_s a, const am_SoundProperty_s b);
 extern bool equalMainSoundProperty(const am_MainSoundProperty_s a, const am_MainSoundProperty_s b);
-extern bool equalRoutingElement(const am_RoutingElement_s a, const am_RoutingElement_s b);
+//extern bool equalRoutingElement(const am_RoutingElement_s a, const am_RoutingElement_s b);
 extern bool equalClassProperties(const am_ClassProperty_s a, const am_ClassProperty_s b);
 extern std::string int2string(int i);
 
@@ -72,7 +72,7 @@ void databasetest::createMainConnectionSetup()
     am_Connection_s connection;
     am_Source_s source;
     am_Sink_s sink;
-    std::vector<am_Connection_s> connectionList;
+    std::vector<am_connectionID_t> connectionList;
 
     //we create 9 sources and sinks:
     EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(9);
@@ -82,12 +82,7 @@ void databasetest::createMainConnectionSetup()
     {
         am_sinkID_t forgetSink;
         am_sourceID_t forgetSource;
-        am_connectionID_t forgetConnection;
-
-        pCF.createConnection(connection);
-        connection.sinkID = i;
-        connection.sourceID = i;
-        connectionList.push_back(connection);
+        am_connectionID_t connectionID;
 
         pCF.createSink(sink);
         sink.sinkID = i;
@@ -98,38 +93,36 @@ void databasetest::createMainConnectionSetup()
         source.name = "source" + int2string(i);
         source.domainID = 4;
 
-        ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(sink,forgetSink))
-            << "ERROR: database error";
-        ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceDB(source,forgetSource))
-            << "ERROR: database error";
-        ASSERT_EQ(E_OK,pDatabaseHandler.enterConnectionDB(connection,forgetConnection))
-            << "ERROR: database error";
-        ASSERT_EQ(E_OK, pDatabaseHandler.changeConnectionFinal(forgetConnection));
+        connection.sinkID = i;
+        connection.sourceID = i;
+        connection.delay = -1;
+        connection.connectionFormat = CF_ANALOG;
+        connection.connectionID = 0;
+
+        ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,forgetSink));
+        ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,forgetSource));
+        ASSERT_EQ(E_OK, pDatabaseHandler.enterConnectionDB(connection,connectionID));
+        ASSERT_EQ(E_OK, pDatabaseHandler.changeConnectionFinal(connectionID));
+        connectionList.push_back(connectionID);
+
     }
-
-    //fill the route
-    std::vector<am_RoutingElement_s> routingList;
-    pCF.connectionList2RoutingList(routingList, connectionList);
-
-    //create the Route
-    am_Route_s route;
-    route.route = routingList;
-    route.sinkID = 1;
-    route.sourceID = 1;
 
     //create a mainConnection
     am_MainConnection_s mainConnection;
     am_mainConnectionID_t mainConnectionID;
     std::vector<am_MainConnection_s> mainConnectionList;
-    pCF.createMainConnection(mainConnection, route);
+    mainConnection.listConnectionID = connectionList;
+    mainConnection.mainConnectionID = 0;
+    mainConnection.sinkID = 1;
+    mainConnection.sourceID = 1;
+    mainConnection.connectionState = CS_CONNECTED;
+    mainConnection.delay = -1;
 
     //enter mainconnection in database
     EXPECT_CALL(pMockInterface,cbNumberOfMainConnectionsChanged()).Times(1);
     EXPECT_CALL(pMockInterface,cbMainConnectionStateChanged(_,_)).Times(1);
-    ASSERT_EQ(E_OK,pDatabaseHandler.enterMainConnectionDB(mainConnection,mainConnectionID))
-        << "ERROR: database error";
-    ASSERT_NE(0,mainConnectionID)
-        << "ERROR: connectionID zero";
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterMainConnectionDB(mainConnection,mainConnectionID));
+    ASSERT_NE(0, mainConnectionID);
 
     //read out the mainconnections and check if they are equal to the data written.
     ASSERT_EQ(E_OK, pDatabaseHandler.getListMainConnections(mainConnectionList));
@@ -137,9 +130,9 @@ void databasetest::createMainConnectionSetup()
     std::vector<am_MainConnection_s>::iterator listIterator = mainConnectionList.begin();
     for (; listIterator < mainConnectionList.end(); ++listIterator)
     {
-        if (listIterator->connectionID == mainConnectionID)
+        if (listIterator->mainConnectionID == mainConnectionID)
         {
-            equal = equal && (listIterator->connectionState == mainConnection.connectionState) && (listIterator->route.sinkID == mainConnection.route.sinkID) && (listIterator->route.sourceID == mainConnection.route.sourceID) && (listIterator->delay == mainConnection.delay) && (std::equal(listIterator->route.route.begin(), listIterator->route.route.end(), routingList.begin(), equalRoutingElement));
+            equal = equal && (listIterator->connectionState == mainConnection.connectionState) && (listIterator->sinkID == mainConnection.sinkID) && (listIterator->sourceID == mainConnection.sourceID) && (listIterator->delay == mainConnection.delay) && (std::equal(listIterator->listConnectionID.begin(), listIterator->listConnectionID.end(), connectionList.begin()));
         }
     }
     ASSERT_EQ(true, equal);
@@ -151,6 +144,209 @@ void databasetest::SetUp()
 
 void databasetest::TearDown()
 {
+}
+
+TEST_F(databasetest,getMainConnectionInfo)
+{
+    //fill the connection database
+    am_Connection_s connection;
+    am_Source_s source;
+    am_Sink_s sink;
+    std::vector<am_connectionID_t> connectionList;
+
+    //we create 9 sources and sinks:
+    EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(9);
+    EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(9);
+
+    for (uint16_t i = 1; i < 10; i++)
+    {
+        am_sinkID_t forgetSink;
+        am_sourceID_t forgetSource;
+        am_connectionID_t connectionID;
+
+        pCF.createSink(sink);
+        sink.sinkID = i;
+        sink.name = "sink" + int2string(i);
+        sink.domainID = 4;
+        pCF.createSource(source);
+        source.sourceID = i;
+        source.name = "source" + int2string(i);
+        source.domainID = 4;
+
+        connection.sinkID = i;
+        connection.sourceID = i;
+        connection.delay = -1;
+        connection.connectionFormat = CF_ANALOG;
+        connection.connectionID = 0;
+
+        ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,forgetSink));
+        ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,forgetSource));
+        ASSERT_EQ(E_OK, pDatabaseHandler.enterConnectionDB(connection,connectionID));
+        ASSERT_EQ(E_OK, pDatabaseHandler.changeConnectionFinal(connectionID));
+        connectionList.push_back(connectionID);
+
+    }
+
+    //create a mainConnection
+    am_MainConnection_s mainConnection;
+    am_mainConnectionID_t mainConnectionID;
+    std::vector<am_MainConnection_s> mainConnectionList;
+    mainConnection.listConnectionID = connectionList;
+    mainConnection.mainConnectionID = 0;
+    mainConnection.sinkID = 1;
+    mainConnection.sourceID = 1;
+    mainConnection.connectionState = CS_CONNECTED;
+    mainConnection.delay = -1;
+
+    //enter mainconnection in database
+    EXPECT_CALL(pMockInterface,cbNumberOfMainConnectionsChanged()).Times(1);
+    EXPECT_CALL(pMockInterface,cbMainConnectionStateChanged(_,_)).Times(1);
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterMainConnectionDB(mainConnection,mainConnectionID));
+    ASSERT_NE(0, mainConnectionID);
+
+    //read out the mainconnections and check if they are equal to the data written.
+    ASSERT_EQ(E_OK, pDatabaseHandler.getListMainConnections(mainConnectionList));
+    bool equal = true;
+    std::vector<am_MainConnection_s>::iterator listIterator = mainConnectionList.begin();
+    for (; listIterator < mainConnectionList.end(); ++listIterator)
+    {
+        if (listIterator->mainConnectionID == mainConnectionID)
+        {
+            equal = equal && (listIterator->connectionState == mainConnection.connectionState) && (listIterator->sinkID == mainConnection.sinkID) && (listIterator->sourceID == mainConnection.sourceID) && (listIterator->delay == mainConnection.delay) && (std::equal(listIterator->listConnectionID.begin(), listIterator->listConnectionID.end(), connectionList.begin()));
+        }
+    }ASSERT_EQ(true, equal);
+
+    am_MainConnection_s mainConnectionT;
+    ASSERT_EQ(E_OK, pDatabaseHandler.getMainConnectionInfoDB(mainConnectionID,mainConnectionT));
+    ASSERT_TRUE( (mainConnection.connectionState==mainConnectionT.connectionState) && (mainConnection.delay==mainConnectionT.delay) && (std::equal(mainConnection.listConnectionID.begin(),mainConnection.listConnectionID.end(),mainConnectionT.listConnectionID.begin())) && (mainConnection.sinkID==mainConnectionT.sinkID) && (mainConnection.sourceID==mainConnectionT.sourceID) && (mainConnectionID==mainConnectionT.mainConnectionID));
+
+}
+
+TEST_F(databasetest,getSinKInfo)
+{
+    //fill the connection database
+    am_Sink_s staticSink, firstDynamicSink, secondDynamicSink;
+    am_sinkID_t staticSinkID, firstDynamicSinkID, secondDynamicSinkID;
+    std::vector<am_Sink_s> sinkList;
+
+    pCF.createSink(staticSink);
+    staticSink.sinkID = 4;
+
+    EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(3);
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(staticSink,staticSinkID))
+        << "ERROR: database error";
+    ASSERT_EQ(staticSink.sinkID,staticSinkID)
+        << "ERROR: ID not the one given in staticSink";
+
+    pCF.createSink(firstDynamicSink);
+    firstDynamicSink.name = "firstdynamic";
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(firstDynamicSink,firstDynamicSinkID))
+        << "ERROR: database error";
+    ASSERT_EQ(firstDynamicSinkID,DYNAMIC_ID_BOUNDARY)
+        << "ERROR: ID not the one given in firstDynamicSink";
+
+    pCF.createSink(secondDynamicSink);
+    secondDynamicSink.name = "seconddynamic";
+
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(secondDynamicSink,secondDynamicSinkID))
+        << "ERROR: database error";
+    ASSERT_NEAR(secondDynamicSinkID,DYNAMIC_ID_BOUNDARY,10)
+        << "ERROR: ID not the one given in secondDynamicSink";
+
+    //now read back and check the returns agains the given values
+    ASSERT_EQ(E_OK,pDatabaseHandler.getListSinks(sinkList))
+        << "ERROR: database error";
+    bool equal = true;
+
+    std::vector<am_Sink_s>::iterator listIterator = sinkList.begin();
+    for (; listIterator < sinkList.end(); ++listIterator)
+    {
+        if (listIterator->sinkID == staticSinkID)
+        {
+            equal = equal && pCF.compareSink(listIterator, staticSink);
+        }
+
+        if (listIterator->sinkID == firstDynamicSinkID)
+        {
+            equal = equal && pCF.compareSink(listIterator, firstDynamicSink);
+        }
+
+        if (listIterator->sinkID == secondDynamicSinkID)
+        {
+            equal = equal && pCF.compareSink(listIterator, secondDynamicSink);
+        }
+    }ASSERT_EQ(true, equal);
+
+    am_Sink_s sinkData;
+    ASSERT_EQ(E_OK, pDatabaseHandler.getSinkInfoDB(secondDynamicSinkID,sinkData));
+    ASSERT_TRUE( (secondDynamicSink.available.availability == sinkData.available.availability) && (secondDynamicSink.available.availabilityReason == sinkData.available.availabilityReason) && (secondDynamicSink.sinkClassID == sinkData.sinkClassID) && (secondDynamicSink.domainID == sinkData.domainID) && (secondDynamicSink.visible == sinkData.visible) && (secondDynamicSink.name.compare(sinkData.name) == 0) && (secondDynamicSink.volume == sinkData.volume) && std::equal(secondDynamicSink.listConnectionFormats.begin(), secondDynamicSink.listConnectionFormats.end(), sinkData.listConnectionFormats.begin()) && std::equal(secondDynamicSink.listMainSoundProperties.begin(), secondDynamicSink.listMainSoundProperties.end(), sinkData.listMainSoundProperties.begin(), equalMainSoundProperty));
+
+}
+
+TEST_F(databasetest,getSourceInfo)
+{
+    //fill the connection database
+    am_Source_s staticSource, firstDynamicSource, secondDynamicSource;
+    am_sourceID_t staticSourceID, firstDynamicSourceID, secondDynamicSourceID;
+    std::vector<am_Source_s> sourceList;
+
+    pCF.createSource(staticSource);
+    staticSource.sourceID = 4;
+    staticSource.name = "Static";
+
+    EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(3);
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceDB(staticSource,staticSourceID))
+        << "ERROR: database error";
+    ASSERT_EQ(staticSource.sourceID,staticSourceID)
+        << "ERROR: ID not the one given in staticSource";
+
+    pCF.createSource(firstDynamicSource);
+    firstDynamicSource.name = "firstDynamicSource";
+
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceDB(firstDynamicSource,firstDynamicSourceID))
+        << "ERROR: database error";
+    ASSERT_EQ(firstDynamicSourceID,DYNAMIC_ID_BOUNDARY)
+        << "ERROR: ID not the one given in firstDynamicSink";
+
+    pCF.createSource(secondDynamicSource);
+    secondDynamicSource.name = "secondDynamicSource";
+
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceDB(secondDynamicSource,secondDynamicSourceID))
+        << "ERROR: database error";
+    ASSERT_NEAR(secondDynamicSourceID,DYNAMIC_ID_BOUNDARY,10)
+        << "ERROR: ID not the one given in secondDynamicSink";
+
+    //now read back and check the returns agains the given values
+    ASSERT_EQ(E_OK,pDatabaseHandler.getListSources(sourceList))
+        << "ERROR: database error";
+    bool equal = true;
+
+    std::vector<am_Source_s>::iterator listIterator = sourceList.begin();
+    for (; listIterator < sourceList.end(); ++listIterator)
+    {
+        if (listIterator->sourceID == staticSourceID)
+        {
+            equal = equal && pCF.compareSource(listIterator, staticSource);
+        }
+
+        if (listIterator->sourceID == firstDynamicSourceID)
+        {
+            equal = equal && pCF.compareSource(listIterator, firstDynamicSource);
+        }
+
+        if (listIterator->sourceID == secondDynamicSourceID)
+        {
+            equal = equal && pCF.compareSource(listIterator, secondDynamicSource);
+        }
+        pCF.compareSource(listIterator, secondDynamicSource);
+
+    }ASSERT_EQ(true, equal);
+
+    am_Source_s sourceData;
+    ASSERT_EQ(E_OK, pDatabaseHandler.getSourceInfoDB(secondDynamicSourceID,sourceData));
+    ASSERT_TRUE(
+            (secondDynamicSource.available.availability == sourceData.available.availability) && (secondDynamicSource.available.availabilityReason == sourceData.available.availabilityReason) && (secondDynamicSource.sourceClassID == sourceData.sourceClassID) && (secondDynamicSource.domainID == sourceData.domainID) && (secondDynamicSource.interruptState == sourceData.interruptState) && (secondDynamicSource.visible == sourceData.visible) && (secondDynamicSource.name.compare(sourceData.name) == 0) && (secondDynamicSource.volume == sourceData.volume) && std::equal(secondDynamicSource.listConnectionFormats.begin(), secondDynamicSource.listConnectionFormats.end(), sourceData.listConnectionFormats.begin()) && std::equal(secondDynamicSource.listMainSoundProperties.begin(), secondDynamicSource.listMainSoundProperties.end(), sourceData.listMainSoundProperties.begin(), equalMainSoundProperty));
+
 }
 
 TEST_F(databasetest, peekSourceID)
@@ -260,9 +456,9 @@ TEST_F(databasetest,crossfadersGetFromDomain)
     sinkB.name = "sinkB";
     pCF.createSource(source);
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
-    source.domainID=domainID;
-    sinkA.domainID=domainID;
-    sinkB.domainID=domainID;
+    source.domainID = domainID;
+    sinkA.domainID = domainID;
+    sinkB.domainID = domainID;
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sinkA,sinkAID));
@@ -279,7 +475,7 @@ TEST_F(databasetest,crossfadersGetFromDomain)
     std::vector<am_crossfaderID_t> listCrossfaders;
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterCrossfaderDB(crossfader,crossfaderID));
-    ASSERT_EQ(E_OK,pDatabaseHandler.getListCrossfadersOfDomain(source.domainID,listCrossfaders));
+    ASSERT_EQ(E_OK, pDatabaseHandler.getListCrossfadersOfDomain(source.domainID,listCrossfaders));
     ASSERT_EQ(100, listCrossfaders[0]);
 
 }
@@ -466,10 +662,8 @@ TEST_F(databasetest, peekSinkDouble)
 
 TEST_F(databasetest,changeConnectionTimingInformationCheckMainConnection)
 {
-    am_Connection_s connection;
     std::vector<am_Connection_s> connectionList;
     std::vector<am_MainConnectionType_s> mainList;
-    pCF.createConnection(connection);
 
     //prepare the test, it is one mainconnection, so we expect one callback
     createMainConnectionSetup();
@@ -1013,8 +1207,8 @@ TEST_F(databasetest, changeMainConnectionState)
     std::vector<am_MainConnection_s> listMainConnections;
     createMainConnectionSetup();
     EXPECT_CALL(pMockInterface,cbMainConnectionStateChanged(_,_)).Times(1);
-    ASSERT_EQ(E_OK,pDatabaseHandler.changeMainConnectionStateDB(1,CS_DISCONNECTING))
-        << "ERROR: database error";ASSERT_EQ(E_OK, pDatabaseHandler.getListMainConnections(listMainConnections));
+    ASSERT_EQ(E_OK, pDatabaseHandler.changeMainConnectionStateDB(1,CS_DISCONNECTING));
+    ASSERT_EQ(E_OK, pDatabaseHandler.getListMainConnections(listMainConnections));
     ASSERT_EQ(CS_DISCONNECTING, listMainConnections[0].connectionState);
 }
 
@@ -1064,7 +1258,7 @@ TEST_F(databasetest,changeMainConnectionRoute)
     am_Connection_s connection;
     am_Source_s source;
     am_Sink_s sink;
-    std::vector<am_Connection_s> connectionList;
+    std::vector<am_connectionID_t> listConnectionID;
 
     EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(9);
     EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(9);
@@ -1072,13 +1266,13 @@ TEST_F(databasetest,changeMainConnectionRoute)
     {
         am_sinkID_t forgetSink;
         am_sourceID_t forgetSource;
-        am_connectionID_t forgetConnection;
+        am_connectionID_t connectionID;
 
-        pCF.createConnection(connection);
         connection.sinkID = i + 20;
         connection.sourceID = i + 20;
         connection.delay = -1;
-        connectionList.push_back(connection);
+        connection.connectionFormat = CF_ANALOG;
+        connection.connectionID = 0;
 
         pCF.createSink(sink);
         sink.sinkID = i + 20;
@@ -1089,31 +1283,17 @@ TEST_F(databasetest,changeMainConnectionRoute)
         source.name = "source" + int2string(i + 30);
         source.domainID = 4;
 
-        ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(sink,forgetSink))
-            << "ERROR: database error";
-        ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceDB(source,forgetSource))
-            << "ERROR: database error";
-        ASSERT_EQ(E_OK,pDatabaseHandler.enterConnectionDB(connection,forgetConnection))
-            << "ERROR: database error";
-        ASSERT_EQ(E_OK,pDatabaseHandler.getListMainConnections(originalList))
-            << "ERROR: database error";
+        ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,forgetSink));
+        ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,forgetSource));
+        ASSERT_EQ(E_OK, pDatabaseHandler.enterConnectionDB(connection,connectionID));
+        listConnectionID.push_back(connectionID);
+        ASSERT_EQ(E_OK, pDatabaseHandler.getListMainConnections(originalList));
 
     }
 
-    //fill the route
-    std::vector<am_RoutingElement_s> routingList;
-    pCF.connectionList2RoutingList(routingList, connectionList);
-
-    //create the Route
-    am_Route_s route;
-    route.route = routingList;
-    route.sinkID = 2;
-    route.sourceID = 2;
-
-    ASSERT_EQ(E_OK, pDatabaseHandler.changeMainConnectionRouteDB(1,route));
-    ASSERT_EQ(E_OK,pDatabaseHandler.getListMainConnections(newList))
-        << "ERROR: database error";ASSERT_TRUE(std::equal(newList[0].route.route.begin(),newList[0].route.route.end(),routingList.begin(),equalRoutingElement));
-    ASSERT_FALSE(std::equal(newList[0].route.route.begin(),newList[0].route.route.end(),originalList[0].route.route.begin(),equalRoutingElement));
+    ASSERT_EQ(E_OK, pDatabaseHandler.changeMainConnectionRouteDB(1,listConnectionID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.getListMainConnections(newList));
+    ASSERT_FALSE(std::equal(newList[0].listConnectionID.begin(),newList[0].listConnectionID.end(),originalList[0].listConnectionID.begin()));
 }
 
 TEST_F(databasetest,changeMainSinkVolume)
@@ -1227,16 +1407,15 @@ TEST_F(databasetest,getMainSinks)
 TEST_F(databasetest,getVisibleMainConnections)
 {
     createMainConnectionSetup();
-    am_MainConnection_s mainConnection;
-    am_Route_s route;
-    pCF.createMainConnection(mainConnection, route);
-    std::vector<am_MainConnectionType_s> visibleMainConnection;
-    ASSERT_EQ(E_OK, pDatabaseHandler.getListVisibleMainConnections(visibleMainConnection));
-    ASSERT_TRUE(1==visibleMainConnection[0].mainConnectionID);
-    ASSERT_TRUE(mainConnection.connectionState==visibleMainConnection[0].connectionState);
-    ASSERT_TRUE(mainConnection.delay==visibleMainConnection[0].delay);
-    ASSERT_TRUE(1==visibleMainConnection[0].sinkID);
-    ASSERT_TRUE(1==visibleMainConnection[0].sourceID);
+    std::vector<am_MainConnectionType_s> listVisibleMainConnections;
+    std::vector<am_MainConnection_s> listMainConnections;
+    ASSERT_EQ(E_OK, pDatabaseHandler.getListVisibleMainConnections(listVisibleMainConnections));
+    ASSERT_EQ(E_OK, pDatabaseHandler.getListMainConnections(listMainConnections));
+    ASSERT_EQ(listMainConnections[0].mainConnectionID, listVisibleMainConnections[0].mainConnectionID);
+    ASSERT_EQ(listMainConnections[0].connectionState, listVisibleMainConnections[0].connectionState);
+    ASSERT_EQ(listMainConnections[0].delay, listVisibleMainConnections[0].delay);
+    ASSERT_EQ(listMainConnections[0].sinkID, listVisibleMainConnections[0].sinkID);
+    ASSERT_EQ(listMainConnections[0].sourceID, listVisibleMainConnections[0].sourceID);
 }
 
 TEST_F(databasetest,getListSourcesOfDomain)

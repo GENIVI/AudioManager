@@ -1,3 +1,9 @@
+commit e124310a45e6e7798a077fa44ef3ee518193b2cf
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * modify RoutingSender Async to match with TestHMI
+    * modify ControlSenderPlugin to have dummy behaviour
+
 commit 2ddacca29eccd4192add2b17ad6af357b52ea29b
 Author: Frank Herchet <frank.fh.herchet@bmw.de>
 
