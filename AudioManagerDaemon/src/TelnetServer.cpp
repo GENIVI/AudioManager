@@ -66,7 +66,7 @@ TelnetServer::TelnetServer(SocketHandler *iSocketHandler, CommandSender *iComman
    mConnectFD(NULL),
    mServerPort(servPort),
    mMaxConnections(maxConnections),
-   mTelnetMenuHelper(iSocketHandler,iCommandSender,iCommandReceiver,iRoutingSender,iRoutingReceiver,iControlSender,iControlReceiver,iDatabasehandler,iRouter)
+   mTelnetMenuHelper(iSocketHandler,iCommandSender,iCommandReceiver,iRoutingSender,iRoutingReceiver,iControlSender,iControlReceiver,iDatabasehandler,iRouter,this)
 {
 	assert(mSocketHandler!=NULL);
 	assert(mCommandReceiver!=NULL);
@@ -81,7 +81,7 @@ TelnetServer::TelnetServer(SocketHandler *iSocketHandler, CommandSender *iComman
 	assert(mMaxConnections!=0);
 
 	instance = this;
-	mTelnetMenuHelper.setTelnetServer(this);
+	//mTelnetMenuHelper.setTelnetServer(this);
 
 	int yes = 1;
 	struct sockaddr_in servAddr;

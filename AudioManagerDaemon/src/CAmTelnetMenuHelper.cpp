@@ -50,9 +50,10 @@ CAmTelnetMenuHelper::CAmTelnetMenuHelper(SocketHandler *iSocketHandler,
                                          ControlSender *iControlSender,
                                          ControlReceiver *iControlReceiver,
                                          DatabaseHandler *iDatabasehandler,
-                                         Router *iRouter)
+                                         Router *iRouter,
+                                         TelnetServer *iTelnetServer)
 /****************************************************************************/
-: mTelenetServer(NULL)
+: mTelenetServer(iTelnetServer)
 , mSocketHandler(iSocketHandler)
 , mCommandSender(iCommandSender)
 , mCommandReceiver(iCommandReceiver)

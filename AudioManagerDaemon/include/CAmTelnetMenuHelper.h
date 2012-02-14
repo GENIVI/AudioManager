@@ -49,6 +49,7 @@ class ControlSender;
 class CommandReceiver;
 class RoutingReceiver;
 class ControlReceiver;
+
 class Router;
 class SocketHandler;
 
@@ -61,7 +62,7 @@ public:
         eRootState = 0, eListState, eInfoState, eGetState, eSetState
     };
 
-    CAmTelnetMenuHelper(SocketHandler *iSocketHandler, CommandSender *iCommandSender, CommandReceiver *iCommandReceiver, RoutingSender *iRoutingSender, RoutingReceiver *iRoutingReceiver, ControlSender *iControlSender, ControlReceiver *iControlReceiver, DatabaseHandler *iDatabasehandler, Router *iRouter);
+    CAmTelnetMenuHelper(SocketHandler *iSocketHandler, CommandSender *iCommandSender, CommandReceiver *iCommandReceiver, RoutingSender *iRoutingSender, RoutingReceiver *iRoutingReceiver, ControlSender *iControlSender, ControlReceiver *iControlReceiver, DatabaseHandler *iDatabasehandler, Router *iRouter, TelnetServer *iTelnetServer);
 
     ~CAmTelnetMenuHelper();
 
