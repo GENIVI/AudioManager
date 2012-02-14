@@ -10,44 +10,61 @@
 
 #include "gtest/gtest.h"
 #include "TelnetServer.h"
+#include "DatabaseHandler.h"
+#include "RoutingSender.h"
+#include "CommandSender.h"
+#include "ControlSender.h"
+#include "Router.h"
 
+namespace am
+{
 
-namespace am {
+class SocketHandler;
+class DatabaseHandler;
+class RoutingSender;
+class CommandSender;
+class ControlSender;
+class Router;
+class CommandReceiver;
+class RoutingReceiver;
+class ControlReceiver;
+class TelnetServer;
+
 
 class CAmTelnetServerTest : public ::testing::Test{
    public:
       CAmTelnetServerTest();
-      virtual ~CAmTelnetServerTest();
+      ~CAmTelnetServerTest();
 
 
-   virtual void SetUp() ;
+   void SetUp() ;
 
-   virtual void TearDown() ;
+   void TearDown() ;
+
+   void setSocketHandler(SocketHandler* pSocketHandler);
 
    std::vector<std::string> mlistRoutingPluginDirs;
    std::vector<std::string> mlistCommandPluginDirs;
 
-   SocketHandler     mSocketHandler;
+   SocketHandler*    mpSocketHandler;
    DatabaseHandler   mDatabasehandler;
    RoutingSender     mRoutingSender;
    CommandSender     mCommandSender;
    ControlSender     mControlSender;
    Router            mRouter;
 
-   CommandReceiver   mCommandReceiver;
-   RoutingReceiver   mRoutingReceiver;
-   ControlReceiver   mControlReceiver;
+   CommandReceiver*  mpCommandReceiver;
+   RoutingReceiver*  mpRoutingReceiver;
+   ControlReceiver*  mpControlReceiver;
 
-   TelnetServer      mTelnetServer;
+   TelnetServer*     mpTelnetServer;
 
+   pthread_t         mSocketHandlerThread;
 };
 
 }
 
 
-int main(int argc, char **argv) {
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}
+
 
 #endif /* CAMTELNETSERVERTEST_H_ */
