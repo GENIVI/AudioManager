@@ -42,10 +42,9 @@ using namespace am;
 CAmTelnetMenuHelper* CAmTelnetMenuHelper::instance = NULL;
 
 /****************************************************************************/
-CAmTelnetMenuHelper::CAmTelnetMenuHelper(SocketHandler *iSocketHandler, CommandSender *iCommandSender, CommandReceiver *iCommandReceiver, RoutingSender *iRoutingSender, RoutingReceiver *iRoutingReceiver, ControlSender *iControlSender, ControlReceiver *iControlReceiver, DatabaseHandler *iDatabasehandler, Router *iRouter)
+CAmTelnetMenuHelper::CAmTelnetMenuHelper(SocketHandler *iSocketHandler, CommandSender *iCommandSender, CommandReceiver *iCommandReceiver, RoutingSender *iRoutingSender, RoutingReceiver *iRoutingReceiver, ControlSender *iControlSender, ControlReceiver *iControlReceiver, DatabaseHandler *iDatabasehandler, Router *iRouter, TelnetServer *iTelnetServer)
 /****************************************************************************/
-:
-        mTelenetServer(NULL), mSocketHandler(iSocketHandler), mCommandSender(iCommandSender), mCommandReceiver(iCommandReceiver), mRoutingSender(iRoutingSender), mRoutingReceiver(iRoutingReceiver), mControlSender(iControlSender), mControlReceiver(iControlReceiver), mDatabasehandler(iDatabasehandler), mRouter(iRouter)
+:mTelenetServer(iTelnetServer), mSocketHandler(iSocketHandler), mCommandSender(iCommandSender), mCommandReceiver(iCommandReceiver), mRoutingSender(iRoutingSender), mRoutingReceiver(iRoutingReceiver), mControlSender(iControlSender), mControlReceiver(iControlReceiver), mDatabasehandler(iDatabasehandler), mRouter(iRouter)
 {
     instance = this;
     createCommandMaps();
@@ -917,7 +916,10 @@ void CAmTelnetMenuHelper::setConnectionExec(std::queue<std::string> & CmdQueue, 
     }
     else
     {
-        CmdQueue.pop();
+        // remove 1 element if list is not empty
+        if(!CmdQueue.empty())
+           CmdQueue.pop();
+
         sendError(filedescriptor, "Not enough arguments to set routing. Please enter sourceID and sinkID after command");
         return;
     }
