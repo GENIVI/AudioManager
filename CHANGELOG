@@ -1,3 +1,86 @@
+commit cc5ee70a393c4b00b41ae869ad8e290d5efab978
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    Merge branch 'master', remote branch 'buildsau/master'
+
+commit b03052149ce2505367ab8177ca497d669ca07b1d
+Author: Frank Herchet <frank.fh.herchet@bmw.de>
+
+    * deactivate TelnetServerTest
+
+commit d554cabc6e68eec43dcc741bae615278c6851e06
+Author: Frank Herchet <frank.fh.herchet@bmw.de>
+
+    * add listMainConnections
+    * add listMainSources
+    * add listMainSinks
+    * some optimizations in CAmTelnetMenuHelper
+
+commit d5bd9a2a3c8911d5fcec6235fa72008860f74cde
+Author: Frank Herchet <frank.fh.herchet@bmw.de>
+
+    * fix reset of 'conn' command if number of arguments < 2
+
+commit 6d3b9a654d55e3d04c846baf4e24eb77c5bb0671
+Merge: 6d59e95 04d5bdb
+Author: Frank Herchet <frank.fh.herchet@bmw.de>
+
+    * merge
+
+commit 6d59e9585db35d9a3c16f01b4180ea440e4b5a4a
+Author: Frank Herchet <frank.fh.herchet@bmw.de>
+
+    * merge of changes from Christian
+
+commit 000b6cb9766473e76e3f7790c6579d44a09c81c0
+Author: Frank Herchet <frank.fh.herchet@bmw.de>
+
+    * modify contructor of CAmTelnetMenuHelper
+
+commit dc3eb79e419cb53f1394300873c204a9a2912823
+Author: Frank Herchet <frank.fh.herchet@bmw.de>
+
+    * add gtest for telnetserver
+
+commit 04d5bdbf179eaa167cf6720e3328c98b13b26799
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * added command to option telnetserver
+    * make AudioManager build without warning again
+
+commit 5abcbd805991d1bdfbc735d786b5f5b0e53aaa45
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * fixed bug in remove connections
+    * added functionality in default ConnectionPlugin
+
+commit d8dc623c4e00b72ef4868aca222d7159f533e741
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * added new functions to controlreceiver / databasehandler:
+    getSinkInfoDB
+    getSourceInfoDB
+    getMainConnectionInfoDB
+    * adopted changeMainConnectionRouteDB to new type
+    * added tests for these types
+    * recreation of interfaces
+
+commit d31807abef3e8f02de5ae4452527769f6c35b3db
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    * change includes in CAmTelnetMenuHelper
+
+commit 2aa9d80d254f3b599d01e70c4901ec78f799546e
+Merge: e124310 108a14b
+Author: christian mueller <christian.ei.mueller@bmw.de>
+
+    Merge remote branch 'buildsau/master'
+
+commit 108a14bfee8d7e1a79e6accf75217a0ff8569d52
+Author: Frank Herchet <frank.fh.herchet@bmw.de>
+
+    * Update README; Short howto about the telnetserver
+
 commit e124310a45e6e7798a077fa44ef3ee518193b2cf
 Author: christian mueller <christian.ei.mueller@bmw.de>
 
