@@ -114,6 +114,12 @@ private:
     void listGatewaysCommandExec(std::queue<std::string> & CmdQueue, int & filedescriptor);
     static void listPluginsCommand(std::queue<std::string> & CmdQueue, int & filedescriptor);
     void listPluginsCommandExec(std::queue<std::string> & CmdQueue, int & filedescriptor);
+    static void listMainConnectionsCommand(std::queue<std::string> & CmdQueue, int & filedescriptor);
+    void listMainConnectionsCommandExec(std::queue<std::string> & CmdQueue, int & filedescriptor);
+    static void listMainSourcesCommand(std::queue<std::string> & CmdQueue, int & filedescriptor);
+    void listMainSourcesCommandExec(std::queue<std::string> & CmdQueue, int & filedescriptor);
+    static void listMainSinksCommand(std::queue<std::string> & CmdQueue, int & filedescriptor);
+    void listMainSinksCommandExec(std::queue<std::string> & CmdQueue, int & filedescriptor);
 
     // SET commands
     static void setRoutingCommand(std::queue<std::string> & CmdQueue, int & filedescriptor);
