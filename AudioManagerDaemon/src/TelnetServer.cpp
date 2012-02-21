@@ -86,29 +86,29 @@ TelnetServer::TelnetServer(SocketHandler *iSocketHandler, CommandSender *iComman
 	int yes = 1;
 	struct sockaddr_in servAddr;
 
-   //setup the port Listener
-   mConnectFD = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
-   setsockopt(mConnectFD, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int));
-   memset(&servAddr, 0, sizeof(servAddr));
-   servAddr.sin_family      = AF_INET;
-   servAddr.sin_addr.s_addr = INADDR_ANY;
-   servAddr.sin_port        = htons(servPort);
-   bind(mConnectFD, (struct sockaddr *) &servAddr, sizeof(servAddr));
+    //setup the port Listener
+    mConnectFD = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+    setsockopt(mConnectFD, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int));
+    memset(&servAddr, 0, sizeof(servAddr));
+    servAddr.sin_family      = AF_INET;
+    servAddr.sin_addr.s_addr = INADDR_ANY;
+    servAddr.sin_port        = htons(servPort);
+    bind(mConnectFD, (struct sockaddr *) &servAddr, sizeof(servAddr));
 
-   if (listen(mConnectFD,mMaxConnections) < 0)
-   {
-      logError("TelnetServer::TelnetServerk cannot listen ",errno);
-   }
-   else
-      logInfo("TelnetServer::TelnetServer started listening on port", mServerPort);
+    if (listen(mConnectFD,mMaxConnections) < 0)
+    {
+        logError("TelnetServer::TelnetServerk cannot listen ",errno);
+    }
+    else
+        logInfo("TelnetServer::TelnetServer started listening on port", mServerPort);
 
-	int a=1;
-	ioctl (mConnectFD, FIONBIO, (char *) &a); // should we use the posix call fcntl(mConnectFD, F_SETFL, O_NONBLOCK)
-	setsockopt (mConnectFD, SOL_SOCKET, SO_KEEPALIVE, (char *) &a, sizeof (a));
+    int a=1;
+    ioctl (mConnectFD, FIONBIO, (char *) &a); // should we use the posix call fcntl(mConnectFD, F_SETFL, O_NONBLOCK)
+    setsockopt (mConnectFD, SOL_SOCKET, SO_KEEPALIVE, (char *) &a, sizeof (a));
 
-   short events = 0;
-   events |= POLLIN;
-   mSocketHandler->addFDPoll(mConnectFD, events, NULL, &telnetConnectFiredCB, NULL, NULL, NULL, mConnecthandle);
+    short events = 0;
+    events |= POLLIN;
+    mSocketHandler->addFDPoll(mConnectFD, events, NULL, &telnetConnectFiredCB, NULL, NULL, NULL, mConnecthandle);
 }
 
 TelnetServer::~TelnetServer()

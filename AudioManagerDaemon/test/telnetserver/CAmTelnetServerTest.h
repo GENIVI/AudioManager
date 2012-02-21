@@ -31,7 +31,42 @@ class ControlReceiver;
 class TelnetServer;
 
 
-class CAmTelnetServerTest : public ::testing::Test{
+class MyEnvironment : public ::testing::Environment
+{
+ public:
+  MyEnvironment();
+
+  ~MyEnvironment();
+  // Override this to define how to set up the environment.
+  void SetUp();
+  // Override this to define how to tear down the environment.
+  void TearDown();
+
+  void setSocketHandler(SocketHandler* pSocketHandler);
+
+  void stopSocketHandler();
+
+  std::vector<std::string> mlistRoutingPluginDirs;
+  std::vector<std::string> mlistCommandPluginDirs;
+
+  //SocketHandler*    mpSocketHandler;
+  DatabaseHandler   mDatabasehandler;
+  RoutingSender     mRoutingSender;
+  CommandSender     mCommandSender;
+  ControlSender     mControlSender;
+  Router            mRouter;
+
+  CommandReceiver*  mpCommandReceiver;
+  RoutingReceiver*  mpRoutingReceiver;
+  ControlReceiver*  mpControlReceiver;
+
+  TelnetServer*     mpTelnetServer;
+
+  pthread_t         mSocketHandlerThread;
+};
+
+class CAmTelnetServerTest : public ::testing::Test
+{
    public:
       CAmTelnetServerTest();
       ~CAmTelnetServerTest();
@@ -41,25 +76,7 @@ class CAmTelnetServerTest : public ::testing::Test{
 
    void TearDown() ;
 
-   void setSocketHandler(SocketHandler* pSocketHandler);
-
-   std::vector<std::string> mlistRoutingPluginDirs;
-   std::vector<std::string> mlistCommandPluginDirs;
-
-   SocketHandler*    mpSocketHandler;
-   DatabaseHandler   mDatabasehandler;
-   RoutingSender     mRoutingSender;
-   CommandSender     mCommandSender;
-   ControlSender     mControlSender;
-   Router            mRouter;
-
-   CommandReceiver*  mpCommandReceiver;
-   RoutingReceiver*  mpRoutingReceiver;
-   ControlReceiver*  mpControlReceiver;
-
-   TelnetServer*     mpTelnetServer;
-
-   pthread_t         mSocketHandlerThread;
+   //int              mSocket;
 };
 
 }
