@@ -499,6 +499,18 @@ am_Error_e ControlReceiver::getSocketHandler(SocketHandler *& socketHandler)
 #endif
 }
 
+void am::ControlReceiver::setCommandRundown()
+{
+    logInfo("ControlReceiver::setCommandRundown got called");
+    mCommandSender->cbCommunicationRundown();
+}
+
+void am::ControlReceiver::setRoutingRundown()
+{
+    logInfo("ControlReceiver::setRoutingRundown got called");
+    mRoutingSender->routingInterfacesRundown();
+}
+
 uint16_t ControlReceiver::getInterfaceVersion() const
 {
     return ControlReceiveVersion;
