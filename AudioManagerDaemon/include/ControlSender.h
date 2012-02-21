@@ -83,7 +83,7 @@ public:
     void cbAckSetSinkSoundProperties(const am_Handle_s handle, const am_Error_e error);
     void cbAckSetSinkSoundProperty(const am_Handle_s handle, const am_Error_e error);
     void cbAckSetSourceSoundProperties(const am_Handle_s handle, const am_Error_e error);
-    am_Error_e getConnectionFormatChoice(const am_sourceID_t sourceID, const am_sinkID_t sinkID, const std::vector<am_ConnectionFormat_e> listPossibleConnectionFormats, std::vector<am_ConnectionFormat_e>& listPrioConnectionFormats);
+    am_Error_e getConnectionFormatChoice(const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_Route_s listRoute, const std::vector<am_ConnectionFormat_e> listPossibleConnectionFormats, std::vector<am_ConnectionFormat_e> & listPrioConnectionFormats);
     uint16_t getInterfaceVersion() const;
 
 #ifdef UNIT_TEST
