@@ -77,7 +77,7 @@ ACTION(returnListConnections)
 	listItem.mainConnectionID=15;
 	listItem.sinkID=4;
 	listItem.sourceID=3;
-	listItem.connectionState=CS_MIN;
+	listItem.connectionState=CS_UNKNOWN;
 	listItem.delay=34;
 	list.push_back(listItem);
 	arg0=list;
@@ -87,8 +87,8 @@ ACTION(returnListSinks)
 {
 	std::vector<am::am_SinkType_s> list;
 	am::am_SinkType_s listItem;
-	listItem.availability.availability=A_MIN;
-	listItem.availability.availabilityReason=AR_NOMEDIA;
+	listItem.availability.availability=A_UNAVAILABLE;
+	listItem.availability.availabilityReason=AR_GENIVI_NOMEDIA;
 	listItem.muteState=MS_UNMUTED;
 	listItem.name="mySink";
 	listItem.sinkClassID=34;
@@ -103,7 +103,7 @@ ACTION(returnListSources)
 	std::vector<am::am_SourceType_s> list;
 	am::am_SourceType_s listItem;
 	listItem.availability.availability=A_MAX;
-	listItem.availability.availabilityReason=AR_SAMEMEDIA;
+	listItem.availability.availabilityReason=AR_GENIVI_SAMEMEDIA;
 	listItem.name="MySource";
 	listItem.sourceClassID=12;
 	listItem.sourceID=224;
@@ -121,7 +121,7 @@ ACTION(returnListMainSinkSoundProperties)
 	listItem.type=MSP_MAX;
 	listItem.value=223;
 	list.push_back(listItem);
-	listItem.type=MSP_MIN;
+	listItem.type=MSP_UNKNOWN;
 	listItem.value=2;
 	list.push_back(listItem);
 	arg1=list;
@@ -132,7 +132,7 @@ ACTION(returnListSourceClasses)
 	std::vector<am::am_SourceClass_s> list;
 	am::am_SourceClass_s listItem;
 	am::am_ClassProperty_s property;
-	property.classProperty=CP_SINK_TYPE;
+	property.classProperty=CP_GENIVI_SINK_TYPE;
 	property.value=12;
 	listItem.name="FirstCLass";
 	listItem.sourceClassID=23;
@@ -150,7 +150,7 @@ ACTION(returnListSinkClasses)
 	std::vector<am::am_SinkClass_s> list;
 	am::am_SinkClass_s listItem;
 	am::am_ClassProperty_s property;
-	property.classProperty=CP_SOURCE_TYPE;
+	property.classProperty=CP_GENIVI_SOURCE_TYPE;
 	property.value=122;
 	listItem.name="FirstCLass";
 	listItem.sinkClassID=2123;
@@ -167,7 +167,7 @@ ACTION(returnListSystemProperties)
 {
 	std::vector<am::am_SystemProperty_s> list;
 	am::am_SystemProperty_s listItem;
-	listItem.type=SYP_TEST;
+	listItem.type=SYP_UNKNOWN;
 	listItem.value=-2245;
 	list.push_back(listItem);
 	arg0=list;
@@ -284,7 +284,7 @@ TEST_F(dbuscommandpluginInterfaceTest,Connect)
 
 	std::cout<<"[volumeStep]"<<std::endl;
 
-	EXPECT_CALL(pReceiveInterface,setSinkMuteState(1,MS_MIN)).WillOnce(Return(E_OK));
+	EXPECT_CALL(pReceiveInterface,setSinkMuteState(1,MS_UNKNOWN)).WillOnce(Return(E_OK));
 	system((DBUSCOMMAND + std::string("SetSinkMuteState uint16:1 int16:0 > /tmp/result.txt ")).c_str());
 
 	//check the results
@@ -305,7 +305,7 @@ TEST_F(dbuscommandpluginInterfaceTest,Connect)
 	std::cout<<"[sinkmutest]"<<std::endl;
 
 	EXPECT_CALL(pReceiveInterface,setMainSinkSoundProperty(AllOf(Field(&am_MainSoundProperty_s::value, 3), \
-					Field(&am_MainSoundProperty_s::type,MSP_MIN)),1)).WillOnce(Return(E_ABORTED));
+					Field(&am_MainSoundProperty_s::type,MSP_UNKNOWN)),1)).WillOnce(Return(E_ABORTED));
 
 
 	PyRun_SimpleStringFlags("import dbus\n"
@@ -332,7 +332,7 @@ TEST_F(dbuscommandpluginInterfaceTest,Connect)
 	std::cout<<"[sinksound ]"<<std::endl;
 
 	EXPECT_CALL(pReceiveInterface,setMainSourceSoundProperty(AllOf(Field(&am_MainSoundProperty_s::value, 3), \
-						Field(&am_MainSoundProperty_s::type,MSP_MIN)),1)).WillOnce(Return(E_ABORTED));
+						Field(&am_MainSoundProperty_s::type,MSP_UNKNOWN)),1)).WillOnce(Return(E_ABORTED));
 
 	PyRun_SimpleStringFlags("import dbus\n"
 							"f = open('/tmp/result.txt','w')\n"

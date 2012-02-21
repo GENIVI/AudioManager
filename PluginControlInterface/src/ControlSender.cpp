@@ -172,7 +172,7 @@ am_Error_e ControlSenderPlugin::hookUserVolumeChange(const am_sinkID_t SinkID, c
     set.sinkID = SinkID;
     set.mainVolume = newVolume;
     am_Error_e error;
-    if ((error = mControlReceiveInterface->setSinkVolume(set.handle, SinkID, newVolume, RAMP_DIRECT, 20)) != E_OK)
+    if ((error = mControlReceiveInterface->setSinkVolume(set.handle, SinkID, newVolume, RAMP_GENIVI_DIRECT, 20)) != E_OK)
     {
         return error;
     }
@@ -189,7 +189,7 @@ am_Error_e ControlSenderPlugin::hookUserVolumeStep(const am_sinkID_t SinkID, con
     am_Sink_s sink;
     mControlReceiveInterface->getSinkInfoDB(SinkID, sink);
     set.mainVolume = sink.volume + increment;
-    if ((error = mControlReceiveInterface->setSinkVolume(set.handle, SinkID, set.mainVolume, RAMP_DIRECT, 20)) != E_OK)
+    if ((error = mControlReceiveInterface->setSinkVolume(set.handle, SinkID, set.mainVolume, RAMP_GENIVI_DIRECT, 20)) != E_OK)
     {
         return error;
     }

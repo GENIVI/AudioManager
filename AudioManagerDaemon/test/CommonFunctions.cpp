@@ -199,8 +199,8 @@ bool CommonFunctions::compareRoute(am_Route_s a, am_Route_s b)
 std::vector<am_ConnectionFormat_e> CommonFunctions::getStandardConnectionFormatList()
 {
     std::vector<am_ConnectionFormat_e> list;
-    list.push_back(CF_ANALOG);
-    list.push_back(CF_STEREO);
+    list.push_back(CF_GENIVI_ANALOG);
+    list.push_back(CF_GENIVI_STEREO);
     return list;
 }
 
@@ -208,10 +208,10 @@ std::vector<am_SoundProperty_s> CommonFunctions::getStandardSoundPropertyList()
 {
     std::vector<am_SoundProperty_s> soundPropertyList;
     am_SoundProperty_s soundProperty;
-    soundProperty.type = SP_BASS;
+    soundProperty.type = SP_EXAMPLE_BASS;
     soundProperty.value = 23;
     soundPropertyList.push_back(soundProperty);
-    soundProperty.type = SP_MID;
+    soundProperty.type = SP_EXAMPLE_MID;
     soundProperty.value = 2;
     soundPropertyList.push_back(soundProperty);
     return soundPropertyList;
@@ -221,10 +221,10 @@ std::vector<am_MainSoundProperty_s> CommonFunctions::getStandardMainSoundPropert
 {
     std::vector<am_MainSoundProperty_s> mainSoundPropertyList;
     am_MainSoundProperty_s mainSoundProperty;
-    mainSoundProperty.type = MSP_NAVIGATION_OFFSET;
+    mainSoundProperty.type = MSP_UNKNOWN;
     mainSoundProperty.value = 23;
     mainSoundPropertyList.push_back(mainSoundProperty);
-    mainSoundProperty.type = MSP_TEST;
+    mainSoundProperty.type = MSP_UNKNOWN;
     mainSoundProperty.value = 3;
     mainSoundPropertyList.push_back(mainSoundProperty);
     return mainSoundPropertyList;
@@ -235,7 +235,7 @@ void CommonFunctions::createSink(am_Sink_s& sink) const
     sink.name = "AnySink";
     sink.domainID = 4;
     sink.available.availability = A_AVAILABLE;
-    sink.available.availabilityReason = AR_NEWMEDIA;
+    sink.available.availabilityReason = AR_GENIVI_NEWMEDIA;
     sink.sinkClassID = 1;
     sink.listConnectionFormats = getStandardConnectionFormatList();
     sink.listSoundProperties = getStandardSoundPropertyList();
@@ -252,7 +252,7 @@ void CommonFunctions::createSource(am_Source_s& source) const
     source.name = "AnySource";
     source.domainID = 4;
     source.available.availability = A_AVAILABLE;
-    source.available.availabilityReason = AR_NEWMEDIA;
+    source.available.availabilityReason = AR_GENIVI_NEWMEDIA;
     source.sourceClassID = 1;
     source.listConnectionFormats = getStandardConnectionFormatList();
     source.listSoundProperties = getStandardSoundPropertyList();
@@ -297,7 +297,7 @@ void CommonFunctions::createConnection(am_Connection_s & connection) const
     connection.sinkID = 1;
     connection.sourceID = 2;
     connection.delay = -1;
-    connection.connectionFormat = CF_ANALOG;
+    connection.connectionFormat = CF_GENIVI_ANALOG;
 }
 
 std::vector<bool> CommonFunctions::getStandardConvertionMatrix()

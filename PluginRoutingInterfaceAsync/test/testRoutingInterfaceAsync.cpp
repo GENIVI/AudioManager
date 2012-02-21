@@ -132,7 +132,7 @@ TEST_F(testRoutingInterfaceAsync,setSourceSoundProperty)
 
     am_sourceID_t sourceID = 3;
     am_SoundProperty_s property;
-    property.type = SP_MID;
+    property.type = SP_EXAMPLE_MID;
     property.value = 24;
 
     EXPECT_CALL(pReceiveInterface,ackSetSourceSoundProperty(_,E_OK)).Times(1);
@@ -150,7 +150,7 @@ TEST_F(testRoutingInterfaceAsync,setSinkSoundProperty)
 
     am_sinkID_t sinkID = 1;
     am_SoundProperty_s property;
-    property.type = SP_MID;
+    property.type = SP_EXAMPLE_MID;
     property.value = 24;
 
     EXPECT_CALL(pReceiveInterface,ackSetSinkSoundProperty(_,E_OK)).Times(1);
@@ -184,7 +184,7 @@ TEST_F(testRoutingInterfaceAsync,setSourceVolume)
 
     am_sourceID_t sourceID = 3;
     am_volume_t volume = 3;
-    am_RampType_e ramp = RAMP_DIRECT;
+    am_RampType_e ramp = RAMP_GENIVI_DIRECT;
     am_time_t myTime = 25;
 
     EXPECT_CALL(pReceiveInterface,ackSourceVolumeTick(_,sourceID,_)).Times(3);
@@ -203,7 +203,7 @@ TEST_F(testRoutingInterfaceAsync,setSinkVolume)
 
     am_sinkID_t sinkID = 1;
     am_volume_t volume = 9;
-    am_RampType_e ramp = RAMP_DIRECT;
+    am_RampType_e ramp = RAMP_GENIVI_DIRECT;
     am_time_t myTime = 25;
 
     EXPECT_CALL(pReceiveInterface,ackSinkVolumeTick(_,sinkID,_)).Times(9);
@@ -222,7 +222,7 @@ TEST_F(testRoutingInterfaceAsync,setSinkVolumeAbort)
 
     am_sinkID_t sinkID = 2;
     am_volume_t volume = 25;
-    am_RampType_e ramp = RAMP_DIRECT;
+    am_RampType_e ramp = RAMP_GENIVI_DIRECT;
     am_time_t myTime = 25;
 
     EXPECT_CALL(pReceiveInterface, ackSinkVolumeTick(_,sinkID,_));
@@ -244,7 +244,7 @@ TEST_F(testRoutingInterfaceAsync,disconnectTooEarly)
     am_connectionID_t connectionID = 4;
     am_sourceID_t sourceID = 2;
     am_sinkID_t sinkID = 1;
-    am_ConnectionFormat_e format = CF_ANALOG;
+    am_ConnectionFormat_e format = CF_GENIVI_ANALOG;
 
     EXPECT_CALL(pReceiveInterface, ackConnect(_,connectionID,E_OK));
     EXPECT_CALL(pReceiveInterface,ackDisconnect(_,connectionID,E_OK)).Times(0);
@@ -263,7 +263,7 @@ TEST_F(testRoutingInterfaceAsync,disconnectAbort)
     am_connectionID_t connectionID = 4;
     am_sourceID_t sourceID = 2;
     am_sinkID_t sinkID = 1;
-    am_ConnectionFormat_e format = CF_ANALOG;
+    am_ConnectionFormat_e format = CF_GENIVI_ANALOG;
 
     EXPECT_CALL(pReceiveInterface, ackConnect(_,connectionID,E_OK));
     EXPECT_CALL(pReceiveInterface, ackDisconnect(_,connectionID,E_ABORTED));
@@ -299,7 +299,7 @@ TEST_F(testRoutingInterfaceAsync,disconnect)
     am_connectionID_t connectionID = 4;
     am_sourceID_t sourceID = 2;
     am_sinkID_t sinkID = 1;
-    am_ConnectionFormat_e format = CF_ANALOG;
+    am_ConnectionFormat_e format = CF_GENIVI_ANALOG;
 
     EXPECT_CALL(pReceiveInterface, ackConnect(_,connectionID,E_OK));
     EXPECT_CALL(pReceiveInterface, ackDisconnect(_,connectionID,E_OK));
@@ -319,7 +319,7 @@ TEST_F(testRoutingInterfaceAsync,connectNoMoreThreads)
     am_connectionID_t connectionID = 1;
     am_sourceID_t sourceID = 2;
     am_sinkID_t sinkID = 1;
-    am_ConnectionFormat_e format = CF_ANALOG;
+    am_ConnectionFormat_e format = CF_GENIVI_ANALOG;
 
     EXPECT_CALL(pReceiveInterface,ackConnect(_,_,E_OK)).Times(10);
     for (int i = 0; i < 10; i++)
@@ -341,7 +341,7 @@ TEST_F(testRoutingInterfaceAsync,connectAbortTooLate)
     am_connectionID_t connectionID = 4;
     am_sourceID_t sourceID = 2;
     am_sinkID_t sinkID = 1;
-    am_ConnectionFormat_e format = CF_ANALOG;
+    am_ConnectionFormat_e format = CF_GENIVI_ANALOG;
 
     EXPECT_CALL(pReceiveInterface,ackConnect(_,connectionID,E_OK)).Times(1);
     ASSERT_EQ(E_OK, pRoutingSender.asyncConnect(handle,connectionID,sourceID,sinkID,format));
@@ -360,7 +360,7 @@ TEST_F(testRoutingInterfaceAsync,connectAbort)
     am_connectionID_t connectionID = 4;
     am_sourceID_t sourceID = 2;
     am_sinkID_t sinkID = 1;
-    am_ConnectionFormat_e format = CF_ANALOG;
+    am_ConnectionFormat_e format = CF_GENIVI_ANALOG;
 
     EXPECT_CALL(pReceiveInterface,ackConnect(_,connectionID,E_ABORTED)).Times(1);
     ASSERT_EQ(E_OK, pRoutingSender.asyncConnect(handle,connectionID,sourceID,sinkID,format));
@@ -379,7 +379,7 @@ TEST_F(testRoutingInterfaceAsync,connectWrongFormat)
     am_connectionID_t connectionID = 4;
     am_sourceID_t sourceID = 2;
     am_sinkID_t sinkID = 1;
-    am_ConnectionFormat_e format = CF_MONO;
+    am_ConnectionFormat_e format = CF_GENIVI_MONO;
 
     EXPECT_CALL(pReceiveInterface,ackConnect(_,connectionID,E_OK)).Times(0);
     ASSERT_EQ(E_WRONG_FORMAT, pRoutingSender.asyncConnect(handle,connectionID,sourceID,sinkID,format));
@@ -396,7 +396,7 @@ TEST_F(testRoutingInterfaceAsync,connectWrongSink)
     am_connectionID_t connectionID = 4;
     am_sourceID_t sourceID = 2;
     am_sinkID_t sinkID = 122;
-    am_ConnectionFormat_e format = CF_ANALOG;
+    am_ConnectionFormat_e format = CF_GENIVI_ANALOG;
 
     EXPECT_CALL(pReceiveInterface,ackConnect(_,connectionID,E_OK)).Times(0);
     ASSERT_EQ(E_NON_EXISTENT, pRoutingSender.asyncConnect(handle,connectionID,sourceID,sinkID,format));
@@ -412,7 +412,7 @@ TEST_F(testRoutingInterfaceAsync,connectWrongSource)
     am_connectionID_t connectionID = 4;
     am_sourceID_t sourceID = 25;
     am_sinkID_t sinkID = 1;
-    am_ConnectionFormat_e format = CF_ANALOG;
+    am_ConnectionFormat_e format = CF_GENIVI_ANALOG;
 
     EXPECT_CALL(pReceiveInterface,ackConnect(_,connectionID,E_OK)).Times(0);
     ASSERT_EQ(E_NON_EXISTENT, pRoutingSender.asyncConnect(handle,connectionID,sourceID,sinkID,format));
@@ -429,7 +429,7 @@ TEST_F(testRoutingInterfaceAsync,connect)
     am_connectionID_t connectionID = 4;
     am_sourceID_t sourceID = 2;
     am_sinkID_t sinkID = 1;
-    am_ConnectionFormat_e format = CF_ANALOG;
+    am_ConnectionFormat_e format = CF_GENIVI_ANALOG;
 
     EXPECT_CALL(pReceiveInterface, ackConnect(_,connectionID,E_OK));
     ASSERT_EQ(E_OK, pRoutingSender.asyncConnect(handle,connectionID,sourceID,sinkID,format));

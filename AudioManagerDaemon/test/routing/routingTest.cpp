@@ -103,7 +103,7 @@ TEST_F(routingTest,simpleRoute2withDomainNoMatchFormats)
     source.sourceState = SS_ON;
     source.sourceID = 0;
     source.sourceClassID = 5;
-    source.listConnectionFormats.push_back(CF_MONO);
+    source.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
 
@@ -115,7 +115,7 @@ TEST_F(routingTest,simpleRoute2withDomainNoMatchFormats)
     sink.sinkID = 0;
     sink.sinkClassID = 5;
     sink.muteState = MS_MUTED;
-    sink.listConnectionFormats.push_back(CF_ANALOG);
+    sink.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
 
@@ -166,7 +166,7 @@ TEST_F(routingTest,simpleRoute2withDomain)
     source.sourceState = SS_ON;
     source.sourceID = 0;
     source.sourceClassID = 5;
-    source.listConnectionFormats.push_back(CF_ANALOG);
+    source.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
 
@@ -178,7 +178,7 @@ TEST_F(routingTest,simpleRoute2withDomain)
     sink.sinkID = 0;
     sink.sinkClassID = 5;
     sink.muteState = MS_MUTED;
-    sink.listConnectionFormats.push_back(CF_ANALOG);
+    sink.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
 
@@ -235,14 +235,14 @@ TEST_F(routingTest,simpleRoute2DomainsOnlyFree)
     source.sourceState = SS_ON;
     source.sourceID = 0;
     source.sourceClassID = 5;
-    source.listConnectionFormats.push_back(CF_ANALOG);
+    source.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
 
     gwSource.domainID = domainID2;
     gwSource.name = "gwsource1";
     gwSource.sourceState = SS_ON;
     gwSource.sourceID = 0;
     gwSource.sourceClassID = 5;
-    gwSource.listConnectionFormats.push_back(CF_MONO);
+    gwSource.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(gwSource,gwSourceID));
@@ -255,14 +255,14 @@ TEST_F(routingTest,simpleRoute2DomainsOnlyFree)
     sink.sinkID = 0;
     sink.sinkClassID = 5;
     sink.muteState = MS_MUTED;
-    sink.listConnectionFormats.push_back(CF_MONO);
+    sink.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
     gwSink.domainID = domainID1;
     gwSink.name = "gwSink";
     gwSink.sinkID = 0;
     gwSink.sinkClassID = 5;
     gwSink.muteState = MS_MUTED;
-    gwSink.listConnectionFormats.push_back(CF_ANALOG);
+    gwSink.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(gwSink,gwSinkID));
@@ -343,14 +343,14 @@ TEST_F(routingTest,simpleRoute2DomainsOnlyFreeNotFree)
     source.sourceState = SS_ON;
     source.sourceID = 0;
     source.sourceClassID = 5;
-    source.listConnectionFormats.push_back(CF_ANALOG);
+    source.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
 
     gwSource.domainID = domainID2;
     gwSource.name = "gwsource1";
     gwSource.sourceState = SS_ON;
     gwSource.sourceID = 0;
     gwSource.sourceClassID = 5;
-    gwSource.listConnectionFormats.push_back(CF_MONO);
+    gwSource.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(gwSource,gwSourceID));
@@ -363,14 +363,14 @@ TEST_F(routingTest,simpleRoute2DomainsOnlyFreeNotFree)
     sink.sinkID = 0;
     sink.sinkClassID = 5;
     sink.muteState = MS_MUTED;
-    sink.listConnectionFormats.push_back(CF_MONO);
+    sink.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
     gwSink.domainID = domainID1;
     gwSink.name = "gwSink";
     gwSink.sinkID = 0;
     gwSink.sinkClassID = 5;
     gwSink.muteState = MS_MUTED;
-    gwSink.listConnectionFormats.push_back(CF_ANALOG);
+    gwSink.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(gwSink,gwSinkID));
@@ -418,11 +418,11 @@ TEST_F(routingTest,simpleRoute2DomainsOnlyFreeNotFree)
     am_connectionID_t id1,id2;
     connection.sourceID=sourceID;
     connection.sinkID=gwSinkID;
-    connection.connectionFormat=CF_ANALOG;
+    connection.connectionFormat=CF_GENIVI_ANALOG;
     connection.connectionID=0;
     connection1.sourceID=gwSourceID;
     connection1.sinkID=sinkID;
-    connection1.connectionFormat=CF_ANALOG;
+    connection1.connectionFormat=CF_GENIVI_ANALOG;
     connection1.connectionID=0;
 
     ASSERT_EQ(E_OK,pDatabaseHandler.enterConnectionDB(connection,id1));
@@ -472,25 +472,25 @@ TEST_F(routingTest,simpleRoute3DomainsListConnectionFormats_2)
     source.sourceState = SS_ON;
     source.sourceID = 0;
     source.sourceClassID = 5;
-    source.listConnectionFormats.push_back(CF_STEREO);
-    source.listConnectionFormats.push_back(CF_MONO);
+    source.listConnectionFormats.push_back(CF_GENIVI_STEREO);
+    source.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
     gwSource.domainID = domainID2;
     gwSource.name = "gwsource1";
     gwSource.sourceState = SS_ON;
     gwSource.sourceID = 0;
     gwSource.sourceClassID = 5;
-    gwSource.listConnectionFormats.push_back(CF_MONO);
-    gwSource.listConnectionFormats.push_back(CF_STEREO);
-    gwSource.listConnectionFormats.push_back(CF_ANALOG);
+    gwSource.listConnectionFormats.push_back(CF_GENIVI_MONO);
+    gwSource.listConnectionFormats.push_back(CF_GENIVI_STEREO);
+    gwSource.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
 
     gwSource1.domainID = domainID3;
     gwSource1.name = "gwsource2";
     gwSource1.sourceState = SS_ON;
     gwSource1.sourceID = 0;
     gwSource1.sourceClassID = 5;
-    gwSource1.listConnectionFormats.push_back(CF_STEREO);
-    gwSource1.listConnectionFormats.push_back(CF_MONO);
+    gwSource1.listConnectionFormats.push_back(CF_GENIVI_STEREO);
+    gwSource1.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(gwSource,gwSourceID));
@@ -504,23 +504,23 @@ TEST_F(routingTest,simpleRoute3DomainsListConnectionFormats_2)
     sink.sinkID = 0;
     sink.sinkClassID = 5;
     sink.muteState = MS_MUTED;
-    sink.listConnectionFormats.push_back(CF_MONO);
+    sink.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
     gwSink.domainID = domainID1;
     gwSink.name = "gwSink";
     gwSink.sinkID = 0;
     gwSink.sinkClassID = 5;
     gwSink.muteState = MS_MUTED;
-    gwSink.listConnectionFormats.push_back(CF_STEREO);
-    gwSink.listConnectionFormats.push_back(CF_MONO);
+    gwSink.listConnectionFormats.push_back(CF_GENIVI_STEREO);
+    gwSink.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
     gwSink1.domainID = domainID2;
     gwSink1.name = "gwSink1";
     gwSink1.sinkID = 0;
     gwSink1.sinkClassID = 5;
     gwSink1.muteState = MS_MUTED;
-    gwSink1.listConnectionFormats.push_back(CF_ANALOG);
-    gwSink1.listConnectionFormats.push_back(CF_STEREO);
+    gwSink1.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
+    gwSink1.listConnectionFormats.push_back(CF_GENIVI_STEREO);
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(gwSink,gwSinkID));
@@ -633,24 +633,24 @@ TEST_F(routingTest,simpleRoute3DomainsListConnectionFormats_1)
     source.sourceState = SS_ON;
     source.sourceID = 0;
     source.sourceClassID = 5;
-    source.listConnectionFormats.push_back(CF_STEREO);
-    source.listConnectionFormats.push_back(CF_MONO);
+    source.listConnectionFormats.push_back(CF_GENIVI_STEREO);
+    source.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
     gwSource.domainID = domainID2;
     gwSource.name = "gwsource1";
     gwSource.sourceState = SS_ON;
     gwSource.sourceID = 0;
     gwSource.sourceClassID = 5;
-    gwSource.listConnectionFormats.push_back(CF_STEREO);
-    gwSource.listConnectionFormats.push_back(CF_MONO);
-    gwSource.listConnectionFormats.push_back(CF_ANALOG);
+    gwSource.listConnectionFormats.push_back(CF_GENIVI_STEREO);
+    gwSource.listConnectionFormats.push_back(CF_GENIVI_MONO);
+    gwSource.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
 
     gwSource1.domainID = domainID3;
     gwSource1.name = "gwsource2";
     gwSource1.sourceState = SS_ON;
     gwSource1.sourceID = 0;
     gwSource1.sourceClassID = 5;
-    gwSource1.listConnectionFormats.push_back(CF_MONO);
+    gwSource1.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(gwSource,gwSourceID));
@@ -664,22 +664,22 @@ TEST_F(routingTest,simpleRoute3DomainsListConnectionFormats_1)
     sink.sinkID = 0;
     sink.sinkClassID = 5;
     sink.muteState = MS_MUTED;
-    sink.listConnectionFormats.push_back(CF_MONO);
+    sink.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
     gwSink.domainID = domainID1;
     gwSink.name = "gwSink";
     gwSink.sinkID = 0;
     gwSink.sinkClassID = 5;
     gwSink.muteState = MS_MUTED;
-    gwSink.listConnectionFormats.push_back(CF_STEREO);
-    gwSink.listConnectionFormats.push_back(CF_MONO);
+    gwSink.listConnectionFormats.push_back(CF_GENIVI_STEREO);
+    gwSink.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
     gwSink1.domainID = domainID2;
     gwSink1.name = "gwSink1";
     gwSink1.sinkID = 0;
     gwSink1.sinkClassID = 5;
     gwSink1.muteState = MS_MUTED;
-    gwSink1.listConnectionFormats.push_back(CF_ANALOG);
+    gwSink1.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(gwSink,gwSinkID));
@@ -790,22 +790,22 @@ TEST_F(routingTest,simpleRoute3DomainsListConnectionFormats)
     source.sourceState = SS_ON;
     source.sourceID = 0;
     source.sourceClassID = 5;
-    source.listConnectionFormats.push_back(CF_STEREO);
-    source.listConnectionFormats.push_back(CF_MONO);
+    source.listConnectionFormats.push_back(CF_GENIVI_STEREO);
+    source.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
     gwSource.domainID = domainID2;
     gwSource.name = "gwsource1";
     gwSource.sourceState = SS_ON;
     gwSource.sourceID = 0;
     gwSource.sourceClassID = 5;
-    gwSource.listConnectionFormats.push_back(CF_ANALOG);
+    gwSource.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
 
     gwSource1.domainID = domainID3;
     gwSource1.name = "gwsource2";
     gwSource1.sourceState = SS_ON;
     gwSource1.sourceID = 0;
     gwSource1.sourceClassID = 5;
-    gwSource1.listConnectionFormats.push_back(CF_MONO);
+    gwSource1.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(gwSource,gwSourceID));
@@ -819,22 +819,22 @@ TEST_F(routingTest,simpleRoute3DomainsListConnectionFormats)
     sink.sinkID = 0;
     sink.sinkClassID = 5;
     sink.muteState = MS_MUTED;
-    sink.listConnectionFormats.push_back(CF_MONO);
+    sink.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
     gwSink.domainID = domainID1;
     gwSink.name = "gwSink";
     gwSink.sinkID = 0;
     gwSink.sinkClassID = 5;
     gwSink.muteState = MS_MUTED;
-    gwSink.listConnectionFormats.push_back(CF_STEREO);
-    gwSink.listConnectionFormats.push_back(CF_MONO);
+    gwSink.listConnectionFormats.push_back(CF_GENIVI_STEREO);
+    gwSink.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
     gwSink1.domainID = domainID2;
     gwSink1.name = "gwSink1";
     gwSink1.sinkID = 0;
     gwSink1.sinkClassID = 5;
     gwSink1.muteState = MS_MUTED;
-    gwSink1.listConnectionFormats.push_back(CF_ANALOG);
+    gwSink1.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(gwSink,gwSinkID));
@@ -946,35 +946,35 @@ TEST_F(routingTest,simpleRoute4Domains2Routes)
     source.sourceState = SS_ON;
     source.sourceID = 0;
     source.sourceClassID = 5;
-    source.listConnectionFormats.push_back(CF_MONO);
+    source.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
     gwSource.domainID = domainID2;
     gwSource.name = "gwsource1";
     gwSource.sourceState = SS_ON;
     gwSource.sourceID = 0;
     gwSource.sourceClassID = 5;
-    gwSource.listConnectionFormats.push_back(CF_ANALOG);
+    gwSource.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
 
     gwSource1.domainID = domainID3;
     gwSource1.name = "gwsource2";
     gwSource1.sourceState = SS_ON;
     gwSource1.sourceID = 0;
     gwSource1.sourceClassID = 5;
-    gwSource1.listConnectionFormats.push_back(CF_MONO);
+    gwSource1.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
     gwSource2.domainID = domainID4;
     gwSource2.name = "gwsource3";
     gwSource2.sourceState = SS_OFF;
     gwSource2.sourceID = 0;
     gwSource2.sourceClassID = 5;
-    gwSource2.listConnectionFormats.push_back(CF_STEREO);
+    gwSource2.listConnectionFormats.push_back(CF_GENIVI_STEREO);
 
     gwSource3.domainID = domainID3;
     gwSource3.name = "gwsource4";
     gwSource3.sourceState = SS_OFF;
     gwSource3.sourceID = 0;
     gwSource3.sourceClassID = 5;
-    gwSource3.listConnectionFormats.push_back(CF_MONO);
+    gwSource3.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(gwSource,gwSourceID));
@@ -990,35 +990,35 @@ TEST_F(routingTest,simpleRoute4Domains2Routes)
     gwSink.sinkID = 0;
     gwSink.sinkClassID = 5;
     gwSink.muteState = MS_MUTED;
-    gwSink.listConnectionFormats.push_back(CF_MONO);
+    gwSink.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
     gwSink1.domainID = domainID2;
     gwSink1.name = "gwSink1";
     gwSink1.sinkID = 0;
     gwSink1.sinkClassID = 5;
     gwSink1.muteState = MS_MUTED;
-    gwSink1.listConnectionFormats.push_back(CF_ANALOG);
+    gwSink1.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
 
     gwSink2.domainID = domainID3;
     gwSink2.name = "gwSink2";
     gwSink2.sinkID = 0;
     gwSink2.sinkClassID = 5;
     gwSink2.muteState = MS_MUTED;
-    gwSink2.listConnectionFormats.push_back(CF_MONO);
+    gwSink2.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
     gwSink3.domainID = domainID2;
     gwSink3.name = "gwSink3";
     gwSink3.sinkID = 0;
     gwSink3.sinkClassID = 5;
     gwSink3.muteState = MS_MUTED;
-    gwSink3.listConnectionFormats.push_back(CF_ANALOG);
+    gwSink3.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
 
     sink.domainID = domainID4;
     sink.name = "sink1";
     sink.sinkID = 0;
     sink.sinkClassID = 5;
     sink.muteState = MS_MUTED;
-    sink.listConnectionFormats.push_back(CF_STEREO);
+    sink.listConnectionFormats.push_back(CF_GENIVI_STEREO);
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(gwSink,gwSinkID));
@@ -1177,21 +1177,21 @@ TEST_F(routingTest,simpleRoute3DomainsNoConnection)
     source.sourceState = SS_ON;
     source.sourceID = 0;
     source.sourceClassID = 5;
-    source.listConnectionFormats.push_back(CF_MONO);
+    source.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
     gwSource.domainID = domainID2;
     gwSource.name = "gwsource1";
     gwSource.sourceState = SS_ON;
     gwSource.sourceID = 0;
     gwSource.sourceClassID = 5;
-    gwSource.listConnectionFormats.push_back(CF_ANALOG);
+    gwSource.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
 
     gwSource1.domainID = domainID3;
     gwSource1.name = "gwsource2";
     gwSource1.sourceState = SS_ON;
     gwSource1.sourceID = 0;
     gwSource1.sourceClassID = 5;
-    gwSource1.listConnectionFormats.push_back(CF_MONO);
+    gwSource1.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(gwSource,gwSourceID));
@@ -1205,21 +1205,21 @@ TEST_F(routingTest,simpleRoute3DomainsNoConnection)
     sink.sinkID = 0;
     sink.sinkClassID = 5;
     sink.muteState = MS_MUTED;
-    sink.listConnectionFormats.push_back(CF_STEREO);
+    sink.listConnectionFormats.push_back(CF_GENIVI_STEREO);
 
     gwSink.domainID = domainID1;
     gwSink.name = "gwSink";
     gwSink.sinkID = 0;
     gwSink.sinkClassID = 5;
     gwSink.muteState = MS_MUTED;
-    gwSink.listConnectionFormats.push_back(CF_MONO);
+    gwSink.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
     gwSink1.domainID = domainID2;
     gwSink1.name = "gwSink1";
     gwSink1.sinkID = 0;
     gwSink1.sinkClassID = 5;
     gwSink1.muteState = MS_MUTED;
-    gwSink1.listConnectionFormats.push_back(CF_ANALOG);
+    gwSink1.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(gwSink,gwSinkID));
@@ -1317,14 +1317,14 @@ TEST_F(routingTest,simpleRoute2Domains)
     source.sourceState = SS_ON;
     source.sourceID = 0;
     source.sourceClassID = 5;
-    source.listConnectionFormats.push_back(CF_ANALOG);
+    source.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
 
     gwSource.domainID = domainID2;
     gwSource.name = "gwsource1";
     gwSource.sourceState = SS_ON;
     gwSource.sourceID = 0;
     gwSource.sourceClassID = 5;
-    gwSource.listConnectionFormats.push_back(CF_MONO);
+    gwSource.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(gwSource,gwSourceID));
@@ -1337,14 +1337,14 @@ TEST_F(routingTest,simpleRoute2Domains)
     sink.sinkID = 0;
     sink.sinkClassID = 5;
     sink.muteState = MS_MUTED;
-    sink.listConnectionFormats.push_back(CF_MONO);
+    sink.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
     gwSink.domainID = domainID1;
     gwSink.name = "gwSink";
     gwSink.sinkID = 0;
     gwSink.sinkClassID = 5;
     gwSink.muteState = MS_MUTED;
-    gwSink.listConnectionFormats.push_back(CF_ANALOG);
+    gwSink.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(gwSink,gwSinkID));
@@ -1425,14 +1425,14 @@ TEST_F(routingTest,simpleRoute2DomainsNoMatchConnectionFormats)
     source.sourceState = SS_ON;
     source.sourceID = 0;
     source.sourceClassID = 5;
-    source.listConnectionFormats.push_back(CF_STEREO);
+    source.listConnectionFormats.push_back(CF_GENIVI_STEREO);
 
     gwSource.domainID = domainID2;
     gwSource.name = "gwsource1";
     gwSource.sourceState = SS_ON;
     gwSource.sourceID = 0;
     gwSource.sourceClassID = 5;
-    gwSource.listConnectionFormats.push_back(CF_MONO);
+    gwSource.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(gwSource,gwSourceID));
@@ -1445,14 +1445,14 @@ TEST_F(routingTest,simpleRoute2DomainsNoMatchConnectionFormats)
     sink.sinkID = 0;
     sink.sinkClassID = 5;
     sink.muteState = MS_MUTED;
-    sink.listConnectionFormats.push_back(CF_MONO);
+    sink.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
     gwSink.domainID = domainID1;
     gwSink.name = "gwSink";
     gwSink.sinkID = 0;
     gwSink.sinkClassID = 5;
     gwSink.muteState = MS_MUTED;
-    gwSink.listConnectionFormats.push_back(CF_ANALOG);
+    gwSink.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(gwSink,gwSinkID));
@@ -1536,21 +1536,21 @@ TEST_F(routingTest,simpleRoute3Domains)
     source.sourceState = SS_ON;
     source.sourceID = 0;
     source.sourceClassID = 5;
-    source.listConnectionFormats.push_back(CF_MONO);
+    source.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
     gwSource.domainID = domainID2;
     gwSource.name = "gwsource1";
     gwSource.sourceState = SS_ON;
     gwSource.sourceID = 0;
     gwSource.sourceClassID = 5;
-    gwSource.listConnectionFormats.push_back(CF_ANALOG);
+    gwSource.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
 
     gwSource1.domainID = domainID3;
     gwSource1.name = "gwsource2";
     gwSource1.sourceState = SS_ON;
     gwSource1.sourceID = 0;
     gwSource1.sourceClassID = 5;
-    gwSource1.listConnectionFormats.push_back(CF_MONO);
+    gwSource1.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(gwSource,gwSourceID));
@@ -1564,21 +1564,21 @@ TEST_F(routingTest,simpleRoute3Domains)
     sink.sinkID = 0;
     sink.sinkClassID = 5;
     sink.muteState = MS_MUTED;
-    sink.listConnectionFormats.push_back(CF_MONO);
+    sink.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
     gwSink.domainID = domainID1;
     gwSink.name = "gwSink";
     gwSink.sinkID = 0;
     gwSink.sinkClassID = 5;
     gwSink.muteState = MS_MUTED;
-    gwSink.listConnectionFormats.push_back(CF_MONO);
+    gwSink.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
     gwSink1.domainID = domainID2;
     gwSink1.name = "gwSink1";
     gwSink1.sinkID = 0;
     gwSink1.sinkClassID = 5;
     gwSink1.muteState = MS_MUTED;
-    gwSink1.listConnectionFormats.push_back(CF_ANALOG);
+    gwSink1.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(gwSink,gwSinkID));
@@ -1688,28 +1688,28 @@ TEST_F(routingTest,simpleRoute4Domains)
     source.sourceState = SS_ON;
     source.sourceID = 0;
     source.sourceClassID = 5;
-    source.listConnectionFormats.push_back(CF_MONO);
+    source.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
     gwSource.domainID = domainID2;
     gwSource.name = "gwsource1";
     gwSource.sourceState = SS_ON;
     gwSource.sourceID = 0;
     gwSource.sourceClassID = 5;
-    gwSource.listConnectionFormats.push_back(CF_ANALOG);
+    gwSource.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
 
     gwSource1.domainID = domainID3;
     gwSource1.name = "gwsource2";
     gwSource1.sourceState = SS_ON;
     gwSource1.sourceID = 0;
     gwSource1.sourceClassID = 5;
-    gwSource1.listConnectionFormats.push_back(CF_MONO);
+    gwSource1.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
     gwSource2.domainID = domainID4;
     gwSource2.name = "gwsource3";
     gwSource2.sourceState = SS_OFF;
     gwSource2.sourceID = 0;
     gwSource2.sourceClassID = 5;
-    gwSource2.listConnectionFormats.push_back(CF_STEREO);
+    gwSource2.listConnectionFormats.push_back(CF_GENIVI_STEREO);
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(gwSource,gwSourceID));
@@ -1724,28 +1724,28 @@ TEST_F(routingTest,simpleRoute4Domains)
     gwSink.sinkID = 0;
     gwSink.sinkClassID = 5;
     gwSink.muteState = MS_MUTED;
-    gwSink.listConnectionFormats.push_back(CF_MONO);
+    gwSink.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
     gwSink1.domainID = domainID2;
     gwSink1.name = "gwSink1";
     gwSink1.sinkID = 0;
     gwSink1.sinkClassID = 5;
     gwSink1.muteState = MS_MUTED;
-    gwSink1.listConnectionFormats.push_back(CF_ANALOG);
+    gwSink1.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
 
     gwSink2.domainID = domainID3;
     gwSink2.name = "gwSink2";
     gwSink2.sinkID = 0;
     gwSink2.sinkClassID = 5;
     gwSink2.muteState = MS_MUTED;
-    gwSink2.listConnectionFormats.push_back(CF_MONO);
+    gwSink2.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
     sink.domainID = domainID4;
     sink.name = "sink1";
     sink.sinkID = 0;
     sink.sinkClassID = 5;
     sink.muteState = MS_MUTED;
-    sink.listConnectionFormats.push_back(CF_STEREO);
+    sink.listConnectionFormats.push_back(CF_GENIVI_STEREO);
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(gwSink,gwSinkID));

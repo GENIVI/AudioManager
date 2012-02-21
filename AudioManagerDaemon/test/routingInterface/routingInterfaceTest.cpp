@@ -84,8 +84,8 @@ TEST_F(routingInterfaceTest,abort)
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
 
     //start a connect, expect a call on the routingInterface
-    EXPECT_CALL(pMockInterface,asyncConnect(_,_,1,sinkID,CF_ANALOG)).WillOnce(Return(E_OK));
-    ASSERT_EQ(E_OK, pControlReceiver.connect(handle,connectionID,CF_ANALOG,1,2));
+    EXPECT_CALL(pMockInterface,asyncConnect(_,_,1,sinkID,CF_GENIVI_ANALOG)).WillOnce(Return(E_OK));
+    ASSERT_EQ(E_OK, pControlReceiver.connect(handle,connectionID,CF_GENIVI_ANALOG,1,2));
 
     //check the correctness of the handle
     ASSERT_NE(handle.handle, 0);
@@ -128,12 +128,12 @@ TEST_F(routingInterfaceTest,alreadyConnected)
     sink.domainID = 1;
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
-    EXPECT_CALL(pMockInterface,asyncConnect(_,_,1,sinkID,CF_ANALOG)).WillOnce(Return(E_OK));
+    EXPECT_CALL(pMockInterface,asyncConnect(_,_,1,sinkID,CF_GENIVI_ANALOG)).WillOnce(Return(E_OK));
     am_Handle_s handle;
     am_connectionID_t connectionID;
-    ASSERT_EQ(E_OK, pControlReceiver.connect(handle,connectionID,CF_ANALOG,1,2));
+    ASSERT_EQ(E_OK, pControlReceiver.connect(handle,connectionID,CF_GENIVI_ANALOG,1,2));
     ASSERT_EQ(E_OK, pDatabaseHandler.changeConnectionFinal(connectionID));
-    ASSERT_EQ(E_ALREADY_EXISTS, pControlReceiver.connect(handle,connectionID,CF_ANALOG,1,2));
+    ASSERT_EQ(E_ALREADY_EXISTS, pControlReceiver.connect(handle,connectionID,CF_GENIVI_ANALOG,1,2));
     ASSERT_NE(handle.handle, 0);
     ASSERT_EQ(handle.handleType, H_CONNECT);
 }
@@ -146,7 +146,7 @@ TEST_F(routingInterfaceTest,setSinkSoundPropertyNoChange)
     am_domainID_t domainID;
     am_Handle_s handle;
     am_SoundProperty_s soundProperty;
-    soundProperty.type = SP_TREBLE;
+    soundProperty.type = SP_EXAMPLE_TREBLE;
     soundProperty.value = 23;
     std::vector<am_Handle_s> listHandles;
     pCF.createSink(sink);
@@ -244,7 +244,7 @@ TEST_F(routingInterfaceTest,setSourceVolumeNoChange)
     am_domainID_t domainID;
     am_Handle_s handle;
     am_volume_t volume = 34;
-    am_RampType_e rampType = RAMP_DIRECT;
+    am_RampType_e rampType = RAMP_GENIVI_DIRECT;
     am_time_t rampTime = 300;
     std::vector<am_Handle_s> listHandles;
     pCF.createSource(source);
@@ -270,7 +270,7 @@ TEST_F(routingInterfaceTest,setSourceVolume)
     am_domainID_t domainID;
     am_Handle_s handle;
     am_volume_t volume = 34;
-    am_RampType_e rampType = RAMP_DIRECT;
+    am_RampType_e rampType = RAMP_GENIVI_DIRECT;
     am_time_t rampTime = 300;
     std::vector<am_Handle_s> listHandles;
     pCF.createSource(source);
@@ -298,7 +298,7 @@ TEST_F(routingInterfaceTest,setSinkVolumeNoChange)
     am_domainID_t domainID;
     am_Handle_s handle;
     am_volume_t volume = 34;
-    am_RampType_e rampType = RAMP_DIRECT;
+    am_RampType_e rampType = RAMP_GENIVI_DIRECT;
     am_time_t rampTime = 300;
     std::vector<am_Handle_s> listHandles;
     pCF.createSink(sink);
@@ -324,7 +324,7 @@ TEST_F(routingInterfaceTest,setSinkVolume)
     am_domainID_t domainID;
     am_Handle_s handle;
     am_volume_t volume = 34;
-    am_RampType_e rampType = RAMP_DIRECT;
+    am_RampType_e rampType = RAMP_GENIVI_DIRECT;
     am_time_t rampTime = 300;
     std::vector<am_Handle_s> listHandles;
     pCF.createSink(sink);
@@ -361,8 +361,8 @@ TEST_F(routingInterfaceTest,connect)
     sink.domainID = 1;
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
-    EXPECT_CALL(pMockInterface,asyncConnect(_,_,1,sinkID,CF_ANALOG)).WillOnce(Return(E_OK));
-    ASSERT_EQ(E_OK, pControlReceiver.connect(handle,connectionID,CF_ANALOG,1,2));
+    EXPECT_CALL(pMockInterface,asyncConnect(_,_,1,sinkID,CF_GENIVI_ANALOG)).WillOnce(Return(E_OK));
+    ASSERT_EQ(E_OK, pControlReceiver.connect(handle,connectionID,CF_GENIVI_ANALOG,1,2));
     ASSERT_NE(handle.handle, 0);
     ASSERT_EQ(handle.handleType, H_CONNECT);
     ASSERT_EQ(E_OK, pControlReceiver.getListHandles(listHandles));
@@ -387,8 +387,8 @@ TEST_F(routingInterfaceTest,disconnect)
     sink.domainID = 1;
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
-    EXPECT_CALL(pMockInterface,asyncConnect(_,_,1,sinkID,CF_ANALOG)).WillOnce(Return(E_OK));
-    ASSERT_EQ(E_OK, pControlReceiver.connect(handle,connectionID,CF_ANALOG,1,2));
+    EXPECT_CALL(pMockInterface,asyncConnect(_,_,1,sinkID,CF_GENIVI_ANALOG)).WillOnce(Return(E_OK));
+    ASSERT_EQ(E_OK, pControlReceiver.connect(handle,connectionID,CF_GENIVI_ANALOG,1,2));
     ASSERT_EQ(E_OK, pDatabaseHandler.changeConnectionFinal(connectionID));
     EXPECT_CALL(pMockInterface,asyncDisconnect(_,connectionID)).WillOnce(Return(E_OK));
     ASSERT_EQ(E_OK, pControlReceiver.disconnect(handle,connectionID));

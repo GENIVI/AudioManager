@@ -96,7 +96,7 @@ void databasetest::createMainConnectionSetup()
         connection.sinkID = i;
         connection.sourceID = i;
         connection.delay = -1;
-        connection.connectionFormat = CF_ANALOG;
+        connection.connectionFormat = CF_GENIVI_ANALOG;
         connection.connectionID = 0;
 
         ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,forgetSink));
@@ -176,7 +176,7 @@ TEST_F(databasetest,getMainConnectionInfo)
         connection.sinkID = i;
         connection.sourceID = i;
         connection.delay = -1;
-        connection.connectionFormat = CF_ANALOG;
+        connection.connectionFormat = CF_GENIVI_ANALOG;
         connection.connectionID = 0;
 
         ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,forgetSink));
@@ -356,7 +356,7 @@ TEST_F(databasetest, peekSourceID)
     am_sourceClass_t sourceClassID, peekID;
     am_SourceClass_s sourceClass;
     am_ClassProperty_s classProperty;
-    classProperty.classProperty = CP_SOURCE_TYPE;
+    classProperty.classProperty = CP_GENIVI_SOURCE_TYPE;
     classProperty.value = 13;
     sourceClass.name = sourceName;
     sourceClass.sourceClassID = 0;
@@ -380,7 +380,7 @@ TEST_F(databasetest, peekSinkID)
     am_sinkClass_t sinkClassID, peekID;
     am_SinkClass_s sinkClass;
     am_ClassProperty_s classProperty;
-    classProperty.classProperty = CP_SOURCE_TYPE;
+    classProperty.classProperty = CP_GENIVI_SOURCE_TYPE;
     classProperty.value = 13;
     sinkClass.name = sinkName;
     sinkClass.sinkClassID = 0;
@@ -423,7 +423,7 @@ TEST_F(databasetest,crossfaders)
     crossfader.sinkID_B = sinkBID;
     crossfader.sourceID = sourceID;
     crossfader.name = "Crossfader";
-    crossfader.hotSink = HS_MIN;
+    crossfader.hotSink = HS_UNKNOWN;
 
     std::vector<am_Crossfader_s> listCrossfaders;
 
@@ -470,7 +470,7 @@ TEST_F(databasetest,crossfadersGetFromDomain)
     crossfader.sinkID_B = sinkBID;
     crossfader.sourceID = sourceID;
     crossfader.name = "Crossfader";
-    crossfader.hotSink = HS_MIN;
+    crossfader.hotSink = HS_UNKNOWN;
 
     std::vector<am_crossfaderID_t> listCrossfaders;
 
@@ -712,10 +712,10 @@ TEST_F(databasetest,getSinkClassOfSink)
     am_sinkClass_t sinkClassID;
     am_Sink_s sink;
     am_sinkID_t sinkID;
-    classProperty.classProperty = CP_SINK_TYPE;
+    classProperty.classProperty = CP_GENIVI_SINK_TYPE;
     classProperty.value = 1;
     classPropertyList.push_back(classProperty);
-    classProperty.classProperty = CP_SOURCE_TYPE;
+    classProperty.classProperty = CP_GENIVI_SOURCE_TYPE;
     classProperty.value = 4;
     classPropertyList.push_back(classProperty);
     sinkClass.name = "test";
@@ -750,10 +750,10 @@ TEST_F(databasetest,getSourceClassOfSource)
     am_sourceClass_t sourceClassID;
     am_Source_s source;
     am_sourceID_t sourceID;
-    classProperty.classProperty = CP_SINK_TYPE;
+    classProperty.classProperty = CP_GENIVI_SINK_TYPE;
     classProperty.value = 1;
     classPropertyList.push_back(classProperty);
-    classProperty.classProperty = CP_SOURCE_TYPE;
+    classProperty.classProperty = CP_GENIVI_SOURCE_TYPE;
     classProperty.value = 4;
     classPropertyList.push_back(classProperty);
     sourceClass.name = "test";
@@ -782,10 +782,10 @@ TEST_F(databasetest,removeSourceClass)
     am_SourceClass_s sourceClass;
     am_ClassProperty_s classProperty;
     am_sourceClass_t sourceClassID;
-    classProperty.classProperty = CP_SINK_TYPE;
+    classProperty.classProperty = CP_GENIVI_SINK_TYPE;
     classProperty.value = 1;
     classPropertyList.push_back(classProperty);
-    classProperty.classProperty = CP_SOURCE_TYPE;
+    classProperty.classProperty = CP_GENIVI_SOURCE_TYPE;
     classProperty.value = 4;
     classPropertyList.push_back(classProperty);
     sourceClass.name = "test";
@@ -810,10 +810,10 @@ TEST_F(databasetest,updateSourceClass)
     am_SourceClass_s sourceClass, changedClass;
     am_ClassProperty_s classProperty;
     am_sourceClass_t sourceClassID;
-    classProperty.classProperty = CP_SINK_TYPE;
+    classProperty.classProperty = CP_GENIVI_SINK_TYPE;
     classProperty.value = 1;
     classPropertyList.push_back(classProperty);
-    classProperty.classProperty = CP_SOURCE_TYPE;
+    classProperty.classProperty = CP_GENIVI_SOURCE_TYPE;
     classProperty.value = 4;
     classPropertyList.push_back(classProperty);
     sourceClass.name = "test";
@@ -843,10 +843,10 @@ TEST_F(databasetest,enterSourceClass)
     am_SourceClass_s sourceClass;
     am_ClassProperty_s classProperty;
     am_sourceClass_t sourceClassID;
-    classProperty.classProperty = CP_SINK_TYPE;
+    classProperty.classProperty = CP_GENIVI_SINK_TYPE;
     classProperty.value = 1;
     classPropertyList.push_back(classProperty);
-    classProperty.classProperty = CP_SOURCE_TYPE;
+    classProperty.classProperty = CP_GENIVI_SOURCE_TYPE;
     classProperty.value = 4;
     classPropertyList.push_back(classProperty);
     sourceClass.name = "test";
@@ -868,10 +868,10 @@ TEST_F(databasetest,enterSourceClassStatic)
     am_SourceClass_s sourceClass;
     am_ClassProperty_s classProperty;
     am_sourceClass_t sourceClassID;
-    classProperty.classProperty = CP_SINK_TYPE;
+    classProperty.classProperty = CP_GENIVI_SINK_TYPE;
     classProperty.value = 1;
     classPropertyList.push_back(classProperty);
-    classProperty.classProperty = CP_SOURCE_TYPE;
+    classProperty.classProperty = CP_GENIVI_SOURCE_TYPE;
     classProperty.value = 4;
     classPropertyList.push_back(classProperty);
     sourceClass.name = "test";
@@ -893,10 +893,10 @@ TEST_F(databasetest,removeSinkClass)
     am_SinkClass_s sinkClass;
     am_ClassProperty_s classProperty;
     am_sinkClass_t sinkClassID;
-    classProperty.classProperty = CP_SINK_TYPE;
+    classProperty.classProperty = CP_GENIVI_SINK_TYPE;
     classProperty.value = 1;
     classPropertyList.push_back(classProperty);
-    classProperty.classProperty = CP_SOURCE_TYPE;
+    classProperty.classProperty = CP_GENIVI_SOURCE_TYPE;
     classProperty.value = 4;
     classPropertyList.push_back(classProperty);
     sinkClass.name = "test";
@@ -921,10 +921,10 @@ TEST_F(databasetest,updateSinkClass)
     am_SinkClass_s sinkClass, changedClass;
     am_ClassProperty_s classProperty;
     am_sinkClass_t sinkClassID;
-    classProperty.classProperty = CP_SINK_TYPE;
+    classProperty.classProperty = CP_GENIVI_SINK_TYPE;
     classProperty.value = 1;
     classPropertyList.push_back(classProperty);
-    classProperty.classProperty = CP_SOURCE_TYPE;
+    classProperty.classProperty = CP_GENIVI_SOURCE_TYPE;
     classProperty.value = 4;
     classPropertyList.push_back(classProperty);
     sinkClass.name = "test";
@@ -954,10 +954,10 @@ TEST_F(databasetest,enterSinkClass)
     am_SinkClass_s sinkClass;
     am_ClassProperty_s classProperty;
     am_sinkClass_t sinkClassID;
-    classProperty.classProperty = CP_SINK_TYPE;
+    classProperty.classProperty = CP_GENIVI_SINK_TYPE;
     classProperty.value = 1;
     classPropertyList.push_back(classProperty);
-    classProperty.classProperty = CP_SOURCE_TYPE;
+    classProperty.classProperty = CP_GENIVI_SOURCE_TYPE;
     classProperty.value = 4;
     classPropertyList.push_back(classProperty);
     sinkClass.name = "test";
@@ -979,10 +979,10 @@ TEST_F(databasetest,enterSinkClassStatic)
     am_SinkClass_s sinkClass;
     am_ClassProperty_s classProperty;
     am_sinkClass_t sinkClassID;
-    classProperty.classProperty = CP_SINK_TYPE;
+    classProperty.classProperty = CP_GENIVI_SINK_TYPE;
     classProperty.value = 1;
     classPropertyList.push_back(classProperty);
-    classProperty.classProperty = CP_SOURCE_TYPE;
+    classProperty.classProperty = CP_GENIVI_SOURCE_TYPE;
     classProperty.value = 4;
     classPropertyList.push_back(classProperty);
     sinkClass.name = "test";
@@ -1002,7 +1002,7 @@ TEST_F(databasetest, changeSystemProperty)
     std::vector<am_SystemProperty_s> listSystemProperties, listReturn;
     am_SystemProperty_s systemProperty;
 
-    systemProperty.type = SYP_TEST;
+    systemProperty.type = SYP_UNKNOWN;
     systemProperty.value = 33;
     listSystemProperties.push_back(systemProperty);
     EXPECT_CALL(pMockInterface,cbSystemPropertyChanged(_)).Times(1); //todo: check the exact value here
@@ -1019,7 +1019,7 @@ TEST_F(databasetest, systemProperties)
     std::vector<am_SystemProperty_s> listSystemProperties, listReturn;
     am_SystemProperty_s systemProperty;
 
-    systemProperty.type = SYP_TEST;
+    systemProperty.type = SYP_UNKNOWN;
     systemProperty.value = 33;
     listSystemProperties.push_back(systemProperty);
 
@@ -1096,7 +1096,7 @@ TEST_F(databasetest, changeSourceMainSoundProperty)
     am_sourceID_t sourceID;
     pCF.createSource(source);
     am_MainSoundProperty_s property;
-    property.type = MSP_NAVIGATION_OFFSET;
+    property.type = MSP_UNKNOWN;
     property.value = 33;
     EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(1);
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
@@ -1137,7 +1137,7 @@ TEST_F(databasetest, changeSinkMainSoundProperty)
     am_sinkID_t sinkID;
     pCF.createSink(sink);
     am_MainSoundProperty_s property;
-    property.type = MSP_NAVIGATION_OFFSET;
+    property.type = MSP_UNKNOWN;
     property.value = 33;
 
     EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(1);
@@ -1220,7 +1220,7 @@ TEST_F(databasetest, changeSinkAvailability)
     pCF.createSink(sink);
     am_Availability_s availability;
     availability.availability = A_UNKNOWN;
-    availability.availabilityReason = AR_TEMPERATURE;
+    availability.availabilityReason = AR_GENIVI_TEMPERATURE;
 
     EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(1);
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
@@ -1238,7 +1238,7 @@ TEST_F(databasetest, changeSourceAvailability)
     pCF.createSource(source);
     am_Availability_s availability;
     availability.availability = A_UNKNOWN;
-    availability.availabilityReason = AR_TEMPERATURE;
+    availability.availabilityReason = AR_GENIVI_TEMPERATURE;
     source.visible = true;
 
     EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(1);
@@ -1271,7 +1271,7 @@ TEST_F(databasetest,changeMainConnectionRoute)
         connection.sinkID = i + 20;
         connection.sourceID = i + 20;
         connection.delay = -1;
-        connection.connectionFormat = CF_ANALOG;
+        connection.connectionFormat = CF_GENIVI_ANALOG;
         connection.connectionID = 0;
 
         pCF.createSink(sink);

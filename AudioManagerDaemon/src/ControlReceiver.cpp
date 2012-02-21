@@ -207,7 +207,7 @@ am_Error_e ControlReceiver::setDomainState(const am_domainID_t domainID, const a
 {
     logInfo("ControlReceiver::setDomainState got called, domainID=", domainID, "domainState=", domainState);
 
-    am_DomainState_e tempState = DS_MIN;
+    am_DomainState_e tempState = DS_UNKNOWN;
     if (mDatabaseHandler->getDomainState(domainID, tempState) != E_OK)
         return E_UNKNOWN;
     if (tempState == domainState)

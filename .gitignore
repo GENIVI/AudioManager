@@ -1,8 +1,8 @@
+CHANGELOG
+config.h
 bin/
 build/
 doc/
 packages/
 .*
-CHANGELOG
-includes/config.h
 
