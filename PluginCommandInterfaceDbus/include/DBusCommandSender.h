@@ -78,6 +78,7 @@ private:
     CommandReceiverShadow mCommandReceiverShadow;
     DBusWrapper* mDBusWrapper;
     CommandReceiveInterface* mCommandReceiveInterface;
+    bool mReady;        ///< ! if false, calls shall be ignored.
 
 
     /**

@@ -39,7 +39,7 @@ ControlSender::ControlSender(std::string controlPluginFile) :
     std::ifstream isfile(controlPluginFile.c_str());
     if (!isfile)
     {
-        logError("ControlSender::ControlSender: Controller plugin not found:",controlPluginFile);
+        logError("ControlSender::ControlSender: Controller plugin not found:", controlPluginFile);
     }
     else if (!controlPluginFile.empty())
     {
@@ -59,7 +59,8 @@ ControlSender::ControlSender(std::string controlPluginFile) :
 
 ControlSender::~ControlSender()
 {
-    if (mlibHandle) dlclose(mlibHandle);
+    if (mlibHandle)
+        dlclose(mlibHandle);
 }
 
 void ControlSender::hookAllPluginsLoaded()
@@ -267,9 +268,9 @@ void ControlSender::cbAckSetSourceSoundProperties(const am_Handle_s handle, cons
     mController->cbAckSetSourceSoundProperties(handle, error);
 }
 
-am_Error_e ControlSender::getConnectionFormatChoice(const am_sourceID_t sourceID, const am_sinkID_t sinkID, const std::vector<am_ConnectionFormat_e> listPossibleConnectionFormats, std::vector<am_ConnectionFormat_e> & listPrioConnectionFormats)
+am_Error_e am::ControlSender::getConnectionFormatChoice(const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_Route_s listRoute, const std::vector<am_ConnectionFormat_e> listPossibleConnectionFormats, std::vector<am_ConnectionFormat_e> & listPrioConnectionFormats)
 {
-    return mController->getConnectionFormatChoice(sourceID, sinkID, listPossibleConnectionFormats, listPrioConnectionFormats);
+    return mController->getConnectionFormatChoice(sourceID, sinkID, listRoute, listPossibleConnectionFormats, listPrioConnectionFormats);
 }
 
 uint16_t ControlSender::getInterfaceVersion() const

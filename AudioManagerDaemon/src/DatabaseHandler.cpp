@@ -113,7 +113,7 @@ am_Error_e DatabaseHandler::enterDomainDB(const am_Domain_s & domainData, am_dom
     assert(domainData.domainID==0);
     assert(!domainData.name.empty());
     assert(!domainData.busname.empty());
-    assert(domainData.state>=DS_MIN && domainData.state<=DS_MAX);
+    assert(domainData.state>=DS_UNKNOWN && domainData.state<=DS_MAX);
 
     //first check for a reserved domain
     sqlite3_stmt* query = NULL, *queryFinal;
@@ -177,7 +177,7 @@ am_Error_e DatabaseHandler::enterDomainDB(const am_Domain_s & domainData, am_dom
 am_Error_e DatabaseHandler::enterMainConnectionDB(const am_MainConnection_s & mainConnectionData, am_mainConnectionID_t & connectionID)
 {
     assert(mainConnectionData.mainConnectionID==0);
-    assert(mainConnectionData.connectionState>=CS_MIN && mainConnectionData.connectionState<=CS_MAX);
+    assert(mainConnectionData.connectionState>=CS_UNKNOWN && mainConnectionData.connectionState<=CS_MAX);
     assert(mainConnectionData.sinkID!=0);
     assert(mainConnectionData.sourceID!=0);
 
@@ -280,7 +280,7 @@ am_Error_e DatabaseHandler::enterSinkDB(const am_Sink_s & sinkData, am_sinkID_t 
     assert(sinkData.sinkClassID!=0);
     // \todo: need to check if class exists?
     assert(!sinkData.listConnectionFormats.empty());
-    assert(sinkData.muteState>=MS_MIN && sinkData.muteState<=MS_MAX);
+    assert(sinkData.muteState>=MS_UNKNOWN && sinkData.muteState<=MS_MAX);
 
     sqlite3_stmt *query = NULL, *queryFinal = NULL;
     int eCode = 0;
@@ -452,7 +452,7 @@ am_Error_e DatabaseHandler::enterSinkDB(const am_Sink_s & sinkData, am_sinkID_t 
 am_Error_e DatabaseHandler::enterCrossfaderDB(const am_Crossfader_s & crossfaderData, am_crossfaderID_t & crossfaderID)
 {
     assert(crossfaderData.crossfaderID<DYNAMIC_ID_BOUNDARY);
-    assert(crossfaderData.hotSink>=HS_MIN && crossfaderData.hotSink<=HS_MAX);
+    assert(crossfaderData.hotSink>=HS_UNKNOWN && crossfaderData.hotSink<=HS_MAX);
     assert(!crossfaderData.name.empty());
     assert(existSink(crossfaderData.sinkID_A));
     assert(existSink(crossfaderData.sinkID_B));
@@ -656,7 +656,7 @@ am_Error_e DatabaseHandler::enterSourceDB(const am_Source_s & sourceData, am_sou
     assert(sourceData.sourceClassID!=0);
     // \todo: need to check if class exists?
     assert(!sourceData.listConnectionFormats.empty());
-    assert(sourceData.sourceState>=SS_MIN && sourceData.sourceState<=SS_MAX);
+    assert(sourceData.sourceState>=SS_UNKNNOWN && sourceData.sourceState<=SS_MAX);
 
     sqlite3_stmt* query = NULL, *queryFinal = NULL;
     ;
@@ -902,7 +902,7 @@ am_Error_e DatabaseHandler::changeMainConnectionRouteDB(const am_mainConnectionI
 am_Error_e DatabaseHandler::changeMainConnectionStateDB(const am_mainConnectionID_t mainconnectionID, const am_ConnectionState_e connectionState)
 {
     assert(mainconnectionID!=0);
-    assert(connectionState>=CS_MIN && connectionState<=CS_MAX);
+    assert(connectionState>=CS_UNKNOWN && connectionState<=CS_MAX);
 
     sqlite3_stmt* query = NULL;
     int eCode = 0;
@@ -969,8 +969,8 @@ am_Error_e DatabaseHandler::changeSinkMainVolumeDB(const am_mainVolume_t mainVol
 am_Error_e DatabaseHandler::changeSinkAvailabilityDB(const am_Availability_s & availability, const am_sinkID_t sinkID)
 {
     assert(sinkID!=0);
-    assert(availability.availability>=A_MIN && availability.availability<=A_MAX);
-    assert(availability.availabilityReason>=AR_MIN && availability.availabilityReason<=AR_MAX);
+    assert(availability.availability>=A_UNKNOWN && availability.availability<=A_MAX);
+    assert(availability.availabilityReason>=AR_UNKNOWN && availability.availabilityReason<=AR_MAX);
 
     sqlite3_stmt* query = NULL;
     int eCode = 0;
@@ -1006,7 +1006,7 @@ am_Error_e DatabaseHandler::changeSinkAvailabilityDB(const am_Availability_s & a
 am_Error_e DatabaseHandler::changDomainStateDB(const am_DomainState_e domainState, const am_domainID_t domainID)
 {
     assert(domainID!=0);
-    assert(domainState>=DS_MIN && domainState<=DS_MAX);
+    assert(domainState>=DS_UNKNOWN && domainState<=DS_MAX);
 
     sqlite3_stmt* query = NULL;
     int eCode = 0;
@@ -1039,7 +1039,7 @@ am_Error_e DatabaseHandler::changDomainStateDB(const am_DomainState_e domainStat
 am_Error_e DatabaseHandler::changeSinkMuteStateDB(const am_MuteState_e muteState, const am_sinkID_t sinkID)
 {
     assert(sinkID!=0);
-    assert(muteState>=MS_MIN && muteState<=MS_MAX);
+    assert(muteState>=MS_UNKNOWN && muteState<=MS_MAX);
 
     sqlite3_stmt* query = NULL;
     int eCode = 0;
@@ -1074,7 +1074,7 @@ am_Error_e DatabaseHandler::changeSinkMuteStateDB(const am_MuteState_e muteState
 
 am_Error_e DatabaseHandler::changeMainSinkSoundPropertyDB(const am_MainSoundProperty_s & soundProperty, const am_sinkID_t sinkID)
 {
-    assert(soundProperty.type>=MSP_MIN && soundProperty.type<=MSP_MAX);
+    assert(soundProperty.type>=MSP_UNKNOWN && soundProperty.type<=MSP_MAX);
     assert(sinkID!=0);
 
     sqlite3_stmt* query = NULL;
@@ -1108,7 +1108,7 @@ am_Error_e DatabaseHandler::changeMainSinkSoundPropertyDB(const am_MainSoundProp
 
 am_Error_e DatabaseHandler::changeMainSourceSoundPropertyDB(const am_MainSoundProperty_s & soundProperty, const am_sourceID_t sourceID)
 {
-    assert(soundProperty.type>=MSP_MIN && soundProperty.type<=MSP_MAX);
+    assert(soundProperty.type>=MSP_UNKNOWN && soundProperty.type<=MSP_MAX);
     assert(sourceID!=0);
 
     sqlite3_stmt* query = NULL;
@@ -1144,8 +1144,8 @@ am_Error_e DatabaseHandler::changeMainSourceSoundPropertyDB(const am_MainSoundPr
 am_Error_e DatabaseHandler::changeSourceAvailabilityDB(const am_Availability_s & availability, const am_sourceID_t sourceID)
 {
     assert(sourceID!=0);
-    assert(availability.availability>=A_MIN && availability.availability<=A_MAX);
-    assert(availability.availabilityReason>=AR_MIN && availability.availabilityReason<=AR_MAX);
+    assert(availability.availability>=A_UNKNOWN && availability.availability<=A_MAX);
+    assert(availability.availabilityReason>=AR_UNKNOWN && availability.availabilityReason<=AR_MAX);
 
     sqlite3_stmt* query = NULL;
     int eCode = 0;
@@ -1180,7 +1180,7 @@ am_Error_e DatabaseHandler::changeSourceAvailabilityDB(const am_Availability_s &
 
 am_Error_e DatabaseHandler::changeSystemPropertyDB(const am_SystemProperty_s & property)
 {
-    assert(property.type>=SYP_MIN && property.type<=SYP_MAX);
+    assert(property.type>=SYP_UNKNOWN && property.type<=SYP_MAX);
     sqlite3_stmt* query = NULL;
     int eCode = 0;
     std::string command = "UPDATE " + std::string(SYSTEM_TABLE) + " set value=? WHERE type=?";
@@ -3795,7 +3795,7 @@ am_Error_e DatabaseHandler::getSoureState(const am_sourceID_t sourceID, am_Sourc
 {
     assert(sourceID!=0);
     sqlite3_stmt* query = NULL;
-    sourceState = SS_MIN;
+    sourceState = SS_UNKNNOWN;
     std::string command = "SELECT sourceState FROM " + std::string(SOURCE_TABLE) + " WHERE sourceID=" + i2s(sourceID);
     int eCode = 0;
     sqlite3_prepare_v2(mDatabase, command.c_str(), -1, &query, NULL);
@@ -3814,7 +3814,7 @@ am_Error_e DatabaseHandler::getSoureState(const am_sourceID_t sourceID, am_Sourc
 am_Error_e DatabaseHandler::changeSourceState(const am_sourceID_t sourceID, const am_SourceState_e sourceState)
 {
     assert(sourceID!=0);
-    assert(sourceState>=SS_MIN && sourceState<=SS_MAX);
+    assert(sourceState>=SS_UNKNNOWN && sourceState<=SS_MAX);
     sqlite3_stmt* query = NULL;
     std::string command = "UPDATE " + std::string(SOURCE_TABLE) + " SET sourceState=? WHERE sourceID=" + i2s(sourceID);
     int eCode = 0;
@@ -3946,7 +3946,7 @@ am_Error_e DatabaseHandler::getDomainState(const am_domainID_t domainID, am_Doma
 {
     assert(domainID!=0);
     sqlite3_stmt* query = NULL;
-    state = DS_MIN;
+    state = DS_UNKNOWN;
     std::string command = "SELECT domainState FROM " + std::string(DOMAIN_TABLE) + " WHERE domainID=" + i2s(domainID);
     int eCode = 0;
     sqlite3_prepare_v2(mDatabase, command.c_str(), -1, &query, NULL);
@@ -4164,7 +4164,7 @@ am_Error_e DatabaseHandler::changeSourceVolume(const am_sourceID_t sourceID, con
 
 am_Error_e DatabaseHandler::changeSourceSoundPropertyDB(const am_SoundProperty_s & soundProperty, const am_sourceID_t sourceID)
 {
-    assert(soundProperty.type>=SP_MIN && soundProperty.type<=SP_MAX);
+    assert(soundProperty.type>=SP_UNKNOWN && soundProperty.type<=SP_MAX);
     assert(sourceID!=0);
 
     sqlite3_stmt* query = NULL;
@@ -4199,7 +4199,7 @@ am_Error_e DatabaseHandler::changeSourceSoundPropertyDB(const am_SoundProperty_s
 
 am_Error_e DatabaseHandler::changeSinkSoundPropertyDB(const am_SoundProperty_s & soundProperty, const am_sinkID_t sinkID)
 {
-    assert(soundProperty.type>=SP_MIN && soundProperty.type<=SP_MAX);
+    assert(soundProperty.type>=SP_UNKNOWN && soundProperty.type<=SP_MAX);
     assert(sinkID!=0);
 
     sqlite3_stmt* query = NULL;
@@ -4233,7 +4233,7 @@ am_Error_e DatabaseHandler::changeSinkSoundPropertyDB(const am_SoundProperty_s &
 am_Error_e DatabaseHandler::changeCrossFaderHotSink(const am_crossfaderID_t crossfaderID, const am_HotSink_e hotsink)
 {
     assert(crossfaderID!=0);
-    assert(hotsink>=HS_MIN && hotsink>=HS_MAX);
+    assert(hotsink>=HS_UNKNOWN && hotsink>=HS_MAX);
 
     sqlite3_stmt* query = NULL;
     int eCode = 0;

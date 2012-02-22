@@ -57,6 +57,7 @@ am_Error_e ControlSenderPlugin::startupController(ControlReceiveInterface *contr
     assert(controlreceiveinterface);
     mControlReceiveInterface = controlreceiveinterface;
     //here is a good place to insert SystemProperties into the database...
+    //and might be a good place to insert the Source and Sink CLasses as well
     return E_NOT_USED;
 }
 
@@ -134,7 +135,8 @@ am_Error_e ControlSenderPlugin::hookUserDisconnectionRequest(const am_mainConnec
 
 am_Error_e ControlSenderPlugin::hookUserSetMainSinkSoundProperty(const am_sinkID_t sinkID, const am_MainSoundProperty_s & soundProperty)
 {
-    if (sinkID==0) return E_NON_EXISTENT;
+    if (sinkID == 0)
+        return E_NON_EXISTENT;
 
     mainSinkSoundPropertySet set;
     set.sinkID = sinkID;
@@ -172,7 +174,7 @@ am_Error_e ControlSenderPlugin::hookUserVolumeChange(const am_sinkID_t SinkID, c
     set.sinkID = SinkID;
     set.mainVolume = newVolume;
     am_Error_e error;
-    if ((error = mControlReceiveInterface->setSinkVolume(set.handle, SinkID, newVolume, RAMP_DIRECT, 20)) != E_OK)
+    if ((error = mControlReceiveInterface->setSinkVolume(set.handle, SinkID, newVolume, RAMP_GENIVI_DIRECT, 20)) != E_OK)
     {
         return error;
     }
@@ -189,7 +191,7 @@ am_Error_e ControlSenderPlugin::hookUserVolumeStep(const am_sinkID_t SinkID, con
     am_Sink_s sink;
     mControlReceiveInterface->getSinkInfoDB(SinkID, sink);
     set.mainVolume = sink.volume + increment;
-    if ((error = mControlReceiveInterface->setSinkVolume(set.handle, SinkID, set.mainVolume, RAMP_DIRECT, 20)) != E_OK)
+    if ((error = mControlReceiveInterface->setSinkVolume(set.handle, SinkID, set.mainVolume, RAMP_GENIVI_DIRECT, 20)) != E_OK)
     {
         return error;
     }
@@ -438,10 +440,11 @@ void ControlSenderPlugin::cbAckSetSinkSoundProperties(const am_Handle_s handle, 
     (void) handle;
 }
 
-am_Error_e ControlSenderPlugin::getConnectionFormatChoice(const am_sourceID_t sourceID, const am_sinkID_t sinkID, const std::vector<am_ConnectionFormat_e> listPossibleConnectionFormats, std::vector<am_ConnectionFormat_e>& listPrioConnectionFormats)
+am_Error_e ControlSenderPlugin::getConnectionFormatChoice(const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_Route_s listRoute, const std::vector<am_ConnectionFormat_e> listPossibleConnectionFormats, std::vector<am_ConnectionFormat_e> & listPrioConnectionFormats)
 {
     (void) sourceID;
     (void) sinkID;
+    (void) listRoute;
     //ok, this is cheap. In a real product you have your preferences, right?
     listPrioConnectionFormats = listPossibleConnectionFormats;
     return (E_OK);

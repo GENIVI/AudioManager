@@ -28,14 +28,18 @@
 
 //todo: create systemd compatibility
 //todo: all communication like all plugins loaded etc...
-//todo: seperate documentation of test from normal project
 //todo: check the startup sequence. Dbus shall be activated last...
 //todo: there is a bug in the visible flags of sinks and sources. fix it.
-//todo: make sure all configurations are tested
 //todo: clean up startup sequences controller, command and routing interfaces----
+//todo: package generation only works if package directory exists...
 
 #include <config.h>
+#ifdef  WITH_TELNET
+#include "TelnetServer.h"
+#endif
+#ifdef WITH_SOCKETHANDLER_LOOP
 #include <SocketHandler.h>
+#endif
 #ifdef WITH_DBUS_WRAPPER
 #include <dbus/DBusWrapper.h>
 #endif
@@ -47,7 +51,6 @@
 #include "CommandReceiver.h"
 #include "ControlReceiver.h"
 #include "DatabaseObserver.h"
-#include "TelnetServer.h"
 #include "Router.h"
 #include "DLTWrapper.h"
 #include <sys/resource.h>
@@ -89,11 +92,11 @@ unsigned int telnetport = DEFAULT_TELNETPORT;
 unsigned int maxConnections = MAX_TELNETCONNECTIONS;
 int fd0, fd1, fd2;
 
-void OutOfMemoryHandler ()
+void OutOfMemoryHandler()
 {
     logError("No more memory - bye");
     //todo: add gracefull dead here. Do what can be done persistence wise
-    exit (1);
+    exit(1);
 }
 
 void daemonize()
@@ -225,9 +228,9 @@ static void signalHandler(int sig, siginfo_t *siginfo, void *context)
 int main(int argc, char *argv[])
 {
     DLTWrapper::instance()->registerApp("AudioManagerDeamon", "AudioManagerDeamon");
-    DLTWrapper::instance()->registerContext(AudioManager,"Main", "Main Context");
+    DLTWrapper::instance()->registerContext(AudioManager, "Main", "Main Context");
     logInfo("The Audiomanager is started");
-    log(&AudioManager,DLT_LOG_ERROR,"The version of the Audiomanager",DAEMONVERSION);
+    log(&AudioManager, DLT_LOG_ERROR, "The version of the Audiomanager", DAEMONVERSION);
 
     listCommandPluginDirs.push_back(std::string(DEFAULT_PLUGIN_COMMAND_DIR));
     listRoutingPluginDirs.push_back(std::string(DEFAULT_PLUGIN_ROUTING_DIR));
@@ -279,7 +282,7 @@ int main(int argc, char *argv[])
     RoutingReceiver iRoutingReceiver(&iDatabaseHandler, &iRoutingSender, &iControlSender, &iSocketHandler, &iDBusWrapper);
     ControlReceiver iControlReceiver(&iDatabaseHandler, &iRoutingSender, &iCommandSender, &iSocketHandler, &iRouter);
 #ifdef WITH_TELNET
-    TelnetServer iTelnetServer(&iSocketHandler,&iCommandSender,&iCommandReceiver,&iRoutingSender,&iRoutingReceiver,&iControlSender,&iControlReceiver,&iDatabaseHandler,&iRouter,telnetport,maxConnections);
+    TelnetServer iTelnetServer(&iSocketHandler, &iCommandSender, &iCommandReceiver, &iRoutingSender, &iRoutingReceiver, &iControlSender, &iControlReceiver, &iDatabaseHandler, &iRouter, telnetport, maxConnections);
 #endif
 #else /*WITH_SOCKETHANDLER_LOOP */
     CommandReceiver iCommandReceiver(&iDatabaseHandler,&iControlSender,&iDBusWrapper);
@@ -296,7 +299,7 @@ int main(int argc, char *argv[])
 #endif /*WITH_DBUS_WRAPPER*/
 
 #ifdef WITH_TELNET
-    DatabaseObserver iObserver(&iCommandSender, &iRoutingSender,&iTelnetServer);
+    DatabaseObserver iObserver(&iCommandSender, &iRoutingSender, &iTelnetServer);
 #else
     DatabaseObserver iObserver(&iCommandSender, &iRoutingSender);
 #endif

@@ -118,7 +118,7 @@ void* AsyncRoutingSender::InterruptEvents(void *data)
         {
             am_sourceID_t sourceID;
 
-            am_InterruptState_e state=IS_MIN;
+            am_InterruptState_e state=IS_UNKNOWN;
             dbus_message_iter_init(msg, &args);
             dbus_message_iter_get_basic(&args,(void*) &sourceID);
             reply = dbus_message_new_method_return(msg);
@@ -763,17 +763,17 @@ std::vector<am_Sink_s> AsyncRoutingSender::createSinkTable()
     std::vector<am_Sink_s> table;
     am_Sink_s item;
     am_SoundProperty_s sp;
-    sp.type = SP_BASS;
+    sp.type = SP_EXAMPLE_BASS;
     sp.value = 0;
 
     std::vector<am_MainSoundProperty_s> listMainSoundProperties;
     am_MainSoundProperty_s msp;
-    msp.type = MSP_BASS;
+    msp.type = MSP_EXAMPLE_BASS;
     msp.value = 5;
     listMainSoundProperties.push_back(msp);
-    msp.type = MSP_MID;
+    msp.type = MSP_EXAMPLE_MID;
     listMainSoundProperties.push_back(msp);
-    msp.type = MSP_TREBLE;
+    msp.type = MSP_EXAMPLE_TREBLE;
     listMainSoundProperties.push_back(msp);
     for (int16_t i = 0; i <= 10; i++)
     {
@@ -789,7 +789,7 @@ std::vector<am_Sink_s> AsyncRoutingSender::createSinkTable()
         item.listSoundProperties.push_back(sp);
         item.listMainSoundProperties = listMainSoundProperties;
         item.visible = true;
-        item.listConnectionFormats.push_back(CF_ANALOG);
+        item.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
         item.muteState = MS_MUTED;
         item.mainVolume = 0;
         table.push_back(item);
@@ -815,7 +815,7 @@ std::vector<am_Source_s> AsyncRoutingSender::createSourceTable()
         item.visible = true;
         item.available.availability = A_AVAILABLE;
         item.available.availabilityReason = AR_UNKNOWN;
-        item.listConnectionFormats.push_back(CF_ANALOG);
+        item.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
         table.push_back(item);
     }
     return (table);

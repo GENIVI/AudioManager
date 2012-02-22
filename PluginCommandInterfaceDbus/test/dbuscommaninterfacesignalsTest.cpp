@@ -70,8 +70,8 @@ void* cbSinkAdded(void*)
     mysink.name = "MySink";
     mysink.sinkID = 23;
     mysink.availability.availability = A_MAX;
-    mysink.availability.availabilityReason = AR_MIN;
-    mysink.muteState = MS_MIN;
+    mysink.availability.availabilityReason = AR_UNKNOWN;
+    mysink.muteState = MS_UNKNOWN;
     mysink.sinkClassID = 3;
     mysink.volume = 234;
     list.push_back(mysink);
@@ -96,7 +96,7 @@ void* cbSourceAdded(void*)
     myource.name = "MySink";
     myource.sourceID = 42;
     myource.availability.availability = A_MAX;
-    myource.availability.availabilityReason = AR_MIN;
+    myource.availability.availabilityReason = AR_UNKNOWN;
     myource.sourceClassID = 15;
     list.push_back(myource);
     DbusCommandSender sender;
@@ -120,7 +120,7 @@ void* cbSourceRemoved(void*)
     myource.name = "MySink";
     myource.sourceID = 42;
     myource.availability.availability = A_MAX;
-    myource.availability.availabilityReason = AR_MIN;
+    myource.availability.availabilityReason = AR_UNKNOWN;
     myource.sourceClassID = 15;
     list.push_back(myource);
     DbusCommandSender sender;
@@ -146,8 +146,8 @@ void* cbSinkRemoved(void*)
     mysink.name = "MySink";
     mysink.sinkID = 23;
     mysink.availability.availability = A_MAX;
-    mysink.availability.availabilityReason = AR_MIN;
-    mysink.muteState = MS_MIN;
+    mysink.availability.availabilityReason = AR_UNKNOWN;
+    mysink.muteState = MS_UNKNOWN;
     mysink.sinkClassID = 3;
     mysink.volume = 234;
     list.push_back(mysink);
@@ -226,7 +226,7 @@ void* MainSinkSoundPropertyChanged(void*)
     backdoor.setDbusConnection(&sender, co);
     am_sinkID_t sinkID = 3;
     am_MainSoundProperty_s soundProperty;
-    soundProperty.type = MSP_TEST;
+    soundProperty.type = MSP_UNKNOWN;
     soundProperty.value = 23;
     sender.cbMainSinkSoundPropertyChanged(sinkID, soundProperty);
     return (NULL);
@@ -245,7 +245,7 @@ void* MainSourceSoundPropertyChanged(void*)
     backdoor.setDbusConnection(&sender, co);
     am_sourceID_t sourceID = 35;
     am_MainSoundProperty_s soundProperty;
-    soundProperty.type = MSP_TEST;
+    soundProperty.type = MSP_UNKNOWN;
     soundProperty.value = 233;
     sender.cbMainSourceSoundPropertyChanged(sourceID, soundProperty);
     return (NULL);
@@ -330,7 +330,7 @@ void* SystemPropertyChanged(void*)
     DBusConnection* co = dbus_bus_get(DBUS_BUS_SESSION, &error);
     backdoor.setDbusConnection(&sender, co);
     am_SystemProperty_s property;
-    property.type = SYP_TEST;
+    property.type = SYP_UNKNOWN;
     property.value = 355;
     sender.cbSystemPropertyChanged(property);
     return (NULL);

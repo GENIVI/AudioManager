@@ -58,7 +58,8 @@ DbusCommandSender::DbusCommandSender() :
         mDBUSMessageHandler(), //
         mCommandReceiverShadow(), //
         mDBusWrapper(NULL), //
-        mCommandReceiveInterface(NULL)
+        mCommandReceiveInterface(NULL), //
+        mReady(false)
 {
     DLTWrapper::instance()->registerContext(commandDbus, "DBP", "DBus Plugin");
     log(&commandDbus, DLT_LOG_INFO, "DbusCommandSender constructor called");
@@ -88,6 +89,7 @@ am_Error_e DbusCommandSender::startupInterface(CommandReceiveInterface* commandr
 am_Error_e DbusCommandSender::stopInterface()
 {
     log(&commandDbus, DLT_LOG_INFO, "stopInterface called");
+    mReady = false;
     /**
      * todo: finish DbusCommandSender::stopInterface(), what needs to be done?
      */
@@ -97,6 +99,7 @@ am_Error_e DbusCommandSender::stopInterface()
 am_Error_e DbusCommandSender::cbCommunicationReady()
 {
     log(&commandDbus, DLT_LOG_INFO, "cbCommunicationReady called");
+    mReady = true;
     /**
      * todo: implement DbusCommandSender::cbCommunicationReady()
      */
@@ -106,6 +109,7 @@ am_Error_e DbusCommandSender::cbCommunicationReady()
 am_Error_e DbusCommandSender::cbCommunicationRundown()
 {
     log(&commandDbus, DLT_LOG_INFO, "cbCommunicationRundown called");
+    mReady = false;
     /**
      * todo: implement DbusCommandSender::cbCommunicationRundown()
      */
@@ -116,8 +120,11 @@ void DbusCommandSender::cbNumberOfMainConnectionsChanged()
 {
     log(&commandDbus, DLT_LOG_INFO, "cbNumberOfMainConnectionsChanged called");
 
-    mDBUSMessageHandler.initSignal(std::string(MY_NODE), std::string("NumberOfMainConnectionsChanged"));
-    mDBUSMessageHandler.sendMessage();
+    if (mReady)
+    {
+        mDBUSMessageHandler.initSignal(std::string(MY_NODE), std::string("NumberOfMainConnectionsChanged"));
+        mDBUSMessageHandler.sendMessage();
+    }
 }
 
 void DbusCommandSender::cbNumberOfSinksChanged()
@@ -130,23 +137,27 @@ void DbusCommandSender::cbNumberOfSinksChanged()
     std::sort(newListSinks.begin(), newListSinks.end(), sortBySinkID());
     std::set_symmetric_difference(newListSinks.begin(), newListSinks.end(), mlistSinks.begin(), mlistSinks.end(), std::back_inserter(diffList), sortBySinkID());
     assert(diffList.size()==1);
-    if (newListSinks.size() > mlistSinks.size())
+    if (mReady)
     {
-        mDBUSMessageHandler.initSignal(std::string(MY_NODE), "SinkAdded");
-        mDBUSMessageHandler.append(diffList[0]);
+        if (newListSinks.size() > mlistSinks.size())
+        {
+            mDBUSMessageHandler.initSignal(std::string(MY_NODE), "SinkAdded");
+            mDBUSMessageHandler.append(diffList[0]);
 
-        log(&commandDbus, DLT_LOG_INFO, "send signal SinkAdded");
+            log(&commandDbus, DLT_LOG_INFO, "send signal SinkAdded");
+
+        }
+        else
+        {
+            mDBUSMessageHandler.initSignal(std::string(MY_NODE), "SinkRemoved");
+            mDBUSMessageHandler.append(diffList.begin()->sinkID);
+
+            log(&commandDbus, DLT_LOG_INFO, "send signal SinkRemoved");
+        }
+        mDBUSMessageHandler.sendMessage();
     }
-    else
-    {
-        mDBUSMessageHandler.initSignal(std::string(MY_NODE), "SinkRemoved");
-        mDBUSMessageHandler.append(diffList.begin()->sinkID);
-
-        log(&commandDbus, DLT_LOG_INFO, "send signal SinkRemoved");
-    }
-
-    mDBUSMessageHandler.sendMessage();
     mlistSinks = newListSinks;
+
 }
 
 void DbusCommandSender::cbNumberOfSourcesChanged()
@@ -159,22 +170,25 @@ void DbusCommandSender::cbNumberOfSourcesChanged()
     std::sort(newlistSources.begin(), newlistSources.end(), sortBySourceID());
     std::set_symmetric_difference(newlistSources.begin(), newlistSources.end(), mlistSources.begin(), mlistSources.end(), std::back_inserter(diffList), sortBySourceID());
     assert(diffList.size()==1);
-    if (newlistSources.size() > mlistSources.size())
+    if (mReady)
     {
-        mDBUSMessageHandler.initSignal(std::string(MY_NODE), "SourceAdded");
-        mDBUSMessageHandler.append(diffList[0]);
+        if (newlistSources.size() > mlistSources.size())
+        {
+            mDBUSMessageHandler.initSignal(std::string(MY_NODE), "SourceAdded");
+            mDBUSMessageHandler.append(diffList[0]);
 
-        log(&commandDbus, DLT_LOG_INFO, "send signal SourceAdded");
+            log(&commandDbus, DLT_LOG_INFO, "send signal SourceAdded");
+        }
+        else
+        {
+            mDBUSMessageHandler.initSignal(std::string(MY_NODE), "SourceRemoved");
+            mDBUSMessageHandler.append((dbus_uint16_t) diffList.begin()->sourceID);
+
+            log(&commandDbus, DLT_LOG_INFO, "send signal SourceRemoved");
+        }
+
+        mDBUSMessageHandler.sendMessage();
     }
-    else
-    {
-        mDBUSMessageHandler.initSignal(std::string(MY_NODE), "SourceRemoved");
-        mDBUSMessageHandler.append((dbus_uint16_t) diffList.begin()->sourceID);
-
-        log(&commandDbus, DLT_LOG_INFO, "send signal SourceRemoved");
-    }
-
-    mDBUSMessageHandler.sendMessage();
     mlistSources = newlistSources;
 }
 
@@ -182,105 +196,138 @@ void DbusCommandSender::cbNumberOfSinkClassesChanged()
 {
     log(&commandDbus, DLT_LOG_INFO, "cbNumberOfSinkClassesChanged called");
 
-    mDBUSMessageHandler.initSignal(std::string(MY_NODE), std::string("NumberOfSinkClassesChanged"));
-    mDBUSMessageHandler.sendMessage();
+    if (mReady)
+    {
+        mDBUSMessageHandler.initSignal(std::string(MY_NODE), std::string("NumberOfSinkClassesChanged"));
+        mDBUSMessageHandler.sendMessage();
+    }
 }
 
 void DbusCommandSender::cbNumberOfSourceClassesChanged()
 {
     log(&commandDbus, DLT_LOG_INFO, "cbNumberOfSourceClassesChanged called");
 
-    mDBUSMessageHandler.initSignal(std::string(MY_NODE), std::string("NumberOfSourceClassesChanged"));
-    mDBUSMessageHandler.sendMessage();
+    if (mReady)
+    {
+        mDBUSMessageHandler.initSignal(std::string(MY_NODE), std::string("NumberOfSourceClassesChanged"));
+        mDBUSMessageHandler.sendMessage();
+    }
 }
 
 void DbusCommandSender::cbMainConnectionStateChanged(const am_mainConnectionID_t connectionID, const am_ConnectionState_e connectionState)
 {
     log(&commandDbus, DLT_LOG_INFO, "cbMainConnectionStateChanged called, connectionID=", connectionID, "connectionState=", connectionState);
 
-    mDBUSMessageHandler.initSignal(std::string(MY_NODE), std::string("MainConnectionStateChanged"));
-    mDBUSMessageHandler.append((dbus_uint16_t) connectionID);
-    mDBUSMessageHandler.append((dbus_int16_t) connectionState);
-    mDBUSMessageHandler.sendMessage();
+    if (mReady)
+    {
+        mDBUSMessageHandler.initSignal(std::string(MY_NODE), std::string("MainConnectionStateChanged"));
+        mDBUSMessageHandler.append((dbus_uint16_t) connectionID);
+        mDBUSMessageHandler.append((dbus_int16_t) connectionState);
+        mDBUSMessageHandler.sendMessage();
+    }
 }
 
 void DbusCommandSender::cbMainSinkSoundPropertyChanged(const am_sinkID_t sinkID, const am_MainSoundProperty_s SoundProperty)
 {
     log(&commandDbus, DLT_LOG_INFO, "cbMainSinkSoundPropertyChanged called, sinkID", sinkID, "SoundProperty.type", SoundProperty.type, "SoundProperty.value", SoundProperty.value);
 
-    mDBUSMessageHandler.initSignal(std::string(MY_NODE), std::string("MainSinkSoundPropertyChanged"));
-    mDBUSMessageHandler.append((dbus_uint16_t) sinkID);
-    mDBUSMessageHandler.append(SoundProperty);
-    mDBUSMessageHandler.sendMessage();
+    if (mReady)
+    {
+        mDBUSMessageHandler.initSignal(std::string(MY_NODE), std::string("MainSinkSoundPropertyChanged"));
+        mDBUSMessageHandler.append((dbus_uint16_t) sinkID);
+        mDBUSMessageHandler.append(SoundProperty);
+        mDBUSMessageHandler.sendMessage();
+    }
 }
 
 void DbusCommandSender::cbMainSourceSoundPropertyChanged(const am_sourceID_t sourceID, const am_MainSoundProperty_s & SoundProperty)
 {
     log(&commandDbus, DLT_LOG_INFO, "cbMainSourceSoundPropertyChanged called, sourceID", sourceID, "SoundProperty.type", SoundProperty.type, "SoundProperty.value", SoundProperty.value);
 
-    mDBUSMessageHandler.initSignal(std::string(MY_NODE), std::string("MainSourceSoundPropertyChanged"));
-    mDBUSMessageHandler.append((dbus_uint16_t) sourceID);
-    mDBUSMessageHandler.append(SoundProperty);
-    mDBUSMessageHandler.sendMessage();
+    if (mReady)
+    {
+        mDBUSMessageHandler.initSignal(std::string(MY_NODE), std::string("MainSourceSoundPropertyChanged"));
+        mDBUSMessageHandler.append((dbus_uint16_t) sourceID);
+        mDBUSMessageHandler.append(SoundProperty);
+        mDBUSMessageHandler.sendMessage();
+    }
 }
 
 void DbusCommandSender::cbSinkAvailabilityChanged(const am_sinkID_t sinkID, const am_Availability_s & availability)
 {
     log(&commandDbus, DLT_LOG_INFO, "cbSinkAvailabilityChanged called, sinkID", sinkID, "availability.availability", availability.availability, "SoundProperty.reason", availability.availabilityReason);
 
-    mDBUSMessageHandler.initSignal(std::string(MY_NODE), std::string("SinkAvailabilityChanged"));
-    mDBUSMessageHandler.append((dbus_uint16_t) sinkID);
-    mDBUSMessageHandler.append(availability);
-    mDBUSMessageHandler.sendMessage();
+    if (mReady)
+    {
+        mDBUSMessageHandler.initSignal(std::string(MY_NODE), std::string("SinkAvailabilityChanged"));
+        mDBUSMessageHandler.append((dbus_uint16_t) sinkID);
+        mDBUSMessageHandler.append(availability);
+        mDBUSMessageHandler.sendMessage();
+    }
 }
 
 void DbusCommandSender::cbSourceAvailabilityChanged(const am_sourceID_t sourceID, const am_Availability_s & availability)
 {
     log(&commandDbus, DLT_LOG_INFO, "cbSourceAvailabilityChanged called, sourceID", sourceID, "availability.availability", availability.availability, "SoundProperty.reason", availability.availabilityReason);
 
-    mDBUSMessageHandler.initSignal(std::string(MY_NODE), std::string("SourceAvailabilityChanged"));
-    mDBUSMessageHandler.append((dbus_uint16_t) sourceID);
-    mDBUSMessageHandler.append(availability);
-    mDBUSMessageHandler.sendMessage();
+    if (mReady)
+    {
+        mDBUSMessageHandler.initSignal(std::string(MY_NODE), std::string("SourceAvailabilityChanged"));
+        mDBUSMessageHandler.append((dbus_uint16_t) sourceID);
+        mDBUSMessageHandler.append(availability);
+        mDBUSMessageHandler.sendMessage();
+    }
 }
 
 void DbusCommandSender::cbVolumeChanged(const am_sinkID_t sinkID, const am_mainVolume_t volume)
 {
     log(&commandDbus, DLT_LOG_INFO, "cbVolumeChanged called, sinkID", sinkID, "volume", volume);
 
-    mDBUSMessageHandler.initSignal(std::string(MY_NODE), std::string("VolumeChanged"));
-    mDBUSMessageHandler.append((dbus_uint16_t) sinkID);
-    mDBUSMessageHandler.append((dbus_int16_t) volume);
-    mDBUSMessageHandler.sendMessage();
+    if (mReady)
+    {
+        mDBUSMessageHandler.initSignal(std::string(MY_NODE), std::string("VolumeChanged"));
+        mDBUSMessageHandler.append((dbus_uint16_t) sinkID);
+        mDBUSMessageHandler.append((dbus_int16_t) volume);
+        mDBUSMessageHandler.sendMessage();
+    }
 }
 
 void DbusCommandSender::cbSinkMuteStateChanged(const am_sinkID_t sinkID, const am_MuteState_e muteState)
 {
     log(&commandDbus, DLT_LOG_INFO, "cbSinkMuteStateChanged called, sinkID", sinkID, "muteState", muteState);
 
-    mDBUSMessageHandler.initSignal(std::string(MY_NODE), std::string("SinkMuteStateChanged"));
-    mDBUSMessageHandler.append((dbus_uint16_t) sinkID);
-    mDBUSMessageHandler.append((dbus_int16_t) muteState);
-    mDBUSMessageHandler.sendMessage();
+    if (mReady)
+    {
+        mDBUSMessageHandler.initSignal(std::string(MY_NODE), std::string("SinkMuteStateChanged"));
+        mDBUSMessageHandler.append((dbus_uint16_t) sinkID);
+        mDBUSMessageHandler.append((dbus_int16_t) muteState);
+        mDBUSMessageHandler.sendMessage();
+    }
 }
 
 void DbusCommandSender::cbSystemPropertyChanged(const am_SystemProperty_s & SystemProperty)
 {
     log(&commandDbus, DLT_LOG_INFO, "cbSystemPropertyChanged called, SystemProperty.type", SystemProperty.type, "SystemProperty.value", SystemProperty.value);
 
-    mDBUSMessageHandler.initSignal(std::string(MY_NODE), std::string("SystemPropertyChanged"));
-    mDBUSMessageHandler.append(SystemProperty);
-    mDBUSMessageHandler.sendMessage();
+    if (mReady)
+    {
+        mDBUSMessageHandler.initSignal(std::string(MY_NODE), std::string("SystemPropertyChanged"));
+        mDBUSMessageHandler.append(SystemProperty);
+        mDBUSMessageHandler.sendMessage();
+    }
 }
 
 void am::DbusCommandSender::cbTimingInformationChanged(const am_mainConnectionID_t mainConnectionID, const am_timeSync_t time)
 {
     log(&commandDbus, DLT_LOG_INFO, "cbTimingInformationChanged called, mainConnectionID=", mainConnectionID, "time=", time);
 
-    mDBUSMessageHandler.initSignal(std::string(MY_NODE), std::string("TimingInformationChanged"));
-    mDBUSMessageHandler.append((dbus_uint16_t) mainConnectionID);
-    mDBUSMessageHandler.append((dbus_int16_t) time);
-    mDBUSMessageHandler.sendMessage();
+    if (mReady)
+    {
+        mDBUSMessageHandler.initSignal(std::string(MY_NODE), std::string("TimingInformationChanged"));
+        mDBUSMessageHandler.append((dbus_uint16_t) mainConnectionID);
+        mDBUSMessageHandler.append((dbus_int16_t) time);
+        mDBUSMessageHandler.sendMessage();
+    }
 }
 
 uint16_t DbusCommandSender::getInterfaceVersion() const

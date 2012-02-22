@@ -112,6 +112,8 @@ public:
     am_Error_e getListSystemProperties(std::vector<am_SystemProperty_s>& listSystemProperties) const;
     void setRoutingReady();
     void setCommandReady();
+    void setCommandRundown();
+    void setRoutingRundown();
     am_Error_e getSocketHandler(SocketHandler*& socketHandler);
     uint16_t getInterfaceVersion() const;
 

@@ -57,8 +57,14 @@ am_Error_e Router::getRoute(const bool onlyfree, const am_sourceID_t sourceID, c
         std::vector<am_ConnectionFormat_e> listFormats, listPriorityConnectionFormats;
         listPossibleConnectionFormats(sourceID, sinkID, listFormats);
 
+        //dummy route
+        am_Route_s route;
+        route.sinkID = sinkID;
+        route.sourceID = sourceID;
+        route.route.clear();
+
         //get the prio of the Controller:
-        mControlSender->getConnectionFormatChoice(sourceID, sinkID, listFormats, listPriorityConnectionFormats);
+        mControlSender->getConnectionFormatChoice(sourceID, sinkID, route, listFormats, listPriorityConnectionFormats);
 
         //no possible connection, so no route ! But we report OK since there is no fault ...
         if (listPriorityConnectionFormats.empty())
@@ -144,7 +150,7 @@ am_Error_e Router::getRoute(const bool onlyfree, const am_sourceID_t sourceID, c
         //Step through the routes and try to use always the best connectionFormat
         std::vector<am_RoutingElement_s>::iterator routingInterator = actualRoutingElement.begin();
         gatewayIterator = listGatewayID.begin();
-        if (findBestWay(actualRoutingElement, routingInterator, gatewayIterator) != E_OK)
+        if (findBestWay(sinkID, sourceID, actualRoutingElement, routingInterator, gatewayIterator) != E_OK)
         {
             continue;
         }
@@ -170,7 +176,7 @@ void Router::listPossibleConnectionFormats(const am_sourceID_t sourceID, const a
     set_intersection(listSourceFormats.begin(), listSourceFormats.end(), listSinkFormats.begin(), listSinkFormats.end(), inserter);
 }
 
-am_Error_e Router::findBestWay(std::vector<am_RoutingElement_s> & listRoute, std::vector<am_RoutingElement_s>::iterator routeIterator, std::vector<am_gatewayID_t>::iterator gatewayIterator)
+am_Error_e Router::findBestWay(am_sinkID_t sinkID, am_sourceID_t sourceID, std::vector<am_RoutingElement_s> & listRoute, std::vector<am_RoutingElement_s>::iterator routeIterator, std::vector<am_gatewayID_t>::iterator gatewayIterator)
 {
     am_Error_e returnError = E_NOT_POSSIBLE;
     std::vector<am_ConnectionFormat_e> listConnectionFormats;
@@ -198,8 +204,13 @@ am_Error_e Router::findBestWay(std::vector<am_RoutingElement_s> & listRoute, std
         listMergeConnectionFormats = listConnectionFormats;
     }
 
+    am_Route_s route;
+    route.sinkID = sinkID;
+    route.sourceID = sourceID;
+    route.route = listRoute;
+
     //let the controller decide:
-    mControlSender->getConnectionFormatChoice(routeIterator->sourceID, routeIterator->sinkID, listMergeConnectionFormats, listPriorityConnectionFormats);
+    mControlSender->getConnectionFormatChoice(routeIterator->sourceID, routeIterator->sinkID, route, listMergeConnectionFormats, listPriorityConnectionFormats);
 
     //we have the list sorted after prios - now we try one after the other with the next part of the route
     std::vector<am_ConnectionFormat_e>::iterator connectionFormatIterator = listPriorityConnectionFormats.begin();
@@ -219,7 +230,7 @@ am_Error_e Router::findBestWay(std::vector<am_RoutingElement_s> & listRoute, std
     for (; connectionFormatIterator != listPriorityConnectionFormats.end(); ++connectionFormatIterator)
     {
         routeIterator->connectionFormat = *connectionFormatIterator;
-        if ((returnError = findBestWay(listRoute, nextIterator, gatewayIterator)) == E_OK)
+        if ((returnError = findBestWay(sinkID, sourceID, listRoute, nextIterator, gatewayIterator)) == E_OK)
         {
             break;
         }

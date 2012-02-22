@@ -176,8 +176,8 @@ TEST_F(controlInterfaceTest,ackConnect)
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
 
     //when asyncConnect is called, we expect a call on the routingInterface
-    EXPECT_CALL(pMockRoutingInterface,asyncConnect(_,1,2,2,CF_STEREO)).WillOnce(Return(E_OK));
-    ASSERT_EQ(E_OK, pControlReceiver.connect(handle,connectionID,CF_STEREO,2,2));
+    EXPECT_CALL(pMockRoutingInterface,asyncConnect(_,1,2,2,CF_GENIVI_STEREO)).WillOnce(Return(E_OK));
+    ASSERT_EQ(E_OK, pControlReceiver.connect(handle,connectionID,CF_GENIVI_STEREO,2,2));
 
     //The handle should have the correct type
     ASSERT_EQ(handle.handleType, H_CONNECT);
@@ -206,7 +206,7 @@ TEST_F(controlInterfaceTest,ackConnect)
     ASSERT_TRUE(!connectionList.empty());
 
     //no we try the same, but do expect a no_change answer directly and no call because connection already exists
-    ASSERT_EQ(E_ALREADY_EXISTS, pControlReceiver.connect(handle,connectionID,CF_STEREO,2,2));
+    ASSERT_EQ(E_ALREADY_EXISTS, pControlReceiver.connect(handle,connectionID,CF_GENIVI_STEREO,2,2));
 }
 
 TEST_F(controlInterfaceTest,ackDisconnect)
@@ -231,8 +231,8 @@ TEST_F(controlInterfaceTest,ackDisconnect)
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
 
     //now we first need to connect, we expect a call on the routing interface
-    EXPECT_CALL(pMockRoutingInterface,asyncConnect(_,1,2,2,CF_STEREO)).WillOnce(Return(E_OK));
-    ASSERT_EQ(E_OK, pControlReceiver.connect(handle,connectionID,CF_STEREO,2,2));
+    EXPECT_CALL(pMockRoutingInterface,asyncConnect(_,1,2,2,CF_GENIVI_STEREO)).WillOnce(Return(E_OK));
+    ASSERT_EQ(E_OK, pControlReceiver.connect(handle,connectionID,CF_GENIVI_STEREO,2,2));
 
     //answer with an ack to insert the connection in the database
     EXPECT_CALL(pMockControlInterface,cbAckConnect(_,E_OK)).Times(1);
@@ -334,8 +334,8 @@ TEST_F(controlInterfaceTest,SetSinkVolumeChange)
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
 
     //set the volume and expect a call on the routing interface
-    EXPECT_CALL(pMockRoutingInterface,asyncSetSinkVolume(_,2,11,RAMP_DIRECT,23)).WillOnce(Return(E_OK));
-    ASSERT_EQ(E_OK, pControlReceiver.setSinkVolume(handle,sinkID,11,RAMP_DIRECT,23));
+    EXPECT_CALL(pMockRoutingInterface,asyncSetSinkVolume(_,2,11,RAMP_GENIVI_DIRECT,23)).WillOnce(Return(E_OK));
+    ASSERT_EQ(E_OK, pControlReceiver.setSinkVolume(handle,sinkID,11,RAMP_GENIVI_DIRECT,23));
 
     //check the list of handles. The handle must be in there and have the right type
     ASSERT_EQ(E_OK, pControlReceiver.getListHandles(handlesList));
@@ -359,7 +359,7 @@ TEST_F(controlInterfaceTest,SetSinkVolumeChange)
     ASSERT_TRUE(handlesList.empty());
 
     //Now we try again, but the value is unchanged
-    ASSERT_EQ(E_NO_CHANGE, pControlReceiver.setSinkVolume(handle,sinkID,11,RAMP_DIRECT,23));
+    ASSERT_EQ(E_NO_CHANGE, pControlReceiver.setSinkVolume(handle,sinkID,11,RAMP_GENIVI_DIRECT,23));
 }
 
 TEST_F(controlInterfaceTest,ackSetSourceVolumeChange)
@@ -384,8 +384,8 @@ TEST_F(controlInterfaceTest,ackSetSourceVolumeChange)
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
 
     //change the sinkVolume, expect a call on the routingInterface
-    EXPECT_CALL(pMockRoutingInterface,asyncSetSourceVolume(_,2,11,RAMP_DIRECT,23)).WillOnce(Return(E_OK));
-    ASSERT_EQ(E_OK, pControlReceiver.setSourceVolume(handle,source.sourceID,11,RAMP_DIRECT,23));
+    EXPECT_CALL(pMockRoutingInterface,asyncSetSourceVolume(_,2,11,RAMP_GENIVI_DIRECT,23)).WillOnce(Return(E_OK));
+    ASSERT_EQ(E_OK, pControlReceiver.setSourceVolume(handle,source.sourceID,11,RAMP_GENIVI_DIRECT,23));
 
     //check the list of handles. The handle must be in there and have the right type
     ASSERT_EQ(E_OK, pControlReceiver.getListHandles(handlesList));
@@ -409,7 +409,7 @@ TEST_F(controlInterfaceTest,ackSetSourceVolumeChange)
     ASSERT_TRUE(handlesList.empty());
 
     //Now we try again, but the value is unchanged
-    ASSERT_EQ(E_NO_CHANGE, pControlReceiver.setSourceVolume(handle,source.sourceID,11,RAMP_DIRECT,23));
+    ASSERT_EQ(E_NO_CHANGE, pControlReceiver.setSourceVolume(handle,source.sourceID,11,RAMP_GENIVI_DIRECT,23));
 }
 
 TEST_F(controlInterfaceTest,ackSetSinkSoundProperty)
@@ -428,7 +428,7 @@ TEST_F(controlInterfaceTest,ackSetSinkSoundProperty)
     domain.busname = "mock";
     sink.sinkID = 2;
     sink.domainID = 1;
-    soundProperty.type = SP_BASS;
+    soundProperty.type = SP_EXAMPLE_BASS;
     soundProperty.value = 244;
 
     //setup environment, we need a domain and a sink
@@ -445,7 +445,7 @@ TEST_F(controlInterfaceTest,ackSetSinkSoundProperty)
     ASSERT_EQ(handlesList[0].handleType, H_SETSINKSOUNDPROPERTY);
 
     //read out this property. There is no change, because the ack did not arrive yet.
-    ASSERT_EQ(E_OK, pDatabaseHandler.getSinkSoundPropertyValue(2,SP_BASS,oldvalue));
+    ASSERT_EQ(E_OK, pDatabaseHandler.getSinkSoundPropertyValue(2,SP_EXAMPLE_BASS,oldvalue));
     ASSERT_EQ(sink.listSoundProperties[0].value, oldvalue);
 
     //lets send the answer and expect a call on the controlInterface
@@ -453,7 +453,7 @@ TEST_F(controlInterfaceTest,ackSetSinkSoundProperty)
     pRoutingReceiver.ackSetSinkSoundProperty(handle, E_OK);
 
     //finally, the new value must be in the database
-    ASSERT_EQ(E_OK, pDatabaseHandler.getSinkSoundPropertyValue(sinkID,SP_BASS,oldvalue));
+    ASSERT_EQ(E_OK, pDatabaseHandler.getSinkSoundPropertyValue(sinkID,SP_EXAMPLE_BASS,oldvalue));
     ASSERT_EQ(soundProperty.value, oldvalue);
 
     //and the handle must be destroyed
@@ -480,7 +480,7 @@ TEST_F(controlInterfaceTest,ackSetSourceSoundProperty)
     domain.busname = "mock";
     source.sourceID = 2;
     source.domainID = 1;
-    soundProperty.type = SP_BASS;
+    soundProperty.type = SP_EXAMPLE_BASS;
     soundProperty.value = 244;
 
     //prepare the scene
@@ -497,7 +497,7 @@ TEST_F(controlInterfaceTest,ackSetSourceSoundProperty)
     ASSERT_EQ(handlesList[0].handleType, H_SETSOURCESOUNDPROPERTY);
 
     //read out this property. There is no change, because the ack did not arrive yet.
-    ASSERT_EQ(E_OK, pDatabaseHandler.getSourceSoundPropertyValue(2,SP_BASS,oldvalue));
+    ASSERT_EQ(E_OK, pDatabaseHandler.getSourceSoundPropertyValue(2,SP_EXAMPLE_BASS,oldvalue));
     ASSERT_EQ(source.listSoundProperties[0].value, oldvalue);
 
     //lets send the answer and expect a call on the controlInterface
@@ -505,7 +505,7 @@ TEST_F(controlInterfaceTest,ackSetSourceSoundProperty)
     pRoutingReceiver.ackSetSourceSoundProperty(handle, E_OK);
 
     //finally, the new value must be in the database
-    ASSERT_EQ(E_OK, pDatabaseHandler.getSourceSoundPropertyValue(sourceID,SP_BASS,oldvalue));
+    ASSERT_EQ(E_OK, pDatabaseHandler.getSourceSoundPropertyValue(sourceID,SP_EXAMPLE_BASS,oldvalue));
     ASSERT_EQ(soundProperty.value, oldvalue);
 
     //and the handle must be destroyed
