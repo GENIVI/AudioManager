@@ -103,7 +103,7 @@ TelnetServer::TelnetServer(SocketHandler *iSocketHandler, CommandSender *iComman
         logInfo("TelnetServer::TelnetServer started listening on port", mServerPort);
 
     int a=1;
-    ioctl (mConnectFD, FIONBIO, (char *) &a); // should we use the posix call fcntl(mConnectFD, F_SETFL, O_NONBLOCK)
+    ioctl (mConnectFD, FIONBIO, (char *) &a);
     setsockopt (mConnectFD, SOL_SOCKET, SO_KEEPALIVE, (char *) &a, sizeof (a));
 
     short events = 0;
@@ -113,7 +113,6 @@ TelnetServer::TelnetServer(SocketHandler *iSocketHandler, CommandSender *iComman
 
 TelnetServer::~TelnetServer()
 {
-   mTelnetMenuHelper.setTelnetServer(NULL);
 }
 
 void TelnetServer::connectSocket(const pollfd pfd, const sh_pollHandle_t handle, void *userData)

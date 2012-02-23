@@ -66,8 +66,6 @@ public:
 
     ~CAmTelnetMenuHelper();
 
-    void setTelnetServer(TelnetServer* iTelnetServer);
-
     void newSocketConnection(int filedescriptor);
 
     void socketConnectionsClosed(int filedescriptor);

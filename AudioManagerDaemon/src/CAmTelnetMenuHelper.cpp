@@ -113,13 +113,6 @@ void CAmTelnetMenuHelper::createCommandMaps()
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::setTelnetServer(TelnetServer* iTelnetServer)
-/****************************************************************************/
-{
-    mpTelenetServer = iTelnetServer;
-}
-
-/****************************************************************************/
 void CAmTelnetMenuHelper::newSocketConnection(int filedescriptor)
 /****************************************************************************/
 {
@@ -275,7 +268,7 @@ void CAmTelnetMenuHelper::sendCurrentCmdPrompt(int & filedescriptor)
     }
     else
     {
-        logError("[TN] sendCurrentCmdPrompt, fd not found",filedescriptor);
+        logInfo("[TN] sendCurrentCmdPrompt, fd not found: ",filedescriptor);
     }
 }
 
@@ -349,10 +342,9 @@ void CAmTelnetMenuHelper::exitCommandExec(std::queue<std::string> & CmdQueue, in
     it = mCurrentMainStateMap.find(filedescriptor);
     if (it != mCurrentMainStateMap.end())
     {
-        logInfo("[TN] exitCommandExec, mpTelenetServer == NULL, fd ",filedescriptor);
-
         if (NULL != mpTelenetServer)
         {
+            logInfo("[TN] exitCommandExec, removing fd ",filedescriptor);
             mpTelenetServer->disconnectClient(filedescriptor);
             mCurrentMainStateMap.erase(it);
         }
