@@ -44,7 +44,6 @@ class RoutingReceiver: public RoutingReceiveInterface
 {
 public:
     RoutingReceiver(DatabaseHandler *iDatabaseHandler, RoutingSender *iRoutingSender, ControlSender *iControlSender, SocketHandler *iSocketHandler);
-    RoutingReceiver(DatabaseHandler *iDatabaseHandler, RoutingSender *iRoutingSender, ControlSender *iControlSender, DBusWrapper *iDBusWrapper);
     RoutingReceiver(DatabaseHandler *iDatabaseHandler, RoutingSender *iRoutingSender, ControlSender *iControlSender, SocketHandler *iSocketHandler, DBusWrapper *iDBusWrapper);
     virtual ~RoutingReceiver();
     void ackConnect(const am_Handle_s handle, const am_connectionID_t connectionID, const am_Error_e error);

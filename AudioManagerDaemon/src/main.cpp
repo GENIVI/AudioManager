@@ -37,12 +37,10 @@
 #ifdef  WITH_TELNET
 #include "TelnetServer.h"
 #endif
-#ifdef WITH_SOCKETHANDLER_LOOP
-#include <SocketHandler.h>
-#endif
 #ifdef WITH_DBUS_WRAPPER
 #include <dbus/DBusWrapper.h>
 #endif
+#include <SocketHandler.h>
 #include "DatabaseHandler.h"
 #include "ControlSender.h"
 #include "CommandSender.h"
@@ -258,16 +256,11 @@ int main(int argc, char *argv[])
     std::set_new_handler(&OutOfMemoryHandler);
 
     //Instantiate all classes. Keep in same order !
-#ifdef WITH_SOCKETHANDLER_LOOP
     SocketHandler iSocketHandler;
-#endif
+
 
 #ifdef WITH_DBUS_WRAPPER
-#ifdef WITH_SOCKETHANDLER_LOOP
     DBusWrapper iDBusWrapper(&iSocketHandler);
-#else /*WITH_SOCKETHANDLER_LOOP*/
-    DBusWrapper iDBusWrapper;
-#endif /*WITH_SOCKETHANDLER_LOOP*/
 #endif /*WITH_DBUS_WRAPPER */
 
     DatabaseHandler iDatabaseHandler(databasePath);
@@ -277,32 +270,26 @@ int main(int argc, char *argv[])
     Router iRouter(&iDatabaseHandler, &iControlSender);
 
 #ifdef WITH_DBUS_WRAPPER
-#ifdef WITH_SOCKETHANDLER_LOOP
     CommandReceiver iCommandReceiver(&iDatabaseHandler, &iControlSender, &iSocketHandler, &iDBusWrapper);
     RoutingReceiver iRoutingReceiver(&iDatabaseHandler, &iRoutingSender, &iControlSender, &iSocketHandler, &iDBusWrapper);
     ControlReceiver iControlReceiver(&iDatabaseHandler, &iRoutingSender, &iCommandSender, &iSocketHandler, &iRouter);
 #ifdef WITH_TELNET
     TelnetServer iTelnetServer(&iSocketHandler, &iCommandSender, &iCommandReceiver, &iRoutingSender, &iRoutingReceiver, &iControlSender, &iControlReceiver, &iDatabaseHandler, &iRouter, telnetport, maxConnections);
+    DatabaseObserver iObserver(&iCommandSender, &iRoutingSender, &iSocketHandler, &iTelnetServer);
+#else /*WITH_TELNET*/
+    DatabaseObserver iObserver(&iCommandSender, &iSocketHandler, &iRoutingSender);
 #endif
-#else /*WITH_SOCKETHANDLER_LOOP */
-    CommandReceiver iCommandReceiver(&iDatabaseHandler,&iControlSender,&iDBusWrapper);
-    RoutingReceiver iRoutingReceiver(&iDatabaseHandler,&iRoutingSender,&iControlSender,&iDBusWrapper);
-    ControlReceiver iControlReceiver(&iDatabaseHandler,&iRoutingSender,&iCommandSender, &iRouter);
-#endif /*WITH_SOCKETHANDLER_LOOP*/
 #else /*WITH_DBUS_WRAPPER*/
     CommandReceiver iCommandReceiver(&iDatabaseHandler,&iControlSender,&iSocketHandler);
     RoutingReceiver iRoutingReceiver(&iDatabaseHandler,&iRoutingSender,&iControlSender,&iSocketHandler);
     ControlReceiver iControlReceiver(&iDatabaseHandler,&iRoutingSender,&iCommandSender,&iSocketHandler, &iRouter);
 #ifdef WITH_TELNET
     TelnetServer iTelnetServer(&iSocketHandler,telnetport,maxConnections);
+    DatabaseObserver iObserver(&iCommandSender, &iRoutingSender, &iSocketHandler, &iTelnetServer);
+#else /*WITH_TELNET*/
+    DatabaseObserver iObserver(&iCommandSender, &iSocketHandler, &iRoutingSender);
 #endif
 #endif /*WITH_DBUS_WRAPPER*/
-
-#ifdef WITH_TELNET
-    DatabaseObserver iObserver(&iCommandSender, &iRoutingSender, &iTelnetServer);
-#else
-    DatabaseObserver iObserver(&iCommandSender, &iRoutingSender);
-#endif
 
     iDatabaseHandler.registerObserver(&iObserver);
 
@@ -314,15 +301,8 @@ int main(int argc, char *argv[])
     //when the routingInterface is done, all plugins are loaded:
     iControlSender.hookAllPluginsLoaded();
 
-#ifdef WITH_SOCKETHANDLER_LOOP
+    //start the mainloop here....
     iSocketHandler.start_listenting();
-#endif /*WITH_SOCKETHANDLER_LOOP*/
-
-#ifdef WITH_DBUS_WRAPPER
-#ifdef WITH_SIMPLEDBUS_LOOP
-    iDBusWrapper.dbusMainLoop();
-#endif/*WITH_SIMPLEDBUS_LOOP*/
-#endif /*WITH_DBUS_WRAPPER*/
 
     close(fd0);
     close(fd1);

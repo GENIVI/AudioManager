@@ -31,6 +31,7 @@
 #include <fcntl.h>
 #include <sys/un.h>
 #include <errno.h>
+#include <string>
 #include "DLTWrapper.h"
 
 using namespace am;

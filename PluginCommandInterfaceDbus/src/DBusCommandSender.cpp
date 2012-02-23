@@ -136,25 +136,32 @@ void DbusCommandSender::cbNumberOfSinksChanged()
     mCommandReceiveInterface->getListMainSinks(newListSinks);
     std::sort(newListSinks.begin(), newListSinks.end(), sortBySinkID());
     std::set_symmetric_difference(newListSinks.begin(), newListSinks.end(), mlistSinks.begin(), mlistSinks.end(), std::back_inserter(diffList), sortBySinkID());
-    assert(diffList.size()==1);
     if (mReady)
     {
         if (newListSinks.size() > mlistSinks.size())
         {
-            mDBUSMessageHandler.initSignal(std::string(MY_NODE), "SinkAdded");
-            mDBUSMessageHandler.append(diffList[0]);
+            std::vector<am_SinkType_s>::iterator iter(diffList.begin());
+            for (;iter!=diffList.end();++iter)
+            {
+                mDBUSMessageHandler.initSignal(std::string(MY_NODE), "SinkAdded");
+                mDBUSMessageHandler.append(*iter);
 
-            log(&commandDbus, DLT_LOG_INFO, "send signal SinkAdded");
-
+                log(&commandDbus, DLT_LOG_INFO, "send signal SinkAdded");
+                mDBUSMessageHandler.sendMessage();
+            }
         }
         else
         {
-            mDBUSMessageHandler.initSignal(std::string(MY_NODE), "SinkRemoved");
-            mDBUSMessageHandler.append(diffList.begin()->sinkID);
+            std::vector<am_SinkType_s>::iterator iter(diffList.begin());
+            for (;iter!=diffList.end();++iter)
+            {
+                mDBUSMessageHandler.initSignal(std::string(MY_NODE), "SinkAdded");
+                mDBUSMessageHandler.append(*iter);
 
-            log(&commandDbus, DLT_LOG_INFO, "send signal SinkRemoved");
+                log(&commandDbus, DLT_LOG_INFO, "send signal SinkAdded");
+                mDBUSMessageHandler.sendMessage();
+            }
         }
-        mDBUSMessageHandler.sendMessage();
     }
     mlistSinks = newListSinks;
 

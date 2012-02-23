@@ -818,7 +818,7 @@ am_Error_e DatabaseHandler::enterSourceDB(const am_Source_s & sourceData, am_sou
         }
     }
 
-    logInfo("DatabaseHandler::enterSinkDB entered new source with name", sourceData.name, "domainID:", sourceData.domainID, "classID:", sourceData.sourceClassID, "visible:", sourceData.visible, "assigned ID:", sourceID);
+    logInfo("DatabaseHandler::enterSourceDB entered new source with name", sourceData.name, "domainID:", sourceData.domainID, "classID:", sourceData.sourceClassID, "visible:", sourceData.visible, "assigned ID:", sourceID);
 
     am_Source_s source = sourceData;
     source.sourceID = sourceID;

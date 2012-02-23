@@ -45,47 +45,6 @@ DBUS_INTROSPECT_1_0_XML_DOCTYPE_DECL_NODE								\
 
 DBusWrapper* DBusWrapper::mReference = NULL;
 
-DBusWrapper::DBusWrapper() :
-        pDbusDispatchCallback(this, &DBusWrapper::dbusDispatchCallback), //
-        pDbusFireCallback(this, &DBusWrapper::dbusFireCallback), //
-        pDbusCheckCallback(this, &DBusWrapper::dbusCheckCallback), //
-        pDbusTimerCallback(this, &DBusWrapper::dbusTimerCallback), //
-        mDbusConnection(0), //
-        mDBusError(), //
-        mNodesList(), //
-        mListTimerhandlePointer()
-{
-    dbus_error_init(&mDBusError);
-    logInfo("DBusWrapper::DBusWrapper Opening DBus connection");
-    mDbusConnection = dbus_bus_get(DBUS_BUS_SESSION, &mDBusError);
-    if (dbus_error_is_set(&mDBusError))
-    {
-        logError("DBusWrapper::DBusWrapper Error while getting the DBus");
-        dbus_error_free(&mDBusError);
-    }
-    if (NULL == mDbusConnection)
-    {
-        logError("DBusWrapper::DBusWrapper DBus Connection is null");
-    }
-
-    //first, we are old enought to live longer then the connection:
-    dbus_connection_set_exit_on_disconnect(mDbusConnection, FALSE);
-
-    mObjectPathVTable.message_function = DBusWrapper::cbRootIntrospection;
-    dbus_connection_register_object_path(mDbusConnection, DBUS_SERVICE_OBJECT_PATH, &mObjectPathVTable, this);
-    int ret = dbus_bus_request_name(mDbusConnection, DBUS_SERVICE_PREFIX, DBUS_NAME_FLAG_DO_NOT_QUEUE, &mDBusError);
-    if (dbus_error_is_set(&mDBusError))
-    {
-        logError("DBusWrapper::DBusWrapper Name Error",mDBusError.message);
-        dbus_error_free(&mDBusError);
-    }
-    if (DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER != ret)
-    {
-        logError("DBusWrapper::DBusWrapper Wrapper is not the Primary Owner",ret);
-        exit(1);
-    }
-}
-
 DBusWrapper::DBusWrapper(SocketHandler* socketHandler) :
         pDbusDispatchCallback(this, &DBusWrapper::dbusDispatchCallback), //
         pDbusFireCallback(this, &DBusWrapper::dbusFireCallback), //

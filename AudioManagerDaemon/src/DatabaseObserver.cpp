@@ -23,29 +23,72 @@
  */
 
 #include "DatabaseObserver.h"
+#include <string.h>
+#include <cassert>
+#include <errno.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
 #include "CommandSender.h"
 #include "RoutingSender.h"
 #include "TelnetServer.h"
-#include <cassert>
+#include "DLTWrapper.h"
 
 using namespace am;
 
-DatabaseObserver::DatabaseObserver(CommandSender *iCommandSender, RoutingSender *iRoutingSender) :
-        mCommandSender(iCommandSender), //
-        mRoutingSender(iRoutingSender)
-{
-    assert(mCommandSender!=0);
-    assert(mRoutingSender!=0);
-}
-
-DatabaseObserver::DatabaseObserver(CommandSender *iCommandSender, RoutingSender *iRoutingSender, TelnetServer *iTelnetServer) :
+DatabaseObserver::DatabaseObserver(CommandSender *iCommandSender, RoutingSender *iRoutingSender, SocketHandler *iSocketHandler) :
+        receiverCallbackT(this, &DatabaseObserver::receiverCallback), //
+        dispatcherCallbackT(this, &DatabaseObserver::dispatcherCallback), //
+        checkerCallbackT(this, &DatabaseObserver::checkerCallback), //
         mCommandSender(iCommandSender), //
         mRoutingSender(iRoutingSender), //
-        mTelnetServer(iTelnetServer)
+        mSocketHandler(iSocketHandler), //
+        mPipe(), //
+        mHandle(), //
+        mQueue()
+{
+    commonConstructor();
+}
+
+DatabaseObserver::DatabaseObserver(CommandSender *iCommandSender, RoutingSender *iRoutingSender, SocketHandler *iSocketHandler, TelnetServer *iTelnetServer) :
+        receiverCallbackT(this, &DatabaseObserver::receiverCallback), //
+        dispatcherCallbackT(this, &DatabaseObserver::dispatcherCallback), //
+        checkerCallbackT(this, &DatabaseObserver::checkerCallback), //
+        mCommandSender(iCommandSender), //
+        mRoutingSender(iRoutingSender), //
+        mTelnetServer(iTelnetServer), //
+        mSocketHandler(iSocketHandler), //
+        mPipe(), //
+        mHandle(), //
+        mQueue()
+{
+    assert(mTelnetServer!=0);
+    commonConstructor();
+}
+
+void DatabaseObserver::pipeCommand(const do_msg_s & message)
+{
+    mQueue.push(message);
+
+    if (write(mPipe[1], &message.msgID, sizeof(do_msg_s)) == -1)
+    {
+        logError("DatabaseObserver::msgID pipe write failed, error code:", strerror(errno));
+    }
+}
+
+void DatabaseObserver::commonConstructor()
 {
     assert(mCommandSender!=0);
     assert(mRoutingSender!=0);
-    assert(mTelnetServer!=0);
+    assert(mSocketHandler!=0);
+    if (pipe(mPipe) == -1)
+    {
+        logError("RoutingReceiverAsyncShadow::setRoutingInterface could not create pipe!:");
+        throw "could not create pipe";
+    }
+
+    short event = 0;
+    event |= POLLIN;
+    mSocketHandler->addFDPoll(mPipe[0], event, NULL, &receiverCallbackT, &checkerCallbackT, &dispatcherCallbackT, NULL, mHandle);
 }
 
 DatabaseObserver::~DatabaseObserver()
@@ -55,13 +98,18 @@ DatabaseObserver::~DatabaseObserver()
 void DatabaseObserver::newSink(am_Sink_s sink)
 {
     mRoutingSender->addSinkLookup(sink);
-    mCommandSender->cbNumberOfSinksChanged();
+    do_msg_s msg;
+    msg.msgID = MDO_cbNumberOfSinksChanged;
+    pipeCommand(msg);
+
 }
 
 void DatabaseObserver::newSource(am_Source_s source)
 {
     mRoutingSender->addSourceLookup(source);
-    mCommandSender->cbNumberOfSourcesChanged();
+    do_msg_s msg;
+    msg.msgID = MDO_cbNumberOfSourcesChanged;
+    pipeCommand(msg);
 }
 
 void DatabaseObserver::newDomain(am_Domain_s domain)
@@ -83,13 +131,17 @@ void DatabaseObserver::newCrossfader(am_Crossfader_s crossfader)
 void DatabaseObserver::removedSink(am_sinkID_t sinkID)
 {
     mRoutingSender->removeSinkLookup(sinkID);
-    mCommandSender->cbNumberOfSinksChanged();
+    do_msg_s msg;
+    msg.msgID = MDO_cbNumberOfSinksChanged;
+    pipeCommand(msg);
 }
 
 void DatabaseObserver::removedSource(am_sourceID_t sourceID)
 {
     mRoutingSender->removeSourceLookup(sourceID);
-    mCommandSender->cbNumberOfSourcesChanged();
+    do_msg_s msg;
+    msg.msgID = MDO_cbNumberOfSourcesChanged;
+    pipeCommand(msg);
 }
 
 void DatabaseObserver::removeDomain(am_domainID_t domainID)
@@ -110,62 +162,187 @@ void DatabaseObserver::removeCrossfader(am_crossfaderID_t crossfaderID)
 
 void DatabaseObserver::numberOfMainConnectionsChanged()
 {
-    mCommandSender->cbNumberOfMainConnectionsChanged();
+    do_msg_s msg;
+    msg.msgID = MDO_cbNumberOfMainConnectionsChanged;
+    pipeCommand(msg);
 }
 
 void DatabaseObserver::numberOfSinkClassesChanged()
 {
-    mCommandSender->cbNumberOfSinkClassesChanged();
+    do_msg_s msg;
+    msg.msgID = MDO_cbNumberOfSinkClassesChanged;
+    pipeCommand(msg);
 }
 
 void DatabaseObserver::numberOfSourceClassesChanged()
 {
-    mCommandSender->cbNumberOfSourceClassesChanged();
+    do_msg_s msg;
+    msg.msgID = MDO_cbNumberOfSourceClassesChanged;
+    pipeCommand(msg);
 }
 
 void DatabaseObserver::mainConnectionStateChanged(const am_mainConnectionID_t connectionID, const am_ConnectionState_e connectionState)
 {
-    mCommandSender->cbMainConnectionStateChanged(connectionID, connectionState);
+    do_msg_s msg;
+    msg.msgID = MDO_cbMainConnectionStateChanged;
+    msg.parameters.connectionStateChanged.connectionID = connectionID;
+    msg.parameters.connectionStateChanged.connectionState = connectionState;
+    pipeCommand(msg);
 }
 
 void DatabaseObserver::mainSinkSoundPropertyChanged(const am_sinkID_t sinkID, const am_MainSoundProperty_s SoundProperty)
 {
-    mCommandSender->cbMainSinkSoundPropertyChanged(sinkID, SoundProperty);
+    do_msg_s msg;
+    msg.msgID = MDO_cbMainSinkSoundPropertyChanged;
+    msg.parameters.mainSinkSoundPropertyChanged.sinkID = sinkID;
+    msg.parameters.mainSinkSoundPropertyChanged.SoundProperty = SoundProperty;
+    pipeCommand(msg);
 }
 
 void DatabaseObserver::mainSourceSoundPropertyChanged(const am_sourceID_t sourceID, const am_MainSoundProperty_s & SoundProperty)
 {
-    mCommandSender->cbMainSourceSoundPropertyChanged(sourceID, SoundProperty);
+    do_msg_s msg;
+    msg.msgID = MDO_cbMainSourceSoundPropertyChanged;
+    msg.parameters.mainSourceSoundPropertyChanged.sourceID = sourceID;
+    msg.parameters.mainSourceSoundPropertyChanged.SoundProperty = SoundProperty;
+    pipeCommand(msg);
 }
 
 void DatabaseObserver::sinkAvailabilityChanged(const am_sinkID_t sinkID, const am_Availability_s & availability)
 {
-    mCommandSender->cbSinkAvailabilityChanged(sinkID, availability);
+    do_msg_s msg;
+    msg.msgID = MDO_cbSinkAvailabilityChanged;
+    msg.parameters.sinkAvailabilityChanged.sinkID = sinkID;
+    msg.parameters.sinkAvailabilityChanged.availability = availability;
+    pipeCommand(msg);
 }
 
 void DatabaseObserver::sourceAvailabilityChanged(const am_sourceID_t sourceID, const am_Availability_s & availability)
 {
-    mCommandSender->cbSourceAvailabilityChanged(sourceID, availability);
+    do_msg_s msg;
+    msg.msgID = MDO_cbSourceAvailabilityChanged;
+    msg.parameters.sourceAvailabilityChanged.sourceID = sourceID;
+    msg.parameters.sourceAvailabilityChanged.availability = availability;
+    pipeCommand(msg);
 }
 
 void DatabaseObserver::volumeChanged(const am_sinkID_t sinkID, const am_mainVolume_t volume)
 {
-    mCommandSender->cbVolumeChanged(sinkID, volume);
+    do_msg_s msg;
+    msg.msgID = MDO_cbVolumeChanged;
+    msg.parameters.volumeChanged.sinkID = sinkID;
+    msg.parameters.volumeChanged.volume = volume;
+    pipeCommand(msg);
 }
 
 void DatabaseObserver::sinkMuteStateChanged(const am_sinkID_t sinkID, const am_MuteState_e muteState)
 {
-    mCommandSender->cbSinkMuteStateChanged(sinkID, muteState);
+    do_msg_s msg;
+    msg.msgID = MDO_cbSinkMuteStateChanged;
+    msg.parameters.sinkMuteStateChanged.sinkID = sinkID;
+    msg.parameters.sinkMuteStateChanged.muteState = muteState;
+    pipeCommand(msg);
 }
 
 void DatabaseObserver::systemPropertyChanged(const am_SystemProperty_s & SystemProperty)
 {
-    mCommandSender->cbSystemPropertyChanged(SystemProperty);
+    do_msg_s msg;
+    msg.msgID = MDO_cbSystemPropertyChanged;
+    msg.parameters.systemProperty = SystemProperty;
+    pipeCommand(msg);
 }
 
 void DatabaseObserver::timingInformationChanged(const am_mainConnectionID_t mainConnection, const am_timeSync_t time)
 {
-    mCommandSender->cbTimingInformationChanged(mainConnection, time);
+    do_msg_s msg;
+    msg.msgID = MDO_cbTimingInformationChanged;
+    msg.parameters.timingInformationChanged.mainConnection = mainConnection;
+    msg.parameters.timingInformationChanged.time = time;
+    pipeCommand(msg);
     //todo:inform the controller via controlsender
+}
+
+void DatabaseObserver::receiverCallback(const pollfd pollfd, const sh_pollHandle_t handle, void *userData)
+{
+    (void) handle;
+    (void) userData;
+    //it is no really important what to read here, we will read the queue later...
+    char buffer[10];
+    if (read(pollfd.fd, buffer, 10) == -1)
+    {
+        logError("DatabaseObserver::receiverCallback could not read pipe!");
+    }
+}
+
+bool DatabaseObserver::dispatcherCallback(const sh_pollHandle_t handle, void *userData)
+{
+    (void) handle;
+    (void) userData;
+    do_msg_s msg;
+
+    msg = mQueue.front();
+    mQueue.pop();
+
+    switch (msg.msgID)
+    {
+    case MDO_cbNumberOfSinksChanged:
+        mCommandSender->cbNumberOfSinksChanged();
+        break;
+    case MDO_cbNumberOfSourcesChanged:
+        mCommandSender->cbNumberOfSourcesChanged();
+        break;
+    case MDO_cbNumberOfMainConnectionsChanged:
+        mCommandSender->cbNumberOfMainConnectionsChanged();
+        break;
+    case MDO_cbNumberOfSinkClassesChanged:
+        mCommandSender->cbNumberOfSinkClassesChanged();
+        break;
+    case MDO_cbNumberOfSourceClassesChanged:
+        mCommandSender->cbNumberOfSourceClassesChanged();
+        break;
+    case MDO_cbMainConnectionStateChanged:
+        mCommandSender->cbMainConnectionStateChanged(msg.parameters.connectionStateChanged.connectionID, msg.parameters.connectionStateChanged.connectionState);
+        break;
+    case MDO_cbMainSinkSoundPropertyChanged:
+        mCommandSender->cbMainSinkSoundPropertyChanged(msg.parameters.mainSinkSoundPropertyChanged.sinkID, msg.parameters.mainSinkSoundPropertyChanged.SoundProperty);
+        break;
+    case MDO_cbMainSourceSoundPropertyChanged:
+        mCommandSender->cbMainSourceSoundPropertyChanged(msg.parameters.mainSourceSoundPropertyChanged.sourceID, msg.parameters.mainSourceSoundPropertyChanged.SoundProperty);
+        break;
+    case MDO_cbSinkAvailabilityChanged:
+        mCommandSender->cbSinkAvailabilityChanged(msg.parameters.sinkAvailabilityChanged.sinkID, msg.parameters.sinkAvailabilityChanged.availability);
+        break;
+    case MDO_cbSourceAvailabilityChanged:
+        mCommandSender->cbSourceAvailabilityChanged(msg.parameters.sourceAvailabilityChanged.sourceID, msg.parameters.sourceAvailabilityChanged.availability);
+        break;
+    case MDO_cbVolumeChanged:
+        mCommandSender->cbVolumeChanged(msg.parameters.volumeChanged.sinkID, msg.parameters.volumeChanged.volume);
+        break;
+    case MDO_cbSinkMuteStateChanged:
+        mCommandSender->cbSinkMuteStateChanged(msg.parameters.sinkMuteStateChanged.sinkID, msg.parameters.sinkMuteStateChanged.muteState);
+        break;
+    case MDO_cbSystemPropertyChanged:
+        mCommandSender->cbSystemPropertyChanged(msg.parameters.systemProperty);
+        break;
+    case MDO_cbTimingInformationChanged:
+        mCommandSender->cbTimingInformationChanged(msg.parameters.timingInformationChanged.mainConnection, msg.parameters.timingInformationChanged.time);
+        break;
+    default:
+        logError("Something went totally wrong in DatabaseObserver::dispatcherCallback");
+        break;
+    }
+
+    if (mQueue.size() > 0)
+        return (true);
+    return (false);
+}
+
+bool DatabaseObserver::checkerCallback(const sh_pollHandle_t handle, void *userData)
+{
+    (void) handle;
+    (void) userData;
+    if (mQueue.size() > 0)
+        return (true);
+    return (false);
 }
 

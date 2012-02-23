@@ -55,7 +55,7 @@ the commandline for cmake or (when installed via ccmake)
 You will need some packages in order to comile the GENIVI AudioManager Daemon, these are:
 	-dbus (only when DBUS_WRAPPER==ON) [tested on version 1.2.16]
 	-sqlite3 [tested on version 3.6.22]
-	-automotive-dlt [tested on version 2.2.0]
+	-automotive-dlt [greater 2.5.0]                
 	-doxygen (only when WITH_DOCUMENTATION==ON) [tested on version 1.6.3]
 
 	to install them in a build environment like Ubuntu you can use:
@@ -76,7 +76,7 @@ The build was tested on a freshly setup LinuxMint 12 (don't like Unity) with the
 	sudo apt-get upgrade
 	sudo apt-get install libdbus-1-dev libsqlite3-dev doxygen libgtest-dev google-mock git cmake build-essential python2.6-dev
 
-	git clone https://<kavi-account>:<kavi-password>@git.genivi.org/srv/git/DLT-daemon
+	git clone https://<kavi-account>:<kavi-password>@git.genivi.org/srv/git/AudioManager
 
 In order to build the project (out of source build), please follow these instructions on the commandline:
 

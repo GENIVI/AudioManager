@@ -42,7 +42,6 @@ class SocketHandler;
 class CommandReceiver: public CommandReceiveInterface
 {
 public:
-    CommandReceiver(DatabaseHandler* iDatabaseHandler, ControlSender* iControlSender, DBusWrapper* iDBusWrapper);
     CommandReceiver(DatabaseHandler* iDatabaseHandler, ControlSender* iControlSender, SocketHandler* iSocketHandler);
     CommandReceiver(DatabaseHandler* iDatabaseHandler, ControlSender* iControlSender, SocketHandler* iSocketHandler, DBusWrapper* iDBusWrapper);
     virtual ~CommandReceiver();

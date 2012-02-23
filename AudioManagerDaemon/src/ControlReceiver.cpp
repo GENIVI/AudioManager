@@ -48,18 +48,6 @@ ControlReceiver::ControlReceiver(DatabaseHandler *iDatabaseHandler, RoutingSende
     assert(mRouter!=NULL);
 }
 
-ControlReceiver::ControlReceiver(DatabaseHandler *iDatabaseHandler, RoutingSender *iRoutingSender, CommandSender *iCommandSender, Router* iRouter) :
-        mDatabaseHandler(iDatabaseHandler), //
-        mRoutingSender(iRoutingSender), //
-        mCommandSender(iCommandSender), //
-        mRouter(iRouter)
-{
-    assert(mDatabaseHandler!=NULL);
-    assert(mRoutingSender!=NULL);
-    assert(mCommandSender!=NULL);
-    assert(mRouter!=NULL);
-}
-
 ControlReceiver::~ControlReceiver()
 {
 }
@@ -491,12 +479,8 @@ void ControlReceiver::setRoutingReady()
 
 am_Error_e ControlReceiver::getSocketHandler(SocketHandler *& socketHandler)
 {
-#ifdef WITH_SOCKETHANDLER_LOOP
     socketHandler = mSocketHandler;
     return E_OK;
-#else
-    return E_UNKNOWN;
-#endif
 }
 
 void am::ControlReceiver::setCommandRundown()

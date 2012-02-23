@@ -28,11 +28,26 @@
 #include <vector>
 #include <set>
 #include "DLTWrapper.h"
+#include <dbus/DBusWrapper.h>
+#include "MockInterfaces.h"
+#include "DatabaseHandler.h"
+#include "ControlReceiver.h"
+#include "RoutingReceiver.h"
+#include "DatabaseObserver.h"
+#include "ControlSender.h"
+#include "RoutingSender.h"
+#include "SocketHandler.h"
+#include "Router.h"
+#include "../RoutingInterfaceBackdoor.h"
+#include "../CommandInterfaceBackdoor.h"
+#include "../ControlInterfaceBackdoor.h"
+#include "../CommonFunctions.h"
 
 using namespace am;
 using namespace testing;
 
 controlInterfaceTest::controlInterfaceTest() :
+        pSocketHandler(), //
         pDBusWrapper((DBusWrapper*) 1), //
         plistCommandPluginDirs(), //
         plistRoutingPluginDirs(), //
@@ -46,7 +61,7 @@ controlInterfaceTest::controlInterfaceTest() :
         pControlInterfaceBackdoor(), //
         pControlSender(std::string("")), //
         pRouter(&pDatabaseHandler,&pControlSender), //
-        pDatabaseObserver(&pCommandSender, &pRoutingSender), //
+        pDatabaseObserver(&pCommandSender, &pSocketHandler, &pRoutingSender), //
         pControlReceiver(&pDatabaseHandler, &pRoutingSender, &pCommandSender,&pRouter), //
         pRoutingReceiver(&pDatabaseHandler, &pRoutingSender, &pControlSender, pDBusWrapper)
 {

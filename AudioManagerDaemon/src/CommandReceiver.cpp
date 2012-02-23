@@ -32,16 +32,6 @@
 
 using namespace am;
 
-CommandReceiver::CommandReceiver(DatabaseHandler *iDatabaseHandler, ControlSender *iControlSender, DBusWrapper *iDBusWrapper) :
-        mDatabaseHandler(iDatabaseHandler), //
-        mControlSender(iControlSender), //
-        mDBusWrapper(iDBusWrapper)
-{
-    assert(mDatabaseHandler!=NULL);
-    assert(mDBusWrapper!=NULL);
-    assert(mControlSender!=NULL);
-}
-
 CommandReceiver::CommandReceiver(DatabaseHandler *iDatabaseHandler, ControlSender *iControlSender, SocketHandler *iSocketHandler) :
         mDatabaseHandler(iDatabaseHandler), //
         mControlSender(iControlSender), //
@@ -174,12 +164,8 @@ am_Error_e CommandReceiver::getDBusConnectionWrapper(DBusWrapper*& dbusConnectio
 
 am_Error_e CommandReceiver::getSocketHandler(SocketHandler *& socketHandler) const
 {
-#ifdef WITH_SOCKETHANDLER_LOOP
     socketHandler = mSocketHandler;
     return E_OK;
-#else
-    return E_UNKNOWN;
-#endif /*WITH_SOCKETHANDLER_LOOP*/
 }
 
 uint16_t CommandReceiver::getInterfaceVersion() const

@@ -245,6 +245,30 @@ am_Error_e am::CommandSender::getListPlugins(std::vector<std::string> & interfac
    return E_OK;
 }
 
+void am::CommandSender::cbNewMainConnection(const am_MainConnectionType_s mainConnection)
+{
+}
+
+void am::CommandSender::cbRemovedMainConnection(const am_MainConnectionType_s mainConnection)
+{
+}
+
+void am::CommandSender::cbNewSink(const am_SinkType_s sink)
+{
+}
+
+void am::CommandSender::cbRemovedSink(const am_SinkType_s sink)
+{
+}
+
+void am::CommandSender::cbNewSource(const am_SourceType_s source)
+{
+}
+
+void am::CommandSender::cbRemovedSource(const am_SourceType_s source)
+{
+}
+
 void CommandSender::unloadLibraries(void)
 {
     std::vector<void*>::iterator iterator = mListLibraryHandles.begin();
