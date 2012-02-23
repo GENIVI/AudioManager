@@ -36,7 +36,6 @@
 #include "DLTWrapper.h"
 #include <cassert>
 
-#define DEBUG_ON false
 static const std::string COLOR_WELCOME("\033[1;33m\033[44m");
 static const std::string COLOR_HEAD("\033[1m\033[42m");
 static const std::string COLOR_DEFAULT("\033[0m");
@@ -141,7 +140,7 @@ void CAmTelnetMenuHelper::newSocketConnection(int filedescriptor)
     mCurrentMainStateMap.insert(it, std::make_pair<int, EMainState>(filedescriptor, state));
 
     // Send welcome message
-    welcome << COLOR_WELCOME << "Welcome to GENIVI AudioManager " << DAEMONVERSION << "\n>";
+    welcome << COLOR_WELCOME << "Welcome to GENIVI AudioManager " << DAEMONVERSION << COLOR_DEFAULT << "\n>";
     send(filedescriptor, welcome.str().c_str(), welcome.str().size(), 0);
     logInfo("[TN] New connection: ",filedescriptor);
 }
@@ -296,8 +295,6 @@ void CAmTelnetMenuHelper::oneStepBackCommandExec(std::queue<std::string> & CmdQu
     it = mCurrentMainStateMap.find(filedescriptor);
     if (it != mCurrentMainStateMap.end())
     {
-        if (DEBUG_ON)
-            std::cout << "old state: " << it->second;
         switch (it->second)
         {
         case eRootState:
@@ -323,8 +320,8 @@ void CAmTelnetMenuHelper::oneStepBackCommandExec(std::queue<std::string> & CmdQu
             it->second = eRootState;
             break;
         }
-        if (DEBUG_ON)
-            std::cout << "new state: " << it->second << std::endl;
+
+        logInfo("[TN] oneStepBackCommandExec, state: ",it->second);
     }
 }
 
@@ -352,8 +349,7 @@ void CAmTelnetMenuHelper::exitCommandExec(std::queue<std::string> & CmdQueue, in
     it = mCurrentMainStateMap.find(filedescriptor);
     if (it != mCurrentMainStateMap.end())
     {
-        if (DEBUG_ON)
-            std::cout << "removing client connection " << filedescriptor << std::endl;
+        logInfo("[TN] exitCommandExec, mpTelenetServer == NULL, fd ",filedescriptor);
 
         if (NULL != mpTelenetServer)
         {
@@ -385,9 +381,9 @@ void CAmTelnetMenuHelper::helpCommandExec(std::queue<std::string> & CmdQueue, in
     it = mCurrentMainStateMap.find(filedescriptor);
     if (it != mCurrentMainStateMap.end())
     {
-        line << "###################################################" << std::endl;
-        line << "###### The following commands are supported: ######" << std::endl;
-        line << "###################################################" << std::endl << std::endl;
+        line << COLOR_HEAD << "###################################################" << COLOR_DEFAULT << std::endl;
+        line << COLOR_HEAD << "###### The following commands are supported: ######" << COLOR_DEFAULT << std::endl;
+        line << COLOR_HEAD << "###################################################" << COLOR_DEFAULT << std::endl << std::endl;
         switch (it->second)
         {
         case eRootState:
@@ -849,9 +845,6 @@ void CAmTelnetMenuHelper::setRoutingCommandExec(std::queue<std::string> & CmdQue
             return;
         }
 
-        if (DEBUG_ON)
-            std::cout << "setRoutingCommandExec(sourceID: " << sourceID << ",sinkID: " << sinkID << ")" << std::endl;
-
         std::vector<am_Route_s> routingList;
         if (E_OK == mpRouter->getRoute(true, sourceID, sinkID, routingList))
         {
@@ -902,12 +895,6 @@ void CAmTelnetMenuHelper::setConnection(std::queue<std::string> & CmdQueue, int 
 void CAmTelnetMenuHelper::setConnectionExec(std::queue<std::string> & CmdQueue, int & filedescriptor)
 /****************************************************************************/
 {
-
-
-
-
-
-
     bool error = false;
     am_Error_e rError = E_OK;
 
@@ -1186,7 +1173,6 @@ void CAmTelnetMenuHelper::listPluginsCommandExec(std::queue<std::string> & CmdQu
     {
         sendError(filedescriptor,"ERROR: mRoutingSender->getListPlugins");
     }
-
 
     sendTelnetLine(filedescriptor, output);
 }
