@@ -812,8 +812,6 @@ void CAmTelnetMenuHelper::setRoutingCommand(std::queue<std::string> & CmdQueue, 
 void CAmTelnetMenuHelper::setRoutingCommandExec(std::queue<std::string> & CmdQueue, int & filedescriptor)
 /****************************************************************************/
 {
-
-
     if (CmdQueue.size() >= 2)
     {
         bool error = false;
