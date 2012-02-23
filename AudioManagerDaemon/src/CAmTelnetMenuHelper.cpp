@@ -33,9 +33,14 @@
 #include "ControlReceiver.h"
 #include "Router.h"
 #include "config.h"
+#include "DLTWrapper.h"
 #include <cassert>
 
 #define DEBUG_ON false
+static const std::string COLOR_WELCOME("\033[1;33m\033[44m");
+static const std::string COLOR_HEAD("\033[1m\033[42m");
+static const std::string COLOR_DEFAULT("\033[0m");
+
 
 using namespace am;
 
@@ -44,7 +49,7 @@ CAmTelnetMenuHelper* CAmTelnetMenuHelper::instance = NULL;
 /****************************************************************************/
 CAmTelnetMenuHelper::CAmTelnetMenuHelper(SocketHandler *iSocketHandler, CommandSender *iCommandSender, CommandReceiver *iCommandReceiver, RoutingSender *iRoutingSender, RoutingReceiver *iRoutingReceiver, ControlSender *iControlSender, ControlReceiver *iControlReceiver, DatabaseHandler *iDatabasehandler, Router *iRouter, TelnetServer *iTelnetServer)
 /****************************************************************************/
-:mTelenetServer(iTelnetServer), mSocketHandler(iSocketHandler), mCommandSender(iCommandSender), mCommandReceiver(iCommandReceiver), mRoutingSender(iRoutingSender), mRoutingReceiver(iRoutingReceiver), mControlSender(iControlSender), mControlReceiver(iControlReceiver), mDatabasehandler(iDatabasehandler), mRouter(iRouter)
+:mpTelenetServer(iTelnetServer), mpSocketHandler(iSocketHandler), mpCommandSender(iCommandSender), mpCommandReceiver(iCommandReceiver), mpRoutingSender(iRoutingSender), mpRoutingReceiver(iRoutingReceiver), mpControlSender(iControlSender), mpControlReceiver(iControlReceiver), mpDatabasehandler(iDatabasehandler), mpRouter(iRouter)
 {
     instance = this;
     createCommandMaps();
@@ -112,7 +117,7 @@ void CAmTelnetMenuHelper::createCommandMaps()
 void CAmTelnetMenuHelper::setTelnetServer(TelnetServer* iTelnetServer)
 /****************************************************************************/
 {
-    mTelenetServer = iTelnetServer;
+    mpTelenetServer = iTelnetServer;
 }
 
 /****************************************************************************/
@@ -136,8 +141,9 @@ void CAmTelnetMenuHelper::newSocketConnection(int filedescriptor)
     mCurrentMainStateMap.insert(it, std::make_pair<int, EMainState>(filedescriptor, state));
 
     // Send welcome message
-    welcome << "Welcome to GENIVI AudioManager " << DAEMONVERSION << "\n>";
+    welcome << COLOR_WELCOME << "Welcome to GENIVI AudioManager " << DAEMONVERSION << "\n>";
     send(filedescriptor, welcome.str().c_str(), welcome.str().size(), 0);
+    logInfo("[TN] New connection: ",filedescriptor);
 }
 
 /****************************************************************************/
@@ -153,7 +159,7 @@ void CAmTelnetMenuHelper::socketConnectionsClosed(int filedescriptor)
     }
     else
     {
-        // connection not found
+        logError("[TN] socketConnectionsClosed, fd not found, ",filedescriptor);
     }
 }
 
@@ -270,7 +276,7 @@ void CAmTelnetMenuHelper::sendCurrentCmdPrompt(int & filedescriptor)
     }
     else
     {
-        // connection not found
+        logError("[TN] sendCurrentCmdPrompt, fd not found",filedescriptor);
     }
 }
 
@@ -339,7 +345,7 @@ void CAmTelnetMenuHelper::exitCommandExec(std::queue<std::string> & CmdQueue, in
     std::stringstream output;
 
     // Sending a last message to the client
-    output << "Your wish is my command ... bye!" << std::endl;
+    output << "bye!" << COLOR_DEFAULT << std::endl;
     sendTelnetLine(filedescriptor, output);
 
     tCommandMap::iterator iter;
@@ -349,16 +355,14 @@ void CAmTelnetMenuHelper::exitCommandExec(std::queue<std::string> & CmdQueue, in
         if (DEBUG_ON)
             std::cout << "removing client connection " << filedescriptor << std::endl;
 
-        if (NULL != mTelenetServer)
+        if (NULL != mpTelenetServer)
         {
-            mTelenetServer->disconnectClient(filedescriptor);
+            mpTelenetServer->disconnectClient(filedescriptor);
             mCurrentMainStateMap.erase(it);
         }
         else
         {
-            // ASSERT mTelenetServer == NULL
-            if (DEBUG_ON)
-                std::cout << "mTelenetServer";
+            logError("[TN] exitCommandExec, mpTelenetServer == NULL, fd ",filedescriptor);
         }
     }
 }
@@ -528,7 +532,7 @@ void CAmTelnetMenuHelper::listConnectionsCommandExec(std::queue<std::string> & C
     (void) CmdQueue;
 
     std::vector<am_Connection_s> listConnections;
-    if(E_OK == mDatabasehandler->getListConnections(listConnections))
+    if(E_OK == mpDatabasehandler->getListConnections(listConnections))
     {
         std::stringstream output;
         output << "\tConnections: " << listConnections.size() << std::endl;
@@ -562,7 +566,7 @@ void CAmTelnetMenuHelper::listSourcesCommandExec(std::queue<std::string> & CmdQu
     (void) CmdQueue;
 
     std::vector<am_Source_s> listSources;
-    if(E_OK == mDatabasehandler->getListSources(listSources))
+    if(E_OK == mpDatabasehandler->getListSources(listSources))
     {
         std::stringstream output;
         output << "\tSources: " << listSources.size() << std::endl;
@@ -596,7 +600,7 @@ void CAmTelnetMenuHelper::listSinksCommandsExec(std::queue<std::string> & CmdQue
     (void) CmdQueue;
 
     std::vector<am_Sink_s> listSinks;
-    if(E_OK == mDatabasehandler->getListSinks(listSinks))
+    if(E_OK == mpDatabasehandler->getListSinks(listSinks))
     {
         std::stringstream output;
         output << "\tSinks: " << listSinks.size() << std::endl;
@@ -631,7 +635,7 @@ void CAmTelnetMenuHelper::listCrossfadersExec(std::queue<std::string> & CmdQueue
     (void) CmdQueue;
 
     std::vector<am_Crossfader_s> listCrossfaders;
-    if(E_OK == mDatabasehandler->getListCrossfaders(listCrossfaders))
+    if(E_OK == mpDatabasehandler->getListCrossfaders(listCrossfaders))
     {
         std::stringstream output;
         output << "\tCrossfaders: " << listCrossfaders.size() << std::endl;
@@ -664,7 +668,7 @@ void CAmTelnetMenuHelper::listDomainsCommandExec(std::queue<std::string> & CmdQu
     (void) CmdQueue;
 
     std::vector<am_Domain_s> listDomains;
-    if(E_OK == mDatabasehandler->getListDomains(listDomains))
+    if(E_OK == mpDatabasehandler->getListDomains(listDomains))
     {
         std::stringstream output;
         output << "\tDomains: " << listDomains.size() << std::endl;
@@ -699,7 +703,7 @@ void CAmTelnetMenuHelper::listGatewaysCommandExec(std::queue<std::string> & CmdQ
     (void) CmdQueue;
 
     std::vector<am_Gateway_s> listGateways;
-    if(E_OK == mDatabasehandler->getListGateways(listGateways))
+    if(E_OK == mpDatabasehandler->getListGateways(listGateways))
     {
         std::stringstream output;
         output << "\tGateways: " << listGateways.size();
@@ -749,7 +753,7 @@ void CAmTelnetMenuHelper::getSenderversionCommandExec(std::queue<std::string> & 
     (void) CmdQueue;
 
     std::stringstream output;
-    output << "\tSender versions:" << std::endl << "\tCtrl: " << mControlSender->getInterfaceVersion() << " | " << "Cmd: " << mCommandSender->getInterfaceVersion() << " | " << "Routing: " << mRoutingSender->getInterfaceVersion() << std::endl;
+    output << "\tSender versions:" << std::endl << "\tCtrl: " << mpControlSender->getInterfaceVersion() << " | " << "Cmd: " << mpCommandSender->getInterfaceVersion() << " | " << "Routing: " << mpRoutingSender->getInterfaceVersion() << std::endl;
 
     sendTelnetLine(filedescriptor, output);
 }
@@ -768,7 +772,7 @@ void CAmTelnetMenuHelper::getReceiverversionCommandExec(std::queue<std::string> 
     (void) CmdQueue;
 
     std::stringstream output;
-    output << "\tReceiver versions:" << std::endl << "\tCtrl: " << mControlReceiver->getInterfaceVersion() << " | " << "Cmd: " << mCommandReceiver->getInterfaceVersion() << " | " << "Routing: " << mRoutingReceiver->getInterfaceVersion() << std::endl;
+    output << "\tReceiver versions:" << std::endl << "\tCtrl: " << mpControlReceiver->getInterfaceVersion() << " | " << "Cmd: " << mpCommandReceiver->getInterfaceVersion() << " | " << "Routing: " << mpRoutingReceiver->getInterfaceVersion() << std::endl;
 
     sendTelnetLine(filedescriptor, output);
 
@@ -788,7 +792,7 @@ void CAmTelnetMenuHelper::infoSystempropertiesCommandExec(std::queue<std::string
     (void) CmdQueue;
     std::vector<am_SystemProperty_s> listSystemProperties;
 
-    if(E_OK == mDatabasehandler->getListSystemProperties(listSystemProperties))
+    if(E_OK == mpDatabasehandler->getListSystemProperties(listSystemProperties))
     {
         std::stringstream output;
         output << "\tSystemproperties: " << listSystemProperties.size() << std::endl;
@@ -849,7 +853,7 @@ void CAmTelnetMenuHelper::setRoutingCommandExec(std::queue<std::string> & CmdQue
             std::cout << "setRoutingCommandExec(sourceID: " << sourceID << ",sinkID: " << sinkID << ")" << std::endl;
 
         std::vector<am_Route_s> routingList;
-        if (E_OK == mRouter->getRoute(true, sourceID, sinkID, routingList))
+        if (E_OK == mpRouter->getRoute(true, sourceID, sinkID, routingList))
         {
             std::stringstream output;
 
@@ -931,7 +935,7 @@ void CAmTelnetMenuHelper::setConnectionExec(std::queue<std::string> & CmdQueue, 
 
         // Try to set up connection
         am_mainConnectionID_t connID = 0;
-        rError = mCommandReceiver->connect(sourceID, sinkID, connID);
+        rError = mpCommandReceiver->connect(sourceID, sinkID, connID);
 
         if (E_OK == rError)
         {
@@ -987,7 +991,7 @@ void CAmTelnetMenuHelper::setDisconnectConnIdExec(std::queue<std::string> & CmdQ
         }
 
         // Try to disconnect connection id
-        rError = mCommandReceiver->disconnect(connID);
+        rError = mpCommandReceiver->disconnect(connID);
 
         if (E_OK == rError)
         {
@@ -1054,7 +1058,7 @@ void CAmTelnetMenuHelper::setSourceSoundPropertiesExec(std::queue<std::string> &
             return;
         }
 
-        if (E_OK == mCommandReceiver->setMainSourceSoundProperty(soundProperty, sourceID))
+        if (E_OK == mpCommandReceiver->setMainSourceSoundProperty(soundProperty, sourceID))
         {
             std::stringstream output;
             output << "MainSourceSoundProperty set: " << soundProperty.type << "->" << soundProperty.value << std::endl;
@@ -1119,7 +1123,7 @@ void CAmTelnetMenuHelper::setSinkSoundPropertiesExec(std::queue<std::string> & C
             return;
         }
 
-        if (E_OK == mCommandReceiver->setMainSinkSoundProperty(soundProperty, sinkID))
+        if (E_OK == mpCommandReceiver->setMainSinkSoundProperty(soundProperty, sinkID))
         {
             std::stringstream output;
             output << "MainSinkSoundProperty set: " << soundProperty.type << "->" << soundProperty.value << std::endl;
@@ -1154,7 +1158,7 @@ void CAmTelnetMenuHelper::listPluginsCommandExec(std::queue<std::string> & CmdQu
     std::stringstream output;
 
 
-    if(E_OK == mCommandSender->getListPlugins(PlugInNames))
+    if(E_OK == mpCommandSender->getListPlugins(PlugInNames))
     {
         output << "\tCommandSender Plugins loaded: " << PlugInNames.size() << std::endl;
 
@@ -1169,7 +1173,7 @@ void CAmTelnetMenuHelper::listPluginsCommandExec(std::queue<std::string> & CmdQu
     }
 
 
-    if(E_OK == mRoutingSender->getListPlugins(PlugInNames))
+    if(E_OK == mpRoutingSender->getListPlugins(PlugInNames))
     {
         output << std::endl << "\tRoutingSender Plugins loaded: " << PlugInNames.size() << std::endl;
 
@@ -1202,10 +1206,10 @@ void CAmTelnetMenuHelper::listMainSourcesCommandExec(std::queue<std::string> & C
     (void) CmdQueue;
     std::vector<am_SourceType_s> listMainSources;
 
-    if(E_OK == mDatabasehandler->getListMainSources(listMainSources))
+    if(E_OK == mpDatabasehandler->getListMainSources(listMainSources))
     {
         std::stringstream output;
-        output << std::endl << "\tMainSources: " << listMainSources.size() << std::endl;
+        output << std::endl << "\tMainSources:  " << listMainSources.size() << std::endl;
 
         std::vector<am_SourceType_s>::iterator iter;
         for (iter = listMainSources.begin(); iter < listMainSources.end(); iter++)
@@ -1237,7 +1241,7 @@ void CAmTelnetMenuHelper::listMainSinksCommandExec(std::queue<std::string> & Cmd
     (void) CmdQueue;
     std::vector<am_SinkType_s> listMainSinks;
 
-    if(E_OK == mDatabasehandler->getListMainSinks(listMainSinks))
+    if(E_OK == mpDatabasehandler->getListMainSinks(listMainSinks))
     {
         std::stringstream output;
         output << std::endl << "\tMainSinks: " << listMainSinks.size() << std::endl;
@@ -1274,7 +1278,7 @@ void CAmTelnetMenuHelper::listMainConnectionsCommandExec(std::queue<std::string>
     (void) CmdQueue;
     std::vector<am_MainConnection_s> listMainConnections;
 
-    if(E_OK == mDatabasehandler->getListMainConnections(listMainConnections))
+    if(E_OK == mpDatabasehandler->getListMainConnections(listMainConnections))
     {
         std::stringstream output;
         output << std::endl << "\tMainConnections: " << listMainConnections.size() << std::endl;

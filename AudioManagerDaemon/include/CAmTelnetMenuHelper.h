@@ -173,16 +173,16 @@ private:
     std::map<int, EMainState> mCurrentMainStateMap;
 
     static CAmTelnetMenuHelper* instance;
-    TelnetServer *mTelenetServer;
-    SocketHandler *mSocketHandler;
-    CommandSender *mCommandSender;
-    CommandReceiver *mCommandReceiver;
-    RoutingSender *mRoutingSender;
-    RoutingReceiver *mRoutingReceiver;
-    ControlSender *mControlSender;
-    ControlReceiver *mControlReceiver;
-    DatabaseHandler *mDatabasehandler;
-    Router *mRouter;
+    TelnetServer *mpTelenetServer;
+    SocketHandler *mpSocketHandler;
+    CommandSender *mpCommandSender;
+    CommandReceiver *mpCommandReceiver;
+    RoutingSender *mpRoutingSender;
+    RoutingReceiver *mpRoutingReceiver;
+    ControlSender *mpControlSender;
+    ControlReceiver *mpControlReceiver;
+    DatabaseHandler *mpDatabasehandler;
+    Router *mpRouter;
 
     tCommandMap mRootCommands;
     tCommandMap mListCommands;
