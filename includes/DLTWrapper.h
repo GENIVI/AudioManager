@@ -25,7 +25,64 @@
 #ifndef DLTWRAPPER_H_
 #define DLTWRAPPER_H_
 
+#include "config.h"
+
+#ifdef WITH_DLT
 #include <dlt/dlt.h>
+#else
+
+#include <stdint.h>
+
+#define DLT_USER_BUF_MAX_SIZE 2048
+
+/**
+ * This structure is used for every context used in an application.
+ */
+typedef struct
+{
+    char contextID[4];                            /**< context id */
+    int32_t log_level_pos;                        /**< offset in user-application context field */
+} DltContext;
+
+/**
+ * Definitions of DLT log level
+ */
+typedef enum
+{
+    DLT_LOG_DEFAULT =             -1,   /**< Default log level */
+    DLT_LOG_OFF     =           0x00,   /**< Log level off */
+    DLT_LOG_FATAL   =           0x01,   /**< fatal system error */
+    DLT_LOG_ERROR   =           0x02,   /**< error with impact to correct functionality */
+    DLT_LOG_WARN    =           0x03,   /**< warning, correct behaviour could not be ensured */
+    DLT_LOG_INFO    =           0x04,   /**< informational */
+    DLT_LOG_DEBUG   =           0x05,   /**< debug  */
+    DLT_LOG_VERBOSE =           0x06    /**< highest grade of information */
+} DltLogLevelType;
+
+/**
+ * This structure is used for context data used in an application.
+ */
+typedef struct
+{
+    DltContext *handle;                           /**< pointer to DltContext */
+    unsigned char buffer[DLT_USER_BUF_MAX_SIZE];  /**< buffer for building log message*/
+    int32_t size;                                 /**< payload size */
+    int32_t log_level;                            /**< log level */
+    int32_t trace_status;                         /**< trace status */
+    int32_t args_num;                             /**< number of arguments for extended header*/
+    uint8_t mcnt;                                 /**< message counter */
+    char* context_description;                    /**< description of context */
+} DltContextData;
+
+#define DLT_DECLARE_CONTEXT(CONTEXT) \
+DltContext CONTEXT;
+
+
+#define DLT_IMPORT_CONTEXT(CONTEXT) \
+extern DltContext CONTEXT;
+
+#endif
+
 #include <string>
 
 class DLTWrapper

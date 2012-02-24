@@ -22,6 +22,7 @@
  *
  */
 
+
 #include "DLTWrapper.h"
 #include <cassert>
 
@@ -36,7 +37,9 @@ DLTWrapper *DLTWrapper::instance()
 
 void DLTWrapper::unregisterContext(DltContext & handle)
 {
+#ifdef WITH_DLT
     dlt_unregister_context(&handle);
+#endif
 }
 
 DLTWrapper::DLTWrapper() :
@@ -47,71 +50,98 @@ DLTWrapper::DLTWrapper() :
 
 void DLTWrapper::registerApp(const char *appid, const char *description)
 {
+#ifdef WITH_DLT
     dlt_register_app(appid, description);
     //register a default context
     dlt_register_context(&mDltContext, "def", "default Context registered by DLTWrapper CLass");
+#endif
 }
 
 void DLTWrapper::registerContext(DltContext& handle, const char *contextid, const char *description)
 {
+#ifdef WITH_DLT
     dlt_register_context(&handle, contextid, description);
+#endif
 }
 
 void DLTWrapper::init(DltLogLevelType loglevel, DltContext* context)
 {
     if (!context)
         context = &mDltContext;
+#ifdef WITH_DLT
     dlt_user_log_write_start(context, &mDltContextData, loglevel);
+#endif
+
 }
 
 void DLTWrapper::send()
 {
+#ifdef WITH_DLT
     dlt_user_log_write_finish(&mDltContextData);
+#endif
 }
 
 void DLTWrapper::append(const int8_t value)
 {
+#ifdef WITH_DLT
     dlt_user_log_write_int8(&mDltContextData, value);
+#endif
 }
 
 void DLTWrapper::append(const uint8_t value)
 {
+#ifdef WITH_DLT
     dlt_user_log_write_uint8(&mDltContextData, value);
+#endif
 }
 
 void DLTWrapper::append(const int16_t value)
 {
+#ifdef WITH_DLT
     dlt_user_log_write_int16(&mDltContextData, value);
+#endif
 }
 
 void DLTWrapper::append(const uint16_t value)
 {
+#ifdef WITH_DLT
     dlt_user_log_write_uint16(&mDltContextData, value);
+#endif
 }
 
 void DLTWrapper::append(const int32_t value)
 {
+#ifdef WITH_DLT
     dlt_user_log_write_int32(&mDltContextData, value);
+#endif
 }
 
 void DLTWrapper::append(const uint32_t value)
 {
+#ifdef WITH_DLT
     dlt_user_log_write_uint32(&mDltContextData, value);
+#endif
 }
 
 void DLTWrapper::append(const char*& value)
 {
+#ifdef WITH_DLT
     dlt_user_log_write_string(&mDltContextData, value);
+#endif
 }
 
 void DLTWrapper::append(const std::string& value)
 {
+#ifdef WITH_DLT
     dlt_user_log_write_string(&mDltContextData, value.c_str());
+#endif
 }
 
 void DLTWrapper::append(const bool value)
 {
+#ifdef WITH_DLT
     dlt_user_log_write_bool(&mDltContextData, static_cast<uint8_t>(value));
+#endif
 }
 
 DLTWrapper::~DLTWrapper()
