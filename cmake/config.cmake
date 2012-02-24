@@ -4,6 +4,7 @@
 #cmakedefine DAEMONVERSION "@DAEMONVERSION@"
 
 #cmakedefine WITH_DBUS_WRAPPER
+#cmakedefine WITH_DLT
 #cmakedefine WITH_SOCKETHANDLER_LOOP 
 #cmakedefine WITH_SIMPLEDBUS_LOOP 
 #cmakedefine WITH_PPOLL

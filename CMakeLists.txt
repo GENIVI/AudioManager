@@ -46,8 +46,13 @@ execute_process(COMMAND git log --pretty=short WORKING_DIRECTORY ${CMAKE_CURRENT
 
 PROJECT(AudioManagerDeamon)
 
+FIND_PACKAGE(PkgConfig)
+
 OPTION( WITH_DBUS_WRAPPER 
 	"Enable Dbus Wrapper Support" ON )
+	
+OPTION( WITH_DLT 
+    "Enable automotive-DLT Support" ON )
 
 OPTION( WITH_SOCKETHANDLER_LOOP 
 	"Enable SocketHandler Support (cannot work with SimpleDBusLoop)" ON )
@@ -128,8 +133,9 @@ SET(INTROSPECTION_COMMAND_XML_FILE "${AUDIO_INCLUDES_FOLDER}/dbus/CommandInterfa
 
 CONFIGURE_FILE( ${CMAKE_SOURCE_DIR}/cmake/config.cmake ${CMAKE_SOURCE_DIR}/includes/config.h )
 
-FIND_PACKAGE(PkgConfig)
-pkg_check_modules(DLT REQUIRED automotive-dlt)
+IF(WITH_DLT)    
+    pkg_check_modules(DLT REQUIRED automotive-dlt)
+ENDIF(WITH_DLT)
 
 IF(WITH_DOCUMENTATION)
 	find_package(Doxygen)
