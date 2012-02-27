@@ -39,7 +39,11 @@ RoutingReceiver::RoutingReceiver(DatabaseHandler *iDatabaseHandler, RoutingSende
         mDatabaseHandler(iDatabaseHandler), //
         mRoutingSender(iRoutingSender), //
         mControlSender(iControlSender), //
-        mSocketHandler(iSocketHandler) //
+        mSocketHandler(iSocketHandler), //
+        mListStartupHandles(), //
+        mListRundownHandles(), //
+        mWaitStartup(false), //
+        mWaitRundown(false)
 {
     assert(mDatabaseHandler!=NULL);
     assert(mRoutingSender!=NULL);
@@ -52,7 +56,11 @@ RoutingReceiver::RoutingReceiver(DatabaseHandler *iDatabaseHandler, RoutingSende
         mRoutingSender(iRoutingSender), //
         mControlSender(iControlSender), //
         mSocketHandler(iSocketHandler), //
-        mDBusWrapper(iDBusWrapper) //
+        mDBusWrapper(iDBusWrapper), //
+        mListStartupHandles(), //
+        mListRundownHandles(), //
+        mWaitStartup(false), //
+        mWaitRundown(false)
 {
     assert(mDatabaseHandler!=NULL);
     assert(mRoutingSender!=NULL);
@@ -329,8 +337,41 @@ am_Error_e RoutingReceiver::getSocketHandler(SocketHandler *& socketHandler) con
     return E_OK;
 }
 
-uint16_t RoutingReceiver::getInterfaceVersion() const
+void RoutingReceiver::getInterfaceVersion(std::string & version) const
 {
-    return RoutingReceiveVersion;
+    version = RoutingReceiveVersion;
+}
+
+void RoutingReceiver::confirmRoutingReady(const uint16_t handle) const
+{
+
+}
+
+void RoutingReceiver::confirmRoutingRundown(const uint16_t handle) const
+{
+}
+
+uint16_t am::RoutingReceiver::getStartupHandle()
+{
+    uint16_t handle = ++handleCount; //todo: handle overflow
+    mListStartupHandles.push_back(handle);
+    return handle;
+}
+
+uint16_t am::RoutingReceiver::getRundownHandle()
+{
+    uint16_t handle = ++handleCount; //todo: handle overflow
+    mListRundownHandles.push_back(handle);
+    return handle;
+}
+
+void am::RoutingReceiver::waitOnStartup(bool startup)
+{
+    mWaitStartup = startup;
+}
+
+void am::RoutingReceiver::waitOnRundown(bool rundown)
+{
+    mWaitRundown = rundown;
 }
 

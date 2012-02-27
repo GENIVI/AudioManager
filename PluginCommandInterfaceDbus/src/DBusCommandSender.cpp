@@ -86,38 +86,26 @@ am_Error_e DbusCommandSender::startupInterface(CommandReceiveInterface* commandr
     return (E_OK);
 }
 
-am_Error_e DbusCommandSender::stopInterface()
+void DbusCommandSender::setCommandReady(const uint16_t handle)
 {
-    log(&commandDbus, DLT_LOG_INFO, "stopInterface called");
-    mReady = false;
-    /**
-     * todo: finish DbusCommandSender::stopInterface(), what needs to be done?
-     */
-    return (E_OK);
-}
-
-am_Error_e DbusCommandSender::cbCommunicationReady()
-{
+    //todo:implement handle handling
     log(&commandDbus, DLT_LOG_INFO, "cbCommunicationReady called");
     mReady = true;
-    /**
-     * todo: implement DbusCommandSender::cbCommunicationReady()
-     */
-    return E_NOT_USED;
 }
 
-am_Error_e DbusCommandSender::cbCommunicationRundown()
+void DbusCommandSender::setCommandRundown(const uint16_t handle)
 {
     log(&commandDbus, DLT_LOG_INFO, "cbCommunicationRundown called");
     mReady = false;
     /**
      * todo: implement DbusCommandSender::cbCommunicationRundown()
      */
-    return E_NOT_USED;
 }
 
-void DbusCommandSender::cbNumberOfMainConnectionsChanged()
+void DbusCommandSender::cbNewMainConnection(const am_MainConnectionType_s mainConnection)
 {
+    (void)mainConnection;
+    //todo: change xml and interface to differetiate between new connection and removed one
     log(&commandDbus, DLT_LOG_INFO, "cbNumberOfMainConnectionsChanged called");
 
     if (mReady)
@@ -127,76 +115,72 @@ void DbusCommandSender::cbNumberOfMainConnectionsChanged()
     }
 }
 
-void DbusCommandSender::cbNumberOfSinksChanged()
+void DbusCommandSender::cbRemovedMainConnection(const am_mainConnectionID_t mainConnection)
 {
-    log(&commandDbus, DLT_LOG_INFO, "cbNumberOfSinksChanged called");
+//todo: change xml and interface to differetiate between new connection and removed one
+    log(&commandDbus, DLT_LOG_INFO, "cbNumberOfMainConnectionsChanged called");
 
-    std::vector<am_SinkType_s> newListSinks;
-    std::vector<am_SinkType_s> diffList;
-    mCommandReceiveInterface->getListMainSinks(newListSinks);
-    std::sort(newListSinks.begin(), newListSinks.end(), sortBySinkID());
-    std::set_symmetric_difference(newListSinks.begin(), newListSinks.end(), mlistSinks.begin(), mlistSinks.end(), std::back_inserter(diffList), sortBySinkID());
     if (mReady)
     {
-        if (newListSinks.size() > mlistSinks.size())
-        {
-            std::vector<am_SinkType_s>::iterator iter(diffList.begin());
-            for (;iter!=diffList.end();++iter)
-            {
-                mDBUSMessageHandler.initSignal(std::string(MY_NODE), "SinkAdded");
-                mDBUSMessageHandler.append(*iter);
-
-                log(&commandDbus, DLT_LOG_INFO, "send signal SinkAdded");
-                mDBUSMessageHandler.sendMessage();
-            }
-        }
-        else
-        {
-            std::vector<am_SinkType_s>::iterator iter(diffList.begin());
-            for (;iter!=diffList.end();++iter)
-            {
-                mDBUSMessageHandler.initSignal(std::string(MY_NODE), "SinkAdded");
-                mDBUSMessageHandler.append(*iter);
-
-                log(&commandDbus, DLT_LOG_INFO, "send signal SinkAdded");
-                mDBUSMessageHandler.sendMessage();
-            }
-        }
+        mDBUSMessageHandler.initSignal(std::string(MY_NODE), std::string("NumberOfMainConnectionsChanged"));
+        mDBUSMessageHandler.sendMessage();
     }
-    mlistSinks = newListSinks;
-
 }
 
-void DbusCommandSender::cbNumberOfSourcesChanged()
+void DbusCommandSender::cbNewSink(const am_SinkType_s& sink)
+{
+    log(&commandDbus, DLT_LOG_INFO, "cbNewSink called");
+
+    if (mReady)
+    {
+        mDBUSMessageHandler.initSignal(std::string(MY_NODE), "SinkAdded");
+        mDBUSMessageHandler.append(sink);
+
+        log(&commandDbus, DLT_LOG_INFO, "send signal SinkAdded");
+        mDBUSMessageHandler.sendMessage();
+    }
+}
+
+void DbusCommandSender::cbRemovedSink(const am_sinkID_t sinkID)
+{
+    //todo: check if this really works!
+    log(&commandDbus, DLT_LOG_INFO, "cbRemovedSink called");
+
+    if (mReady)
+    {
+        mDBUSMessageHandler.initSignal(std::string(MY_NODE), "SinkRemoved");
+        mDBUSMessageHandler.append(sinkID);
+
+        log(&commandDbus, DLT_LOG_INFO, "send signal SinkAdded");
+        mDBUSMessageHandler.sendMessage();
+    }
+}
+
+void DbusCommandSender::cbNewSource(const am_SourceType_s& source)
 {
     log(&commandDbus, DLT_LOG_INFO, "cbNumberOfSourcesChanged called");
 
-    std::vector<am_SourceType_s> newlistSources;
-    std::vector<am_SourceType_s> diffList;
-    mCommandReceiveInterface->getListMainSources(newlistSources);
-    std::sort(newlistSources.begin(), newlistSources.end(), sortBySourceID());
-    std::set_symmetric_difference(newlistSources.begin(), newlistSources.end(), mlistSources.begin(), mlistSources.end(), std::back_inserter(diffList), sortBySourceID());
-    assert(diffList.size()==1);
     if (mReady)
     {
-        if (newlistSources.size() > mlistSources.size())
-        {
-            mDBUSMessageHandler.initSignal(std::string(MY_NODE), "SourceAdded");
-            mDBUSMessageHandler.append(diffList[0]);
+        mDBUSMessageHandler.initSignal(std::string(MY_NODE), "SourceAdded");
+        mDBUSMessageHandler.append(source);
 
-            log(&commandDbus, DLT_LOG_INFO, "send signal SourceAdded");
-        }
-        else
-        {
-            mDBUSMessageHandler.initSignal(std::string(MY_NODE), "SourceRemoved");
-            mDBUSMessageHandler.append((dbus_uint16_t) diffList.begin()->sourceID);
+        log(&commandDbus, DLT_LOG_INFO, "send signal SourceAdded");
+        mDBUSMessageHandler.sendMessage();
+    }
+}
 
-            log(&commandDbus, DLT_LOG_INFO, "send signal SourceRemoved");
-        }
+void am::DbusCommandSender::cbRemovedSource(const am_sourceID_t source)
+{
+    if (mReady)
+    {
+        mDBUSMessageHandler.initSignal(std::string(MY_NODE), "SourceRemoved");
+        mDBUSMessageHandler.append(source);
+
+        log(&commandDbus, DLT_LOG_INFO, "send signal SourceRemoved");
 
         mDBUSMessageHandler.sendMessage();
     }
-    mlistSources = newlistSources;
 }
 
 void DbusCommandSender::cbNumberOfSinkClassesChanged()
@@ -234,15 +218,15 @@ void DbusCommandSender::cbMainConnectionStateChanged(const am_mainConnectionID_t
     }
 }
 
-void DbusCommandSender::cbMainSinkSoundPropertyChanged(const am_sinkID_t sinkID, const am_MainSoundProperty_s SoundProperty)
+void DbusCommandSender::cbMainSinkSoundPropertyChanged(const am_sinkID_t sinkID, const am_MainSoundProperty_s & soundProperty)
 {
-    log(&commandDbus, DLT_LOG_INFO, "cbMainSinkSoundPropertyChanged called, sinkID", sinkID, "SoundProperty.type", SoundProperty.type, "SoundProperty.value", SoundProperty.value);
+    log(&commandDbus, DLT_LOG_INFO, "cbMainSinkSoundPropertyChanged called, sinkID", sinkID, "SoundProperty.type", soundProperty.type, "SoundProperty.value", soundProperty.value);
 
     if (mReady)
     {
         mDBUSMessageHandler.initSignal(std::string(MY_NODE), std::string("MainSinkSoundPropertyChanged"));
         mDBUSMessageHandler.append((dbus_uint16_t) sinkID);
-        mDBUSMessageHandler.append(SoundProperty);
+        mDBUSMessageHandler.append(soundProperty);
         mDBUSMessageHandler.sendMessage();
     }
 }
@@ -337,8 +321,8 @@ void am::DbusCommandSender::cbTimingInformationChanged(const am_mainConnectionID
     }
 }
 
-uint16_t DbusCommandSender::getInterfaceVersion() const
+void DbusCommandSender::getInterfaceVersion(std::string & version) const
 {
-    return (CommandSendVersion);
+    version = CommandSendVersion;
 }
 

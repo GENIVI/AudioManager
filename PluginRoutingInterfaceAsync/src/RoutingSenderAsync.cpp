@@ -278,7 +278,7 @@ AsyncRoutingSender::~AsyncRoutingSender()
 {
 }
 
-void AsyncRoutingSender::startupRoutingInterface(RoutingReceiveInterface *routingreceiveinterface)
+am_Error_e AsyncRoutingSender::startupInterface(RoutingReceiveInterface *routingreceiveinterface)
 {
     //first, create the Shadow:
     assert(routingreceiveinterface!=0);
@@ -286,8 +286,9 @@ void AsyncRoutingSender::startupRoutingInterface(RoutingReceiveInterface *routin
     mShadow.setRoutingInterface(routingreceiveinterface);
 }
 
-void AsyncRoutingSender::routingInterfacesReady()
+void AsyncRoutingSender::setRoutingReady(const uint16_t handle)
 {
+    //todo: implement handle !
     assert(mReceiveInterface!=0);
     am_Error_e eCode;
     //first register the domains
@@ -348,7 +349,7 @@ void AsyncRoutingSender::routingInterfacesReady()
     //pthread_create(&mInterruptThread,NULL,&AsyncRoutingSender::InterruptEvents,&mShadow);
 }
 
-void AsyncRoutingSender::routingInterfacesRundown()
+void AsyncRoutingSender::setRoutingRundown(const uint16_t handle)
 {
     assert(mReceiveInterface!=0);
 }
@@ -952,9 +953,9 @@ void am::AsyncRoutingSender::updateDomainstateSafe(am_domainID_t domainID, am_Do
     pthread_mutex_unlock(&mDomainsMutex);
 }
 
-uint16_t AsyncRoutingSender::getInterfaceVersion() const
+void AsyncRoutingSender::getInterfaceVersion(std::string & version) const
 {
-    return (RoutingSendVersion);
+    version = RoutingSendVersion;
 }
 
 am_Error_e AsyncRoutingSender::asyncSetSourceSoundProperties(const am_Handle_s handle, const am_sourceID_t sourceID, const std::vector<am_SoundProperty_s> & listSoundProperties)

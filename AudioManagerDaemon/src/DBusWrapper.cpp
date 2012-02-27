@@ -103,7 +103,7 @@ DBusWrapper::DBusWrapper(SocketHandler* socketHandler) :
     }
     if (DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER != ret)
     {
-        logError("DBusWrapper::DBusWrapper Wrapper is not the Primary Owner",ret);
+        logError("DBusWrapper::DBusWrapper Wrapper is not the Primary Owner ! Another instance already running?",ret);
         exit(1);
     }
 }

@@ -468,13 +468,23 @@ am_Error_e ControlReceiver::removeSourceClassDB(const am_sourceClass_t sourceCla
 void ControlReceiver::setCommandReady()
 {
     logInfo("ControlReceiver::setCommandReady got called");
-    mCommandSender->cbCommunicationReady();
+    mCommandSender->setCommandReady();
 }
 
 void ControlReceiver::setRoutingReady()
 {
     logInfo("ControlReceiver::setRoutingReady got called");
-    mRoutingSender->routingInterfacesReady();
+    mRoutingSender->setRoutingReady();
+}
+
+void ControlReceiver::confirmControllerReady()
+{
+    //todo: one time implement here system interaction with NSM
+}
+
+void ControlReceiver::confirmControllerRundown()
+{
+    //todo: one time implement here system interaction with NSM
 }
 
 am_Error_e ControlReceiver::getSocketHandler(SocketHandler *& socketHandler)
@@ -483,20 +493,22 @@ am_Error_e ControlReceiver::getSocketHandler(SocketHandler *& socketHandler)
     return E_OK;
 }
 
-void am::ControlReceiver::setCommandRundown()
+void ControlReceiver::setCommandRundown()
 {
     logInfo("ControlReceiver::setCommandRundown got called");
-    mCommandSender->cbCommunicationRundown();
+    mCommandSender->setCommandRundown();
 }
 
-void am::ControlReceiver::setRoutingRundown()
+void ControlReceiver::setRoutingRundown()
 {
     logInfo("ControlReceiver::setRoutingRundown got called");
-    mRoutingSender->routingInterfacesRundown();
+    mRoutingSender->setRoutingRundown();
 }
 
-uint16_t ControlReceiver::getInterfaceVersion() const
+void ControlReceiver::getInterfaceVersion(std::string & version) const
 {
-    return ControlReceiveVersion;
+    version = ControlReceiveVersion;
 }
+
+
 

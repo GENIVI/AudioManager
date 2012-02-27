@@ -43,19 +43,6 @@ DbusRoutingSender::~DbusRoutingSender()
 {
 }
 
-void DbusRoutingSender::startupRoutingInterface(RoutingReceiveInterface *routingreceiveinterface)
-{
-    (void)routingreceiveinterface;
-}
-
-void DbusRoutingSender::routingInterfacesReady()
-{
-}
-
-void DbusRoutingSender::routingInterfacesRundown()
-{
-}
-
 am_Error_e DbusRoutingSender::asyncAbort(const am_Handle_s handle)
 {
     (void) handle;
@@ -124,6 +111,22 @@ am_Error_e DbusRoutingSender::setDomainState(const am_domainID_t domainID, const
     return (E_NOT_USED);
 }
 
+am_Error_e DbusRoutingSender::startupInterface(RoutingReceiveInterface *routingreceiveinterface)
+{
+    (void)routingreceiveinterface;
+    return (E_NOT_USED);
+}
+
+void DbusRoutingSender::setRoutingReady(const uint16_t handle)
+{
+    (void) handle;
+}
+
+void DbusRoutingSender::setRoutingRundown(const uint16_t handle)
+{
+    (void) handle;
+}
+
 am_Error_e DbusRoutingSender::returnBusName(std::string & BusName) const
 {
     BusName = "DbusPlugin";
@@ -162,8 +165,10 @@ am_Error_e DbusRoutingSender::asyncSetSourceSoundProperties(const am_Handle_s ha
     return (E_NOT_USED);
 }
 
-uint16_t DbusRoutingSender::getInterfaceVersion() const
+void DbusRoutingSender::getInterfaceVersion(std::string & version) const
 {
-    return (RoutingSendVersion);
+    version=RoutingSendVersion;
 }
+
+
 

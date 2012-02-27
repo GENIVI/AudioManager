@@ -34,6 +34,9 @@
 namespace am
 {
 
+class CommandReceiver;
+
+
 /**
  * This class is used to send data to the CommandInterface.
  * All loaded plugins will be called when a callback is invoked.
@@ -43,20 +46,19 @@ class CommandSender
 public:
     CommandSender(const std::vector<std::string>& listOfPluginDirectories);
     virtual ~CommandSender();
-    am_Error_e startupInterface(CommandReceiveInterface* commandreceiveinterface);
-    am_Error_e stopInterface();
-    am_Error_e cbCommunicationReady();
-    am_Error_e cbCommunicationRundown();
+    am_Error_e startupInterfaces(CommandReceiver* iCommandReceiver);
+    void setCommandReady();
+    void setCommandRundown();
     void cbNewMainConnection(const am_MainConnectionType_s mainConnection);
-    void cbRemovedMainConnection(const am_MainConnectionType_s mainConnection);
-    void cbNewSink(const am_SinkType_s sink);
-    void cbRemovedSink(const am_SinkType_s sink);
+    void cbRemovedMainConnection(const am_mainConnectionID_t mainConnection);
+    void cbNewSink(am_SinkType_s sink);
+    void cbRemovedSink(const am_sinkID_t sink);
     void cbNewSource(const am_SourceType_s source);
-    void cbRemovedSource(const am_SourceType_s source);
+    void cbRemovedSource(const am_sourceID_t source);
     void cbNumberOfSinkClassesChanged();
     void cbNumberOfSourceClassesChanged();
     void cbMainConnectionStateChanged(const am_mainConnectionID_t connectionID, const am_ConnectionState_e connectionState);
-    void cbMainSinkSoundPropertyChanged(const am_sinkID_t sinkID, const am_MainSoundProperty_s soundProperty);
+    void cbMainSinkSoundPropertyChanged(const am_sinkID_t sinkID, const am_MainSoundProperty_s& soundProperty);
     void cbMainSourceSoundPropertyChanged(const am_sourceID_t sourceID, const am_MainSoundProperty_s& soundProperty);
     void cbSinkAvailabilityChanged(const am_sinkID_t sinkID, const am_Availability_s& availability);
     void cbSourceAvailabilityChanged(const am_sourceID_t sourceID, const am_Availability_s& availability);
@@ -64,7 +66,7 @@ public:
     void cbSinkMuteStateChanged(const am_sinkID_t sinkID, const am_MuteState_e muteState);
     void cbSystemPropertyChanged(const am_SystemProperty_s& systemProperty);
     void cbTimingInformationChanged(const am_mainConnectionID_t mainConnectionID, const am_timeSync_t time);
-    uint16_t getInterfaceVersion() const;
+    void getInterfaceVersion(std::string& version) const;
     am_Error_e getListPlugins(std::vector<std::string>& interfaces) const;
 #ifdef UNIT_TEST
     friend class CommandInterfaceBackdoor; //this is to get access to the loaded plugins and be able to exchange the interfaces
@@ -73,7 +75,9 @@ private:
     void unloadLibraries(void); //!< unload the shared libraries
     std::vector<CommandSendInterface*> mListInterfaces; //!< list of all interfaces
     std::vector<void*> mListLibraryHandles; //!< list of all library handles. This information is used to unload the plugins correctly.
-    std::vector<std::string> mListLibraryNames; //!< list of all library anmes. This information is used for getListPlugins.
+    std::vector<std::string> mListLibraryNames; //!< list of all library names. This information is used for getListPlugins.
+
+    CommandReceiver *mCommandReceiver;
 };
 
 }

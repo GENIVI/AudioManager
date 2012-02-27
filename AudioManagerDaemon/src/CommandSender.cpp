@@ -23,14 +23,17 @@
  */
 
 #include "CommandSender.h"
-#include "command/CommandReceiveInterface.h"
 #include <dirent.h>
+#include <sstream>
+#include <string>
+#include "CommandReceiver.h"
 #include "PluginTemplate.h"
 #include "DLTWrapper.h"
 
 using namespace am;
 
-#define REQUIRED_INTERFACE_VERSION 1
+#define REQUIRED_INTERFACE_VERSION_MAJOR 1
+#define REQUIRED_INTERFACE_VERSION_MINOR 0
 
 //!< macro to call all interfaces
 #define CALL_ALL_INTERFACES(...) 														 \
@@ -43,8 +46,9 @@ using namespace am;
 
 CommandSender::CommandSender(const std::vector<std::string>& listOfPluginDirectories) :
         mListInterfaces(), //
-        mListLibraryHandles(),
-        mListLibraryNames()
+        mListLibraryHandles(), //
+        mListLibraryNames(), //
+        mCommandReceiver()
 {
     std::vector<std::string> sharedLibraryNameList;
     std::vector<std::string>::const_iterator dirIter = listOfPluginDirectories.begin();
@@ -54,12 +58,12 @@ CommandSender::CommandSender(const std::vector<std::string>& listOfPluginDirecto
     for (; dirIter < dirIterEnd; ++dirIter)
     {
         const char* directoryName = dirIter->c_str();
-        logInfo("Searching for CommandPlugins in" , *dirIter);
+        logInfo("Searching for CommandPlugins in", *dirIter);
         DIR *directory = opendir(directoryName);
 
         if (!directory)
         {
-            logError("Error opening directory ",*dirIter);
+            logError("Error opening directory ", *dirIter);
             continue;
         }
 
@@ -108,9 +112,15 @@ CommandSender::CommandSender(const std::vector<std::string>& listOfPluginDirecto
         }
 
         //check libversion
-        if (commander->getInterfaceVersion() < REQUIRED_INTERFACE_VERSION)
+        std::string version;
+        commander->getInterfaceVersion(version);
+        uint16_t minorVersion, majorVersion;
+        std::istringstream(version.substr(0, 1)) >> majorVersion;
+        std::istringstream(version.substr(2, 1)) >> minorVersion;
+
+        if (majorVersion < REQUIRED_INTERFACE_VERSION_MAJOR || ((majorVersion == REQUIRED_INTERFACE_VERSION_MAJOR) && (minorVersion > REQUIRED_INTERFACE_VERSION_MINOR)))
         {
-            logInfo("RoutingPlugin initialization failed. Version of Interface to old");
+            logInfo("CommandInterface initialization failed. Version of Interface to old");
             continue;
         }
 
@@ -125,63 +135,22 @@ CommandSender::~CommandSender()
     unloadLibraries();
 }
 
-am_Error_e CommandSender::stopInterface()
+am_Error_e CommandSender::startupInterfaces(CommandReceiver *iCommandReceiver)
 {
+    mCommandReceiver = iCommandReceiver;
     am_Error_e returnError = E_OK;
 
     std::vector<CommandSendInterface*>::iterator iter = mListInterfaces.begin();
     std::vector<CommandSendInterface*>::iterator iterEnd = mListInterfaces.end();
     for (; iter < iterEnd; ++iter)
     {
-        am_Error_e error = (*iter)->stopInterface();
+        am_Error_e error = (*iter)->startupInterface(iCommandReceiver);
         if (error != E_OK)
         {
             returnError = error;
         }
     }
     return returnError;
-}
-
-am_Error_e CommandSender::startupInterface(CommandReceiveInterface *commandreceiveinterface)
-{
-    am_Error_e returnError = E_OK;
-
-    std::vector<CommandSendInterface*>::iterator iter = mListInterfaces.begin();
-    std::vector<CommandSendInterface*>::iterator iterEnd = mListInterfaces.end();
-    for (; iter < iterEnd; ++iter)
-    {
-        am_Error_e error = (*iter)->startupInterface(commandreceiveinterface);
-        if (error != E_OK)
-        {
-            returnError = error;
-        }
-    }
-    return returnError;
-}
-
-void CommandSender::cbCommunicationReady()
-{
-    CALL_ALL_INTERFACES(cbCommunicationReady())
-}
-
-void CommandSender::cbCommunicationRundown()
-{
-    CALL_ALL_INTERFACES(cbCommunicationRundown())
-}
-
-void CommandSender::cbNumberOfMainConnectionsChanged()
-{
-    CALL_ALL_INTERFACES(cbNumberOfMainConnectionsChanged())
-}
-
-void CommandSender::cbNumberOfSinksChanged()
-{
-    CALL_ALL_INTERFACES(cbNumberOfSinksChanged())
-}
-
-void CommandSender::cbNumberOfSourcesChanged()
-{
-    CALL_ALL_INTERFACES(cbNumberOfSourcesChanged())
 }
 
 void CommandSender::cbNumberOfSinkClassesChanged()
@@ -199,12 +168,12 @@ void CommandSender::cbMainConnectionStateChanged(const am_mainConnectionID_t con
     CALL_ALL_INTERFACES(cbMainConnectionStateChanged(connectionID,connectionState))
 }
 
-void CommandSender::cbMainSinkSoundPropertyChanged(const am_sinkID_t sinkID, const am_MainSoundProperty_s SoundProperty)
+void CommandSender::cbMainSinkSoundPropertyChanged(const am_sinkID_t sinkID, const am_MainSoundProperty_s& SoundProperty)
 {
     CALL_ALL_INTERFACES(cbMainSinkSoundPropertyChanged(sinkID,SoundProperty))
 }
 
-void CommandSender::cbMainSourceSoundPropertyChanged(const am_sourceID_t sourceID, const am_MainSoundProperty_s & SoundProperty)
+void CommandSender::cbMainSourceSoundPropertyChanged(const am_sourceID_t sourceID, const am_MainSoundProperty_s& SoundProperty)
 {
     CALL_ALL_INTERFACES(cbMainSourceSoundPropertyChanged(sourceID,SoundProperty))
 }
@@ -239,34 +208,69 @@ void CommandSender::cbTimingInformationChanged(const am_mainConnectionID_t mainC
     CALL_ALL_INTERFACES(cbTimingInformationChanged(mainConnection,time))
 }
 
+void CommandSender::cbNewMainConnection(const am_MainConnectionType_s mainConnection)
+{
+    CALL_ALL_INTERFACES(cbNewMainConnection(mainConnection))
+}
+
+void CommandSender::cbRemovedMainConnection(const am_mainConnectionID_t mainConnection)
+{
+    CALL_ALL_INTERFACES(cbRemovedMainConnection(mainConnection))
+}
+
+void CommandSender::cbNewSink(const am_SinkType_s sink)
+{
+    CALL_ALL_INTERFACES(cbNewSink(sink))
+}
+
+void CommandSender::cbRemovedSink(const am_sinkID_t sink)
+{
+    CALL_ALL_INTERFACES(cbRemovedSink(sink))
+}
+
+void CommandSender::cbNewSource(const am_SourceType_s source)
+{
+    CALL_ALL_INTERFACES(cbNewSource(source))
+}
+
+void CommandSender::cbRemovedSource(const am_sourceID_t source)
+{
+    CALL_ALL_INTERFACES(cbRemovedSource(source))
+}
+
+void CommandSender::setCommandReady()
+{
+    mCommandReceiver->waitOnStartup(false);
+    std::vector<CommandSendInterface*>::iterator iter = mListInterfaces.begin();
+    std::vector<CommandSendInterface*>::iterator iterEnd = mListInterfaces.end();
+    for (; iter < iterEnd; ++iter)
+    {
+        (*iter)->setCommandReady(mCommandReceiver->getStartupHandle());
+    }
+    mCommandReceiver->waitOnStartup(true);
+}
+
+void CommandSender::setCommandRundown()
+{
+    mCommandReceiver->waitOnRundown(false);
+    std::vector<CommandSendInterface*>::iterator iter = mListInterfaces.begin();
+    std::vector<CommandSendInterface*>::iterator iterEnd = mListInterfaces.end();
+    for (; iter < iterEnd; ++iter)
+    {
+        (*iter)->setCommandRundown(mCommandReceiver->getRundownHandle());
+    }
+    mCommandReceiver->waitOnRundown(true);
+}
+
+void CommandSender::getInterfaceVersion(std::string & version) const
+{
+    version = CommandSendVersion;
+}
+
 am_Error_e am::CommandSender::getListPlugins(std::vector<std::string> & interfaces) const
 {
-   interfaces = mListLibraryNames;
-   return E_OK;
-}
-
-void am::CommandSender::cbNewMainConnection(const am_MainConnectionType_s mainConnection)
-{
-}
-
-void am::CommandSender::cbRemovedMainConnection(const am_MainConnectionType_s mainConnection)
-{
-}
-
-void am::CommandSender::cbNewSink(const am_SinkType_s sink)
-{
-}
-
-void am::CommandSender::cbRemovedSink(const am_SinkType_s sink)
-{
-}
-
-void am::CommandSender::cbNewSource(const am_SourceType_s source)
-{
-}
-
-void am::CommandSender::cbRemovedSource(const am_SourceType_s source)
-{
+    interfaces = mListLibraryNames;
+    return E_OK;
 }
 
 void CommandSender::unloadLibraries(void)
@@ -277,10 +281,5 @@ void CommandSender::unloadLibraries(void)
         dlclose(*iterator);
     }
     mListLibraryHandles.clear();
-}
-
-uint16_t CommandSender::getInterfaceVersion() const
-{
-    return CommandSendVersion;
 }
 

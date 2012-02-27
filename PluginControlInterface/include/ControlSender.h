@@ -37,8 +37,8 @@ public:
     ControlSenderPlugin();
     virtual ~ControlSenderPlugin();
     am_Error_e startupController(ControlReceiveInterface* controlreceiveinterface);
-    am_Error_e stopController();
-    void hookAllPluginsLoaded();
+    void setControllerReady();
+    void setControllerRundown();
     am_Error_e hookUserConnectionRequest(const am_sourceID_t sourceID, const am_sinkID_t sinkID, am_mainConnectionID_t& mainConnectionID);
     am_Error_e hookUserDisconnectionRequest(const am_mainConnectionID_t connectionID);
     am_Error_e hookUserSetMainSinkSoundProperty(const am_sinkID_t sinkID, const am_MainSoundProperty_s& soundProperty);
@@ -73,12 +73,16 @@ public:
     void cbAckSetSinkVolumeChange(const am_Handle_s handle, const am_volume_t volume, const am_Error_e error);
     void cbAckSetSourceVolumeChange(const am_Handle_s handle, const am_volume_t voulme, const am_Error_e error);
     void cbAckSetSourceState(const am_Handle_s handle, const am_Error_e error);
-    void cbAckSetSourceSoundProperty(const am_Handle_s handle, const am_Error_e error);
     void cbAckSetSourceSoundProperties(const am_Handle_s handle, const am_Error_e error);
-    void cbAckSetSinkSoundProperty(const am_Handle_s handle, const am_Error_e error);
+    void cbAckSetSourceSoundProperty(const am_Handle_s handle, const am_Error_e error);
     void cbAckSetSinkSoundProperties(const am_Handle_s handle, const am_Error_e error);
+    void cbAckSetSinkSoundProperty(const am_Handle_s handle, const am_Error_e error);
     am_Error_e getConnectionFormatChoice(const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_Route_s listRoute, const std::vector<am_ConnectionFormat_e> listPossibleConnectionFormats, std::vector<am_ConnectionFormat_e>& listPrioConnectionFormats);
-    uint16_t getInterfaceVersion() const;
+    void getInterfaceVersion(std::string& version) const;
+    void confirmCommandReady();
+    void confirmRoutingReady();
+    void confirmCommandRundown();
+    void confirmRoutingRundown();
 
 private:
     ControlReceiveInterface * mControlReceiveInterface;

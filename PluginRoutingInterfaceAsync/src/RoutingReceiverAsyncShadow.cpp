@@ -74,7 +74,7 @@ void RoutingReceiverAsyncShadow::ackConnect(const am_Handle_s handle, const am_c
     //ok, fire the signal that data needs to be received !
     if (write(mPipe[1], &msg.msgID, sizeof(msgID_e)) == -1)
     {
-        logError("RoutingReceiverAsyncShadow::ackConnect write failed, error code:",strerror(errno));
+        logError("RoutingReceiverAsyncShadow::ackConnect write failed, error code:", strerror(errno));
     }
 }
 
@@ -98,7 +98,7 @@ void RoutingReceiverAsyncShadow::ackDisconnect(const am_Handle_s handle, const a
     //ok, fire the signal that data needs to be received !
     if (write(mPipe[1], &msg.msgID, sizeof(msgID_e)) == -1)
     {
-        logError("RoutingReceiverAsyncShadow::ackDisconnect write failed, error code:",strerror(errno));
+        logError("RoutingReceiverAsyncShadow::ackDisconnect write failed, error code:", strerror(errno));
     }
 }
 
@@ -122,7 +122,7 @@ void RoutingReceiverAsyncShadow::ackSetSinkVolumeChange(const am_Handle_s handle
     //ok, fire the signal that data needs to be received !
     if (write(mPipe[1], &msg.msgID, sizeof(msgID_e)) == -1)
     {
-        logError("RoutingReceiverAsyncShadow::ackSetSinkVolumeChange write failed, error code:",strerror(errno));
+        logError("RoutingReceiverAsyncShadow::ackSetSinkVolumeChange write failed, error code:", strerror(errno));
     }
 }
 
@@ -146,7 +146,7 @@ void RoutingReceiverAsyncShadow::ackSetSourceVolumeChange(const am_Handle_s hand
     //ok, fire the signal that data needs to be received !
     if (write(mPipe[1], &msg.msgID, sizeof(msgID_e)) == -1)
     {
-        logError("RoutingReceiverAsyncShadow::ackSetSourceVolumeChange write failed, error code:",strerror(errno));
+        logError("RoutingReceiverAsyncShadow::ackSetSourceVolumeChange write failed, error code:", strerror(errno));
     }
 }
 
@@ -169,7 +169,7 @@ void RoutingReceiverAsyncShadow::ackSetSourceState(const am_Handle_s handle, con
     //ok, fire the signal that data needs to be received !
     if (write(mPipe[1], &msg.msgID, sizeof(msgID_e)) == -1)
     {
-        logError("RoutingReceiverAsyncShadow::ackSetSourceState write failed, error code:",strerror(errno));
+        logError("RoutingReceiverAsyncShadow::ackSetSourceState write failed, error code:", strerror(errno));
     }
 }
 
@@ -192,7 +192,7 @@ void RoutingReceiverAsyncShadow::ackSetSinkSoundProperty(const am_Handle_s handl
     //ok, fire the signal that data needs to be received !
     if (write(mPipe[1], &msg.msgID, sizeof(msgID_e)) == -1)
     {
-        logError("RoutingReceiverAsyncShadow::ackSetSinkSoundProperty write failed, error code:",strerror(errno));
+        logError("RoutingReceiverAsyncShadow::ackSetSinkSoundProperty write failed, error code:", strerror(errno));
     }
 }
 
@@ -215,7 +215,7 @@ void RoutingReceiverAsyncShadow::ackSetSourceSoundProperty(const am_Handle_s han
     //ok, fire the signal that data needs to be received !
     if (write(mPipe[1], &msg.msgID, sizeof(msgID_e)) == -1)
     {
-        logError("RoutingReceiverAsyncShadow::ackSetSourceSoundProperty write failed, error code:",strerror(errno));
+        logError("RoutingReceiverAsyncShadow::ackSetSourceSoundProperty write failed, error code:", strerror(errno));
     }
 }
 
@@ -239,7 +239,7 @@ void RoutingReceiverAsyncShadow::ackCrossFading(const am_Handle_s handle, const 
     //ok, fire the signal that data needs to be received !
     if (write(mPipe[1], &msg.msgID, sizeof(msgID_e)) == -1)
     {
-        logError("RoutingReceiverAsyncShadow::ackCrossFading write failed, error code:",strerror(errno));
+        logError("RoutingReceiverAsyncShadow::ackCrossFading write failed, error code:", strerror(errno));
     }
 }
 
@@ -263,7 +263,7 @@ void RoutingReceiverAsyncShadow::ackSourceVolumeTick(const am_Handle_s handle, c
     //ok, fire the signal that data needs to be received !
     if (write(mPipe[1], &msg.msgID, sizeof(msgID_e)) == -1)
     {
-        logError("RoutingReceiverAsyncShadow::ackSourceVolumeTick write failed, error code:",strerror(errno));
+        logError("RoutingReceiverAsyncShadow::ackSourceVolumeTick write failed, error code:", strerror(errno));
     }
 }
 
@@ -287,7 +287,7 @@ void RoutingReceiverAsyncShadow::ackSinkVolumeTick(const am_Handle_s handle, con
     //ok, fire the signal that data needs to be received !
     if (write(mPipe[1], &msg.msgID, sizeof(msgID_e)) == -1)
     {
-        logError("RoutingReceiverAsyncShadow::ackSinkVolumeTick write failed, error code:",strerror(errno));
+        logError("RoutingReceiverAsyncShadow::ackSinkVolumeTick write failed, error code:", strerror(errno));
     }
 }
 
@@ -311,7 +311,7 @@ void RoutingReceiverAsyncShadow::hookInterruptStatusChange(const am_sourceID_t s
     //ok, fire the signal that data needs to be received !
     if (write(mPipe[1], &msg.msgID, sizeof(msgID_e)) == -1)
     {
-        logError("RoutingReceiverAsyncShadow::hookInterruptStatusChange write failed, error code:",strerror(errno));
+        logError("RoutingReceiverAsyncShadow::hookInterruptStatusChange write failed, error code:", strerror(errno));
     }
 }
 
@@ -335,7 +335,7 @@ void RoutingReceiverAsyncShadow::hookSinkAvailablityStatusChange(const am_sinkID
     //ok, fire the signal that data needs to be received !
     if (write(mPipe[1], &msg.msgID, sizeof(msgID_e)) == -1)
     {
-        logError("RoutingReceiverAsyncShadow::hookSinkAvailablityStatusChange write failed, error code:",strerror(errno));
+        logError("RoutingReceiverAsyncShadow::hookSinkAvailablityStatusChange write failed, error code:", strerror(errno));
     }
 }
 
@@ -359,7 +359,7 @@ void RoutingReceiverAsyncShadow::hookSourceAvailablityStatusChange(const am_sour
     //ok, fire the signal that data needs to be received !
     if (write(mPipe[1], &msg.msgID, sizeof(msgID_e)) == -1)
     {
-        logError("RoutingReceiverAsyncShadow::hookSourceAvailablityStatusChange write failed, error code:",strerror(errno));
+        logError("RoutingReceiverAsyncShadow::hookSourceAvailablityStatusChange write failed, error code:", strerror(errno));
     }
 }
 
@@ -383,7 +383,7 @@ void RoutingReceiverAsyncShadow::hookDomainStateChange(const am_domainID_t domai
     //ok, fire the signal that data needs to be received !
     if (write(mPipe[1], &msg.msgID, sizeof(msgID_e)) == -1)
     {
-        logError("RoutingReceiverAsyncShadow::hookDomainStateChange write failed, error code:",strerror(errno));
+        logError("RoutingReceiverAsyncShadow::hookDomainStateChange write failed, error code:", strerror(errno));
     }
 }
 
@@ -407,7 +407,7 @@ void RoutingReceiverAsyncShadow::hookTimingInformationChanged(const am_connectio
     //ok, fire the signal that data needs to be received !
     if (write(mPipe[1], &msg.msgID, sizeof(msgID_e)) == -1)
     {
-        logError("RoutingReceiverAsyncShadow::hookTimingInformationChanged write failed, error code:",strerror(errno));
+        logError("RoutingReceiverAsyncShadow::hookTimingInformationChanged write failed, error code:", strerror(errno));
     }
 }
 
@@ -484,7 +484,7 @@ bool RoutingReceiverAsyncShadow::asyncDispatcher(const sh_pollHandle_t handle, v
         mRoutingReceiveInterface->hookTimingInformationChanged(msg.parameters.timingInfoChange.connectionID, msg.parameters.timingInfoChange.delay);
         break;
     default:
-        logError("RoutingReceiverAsyncShadow::asyncDispatcher unknown message was received:",msg.msgID);
+        logError("RoutingReceiverAsyncShadow::asyncDispatcher unknown message was received:", msg.msgID);
         break;
     }
 

@@ -26,8 +26,8 @@
 #define DATABASEOBSERVER_H_
 
 #include <audiomanagertypes.h>
-#include <SocketHandler.h>
 #include <queue>
+#include "CAmSerializer.h"
 
 namespace am
 {
@@ -35,6 +35,7 @@ namespace am
 class TelnetServer;
 class CommandSender;
 class RoutingSender;
+class SocketHandler;
 
 /**
  * This class observes the Database and notifies other classes about important events, mainly the CommandSender.
@@ -46,21 +47,22 @@ public:
     DatabaseObserver(CommandSender *iCommandSender, RoutingSender *iRoutingSender, SocketHandler *iSocketHandler);
     DatabaseObserver(CommandSender *iCommandSender, RoutingSender *iRoutingSender, SocketHandler *iSocketHandler, TelnetServer *iTelnetServer);
     virtual ~DatabaseObserver();
-    void numberOfMainConnectionsChanged();
     void numberOfSinkClassesChanged();
     void numberOfSourceClassesChanged();
-    void newSink(am_Sink_s sink);
-    void newSource(am_Source_s source);
-    void newDomain(am_Domain_s domain);
-    void newGateway(am_Gateway_s gateway);
-    void newCrossfader(am_Crossfader_s crossfader);
-    void removedSink(am_sinkID_t sinkID);
-    void removedSource(am_sourceID_t sourceID);
-    void removeDomain(am_domainID_t domainID);
-    void removeGateway(am_gatewayID_t gatewayID);
-    void removeCrossfader(am_crossfaderID_t crossfaderID);
+    void newSink(const am_Sink_s& sink);
+    void newSource(const am_Source_s& source);
+    void newDomain(const am_Domain_s& domain);
+    void newGateway(const am_Gateway_s& gateway);
+    void newCrossfader(const am_Crossfader_s& crossfader);
+    void newMainConnection(const am_MainConnectionType_s& mainConnection);
+    void removedMainConnection(const am_mainConnectionID_t mainConnection);
+    void removedSink(const am_sinkID_t sinkID, const bool visible);
+    void removedSource(const am_sourceID_t sourceID, const bool visible);
+    void removeDomain(const am_domainID_t domainID);
+    void removeGateway(const am_gatewayID_t gatewayID);
+    void removeCrossfader(const am_crossfaderID_t crossfaderID);
     void mainConnectionStateChanged(const am_mainConnectionID_t connectionID, const am_ConnectionState_e connectionState);
-    void mainSinkSoundPropertyChanged(const am_sinkID_t sinkID, const am_MainSoundProperty_s SoundProperty);
+    void mainSinkSoundPropertyChanged(const am_sinkID_t sinkID, const am_MainSoundProperty_s& SoundProperty);
     void mainSourceSoundPropertyChanged(const am_sourceID_t sourceID, const am_MainSoundProperty_s& SoundProperty);
     void sinkAvailabilityChanged(const am_sinkID_t sinkID, const am_Availability_s& availability);
     void sourceAvailabilityChanged(const am_sourceID_t sourceID, const am_Availability_s& availability);
@@ -69,112 +71,11 @@ public:
     void systemPropertyChanged(const am_SystemProperty_s& SystemProperty);
     void timingInformationChanged(const am_mainConnectionID_t mainConnection, const am_timeSync_t time);
 
-    void receiverCallback(const pollfd pollfd, const sh_pollHandle_t handle, void* userData);
-    bool dispatcherCallback(const sh_pollHandle_t handle, void* userData);
-    bool checkerCallback(const sh_pollHandle_t handle, void* userData);
-
-    shPollFired_T<DatabaseObserver> receiverCallbackT;
-    shPollDispatch_T<DatabaseObserver> dispatcherCallbackT;
-    shPollCheck_T<DatabaseObserver> checkerCallbackT;
-
 private:
-
-    enum do_msgID_e
-    {
-        MDO_cbNumberOfSinksChanged, //
-        MDO_cbNumberOfSourcesChanged, //
-        MDO_cbNumberOfMainConnectionsChanged, //
-        MDO_cbNumberOfSinkClassesChanged, //
-        MDO_cbNumberOfSourceClassesChanged, //
-        MDO_cbMainConnectionStateChanged, //
-        MDO_cbMainSinkSoundPropertyChanged, //
-        MDO_cbMainSourceSoundPropertyChanged, //
-        MDO_cbSinkAvailabilityChanged, //
-        MDO_cbSourceAvailabilityChanged, //
-        MDO_cbVolumeChanged, //
-        MDO_cbSinkMuteStateChanged, //
-        MDO_cbSystemPropertyChanged, //
-        MDO_cbTimingInformationChanged
-    };
-
-    struct do_connectionStateChanged_s
-    {
-        am_mainConnectionID_t connectionID;
-        am_ConnectionState_e connectionState;
-    };
-
-    struct do_mainSinkSoundPropertyChanged_s
-    {
-        am_sinkID_t sinkID;
-        am_MainSoundProperty_s SoundProperty;
-    };
-
-    struct do_mainSourceSoundPropertyChanged_s
-    {
-        am_sourceID_t sourceID;
-        am_MainSoundProperty_s SoundProperty;
-    };
-
-    struct do_sinkAvailabilityChanged_s
-    {
-        am_sinkID_t sinkID;
-        am_Availability_s availability;
-    };
-
-    struct do_sourceAvailabilityChanged_s
-    {
-        am_sourceID_t sourceID;
-        am_Availability_s availability;
-    };
-
-    struct do_volumeChanged_s
-    {
-        am_sinkID_t sinkID;
-        am_mainVolume_t volume;
-    };
-
-    struct do_sinkMuteStateChanged_s
-    {
-        am_sinkID_t sinkID;
-        am_MuteState_e muteState;
-    };
-
-    struct do_timingInformationChanged_s
-    {
-        am_mainConnectionID_t mainConnection;
-        am_timeSync_t time;
-    };
-
-    union do_parameter_u
-    {
-        do_connectionStateChanged_s connectionStateChanged;
-        do_mainSinkSoundPropertyChanged_s mainSinkSoundPropertyChanged;
-        do_mainSourceSoundPropertyChanged_s mainSourceSoundPropertyChanged;
-        do_sinkAvailabilityChanged_s sinkAvailabilityChanged;
-        do_sourceAvailabilityChanged_s sourceAvailabilityChanged;
-        do_volumeChanged_s volumeChanged;
-        do_sinkMuteStateChanged_s sinkMuteStateChanged;
-        do_timingInformationChanged_s timingInformationChanged;
-        am_SystemProperty_s systemProperty;
-    };
-
-    struct do_msg_s
-    {
-        do_msgID_e msgID;
-        do_parameter_u parameters;
-    };
-
-    void pipeCommand(const do_msg_s& message);
-
-    void commonConstructor(); //!< this is called from both constructors
     CommandSender *mCommandSender; //!< pointer to the comandSender
     RoutingSender* mRoutingSender; //!< pointer to the routingSender
     TelnetServer* mTelnetServer; //!< pointer to the telnetserver
-    SocketHandler* mSocketHandler; //!< pointer to the sockethandler
-
-    int mPipe[2];
-    sh_pollHandle_t mHandle;
-    std::queue<do_msg_s> mQueue;
+    CAmSerializer mSerializer;
 };
 
 }

@@ -61,12 +61,7 @@ am_Error_e ControlSenderPlugin::startupController(ControlReceiveInterface *contr
     return E_NOT_USED;
 }
 
-am_Error_e ControlSenderPlugin::stopController()
-{
-    return E_NOT_USED;
-}
-
-void ControlSenderPlugin::hookAllPluginsLoaded()
+void ControlSenderPlugin::setControllerReady()
 {
     //here is a good place to insert Source and SinkClasses into the database...
     mControlReceiveInterface->setRoutingReady();
@@ -440,6 +435,10 @@ void ControlSenderPlugin::cbAckSetSinkSoundProperties(const am_Handle_s handle, 
     (void) handle;
 }
 
+void ControlSenderPlugin::setControllerRundown()
+{
+}
+
 am_Error_e ControlSenderPlugin::getConnectionFormatChoice(const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_Route_s listRoute, const std::vector<am_ConnectionFormat_e> listPossibleConnectionFormats, std::vector<am_ConnectionFormat_e> & listPrioConnectionFormats)
 {
     (void) sourceID;
@@ -450,8 +449,28 @@ am_Error_e ControlSenderPlugin::getConnectionFormatChoice(const am_sourceID_t so
     return (E_OK);
 }
 
-uint16_t ControlSenderPlugin::getInterfaceVersion() const
+void ControlSenderPlugin::getInterfaceVersion(std::string & version) const
 {
-    return (ControlSendVersion);
+    version = ControlSendVersion;
+}
+
+void ControlSenderPlugin::confirmCommandReady()
+{
+    //todo:implement
+}
+
+void ControlSenderPlugin::confirmRoutingReady()
+{
+    //todo:implement
+}
+
+void ControlSenderPlugin::confirmCommandRundown()
+{
+    //todo:implement
+}
+
+void ControlSenderPlugin::confirmRoutingRundown()
+{
+    //todo:implement
 }
 

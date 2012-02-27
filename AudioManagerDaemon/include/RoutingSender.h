@@ -35,6 +35,8 @@
 namespace am
 {
 
+class RoutingReceiver;
+
 /**
  * Implements the RoutingSendInterface. Loads all plugins and dispatches calls to the plugins
  */
@@ -95,9 +97,9 @@ public:
      * this removes the Crossfader to the lookup table of the Router. This must be done everytime a crossfader is deregistered.
      */
     am_Error_e removeCrossfaderLookup(const am_crossfaderID_t crossfaderID);
-    void startupRoutingInterface(RoutingReceiveInterface* routingreceiveinterface);
-    void routingInterfacesReady();
-    void routingInterfacesRundown();
+    am_Error_e startupInterfaces(RoutingReceiver* iRoutingReceiver);
+    void setRoutingReady();
+    void setRoutingRundown();
     am_Error_e asyncAbort(const am_Handle_s& handle);
     am_Error_e asyncConnect(am_Handle_s& handle, const am_connectionID_t connectionID, const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_ConnectionFormat_e connectionFormat);
     am_Error_e asyncDisconnect(am_Handle_s& handle, const am_connectionID_t connectionID);
@@ -112,7 +114,7 @@ public:
     am_Error_e setDomainState(const am_domainID_t domainID, const am_DomainState_e domainState);
     am_Error_e getListHandles(std::vector<am_Handle_s> & listHandles) const;
     am_Error_e getListPlugins(std::vector<std::string>& interfaces) const;
-    uint16_t getInterfaceVersion() const;
+    void getInterfaceVersion(std::string& version) const;
 
     //!< is used to pair interfaces with busnames
     struct InterfaceNamePairs
@@ -192,6 +194,7 @@ private:
     SinkInterfaceMap mMapSinkInterface; //!< map of sinks to interfaces
     SourceInterfaceMap mMapSourceInterface; //!< map of sources to interfaces
     HandleInterfaceMap mMapHandleInterface; //!< map of handles to interfaces
+    RoutingReceiver *mRoutingReceiver;
 };
 
 }

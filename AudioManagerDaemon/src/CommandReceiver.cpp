@@ -29,13 +29,19 @@
 #include <SocketHandler.h>
 #include <config.h>
 #include <cassert>
+#include <algorithm>
 
 using namespace am;
 
 CommandReceiver::CommandReceiver(DatabaseHandler *iDatabaseHandler, ControlSender *iControlSender, SocketHandler *iSocketHandler) :
         mDatabaseHandler(iDatabaseHandler), //
         mControlSender(iControlSender), //
-        mSocketHandler(iSocketHandler)
+        mSocketHandler(iSocketHandler), //
+        mListStartupHandles(), //
+        mListRundownHandles(), //
+        mWaitStartup(false), //
+        mWaitRundown(false)
+
 {
     assert(mDatabaseHandler!=NULL);
     assert(mSocketHandler!=NULL);
@@ -46,7 +52,11 @@ CommandReceiver::CommandReceiver(DatabaseHandler *iDatabaseHandler, ControlSende
         mDatabaseHandler(iDatabaseHandler), //
         mControlSender(iControlSender), //
         mDBusWrapper(iDBusWrapper), //
-        mSocketHandler(iSocketHandler)
+        mSocketHandler(iSocketHandler), //
+        mListStartupHandles(), //
+        mListRundownHandles(), //
+        mWaitStartup(false), //
+        mWaitRundown(false)
 {
     assert(mDatabaseHandler!=NULL);
     assert(mSocketHandler!=NULL);
@@ -168,8 +178,46 @@ am_Error_e CommandReceiver::getSocketHandler(SocketHandler *& socketHandler) con
     return E_OK;
 }
 
-uint16_t CommandReceiver::getInterfaceVersion() const
+void CommandReceiver::getInterfaceVersion(std::string & version) const
 {
-    return CommandReceiveVersion;
+    version = CommandReceiveVersion;
+}
+
+void CommandReceiver::confirmCommandReady(const uint16_t handle)
+{
+    mListStartupHandles.erase(std::remove(mListStartupHandles.begin(), mListStartupHandles.end(), handle), mListStartupHandles.end());
+    if (mWaitStartup && mListStartupHandles.empty())
+        mControlSender->confirmCommandReady();
+}
+
+void CommandReceiver::confirmCommandRundown(const uint16_t handle)
+{
+    mListRundownHandles.erase(std::remove(mListRundownHandles.begin(), mListRundownHandles.end(), handle), mListRundownHandles.end());
+    if (mWaitRundown && mListRundownHandles.empty())
+        mControlSender->confirmCommandRundown();
+}
+
+uint16_t CommandReceiver::getStartupHandle()
+{
+    uint16_t handle = ++handleCount; //todo: handle overflow
+    mListStartupHandles.push_back(handle);
+    return handle;
+}
+
+uint16_t CommandReceiver::getRundownHandle()
+{
+    uint16_t handle = ++handleCount; //todo: handle overflow
+    mListRundownHandles.push_back(handle);
+    return handle;
+}
+
+void am::CommandReceiver::waitOnStartup(bool startup)
+{
+    mWaitStartup = startup;
+}
+
+void am::CommandReceiver::waitOnRundown(bool rundown)
+{
+    mWaitRundown = rundown;
 }
 

@@ -262,7 +262,13 @@ am_Error_e DatabaseHandler::enterMainConnectionDB(const am_MainConnection_s & ma
 
     if (mDatabaseObserver)
     {
-        mDatabaseObserver->numberOfMainConnectionsChanged();
+        am_MainConnectionType_s mainConnection;
+        mainConnection.mainConnectionID=connectionID;
+        mainConnection.connectionState=mainConnectionData.connectionState;
+        mainConnection.delay=delay;
+        mainConnection.sinkID=mainConnectionData.sinkID;
+        mainConnection.sourceID=mainConnectionData.sourceID;
+        mDatabaseObserver->newMainConnection(mainConnection);
         mDatabaseObserver->mainConnectionStateChanged(connectionID, mainConnectionData.connectionState);
     }
 
@@ -1227,7 +1233,7 @@ am_Error_e DatabaseHandler::removeMainConnectionDB(const am_mainConnectionID_t m
     if (mDatabaseObserver)
     {
         mDatabaseObserver->mainConnectionStateChanged(mainConnectionID, CS_DISCONNECTED);
-        mDatabaseObserver->numberOfMainConnectionsChanged();
+        mDatabaseObserver->removedMainConnection(mainConnectionID);
     }
     return E_OK;
 }
@@ -1240,6 +1246,9 @@ am_Error_e DatabaseHandler::removeSinkDB(const am_sinkID_t sinkID)
     {
         return E_NON_EXISTENT;
     }
+
+    bool visible=sinkVisible(sinkID);
+
     std::string command = "DELETE from " + std::string(SINK_TABLE) + " WHERE sinkID=" + i2s(sinkID);
     std::string command1 = "DROP table SinkConnectionFormat" + i2s(sinkID);
     std::string command2 = "DROP table SinkMainSoundProperty" + i2s(sinkID);
@@ -1255,7 +1264,7 @@ am_Error_e DatabaseHandler::removeSinkDB(const am_sinkID_t sinkID)
     logInfo("DatabaseHandler::removeSinkDB removed:", sinkID);
 
     if (mDatabaseObserver != NULL)
-        mDatabaseObserver->removedSink(sinkID);
+        mDatabaseObserver->removedSink(sinkID,visible);
 
     return E_OK;
 }
@@ -1268,6 +1277,9 @@ am_Error_e DatabaseHandler::removeSourceDB(const am_sourceID_t sourceID)
     {
         return E_NON_EXISTENT;
     }
+
+    bool visible=sourceVisible(sourceID);
+
     std::string command = "DELETE from " + std::string(SOURCE_TABLE) + " WHERE sourceID=" + i2s(sourceID);
     std::string command1 = "DROP table SourceConnectionFormat" + i2s(sourceID);
     std::string command2 = "DROP table SourceMainSoundProperty" + i2s(sourceID);
@@ -1282,7 +1294,7 @@ am_Error_e DatabaseHandler::removeSourceDB(const am_sourceID_t sourceID)
         return E_DATABASE_ERROR;
     logInfo("DatabaseHandler::removeSourceDB removed:", sourceID);
     if (mDatabaseObserver)
-        mDatabaseObserver->removedSource(sourceID);
+        mDatabaseObserver->removedSource(sourceID,visible);
     return E_OK;
 }
 

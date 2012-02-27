@@ -27,12 +27,17 @@
 #include <dirent.h>
 #include <dlfcn.h>
 #include <cassert>
+#include <iostream>
+#include <sstream>
+
+#include "RoutingReceiver.h"
 #include "PluginTemplate.h"
 #include "DLTWrapper.h"
 
 using namespace am;
 
-#define REQUIRED_INTERFACE_VERSION 1
+#define REQUIRED_INTERFACE_VERSION_MAJOR 1
+#define REQUIRED_INTERFACE_VERSION_MINOR 0
 
 #define CALL_ALL_INTERFACES(...) 														 \
 		std::vector<InterfaceNamePairs>::iterator iter = mListInterfaces.begin();	 	 \
@@ -51,7 +56,8 @@ RoutingSender::RoutingSender(const std::vector<std::string>& listOfPluginDirecto
         mMapDomainInterface(), //
         mMapSinkInterface(), //
         mMapSourceInterface(), //
-        mMapHandleInterface() //
+        mMapHandleInterface(), //
+        mRoutingReceiver()
 {
     std::vector<std::string> sharedLibraryNameList;
     std::vector<std::string>::const_iterator dirIter = listOfPluginDirectories.begin();
@@ -61,7 +67,7 @@ RoutingSender::RoutingSender(const std::vector<std::string>& listOfPluginDirecto
     for (; dirIter < dirIterEnd; ++dirIter)
     {
         const char* directoryName = dirIter->c_str();
-        logInfo("Searching for HookPlugins in",directoryName);
+        logInfo("Searching for HookPlugins in", directoryName);
         DIR *directory = opendir(directoryName);
 
         if (!directory)
@@ -101,7 +107,7 @@ RoutingSender::RoutingSender(const std::vector<std::string>& listOfPluginDirecto
 
     for (; iter != iterEnd; ++iter)
     {
-        logInfo("RoutingSender::RoutingSender try loading: " , *iter);
+        logInfo("RoutingSender::RoutingSender try loading: ", *iter);
 
         RoutingSendInterface* (*createFunc)();
         void* tempLibHandle = NULL;
@@ -125,9 +131,14 @@ RoutingSender::RoutingSender(const std::vector<std::string>& listOfPluginDirecto
         routerInterface.routingInterface = router;
 
         //check libversion
-        if (router->getInterfaceVersion() < REQUIRED_INTERFACE_VERSION)
+        std::string version;
+        router->getInterfaceVersion(version);
+        uint16_t minorVersion, majorVersion;
+        std::istringstream(version.substr(0, 1)) >> majorVersion;
+        std::istringstream(version.substr(2, 1)) >> minorVersion;
+        if (majorVersion < REQUIRED_INTERFACE_VERSION_MAJOR || ((majorVersion == REQUIRED_INTERFACE_VERSION_MAJOR) && (minorVersion > REQUIRED_INTERFACE_VERSION_MINOR)))
         {
-            logError("RoutingSender::RoutingSender RoutingPlugin initialization failed. Version of Interface to old");
+            logInfo("RoutingPlugin initialization failed. Version of Interface to old");
             continue;
         }
 
@@ -154,19 +165,22 @@ RoutingSender::~RoutingSender()
     }
 }
 
-void RoutingSender::routingInterfacesReady()
+am_Error_e RoutingSender::startupInterfaces(RoutingReceiver *iRoutingReceiver)
 {
-    CALL_ALL_INTERFACES(routingInterfacesReady())
-}
+    mRoutingReceiver = iRoutingReceiver;
+    am_Error_e returnError = E_OK;
 
-void RoutingSender::routingInterfacesRundown()
-{
-    CALL_ALL_INTERFACES(routingInterfacesRundown())
-}
-
-void RoutingSender::startupRoutingInterface(RoutingReceiveInterface *routingreceiveinterface)
-{
-    CALL_ALL_INTERFACES(startupRoutingInterface(routingreceiveinterface))
+    std::vector<InterfaceNamePairs>::iterator iter = mListInterfaces.begin();
+    std::vector<InterfaceNamePairs>::iterator iterEnd = mListInterfaces.end();
+    for (; iter < iterEnd; ++iter)
+    {
+        am_Error_e error = (*iter).routingInterface->startupInterface(iRoutingReceiver);
+        if (error != E_OK)
+        {
+            returnError = error;
+        }
+    }
+    return returnError;
 }
 
 am_Error_e RoutingSender::asyncAbort(const am_Handle_s& handle)
@@ -479,6 +493,30 @@ RoutingSender::am_handleData_c RoutingSender::returnHandleData(const am_Handle_s
     return (it->second);
 }
 
+void am::RoutingSender::setRoutingReady()
+{
+    mRoutingReceiver->waitOnStartup(false);
+    std::vector<InterfaceNamePairs>::iterator iter = mListInterfaces.begin();
+    std::vector<InterfaceNamePairs>::iterator iterEnd = mListInterfaces.end();
+    for (; iter < iterEnd; ++iter)
+    {
+        (*iter).routingInterface->setRoutingReady(mRoutingReceiver->getStartupHandle());
+    }
+    mRoutingReceiver->waitOnStartup(true);
+}
+
+void am::RoutingSender::setRoutingRundown()
+{
+    mRoutingReceiver->waitOnRundown(false);
+    std::vector<InterfaceNamePairs>::iterator iter = mListInterfaces.begin();
+    std::vector<InterfaceNamePairs>::iterator iterEnd = mListInterfaces.end();
+    for (; iter < iterEnd; ++iter)
+    {
+        (*iter).routingInterface->setRoutingRundown(mRoutingReceiver->getStartupHandle());
+    }
+    mRoutingReceiver->waitOnRundown(true);
+}
+
 void RoutingSender::unloadLibraries(void)
 {
     std::vector<void*>::iterator iterator = mListLibraryHandles.begin();
@@ -489,7 +527,7 @@ void RoutingSender::unloadLibraries(void)
     mListLibraryHandles.clear();
 }
 
-am_Error_e am::RoutingSender::getListPlugins(std::vector<std::string>& interfaces) const
+am_Error_e RoutingSender::getListPlugins(std::vector<std::string>& interfaces) const
 {
     std::vector<InterfaceNamePairs>::const_iterator it = mListInterfaces.begin();
     for (; it != mListInterfaces.end(); ++it)
@@ -499,8 +537,8 @@ am_Error_e am::RoutingSender::getListPlugins(std::vector<std::string>& interface
     return E_OK;
 }
 
-uint16_t RoutingSender::getInterfaceVersion() const
+void RoutingSender::getInterfaceVersion(std::string & version) const
 {
-    return (RoutingSendVersion);
+    version = RoutingSendVersion;
 }
 

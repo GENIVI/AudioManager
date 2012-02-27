@@ -741,7 +741,13 @@ void CAmTelnetMenuHelper::getSenderversionCommandExec(std::queue<std::string> & 
     (void) CmdQueue;
 
     std::stringstream output;
-    output << "\tSender versions:" << std::endl << "\tCtrl: " << mpControlSender->getInterfaceVersion() << " | " << "Cmd: " << mpCommandSender->getInterfaceVersion() << " | " << "Routing: " << mpRoutingSender->getInterfaceVersion() << std::endl;
+    std::string versionCommand;
+    std::string versionRouting;
+    std::string versionControl;
+    mpControlSender->getInterfaceVersion(versionControl);
+    mpRoutingSender->getInterfaceVersion(versionRouting);
+    mpCommandSender->getInterfaceVersion(versionCommand);
+    output << "\tSender versions:" << std::endl << "\tCtrl: " << versionControl << " | " << "Cmd: " << versionCommand << " | " << "Routing: " << versionRouting << std::endl;
 
     sendTelnetLine(filedescriptor, output);
 }
@@ -760,7 +766,13 @@ void CAmTelnetMenuHelper::getReceiverversionCommandExec(std::queue<std::string> 
     (void) CmdQueue;
 
     std::stringstream output;
-    output << "\tReceiver versions:" << std::endl << "\tCtrl: " << mpControlReceiver->getInterfaceVersion() << " | " << "Cmd: " << mpCommandReceiver->getInterfaceVersion() << " | " << "Routing: " << mpRoutingReceiver->getInterfaceVersion() << std::endl;
+    std::string versionCommand;
+    std::string versionRouting;
+    std::string versionControl;
+    mpControlReceiver->getInterfaceVersion(versionControl);
+    mpRoutingReceiver->getInterfaceVersion(versionRouting);
+    mpCommandReceiver->getInterfaceVersion(versionCommand);
+    output << "\tReceiver versions:" << std::endl << "\tCtrl: " << versionControl << " | " << "Cmd: " <<  versionCommand << " | " << "Routing: " << versionRouting << std::endl;
 
     sendTelnetLine(filedescriptor, output);
 

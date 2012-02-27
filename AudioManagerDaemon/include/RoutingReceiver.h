@@ -51,10 +51,10 @@ public:
     void ackSetSinkVolumeChange(const am_Handle_s handle, const am_volume_t volume, const am_Error_e error);
     void ackSetSourceVolumeChange(const am_Handle_s handle, const am_volume_t volume, const am_Error_e error);
     void ackSetSourceState(const am_Handle_s handle, const am_Error_e error);
-    void ackSetSinkSoundProperty(const am_Handle_s handle, const am_Error_e error);
     void ackSetSinkSoundProperties(const am_Handle_s handle, const am_Error_e error);
-    void ackSetSourceSoundProperty(const am_Handle_s handle, const am_Error_e error);
+    void ackSetSinkSoundProperty(const am_Handle_s handle, const am_Error_e error);
     void ackSetSourceSoundProperties(const am_Handle_s handle, const am_Error_e error);
+    void ackSetSourceSoundProperty(const am_Handle_s handle, const am_Error_e error);
     void ackCrossFading(const am_Handle_s handle, const am_HotSink_e hotSink, const am_Error_e error);
     void ackSourceVolumeTick(const am_Handle_s handle, const am_sourceID_t sourceID, const am_volume_t volume);
     void ackSinkVolumeTick(const am_Handle_s handle, const am_sinkID_t sinkID, const am_volume_t volume);
@@ -71,8 +71,8 @@ public:
     am_Error_e deregisterSource(const am_sourceID_t sourceID);
     am_Error_e registerCrossfader(const am_Crossfader_s& crossfaderData, am_crossfaderID_t& crossfaderID);
     am_Error_e deregisterCrossfader(const am_crossfaderID_t crossfaderID);
-    am_Error_e peekSinkClassID(const std::string& name, am_sinkClass_t& sinkClassID);
     am_Error_e peekSourceClassID(const std::string& name, am_sourceClass_t& sourceClassID);
+    am_Error_e peekSinkClassID(const std::string& name, am_sinkClass_t& sinkClassID);
     void hookInterruptStatusChange(const am_sourceID_t sourceID, const am_InterruptState_e interruptState);
     void hookDomainRegistrationComplete(const am_domainID_t domainID);
     void hookSinkAvailablityStatusChange(const am_sinkID_t sinkID, const am_Availability_s& availability);
@@ -82,7 +82,15 @@ public:
     void sendChangedData(const std::vector<am_EarlyData_s>& earlyData);
     am_Error_e getDBusConnectionWrapper(DBusWrapper*& dbusConnectionWrapper) const;
     am_Error_e getSocketHandler(SocketHandler*& socketHandler) const;
-    uint16_t getInterfaceVersion() const;
+    void getInterfaceVersion(std::string& version) const;
+    void confirmRoutingReady(const uint16_t handle) const;
+    void confirmRoutingRundown(const uint16_t handle) const;
+
+    uint16_t getStartupHandle(); //!< returns a startup handle
+    uint16_t getRundownHandle(); //!< returns a rundown handle
+
+    void waitOnStartup(bool startup); //!< tells the RoutingReceiver to start waiting for all handles to be confirmed
+    void waitOnRundown(bool rundown); //!< tells the RoutingReceiver to start waiting for all handles to be confirmed
 
 private:
     DatabaseHandler *mDatabaseHandler; //!< pointer to the databaseHandler
@@ -90,6 +98,12 @@ private:
     ControlSender *mControlSender; //!< pointer to the controlSender
     SocketHandler *mSocketHandler; //!< pointer to sockethandler
     DBusWrapper *mDBusWrapper; //!< pointer to dbuswrapper
+
+    uint16_t handleCount; //!< counts all handles
+    std::vector<uint16_t> mListStartupHandles; //!< list of handles that wait for a confirm
+    std::vector<uint16_t> mListRundownHandles; //!< list of handles that wait for a confirm
+    bool mWaitStartup; //!< if true confirmation will be sent if list of handles = 0
+    bool mWaitRundown; //!< if true confirmation will be sent if list of handles = 0
 
 };
 

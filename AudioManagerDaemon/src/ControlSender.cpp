@@ -27,10 +27,14 @@
 #include "DLTWrapper.h"
 #include <cassert>
 #include <fstream>
+#include <iostream>
+#include <sstream>
+#include <stdexcept>
 
 using namespace am;
 
-#define REQUIRED_MIN_INTERFACE_VERSION 1
+#define REQUIRED_INTERFACE_VERSION_MAJOR 1
+#define REQUIRED_INTERFACE_VERSION_MINOR 0
 
 ControlSender::ControlSender(std::string controlPluginFile) :
         mlibHandle(NULL), //
@@ -49,7 +53,17 @@ ControlSender::ControlSender(std::string controlPluginFile) :
         mController = createFunc();
 
         //check libversion
-        assert(REQUIRED_MIN_INTERFACE_VERSION<=mController->getInterfaceVersion());
+        std::string version;
+        mController->getInterfaceVersion(version);
+        uint16_t minorVersion, majorVersion;
+        std::istringstream(version.substr(0, 1)) >> majorVersion;
+        std::istringstream(version.substr(2, 1)) >> minorVersion;
+
+        if (majorVersion < REQUIRED_INTERFACE_VERSION_MAJOR || ((majorVersion == REQUIRED_INTERFACE_VERSION_MAJOR) && (minorVersion > REQUIRED_INTERFACE_VERSION_MINOR)))
+        {
+            logError("ControlSender::ControlSender: Interface Version of Controller too old, exiting now");
+            throw std::runtime_error("Interface Version of Controller too old");
+        }
     }
     else
     {
@@ -61,11 +75,6 @@ ControlSender::~ControlSender()
 {
     if (mlibHandle)
         dlclose(mlibHandle);
-}
-
-void ControlSender::hookAllPluginsLoaded()
-{
-    mController->hookAllPluginsLoaded();
 }
 
 am_Error_e ControlSender::hookUserConnectionRequest(const am_sourceID_t sourceID, const am_sinkID_t sinkID, am_mainConnectionID_t & mainConnectionID)
@@ -248,11 +257,6 @@ am_Error_e ControlSender::startupController(ControlReceiveInterface *controlrece
     return mController->startupController(controlreceiveinterface);
 }
 
-am_Error_e ControlSender::stopController()
-{
-    return mController->stopController();
-}
-
 void ControlSender::cbAckSetSinkSoundProperty(const am_Handle_s handle, const am_Error_e error)
 {
     mController->cbAckSetSinkSoundProperty(handle, error);
@@ -268,13 +272,43 @@ void ControlSender::cbAckSetSourceSoundProperties(const am_Handle_s handle, cons
     mController->cbAckSetSourceSoundProperties(handle, error);
 }
 
+void ControlSender::setControllerReady()
+{
+    mController->setControllerReady();
+}
+
+void ControlSender::setControllerRundown()
+{
+    mController->setControllerRundown();
+}
+
 am_Error_e am::ControlSender::getConnectionFormatChoice(const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_Route_s listRoute, const std::vector<am_ConnectionFormat_e> listPossibleConnectionFormats, std::vector<am_ConnectionFormat_e> & listPrioConnectionFormats)
 {
     return mController->getConnectionFormatChoice(sourceID, sinkID, listRoute, listPossibleConnectionFormats, listPrioConnectionFormats);
 }
 
-uint16_t ControlSender::getInterfaceVersion() const
+void ControlSender::getInterfaceVersion(std::string & version) const
 {
-    return ControlSendVersion;
+    version = ControlSendVersion;
+}
+
+void ControlSender::confirmCommandReady()
+{
+    mController->confirmCommandReady();
+}
+
+void ControlSender::confirmRoutingReady()
+{
+    mController->confirmRoutingReady();
+}
+
+void ControlSender::confirmCommandRundown()
+{
+    mController->confirmCommandRundown();
+}
+
+void ControlSender::confirmRoutingRundown()
+{
+    mController->confirmRoutingRundown();
 }
 

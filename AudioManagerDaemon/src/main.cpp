@@ -277,7 +277,7 @@ int main(int argc, char *argv[])
     TelnetServer iTelnetServer(&iSocketHandler, &iCommandSender, &iCommandReceiver, &iRoutingSender, &iRoutingReceiver, &iControlSender, &iControlReceiver, &iDatabaseHandler, &iRouter, telnetport, maxConnections);
     DatabaseObserver iObserver(&iCommandSender, &iRoutingSender, &iSocketHandler, &iTelnetServer);
 #else /*WITH_TELNET*/
-    DatabaseObserver iObserver(&iCommandSender, &iSocketHandler, &iRoutingSender);
+    DatabaseObserver iObserver(&iCommandSender,&iRoutingSender, &iSocketHandler);
 #endif
 #else /*WITH_DBUS_WRAPPER*/
     CommandReceiver iCommandReceiver(&iDatabaseHandler,&iControlSender,&iSocketHandler);
@@ -295,11 +295,11 @@ int main(int argc, char *argv[])
 
     //startup all the Plugins and Interfaces
     iControlSender.startupController(&iControlReceiver);
-    iCommandSender.startupInterface(&iCommandReceiver);
-    iRoutingSender.startupRoutingInterface(&iRoutingReceiver);
+    iCommandSender.startupInterfaces(&iCommandReceiver);
+    iRoutingSender.startupInterfaces(&iRoutingReceiver);
 
     //when the routingInterface is done, all plugins are loaded:
-    iControlSender.hookAllPluginsLoaded();
+    iControlSender.setControllerReady();
 
     //start the mainloop here....
     iSocketHandler.start_listenting();

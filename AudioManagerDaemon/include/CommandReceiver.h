@@ -64,13 +64,27 @@ public:
     am_Error_e getTimingInformation(const am_mainConnectionID_t mainConnectionID, am_timeSync_t& delay) const;
     am_Error_e getDBusConnectionWrapper(DBusWrapper*& dbusConnectionWrapper) const;
     am_Error_e getSocketHandler(SocketHandler*& socketHandler) const;
-    uint16_t getInterfaceVersion() const;
+    void getInterfaceVersion(std::string& version) const;
+    void confirmCommandReady(const uint16_t handle);
+    void confirmCommandRundown(const uint16_t handle);
+
+    uint16_t getStartupHandle(); //!< returns a startup handle
+    uint16_t getRundownHandle(); //!< returns a rundown handle
+
+    void waitOnStartup(bool startup); //!< tells the ComandReceiver to start waiting for all handles to be confirmed
+    void waitOnRundown(bool rundown); //!< tells the ComandReceiver to start waiting for all handles to be confirmed
 
 private:
     DatabaseHandler* mDatabaseHandler; //!< pointer to the databasehandler
     ControlSender* mControlSender; //!< pointer to the control sender
     DBusWrapper* mDBusWrapper; //!< pointer to the dbuswrapper
     SocketHandler* mSocketHandler; //!< pointer to the SocketHandler
+
+    uint16_t handleCount; //!< counts all handles
+    std::vector<uint16_t> mListStartupHandles; //!< list of handles that wait for a confirm
+    std::vector<uint16_t> mListRundownHandles; //!< list of handles that wait for a confirm
+    bool mWaitStartup; //!< if true confirmation will be sent if list of handles = 0
+    bool mWaitRundown; //!< if true confirmation will be sent if list of handles = 0
 };
 
 }
