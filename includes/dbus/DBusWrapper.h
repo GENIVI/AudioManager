@@ -40,7 +40,6 @@ namespace am
 class DBusWrapper
 {
 public:
-    DBusWrapper();
     DBusWrapper(SocketHandler* socketHandler);
     virtual ~DBusWrapper();
 
@@ -58,11 +57,6 @@ public:
      * @param connection pointer to the connection
      */
     void getDBusConnection(DBusConnection*& connection) const;
-
-    /**
-     * If Dbus is used, this MainLoop must be called as mainloop, otherwise the messages are not dispatched.
-     */
-    void dbusMainLoop();
 
     static dbus_bool_t addWatch(DBusWatch *watch, void *userData);
     static void removeWatch(DBusWatch *watch, void *userData);

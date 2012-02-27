@@ -187,16 +187,6 @@ DBusHandlerResult DBusWrapper::cbRootIntrospection(DBusConnection *conn, DBusMes
     }
 }
 
-void DBusWrapper::dbusMainLoop()
-{
-    logInfo("DBusWrapper::dbusMainLoop Entering MainLoop");
-
-    while (dbus_connection_read_write_dispatch(mDbusConnection, -1))
-    {
-
-    }
-}
-
 void DBusWrapper::getDBusConnection(DBusConnection *& connection) const
 {
     connection = mDbusConnection;
