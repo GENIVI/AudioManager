@@ -65,7 +65,7 @@ typedef enum
 typedef struct
 {
     DltContext *handle;                           /**< pointer to DltContext */
-    unsigned char buffer[DLT_USER_BUF_MAX_SIZE];  /**< buffer for building log message*/
+    char buffer[DLT_USER_BUF_MAX_SIZE];  /**< buffer for building log message*/
     int32_t size;                                 /**< payload size */
     int32_t log_level;                            /**< log level */
     int32_t trace_status;                         /**< trace status */
@@ -88,7 +88,7 @@ extern DltContext CONTEXT;
 class DLTWrapper
 {
 public:
-    static DLTWrapper* instance();
+    static DLTWrapper* instance(const bool enableNoDLTDebug = false);
     void registerApp(const char *appid, const char * description);
     void registerContext(DltContext& handle, const char *contextid, const char * description);
     void unregisterContext(DltContext& handle);
@@ -103,9 +103,16 @@ public:
     void append(const char*& value);
     void append(const std::string& value);
     void append(const bool value);
+#ifndef WITH_DLT
+    void enableNoDLTDebug(const bool enableNoDLTDebug = true);
+#endif
     ~DLTWrapper();
 private:
-    DLTWrapper(); //is private because of singleton pattern
+    DLTWrapper(const bool enableNoDLTDebug); //is private because of singleton pattern
+#ifndef WITH_DLT
+    template<class T> void appendNoDLT(T value);
+    bool mEnableNoDLTDebug;
+#endif
     DltContext mDltContext;
     DltContextData mDltContextData;
     static DLTWrapper* mDLTWrapper;
