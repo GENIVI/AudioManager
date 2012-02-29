@@ -22,97 +22,189 @@
  *
  */
 
+
 #include "DLTWrapper.h"
-#include <cassert>
+#include <string.h>
+#include <sstream>
+#include <iostream>
 
 DLTWrapper* DLTWrapper::mDLTWrapper = NULL;
 
-DLTWrapper *DLTWrapper::instance()
+DLTWrapper *DLTWrapper::instance(const bool enableNoDLTDebug)
 {
     if (!mDLTWrapper)
-        mDLTWrapper = new DLTWrapper;
+        mDLTWrapper = new DLTWrapper(enableNoDLTDebug);
+#ifndef WITH_DLT
+    if(enableNoDLTDebug)
+        mDLTWrapper->enableNoDLTDebug(true);
+#endif        
     return mDLTWrapper;
 }
 
 void DLTWrapper::unregisterContext(DltContext & handle)
 {
+#ifdef WITH_DLT
     dlt_unregister_context(&handle);
+#endif
 }
 
-DLTWrapper::DLTWrapper() :
+DLTWrapper::DLTWrapper(const bool enableNoDLTDebug) :
+#ifndef WITH_DLT
+        mEnableNoDLTDebug(enableNoDLTDebug),
+#endif
         mDltContext(), //
         mDltContextData()
 {
+#ifndef WITH_DLT
+    std::cout << "[DLT] Running without DLT-support" << std::endl;
+#endif
 }
 
 void DLTWrapper::registerApp(const char *appid, const char *description)
 {
+#ifdef WITH_DLT
     dlt_register_app(appid, description);
     //register a default context
     dlt_register_context(&mDltContext, "def", "default Context registered by DLTWrapper CLass");
+#endif
 }
 
 void DLTWrapper::registerContext(DltContext& handle, const char *contextid, const char *description)
 {
+#ifdef WITH_DLT
     dlt_register_context(&handle, contextid, description);
+#else
+    memcpy(&mDltContext.contextID,contextid,4);
+    strlen(description);
+    const size_t str_len = strlen(description);
+    if(str_len < 2000)
+    {
+        mDltContextData.context_description = new char[str_len + 1];
+        (void) strcpy(mDltContextData.context_description,description);
+    }
+#endif
 }
 
 void DLTWrapper::init(DltLogLevelType loglevel, DltContext* context)
 {
     if (!context)
         context = &mDltContext;
+#ifdef WITH_DLT
     dlt_user_log_write_start(context, &mDltContextData, loglevel);
+#endif
+
 }
 
 void DLTWrapper::send()
 {
+#ifdef WITH_DLT
     dlt_user_log_write_finish(&mDltContextData);
+#else
+    if(mEnableNoDLTDebug)
+        std::cout << "[" << mDltContext.contextID << "] " << std::string(mDltContextData.buffer) << std::endl;
+
+    mDltContextData.size = 0;
+#endif
 }
 
 void DLTWrapper::append(const int8_t value)
 {
+#ifdef WITH_DLT
     dlt_user_log_write_int8(&mDltContextData, value);
+#else
+    appendNoDLT(value);
+#endif
 }
 
 void DLTWrapper::append(const uint8_t value)
 {
+#ifdef WITH_DLT
     dlt_user_log_write_uint8(&mDltContextData, value);
+#else
+    appendNoDLT(value);
+#endif
 }
 
 void DLTWrapper::append(const int16_t value)
 {
+#ifdef WITH_DLT
     dlt_user_log_write_int16(&mDltContextData, value);
+#else
+    appendNoDLT(value);
+#endif
 }
 
 void DLTWrapper::append(const uint16_t value)
 {
+#ifdef WITH_DLT
     dlt_user_log_write_uint16(&mDltContextData, value);
+#else
+    appendNoDLT(value);
+#endif
 }
 
 void DLTWrapper::append(const int32_t value)
 {
+#ifdef WITH_DLT
     dlt_user_log_write_int32(&mDltContextData, value);
+#else
+    appendNoDLT(value);
+#endif
 }
 
 void DLTWrapper::append(const uint32_t value)
 {
+#ifdef WITH_DLT
     dlt_user_log_write_uint32(&mDltContextData, value);
+#else
+    appendNoDLT(value);
+#endif
 }
 
 void DLTWrapper::append(const char*& value)
 {
+#ifdef WITH_DLT
     dlt_user_log_write_string(&mDltContextData, value);
+#else
+    memcpy((mDltContextData.buffer+mDltContextData.size),value,strlen(value));
+    mDltContextData.size += strlen(value);
+#endif
 }
 
 void DLTWrapper::append(const std::string& value)
 {
+#ifdef WITH_DLT
     dlt_user_log_write_string(&mDltContextData, value.c_str());
+#else
+    memcpy((mDltContextData.buffer+mDltContextData.size),value.c_str(),value.size());
+    mDltContextData.size += value.size();
+#endif
 }
 
 void DLTWrapper::append(const bool value)
 {
+#ifdef WITH_DLT
     dlt_user_log_write_bool(&mDltContextData, static_cast<uint8_t>(value));
+#else
+    appendNoDLT(value);
+#endif
 }
+
+#ifndef WITH_DLT
+template<class T> void DLTWrapper::appendNoDLT(T value)
+{
+    if((mDltContextData.size + sizeof(value)) < DLT_USER_BUF_MAX_SIZE)
+    {
+        memcpy((mDltContextData.buffer+mDltContextData.size),&(value),sizeof(value));
+        mDltContextData.size += sizeof(value);
+    }
+}
+
+void DLTWrapper::enableNoDLTDebug(const bool enableNoDLTDebug)
+{
+    mEnableNoDLTDebug = enableNoDLTDebug;
+}
+#endif
 
 DLTWrapper::~DLTWrapper()
 {
