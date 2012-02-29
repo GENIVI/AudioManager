@@ -29,6 +29,7 @@
 #include <routing/RoutingSendInterface.h>
 #include "RoutingReceiverAsyncShadow.h"
 #include <semaphore.h>
+#include <memory.h>
 
 namespace am
 {
@@ -208,6 +209,12 @@ public:
      */
     void updateDomainstateSafe(am_domainID_t domainID, am_DomainState_e domainState);
 
+    void updateDomainListSafe(std::vector<am_Domain_s> listDomains);
+
+    void updateSourceListSafe(std::vector<am_Source_s> listSource);
+
+    void updateSinkListSafe(std::vector<am_Sink_s> listSinks);
+
 private:
     /**
      * Extra thread that handles dbus stimulation for interrupt tests
@@ -216,12 +223,11 @@ private:
      * it is used just for testing, not intended to be used otherwise...
      * @param data
      */
-    static void* InterruptEvents(void* data);
     std::vector<am_Domain_s> createDomainTable();
     std::vector<am_Sink_s> createSinkTable();
     std::vector<am_Source_s> createSourceTable();
     std::vector<am_Gateway_s> createGatewayTable();
-    RoutingReceiverAsyncShadow mShadow;
+    RoutingReceiverAsyncShadow* mShadow;
     RoutingReceiveInterface* mReceiveInterface;
     SocketHandler *mSocketHandler;
     std::vector<am_Domain_s> mDomains;
@@ -370,6 +376,21 @@ private:
     RoutingReceiverAsyncShadow *mShadow;
     am_domainID_t mDomainID;
     am_DomainState_e mDomainState;
+};
+
+class syncRegisterWorker: public Worker
+{
+public:
+    syncRegisterWorker(AsyncRoutingSender * asyncSender, WorkerThreadPool* pool, RoutingReceiverAsyncShadow* shadow, const std::vector<am_Domain_s> domains, const std::vector<am_Sink_s> sinks, const std::vector<am_Source_s> sources, const  uint16_t handle);
+    void start2work();
+    void cancelWork();
+private:
+    AsyncRoutingSender * mAsyncSender;
+    RoutingReceiverAsyncShadow *mShadow;
+    std::vector<am_Domain_s> mListDomains;
+    std::vector<am_Sink_s> mListSinks;
+    std::vector<am_Source_s> mListSources;
+    uint16_t mHandle;
 };
 
 }

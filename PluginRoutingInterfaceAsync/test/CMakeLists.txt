@@ -34,6 +34,8 @@ find_package (Threads)
 FIND_PACKAGE(PkgConfig)
 FIND_PACKAGE(DBUS REQUIRED)
 pkg_check_modules(DLT REQUIRED automotive-dlt)
+pkg_check_modules(SQLITE REQUIRED sqlite3)
+
 INCLUDE_DIRECTORIES(   
     ${STD_INCLUDE_DIRS}
     ${CMAKE_SOURCE_DIR} 
@@ -51,7 +53,6 @@ INCLUDE_DIRECTORIES(
    
 file(GLOB ASYNC_PLUGIN_INTERFACE_SRCS_CXX 
      "../../AudioManagerDaemon/src/SocketHandler.cpp"
-     "../../AudioManagerDaemon/src/RoutingSender.cpp"
      "../../AudioManagerDaemon/src/DLTWrapper.cpp"
      "../src/*.cpp"  
      "testRoutingInterfaceAsync.cpp" 
@@ -76,6 +77,7 @@ TARGET_LINK_LIBRARIES(asyncRoutingInterfaceTest
     ${CMAKE_THREAD_LIBS_INIT}
     ${GTEST_LIBRARIES}
     ${DBUS_LIBRARY}
+    ${SQLITE_LIBRARIES}
     gmock
 )
 

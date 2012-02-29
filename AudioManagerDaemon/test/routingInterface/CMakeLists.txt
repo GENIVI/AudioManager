@@ -54,6 +54,9 @@ file(GLOB ROUTING_INTERFACE_SRCS_CXX
     "../../src/ControlSender.cpp"
     "../CommonFunctions.cpp" 
     "../../src/DLTWrapper.cpp"
+    "../../src/SocketHandler.cpp"
+    "../../src/RoutingReceiver.cpp"
+    "../../src/CommandReceiver.cpp"
     "*.cpp"
 )
 

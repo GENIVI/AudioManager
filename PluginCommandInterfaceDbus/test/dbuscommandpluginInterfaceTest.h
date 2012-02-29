@@ -37,6 +37,8 @@
 #include "CommandSender.h"
 #include "MockInterfaces.h"
 #include "DbusCommandInterfaceBackdoor.h"
+#include "DatabaseHandler.h"
+#include "ControlSender.h"
 
 
 #define UNIT_TEST 1
@@ -56,6 +58,8 @@ class DbusCommandInterfaceBackdoor;
 class dbuscommandpluginInterfaceTest :public ::testing::Test
 {
 public:
+    DatabaseHandler pDatabaseHandler;
+    ControlSender pControlSender;
 	dbuscommandpluginInterfaceTest();
 	~dbuscommandpluginInterfaceTest();
 

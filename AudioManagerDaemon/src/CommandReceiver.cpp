@@ -27,7 +27,6 @@
 #include "ControlSender.h"
 #include "DLTWrapper.h"
 #include <SocketHandler.h>
-#include <config.h>
 #include <cassert>
 #include <algorithm>
 
@@ -211,12 +210,12 @@ uint16_t CommandReceiver::getRundownHandle()
     return handle;
 }
 
-void am::CommandReceiver::waitOnStartup(bool startup)
+void CommandReceiver::waitOnStartup(bool startup)
 {
     mWaitStartup = startup;
 }
 
-void am::CommandReceiver::waitOnRundown(bool rundown)
+void CommandReceiver::waitOnRundown(bool rundown)
 {
     mWaitRundown = rundown;
 }

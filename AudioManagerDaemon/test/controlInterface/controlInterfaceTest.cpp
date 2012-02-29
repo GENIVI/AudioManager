@@ -21,27 +21,12 @@
  * Note that people who make modified versions of AudioManager are not obligated to grant this special exception for their modified versions; it is their choice whether to do so. The GNU Lesser General Public License, version 2.1, gives permission to release a modified version without this exception; this exception also makes it possible to release a modified version which carries forward this exception.
  *
  */
-
 #include "controlInterfaceTest.h"
 #include <algorithm>
 #include <string>
 #include <vector>
 #include <set>
 #include "DLTWrapper.h"
-#include <dbus/DBusWrapper.h>
-#include "MockInterfaces.h"
-#include "DatabaseHandler.h"
-#include "ControlReceiver.h"
-#include "RoutingReceiver.h"
-#include "DatabaseObserver.h"
-#include "ControlSender.h"
-#include "RoutingSender.h"
-#include "SocketHandler.h"
-#include "Router.h"
-#include "../RoutingInterfaceBackdoor.h"
-#include "../CommandInterfaceBackdoor.h"
-#include "../ControlInterfaceBackdoor.h"
-#include "../CommonFunctions.h"
 
 using namespace am;
 using namespace testing;
@@ -52,7 +37,7 @@ controlInterfaceTest::controlInterfaceTest() :
         plistCommandPluginDirs(), //
         plistRoutingPluginDirs(), //
         pDatabaseHandler(std::string(":memory:")), //
-        pRoutingSender(plistRoutingPluginDirs), //
+        pRoutingSender(plistRoutingPluginDirs), //RoutingReceiver
         pCommandSender(plistCommandPluginDirs), //
         pMockControlInterface(), //
         pMockRoutingInterface(), //
@@ -61,9 +46,9 @@ controlInterfaceTest::controlInterfaceTest() :
         pControlInterfaceBackdoor(), //
         pControlSender(std::string("")), //
         pRouter(&pDatabaseHandler,&pControlSender), //
-        pDatabaseObserver(&pCommandSender, &pSocketHandler, &pRoutingSender), //
-        pControlReceiver(&pDatabaseHandler, &pRoutingSender, &pCommandSender,&pRouter), //
-        pRoutingReceiver(&pDatabaseHandler, &pRoutingSender, &pControlSender, pDBusWrapper)
+        pDatabaseObserver(&pCommandSender, &pRoutingSender, &pSocketHandler), //
+        pControlReceiver(&pDatabaseHandler, &pRoutingSender, &pCommandSender, &pSocketHandler, &pRouter), //
+        pRoutingReceiver(&pDatabaseHandler, &pRoutingSender, &pControlSender, &pSocketHandler, pDBusWrapper)
 {
     pDatabaseHandler.registerObserver(&pDatabaseObserver);
     pControlInterfaceBackdoor.replaceController(&pControlSender, &pMockControlInterface);

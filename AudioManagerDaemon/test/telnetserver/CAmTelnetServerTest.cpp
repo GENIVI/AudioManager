@@ -88,11 +88,11 @@ void MyEnvironment::setSocketHandler(SocketHandler* pSocketHandler)
 
         //startup all the Plugins and Interfaces
         mControlSender.startupController(mpControlReceiver);
-        mCommandSender.startupInterface(mpCommandReceiver);
-        mRoutingSender.startupRoutingInterface(mpRoutingReceiver);
+        mCommandSender.startupInterfaces(mpCommandReceiver);
+        mRoutingSender.startupInterfaces(mpRoutingReceiver);
 
         //when the routingInterface is done, all plugins are loaded:
-        mControlSender.hookAllPluginsLoaded();
+        mControlSender.setControllerReady();
 
         // Starting TelnetServer
         mpTelnetServer = new TelnetServer(mpSocketHandler,&mCommandSender,mpCommandReceiver,&mRoutingSender,mpRoutingReceiver,&mControlSender,mpControlReceiver,&mDatabasehandler,&mRouter,servPort,3);

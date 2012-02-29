@@ -44,7 +44,7 @@ class CommandReceiver: public CommandReceiveInterface
 public:
     CommandReceiver(DatabaseHandler* iDatabaseHandler, ControlSender* iControlSender, SocketHandler* iSocketHandler);
     CommandReceiver(DatabaseHandler* iDatabaseHandler, ControlSender* iControlSender, SocketHandler* iSocketHandler, DBusWrapper* iDBusWrapper);
-    virtual ~CommandReceiver();
+    ~CommandReceiver();
     am_Error_e connect(const am_sourceID_t sourceID, const am_sinkID_t sinkID, am_mainConnectionID_t& mainConnectionID);
     am_Error_e disconnect(const am_mainConnectionID_t mainConnectionID);
     am_Error_e setVolume(const am_sinkID_t sinkID, const am_mainVolume_t volume);

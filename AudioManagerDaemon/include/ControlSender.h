@@ -41,7 +41,7 @@ class ControlSender
 {
 public:
     ControlSender(std::string controlPluginFile);
-    virtual ~ControlSender();
+    ~ControlSender();
     am_Error_e startupController(ControlReceiveInterface* controlreceiveinterface) ;
     void setControllerReady() ;
     void setControllerRundown() ;

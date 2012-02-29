@@ -42,6 +42,7 @@ using namespace testing;
 routingTest::routingTest() :
         plistRoutingPluginDirs(), //
         plistCommandPluginDirs(), //
+        pSocketHandler(), //
         pDatabaseHandler(std::string(":memory:")), //
         pControlSender(std::string("")), //
         pRouter(&pDatabaseHandler, &pControlSender), //
@@ -52,8 +53,8 @@ routingTest::routingTest() :
         pRoutingInterfaceBackdoor(), //
         pCommandInterfaceBackdoor(), //
         pControlInterfaceBackdoor(), //
-        pControlReceiver(&pDatabaseHandler, &pRoutingSender, &pCommandSender, &pRouter), //
-        pObserver(&pCommandSender, &pRoutingSender)
+        pControlReceiver(&pDatabaseHandler, &pRoutingSender, &pCommandSender,&pSocketHandler, &pRouter), //
+        pObserver(&pCommandSender, &pRoutingSender, &pSocketHandler)
 {
     pDatabaseHandler.registerObserver(&pObserver);
     pCommandInterfaceBackdoor.injectInterface(&pCommandSender, &pMockInterface);
@@ -80,8 +81,6 @@ arg4=arg3;
 //test that checks just sinks and source in a domain but connectionformats do not match
 TEST_F(routingTest,simpleRoute2withDomainNoMatchFormats)
 {
-    EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(1);
-    EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(1);
     EXPECT_CALL(pMockControlInterface,getConnectionFormatChoice(_,_,_,_,_)).WillRepeatedly(DoAll(returnConnectionFormat(), Return(E_OK)));
 
     //initialize 2 domains
@@ -143,8 +142,6 @@ TEST_F(routingTest,simpleRoute2withDomainNoMatchFormats)
 //test that checks just sinks and source in a domain
 TEST_F(routingTest,simpleRoute2withDomain)
 {
-    EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(1);
-    EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(1);
     EXPECT_CALL(pMockControlInterface,getConnectionFormatChoice(_,_,_,_,_)).WillRepeatedly(DoAll(returnConnectionFormat(), Return(E_OK)));
 
     //initialize 2 domains
@@ -207,8 +204,8 @@ TEST_F(routingTest,simpleRoute2withDomain)
 //test that checks just 2 domains, one sink one source with only one connection format each
 TEST_F(routingTest,simpleRoute2DomainsOnlyFree)
 {
-    EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(2);
-    EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(2);
+
+
     EXPECT_CALL(pMockControlInterface,getConnectionFormatChoice(_,_,_,_,_)).WillRepeatedly(DoAll(returnConnectionFormat(), Return(E_OK)));
 
     //initialize 2 domains
@@ -315,8 +312,8 @@ TEST_F(routingTest,simpleRoute2DomainsOnlyFree)
 //test that checks just 2 domains, one sink one source with only one connection format each
 TEST_F(routingTest,simpleRoute2DomainsOnlyFreeNotFree)
 {
-    EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(2);
-    EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(2);
+
+
     EXPECT_CALL(pMockControlInterface,getConnectionFormatChoice(_,_,_,_,_)).WillRepeatedly(DoAll(returnConnectionFormat(), Return(E_OK)));
 
     //initialize 2 domains
@@ -439,8 +436,7 @@ TEST_F(routingTest,simpleRoute2DomainsOnlyFreeNotFree)
 //test that checks 3 domains, one sink one source, longer lists of connectionformats.
 TEST_F(routingTest,simpleRoute3DomainsListConnectionFormats_2)
 {
-    EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(3);
-    EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(3);
+
     EXPECT_CALL(pMockControlInterface,getConnectionFormatChoice(_,_,_,_,_)).WillRepeatedly(DoAll(returnConnectionFormat(), Return(E_OK)));
 
     //initialize 2 domains
@@ -600,8 +596,6 @@ TEST_F(routingTest,simpleRoute3DomainsListConnectionFormats_2)
 //test that checks 3 domains, one sink one source, longer lists of connectionformats.
 TEST_F(routingTest,simpleRoute3DomainsListConnectionFormats_1)
 {
-    EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(3);
-    EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(3);
     EXPECT_CALL(pMockControlInterface,getConnectionFormatChoice(_,_,_,_,_)).WillRepeatedly(DoAll(returnConnectionFormat(), Return(E_OK)));
 
     //initialize 2 domains
@@ -757,8 +751,6 @@ TEST_F(routingTest,simpleRoute3DomainsListConnectionFormats_1)
 //test that checks 3 domains, one sink one source, longer lists of connectionformats.
 TEST_F(routingTest,simpleRoute3DomainsListConnectionFormats)
 {
-    EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(3);
-    EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(3);
     EXPECT_CALL(pMockControlInterface,getConnectionFormatChoice(_,_,_,_,_)).WillRepeatedly(DoAll(returnConnectionFormat(), Return(E_OK)));
 
     //initialize 2 domains
@@ -908,8 +900,6 @@ TEST_F(routingTest,simpleRoute3DomainsListConnectionFormats)
 //test that checks 4 domains, one sink and one source but there are 2 routes because there are 2 gateways
 TEST_F(routingTest,simpleRoute4Domains2Routes)
 {
-    EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(5);
-    EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(5);
     EXPECT_CALL(pMockControlInterface,getConnectionFormatChoice(_,_,_,_,_)).WillRepeatedly(DoAll(returnConnectionFormat(), Return(E_OK)));
 
     //initialize 2 domains
@@ -1144,8 +1134,7 @@ TEST_F(routingTest,simpleRoute4Domains2Routes)
 //test that checks 3 domains, one sink one source but the connectionformat of third domains do not fit.
 TEST_F(routingTest,simpleRoute3DomainsNoConnection)
 {
-    EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(3);
-    EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(3);
+
     EXPECT_CALL(pMockControlInterface,getConnectionFormatChoice(_,_,_,_,_)).WillRepeatedly(DoAll(returnConnectionFormat(), Return(E_OK)));
 
     //initialize 2 domains
@@ -1289,8 +1278,8 @@ TEST_F(routingTest,simpleRoute3DomainsNoConnection)
 //test that checks just 2 domains, one sink one source with only one connection format each
 TEST_F(routingTest,simpleRoute2Domains)
 {
-    EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(2);
-    EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(2);
+
+
     EXPECT_CALL(pMockControlInterface,getConnectionFormatChoice(_,_,_,_,_)).WillRepeatedly(DoAll(returnConnectionFormat(), Return(E_OK)));
 
     //initialize 2 domains
@@ -1397,8 +1386,8 @@ TEST_F(routingTest,simpleRoute2Domains)
 //test that checks just 2 domains, one sink one source but the connectionformat of source
 TEST_F(routingTest,simpleRoute2DomainsNoMatchConnectionFormats)
 {
-    EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(2);
-    EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(2);
+
+
     EXPECT_CALL(pMockControlInterface,getConnectionFormatChoice(_,_,_,_,_)).WillRepeatedly(DoAll(returnConnectionFormat(), Return(E_OK)));
 
     //initialize 2 domains
@@ -1503,8 +1492,6 @@ TEST_F(routingTest,simpleRoute2DomainsNoMatchConnectionFormats)
 //test that checks 3 domains, one sink one source.
 TEST_F(routingTest,simpleRoute3Domains)
 {
-    EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(3);
-    EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(3);
     EXPECT_CALL(pMockControlInterface,getConnectionFormatChoice(_,_,_,_,_)).WillRepeatedly(DoAll(returnConnectionFormat(), Return(E_OK)));
 
     //initialize 2 domains
@@ -1650,8 +1637,6 @@ TEST_F(routingTest,simpleRoute3Domains)
 //test that checks 4 domains, one sink and one source.
 TEST_F(routingTest,simpleRoute4Domains)
 {
-    EXPECT_CALL(pMockInterface,cbNumberOfSourcesChanged()).Times(4);
-    EXPECT_CALL(pMockInterface,cbNumberOfSinksChanged()).Times(4);
     EXPECT_CALL(pMockControlInterface,getConnectionFormatChoice(_,_,_,_,_)).WillRepeatedly(DoAll(returnConnectionFormat(), Return(E_OK)));
 
     //initialize 2 domains

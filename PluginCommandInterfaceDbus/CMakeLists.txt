@@ -38,7 +38,7 @@ TARGET_LINK_LIBRARIES(PluginCommandInterfaceDbus
 )
 
 IF(WITH_TESTS)
-	add_subdirectory (test)
+#	add_subdirectory (test)
 ENDIF(WITH_TESTS)
 
 #IF(WITH_DOCUMENTATION)

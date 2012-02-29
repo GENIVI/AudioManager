@@ -29,6 +29,7 @@
 #include <SocketHandler.h>
 #include <pthread.h>
 #include <queue>
+#include "CAmSerializer.h"
 
 namespace am
 {
@@ -40,7 +41,7 @@ namespace am
 class RoutingReceiverAsyncShadow
 {
 public:
-    RoutingReceiverAsyncShadow();
+    RoutingReceiverAsyncShadow(RoutingReceiveInterface* iReceiveInterface,SocketHandler* iSocketHandler);
     virtual ~RoutingReceiverAsyncShadow();
     void ackConnect(const am_Handle_s handle, const am_connectionID_t connectionID, const am_Error_e error);
     void ackDisconnect(const am_Handle_s handle, const am_connectionID_t connectionID, const am_Error_e error);
@@ -57,120 +58,20 @@ public:
     void hookSourceAvailablityStatusChange(const am_sourceID_t sourceID, const am_Availability_s& availability);
     void hookDomainStateChange(const am_domainID_t domainID, const am_DomainState_e domainState);
     void hookTimingInformationChanged(const am_connectionID_t connectionID, const am_timeSync_t delay);
-
-    am_Error_e setRoutingInterface(RoutingReceiveInterface *receiveInterface);
-    void asyncMsgReceiver(const pollfd pollfd, const sh_pollHandle_t handle, void* userData);
-    bool asyncDispatcher(const sh_pollHandle_t handle, void* userData);
-    bool asyncChecker(const sh_pollHandle_t handle, void* userData);
-
-    shPollFired_T<RoutingReceiverAsyncShadow> asyncMsgReceive;
-    shPollDispatch_T<RoutingReceiverAsyncShadow> asyncDispatch;
-    shPollCheck_T<RoutingReceiverAsyncShadow> asyncCheck;
+    am_Error_e registerDomain(const am_Domain_s& domainData, am_domainID_t& domainID) ;
+    am_Error_e registerGateway(const am_Gateway_s& gatewayData, am_gatewayID_t& gatewayID) ;
+    am_Error_e registerSink(const am_Sink_s& sinkData, am_sinkID_t& sinkID) ;
+    am_Error_e deregisterSink(const am_sinkID_t sinkID) ;
+    am_Error_e registerSource(const am_Source_s& sourceData, am_sourceID_t& sourceID) ;
+    am_Error_e deregisterSource(const am_sourceID_t sourceID) ;
+    am_Error_e registerCrossfader(const am_Crossfader_s& crossfaderData, am_crossfaderID_t& crossfaderID) ;
+    void confirmRoutingReady(uint16_t starupHandle);
 
 private:
-    enum msgID_e
-    {
-        MSG_ACKCONNECT, MSG_ACKDISCONNECT, MSG_ACKSETSINKVOLUMECHANGE, MSG_ACKSETSOURCEVOLUMECHANGE, MSG_ACKSETSOURCESTATE, MSG_ACKSETSINKSOUNDPROPERTY, MSG_ACKSETSOURCESOUNDPROPERTY, MSG_ACKCROSSFADING, MSG_ACKSOURCEVOLUMETICK, MSG_ACKSINKVOLUMETICK, MSG_HOOKINTERRUPTSTATUSCHANGE, MSG_HOOKSINKAVAILABLITYSTATUSCHANGE, MSG_HOOKSOURCEAVAILABLITYSTATUSCHANGE, MSG_HOOKDOMAINSTATECHANGE, MSG_HOOKTIMINGINFORMATIONCHANGED
-    };
-
-    struct a_connect_s
-    {
-        am_Handle_s handle;
-        am_connectionID_t connectionID;
-        am_Error_e error;
-    };
-
-    struct a_volume_s
-    {
-        am_Handle_s handle;
-        am_volume_t volume;
-        am_Error_e error;
-    };
-
-    struct a_handle_s
-    {
-        am_Handle_s handle;
-        am_Error_e error;
-    };
-
-    struct a_crossfading_s
-    {
-        am_Handle_s handle;
-        am_HotSink_e hotSink;
-        am_Error_e error;
-    };
-
-    struct a_sourceVolumeTick_s
-    {
-        am_sourceID_t sourceID;
-        am_Handle_s handle;
-        am_volume_t volume;
-    };
-
-    struct a_sinkVolumeTick_s
-    {
-        am_sinkID_t sinkID;
-        am_Handle_s handle;
-        am_volume_t volume;
-    };
-
-    struct a_interruptStatusChange_s
-    {
-        am_sourceID_t sourceID;
-        am_InterruptState_e interruptState;
-    };
-
-    struct a_sinkAvailability_s
-    {
-        am_sinkID_t sinkID;
-        am_Availability_s availability;
-    };
-
-    struct a_sourceAvailability_s
-    {
-        am_sourceID_t sourceID;
-        am_Availability_s availability;
-    };
-
-    struct a_hookDomainStateChange_s
-    {
-        am_domainID_t domainID;
-        am_DomainState_e state;
-    };
-
-    struct a_timingInfoChanged_s
-    {
-        am_connectionID_t connectionID;
-        am_timeSync_t delay;
-    };
-
-    union parameter_u
-    {
-        a_connect_s connect;
-        a_volume_s volume;
-        a_handle_s handle;
-        a_crossfading_s crossfading;
-        a_sourceVolumeTick_s sourceVolumeTick;
-        a_sinkVolumeTick_s sinkVolumeTick;
-        a_interruptStatusChange_s interruptStatusChange;
-        a_sinkAvailability_s sinkAvailability;
-        a_sourceAvailability_s sourceAvailability;
-        a_hookDomainStateChange_s domainStateChange;
-        a_timingInfoChanged_s timingInfoChange;
-    };
-
-    struct msg_s
-    {
-        msgID_e msgID;
-        parameter_u parameters;
-    };
 
     SocketHandler *mSocketHandler;
     RoutingReceiveInterface *mRoutingReceiveInterface;
-    std::queue<msg_s> mQueue;
-    static pthread_mutex_t mMutex;
-    sh_pollHandle_t mHandle;
-    int mPipe[2];
+    CAmSerializer mSerializer;
 };
 
 } /* namespace am */

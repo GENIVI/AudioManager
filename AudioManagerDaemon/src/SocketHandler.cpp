@@ -64,6 +64,7 @@ SocketHandler::~SocketHandler()
  */
 void SocketHandler::start_listenting()
 {
+    gDispatchDone=0;
     int16_t pollStatus;
     std::list<int16_t> hitList;
 
