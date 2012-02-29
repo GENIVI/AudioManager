@@ -72,6 +72,9 @@ const char* USAGE_DESCRIPTION = "Usage:\tAudioManagerDaemon [options]\n"
         "\t-h: print this message\t\n"
         "\t-i: info about current settings \t\n"
         "\t-v: print version\t\n"
+#ifndef WITH_DLT
+        "\t-V: print DLT logs to stdout\t\n"
+#endif
         "\t-d: daemonize AudioManager \t\n"
         "\t-p<path> path for sqlite database (default is in memory)\t\n"
         "\t-t<port> port for telnetconnection\t\n"
@@ -89,6 +92,7 @@ std::string databasePath = std::string(":memory:");
 unsigned int telnetport = DEFAULT_TELNETPORT;
 unsigned int maxConnections = MAX_TELNETCONNECTIONS;
 int fd0, fd1, fd2;
+bool enableNoDLTDebug = false;
 
 void OutOfMemoryHandler()
 {
@@ -149,7 +153,11 @@ void parseCommandLine(int argc, char **argv)
 {
     while (optind < argc)
     {
+#ifdef WITH_DLT
         int option = getopt(argc, argv, "h::v::c::l::r::L::R::d::t::m::i::p::");
+#else
+        int option = getopt(argc, argv, "h::v::V::c::l::r::L::R::d::t::m::i::p::");
+#endif
 
         switch (option)
         {
@@ -202,6 +210,12 @@ void parseCommandLine(int argc, char **argv)
             printf("AudioManagerDaemon Version: %s\n", DAEMONVERSION);
             exit(-1);
             break;
+#ifndef WITH_DLT
+        case 'V':
+            printf("[DLT] debug output to stdout enabled\n");
+            enableNoDLTDebug = true;
+            break;
+#endif
         case 'h':
         default:
             printf("AudioManagerDaemon Version: %s\n", DAEMONVERSION);
@@ -225,16 +239,16 @@ static void signalHandler(int sig, siginfo_t *siginfo, void *context)
 
 int main(int argc, char *argv[])
 {
-    DLTWrapper::instance()->registerApp("AudioManagerDeamon", "AudioManagerDeamon");
-    DLTWrapper::instance()->registerContext(AudioManager, "Main", "Main Context");
-    logInfo("The Audiomanager is started");
-    log(&AudioManager, DLT_LOG_ERROR, "The version of the Audiomanager", DAEMONVERSION);
-
     listCommandPluginDirs.push_back(std::string(DEFAULT_PLUGIN_COMMAND_DIR));
     listRoutingPluginDirs.push_back(std::string(DEFAULT_PLUGIN_ROUTING_DIR));
 
     //parse the commandline options
     parseCommandLine(argc, (char**) argv);
+
+    DLTWrapper::instance(enableNoDLTDebug)->registerApp("AudioManagerDeamon", "AudioManagerDeamon");
+    DLTWrapper::instance()->registerContext(AudioManager, "Main", "Main Context");
+    logInfo("The Audiomanager is started");
+    log(&AudioManager, DLT_LOG_ERROR, "The version of the Audiomanager", DAEMONVERSION);
 
     //now the signal handler:
     struct sigaction signalAction;
