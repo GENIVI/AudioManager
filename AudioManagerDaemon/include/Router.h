@@ -38,7 +38,7 @@ class Router
 public:
     Router(DatabaseHandler* iDatabaseHandler, ControlSender* iSender);
     am_Error_e getRoute(const bool onlyfree, const am_sourceID_t sourceID, const am_sinkID_t sinkID, std::vector<am_Route_s>& returnList);
-    virtual ~Router();
+    ~Router();
 
 private:
     am_Error_e findBestWay(am_sinkID_t sinkID, am_sourceID_t sourceID, std::vector<am_RoutingElement_s>& listRoute, std::vector<am_RoutingElement_s>::iterator routeIterator, std::vector<am_gatewayID_t>::iterator gatewayIterator);

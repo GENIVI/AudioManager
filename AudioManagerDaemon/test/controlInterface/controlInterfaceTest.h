@@ -28,19 +28,20 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-class DatbaseHandler;
-class SocketHandler;
-class RoutingSender;
-class CommandSender;
-class RoutingInterfaceBackdoor;
-class CommandInterfaceBackdoor;
-class ControlSender;
-class Router;
-class DatabaseObserver;
-class ControlReceiver;
-class RoutingReceiver;
-class CommonFunctions;
-
+#include <dbus/DBusWrapper.h>
+#include "MockInterfaces.h"
+#include "DatabaseHandler.h"
+#include "ControlReceiver.h"
+#include "RoutingReceiver.h"
+#include "DatabaseObserver.h"
+#include "ControlSender.h"
+#include "RoutingSender.h"
+#include "SocketHandler.h"
+#include "Router.h"
+#include "../RoutingInterfaceBackdoor.h"
+#include "../CommandInterfaceBackdoor.h"
+#include "../ControlInterfaceBackdoor.h"
+#include "../CommonFunctions.h"
 
 namespace am
 {

@@ -32,6 +32,7 @@ using namespace testing;
 routingInterfaceTest::routingInterfaceTest() :
         plistRoutingPluginDirs(), //
         plistCommandPluginDirs(), //
+        pSocketHandler(), //
         pDatabaseHandler(std::string(":memory:")), //
         pRoutingSender(plistRoutingPluginDirs), //
         pCommandSender(plistCommandPluginDirs), //
@@ -40,8 +41,8 @@ routingInterfaceTest::routingInterfaceTest() :
         pMockInterface(), //
         pRoutingInterfaceBackdoor(), //
         pCommandInterfaceBackdoor(), //
-        pControlReceiver(&pDatabaseHandler, &pRoutingSender, &pCommandSender, &pRouter), //
-        pObserver(&pCommandSender, &pRoutingSender)
+        pControlReceiver(&pDatabaseHandler, &pRoutingSender, &pCommandSender, &pSocketHandler, &pRouter), //
+        pObserver(&pCommandSender, &pRoutingSender, &pSocketHandler)
 {
     pDatabaseHandler.registerObserver(&pObserver);
     pRoutingInterfaceBackdoor.unloadPlugins(&pRoutingSender);

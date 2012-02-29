@@ -300,7 +300,7 @@ am_Error_e RoutingSender::asyncSetSourceSoundProperty(am_Handle_s& handle, const
     return (E_NON_EXISTENT);
 }
 
-am_Error_e am::RoutingSender::asyncSetSourceSoundProperties(am_Handle_s& handle, const std::vector<am_SoundProperty_s> & listSoundProperties, const am_sourceID_t sourceID)
+am_Error_e RoutingSender::asyncSetSourceSoundProperties(am_Handle_s& handle, const std::vector<am_SoundProperty_s> & listSoundProperties, const am_sourceID_t sourceID)
 {
     am_handleData_c handleData;
     SourceInterfaceMap::iterator iter = mMapSourceInterface.begin();
@@ -314,7 +314,7 @@ am_Error_e am::RoutingSender::asyncSetSourceSoundProperties(am_Handle_s& handle,
     return (E_NON_EXISTENT);
 }
 
-am_Error_e am::RoutingSender::asyncSetSinkSoundProperties(am_Handle_s& handle, const std::vector<am_SoundProperty_s> & listSoundProperties, const am_sinkID_t sinkID)
+am_Error_e RoutingSender::asyncSetSinkSoundProperties(am_Handle_s& handle, const std::vector<am_SoundProperty_s> & listSoundProperties, const am_sinkID_t sinkID)
 {
     am_handleData_c handleData;
     SinkInterfaceMap::iterator iter = mMapSinkInterface.begin();
@@ -493,7 +493,7 @@ RoutingSender::am_handleData_c RoutingSender::returnHandleData(const am_Handle_s
     return (it->second);
 }
 
-void am::RoutingSender::setRoutingReady()
+void RoutingSender::setRoutingReady()
 {
     mRoutingReceiver->waitOnStartup(false);
     std::vector<InterfaceNamePairs>::iterator iter = mListInterfaces.begin();
@@ -505,7 +505,7 @@ void am::RoutingSender::setRoutingReady()
     mRoutingReceiver->waitOnStartup(true);
 }
 
-void am::RoutingSender::setRoutingRundown()
+void RoutingSender::setRoutingRundown()
 {
     mRoutingReceiver->waitOnRundown(false);
     std::vector<InterfaceNamePairs>::iterator iter = mListInterfaces.begin();

@@ -34,12 +34,12 @@ namespace am {
 
 class MockRoutingSendInterface : public RoutingSendInterface {
  public:
-  MOCK_METHOD1(startupRoutingInterface,
-      void(RoutingReceiveInterface* routingreceiveinterface));
-  MOCK_METHOD0(routingInterfacesReady,
-      void());
-  MOCK_METHOD0(routingInterfacesRundown,
-      void());
+  MOCK_METHOD1(startupInterface,
+      am_Error_e(RoutingReceiveInterface* routingreceiveinterface));
+  MOCK_METHOD1(setRoutingReady,
+      void(const uint16_t handle));
+  MOCK_METHOD1(setRoutingRundown,
+      void(const uint16_t handle));
   MOCK_METHOD1(asyncAbort,
       am_Error_e(const am_Handle_s handle));
   MOCK_METHOD5(asyncConnect,
@@ -66,9 +66,10 @@ class MockRoutingSendInterface : public RoutingSendInterface {
       am_Error_e(const am_domainID_t domainID, const am_DomainState_e domainState));
   MOCK_CONST_METHOD1(returnBusName,
       am_Error_e(std::string& BusName));
-  MOCK_CONST_METHOD0(getInterfaceVersion,
-      uint16_t());
+  MOCK_CONST_METHOD1(getInterfaceVersion,
+      void(std::string& version));
 };
+
 }  // namespace am
 
 

@@ -58,7 +58,7 @@ public:
                  unsigned int servPort,
                  unsigned int maxConnections);
 
-    virtual ~TelnetServer();
+    ~TelnetServer();
     void connectSocket(const pollfd pfd, const sh_pollHandle_t handle, void* userData);
     void disconnectClient(int filedescriptor);
     void receiveData(const pollfd pfd, const sh_pollHandle_t handle, void* userData);

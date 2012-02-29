@@ -27,6 +27,7 @@
 #include "control/ControlReceiveInterface.h"
 #include <cassert>
 #include <algorithm>
+#include "DLTWrapper.h"
 
 using namespace am;
 
@@ -456,21 +457,21 @@ void ControlSenderPlugin::getInterfaceVersion(std::string & version) const
 
 void ControlSenderPlugin::confirmCommandReady()
 {
-    //todo:implement
+    logInfo("ControlSenderPlugin got Routing Ready confirmed");
 }
 
 void ControlSenderPlugin::confirmRoutingReady()
 {
-    //todo:implement
+    logInfo("ControlSenderPlugin got Command Ready confirmed");
 }
 
 void ControlSenderPlugin::confirmCommandRundown()
 {
-    //todo:implement
+    logInfo("ControlSenderPlugin got Routing Rundown confirmed");
 }
 
 void ControlSenderPlugin::confirmRoutingRundown()
 {
-    //todo:implement
+    logInfo("ControlSenderPlugin got Command Rundown confirmed");
 }
 

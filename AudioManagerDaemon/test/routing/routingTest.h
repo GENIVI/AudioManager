@@ -41,6 +41,7 @@
 #include "DatabaseObserver.h"
 #include "RoutingSender.h"
 #include "Router.h"
+#include "SocketHandler.h"
 #include "../ControlInterfaceBackdoor.h"
 #include "../CommandInterfaceBackdoor.h"
 #include "../CommonFunctions.h"
@@ -55,6 +56,7 @@ public:
     ~routingTest();
     std::vector<std::string> plistRoutingPluginDirs;
     std::vector<std::string> plistCommandPluginDirs;
+    SocketHandler pSocketHandler;
     DatabaseHandler pDatabaseHandler;
     ControlSender pControlSender;
     Router pRouter;

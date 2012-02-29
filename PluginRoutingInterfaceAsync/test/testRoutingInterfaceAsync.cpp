@@ -25,26 +25,28 @@
 #include "testRoutingInterfaceAsync.h"
 #include "config.h"
 #include "DLTWrapper.h"
+#include "RoutingReceiver.h"
+#include "PluginTemplate.h"
 
 using namespace am;
 using namespace testing;
 
-std::vector<std::string> testRoutingInterfaceAsync::pListRoutingPluginDirs = returnListPlugins();
-am_domainID_t testRoutingInterfaceAsync::mDomainIDCount = 0;
-RoutingSender testRoutingInterfaceAsync::pRoutingSender = RoutingSender(pListRoutingPluginDirs);
+am_domainID_t MyEnvironment::mDomainIDCount = 0;
+static RoutingSendInterface* pRouter;
+static SocketHandler pSocketHandler;
+static MockRoutingReceiveInterface pReceiveInterface;
 
-testRoutingInterfaceAsync::testRoutingInterfaceAsync() :
-        pSocketHandler(), //
-        pReceiveInterface(), //
-        ptimerCallback(this, &testRoutingInterfaceAsync::timerCallback)
+MyEnvironment::MyEnvironment() :
+        ptimerCallback(this, &MyEnvironment::timerCallback)
+{
+    DefaultValue<am_Error_e>::Set(E_OK); // Sets the default value to be returned.
+}
+
+MyEnvironment::~MyEnvironment()
 {
 }
 
-testRoutingInterfaceAsync::~testRoutingInterfaceAsync()
-{
-}
-
-void testRoutingInterfaceAsync::SetUp()
+void MyEnvironment::SetUp()
 {
     logInfo("RoutingSendInterface Test started ");
 
@@ -53,59 +55,116 @@ void testRoutingInterfaceAsync::SetUp()
     domainIDs.push_back(1);
 
     EXPECT_CALL(pReceiveInterface,getSocketHandler(_)).WillOnce(DoAll(SetArgReferee<0>(&pSocketHandler), Return(E_OK)));
-    EXPECT_CALL(pReceiveInterface,registerDomain(_,_)).WillRepeatedly(Invoke(testRoutingInterfaceAsync::handleDomainRegister));
-    EXPECT_CALL(pReceiveInterface,registerSource(_,_)).WillRepeatedly(Invoke(testRoutingInterfaceAsync::handleSourceRegister));
-    EXPECT_CALL(pReceiveInterface,registerSink(_,_)).WillRepeatedly(Invoke(testRoutingInterfaceAsync::handleSinkRegister));
+    EXPECT_CALL(pReceiveInterface,registerDomain(_,_)).WillRepeatedly(Invoke(MyEnvironment::handleDomainRegister));
+    EXPECT_CALL(pReceiveInterface,registerSource(_,_)).WillRepeatedly(Invoke(MyEnvironment::handleSourceRegister));
+    EXPECT_CALL(pReceiveInterface,registerSink(_,_)).WillRepeatedly(Invoke(MyEnvironment::handleSinkRegister));
+    EXPECT_CALL(pReceiveInterface,confirmRoutingReady(_)).Times(1);
 
-    pRoutingSender.startupRoutingInterface(&pReceiveInterface);
-    pRoutingSender.routingInterfacesReady();
+    RoutingSendInterface* (*createFunc)();
+    void* tempLibHandle = NULL;
+    std::string libname("../plugins/routing/libPluginRoutingInterfaceAsync.so");
+    createFunc = getCreateFunction<RoutingSendInterface*()>(libname, tempLibHandle);
+
+    if (!createFunc)
+    {
+        logError("RoutingSendInterface Test Entry point of RoutingPlugin not found");
+        exit(1);
+    }
+
+    pRouter = createFunc();
+
+    if (!pRouter)
+    {
+        logError("RoutingSendInterface Test RoutingPlugin initialization failed. Entry Function not callable");
+        exit(1);
+    }
+
+    pRouter->startupInterface(&pReceiveInterface);
+    pRouter->setRoutingReady(10);
 
     timespec t;
     t.tv_nsec = 0;
-    t.tv_sec = 4;
+    t.tv_sec = 2;
 
     sh_timerHandle_t handle;
 
     shTimerCallBack *buf = &ptimerCallback;
     //lets use a timeout so the test will finish
     pSocketHandler.addTimer(t, buf, handle, (void*) NULL);
+    pSocketHandler.start_listenting();
+
 }
 
-std::vector<std::string> am::testRoutingInterfaceAsync::returnListPlugins()
+void MyEnvironment::TearDown()
+{
+
+}
+
+testRoutingInterfaceAsync::testRoutingInterfaceAsync() :
+        ptimerCallback(this, &testRoutingInterfaceAsync::timerCallback)
+{
+}
+
+testRoutingInterfaceAsync::~testRoutingInterfaceAsync()
+{
+}
+
+void testRoutingInterfaceAsync::timerCallback(sh_timerHandle_t handle, void *userData)
+{
+    (void) handle;
+    (void) userData;
+    pSocketHandler.stop_listening();
+}
+
+void testRoutingInterfaceAsync::SetUp()
+{
+//    timespec t;
+//    t.tv_nsec = 0;
+//    t.tv_sec = 2;
+//
+//    sh_timerHandle_t handle;
+//
+//    shTimerCallBack *buf = &ptimerCallback;
+//    //lets use a timeout so the test will finish
+//    pSocketHandler.addTimer(t, buf, handle, (void*) NULL);
+}
+
+std::vector<std::string> MyEnvironment::returnListPlugins()
 {
     std::vector<std::string> list;
     list.push_back(std::string(DEFAULT_PLUGIN_ROUTING_DIR));
     return (list);
 }
 
-am_Error_e am::testRoutingInterfaceAsync::handleSourceRegister(const am_Source_s & sourceData, am_sourceID_t & sourceID)
+am_Error_e MyEnvironment::handleSourceRegister(const am_Source_s & sourceData, am_sourceID_t & sourceID)
 {
     sourceID = sourceData.sourceID;
-    pRoutingSender.addSourceLookup(sourceData);
     return (E_OK);
 }
 
-am_Error_e am::testRoutingInterfaceAsync::handleSinkRegister(const am_Sink_s & sinkData, am_sinkID_t & sinkID)
+am_Error_e MyEnvironment::handleSinkRegister(const am_Sink_s & sinkData, am_sinkID_t & sinkID)
 {
     sinkID = sinkData.sinkID;
-    pRoutingSender.addSinkLookup(sinkData);
     return (E_OK);
 }
 
-am_Error_e am::testRoutingInterfaceAsync::handleDomainRegister(const am_Domain_s & domainData, am_domainID_t & domainID)
+am_Error_e MyEnvironment::handleDomainRegister(const am_Domain_s & domainData, am_domainID_t & domainID)
 {
     am_Domain_s domain = domainData;
-    domainID = mDomainIDCount++;
+    domainID = ++mDomainIDCount;
     domain.domainID = domainID;
-    pRoutingSender.addDomainLookup(domain);
     return (E_OK);
 }
 
-void am::testRoutingInterfaceAsync::timerCallback(sh_timerHandle_t handle, void *userData)
+void MyEnvironment::timerCallback(sh_timerHandle_t handle, void *userData)
 {
     (void) handle;
     (void) userData;
     pSocketHandler.stop_listening();
+    timespec t;
+    t.tv_nsec = 0;
+    t.tv_sec = 2;
+    pSocketHandler.restartTimer(handle, t);
 }
 
 void testRoutingInterfaceAsync::TearDown()
@@ -119,7 +178,7 @@ TEST_F(testRoutingInterfaceAsync,setDomainState)
 
     EXPECT_CALL(pReceiveInterface,hookDomainStateChange(_,DS_INDEPENDENT_RUNDOWN)).Times(1);
 
-    ASSERT_EQ(E_OK, pRoutingSender.setDomainState(domainID,state));
+    ASSERT_EQ(E_OK, pRouter->setDomainState(domainID,state));
     pSocketHandler.start_listenting();
 }
 
@@ -137,7 +196,7 @@ TEST_F(testRoutingInterfaceAsync,setSourceSoundProperty)
 
     EXPECT_CALL(pReceiveInterface,ackSetSourceSoundProperty(_,E_OK)).Times(1);
 
-    ASSERT_EQ(E_OK, pRoutingSender.asyncSetSourceSoundProperty(handle,sourceID,property));
+    ASSERT_EQ(E_OK, pRouter->asyncSetSourceSoundProperty(handle,sourceID,property));
     pSocketHandler.start_listenting();
 }
 
@@ -155,7 +214,7 @@ TEST_F(testRoutingInterfaceAsync,setSinkSoundProperty)
 
     EXPECT_CALL(pReceiveInterface,ackSetSinkSoundProperty(_,E_OK)).Times(1);
 
-    ASSERT_EQ(E_OK, pRoutingSender.asyncSetSinkSoundProperty(handle,sinkID,property));
+    ASSERT_EQ(E_OK, pRouter->asyncSetSinkSoundProperty(handle,sinkID,property));
     pSocketHandler.start_listenting();
 }
 
@@ -164,14 +223,14 @@ TEST_F(testRoutingInterfaceAsync,setSourceState)
 
     am_Handle_s handle;
     handle.handle = 1;
-    handle.handleType = H_SETSOURCEVOLUME;
+    handle.handleType = H_SETSOURCESTATE;
 
     am_sourceID_t sourceID = 1;
     am_SourceState_e state = SS_OFF;
 
     EXPECT_CALL(pReceiveInterface,ackSetSourceState(_,E_OK)).Times(1);
 
-    ASSERT_EQ(E_OK, pRoutingSender.asyncSetSourceState(handle,sourceID,state));
+    ASSERT_EQ(E_OK, pRouter->asyncSetSourceState(handle,sourceID,state));
     pSocketHandler.start_listenting();
 }
 
@@ -187,10 +246,10 @@ TEST_F(testRoutingInterfaceAsync,setSourceVolume)
     am_RampType_e ramp = RAMP_GENIVI_DIRECT;
     am_time_t myTime = 25;
 
-    EXPECT_CALL(pReceiveInterface,ackSourceVolumeTick(_,sourceID,_)).Times(3);
+    EXPECT_CALL(pReceiveInterface,ackSourceVolumeTick(_,sourceID,_)).Times(AtLeast(1));
     EXPECT_CALL(pReceiveInterface,ackSetSourceVolumeChange(_,volume,E_OK)).Times(1);
 
-    ASSERT_EQ(E_OK, pRoutingSender.asyncSetSourceVolume(handle,sourceID,volume,ramp,myTime));
+    ASSERT_EQ(E_OK, pRouter->asyncSetSourceVolume(handle,sourceID,volume,ramp,myTime));
     pSocketHandler.start_listenting();
 }
 
@@ -206,10 +265,10 @@ TEST_F(testRoutingInterfaceAsync,setSinkVolume)
     am_RampType_e ramp = RAMP_GENIVI_DIRECT;
     am_time_t myTime = 25;
 
-    EXPECT_CALL(pReceiveInterface,ackSinkVolumeTick(_,sinkID,_)).Times(9);
+    EXPECT_CALL(pReceiveInterface,ackSinkVolumeTick(_,sinkID,_)).Times(AtLeast(2));
     EXPECT_CALL(pReceiveInterface,ackSetSinkVolumeChange(_,volume,E_OK)).Times(1);
 
-    ASSERT_EQ(E_OK, pRoutingSender.asyncSetSinkVolume(handle,sinkID,volume,ramp,myTime));
+    ASSERT_EQ(E_OK, pRouter->asyncSetSinkVolume(handle,sinkID,volume,ramp,myTime));
     pSocketHandler.start_listenting();
 }
 
@@ -228,49 +287,9 @@ TEST_F(testRoutingInterfaceAsync,setSinkVolumeAbort)
     EXPECT_CALL(pReceiveInterface, ackSinkVolumeTick(_,sinkID,_));
     EXPECT_CALL(pReceiveInterface,ackSetSinkVolumeChange(_,AllOf(Ne(volume),Ne(0)),E_ABORTED)).Times(1);
 
-    ASSERT_EQ(E_OK, pRoutingSender.asyncSetSinkVolume(handle,sinkID,volume,ramp,myTime));
+    ASSERT_EQ(E_OK, pRouter->asyncSetSinkVolume(handle,sinkID,volume,ramp,myTime));
     sleep(0.5);
-    ASSERT_EQ(E_OK, pRoutingSender.asyncAbort(handle));
-    pSocketHandler.start_listenting();
-}
-
-TEST_F(testRoutingInterfaceAsync,disconnectTooEarly)
-{
-
-    am_Handle_s handle;
-    handle.handle = 1;
-    handle.handleType = H_CONNECT;
-
-    am_connectionID_t connectionID = 4;
-    am_sourceID_t sourceID = 2;
-    am_sinkID_t sinkID = 1;
-    am_ConnectionFormat_e format = CF_GENIVI_ANALOG;
-
-    EXPECT_CALL(pReceiveInterface, ackConnect(_,connectionID,E_OK));
-    EXPECT_CALL(pReceiveInterface,ackDisconnect(_,connectionID,E_OK)).Times(0);
-    ASSERT_EQ(E_OK, pRoutingSender.asyncConnect(handle,connectionID,sourceID,sinkID,format));
-    ASSERT_EQ(E_NON_EXISTENT, pRoutingSender.asyncDisconnect(handle,connectionID));
-    pSocketHandler.start_listenting();
-}
-
-TEST_F(testRoutingInterfaceAsync,disconnectAbort)
-{
-
-    am_Handle_s handle;
-    handle.handle = 1;
-    handle.handleType = H_CONNECT;
-
-    am_connectionID_t connectionID = 4;
-    am_sourceID_t sourceID = 2;
-    am_sinkID_t sinkID = 1;
-    am_ConnectionFormat_e format = CF_GENIVI_ANALOG;
-
-    EXPECT_CALL(pReceiveInterface, ackConnect(_,connectionID,E_OK));
-    EXPECT_CALL(pReceiveInterface, ackDisconnect(_,connectionID,E_ABORTED));
-    ASSERT_EQ(E_OK, pRoutingSender.asyncConnect(handle,connectionID,sourceID,sinkID,format));
-    sleep(2);
-    ASSERT_EQ(E_OK, pRoutingSender.asyncDisconnect(handle,connectionID));
-    ASSERT_EQ(E_OK, pRoutingSender.asyncAbort(handle));
+    ASSERT_EQ(E_OK, pRouter->asyncAbort(handle));
     pSocketHandler.start_listenting();
 }
 
@@ -279,22 +298,74 @@ TEST_F(testRoutingInterfaceAsync,disconnectNonExisting)
 
     am_Handle_s handle;
     handle.handle = 1;
-    handle.handleType = H_CONNECT;
+    handle.handleType = H_DISCONNECT;
 
     am_connectionID_t connectionID = 4;
 
     EXPECT_CALL(pReceiveInterface,ackConnect(_,connectionID,E_OK)).Times(0);
     EXPECT_CALL(pReceiveInterface,ackDisconnect(_,connectionID,E_OK)).Times(0);
-    ASSERT_EQ(E_NON_EXISTENT, pRoutingSender.asyncDisconnect(handle,connectionID));
+    ASSERT_EQ(E_NON_EXISTENT, pRouter->asyncDisconnect(handle,connectionID));
+    pSocketHandler.start_listenting();
+}
+
+TEST_F(testRoutingInterfaceAsync,disconnectTooEarly)
+{
+
+    am_Handle_s handle_c;
+    handle_c.handle = 1;
+    handle_c.handleType = H_CONNECT;
+
+    am_Handle_s handle;
+    handle.handle = 1;
+    handle.handleType = H_DISCONNECT;
+
+    am_connectionID_t connectionID = 4;
+    am_sourceID_t sourceID = 2;
+    am_sinkID_t sinkID = 1;
+    am_ConnectionFormat_e format = CF_GENIVI_ANALOG;
+
+    EXPECT_CALL(pReceiveInterface, ackConnect(_,connectionID,E_OK));
+    EXPECT_CALL(pReceiveInterface,ackDisconnect(_,connectionID,E_OK)).Times(0);
+    ASSERT_EQ(E_OK, pRouter->asyncConnect(handle_c,connectionID,sourceID,sinkID,format));
+    ASSERT_EQ(E_NON_EXISTENT, pRouter->asyncDisconnect(handle,connectionID));
+    pSocketHandler.start_listenting();
+}
+
+TEST_F(testRoutingInterfaceAsync,disconnectAbort)
+{
+
+    am_Handle_s handle_c;
+    handle_c.handle = 1;
+    handle_c.handleType = H_CONNECT;
+
+    am_Handle_s handle;
+    handle.handle = 1;
+    handle.handleType = H_DISCONNECT;
+
+    am_connectionID_t connectionID = 5;
+    am_sourceID_t sourceID = 2;
+    am_sinkID_t sinkID = 1;
+    am_ConnectionFormat_e format = CF_GENIVI_ANALOG;
+
+    EXPECT_CALL(pReceiveInterface, ackConnect(_,connectionID,E_OK));
+    EXPECT_CALL(pReceiveInterface, ackDisconnect(_,connectionID,E_ABORTED));
+    ASSERT_EQ(E_OK, pRouter->asyncConnect(handle_c,connectionID,sourceID,sinkID,format));
+    sleep(2);
+    ASSERT_EQ(E_OK, pRouter->asyncDisconnect(handle,connectionID));
+    ASSERT_EQ(E_OK, pRouter->asyncAbort(handle));
     pSocketHandler.start_listenting();
 }
 
 TEST_F(testRoutingInterfaceAsync,disconnect)
 {
 
+    am_Handle_s handle_c;
+    handle_c.handle = 1;
+    handle_c.handleType = H_CONNECT;
+
     am_Handle_s handle;
     handle.handle = 1;
-    handle.handleType = H_CONNECT;
+    handle.handleType = H_DISCONNECT;
 
     am_connectionID_t connectionID = 4;
     am_sourceID_t sourceID = 2;
@@ -303,9 +374,9 @@ TEST_F(testRoutingInterfaceAsync,disconnect)
 
     EXPECT_CALL(pReceiveInterface, ackConnect(_,connectionID,E_OK));
     EXPECT_CALL(pReceiveInterface, ackDisconnect(_,connectionID,E_OK));
-    ASSERT_EQ(E_OK, pRoutingSender.asyncConnect(handle,connectionID,sourceID,sinkID,format));
+    ASSERT_EQ(E_OK, pRouter->asyncConnect(handle_c,connectionID,sourceID,sinkID,format));
     sleep(2);
-    ASSERT_EQ(E_OK, pRoutingSender.asyncDisconnect(handle,connectionID));
+    ASSERT_EQ(E_OK, pRouter->asyncDisconnect(handle,connectionID));
     pSocketHandler.start_listenting();
 }
 
@@ -322,12 +393,12 @@ TEST_F(testRoutingInterfaceAsync,connectNoMoreThreads)
     am_ConnectionFormat_e format = CF_GENIVI_ANALOG;
 
     EXPECT_CALL(pReceiveInterface,ackConnect(_,_,E_OK)).Times(10);
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < 9; i++)
     {
         handle.handle++;
         connectionID++;
-        ASSERT_EQ(E_OK, pRoutingSender.asyncConnect(handle,connectionID,sourceID,sinkID,format));
-    }ASSERT_EQ(E_NOT_POSSIBLE, pRoutingSender.asyncConnect(handle,connectionID,sourceID,sinkID,format));
+        ASSERT_EQ(E_OK, pRouter->asyncConnect(handle,connectionID,sourceID,sinkID,format));
+    }ASSERT_EQ(E_NOT_POSSIBLE, pRouter->asyncConnect(handle,connectionID,sourceID,sinkID,format));
     pSocketHandler.start_listenting();
 }
 
@@ -344,9 +415,9 @@ TEST_F(testRoutingInterfaceAsync,connectAbortTooLate)
     am_ConnectionFormat_e format = CF_GENIVI_ANALOG;
 
     EXPECT_CALL(pReceiveInterface,ackConnect(_,connectionID,E_OK)).Times(1);
-    ASSERT_EQ(E_OK, pRoutingSender.asyncConnect(handle,connectionID,sourceID,sinkID,format));
+    ASSERT_EQ(E_OK, pRouter->asyncConnect(handle,connectionID,sourceID,sinkID,format));
     sleep(3);
-    ASSERT_EQ(E_NON_EXISTENT, pRoutingSender.asyncAbort(handle));
+    ASSERT_EQ(E_NON_EXISTENT, pRouter->asyncAbort(handle));
     pSocketHandler.start_listenting();
 }
 
@@ -363,9 +434,9 @@ TEST_F(testRoutingInterfaceAsync,connectAbort)
     am_ConnectionFormat_e format = CF_GENIVI_ANALOG;
 
     EXPECT_CALL(pReceiveInterface,ackConnect(_,connectionID,E_ABORTED)).Times(1);
-    ASSERT_EQ(E_OK, pRoutingSender.asyncConnect(handle,connectionID,sourceID,sinkID,format));
+    ASSERT_EQ(E_OK, pRouter->asyncConnect(handle,connectionID,sourceID,sinkID,format));
     sleep(0.5);
-    ASSERT_EQ(E_OK, pRoutingSender.asyncAbort(handle));
+    ASSERT_EQ(E_OK, pRouter->asyncAbort(handle));
     pSocketHandler.start_listenting();
 }
 
@@ -382,7 +453,7 @@ TEST_F(testRoutingInterfaceAsync,connectWrongFormat)
     am_ConnectionFormat_e format = CF_GENIVI_MONO;
 
     EXPECT_CALL(pReceiveInterface,ackConnect(_,connectionID,E_OK)).Times(0);
-    ASSERT_EQ(E_WRONG_FORMAT, pRoutingSender.asyncConnect(handle,connectionID,sourceID,sinkID,format));
+    ASSERT_EQ(E_WRONG_FORMAT, pRouter->asyncConnect(handle,connectionID,sourceID,sinkID,format));
     pSocketHandler.start_listenting();
 }
 
@@ -399,7 +470,7 @@ TEST_F(testRoutingInterfaceAsync,connectWrongSink)
     am_ConnectionFormat_e format = CF_GENIVI_ANALOG;
 
     EXPECT_CALL(pReceiveInterface,ackConnect(_,connectionID,E_OK)).Times(0);
-    ASSERT_EQ(E_NON_EXISTENT, pRoutingSender.asyncConnect(handle,connectionID,sourceID,sinkID,format));
+    ASSERT_EQ(E_NON_EXISTENT, pRouter->asyncConnect(handle,connectionID,sourceID,sinkID,format));
     pSocketHandler.start_listenting();
 }
 
@@ -415,7 +486,7 @@ TEST_F(testRoutingInterfaceAsync,connectWrongSource)
     am_ConnectionFormat_e format = CF_GENIVI_ANALOG;
 
     EXPECT_CALL(pReceiveInterface,ackConnect(_,connectionID,E_OK)).Times(0);
-    ASSERT_EQ(E_NON_EXISTENT, pRoutingSender.asyncConnect(handle,connectionID,sourceID,sinkID,format));
+    ASSERT_EQ(E_NON_EXISTENT, pRouter->asyncConnect(handle,connectionID,sourceID,sinkID,format));
     pSocketHandler.start_listenting();
 }
 
@@ -432,13 +503,15 @@ TEST_F(testRoutingInterfaceAsync,connect)
     am_ConnectionFormat_e format = CF_GENIVI_ANALOG;
 
     EXPECT_CALL(pReceiveInterface, ackConnect(_,connectionID,E_OK));
-    ASSERT_EQ(E_OK, pRoutingSender.asyncConnect(handle,connectionID,sourceID,sinkID,format));
+    ASSERT_EQ(E_OK, pRouter->asyncConnect(handle,connectionID,sourceID,sinkID,format));
     pSocketHandler.start_listenting();
 }
 
 int main(int argc, char **argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
+    ::testing::Environment* const env = ::testing::AddGlobalTestEnvironment(new MyEnvironment);
+    (void) env;
     return RUN_ALL_TESTS();
 }
 

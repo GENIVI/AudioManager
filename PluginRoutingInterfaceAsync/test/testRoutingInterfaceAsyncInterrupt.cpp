@@ -59,8 +59,8 @@ void testRoutingInterfaceAsync::SetUp()
     EXPECT_CALL(pReceiveInterface,registerSource(_,_)).WillRepeatedly(Invoke(testRoutingInterfaceAsync::handleSourceRegister));
     EXPECT_CALL(pReceiveInterface,registerSink(_,_)).WillRepeatedly(Invoke(testRoutingInterfaceAsync::handleSinkRegister));
 
-    pRoutingSender.startupRoutingInterface(&pReceiveInterface);
-    pRoutingSender.routingInterfacesReady();
+    //pRoutingSender.startupRoutingInterface(&pReceiveInterface);
+    //pRoutingSender.routingInterfacesReady();
 
     timespec t;
     t.tv_nsec = 0;

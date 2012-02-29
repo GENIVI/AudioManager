@@ -45,7 +45,7 @@ class CommandSender
 {
 public:
     CommandSender(const std::vector<std::string>& listOfPluginDirectories);
-    virtual ~CommandSender();
+    ~CommandSender();
     am_Error_e startupInterfaces(CommandReceiver* iCommandReceiver);
     void setCommandReady();
     void setCommandRundown();

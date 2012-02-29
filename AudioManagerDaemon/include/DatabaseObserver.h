@@ -46,7 +46,7 @@ class DatabaseObserver
 public:
     DatabaseObserver(CommandSender *iCommandSender, RoutingSender *iRoutingSender, SocketHandler *iSocketHandler);
     DatabaseObserver(CommandSender *iCommandSender, RoutingSender *iRoutingSender, SocketHandler *iSocketHandler, TelnetServer *iTelnetServer);
-    virtual ~DatabaseObserver();
+    ~DatabaseObserver();
     void numberOfSinkClassesChanged();
     void numberOfSourceClassesChanged();
     void newSink(const am_Sink_s& sink);

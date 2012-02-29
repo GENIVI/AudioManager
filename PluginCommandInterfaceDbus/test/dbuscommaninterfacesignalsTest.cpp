@@ -84,7 +84,7 @@ void* cbSinkAdded(void*)
     dbus_error_init(&error);
     DBusConnection* co = dbus_bus_get(DBUS_BUS_SESSION, &error);
     backdoor.setDbusConnection(&sender, co);
-    sender.cbNumberOfSinksChanged();
+    sender.cbNewSink(mysink);
     return (NULL);
 }
 

@@ -45,7 +45,7 @@ class RoutingReceiver: public RoutingReceiveInterface
 public:
     RoutingReceiver(DatabaseHandler *iDatabaseHandler, RoutingSender *iRoutingSender, ControlSender *iControlSender, SocketHandler *iSocketHandler);
     RoutingReceiver(DatabaseHandler *iDatabaseHandler, RoutingSender *iRoutingSender, ControlSender *iControlSender, SocketHandler *iSocketHandler, DBusWrapper *iDBusWrapper);
-    virtual ~RoutingReceiver();
+    ~RoutingReceiver();
     void ackConnect(const am_Handle_s handle, const am_connectionID_t connectionID, const am_Error_e error);
     void ackDisconnect(const am_Handle_s handle, const am_connectionID_t connectionID, const am_Error_e error);
     void ackSetSinkVolumeChange(const am_Handle_s handle, const am_volume_t volume, const am_Error_e error);
@@ -83,8 +83,8 @@ public:
     am_Error_e getDBusConnectionWrapper(DBusWrapper*& dbusConnectionWrapper) const;
     am_Error_e getSocketHandler(SocketHandler*& socketHandler) const;
     void getInterfaceVersion(std::string& version) const;
-    void confirmRoutingReady(const uint16_t handle) const;
-    void confirmRoutingRundown(const uint16_t handle) const;
+    void confirmRoutingReady(const uint16_t handle);
+    void confirmRoutingRundown(const uint16_t handle);
 
     uint16_t getStartupHandle(); //!< returns a startup handle
     uint16_t getRundownHandle(); //!< returns a rundown handle

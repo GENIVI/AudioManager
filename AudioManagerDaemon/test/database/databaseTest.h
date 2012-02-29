@@ -30,10 +30,7 @@
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include <algorithm>
-#include <string>
-#include <vector>
-#include <set>
+
 #include "MockInterfaces.h"
 #include "DatabaseHandler.h"
 #include "ControlReceiver.h"
@@ -42,6 +39,7 @@
 #include "RoutingSender.h"
 #include "Router.h"
 #include "ControlSender.h"
+#include "SocketHandler.h"
 #include "../ControlInterfaceBackdoor.h"
 #include "../CommandInterfaceBackdoor.h"
 #include "../CommonFunctions.h"
@@ -56,6 +54,7 @@ public:
     ~databasetest();
     std::vector<std::string> plistRoutingPluginDirs;
     std::vector<std::string> plistCommandPluginDirs;
+    SocketHandler pSocketHandler;
     DatabaseHandler pDatabaseHandler;
     RoutingSender pRoutingSender;
     CommandSender pCommandSender;

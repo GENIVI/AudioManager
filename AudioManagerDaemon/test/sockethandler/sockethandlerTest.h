@@ -41,7 +41,7 @@ public:
         UNIX, INET
     };
     SamplePlugin(SocketHandler *mySocketHandler, sockType_e socketType);
-    virtual ~SamplePlugin()
+    ~SamplePlugin()
     {
     }
     ;
@@ -79,7 +79,7 @@ class sockethandlerTest: public ::testing::Test
 {
 public:
     sockethandlerTest();
-    virtual ~sockethandlerTest();
+    ~sockethandlerTest();
     void SetUp();
     void TearDown();
 };

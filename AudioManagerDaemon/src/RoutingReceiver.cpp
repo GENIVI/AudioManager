@@ -24,14 +24,14 @@
  */
 
 #include "RoutingReceiver.h"
-#include <SocketHandler.h>
-#ifdef WITH_DBUS_WRAPPER
-#include <dbus/DBusWrapper.h>
-#endif
 #include "DatabaseHandler.h"
 #include "RoutingSender.h"
 #include "ControlSender.h"
+#include "DLTWrapper.h"
+#include <SocketHandler.h>
 #include <cassert>
+#include <algorithm>
+
 
 using namespace am;
 
@@ -342,13 +342,18 @@ void RoutingReceiver::getInterfaceVersion(std::string & version) const
     version = RoutingReceiveVersion;
 }
 
-void RoutingReceiver::confirmRoutingReady(const uint16_t handle) const
+void RoutingReceiver::confirmRoutingReady(const uint16_t handle)
 {
-
+    mListStartupHandles.erase(std::remove(mListStartupHandles.begin(), mListStartupHandles.end(), handle), mListStartupHandles.end());
+    if (mWaitStartup && mListStartupHandles.empty())
+        mControlSender->confirmRoutingReady();
 }
 
-void RoutingReceiver::confirmRoutingRundown(const uint16_t handle) const
+void RoutingReceiver::confirmRoutingRundown(const uint16_t handle)
 {
+    mListRundownHandles.erase(std::remove(mListRundownHandles.begin(), mListRundownHandles.end(), handle), mListRundownHandles.end());
+    if (mWaitRundown && mListRundownHandles.empty())
+        mControlSender->confirmCommandRundown();
 }
 
 uint16_t am::RoutingReceiver::getStartupHandle()

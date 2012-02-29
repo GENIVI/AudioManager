@@ -69,6 +69,8 @@ file(GLOB DBUS_SIGNAL_INTERFACE_SRCS_CXX
      "../../AudioManagerDaemon/src/CommandSender.cpp"
      "../../AudioManagerDaemon/src/SocketHandler.cpp"
      "../../AudioManagerDaemon/src/DLTWrapper.cpp"
+     "../../AudioManagerDaemon/src/DatabaseHandler.cpp"
+     "../../AudioManagerDaemon/src/ControlSender.cpp"
      "../src/*.cpp" 
      "dbuscommaninterfacesignalsTest.cpp" 
      "DbusCommandInterfaceBackdoor.cpp"

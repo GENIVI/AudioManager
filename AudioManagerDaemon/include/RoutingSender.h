@@ -44,7 +44,7 @@ class RoutingSender
 {
 public:
     RoutingSender(const std::vector<std::string>& listOfPluginDirectories);
-    virtual ~RoutingSender();
+    ~RoutingSender();
 
     /**
      * removes a handle from the list
