@@ -4,6 +4,7 @@
 #cmakedefine DAEMONVERSION "@DAEMONVERSION@"
 
 #cmakedefine WITH_DBUS_WRAPPER
+#cmakedefine WITH_DLT
 #cmakedefine WITH_PPOLL
 #cmakedefine WITH_TELNET
 #cmakedefine GLIB_DBUS_TYPES_TOLERANT
