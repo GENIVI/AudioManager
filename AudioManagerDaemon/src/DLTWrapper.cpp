@@ -101,9 +101,10 @@ void DLTWrapper::send()
     dlt_user_log_write_finish(&mDltContextData);
 #else
     if(mEnableNoDLTDebug)
-        std::cout << "[" << mDltContext.contextID << "] " << std::string(mDltContextData.buffer) << std::endl;
+        std::cout << "[" << mDltContext.contextID << "] " << mDltContextData.buffer.str().c_str() << std::endl;
 
-    mDltContextData.size = 0;
+    mDltContextData.buffer.str("");
+    mDltContextData.buffer.clear();
 #endif
 }
 
@@ -161,13 +162,12 @@ void DLTWrapper::append(const uint32_t value)
 #endif
 }
 
-void DLTWrapper::append(const char*& value)
+void DLTWrapper::append(const char* &value)
 {
 #ifdef WITH_DLT
     dlt_user_log_write_string(&mDltContextData, value);
 #else
-    memcpy((mDltContextData.buffer+mDltContextData.size),value,strlen(value));
-    mDltContextData.size += strlen(value);
+    mDltContextData.buffer << value;
 #endif
 }
 
@@ -176,8 +176,7 @@ void DLTWrapper::append(const std::string& value)
 #ifdef WITH_DLT
     dlt_user_log_write_string(&mDltContextData, value.c_str());
 #else
-    memcpy((mDltContextData.buffer+mDltContextData.size),value.c_str(),value.size());
-    mDltContextData.size += value.size();
+    mDltContextData.buffer << value;
 #endif
 }
 
@@ -193,11 +192,7 @@ void DLTWrapper::append(const bool value)
 #ifndef WITH_DLT
 template<class T> void DLTWrapper::appendNoDLT(T value)
 {
-    if((mDltContextData.size + sizeof(value)) < DLT_USER_BUF_MAX_SIZE)
-    {
-        memcpy((mDltContextData.buffer+mDltContextData.size),&(value),sizeof(value));
-        mDltContextData.size += sizeof(value);
-    }
+    mDltContextData.buffer << value;
 }
 
 void DLTWrapper::enableNoDLTDebug(const bool enableNoDLTDebug)
