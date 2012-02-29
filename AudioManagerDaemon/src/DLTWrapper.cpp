@@ -34,8 +34,10 @@ DLTWrapper *DLTWrapper::instance(const bool enableNoDLTDebug)
 {
     if (!mDLTWrapper)
         mDLTWrapper = new DLTWrapper(enableNoDLTDebug);
+#ifndef WITH_DLT
     if(enableNoDLTDebug)
         mDLTWrapper->enableNoDLTDebug(true);
+#endif        
     return mDLTWrapper;
 }
 
