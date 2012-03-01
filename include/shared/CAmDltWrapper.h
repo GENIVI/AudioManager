@@ -24,6 +24,7 @@
 #else
 
 #include <stdint.h>
+#include <sstream>
 
 namespace am {
 
@@ -59,8 +60,7 @@ typedef enum
 typedef struct
 {
     DltContext *handle;                           /**< pointer to DltContext */
-    char buffer[DLT_USER_BUF_MAX_SIZE];  /**< buffer for building log message*/
-    int32_t size;                                 /**< payload size */
+    std::stringstream buffer;                     /**< buffer for building log message*/
     int32_t log_level;                            /**< log level */
     int32_t trace_status;                         /**< trace status */
     int32_t args_num;                             /**< number of arguments for extended header*/
@@ -75,9 +75,7 @@ DltContext CONTEXT;
 #define DLT_IMPORT_CONTEXT(CONTEXT) \
 extern DltContext CONTEXT;
 
-}
-
-#endif
+#endif // WITH_DLT
 
 #include <string>
 
