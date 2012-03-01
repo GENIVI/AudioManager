@@ -29,7 +29,7 @@ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -rdynamic")
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 
 set(DOC_OUTPUT_PATH ${DOC_OUTPUT_PATH}/AudioManager)
-set(INCLUDES_FOLDER "include")
+set(include_FOLDER "include")
 
 pkg_check_modules(SQLITE REQUIRED sqlite3)
 
@@ -39,40 +39,40 @@ ENDIF(WITH_DBUS_WRAPPER)
 
 SET(AUDIOMAN_SRCS_CXX
     src/main.cpp
-    src/CommandReceiver.cpp
-    src/CommandSender.cpp
-    src/ControlReceiver.cpp
-    src/ControlSender.cpp
-    src/DatabaseHandler.cpp
-    src/DatabaseObserver.cpp
-    src/RoutingReceiver.cpp
-    src/RoutingSender.cpp
-    src/SocketHandler.cpp
-    src/TelnetServer.cpp
-    src/Router.cpp
-    src/DLTWrapper.cpp
+    src/CAmCommandReceiver.cpp
+    src/CAmCommandSender.cpp
+    src/CAmControlReceiver.cpp
+    src/CAmControlSender.cpp
+    src/CAmDatabaseHandler.cpp
+    src/CAmDatabaseObserver.cpp
+    src/CAmRoutingReceiver.cpp
+    src/CAmRoutingSender.cpp
+    src/CAmSocketHandler.cpp
+    src/CAmTelnetServer.cpp
+    src/CAmRouter.cpp
+    src/CAmDltWrapper.cpp
     src/CAmTelnetMenuHelper.cpp
 )
 
 IF(WITH_DBUS_WRAPPER)
     SET (AUDIOMAN_SRCS_CXX
         ${AUDIOMAN_SRCS_CXX}
-        src/DBusWrapper.cpp
+        src/CAmDbusWrapper.cpp
     )
 ENDIF(WITH_DBUS_WRAPPER)
 
 IF(WITH_SOCKETHANDLER_LOOP)
     SET (AUDIOMAN_SRCS_CXX
         ${AUDIOMAN_SRCS_CXX}
-        src/SocketHandler.cpp
+        src/CAmSocketHandler.cpp
      )
 ENDIF(WITH_SOCKETHANDLER_LOOP)
 
 INCLUDE_DIRECTORIES(	
 	${CMAKE_SOURCE_DIR} 
 	${CMAKE_CURRENT_BINARY_DIR}	
-	${AUDIO_INCLUDES_FOLDER}
-	${INCLUDES_FOLDER}
+	${AUDIO_include_FOLDER}
+	${include_FOLDER}
 )
 
 IF(WITH_DLT)
@@ -127,7 +127,7 @@ INSTALL(TARGETS AudioManager
         COMPONENT bin
 )
 
-INSTALL(DIRECTORY "${AUDIO_INCLUDES_FOLDER}/" 
+INSTALL(DIRECTORY "${AUDIO_include_FOLDER}/" 
         DESTINATION include
         COMPONENT dev
 )

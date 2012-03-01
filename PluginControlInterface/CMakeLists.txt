@@ -4,9 +4,9 @@ PROJECT(PluginControlInterface)
 
 set(LIBRARY_OUTPUT_PATH ${PLUGINS_OUTPUT_PATH}/control)
 set(DOC_OUTPUT_PATH ${DOC_OUTPUT_PATH}/ControlPlugin)
-set(INCLUDES_FOLDER "include")
+set(include_FOLDER "include")
 
-FILE(READ "${AUDIO_INCLUDES_FOLDER}/control/ControlSendInterface.h" VERSION_BUFFER LIMIT 6000)
+FILE(READ "${AUDIO_include_FOLDER}/control/IAmControlSend.h" VERSION_BUFFER LIMIT 6000)
 STRING(REGEX MATCH "ControlSendVersion*.[^0-9]*[0-9].[0-9]*[0-9]" LIB_INTERFACE_VERSION_STRING ${VERSION_BUFFER})
 STRING(REGEX REPLACE "ControlSendVersion*.." "" LIB_INTERFACE_VERSION ${LIB_INTERFACE_VERSION_STRING})
 MESSAGE(STATUS "Building against control interface version ${LIB_INTERFACE_VERSION}")
@@ -15,8 +15,8 @@ INCLUDE_DIRECTORIES(
 	${CMAKE_SOURCE_DIR} 
 	${STD_INCLUDE_DIRS}
  	${CMAKE_CURRENT_BINARY_DIR}
- 	${AUDIO_INCLUDES_FOLDER}
- 	${INCLUDES_FOLDER}
+ 	${AUDIO_include_FOLDER}
+ 	${include_FOLDER}
 )
 
 # all source files go here

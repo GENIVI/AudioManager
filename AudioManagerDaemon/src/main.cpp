@@ -35,22 +35,22 @@
 
 #include <config.h>
 #ifdef  WITH_TELNET
-#include "TelnetServer.h"
+#include "CAmTelnetServer.h"
 #endif
 #ifdef WITH_DBUS_WRAPPER
-#include <dbus/DBusWrapper.h>
+#include <shared/CAmDbusWrapper.h>
 #endif
-#include <SocketHandler.h>
-#include "DatabaseHandler.h"
-#include "ControlSender.h"
-#include "CommandSender.h"
-#include "RoutingSender.h"
-#include "RoutingReceiver.h"
-#include "CommandReceiver.h"
-#include "ControlReceiver.h"
-#include "DatabaseObserver.h"
-#include "Router.h"
-#include "DLTWrapper.h"
+#include <shared/CAmSocketHandler.h>
+#include "CAmDatabaseHandler.h"
+#include "CAmControlSender.h"
+#include "CAmCommandSender.h"
+#include "CAmRoutingSender.h"
+#include "CAmRoutingReceiver.h"
+#include "CAmCommandReceiver.h"
+#include "CAmControlReceiver.h"
+#include "CAmDatabaseObserver.h"
+#include "CAmRouter.h"
+#include "shared/CAmDltWrapper.h"
 #include <sys/resource.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -219,16 +219,15 @@ static void signalHandler(int sig, siginfo_t *siginfo, void *context)
     logError("signal handler was called, exit now...");
     gDispatchDone = 1;
     //todo: maually fire the mainloop
-    //todo: ifdef no sockethandler
     exit(1);
 }
 
 int main(int argc, char *argv[])
 {
-    DLTWrapper::instance()->registerApp("AudioManagerDeamon", "AudioManagerDeamon");
-    DLTWrapper::instance()->registerContext(AudioManager, "Main", "Main Context");
+    CAmDltWrapper::instance(true)->registerApp("AudioManagerDeamon", "AudioManagerDeamon");
+    CAmDltWrapper::instance()->registerContext(AudioManager, "Main", "Main Context");
     logInfo("The Audiomanager is started");
-    log(&AudioManager, DLT_LOG_ERROR, "The version of the Audiomanager", DAEMONVERSION);
+    logInfo("The version of the Audiomanager", DAEMONVERSION);
 
     listCommandPluginDirs.push_back(std::string(DEFAULT_PLUGIN_COMMAND_DIR));
     listRoutingPluginDirs.push_back(std::string(DEFAULT_PLUGIN_ROUTING_DIR));
@@ -256,40 +255,36 @@ int main(int argc, char *argv[])
     std::set_new_handler(&OutOfMemoryHandler);
 
     //Instantiate all classes. Keep in same order !
-    SocketHandler iSocketHandler;
+    CAmSocketHandler iSocketHandler;
 
 
 #ifdef WITH_DBUS_WRAPPER
-    DBusWrapper iDBusWrapper(&iSocketHandler);
+    CAmDbusWrapper iDBusWrapper(&iSocketHandler);
 #endif /*WITH_DBUS_WRAPPER */
 
-    DatabaseHandler iDatabaseHandler(databasePath);
-    RoutingSender iRoutingSender(listRoutingPluginDirs);
-    CommandSender iCommandSender(listCommandPluginDirs);
-    ControlSender iControlSender(controllerPlugin);
-    Router iRouter(&iDatabaseHandler, &iControlSender);
+    CAmDatabaseHandler iDatabaseHandler(databasePath);
+    CAmRoutingSender iRoutingSender(listRoutingPluginDirs);
+    CAmCommandSender iCommandSender(listCommandPluginDirs);
+    CAmControlSender iControlSender(controllerPlugin);
+    CAmRouter iRouter(&iDatabaseHandler, &iControlSender);
 
 #ifdef WITH_DBUS_WRAPPER
-    CommandReceiver iCommandReceiver(&iDatabaseHandler, &iControlSender, &iSocketHandler, &iDBusWrapper);
-    RoutingReceiver iRoutingReceiver(&iDatabaseHandler, &iRoutingSender, &iControlSender, &iSocketHandler, &iDBusWrapper);
-    ControlReceiver iControlReceiver(&iDatabaseHandler, &iRoutingSender, &iCommandSender, &iSocketHandler, &iRouter);
-#ifdef WITH_TELNET
-    TelnetServer iTelnetServer(&iSocketHandler, &iCommandSender, &iCommandReceiver, &iRoutingSender, &iRoutingReceiver, &iControlSender, &iControlReceiver, &iDatabaseHandler, &iRouter, telnetport, maxConnections);
-    DatabaseObserver iObserver(&iCommandSender, &iRoutingSender, &iSocketHandler, &iTelnetServer);
-#else /*WITH_TELNET*/
-    DatabaseObserver iObserver(&iCommandSender,&iRoutingSender, &iSocketHandler);
-#endif
+    CAmCommandReceiver iCommandReceiver(&iDatabaseHandler, &iControlSender, &iSocketHandler, &iDBusWrapper);
+    CAmRoutingReceiver iRoutingReceiver(&iDatabaseHandler, &iRoutingSender, &iControlSender, &iSocketHandler, &iDBusWrapper);
+    CAmControlReceiver iControlReceiver(&iDatabaseHandler, &iRoutingSender, &iCommandSender, &iSocketHandler, &iRouter);
 #else /*WITH_DBUS_WRAPPER*/
-    CommandReceiver iCommandReceiver(&iDatabaseHandler,&iControlSender,&iSocketHandler);
-    RoutingReceiver iRoutingReceiver(&iDatabaseHandler,&iRoutingSender,&iControlSender,&iSocketHandler);
+    CAmCommandReceiver iCommandReceiver(&iDatabaseHandler,&iControlSender,&iSocketHandler);
+    CAmRoutingReceiver iRoutingReceiver(&iDatabaseHandler,&iRoutingSender,&iControlSender,&iSocketHandler);
     ControlReceiver iControlReceiver(&iDatabaseHandler,&iRoutingSender,&iCommandSender,&iSocketHandler, &iRouter);
-#ifdef WITH_TELNET
-    TelnetServer iTelnetServer(&iSocketHandler,telnetport,maxConnections);
-    DatabaseObserver iObserver(&iCommandSender, &iRoutingSender, &iSocketHandler, &iTelnetServer);
-#else /*WITH_TELNET*/
-    DatabaseObserver iObserver(&iCommandSender, &iSocketHandler, &iRoutingSender);
-#endif
 #endif /*WITH_DBUS_WRAPPER*/
+
+#ifdef WITH_TELNET
+    CAmTelnetServer iTelnetServer(&iSocketHandler, &iCommandSender, &iCommandReceiver, &iRoutingSender, &iRoutingReceiver, &iControlSender, &iControlReceiver, &iDatabaseHandler, &iRouter, telnetport, maxConnections);
+    CAmDatabaseObserver iObserver(&iCommandSender, &iRoutingSender, &iSocketHandler, &iTelnetServer);
+#else /*WITH_TELNET*/
+    CAmDatabaseObserver iObserver(&iCommandSender,&iRoutingSender, &iSocketHandler);
+#endif
+
 
     iDatabaseHandler.registerObserver(&iObserver);
 

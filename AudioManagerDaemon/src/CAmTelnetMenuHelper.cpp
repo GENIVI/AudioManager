@@ -23,30 +23,30 @@
  */
 
 #include "CAmTelnetMenuHelper.h"
-#include "TelnetServer.h"
-#include "DatabaseHandler.h"
-#include "ControlSender.h"
-#include "CommandSender.h"
-#include "RoutingSender.h"
-#include "RoutingReceiver.h"
-#include "CommandReceiver.h"
-#include "ControlReceiver.h"
-#include "Router.h"
-#include "config.h"
-#include "DLTWrapper.h"
 #include <cassert>
+#include "config.h"
+#include "CAmRouter.h"
+#include "CAmTelnetServer.h"
+#include "CAmDatabaseHandler.h"
+#include "CAmControlSender.h"
+#include "CAmCommandSender.h"
+#include "CAmRoutingSender.h"
+#include "CAmRoutingReceiver.h"
+#include "CAmCommandReceiver.h"
+#include "CAmControlReceiver.h"
+#include "shared/CAmDltWrapper.h"
 
 static const std::string COLOR_WELCOME("\033[1;33m\033[44m");
 static const std::string COLOR_HEAD("\033[1m\033[42m");
 static const std::string COLOR_DEFAULT("\033[0m");
 
 
-using namespace am;
+namespace am {
 
 CAmTelnetMenuHelper* CAmTelnetMenuHelper::instance = NULL;
 
 /****************************************************************************/
-CAmTelnetMenuHelper::CAmTelnetMenuHelper(SocketHandler *iSocketHandler, CommandSender *iCommandSender, CommandReceiver *iCommandReceiver, RoutingSender *iRoutingSender, RoutingReceiver *iRoutingReceiver, ControlSender *iControlSender, ControlReceiver *iControlReceiver, DatabaseHandler *iDatabasehandler, Router *iRouter, TelnetServer *iTelnetServer)
+CAmTelnetMenuHelper::CAmTelnetMenuHelper(CAmSocketHandler *iSocketHandler, CAmCommandSender *iCommandSender, CAmCommandReceiver *iCommandReceiver, CAmRoutingSender *iRoutingSender, CAmRoutingReceiver *iRoutingReceiver, CAmControlSender *iControlSender, CAmControlReceiver *iControlReceiver, CAmDatabaseHandler *iDatabasehandler, CAmRouter *iRouter, CAmTelnetServer *iTelnetServer)
 /****************************************************************************/
 :mpTelenetServer(iTelnetServer), mpSocketHandler(iSocketHandler), mpCommandSender(iCommandSender), mpCommandReceiver(iCommandReceiver), mpRoutingSender(iRoutingSender), mpRoutingReceiver(iRoutingReceiver), mpControlSender(iControlSender), mpControlReceiver(iControlReceiver), mpDatabasehandler(iDatabasehandler), mpRouter(iRouter)
 {
@@ -1296,7 +1296,7 @@ void CAmTelnetMenuHelper::listMainConnectionsCommandExec(std::queue<std::string>
         sendError(filedescriptor,"ERROR: mDatabasehandler->getListMainSinks");
     }
 }
-
+}
 
 
 

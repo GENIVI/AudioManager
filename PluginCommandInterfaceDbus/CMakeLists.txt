@@ -4,9 +4,9 @@ PROJECT(PluginCommandInterfaceDbus)
 
 set(LIBRARY_OUTPUT_PATH ${PLUGINS_OUTPUT_PATH}/command)
 set(DOC_OUTPUT_PATH ${DOC_OUTPUT_PATH}/CommandDBusPlugin)
-set(INCLUDES_FOLDER "include")
+set(include_FOLDER "include")
 
-FILE(READ "${AUDIO_INCLUDES_FOLDER}/command/CommandSendInterface.h" VERSION_BUFFER LIMIT 6000)
+FILE(READ "${AUDIO_include_FOLDER}/command/IAmCommandSend.h" VERSION_BUFFER LIMIT 6000)
 STRING(REGEX MATCH "CommandSendVersion*.[^0-9]*[0-9].[0-9]*[0-9]" LIB_INTERFACE_VERSION_STRING ${VERSION_BUFFER})
 STRING(REGEX REPLACE "CommandSendVersion*.." "" LIB_INTERFACE_VERSION ${LIB_INTERFACE_VERSION_STRING})
 MESSAGE(STATUS "Building against command interface version ${LIB_INTERFACE_VERSION}")
@@ -18,9 +18,9 @@ INCLUDE_DIRECTORIES(
  	${CMAKE_CURRENT_BINARY_DIR}
  	${DBUS_INCLUDE_DIR}
 	${DBUS_ARCH_INCLUDE_DIR}
-	${AUDIO_INCLUDES_FOLDER}
+	${AUDIO_include_FOLDER}
 	${DLT_INCLUDE_DIRS}
-	${INCLUDES_FOLDER}
+	${include_FOLDER}
 )
 
 # all source files go here
@@ -38,7 +38,7 @@ TARGET_LINK_LIBRARIES(PluginCommandInterfaceDbus
 )
 
 IF(WITH_TESTS)
-#	add_subdirectory (test)
+	add_subdirectory (test)
 ENDIF(WITH_TESTS)
 
 #IF(WITH_DOCUMENTATION)
@@ -55,6 +55,8 @@ INSTALL(TARGETS PluginCommandInterfaceDbus
         PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
         COMPONENT sampleplugins
 )
+
+execute_process(COMMAND cp "${CMAKE_SOURCE_DIR}/PluginCommandInterfaceDbus/${include_FOLDER}/CommandInterface.xml" ${EXECUTABLE_OUTPUT_PATH}/CommandInterface.xml)
 
 SET(ADD_DEPEND "audiomanager-bin" "dlt" "libdbus-1-3(>=1.2.16)")
 set_property(GLOBAL APPEND PROPERTY sampleplugins_prop "${ADD_DEPEND}")

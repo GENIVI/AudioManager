@@ -41,17 +41,17 @@
 namespace am
 {
 
-class TelnetServer;
-class DatabaseHandler;
-class CommandSender;
-class RoutingSender;
-class ControlSender;
-class CommandReceiver;
-class RoutingReceiver;
-class ControlReceiver;
+class CAmTelnetServer;
+class CAmDatabaseHandler;
+class CAmCommandSender;
+class CAmRoutingSender;
+class CAmControlSender;
+class CAmCommandReceiver;
+class CAmRoutingReceiver;
+class CAmControlReceiver;
 
-class Router;
-class SocketHandler;
+class CAmRouter;
+class CAmSocketHandler;
 
 class CAmTelnetMenuHelper
 {
@@ -62,7 +62,7 @@ public:
         eRootState = 0, eListState, eInfoState, eGetState, eSetState
     };
 
-    CAmTelnetMenuHelper(SocketHandler *iSocketHandler, CommandSender *iCommandSender, CommandReceiver *iCommandReceiver, RoutingSender *iRoutingSender, RoutingReceiver *iRoutingReceiver, ControlSender *iControlSender, ControlReceiver *iControlReceiver, DatabaseHandler *iDatabasehandler, Router *iRouter, TelnetServer *iTelnetServer);
+    CAmTelnetMenuHelper(CAmSocketHandler *iSocketHandler, CAmCommandSender *iCommandSender, CAmCommandReceiver *iCommandReceiver, CAmRoutingSender *iRoutingSender, CAmRoutingReceiver *iRoutingReceiver, CAmControlSender *iControlSender, CAmControlReceiver *iControlReceiver, CAmDatabaseHandler *iDatabasehandler, CAmRouter *iRouter, CAmTelnetServer *iTelnetServer);
 
     ~CAmTelnetMenuHelper();
 
@@ -171,16 +171,16 @@ private:
     std::map<int, EMainState> mCurrentMainStateMap;
 
     static CAmTelnetMenuHelper* instance;
-    TelnetServer *mpTelenetServer;
-    SocketHandler *mpSocketHandler;
-    CommandSender *mpCommandSender;
-    CommandReceiver *mpCommandReceiver;
-    RoutingSender *mpRoutingSender;
-    RoutingReceiver *mpRoutingReceiver;
-    ControlSender *mpControlSender;
-    ControlReceiver *mpControlReceiver;
-    DatabaseHandler *mpDatabasehandler;
-    Router *mpRouter;
+    CAmTelnetServer *mpTelenetServer;
+    CAmSocketHandler *mpSocketHandler;
+    CAmCommandSender *mpCommandSender;
+    CAmCommandReceiver *mpCommandReceiver;
+    CAmRoutingSender *mpRoutingSender;
+    CAmRoutingReceiver *mpRoutingReceiver;
+    CAmControlSender *mpControlSender;
+    CAmControlReceiver *mpControlReceiver;
+    CAmDatabaseHandler *mpDatabasehandler;
+    CAmRouter *mpRouter;
 
     tCommandMap mRootCommands;
     tCommandMap mListCommands;

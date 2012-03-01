@@ -23,7 +23,7 @@
 
 cmake_minimum_required(VERSION 2.6)
 
-PROJECT(controlInterfacetest)
+PROJECT(CAmCommandSenderDbusTests)
 
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -DUNIT_TEST=1 -DDLT_CONTEXT=AudioManager")
 
@@ -41,13 +41,13 @@ INCLUDE_DIRECTORIES(
     ${STD_INCLUDE_DIRS}
     ${CMAKE_SOURCE_DIR} 
     ${CMAKE_CURRENT_BINARY_DIR}
-    ${AUDIO_INCLUDES_FOLDER}
+    ${AUDIO_include_FOLDER}
     ${DBUS_ARCH_INCLUDE_DIR}
-    ${DBUS_INCLUDES_FOLDER} 
+    ${DBUS_include_FOLDER} 
     ${CMAKE_SOURCE_DIR} 
     ${DLT_INCLUDE_DIRS}
     ${DBUS_INCLUDE_DIR}
-    ${INCLUDES_FOLDER}
+    ${include_FOLDER}
     ${PYTHON_INCLUDE_DIRS}
     ${GTEST_INCLUDE_DIR}
     "../../AudioManagerDaemon/include"
@@ -55,31 +55,28 @@ INCLUDE_DIRECTORIES(
 )
    
 file(GLOB DBUS_PLUGIN_INTERFACE_SRCS_CXX 
-     "../../AudioManagerDaemon/src/DBusWrapper.cpp"
-     "../../AudioManagerDaemon/src/CommandSender.cpp"
-     "../../AudioManagerDaemon/src/SocketHandler.cpp"
-     "../../AudioManagerDaemon/src/DLTWrapper.cpp"
+     "../../AudioManagerDaemon/src/CAmDbusWrapper.cpp"
+     "../../AudioManagerDaemon/src/CAmSocketHandler.cpp"
+     "../../AudioManagerDaemon/src/CAmDltWrapper.cpp"
      "../src/*.cpp"  
-     "dbuscommandpluginInterfaceTest.cpp" 
-     "DbusCommanInterfaceBackdoor.cpp"
+     "CAmCommandSenderDbusBackdoor.cpp"
+     "CAmCommandSenderDbusTest.cpp"
+
 )
 
 file(GLOB DBUS_SIGNAL_INTERFACE_SRCS_CXX 
-     "../../AudioManagerDaemon/src/DBusWrapper.cpp"
-     "../../AudioManagerDaemon/src/CommandSender.cpp"
-     "../../AudioManagerDaemon/src/SocketHandler.cpp"
-     "../../AudioManagerDaemon/src/DLTWrapper.cpp"
-     "../../AudioManagerDaemon/src/DatabaseHandler.cpp"
-     "../../AudioManagerDaemon/src/ControlSender.cpp"
-     "../src/*.cpp" 
-     "dbuscommaninterfacesignalsTest.cpp" 
-     "DbusCommandInterfaceBackdoor.cpp"
+     "../../AudioManagerDaemon/src/CAmDbusWrapper.cpp"
+     "../../AudioManagerDaemon/src/CAmSocketHandler.cpp"
+     "../../AudioManagerDaemon/src/CAmDltWrapper.cpp"
+     "../src/*.cpp"  
+     "CAmCommandSenderDbusBackdoor.cpp"
+     "CAmCommandSenderDbusSignalTest.cpp"
 )
-ADD_EXECUTABLE(dbusCommandMessages ${DBUS_PLUGIN_INTERFACE_SRCS_CXX})
+ADD_EXECUTABLE(AmCommandSenderDbusTest ${DBUS_PLUGIN_INTERFACE_SRCS_CXX})
 
-ADD_EXECUTABLE(dbusCommandSignals ${DBUS_SIGNAL_INTERFACE_SRCS_CXX})
+ADD_EXECUTABLE(AmCommandSenderDbusSignalTest ${DBUS_SIGNAL_INTERFACE_SRCS_CXX})
 
-TARGET_LINK_LIBRARIES(dbusCommandMessages 
+TARGET_LINK_LIBRARIES(AmCommandSenderDbusTest 
     ${DLT_LIBRARIES}
     ${DBUS_LIBRARY}
     ${CMAKE_DL_LIBS}
@@ -90,7 +87,7 @@ TARGET_LINK_LIBRARIES(dbusCommandMessages
 )
 
 
-TARGET_LINK_LIBRARIES(dbusCommandSignals 
+TARGET_LINK_LIBRARIES(AmCommandSenderDbusSignalTest 
     ${DLT_LIBRARIES}
     ${DBUS_LIBRARY}
     ${CMAKE_DL_LIBS}
@@ -100,13 +97,13 @@ TARGET_LINK_LIBRARIES(dbusCommandSignals
     gmock
 )
 
-INSTALL(TARGETS dbusCommandMessages 
+INSTALL(TARGETS AmCommandSenderDbusTest 
         DESTINATION "~/AudioManagerTest/"
         PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
         COMPONENT tests
 )
 
-INSTALL(TARGETS dbusCommandSignals 
+INSTALL(TARGETS AmCommandSenderDbusSignalTest 
         DESTINATION "~/AudioManagerTest/"
         PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
         COMPONENT tests

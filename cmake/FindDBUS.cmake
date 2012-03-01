@@ -35,8 +35,8 @@ SET( DBUS_FOUND "NO" )
 IF(DBUS_LIBRARY)
     SET( DBUS_FOUND "YES" )
     message(STATUS "Found DBUS libs: ${DBUS_LIBRARY}")
-    message(STATUS "Found DBUS includes: ${DBUS_INCLUDE_DIR}")
-    message(STATUS "Found DBUS arch dependent includes: ${DBUS_ARCH_INCLUDE_DIR}")
+    message(STATUS "Found DBUS include: ${DBUS_INCLUDE_DIR}")
+    message(STATUS "Found DBUS arch dependent include: ${DBUS_ARCH_INCLUDE_DIR}")
 ENDIF(DBUS_LIBRARY)
 
 MARK_AS_ADVANCED(

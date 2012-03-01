@@ -23,7 +23,7 @@
 
 cmake_minimum_required(VERSION 2.6)
 
-PROJECT(routingAsyncTest)
+PROJECT(AmRoutingReceiverAsync)
 
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -DUNIT_TEST=1 -DDLT_CONTEXT=AudioManager")
 
@@ -40,10 +40,10 @@ INCLUDE_DIRECTORIES(
     ${STD_INCLUDE_DIRS}
     ${CMAKE_SOURCE_DIR} 
     ${CMAKE_CURRENT_BINARY_DIR}
-    ${AUDIO_INCLUDES_FOLDER}
+    ${AUDIO_include_FOLDER}
     ${CMAKE_SOURCE_DIR} 
     ${DLT_INCLUDE_DIRS}
-    ${INCLUDES_FOLDER}
+    ${include_FOLDER}
     ${GTEST_INCLUDE_DIR}
     ${DBUS_INCLUDE_DIR}
     ${DBUS_ARCH_INCLUDE_DIR}
@@ -52,26 +52,17 @@ INCLUDE_DIRECTORIES(
 )
    
 file(GLOB ASYNC_PLUGIN_INTERFACE_SRCS_CXX 
-     "../../AudioManagerDaemon/src/SocketHandler.cpp"
-     "../../AudioManagerDaemon/src/DLTWrapper.cpp"
+     "../../AudioManagerDaemon/src/CAmSocketHandler.cpp"
+     "../../AudioManagerDaemon/src/CAmDltWrapper.cpp"
      "../src/*.cpp"  
-     "testRoutingInterfaceAsync.cpp" 
+     "CAmRoutingReceiverAsync.cpp" 
 )
 
-file(GLOB ASYNC_PLUGIN_INTERFACE_INTERRUPT_SRCS_CXX 
-     "../../AudioManagerDaemon/src/SocketHandler.cpp"
-     "../../AudioManagerDaemon/src/RoutingSender.cpp"
-     "../../AudioManagerDaemon/src/DLTWrapper.cpp"
-     "../src/*.cpp"  
-     "testRoutingInterfaceAsyncInterrupt.cpp" 
 
-)
-
-ADD_EXECUTABLE(asyncRoutingInterfaceTest ${ASYNC_PLUGIN_INTERFACE_SRCS_CXX})
-#ADD_EXECUTABLE(asyncRoutingInterfaceInterruptTest ${ASYNC_PLUGIN_INTERFACE_INTERRUPT_SRCS_CXX})
+ADD_EXECUTABLE(AmRoutingReceiveAsyncTest ${ASYNC_PLUGIN_INTERFACE_SRCS_CXX})
 
 
-TARGET_LINK_LIBRARIES(asyncRoutingInterfaceTest 
+TARGET_LINK_LIBRARIES(AmRoutingReceiveAsyncTest 
     ${DLT_LIBRARIES}
     ${CMAKE_DL_LIBS}
     ${CMAKE_THREAD_LIBS_INIT}
@@ -81,16 +72,7 @@ TARGET_LINK_LIBRARIES(asyncRoutingInterfaceTest
     gmock
 )
 
-#TARGET_LINK_LIBRARIES(asyncRoutingInterfaceInterruptTest 
-#    ${DLT_LIBRARIES}
-#    ${CMAKE_DL_LIBS}
-#    ${CMAKE_THREAD_LIBS_INIT}
-#    ${GTEST_LIBRARIES}
-#    ${DBUS_LIBRARY}
-#    gmock
-#)
-
-INSTALL(TARGETS asyncRoutingInterfaceTest 
+INSTALL(TARGETS AmRoutingReceiveAsyncTest 
         DESTINATION "~/AudioManagerTest/"
         PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
         COMPONENT tests
