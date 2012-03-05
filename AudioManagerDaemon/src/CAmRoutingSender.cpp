@@ -1,24 +1,22 @@
 /**
- * Copyright (C) 2011, BMW AG
+ * Copyright (C) 2012, GENIVI Alliance, Inc.
+ * Copyright (C) 2012, BMW AG
  *
- * GeniviAudioMananger AudioManagerDaemon
+ * This file is part of GENIVI Project AudioManager.
  *
- * \file CAmRoutingSender.h
+ * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contribution License Agreements.
  *
- * \date 20-Oct-2011 3:42:04 PM
- * \author Christian Mueller (christian.ei.mueller@bmw.de)
+ * \copyright
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
+ * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
- * \section License
- * GNU Lesser General Public License, version 2.1, with special exception (GENIVI clause)
- * Copyright (C) 2011, BMW AG Christian Mueller  Christian.ei.mueller@bmw.de
  *
- * This program is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License, version 2.1, as published by the Free Software Foundation.
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License, version 2.1, for more details.
- * You should have received a copy of the GNU Lesser General Public License, version 2.1, along with this program; if not, see <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * Note that the copyright holders assume that the GNU Lesser General Public License, version 2.1, may also be applicable to programs even in cases in which the program is not a library in the technical sense.
- * Linking AudioManager statically or dynamically with other modules is making a combined work based on AudioManager. You may license such other modules under the GNU Lesser General Public License, version 2.1. If you do not want to license your linked modules under the GNU Lesser General Public License, version 2.1, you may use the program under the following exception.
- * As a special exception, the copyright holders of AudioManager give you permission to combine AudioManager with software programs or libraries that are released under any license unless such a combination is not permitted by the license of such a software program or library. You may copy and distribute such a system following the terms of the GNU Lesser General Public License, version 2.1, including this special exception, for AudioManager and the licenses of the other code concerned.
- * Note that people who make modified versions of AudioManager are not obligated to grant this special exception for their modified versions; it is their choice whether to do so. The GNU Lesser General Public License, version 2.1, gives permission to release a modified version without this exception; this exception also makes it possible to release a modified version which carries forward this exception.
+ * \author Christian Mueller, christian.ei.mueller@bmw.de BMW 2011,2012
+ *
+ * \file CAmRoutingSender.cpp
+ * For further information see http://www.genivi.org/.
  *
  */
 
@@ -36,9 +34,12 @@
 namespace am
 {
 
-#define REQUIRED_INTERFACE_VERSION_MAJOR 1
-#define REQUIRED_INTERFACE_VERSION_MINOR 0
-
+#define REQUIRED_INTERFACE_VERSION_MAJOR 1  //!< major interface version. All versions smaller than this will be rejected
+#define REQUIRED_INTERFACE_VERSION_MINOR 0 //!< minor interface version. All versions smaller than this will be rejected
+/**
+ * macro to call all interfaces
+ *
+ */
 #define CALL_ALL_INTERFACES(...) 														 \
 		std::vector<InterfaceNamePairs>::iterator iter = mListInterfaces.begin();	 	 \
 		std::vector<InterfaceNamePairs>::iterator iterEnd = mListInterfaces.end();	 	 \
@@ -57,7 +58,7 @@ CAmRoutingSender::CAmRoutingSender(const std::vector<std::string>& listOfPluginD
         mMapSinkInterface(), //
         mMapSourceInterface(), //
         mMapHandleInterface(), //
-        mRoutingReceiver()
+        mpRoutingReceiver()
 {
     std::vector<std::string> sharedLibraryNameList;
     std::vector<std::string>::const_iterator dirIter = listOfPluginDirectories.begin();
@@ -167,7 +168,7 @@ CAmRoutingSender::~CAmRoutingSender()
 
 am_Error_e CAmRoutingSender::startupInterfaces(CAmRoutingReceiver *iRoutingReceiver)
 {
-    mRoutingReceiver = iRoutingReceiver;
+    mpRoutingReceiver = iRoutingReceiver;
     am_Error_e returnError = E_OK;
 
     std::vector<InterfaceNamePairs>::iterator iter = mListInterfaces.begin();
@@ -180,7 +181,7 @@ am_Error_e CAmRoutingSender::startupInterfaces(CAmRoutingReceiver *iRoutingRecei
             returnError = error;
         }
     }
-    return returnError;
+    return (returnError);
 }
 
 am_Error_e CAmRoutingSender::asyncAbort(const am_Handle_s& handle)
@@ -189,10 +190,10 @@ am_Error_e CAmRoutingSender::asyncAbort(const am_Handle_s& handle)
     iter = mMapHandleInterface.find(handle.handle);
     if (iter != mMapHandleInterface.end())
     {
-        return iter->second->asyncAbort(handle);
+        return (iter->second->asyncAbort(handle));
     }
 
-    return E_NON_EXISTENT;
+    return (E_NON_EXISTENT);
 }
 
 am_Error_e CAmRoutingSender::asyncConnect(am_Handle_s& handle, const am_connectionID_t connectionID, const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_ConnectionFormat_e connectionFormat)
@@ -206,10 +207,10 @@ am_Error_e CAmRoutingSender::asyncConnect(am_Handle_s& handle, const am_connecti
         handle = createHandle(handleData, H_CONNECT);
         mMapConnectionInterface.insert(std::make_pair(connectionID, iter->second));
         mMapHandleInterface.insert(std::make_pair(handle.handle, iter->second));
-        return iter->second->asyncConnect(handle, connectionID, sourceID, sinkID, connectionFormat);
+        return (iter->second->asyncConnect(handle, connectionID, sourceID, sinkID, connectionFormat));
     }
 
-    return E_NON_EXISTENT;
+    return (E_NON_EXISTENT);
 }
 
 am_Error_e CAmRoutingSender::asyncDisconnect(am_Handle_s& handle, const am_connectionID_t connectionID)
@@ -224,10 +225,10 @@ am_Error_e CAmRoutingSender::asyncDisconnect(am_Handle_s& handle, const am_conne
         mMapHandleInterface.insert(std::make_pair(handle.handle, iter->second));
         am_Error_e returnVal = iter->second->asyncDisconnect(handle, connectionID);
         mMapConnectionInterface.erase(iter);
-        return returnVal;
+        return (returnVal);
     }
 
-    return E_NON_EXISTENT;
+    return (E_NON_EXISTENT);
 }
 
 am_Error_e CAmRoutingSender::asyncSetSinkVolume(am_Handle_s& handle, const am_sinkID_t sinkID, const am_volume_t volume, const am_RampType_e ramp, const am_time_t time)
@@ -241,9 +242,9 @@ am_Error_e CAmRoutingSender::asyncSetSinkVolume(am_Handle_s& handle, const am_si
         handleData.volume = volume;
         handle = createHandle(handleData, H_SETSINKVOLUME);
         mMapHandleInterface.insert(std::make_pair(handle.handle, iter->second));
-        return iter->second->asyncSetSinkVolume(handle, sinkID, volume, ramp, time);
+        return (iter->second->asyncSetSinkVolume(handle, sinkID, volume, ramp, time));
     }
-    return E_NON_EXISTENT;
+    return (E_NON_EXISTENT);
 }
 
 am_Error_e CAmRoutingSender::asyncSetSourceVolume(am_Handle_s& handle, const am_sourceID_t sourceID, const am_volume_t volume, const am_RampType_e ramp, const am_time_t time)
@@ -257,9 +258,9 @@ am_Error_e CAmRoutingSender::asyncSetSourceVolume(am_Handle_s& handle, const am_
         handleData.volume = volume;
         handle = createHandle(handleData, H_SETSOURCEVOLUME);
         mMapHandleInterface.insert(std::make_pair(handle.handle, iter->second));
-        return iter->second->asyncSetSourceVolume(handle, sourceID, volume, ramp, time);
+        return (iter->second->asyncSetSourceVolume(handle, sourceID, volume, ramp, time));
     }
-    return E_NON_EXISTENT;
+    return (E_NON_EXISTENT);
 }
 
 am_Error_e CAmRoutingSender::asyncSetSourceState(am_Handle_s& handle, const am_sourceID_t sourceID, const am_SourceState_e state)
@@ -273,9 +274,9 @@ am_Error_e CAmRoutingSender::asyncSetSourceState(am_Handle_s& handle, const am_s
         handleData.sourceState = state;
         handle = createHandle(handleData, H_SETSOURCESTATE);
         mMapHandleInterface.insert(std::make_pair(handle.handle, iter->second));
-        return iter->second->asyncSetSourceState(handle, sourceID, state);
+        return (iter->second->asyncSetSourceState(handle, sourceID, state));
     }
-    return E_NON_EXISTENT;
+    return (E_NON_EXISTENT);
 }
 
 am_Error_e CAmRoutingSender::asyncSetSinkSoundProperty(am_Handle_s& handle, const am_sinkID_t sinkID, const am_SoundProperty_s & soundProperty)
@@ -289,7 +290,7 @@ am_Error_e CAmRoutingSender::asyncSetSinkSoundProperty(am_Handle_s& handle, cons
         handleData.soundPropery = soundProperty;
         handle = createHandle(handleData, H_SETSINKSOUNDPROPERTY);
         mMapHandleInterface.insert(std::make_pair(handle.handle, iter->second));
-        return iter->second->asyncSetSinkSoundProperty(handle, sinkID, soundProperty);
+        return (iter->second->asyncSetSinkSoundProperty(handle, sinkID, soundProperty));
     }
     return (E_NON_EXISTENT);
 }
@@ -305,7 +306,7 @@ am_Error_e CAmRoutingSender::asyncSetSourceSoundProperty(am_Handle_s& handle, co
         handleData.soundPropery = soundProperty;
         handle = createHandle(handleData, H_SETSOURCESOUNDPROPERTY);
         mMapHandleInterface.insert(std::make_pair(handle.handle, iter->second));
-        return iter->second->asyncSetSourceSoundProperty(handle, sourceID, soundProperty);
+        return (iter->second->asyncSetSourceSoundProperty(handle, sourceID, soundProperty));
     }
     return (E_NON_EXISTENT);
 }
@@ -321,7 +322,7 @@ am_Error_e CAmRoutingSender::asyncSetSourceSoundProperties(am_Handle_s& handle, 
         handleData.soundProperties = new std::vector<am_SoundProperty_s>(listSoundProperties);
         handle = createHandle(handleData, H_SETSOURCESOUNDPROPERTIES);
         mMapHandleInterface.insert(std::make_pair(handle.handle, iter->second));
-        return iter->second->asyncSetSourceSoundProperties(handle, sourceID, listSoundProperties);
+        return (iter->second->asyncSetSourceSoundProperties(handle, sourceID, listSoundProperties));
     }
     return (E_NON_EXISTENT);
 }
@@ -337,7 +338,7 @@ am_Error_e CAmRoutingSender::asyncSetSinkSoundProperties(am_Handle_s& handle, co
         handleData.soundProperties = new std::vector<am_SoundProperty_s>(listSoundProperties);
         handle = createHandle(handleData, H_SETSINKSOUNDPROPERTIES);
         mMapHandleInterface.insert(std::make_pair(handle.handle, iter->second));
-        return iter->second->asyncSetSinkSoundProperties(handle, sinkID, listSoundProperties);
+        return (iter->second->asyncSetSinkSoundProperties(handle, sinkID, listSoundProperties));
     }
     return (E_NON_EXISTENT);
 
@@ -354,9 +355,9 @@ am_Error_e CAmRoutingSender::asyncCrossFade(am_Handle_s& handle, const am_crossf
         handleData.hotSink = hotSink;
         handle = createHandle(handleData, H_CROSSFADE);
         mMapHandleInterface.insert(std::make_pair(handle.handle, iter->second));
-        return iter->second->asyncCrossFade(handle, crossfaderID, hotSink, rampType, time);
+        return (iter->second->asyncCrossFade(handle, crossfaderID, hotSink, rampType, time));
     }
-    return E_NON_EXISTENT;
+    return (E_NON_EXISTENT);
 }
 
 am_Error_e CAmRoutingSender::setDomainState(const am_domainID_t domainID, const am_DomainState_e domainState)
@@ -364,10 +365,15 @@ am_Error_e CAmRoutingSender::setDomainState(const am_domainID_t domainID, const 
     DomainInterfaceMap::iterator iter = mMapDomainInterface.begin();
     iter = mMapDomainInterface.find(domainID);
     if (iter != mMapDomainInterface.end())
-        return iter->second->setDomainState(domainID, domainState);
-    return E_NON_EXISTENT;
+        return (iter->second->setDomainState(domainID, domainState));
+    return (E_NON_EXISTENT);
 }
 
+/**
+ * @author Christian
+ * this adds the domain to the lookup table of the Router. The data is used to have a quick lookup of the correct pluginInterface.
+ * This must be done whenever a domain is registered.
+ */
 am_Error_e CAmRoutingSender::addDomainLookup(const am_Domain_s& domainData)
 {
     std::vector<InterfaceNamePairs>::iterator iter = mListInterfaces.begin();
@@ -377,13 +383,18 @@ am_Error_e CAmRoutingSender::addDomainLookup(const am_Domain_s& domainData)
         if ((*iter).busName.compare(domainData.busname) == 0)
         {
             mMapDomainInterface.insert(std::make_pair(domainData.domainID, (*iter).routingInterface));
-            return E_OK;
+            return (E_OK);
         }
     }
 
-    return E_UNKNOWN;
+    return (E_UNKNOWN);
 }
 
+/**
+ * @author Christian
+ * this adds the Source to the lookup table of the Router. The data is used to have a quick lookup of the correct pluginInterface.
+ * This must be done whenever a Source is registered.
+ */
 am_Error_e CAmRoutingSender::addSourceLookup(const am_Source_s& sourceData)
 {
     DomainInterfaceMap::iterator iter = mMapDomainInterface.begin();
@@ -391,12 +402,17 @@ am_Error_e CAmRoutingSender::addSourceLookup(const am_Source_s& sourceData)
     if (iter != mMapDomainInterface.end())
     {
         mMapSourceInterface.insert(std::make_pair(sourceData.sourceID, iter->second));
-        return E_OK;
+        return (E_OK);
     }
 
-    return E_UNKNOWN;
+    return (E_UNKNOWN);
 }
 
+/**
+ * @author Christian
+ * this adds the Sink to the lookup table of the Router. The data is used to have a quick lookup of the correct pluginInterface.
+ * This must be done whenever a Sink is registered.
+ */
 am_Error_e CAmRoutingSender::addSinkLookup(const am_Sink_s& sinkData)
 {
     DomainInterfaceMap::iterator iter = mMapDomainInterface.begin();
@@ -404,12 +420,17 @@ am_Error_e CAmRoutingSender::addSinkLookup(const am_Sink_s& sinkData)
     if (iter != mMapDomainInterface.end())
     {
         mMapSinkInterface.insert(std::make_pair(sinkData.sinkID, iter->second));
-        return E_OK;
+        return (E_OK);
     }
 
-    return E_UNKNOWN;
+    return (E_UNKNOWN);
 }
 
+/**
+ * @author Christian
+ * this adds the Crossfader to the lookup table of the Router. The data is used to have a quick lookup of the correct pluginInterface.
+ * This must be done whenever a Crossfader is registered.
+ */
 am_Error_e CAmRoutingSender::addCrossfaderLookup(const am_Crossfader_s& crossfaderData)
 {
     DomainInterfaceMap::iterator iter = mMapSourceInterface.begin();
@@ -417,12 +438,16 @@ am_Error_e CAmRoutingSender::addCrossfaderLookup(const am_Crossfader_s& crossfad
     if (iter != mMapSourceInterface.end())
     {
         mMapSourceInterface.insert(std::make_pair(crossfaderData.crossfaderID, iter->second));
-        return E_OK;
+        return (E_OK);
     }
 
-    return E_UNKNOWN;
+    return (E_UNKNOWN);
 }
 
+/**
+ * @author Christian
+ * this removes the Domain to the lookup table of the Router. This must be done everytime a domain is deregistered.
+ */
 am_Error_e CAmRoutingSender::removeDomainLookup(const am_domainID_t domainID)
 {
     DomainInterfaceMap::iterator iter = mMapDomainInterface.begin();
@@ -430,12 +455,16 @@ am_Error_e CAmRoutingSender::removeDomainLookup(const am_domainID_t domainID)
     if (iter != mMapDomainInterface.end())
     {
         mMapDomainInterface.erase(iter);
-        return E_OK;
+        return (E_OK);
     }
 
-    return E_NON_EXISTENT;
+    return (E_NON_EXISTENT);
 }
 
+/**
+ * @author Christian
+ * this removes the Source to the lookup table of the Router. This must be done everytime a source is deregistered.
+ */
 am_Error_e CAmRoutingSender::removeSourceLookup(const am_sourceID_t sourceID)
 {
     SourceInterfaceMap::iterator iter = mMapSourceInterface.begin();
@@ -443,12 +472,16 @@ am_Error_e CAmRoutingSender::removeSourceLookup(const am_sourceID_t sourceID)
     if (iter != mMapSourceInterface.end())
     {
         mMapSourceInterface.erase(iter);
-        return E_OK;
+        return (E_OK);
     }
 
-    return E_NON_EXISTENT;
+    return (E_NON_EXISTENT);
 }
 
+/**
+ * @author Christian
+ * this removes the Sink to the lookup table of the Router. This must be done everytime a sink is deregistered.
+ */
 am_Error_e CAmRoutingSender::removeSinkLookup(const am_sinkID_t sinkID)
 {
     SinkInterfaceMap::iterator iter = mMapSinkInterface.begin();
@@ -456,12 +489,16 @@ am_Error_e CAmRoutingSender::removeSinkLookup(const am_sinkID_t sinkID)
     if (iter != mMapSinkInterface.end())
     {
         mMapSinkInterface.erase(iter);
-        return E_OK;
+        return (E_OK);
     }
 
-    return E_NON_EXISTENT;
+    return (E_NON_EXISTENT);
 }
 
+/**
+ * @author Christian
+ * this removes the Crossfader to the lookup table of the Router. This must be done everytime a crossfader is deregistered.
+ */
 am_Error_e CAmRoutingSender::removeCrossfaderLookup(const am_crossfaderID_t crossfaderID)
 {
     CrossfaderInterfaceMap::iterator iter = mMapCrossfaderInterface.begin();
@@ -469,17 +506,22 @@ am_Error_e CAmRoutingSender::removeCrossfaderLookup(const am_crossfaderID_t cros
     if (iter != mMapCrossfaderInterface.end())
     {
         mMapCrossfaderInterface.erase(iter);
-        return E_OK;
+        return (E_OK);
     }
 
-    return E_NON_EXISTENT;
+    return (E_NON_EXISTENT);
 }
 
+/**
+ * removes a handle from the list
+ * @param handle to be removed
+ * @return E_OK in case of success
+ */
 am_Error_e CAmRoutingSender::removeHandle(const am_Handle_s& handle)
 {
     if (mlistActiveHandles.erase(handle))
-        return E_OK;
-    return E_UNKNOWN;
+        return (E_OK);
+    return (E_UNKNOWN);
 }
 
 am_Error_e CAmRoutingSender::getListHandles(std::vector<am_Handle_s> & listHandles) const
@@ -490,18 +532,29 @@ am_Error_e CAmRoutingSender::getListHandles(std::vector<am_Handle_s> & listHandl
     {
         listHandles.push_back(it->first);
     }
-    return E_OK;
+    return (E_OK);
 }
 
+/**
+ * creates a handle and adds it to the list of handles
+ * @param handleData the data that should be saves together with the handle
+ * @param type the type of handle to be created
+ * @return the handle
+ */
 am_Handle_s CAmRoutingSender::createHandle(const am_handleData_c& handleData, const am_Handle_e type)
 {
     am_Handle_s handle;
     handle.handle = ++mHandleCount; //todo: handle overflows here...
     handle.handleType = type;
     mlistActiveHandles.insert(std::make_pair(handle, handleData));
-    return handle;
+    return (handle);
 }
 
+/**
+ * returns the data that belong to handles
+ * @param handle the handle
+ * @return a class holding the handle data
+ */
 CAmRoutingSender::am_handleData_c CAmRoutingSender::returnHandleData(const am_Handle_s handle) const
 {
     HandlesMap::const_iterator it = mlistActiveHandles.begin();
@@ -511,26 +564,26 @@ CAmRoutingSender::am_handleData_c CAmRoutingSender::returnHandleData(const am_Ha
 
 void CAmRoutingSender::setRoutingReady()
 {
-    mRoutingReceiver->waitOnStartup(false);
+    mpRoutingReceiver->waitOnStartup(false);
     std::vector<InterfaceNamePairs>::iterator iter = mListInterfaces.begin();
     std::vector<InterfaceNamePairs>::iterator iterEnd = mListInterfaces.end();
     for (; iter < iterEnd; ++iter)
     {
-        (*iter).routingInterface->setRoutingReady(mRoutingReceiver->getStartupHandle());
+        (*iter).routingInterface->setRoutingReady(mpRoutingReceiver->getStartupHandle());
     }
-    mRoutingReceiver->waitOnStartup(true);
+    mpRoutingReceiver->waitOnStartup(true);
 }
 
 void CAmRoutingSender::setRoutingRundown()
 {
-    mRoutingReceiver->waitOnRundown(false);
+    mpRoutingReceiver->waitOnRundown(false);
     std::vector<InterfaceNamePairs>::iterator iter = mListInterfaces.begin();
     std::vector<InterfaceNamePairs>::iterator iterEnd = mListInterfaces.end();
     for (; iter < iterEnd; ++iter)
     {
-        (*iter).routingInterface->setRoutingRundown(mRoutingReceiver->getStartupHandle());
+        (*iter).routingInterface->setRoutingRundown(mpRoutingReceiver->getStartupHandle());
     }
-    mRoutingReceiver->waitOnRundown(true);
+    mpRoutingReceiver->waitOnRundown(true);
 }
 
 void CAmRoutingSender::unloadLibraries(void)
@@ -550,7 +603,7 @@ am_Error_e CAmRoutingSender::getListPlugins(std::vector<std::string>& interfaces
     {
         interfaces.push_back(it->busName);
     }
-    return E_OK;
+    return (E_OK);
 }
 
 void CAmRoutingSender::getInterfaceVersion(std::string & version) const

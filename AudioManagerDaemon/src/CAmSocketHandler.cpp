@@ -1,24 +1,22 @@
 /**
- * Copyright (C) 2011, BMW AG
+ * Copyright (C) 2012, GENIVI Alliance, Inc.
+ * Copyright (C) 2012, BMW AG
  *
- * GeniviAudioMananger AudioManagerDaemon
+ * This file is part of GENIVI Project AudioManager.
  *
- * \file CAmDbusWrapper.cpp
+ * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contribution License Agreements.
  *
- * \date 20-Oct-2011 3:42:04 PM
- * \author Christian Mueller (christian.ei.mueller@bmw.de)
+ * \copyright
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
+ * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
- * \section License
- * GNU Lesser General Public License, version 2.1, with special exception (GENIVI clause)
- * Copyright (C) 2011, BMW AG Christian Mueller  Christian.ei.mueller@bmw.de
  *
- * This program is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License, version 2.1, as published by the Free Software Foundation.
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License, version 2.1, for more details.
- * You should have received a copy of the GNU Lesser General Public License, version 2.1, along with this program; if not, see <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * Note that the copyright holders assume that the GNU Lesser General Public License, version 2.1, may also be applicable to programs even in cases in which the program is not a library in the technical sense.
- * Linking AudioManager statically or dynamically with other modules is making a combined work based on AudioManager. You may license such other modules under the GNU Lesser General Public License, version 2.1. If you do not want to license your linked modules under the GNU Lesser General Public License, version 2.1, you may use the program under the following exception.
- * As a special exception, the copyright holders of AudioManager give you permission to combine AudioManager with software programs or libraries that are released under any license unless such a combination is not permitted by the license of such a software program or library. You may copy and distribute such a system following the terms of the GNU Lesser General Public License, version 2.1, including this special exception, for AudioManager and the licenses of the other code concerned.
- * Note that people who make modified versions of AudioManager are not obligated to grant this special exception for their modified versions; it is their choice whether to do so. The GNU Lesser General Public License, version 2.1, gives permission to release a modified version without this exception; this exception also makes it possible to release a modified version which carries forward this exception.
+ * \author Christian Mueller, christian.ei.mueller@bmw.de BMW 2011,2012
+ *
+ * \file CAmSocketHandler.cpp
+ * For further information see http://www.genivi.org/.
  *
  */
 
@@ -37,7 +35,8 @@
 //todo: implement time correction if timer was interrupted by call
 //todo: change hitlist to a list that holds all information, because entering and removing items will be cheaper than with std::vector
 
-namespace am {
+namespace am
+{
 
 CAmSocketHandler::CAmSocketHandler() :
         mListPoll(), //
@@ -64,7 +63,7 @@ CAmSocketHandler::~CAmSocketHandler()
  */
 void CAmSocketHandler::start_listenting()
 {
-    gDispatchDone=0;
+    gDispatchDone = 0;
     int16_t pollStatus;
     std::list<int16_t> hitList;
 
@@ -84,7 +83,7 @@ void CAmSocketHandler::start_listenting()
     {
         //first we go through the registered filedescriptors and check if someone needs preparation:
         mListPoll_t::iterator prepIter = mListPoll.begin();
-        CAmShPollPrepare *prep = NULL;
+        IAmShPollPrepare *prep = NULL;
         for (; prepIter != mListPoll.end(); ++prepIter)
         {
             if ((prep = prepIter->prepareCB) != NULL)
@@ -156,7 +155,7 @@ void CAmSocketHandler::start_listenting()
             std::list<int16_t>::iterator hListIt = hitList.begin();
             for (; hListIt != hitList.end(); ++hListIt)
             {
-                CAmShPollFired* fire = NULL;
+                IAmShPollFired* fire = NULL;
                 if ((fire = listPoll.at(*hListIt).firedCB) != NULL)
                     fire->Call(mfdPollingArray.at(*hListIt), listPoll.at(*hListIt).handle, listPoll.at(*hListIt).userData);
             }
@@ -165,7 +164,7 @@ void CAmSocketHandler::start_listenting()
             hListIt = hitList.begin();
             for (; hListIt != hitList.end(); ++hListIt)
             {
-                CAmShPollCheck* check = NULL;
+                IAmShPollCheck* check = NULL;
                 if ((check = listPoll.at(*hListIt).checkCB) != NULL)
                 {
                     if (!check->Call(listPoll.at(*hListIt).handle, listPoll.at(*hListIt).userData))
@@ -181,7 +180,7 @@ void CAmSocketHandler::start_listenting()
                 hListIt = hitList.begin();
                 for (; hListIt != hitList.end(); ++hListIt)
                 {
-                    CAmShPollDispatch *dispatch = NULL;
+                    IAmShPollDispatch *dispatch = NULL;
                     if ((dispatch = listPoll.at(*hListIt).dispatchCB) != NULL)
                     {
                         if (!dispatch->Call(listPoll.at(*hListIt).handle, listPoll.at(*hListIt).userData))
@@ -215,15 +214,20 @@ void CAmSocketHandler::stop_listening()
 
 /**
  * Adds a filedescriptor to the polling loop
- * @param fd this is a valid filedescriptor
+ * @param fd the filedescriptor
  * @param event the event flags
- * @param callback the callback that shall be called if the filedescriptor poll succeeded
+ * @param prepare a callback that is called before the loop is entered
+ * @param fired a callback that is called when the filedescriptor needs to be read
+ * @param check a callback that is called to check if further actions are neccessary
+ * @param dispatch a callback that is called to dispatch the received data
+ * @param userData a pointer to userdata that is always passed around
+ * @param handle the handle of this poll
  * @return E_OK if the descriptor was added, E_NON_EXISTENT if the fd is not valid
  */
-am_Error_e CAmSocketHandler::addFDPoll(const int fd, const short  event, CAmShPollPrepare *prepare, CAmShPollFired *fired, CAmShPollCheck *check, CAmShPollDispatch *dispatch, void *userData, sh_pollHandle_t & handle)
+am_Error_e CAmSocketHandler::addFDPoll(const int fd, const short event, IAmShPollPrepare *prepare, IAmShPollFired *fired, IAmShPollCheck *check, IAmShPollDispatch *dispatch, void *userData, sh_pollHandle_t & handle)
 {
     if (!fdIsValid(fd))
-        return E_NON_EXISTENT;
+        return (E_NON_EXISTENT);
 
     sh_poll_s pollData;
     pollData.pollfdValue.fd = fd;
@@ -242,13 +246,13 @@ am_Error_e CAmSocketHandler::addFDPoll(const int fd, const short  event, CAmShPo
     mRecreatePollfds = true;
 
     handle = pollData.handle;
-    return E_OK;
+    return (E_OK);
 }
 
 /**
  * removes a filedescriptor from the poll loop
- * @param fd the filedescriptor to be removed
- * @return E_OK in case of sucess, E_NON_EXISTENT or E_UNKNOWN if the fd in not registered
+ * @param handle
+ * @return
  */
 am_Error_e CAmSocketHandler::removeFDPoll(const sh_pollHandle_t handle)
 {
@@ -260,10 +264,10 @@ am_Error_e CAmSocketHandler::removeFDPoll(const sh_pollHandle_t handle)
         {
             iterator = mListPoll.erase(iterator);
             mRecreatePollfds = true;
-            return E_OK;
+            return (E_OK);
         }
     }
-    return E_UNKNOWN;
+    return (E_UNKNOWN);
 }
 
 /**
@@ -271,12 +275,13 @@ am_Error_e CAmSocketHandler::removeFDPoll(const sh_pollHandle_t handle)
  * This is not a high precise timer, it is very coarse. It is meant to be used for timeouts when waiting
  * for an answer via a filedescriptor.
  * One time timer. If you need again a timer, you need to add a new timer in the callback of the old one.
- * @param timeouts time until the callback is fired
- * @param callback the callback
- * @param handle the handle that is created for the timer is returned. Can be used to remove the timer
+ * @param timeouts timeouts time until the callback is fired
+ * @param callback callback the callback
+ * @param handle handle the handle that is created for the timer is returned. Can be used to remove the timer
+ * @param userData pointer always passed with the call
  * @return E_OK in case of success
  */
-am_Error_e CAmSocketHandler::addTimer(const timespec timeouts, CAmShTimerCallBack*& callback, sh_timerHandle_t& handle, void * userData)
+am_Error_e CAmSocketHandler::addTimer(const timespec timeouts, IAmShTimerCallBack*& callback, sh_timerHandle_t& handle, void * userData)
 {
     assert(!((timeouts.tv_sec==0) && (timeouts.tv_nsec==0)));
     assert(callback!=NULL);
@@ -298,7 +303,7 @@ am_Error_e CAmSocketHandler::addTimer(const timespec timeouts, CAmShTimerCallBac
     //very important: sort the list so that the smallest value is front
     mListActiveTimer.sort(compareCountdown);
     mTimeout = mListActiveTimer.front().countdown;
-    return E_OK;
+    return (E_OK);
 }
 
 /**
@@ -319,10 +324,10 @@ am_Error_e CAmSocketHandler::removeTimer(const sh_timerHandle_t handle)
         if (it->handle == handle)
         {
             it = mListTimer.erase(it);
-            return E_OK;
+            return (E_OK);
         }
     }
-    return E_UNKNOWN;
+    return (E_UNKNOWN);
 }
 
 /**
@@ -354,7 +359,7 @@ am_Error_e CAmSocketHandler::restartTimer(const sh_timerHandle_t handle, const t
     //very important: sort the list so that the smallest value is front
     mListActiveTimer.sort(compareCountdown);
     mTimeout = mListActiveTimer.front().countdown;
-    return E_OK;
+    return (E_OK);
 }
 
 am_Error_e CAmSocketHandler::stopTimer(const sh_timerHandle_t handle)
@@ -375,17 +380,17 @@ am_Error_e CAmSocketHandler::stopTimer(const sh_timerHandle_t handle)
                 mTimeout.tv_nsec = -1;
                 mTimeout.tv_sec = -1;
             }
-            return E_OK;
+            return (E_OK);
         }
     }
-    return E_NON_EXISTENT;
+    return (E_NON_EXISTENT);
 }
 
 /**
  * updates the eventFlags of a poll
- * @param fd the filedescriptor of the poll
- * @param event the event flags
- * @return E_OK on succsess, E_NON_EXISTENT if fd was not found
+ * @param handle
+ * @param events
+ * @return @return E_OK on succsess, E_NON_EXISTENT if fd was not found
  */
 am_Error_e CAmSocketHandler::updateEventFlags(const sh_pollHandle_t handle, const short events)
 {
@@ -397,10 +402,10 @@ am_Error_e CAmSocketHandler::updateEventFlags(const sh_pollHandle_t handle, cons
         {
             iterator->pollfdValue.events = events;
             mRecreatePollfds = true;
-            return E_OK;
+            return (E_OK);
         }
     }
-    return E_UNKNOWN;
+    return (E_UNKNOWN);
 }
 
 /**
@@ -460,14 +465,14 @@ void CAmSocketHandler::initTimer()
  */
 inline int CAmSocketHandler::timespec2ms(const timespec & time)
 {
-    return (time.tv_nsec == -1 && time.tv_sec == -1) ? -1 : time.tv_sec * 1000 + time.tv_nsec / 1000000;
+    return ((time.tv_nsec == -1 && time.tv_sec == -1) ? -1 : time.tv_sec * 1000 + time.tv_nsec / 1000000);
 }
 
 inline timespec* CAmSocketHandler::insertTime(timespec& buffertime)
 {
     buffertime.tv_nsec = mTimeout.tv_nsec;
     buffertime.tv_sec = mTimeout.tv_sec;
-    return (mTimeout.tv_nsec == -1 && mTimeout.tv_sec == -1) ? NULL : &buffertime;
+    return ((mTimeout.tv_nsec == -1 && mTimeout.tv_sec == -1) ? NULL : &buffertime);
 }
 
 /**

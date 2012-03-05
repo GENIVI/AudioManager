@@ -1,24 +1,22 @@
 /**
- * Copyright (C) 2011, BMW AG
+ * Copyright (C) 2012, GENIVI Alliance, Inc.
+ * Copyright (C) 2012, BMW AG
  *
- * GeniviAudioMananger AudioManagerDaemon
+ * This file is part of GENIVI Project AudioManager.
+ *
+ * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contribution License Agreements.
+ *
+ * \copyright
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
+ * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ *
+ * \author Christian Mueller, christian.ei.mueller@bmw.de BMW 2011,2012
  *
  * \file CAmRouter.cpp
- *
- * \date 20-Oct-2011 3:42:04 PM
- * \author Christian Mueller (christian.ei.mueller@bmw.de)
- *
- * \section License
- * GNU Lesser General Public License, version 2.1, with special exception (GENIVI clause)
- * Copyright (C) 2011, BMW AG Christian Mueller  Christian.ei.mueller@bmw.de
- *
- * This program is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License, version 2.1, as published by the Free Software Foundation.
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License, version 2.1, for more details.
- * You should have received a copy of the GNU Lesser General Public License, version 2.1, along with this program; if not, see <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * Note that the copyright holders assume that the GNU Lesser General Public License, version 2.1, may also be applicable to programs even in cases in which the program is not a library in the technical sense.
- * Linking AudioManager statically or dynamically with other modules is making a combined work based on AudioManager. You may license such other modules under the GNU Lesser General Public License, version 2.1. If you do not want to license your linked modules under the GNU Lesser General Public License, version 2.1, you may use the program under the following exception.
- * As a special exception, the copyright holders of AudioManager give you permission to combine AudioManager with software programs or libraries that are released under any license unless such a combination is not permitted by the license of such a software program or library. You may copy and distribute such a system following the terms of the GNU Lesser General Public License, version 2.1, including this special exception, for AudioManager and the licenses of the other code concerned.
- * Note that people who make modified versions of AudioManager are not obligated to grant this special exception for their modified versions; it is their choice whether to do so. The GNU Lesser General Public License, version 2.1, gives permission to release a modified version without this exception; this exception also makes it possible to release a modified version which carries forward this exception.
+ * For further information see http://www.genivi.org/.
  *
  */
 
@@ -33,22 +31,30 @@
 namespace am {
 
 CAmRouter::CAmRouter(CAmDatabaseHandler* iDatabaseHandler, CAmControlSender* iSender) :
-        mDatabaseHandler(iDatabaseHandler), //
-        mControlSender(iSender)
+        mpDatabaseHandler(iDatabaseHandler), //
+        mpControlSender(iSender)
 {
-    assert(mDatabaseHandler);
-    assert(mControlSender);
+    assert(mpDatabaseHandler);
+    assert(mpControlSender);
 }
 
+/**
+ * returns the best route between a source and a sink
+ * @param onlyfree if true only free gateways are used
+ * @param sourceID
+ * @param sinkID
+ * @param returnList this list contains a set of routes
+ * @return E_OK in case of success
+ */
 am_Error_e CAmRouter::getRoute(const bool onlyfree, const am_sourceID_t sourceID, const am_sinkID_t sinkID, std::vector<am_Route_s> & returnList)
 {
     returnList.clear();
     //first find out in which domains the source and sink are
     am_domainID_t sourceDomainID;
     am_domainID_t sinkDomainID;
-    if (mDatabaseHandler->getDomainOfSource(sourceID, sourceDomainID) != E_OK)
+    if (mpDatabaseHandler->getDomainOfSource(sourceID, sourceDomainID) != E_OK)
         return (E_NON_EXISTENT);
-    if (mDatabaseHandler->getDomainOfSink(sinkID, sinkDomainID) != E_OK)
+    if (mpDatabaseHandler->getDomainOfSink(sinkID, sinkDomainID) != E_OK)
         return (E_NON_EXISTENT);
 
     if (sourceDomainID == sinkDomainID) //shortcut if the domains are the same...
@@ -64,11 +70,11 @@ am_Error_e CAmRouter::getRoute(const bool onlyfree, const am_sourceID_t sourceID
         route.route.clear();
 
         //get the prio of the Controller:
-        mControlSender->getConnectionFormatChoice(sourceID, sinkID, route, listFormats, listPriorityConnectionFormats);
+        mpControlSender->getConnectionFormatChoice(sourceID, sinkID, route, listFormats, listPriorityConnectionFormats);
 
         //no possible connection, so no route ! But we report OK since there is no fault ...
         if (listPriorityConnectionFormats.empty())
-            return E_OK;
+            return (E_OK);
 
         //return the first item as route:
         am_RoutingElement_s routingElement;
@@ -85,7 +91,7 @@ am_Error_e CAmRouter::getRoute(const bool onlyfree, const am_sourceID_t sourceID
 
         //push it to the return list - we are done here ...
         returnList.push_back(actualRoute);
-        return E_OK;
+        return (E_OK);
 
     }
     CAmRoutingTree routingtree(sourceDomainID); //Build up a Tree from the Source_Domain to every other domain.
@@ -96,7 +102,7 @@ am_Error_e CAmRouter::getRoute(const bool onlyfree, const am_sourceID_t sourceID
     am_Route_s actualRoute; //holds the actual Route
     am_sourceID_t lastSource = 0;
 
-    mDatabaseHandler->getRoutingTree(onlyfree, routingtree, flattree); //Build up the tree out of the database as
+    mpDatabaseHandler->getRoutingTree(onlyfree, routingtree, flattree); //Build up the tree out of the database as
 
     //we go through the returned flattree and look for our sink, after that flattree holds only treeItems that match
     std::vector<CAmRoutingTreeItem*>::iterator iterator = flattree.begin();
@@ -121,7 +127,7 @@ am_Error_e CAmRouter::getRoute(const bool onlyfree, const am_sourceID_t sourceID
         for (; gatewayIterator != listGatewayID.end(); ++gatewayIterator)
         {
             am_Gateway_s gatewayData;
-            if (mDatabaseHandler->getGatewayInfoDB(*gatewayIterator, gatewayData) != E_OK)
+            if (mpDatabaseHandler->getGatewayInfoDB(*gatewayIterator, gatewayData) != E_OK)
                 return (E_UNKNOWN);
 
             //at the beginning of the route, we connect first the source to the first gateway
@@ -168,8 +174,8 @@ void CAmRouter::listPossibleConnectionFormats(const am_sourceID_t sourceID, cons
 {
     std::vector<am_ConnectionFormat_e> listSourceFormats;
     std::vector<am_ConnectionFormat_e> listSinkFormats;
-    mDatabaseHandler->getListSinkConnectionFormats(sinkID, listSinkFormats);
-    mDatabaseHandler->getListSourceConnectionFormats(sourceID, listSourceFormats);
+    mpDatabaseHandler->getListSinkConnectionFormats(sinkID, listSinkFormats);
+    mpDatabaseHandler->getListSourceConnectionFormats(sourceID, listSourceFormats);
     std::sort(listSinkFormats.begin(), listSinkFormats.end()); //todo: this might be not needed if we use strictly sorted input
     std::sort(listSourceFormats.begin(), listSourceFormats.end()); //todo: this might be not needed if we use strictly sorted input
     std::insert_iterator<std::vector<am_ConnectionFormat_e> > inserter(listFormats, listFormats.begin());
@@ -210,7 +216,7 @@ am_Error_e CAmRouter::findBestWay(am_sinkID_t sinkID, am_sourceID_t sourceID, st
     route.route = listRoute;
 
     //let the controller decide:
-    mControlSender->getConnectionFormatChoice(routeIterator->sourceID, routeIterator->sinkID, route, listMergeConnectionFormats, listPriorityConnectionFormats);
+    mpControlSender->getConnectionFormatChoice(routeIterator->sourceID, routeIterator->sinkID, route, listMergeConnectionFormats, listPriorityConnectionFormats);
 
     //we have the list sorted after prios - now we try one after the other with the next part of the route
     std::vector<am_ConnectionFormat_e>::iterator connectionFormatIterator = listPriorityConnectionFormats.begin();
@@ -221,10 +227,10 @@ am_Error_e CAmRouter::findBestWay(am_sinkID_t sinkID, am_sourceID_t sourceID, st
         if (!listPriorityConnectionFormats.empty())
         {
             routeIterator->connectionFormat = listPriorityConnectionFormats.front();
-            return E_OK;
+            return (E_OK);
         }
         else
-            return E_NOT_POSSIBLE;
+            return (E_NOT_POSSIBLE);
     }
 
     for (; connectionFormatIterator != listPriorityConnectionFormats.end(); ++connectionFormatIterator)
@@ -243,7 +249,7 @@ void CAmRouter::listRestrictedOutputFormatsGateways(const am_gatewayID_t gateway
 {
     listFormats.clear();
     am_Gateway_s gatewayData;
-    mDatabaseHandler->getGatewayInfoDB(gatewayID, gatewayData);
+    mpDatabaseHandler->getGatewayInfoDB(gatewayID, gatewayData);
     std::vector<am_ConnectionFormat_e>::const_iterator rowSinkIterator = gatewayData.listSinkFormats.begin();
     std::vector<bool>::const_iterator matrixIterator = gatewayData.convertionMatrix.begin();
 
@@ -272,7 +278,7 @@ CAmRouter::~CAmRouter()
 CAmRoutingTreeItem::CAmRoutingTreeItem(const am_domainID_t domainID, const am_gatewayID_t gatewayID, CAmRoutingTreeItem *parent) :
         mDomainID(domainID), //
         mGatewayID(gatewayID), //
-        mParentItem(parent)
+        mpParentItem(parent)
 {
     assert(mDomainID!=0);
 }
@@ -300,7 +306,7 @@ am_gatewayID_t CAmRoutingTreeItem::returnGatewayID() const
 
 CAmRoutingTreeItem* CAmRoutingTreeItem::returnParent() const
 {
-    return (mParentItem);
+    return (mpParentItem);
 }
 
 CAmRoutingTreeItem::~CAmRoutingTreeItem()
@@ -318,7 +324,7 @@ CAmRoutingTreeItem *CAmRoutingTree::insertItem(const am_domainID_t domainID, con
     CAmRoutingTreeItem *newTree = new CAmRoutingTreeItem(domainID, gatewayID, parent);
     parent->appendChild(newTree);
     mListChild.push_back(newTree);
-    return newTree;
+    return (newTree);
 }
 
 void CAmRoutingTree::getRoute(CAmRoutingTreeItem *targetItem, std::vector<am_gatewayID_t>& listGateways)

@@ -1,29 +1,24 @@
 /**
- * Copyright (C) 2011, BMW AG
+ * Copyright (C) 2012, GENIVI Alliance, Inc.
+ * Copyright (C) 2012, BMW AG
  *
- * GeniviAudioMananger AudioManagerDaemon
+ * This file is part of GENIVI Project AudioManager.
+ *
+ * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contribution License Agreements.
+ *
+ * \copyright
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
+ * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ *
+ * \author Christian Mueller, christian.ei.mueller@bmw.de BMW 2011,2012
+ * \author Frank Herchet, frank.fh.herchet@bmw.de BMW 2012
  *
  * \file main.cpp
+ * For further information see http://www.genivi.org/.
  *
- * \date 20-Oct-2011 3:42:04 PM
- * \author Christian Mueller (christian.ei.mueller@bmw.de)
- *
- * \section License
- * GNU Lesser General Public License, version 2.1, with special exception (GENIVI clause)
- * Copyright (C) 2011, BMW AG Christian Mueller  Christian.ei.mueller@bmw.de
- *
- * This program is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License, version 2.1, as published by the Free Software Foundation.
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License, version 2.1, for more details.
- * You should have received a copy of the GNU Lesser General Public License, version 2.1, along with this program; if not, see <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * Note that the copyright holders assume that the GNU Lesser General Public License, version 2.1, may also be applicable to programs even in cases in which the program is not a library in the technical sense.
- * Linking AudioManager statically or dynamically with other modules is making a combined work based on AudioManager. You may license such other modules under the GNU Lesser General Public License, version 2.1. If you do not want to license your linked modules under the GNU Lesser General Public License, version 2.1, you may use the program under the following exception.
- * As a special exception, the copyright holders of AudioManager give you permission to combine AudioManager with software programs or libraries that are released under any license unless such a combination is not permitted by the license of such a software program or library. You may copy and distribute such a system following the terms of the GNU Lesser General Public License, version 2.1, including this special exception, for AudioManager and the licenses of the other code concerned.
- * Note that people who make modified versions of AudioManager are not obligated to grant this special exception for their modified versions; it is their choice whether to do so. The GNU Lesser General Public License, version 2.1, gives permission to release a modified version without this exception; this exception also makes it possible to release a modified version which carries forward this exception.
- *
- */
-
-/**
- * Please make sure to have read the documentation on genivi.org!
  */
 
 //todo: create systemd compatibility
@@ -33,24 +28,15 @@
 //todo: clean up startup sequences controller, command and routing interfaces----
 //todo: package generation only works if package directory exists...
 
-#include <config.h>
+#include "config.h"
+
 #ifdef  WITH_TELNET
 #include "CAmTelnetServer.h"
 #endif
 #ifdef WITH_DBUS_WRAPPER
 #include <shared/CAmDbusWrapper.h>
 #endif
-#include <shared/CAmSocketHandler.h>
-#include "CAmDatabaseHandler.h"
-#include "CAmControlSender.h"
-#include "CAmCommandSender.h"
-#include "CAmRoutingSender.h"
-#include "CAmRoutingReceiver.h"
-#include "CAmCommandReceiver.h"
-#include "CAmControlReceiver.h"
-#include "CAmDatabaseObserver.h"
-#include "CAmRouter.h"
-#include "shared/CAmDltWrapper.h"
+
 #include <sys/resource.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -62,6 +48,18 @@
 #include <cstring>
 #include <cstdio>
 #include <new>
+#include "CAmRouter.h"
+#include "CAmDatabaseHandler.h"
+#include "CAmControlSender.h"
+#include "CAmCommandSender.h"
+#include "CAmRoutingSender.h"
+#include "CAmRoutingReceiver.h"
+#include "CAmCommandReceiver.h"
+#include "CAmControlReceiver.h"
+#include "CAmDatabaseObserver.h"
+#include "shared/CAmDltWrapper.h"
+#include "shared/CAmSocketHandler.h"
+
 
 DLT_DECLARE_CONTEXT(AudioManager)
 
@@ -94,6 +92,9 @@ unsigned int maxConnections = MAX_TELNETCONNECTIONS;
 int fd0, fd1, fd2;
 bool enableNoDLTDebug = false;
 
+/**
+ * the out of memory handler
+ */
 void OutOfMemoryHandler()
 {
     logError("No more memory - bye");
@@ -101,6 +102,9 @@ void OutOfMemoryHandler()
     exit(1);
 }
 
+/**
+ * daemonizes the AudioManager
+ */
 void daemonize()
 {
     umask(0);
@@ -149,6 +153,11 @@ void daemonize()
     }
 }
 
+/**
+ * parses the command line
+ * @param argc
+ * @param argv
+ */
 void parseCommandLine(int argc, char **argv)
 {
     while (optind < argc)
@@ -211,7 +220,7 @@ void parseCommandLine(int argc, char **argv)
             exit(-1);
             break;
 #ifndef WITH_DLT
-        case 'V':
+            case 'V':
             printf("[DLT] debug output to stdout enabled\n");
             enableNoDLTDebug = true;
             break;
@@ -225,6 +234,12 @@ void parseCommandLine(int argc, char **argv)
     }
 }
 
+/**
+ * the signal handler
+ * @param sig
+ * @param siginfo
+ * @param context
+ */
 static void signalHandler(int sig, siginfo_t *siginfo, void *context)
 {
     (void) sig;
@@ -236,6 +251,12 @@ static void signalHandler(int sig, siginfo_t *siginfo, void *context)
     exit(1);
 }
 
+/**
+ * main
+ * @param argc
+ * @param argv
+ * @return
+ */
 int main(int argc, char *argv[])
 {
     listCommandPluginDirs.push_back(std::string(DEFAULT_PLUGIN_COMMAND_DIR));
@@ -271,7 +292,6 @@ int main(int argc, char *argv[])
     //Instantiate all classes. Keep in same order !
     CAmSocketHandler iSocketHandler;
 
-
 #ifdef WITH_DBUS_WRAPPER
     CAmDbusWrapper iDBusWrapper(&iSocketHandler);
 #endif /*WITH_DBUS_WRAPPER */
@@ -298,7 +318,6 @@ int main(int argc, char *argv[])
 #else /*WITH_TELNET*/
     CAmDatabaseObserver iObserver(&iCommandSender,&iRoutingSender, &iSocketHandler);
 #endif
-
 
     iDatabaseHandler.registerObserver(&iObserver);
 

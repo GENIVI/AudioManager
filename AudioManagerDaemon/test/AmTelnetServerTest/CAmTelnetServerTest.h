@@ -1,8 +1,23 @@
-/*
- * CAmTelnetServerTest.h
+/**
+ * Copyright (C) 2012, GENIVI Alliance, Inc.
+ * Copyright (C) 2012, BMW AG
  *
- *  Created on: Feb 7, 2012
- *      Author: Frank Herchet
+ * This file is part of GENIVI Project AudioManager.
+ *
+ * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contribution License Agreements.
+ *
+ * \copyright
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
+ * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ *
+ * \author Christian Mueller, christian.ei.mueller@bmw.de BMW 2011,2012
+ * \author Frank Herchet, frank.fh.herchet@bmw.de BMW 2012
+ *
+ * For further information see http://www.genivi.org/.
+ *
  */
 
 #ifndef CAMTELNETSERVERTEST_H_

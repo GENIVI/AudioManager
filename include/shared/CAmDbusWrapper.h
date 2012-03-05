@@ -1,9 +1,9 @@
 /** Copyright (c) 2012 GENIVI Alliance
  *  Copyright (c) 2012 BMW
  *
- *  \author Christian Mueller, BMW
+ *  \author Christian Mueller, christian.ei.mueller@bmw.de BMW 2011,2012
  *
- *  \section license
+ *  \copyright
  *  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction,
  *  including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
  *  subject to the following conditions:
@@ -12,21 +12,24 @@
  *  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
  *  THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
+ *  \file CAmDbusWrapper.h
+ *  For further information see http://www.genivi.org/.
  */
 
 #ifndef DBUSWRAPPER_H_
 #define DBUSWRAPPER_H_
 
-#include <config.h>
 #include <dbus/dbus.h>
 #include <string>
 #include <list>
+#include "config.h"
 #include "shared/CAmSocketHandler.h"
 
 namespace am
 {
+
 /**
- * This wraps dbus and provides everything needed to anyone who wants to use dbus (including plugins)
+ * This wraps dbus and provides everything needed to anyone who wants to use dbus (including plugins). Works on the basis of CAmSocketHandler
  */
 class CAmDbusWrapper
 {
@@ -34,19 +37,7 @@ public:
     CAmDbusWrapper(CAmSocketHandler* socketHandler);
     virtual ~CAmDbusWrapper();
 
-    /**
-     * registers a callback that is entered as path below the main path.
-     * The configuration of the mainpath is done via DBusConfiguration.h
-     * @param vtable the vtable that holds a pointer to the callback that is called when the path is called from the dbus
-     * @param path the name of the path
-     * @param userdata pointer to the class that will handle the callback
-     */
     void registerCallback(const DBusObjectPathVTable* vtable, const std::string& path, void* userdata);
-
-    /**
-     * returns the dbus connection
-     * @param connection pointer to the connection
-     */
     void getDBusConnection(DBusConnection*& connection) const;
 
     static dbus_bool_t addWatch(DBusWatch *watch, void *userData);
@@ -70,7 +61,7 @@ public:
     TAmShTimerCallBack<CAmDbusWrapper> pDbusTimerCallback;
 
 private:
-    static CAmDbusWrapper* mpReference;
+    static CAmDbusWrapper* mpReference; //!< reference to the dbus instance
     static DBusHandlerResult cbRootIntrospection(DBusConnection *conn, DBusMessage *msg, void *reference);
     dbus_bool_t addWatchDelegate(DBusWatch * watch, void* userData);
     void removeWatchDelegate(DBusWatch *watch, void *userData);
@@ -78,13 +69,13 @@ private:
     dbus_bool_t addTimeoutDelegate(DBusTimeout *timeout, void* userData);
     void removeTimeoutDelegate(DBusTimeout *timeout, void* userData);
     void toggleTimeoutDelegate(DBusTimeout *timeout, void* userData);
-    DBusObjectPathVTable mObjectPathVTable;
-    DBusConnection* mpDbusConnection;
-    DBusError mDBusError;
-    std::list<std::string> mListNodes;
-    std::vector<sh_timerHandle_t*> mpListTimerhandles;
-    CAmSocketHandler *mpSocketHandler;
-    std::map<DBusWatch*, sh_pollHandle_t> mMapHandleWatch;
+    DBusObjectPathVTable mObjectPathVTable; //!< the vpathtable
+    DBusConnection* mpDbusConnection; //!< pointer to the dbus connection used
+    DBusError mDBusError; //!< dbuserror
+    std::list<std::string> mListNodes; //!< holds a list of all nodes of the dbus
+    std::vector<sh_timerHandle_t*> mpListTimerhandles; //!< pointer to the timer handles
+    CAmSocketHandler *mpSocketHandler; //!< pointer to the sockethandler
+    std::map<DBusWatch*, sh_pollHandle_t> mMapHandleWatch; //!< map to the handle watches
 };
 
 }

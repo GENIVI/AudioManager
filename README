@@ -1,32 +1,39 @@
-GENIVI AUDIOMANAGER
-
-Copyright (C) 2011, BMW AG
-
-Datum  15.1.2012
-author Christian Müller (christian.ei.mueller@bmw.de)
-
 ***********************************************************************************************************
-LICENSE
+GENIVI AudioManager
 ***********************************************************************************************************
 
-GNU Lesser General Public License, version 2.1, with special exception (GENIVI clause)
-Copyright (C) 2011, BMW AG – Christian Müller  Christian.ei.mueller@bmw.de
+Copyright (C) 2012, GENIVI Alliance, Inc.
+Copyright (C) 2012, BMW AG
 
-This program is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License, version 2.1, as published by the Free Software Foundation.
-This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License, version 2.1, for more details.
-You should have received a copy of the GNU Lesser General Public License, version 2.1, along with this program; if not, see <http://www.gnu.org/licenses/lgpl-2.1.html>.
-Note that the copyright holders assume that the GNU Lesser General Public License, version 2.1, may also be applicable to programs even in cases in which the program is not a library in the technical sense.
-Linking AudioManager statically or dynamically with other modules is making a combined work based on AudioManager. You may license such other modules under the GNU Lesser General Public License, version 2.1. If you do not want to license your linked modules under the GNU Lesser General Public License, version 2.1, you may use the program under the following exception.
-As a special exception, the copyright holders of AudioManager give you permission to combine AudioManager with software programs or libraries that are released under any license unless such a combination is not permitted by the license of such a software program or library. You may copy and distribute such a system following the terms of the GNU Lesser General Public License, version 2.1, including this special exception, for AudioManager and the licenses of the other code concerned.
-Note that people who make modified versions of AudioManager are not obligated to grant this special exception for their modified versions; it is their choice whether to do so. The GNU Lesser General Public License, version 2.1, gives permission to release a modified version without this exception; this exception also makes it possible to release a modified version which carries forward this exception.
+This file is part of GENIVI Project AudioManager.
+ 
+Contributions are licensed to the GENIVI Alliance under one or more
+Contribution License Agreements.
+ 
+copyright
+This Source Code Form is subject to the terms of the
+Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
+this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ 
+author Christian Mueller, christian.ei.mueller@bmw.de BMW 2011,2012
 
-Version 0.0.1
+For further information see http://www.genivi.org/.
 
 ***********************************************************************************************************
-CURRENT STATUS
+License
 ***********************************************************************************************************
-The most important parts of the audiomanager are already there - nevertheless there are main features missing (pls look at the todos)
-It should be sufficient to start working on a POC around it.
+The licenses of this project are split into two parts:
+1) the AudioManagerDaemon, licensed under MPL 2.0
+2) all other parts that serve as example code that can be taken to build up an own project with it -
+    these parts are licensed with the MIT license
+    
+Contribution is done under GENIVI CLA. 
+
+***********************************************************************************************************
+Version
+***********************************************************************************************************
+The current version can be taken out of the git. The version 1.0.0 is the first GENIVI compliant code, 
+in the compliance statement of discovery (2.0)
 
 ***********************************************************************************************************
 COMPILE PROGRAMS
@@ -49,8 +56,8 @@ COMPILE PROGRAMS
 	 WITH_TESTS                       ON  
  
 
-In order to change these options, you can modify this values with ccmake, do the appropriate changes in CmakeList.txt or via 
-the commandline for cmake or (when installed via ccmake)
+In order to change these options, you can modify this values with ccmake, do the appropriate changes in 
+CmakeList.txt or via the commandline for cmake or (when installed via ccmake)
 
 You will need some packages in order to comile the GENIVI AudioManager Daemon, these are:
 	-dbus (only when DBUS_WRAPPER==ON) [tested on version 1.2.16]
@@ -74,7 +81,8 @@ More details in the CMake Files CmakeList.txt in the projects.
 The build was tested on a freshly setup LinuxMint 12 (don't like Unity) with the following steps:
 	sudo apt-get update
 	sudo apt-get upgrade
-	sudo apt-get install libdbus-1-dev libsqlite3-dev doxygen libgtest-dev google-mock git cmake build-essential python2.6-dev
+	sudo apt-get install libdbus-1-dev libsqlite3-dev doxygen libgtest-dev google-mock git cmake 
+	     build-essential python2.6-dev
 
 	git clone https://<kavi-account>:<kavi-password>@git.genivi.org/srv/git/AudioManager
 
@@ -108,7 +116,8 @@ if your version is above, you will get 4 packages (all binaries stripped) :
 	AudioManager-<git verison>-Linux-bin.deb   		[AudioManager binary]
 	AudioManager-<git verison>-Linux-dev.deb   		[header files needed to compile plugins]
 	AudioManager-<git verison>-Linux-sampleplugins.deb 	[sample plugins]
-	AudioManager-<git verison>-Linux-tests.deb		[tests including tests for sample plugins, installed in the ~/AudioMAnagerTests]
+	AudioManager-<git verison>-Linux-tests.deb		[tests including tests for sample plugins, 
+	       installed in the ~/AudioMAnagerTests]
 
 to create a tar.gz file of all sources (not including .git, build and bin folder,config files), you can do:
 
@@ -137,9 +146,14 @@ The commandline options of the AudioManager:
 		-L<Name> add command plugin directory with <Name> (full path)	
 		-R<Name> add routing plugin directory with <Name> (full path)	
 
-Telnet-Server:
-   If you compile your AudioManager with TelnetServer support (cmake -DWITH_TELNET=ON), you will be able to set with commandline argument -t the port number and
-   with -m the maximum supported connections. The default telnet port is 6060. 
+
+***********************************************************************************************************
+Telnet Server
+***********************************************************************************************************
+The audiomanager has a build- in telnetserver that serves for debuggin purposes.
+If you compile your AudioManager with TelnetServer support (cmake -DWITH_TELNET=ON), you will be able to 
+set with commandline argument -t the port number and with -m the maximum supported connections. 
+The default telnet port is 6060. 
    
    For example, launch a telnet session on port 6060:
       telnet localhost 6060
@@ -203,9 +217,39 @@ Telnet-Server:
       #Connection closed by foreign host.
 
 
-
+***********************************************************************************************************
+Code Formatting
+***********************************************************************************************************
 The source code if formatted with eclipse, the style sheet used can be found in the cmake folder:
 cmake/AudioManager_Codestyle.xml
+
+***********************************************************************************************************
+Working on the code & contribution
+***********************************************************************************************************
+First get the code from the git:
+        git clone https://<kavi-account>:<kavi-password>@git.genivi.org/srv/git/AudioManager
+
+Get an overview of all branches:
+        git branch
+
+Switch to the branch you want to work on (see versioning schmeme, the master is the feature branch) 
+and verify that it has switched (* changed)
+        git checkout <your branch>
+        git branch
+
+Best practice is to create a local branch based on the current branch:
+        git branch working_branch
+
+Start working, best practice is to commit smaller, compilable peaced during the work that makes it easier to 
+handle later on.
+
+If you want to commit you changes, send them to the audiomanager-dev list, you can create a patch like this:
+        git format-patch working_branch <your branch>
+
+This creates a set of patches that are published via the mailing list (this is already the submission under CLA). 
+The patches will be discussed and then merged & uploaded on the git. For more information about git checkout the 
+Genivi wiki and the stuff on the web.
+
 
                                  _..-------++._
                              _.-'/ |      _||  \"--._

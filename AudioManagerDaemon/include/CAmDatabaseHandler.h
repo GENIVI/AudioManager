@@ -1,24 +1,22 @@
 /**
- * Copyright (C) 2011, BMW AG
+ * Copyright (C) 2012, GENIVI Alliance, Inc.
+ * Copyright (C) 2012, BMW AG
  *
- * GeniviAudioMananger AudioManagerDaemon
+ * This file is part of GENIVI Project AudioManager.
+ *
+ * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contribution License Agreements.
+ *
+ * \copyright
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
+ * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ *
+ * \author Christian Mueller, christian.ei.mueller@bmw.de BMW 2011,2012
  *
  * \file CAmDatabaseHandler.h
- *
- * \date 20-Oct-2011 3:42:04 PM
- * \author Christian Mueller (christian.ei.mueller@bmw.de)
- *
- * \section License
- * GNU Lesser General Public License, version 2.1, with special exception (GENIVI clause)
- * Copyright (C) 2011, BMW AG Christian Mueller  Christian.ei.mueller@bmw.de
- *
- * This program is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License, version 2.1, as published by the Free Software Foundation.
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License, version 2.1, for more details.
- * You should have received a copy of the GNU Lesser General Public License, version 2.1, along with this program; if not, see <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * Note that the copyright holders assume that the GNU Lesser General Public License, version 2.1, may also be applicable to programs even in cases in which the program is not a library in the technical sense.
- * Linking AudioManager statically or dynamically with other modules is making a combined work based on AudioManager. You may license such other modules under the GNU Lesser General Public License, version 2.1. If you do not want to license your linked modules under the GNU Lesser General Public License, version 2.1, you may use the program under the following exception.
- * As a special exception, the copyright holders of AudioManager give you permission to combine AudioManager with software programs or libraries that are released under any license unless such a combination is not permitted by the license of such a software program or library. You may copy and distribute such a system following the terms of the GNU Lesser General Public License, version 2.1, including this special exception, for AudioManager and the licenses of the other code concerned.
- * Note that people who make modified versions of AudioManager are not obligated to grant this special exception for their modified versions; it is their choice whether to do so. The GNU Lesser General Public License, version 2.1, gives permission to release a modified version without this exception; this exception also makes it possible to release a modified version which carries forward this exception.
+ * For further information see http://www.genivi.org/.
  *
  */
 
@@ -26,9 +24,10 @@
 #define DATABASEHANDLER_H_
 
 #include "audiomanagertypes.h"
-#include <sqlite3.h>
 #include <map>
-#include <list>
+#include <vector>
+#include <string>
+#include <sqlite3.h>
 
 namespace am
 {
@@ -138,139 +137,39 @@ public:
     am_Error_e peekSource(const std::string& name, am_sourceID_t& sourceID);
     am_Error_e peekSinkClassID(const std::string& name, am_sinkClass_t& sinkClassID);
     am_Error_e peekSourceClassID(const std::string& name, am_sourceClass_t& sourceClassID);
-    /**
-     * checks for a certain mainConnection
-     * @param mainConnectionID to be checked for
-     * @return true if it exists
-     */
+
     bool existMainConnection(const am_mainConnectionID_t mainConnectionID) const;
-
-    /**
-     * checks if a CrossFader exists
-     * @param crossfaderID the ID of the crossfader to be checked
-     * @return true if exists
-     */
     bool existcrossFader(const am_crossfaderID_t crossfaderID) const;
-
-    /**
-     * checks if a connection already exists.
-     * Only takes sink, source and format information for search!
-     * @param connection the connection to be checked
-     * @return true if connections exists
-     */
     bool existConnection(const am_Connection_s connection);
-
-    /**
-     * checks if a connection with the given ID exists
-     * @param connectionID
-     * @return true if connection exits
-     */
     bool existConnectionID(const am_connectionID_t connectionID);
-    /**
-     * checks for a certain Source
-     * @param sourceID to be checked for
-     * @return true if it exists
-     */
     bool existSource(const am_sourceID_t sourceID) const;
-
-    /**
-     * checks if a source name or ID exists
-     * @param sourceID the sourceID
-     * @param name the name
-     * @return true if it exits
-     */
     bool existSourceNameOrID(const am_sourceID_t sourceID, const std::string& name) const;
-
-    /**
-     * checks if a name exits
-     * @param name the name
-     * @return true if it exits
-     */
     bool existSourceName(const std::string& name) const;
-    /**
-     * checks for a certain Sink
-     * @param sinkID to be checked for
-     * @return true if it exists
-     */
     bool existSink(const am_sinkID_t sinkID) const;
-
-    /**
-     * checks if a sink with the ID or the name exists
-     * @param sinkID the ID
-     * @param name the name
-     * @return true if it exists.
-     */
     bool existSinkNameOrID(const am_sinkID_t sinkID, const std::string& name) const;
-
-    /**
-     * checks if a sink with the name exists
-     * @param name the name
-     * @return true if it exists
-     */
     bool existSinkName(const std::string& name) const;
-
-    /**
-     * checks for a certain domain
-     * @param domainID to be checked for
-     * @return true if it exists
-     */
     bool existDomain(const am_domainID_t domainID) const;
-
-    /**
-     * checks for certain gateway
-     * @param gatewayID to be checked for
-     * @return true if it exists
-     */
     bool existGateway(const am_gatewayID_t gatewayID) const;
-
-    /**
-     * checks for certain SinkClass
-     * @param sinkClassID
-     * @return true if it exists
-     */
     bool existSinkClass(const am_sinkClass_t sinkClassID) const;
-
-    /**
-     * checks for certain sourceClass
-     * @param sourceClassID
-     * @return true if it exists
-     */
     bool existSourceClass(const am_sourceClass_t sourceClassID) const;
-
-    /**
-     * registers the Observer at the Database
-     * @param iObserver pointer to the observer
-     */
     void registerObserver(CAmDatabaseObserver *iObserver);
-
-    /**
-     * gives information about the visibility of a source
-     * @param sourceID the sourceID
-     * @return true if source is visible
-     */
     bool sourceVisible(const am_sourceID_t sourceID) const;
-
-    /**
-     * gives information about the visibility of a sink
-     * @param sinkID the sinkID
-     * @return true if source is visible
-     */
     bool sinkVisible(const am_sinkID_t sinkID) const;
 
 private:
-    am_timeSync_t calculateMainConnectionDelay(const am_mainConnectionID_t mainConnectionID) const;
-    bool sqQuery(const std::string& query);
+    am_timeSync_t calculateMainConnectionDelay(const am_mainConnectionID_t mainConnectionID) const; //!< calculates a new main connection delay
+    bool sqQuery(const std::string& query); //!< queries the database
     bool openDatabase(); //!< opens the database
     void createTables(); //!< creates all tables from the static table
-    sqlite3 *mDatabase; //!< pointer to the database
+    sqlite3 *mpDatabase; //!< pointer to the database
     std::string mPath; //!< path to the database
-    CAmDatabaseObserver *mDatabaseObserver; //!< pointer to the Observer
-    bool mFirstStaticSink;
-    bool mFirstStaticSource;
-    bool mFirstStaticGateway;
-    bool mFirstStaticSinkClass;
-    bool mFirstStaticSourceClass;
-    bool mFirstStaticCrossfader;
+    CAmDatabaseObserver *mpDatabaseObserver; //!< pointer to the Observer
+    bool mFirstStaticSink; //!< bool for dynamic range handling
+    bool mFirstStaticSource; //!< bool for dynamic range handling
+    bool mFirstStaticGateway; //!< bool for dynamic range handling
+    bool mFirstStaticSinkClass; //!< bool for dynamic range handling
+    bool mFirstStaticSourceClass; //!< bool for dynamic range handling
+    bool mFirstStaticCrossfader; //!< bool for dynamic range handling
     typedef std::map<am_gatewayID_t, std::vector<bool> > ListConnectionFormat; //!< type for list of connection formats
     ListConnectionFormat mListConnectionFormat; //!< list of connection formats
 };

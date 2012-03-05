@@ -1,9 +1,9 @@
 /** Copyright (c) 2012 GENIVI Alliance
  *  Copyright (c) 2012 BMW
  *
- *  \author Christian Mueller, BMW
+ *  \author Christian Mueller, christian.ei.mueller@bmw.de BMW 2011,2012
  *
- *  \section license
+ *  \copyright
  *  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction,
  *  including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
  *  subject to the following conditions:
@@ -12,6 +12,8 @@
  *  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
  *  THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
+ *  \file CAmSerializer.h
+ *  For further information see http://www.genivi.org/.
  */
 
 #ifndef CAMSERIALIZER_H_
@@ -74,7 +76,7 @@ private:
         {
             (void) pipe;
             (*mInstance.*mFunction)();
-            return true;
+            return (true);
         };
     };
 
@@ -99,7 +101,7 @@ private:
         {
             (void) pipe;
             (*mInstance.*mFunction)(mArgument);
-            return true;
+            return (true);
         };
     };
 
@@ -126,7 +128,7 @@ private:
         {
             (void) pipe;
             (*mInstance.*mFunction)(mArgument, mArgument1);
-            return true;
+            return (true);
         };
     };
 
@@ -157,7 +159,7 @@ private:
         {
             (void) pipe;
             (*mInstance.*mFunction)(mArgument, mArgument1, mArgument2);
-            return true;
+            return (true);
         }
         ;
     };
@@ -191,7 +193,7 @@ private:
         {
             (void) pipe;
             (*mInstance.*mFunction)(mArgument, mArgument1, mArgument2, mArgument3);
-            return true;
+            return (true);
         }
         ;
     };
@@ -220,13 +222,13 @@ private:
         {
             mRetval = (*mInstance.*mFunction)();
             write(pipe[1], this, sizeof(this));
-            return false;
+            return (false);
         }
         ;
 
         TretVal returnResults()
         {
-            return mRetval;
+            return (mRetval);
         }
     };
 
@@ -256,14 +258,14 @@ private:
         {
             mRetval = (*mInstance.*mFunction)(mArgument);
             write(pipe[1], this, sizeof(this));
-            return false;
+            return (false);
         }
         ;
 
         TretVal returnResults(Targ& argument)
         {
             argument = mArgument;
-            return mRetval;
+            return (mRetval);
         }
     };
 
@@ -290,14 +292,14 @@ private:
         {
             mRetval = (*mInstance.*mFunction)(mArgument);
             write(pipe[1], this, sizeof(this));
-            return false;
+            return (false);
         }
         ;
 
         TretVal returnResults(Targ& argument)
         {
             argument = mArgument;
-            return mRetval;
+            return (mRetval);
         }
     };
 
@@ -329,7 +331,7 @@ private:
         {
             mRetval = (*mInstance.*mFunction)(mArgument, mArgument1);
             write(pipe[1], this, sizeof(this));
-            return false;
+            return (false);
         }
         ;
 
@@ -337,7 +339,7 @@ private:
         {
             argument = mArgument;
             argument1 = mArgument1;
-            return mRetval;
+            return (mRetval);
         }
     };
 
@@ -366,7 +368,7 @@ private:
         {
             mRetval = (*mInstance.*mFunction)(mArgument, mArgument1);
             write(pipe[1], this, sizeof(this));
-            return false;
+            return (false);
         }
         ;
 
@@ -374,7 +376,7 @@ private:
         {
             argument = mArgument;
             argument1 = mArgument1;
-            return mRetval;
+            return (mRetval);
         }
     };
 
@@ -407,7 +409,7 @@ private:
         {
             mRetval = (*mInstance.*mFunction)(mArgument, mArgument1, mArgument2);
             write(pipe[1], this, sizeof(this));
-            return false;
+            return (false);
         }
         ;
 
@@ -416,7 +418,7 @@ private:
             argument = mArgument;
             argument1 = mArgument1;
             argument2 = mArgument2;
-            return mRetval;
+            return (mRetval);
         }
     };
 
@@ -450,7 +452,7 @@ private:
         {
             mRetval = (*mInstance.*mFunction)(mArgument, mArgument1, mArgument2, mArgument3);
             write(pipe[1], this, sizeof(this));
-            return false;
+            return (false);
         }
         ;
 
@@ -460,7 +462,7 @@ private:
             argument1 = mArgument1;
             argument2 = mArgument2;
             argument3 = mArgument3;
-            return mRetval;
+            return (mRetval);
         }
     };
 
@@ -494,7 +496,7 @@ private:
         {
             mRetval = (*mInstance.*mFunction)(mArgument, mArgument1, mArgument2, mArgument3, mArgument4);
             write(pipe[1], this, sizeof(this));
-            return false;
+            return (false);
         }
         ;
 
@@ -505,7 +507,7 @@ private:
             argument2 = mArgument2;
             argument3 = mArgument3;
             argument4 = mArgument4;
-            return mRetval;
+            return (mRetval);
         }
     };
 
@@ -540,7 +542,7 @@ private:
         {
             mRetval = (*mInstance.*mFunction)(mArgument, mArgument1, mArgument2, mArgument3, mArgument4, mArgument5);
             write(pipe[1], this, sizeof(this));
-            return false;
+            return (false);
         }
         ;
 
@@ -552,7 +554,7 @@ private:
             argument3 = mArgument3;
             argument4 = mArgument4;
             argument5 = mArgument5;
-            return mRetval;
+            return (mRetval);
         }
     };
 
@@ -913,8 +915,8 @@ public:
         (void) handle;
         (void) userData;
         if (mListDelegatePoiters.empty())
-            return false;
-        return true;
+            return (false);
+        return (true);
     }
 
     bool dispatcherCallback(const sh_pollHandle_t handle, void* userData)
@@ -926,8 +928,8 @@ public:
         if (delegatePoiter->call(mReturnPipe))
             delete delegatePoiter;
         if (mListDelegatePoiters.empty())
-            return false;
-        return true;
+            return (false);
+        return (true);
     }
 
     TAmShPollFired<CAmSerializer> receiverCallbackT;

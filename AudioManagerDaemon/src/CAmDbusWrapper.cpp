@@ -1,24 +1,22 @@
 /**
- * Copyright (C) 2011, BMW AG
+ * Copyright (C) 2012, GENIVI Alliance, Inc.
+ * Copyright (C) 2012, BMW AG
  *
- * GeniviAudioMananger AudioManagerDaemon
+ * This file is part of GENIVI Project AudioManager.
  *
- * \file CAmSocketHandler.cpp
+ * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contribution License Agreements.
  *
- * \date 20-Oct-2011 3:42:04 PM
- * \author Christian Mueller (christian.ei.mueller@bmw.de)
+ * \copyright
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
+ * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
- * \section License
- * GNU Lesser General Public License, version 2.1, with special exception (GENIVI clause)
- * Copyright (C) 2011, BMW AG Christian Mueller  Christian.ei.mueller@bmw.de
  *
- * This program is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License, version 2.1, as published by the Free Software Foundation.
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License, version 2.1, for more details.
- * You should have received a copy of the GNU Lesser General Public License, version 2.1, along with this program; if not, see <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * Note that the copyright holders assume that the GNU Lesser General Public License, version 2.1, may also be applicable to programs even in cases in which the program is not a library in the technical sense.
- * Linking AudioManager statically or dynamically with other modules is making a combined work based on AudioManager. You may license such other modules under the GNU Lesser General Public License, version 2.1. If you do not want to license your linked modules under the GNU Lesser General Public License, version 2.1, you may use the program under the following exception.
- * As a special exception, the copyright holders of AudioManager give you permission to combine AudioManager with software programs or libraries that are released under any license unless such a combination is not permitted by the license of such a software program or library. You may copy and distribute such a system following the terms of the GNU Lesser General Public License, version 2.1, including this special exception, for AudioManager and the licenses of the other code concerned.
- * Note that people who make modified versions of AudioManager are not obligated to grant this special exception for their modified versions; it is their choice whether to do so. The GNU Lesser General Public License, version 2.1, gives permission to release a modified version without this exception; this exception also makes it possible to release a modified version which carries forward this exception.
+ * \author Christian Mueller, christian.ei.mueller@bmw.de BMW 2011,2012
+ *
+ * \file CAmDbusWrapper.cpp
+ * For further information see http://www.genivi.org/.
  *
  */
 
@@ -35,6 +33,9 @@
 namespace am
 {
 
+/**
+ * introspectio header
+ */
 #define ROOT_INTROSPECT_XML												\
 DBUS_INTROSPECT_1_0_XML_DOCTYPE_DECL_NODE								\
 "<node>"																\
@@ -99,12 +100,12 @@ CAmDbusWrapper::CAmDbusWrapper(CAmSocketHandler* socketHandler) :
     int ret = dbus_bus_request_name(mpDbusConnection, DBUS_SERVICE_PREFIX, DBUS_NAME_FLAG_DO_NOT_QUEUE, &mDBusError);
     if (dbus_error_is_set(&mDBusError))
     {
-        logError("DBusWrapper::DBusWrapper Name Error",mDBusError.message);
+        logError("DBusWrapper::DBusWrapper Name Error", mDBusError.message);
         dbus_error_free(&mDBusError);
     }
     if (DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER != ret)
     {
-        logError("DBusWrapper::DBusWrapper Wrapper is not the Primary Owner ! Another instance already running?",ret);
+        logError("DBusWrapper::DBusWrapper Wrapper is not the Primary Owner ! Another instance already running?", ret);
         exit(1);
     }
 }
@@ -123,9 +124,16 @@ CAmDbusWrapper::~CAmDbusWrapper()
     }
 }
 
+/**
+ * registers a callback that is entered as path below the main path.
+ * The configuration of the mainpath is done via DBusConfiguration.h
+ * @param vtable the vtable that holds a pointer to the callback that is called when the path is called from the dbus
+ * @param path the name of the path
+ * @param userdata pointer to the class that will handle the callback
+ */
 void CAmDbusWrapper::registerCallback(const DBusObjectPathVTable* vtable, const std::string& path, void* userdata)
 {
-    logInfo("DBusWrapper::~registerCallback register callback:",path);
+    logInfo("DBusWrapper::~registerCallback register callback:", path);
 
     std::string completePath = std::string(DBUS_SERVICE_OBJECT_PATH) + "/" + path;
     dbus_error_init(&mDBusError);
@@ -133,12 +141,19 @@ void CAmDbusWrapper::registerCallback(const DBusObjectPathVTable* vtable, const 
     dbus_connection_register_object_path(mpDbusConnection, completePath.c_str(), vtable, userdata);
     if (dbus_error_is_set(&mDBusError))
     {
-        logError("DBusWrapper::registerCallack error: ",mDBusError.message);
+        logError("DBusWrapper::registerCallack error: ", mDBusError.message);
         dbus_error_free(&mDBusError);
     }
     mListNodes.push_back(path);
 }
 
+/**
+ * internal callback for the root introspection
+ * @param conn
+ * @param msg
+ * @param reference
+ * @return
+ */
 DBusHandlerResult CAmDbusWrapper::cbRootIntrospection(DBusConnection *conn, DBusMessage *msg, void *reference)
 {
     logInfo("DBusWrapper::~cbRootIntrospection called:");
@@ -180,14 +195,18 @@ DBusHandlerResult CAmDbusWrapper::cbRootIntrospection(DBusConnection *conn, DBus
         // free the reply
         dbus_message_unref(reply);
 
-        return DBUS_HANDLER_RESULT_HANDLED;
+        return (DBUS_HANDLER_RESULT_HANDLED);
     }
     else
     {
-        return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+        return (DBUS_HANDLER_RESULT_NOT_YET_HANDLED);
     }
 }
 
+/**
+ * returns the dbus connection
+ * @param connection pointer to the connection
+ */
 void CAmDbusWrapper::getDBusConnection(DBusConnection *& connection) const
 {
     connection = mpDbusConnection;
@@ -197,7 +216,7 @@ dbus_bool_t CAmDbusWrapper::addWatch(DBusWatch *watch, void *userData)
 {
     mpReference = (CAmDbusWrapper*) userData;
     assert(mpReference!=0);
-    return mpReference->addWatchDelegate(watch, userData);
+    return (mpReference->addWatchDelegate(watch, userData));
 }
 
 dbus_bool_t CAmDbusWrapper::addWatchDelegate(DBusWatch * watch, void* userData)
@@ -216,14 +235,14 @@ dbus_bool_t CAmDbusWrapper::addWatchDelegate(DBusWatch * watch, void* userData)
             event |= POLLOUT;
     }
 
-    logInfo("DBusWrapper::addWatchDelegate entered new watch, fd=",dbus_watch_get_unix_fd(watch),"event flag=",event);
+    logInfo("DBusWrapper::addWatchDelegate entered new watch, fd=", dbus_watch_get_unix_fd(watch), "event flag=", event);
     am_Error_e error = mpSocketHandler->addFDPoll(dbus_watch_get_unix_fd(watch), event, NULL, &pDbusFireCallback, &pDbusCheckCallback, &pDbusDispatchCallback, watch, handle);
 
     //if everything is alright, add the watch and the handle to our map so we know this relationship
     if (error == E_OK && handle != 0)
     {
         mMapHandleWatch.insert(std::make_pair(watch, handle));
-        return true;
+        return (true);
     }
     logError("DBusWrapper::addWatchDelegate entering watch failed");
     return (true);
@@ -243,7 +262,7 @@ void CAmDbusWrapper::removeWatchDelegate(DBusWatch *watch, void *userData)
     iterator = mMapHandleWatch.find(watch);
     if (iterator != mMapHandleWatch.end())
         mpSocketHandler->removeFDPoll(iterator->second);
-    logInfo("DBusWrapper::removeWatch removed watch with handle",iterator->second);
+    logInfo("DBusWrapper::removeWatch removed watch with handle", iterator->second);
     mMapHandleWatch.erase(iterator);
 }
 
@@ -279,13 +298,13 @@ dbus_bool_t CAmDbusWrapper::addTimeout(DBusTimeout *timeout, void* userData)
 {
     mpReference = (CAmDbusWrapper*) userData;
     assert(mpReference!=0);
-    return mpReference->addTimeoutDelegate(timeout, userData);
+    return (mpReference->addTimeoutDelegate(timeout, userData));
 }
 
 dbus_bool_t CAmDbusWrapper::addTimeoutDelegate(DBusTimeout *timeout, void* userData)
 {
     if (!dbus_timeout_get_enabled(timeout))
-        return false;
+        return (false);
 
     //calculate the timeout in timeval
     timespec pollTimeout;
@@ -296,7 +315,7 @@ dbus_bool_t CAmDbusWrapper::addTimeoutDelegate(DBusTimeout *timeout, void* userD
     //prepare handle and callback. new is eval, but there is no other choice because we need the pointer!
     sh_timerHandle_t* handle = new sh_timerHandle_t;
     mpListTimerhandles.push_back(handle);
-    CAmShTimerCallBack* buffer = &pDbusTimerCallback;
+    IAmShTimerCallBack* buffer = &pDbusTimerCallback;
 
     //add the timer to the pollLoop
     mpSocketHandler->addTimer(pollTimeout, buffer, *handle, timeout);
@@ -307,7 +326,7 @@ dbus_bool_t CAmDbusWrapper::addTimeoutDelegate(DBusTimeout *timeout, void* userD
     //save timeout in Socket context
     userData = timeout;
     logInfo("DBusWrapper::addTimeoutDelegate a timeout was added");
-    return true;
+    return (true);
 }
 
 void CAmDbusWrapper::removeTimeout(DBusTimeout *timeout, void* userData)
@@ -354,8 +373,8 @@ bool am::CAmDbusWrapper::dbusDispatchCallback(const sh_pollHandle_t handle, void
     if (dbus_connection_dispatch(mpDbusConnection) == DBUS_DISPATCH_COMPLETE)
         returnVal = false;
     dbus_connection_unref(mpDbusConnection);
-//    logInfo("DBusWrapper::dbusDispatchCallback was called");
-    return returnVal;
+    //logInfo("DBusWrapper::dbusDispatchCallback was called");
+    return (returnVal);
 }
 
 bool am::CAmDbusWrapper::dbusCheckCallback(const sh_pollHandle_t handle, void *userData)
@@ -367,8 +386,8 @@ bool am::CAmDbusWrapper::dbusCheckCallback(const sh_pollHandle_t handle, void *u
     if (dbus_connection_get_dispatch_status(mpDbusConnection) == DBUS_DISPATCH_DATA_REMAINS)
         returnVal = true;
     dbus_connection_unref(mpDbusConnection);
-//    logInfo("DBusWrapper::dbusCheckCallback was called");
-    return returnVal;
+    //logInfo("DBusWrapper::dbusCheckCallback was called");
+    return (returnVal);
 }
 
 void am::CAmDbusWrapper::dbusFireCallback(const pollfd pollfd, const sh_pollHandle_t handle, void *userData)
@@ -392,7 +411,7 @@ void am::CAmDbusWrapper::dbusFireCallback(const pollfd pollfd, const sh_pollHand
     dbus_connection_ref(mpDbusConnection);
     dbus_watch_handle(watch, flags);
     dbus_connection_unref(mpDbusConnection);
-//    logInfo("DBusWrapper::dbusFireCallback was called");
+    //logInfo("DBusWrapper::dbusFireCallback was called");
 }
 
 void CAmDbusWrapper::toggleTimeoutDelegate(DBusTimeout *timeout, void* userData)
@@ -414,7 +433,8 @@ void CAmDbusWrapper::toggleTimeoutDelegate(DBusTimeout *timeout, void* userData)
     else
     {
         mpSocketHandler->stopTimer(*handle);
-    }logInfo("DBusWrapper::toggleTimeoutDelegate was called");
+    }
+    logInfo("DBusWrapper::toggleTimeoutDelegate was called");
 }
 
 void CAmDbusWrapper::dbusTimerCallback(sh_timerHandle_t handle, void *userData)

@@ -1,9 +1,9 @@
 /** Copyright (c) 2012 GENIVI Alliance
  *  Copyright (c) 2012 BMW
  *
- *  \author Christian Mueller, BMW
+ *  \author Christian Mueller, christian.ei.mueller@bmw.de BMW 2011,2012
  *
- *  \section license
+ *  \copyright
  *  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction,
  *  including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
  *  subject to the following conditions:
@@ -12,78 +12,78 @@
  *  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
  *  THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
+ *  \file CAmDltWrapper.h
+ *  For further information see http://www.genivi.org/.
  */
 
 #ifndef DLTWRAPPER_H_
 #define DLTWRAPPER_H_
 
 #include "config.h"
+#include <string>
 
 #ifdef WITH_DLT
 #include <dlt/dlt.h>
 #else
 
-#include <stdint.h>
+#include <cstdint>
 #include <sstream>
 
-namespace am {
+namespace am
+{
 
 #define DLT_USER_BUF_MAX_SIZE 2048
 
-/**
- * This structure is used for every context used in an application.
- */
-typedef struct
-{
-    char contextID[4];                            /**< context id */
-    int32_t log_level_pos;                        /**< offset in user-application context field */
-} DltContext;
+    /**
+     * This structure is used for every context used in an application.
+     */
+    typedef struct
+    {
+        char contextID[4]; /**< context id */
+        int32_t log_level_pos; /**< offset in user-application context field */
+    }DltContext;
 
-/**
- * Definitions of DLT log level
- */
-typedef enum
-{
-    DLT_LOG_DEFAULT =             -1,   /**< Default log level */
-    DLT_LOG_OFF     =           0x00,   /**< Log level off */
-    DLT_LOG_FATAL   =           0x01,   /**< fatal system error */
-    DLT_LOG_ERROR   =           0x02,   /**< error with impact to correct functionality */
-    DLT_LOG_WARN    =           0x03,   /**< warning, correct behaviour could not be ensured */
-    DLT_LOG_INFO    =           0x04,   /**< informational */
-    DLT_LOG_DEBUG   =           0x05,   /**< debug  */
-    DLT_LOG_VERBOSE =           0x06    /**< highest grade of information */
-} DltLogLevelType;
+    /**
+     * Definitions of DLT log level
+     */
+    typedef enum
+    {
+        DLT_LOG_DEFAULT = -1, /**< Default log level */
+        DLT_LOG_OFF = 0x00, /**< Log level off */
+        DLT_LOG_FATAL = 0x01, /**< fatal system error */
+        DLT_LOG_ERROR = 0x02, /**< error with impact to correct functionality */
+        DLT_LOG_WARN = 0x03, /**< warning, correct behaviour could not be ensured */
+        DLT_LOG_INFO = 0x04, /**< informational */
+        DLT_LOG_DEBUG = 0x05, /**< debug  */
+        DLT_LOG_VERBOSE = 0x06 /**< highest grade of information */
+    }DltLogLevelType;
 
-/**
- * This structure is used for context data used in an application.
- */
-typedef struct
-{
-    DltContext *handle;                           /**< pointer to DltContext */
-    std::stringstream buffer;                     /**< buffer for building log message*/
-    int32_t log_level;                            /**< log level */
-    int32_t trace_status;                         /**< trace status */
-    int32_t args_num;                             /**< number of arguments for extended header*/
-    uint8_t mcnt;                                 /**< message counter */
-    char* context_description;                    /**< description of context */
-} DltContextData;
+    /**
+     * This structure is used for context data used in an application.
+     */
+    typedef struct
+    {
+        DltContext *handle; /**< pointer to DltContext */
+        std::stringstream buffer; /**< buffer for building log message*/
+        int32_t log_level; /**< log level */
+        int32_t trace_status; /**< trace status */
+        int32_t args_num; /**< number of arguments for extended header*/
+        uint8_t mcnt; /**< message counter */
+        char* context_description; /**< description of context */
+    }DltContextData;
 
 #define DLT_DECLARE_CONTEXT(CONTEXT) \
 DltContext CONTEXT;
-
 
 #define DLT_IMPORT_CONTEXT(CONTEXT) \
 extern DltContext CONTEXT;
 
 #endif // WITH_DLT
-
-#include <string>
-
 namespace am
 {
 
 /**
- * Wraps around the dlt wrapper. This class is instantiated as a singleton and offers a default
+ * Wraps around the dlt. This class is instantiated as a singleton and offers a default
  * context (maincontext) that is registered to log to.
  * Logging under the default context can simply be done with the logInfo/logError templates with up to 10 values at a time.
  * For logging with a different context, you can use the log template. First register a context with registerContext.
@@ -114,8 +114,8 @@ public:
 private:
     CAmDltWrapper(const bool enableNoDLTDebug); //is private because of singleton pattern
 #ifndef WITH_DLT
-    template<class T> void appendNoDLT(T value);
-    bool mEnableNoDLTDebug;
+            template<class T> void appendNoDLT(T value);
+            bool mEnableNoDLTDebug;
 #endif
     DltContext mDltContext; //!< the default context
     DltContextData mDltContextData; //!< contextdata
@@ -129,7 +129,7 @@ private:
  */
 inline CAmDltWrapper* getWrapper()
 {
-    return CAmDltWrapper::instance();
+    return (CAmDltWrapper::instance());
 }
 
 /**

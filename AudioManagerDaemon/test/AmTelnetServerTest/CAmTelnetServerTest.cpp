@@ -1,18 +1,35 @@
-/*
- * CAmTelnetServerTest.cpp
+/**
+ * Copyright (C) 2012, GENIVI Alliance, Inc.
+ * Copyright (C) 2012, BMW AG
  *
- *  Created on: Feb 7, 2012
- *      Author: demo
+ * This file is part of GENIVI Project AudioManager.
+ *
+ * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contribution License Agreements.
+ *
+ * \copyright
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
+ * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ *
+ * \author Christian Mueller, christian.ei.mueller@bmw.de BMW 2011,2012
+ * \author Frank Herchet, frank.fh.herchet@bmw.de BMW 2012
+ *
+ * For further information see http://www.genivi.org/.
+ *
  */
 
-#include <sys/socket.h> /* for socket(), connect(), (), and recv() */
-#include <arpa/inet.h>  /* for sockaddr_in and inet_addr() */
-#include <netdb.h> /* for  struct hostent */
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <string>
 
 #include "CAmTelnetServerTest.h"
 #include "CAmCommandReceiver.h"
 #include "CAmRoutingReceiver.h"
 #include "CAmControlReceiver.h"
+#include "config.h"
 
 
 using namespace testing;
