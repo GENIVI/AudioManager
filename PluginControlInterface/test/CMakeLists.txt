@@ -1,0 +1,56 @@
+cmake_minimum_required(VERSION 2.6)
+
+PROJECT(AmControlReceiverShadowTest)
+
+set(EXECUTABLE_OUTPUT_PATH ${TEST_EXECUTABLE_OUTPUT_PATH})
+FIND_PACKAGE(GTest REQUIRED) 
+
+find_package (Threads)
+FIND_PACKAGE(PkgConfig)
+pkg_check_modules(DLT REQUIRED automotive-dlt)
+
+INCLUDE_DIRECTORIES(   
+    ${STD_INCLUDE_DIRS}
+    ${CMAKE_SOURCE_DIR} 
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${AUDIO_include_FOLDER}
+    ${CMAKE_SOURCE_DIR} 
+    ${DLT_INCLUDE_DIRS}
+    ${include_FOLDER}
+    ${GTEST_INCLUDE_DIR}
+    ${DBUS_INCLUDE_DIR}
+    ${DBUS_ARCH_INCLUDE_DIR}
+    "../../AudioManagerDaemon/include"
+    "../include"
+)
+   
+file(GLOB CONTROL_RECEIVER_PLUGIN_INTERFACE_SRCS_CXX 
+     "../../AudioManagerDaemon/src/CAmSocketHandler.cpp"
+     "../../AudioManagerDaemon/src/CAmDltWrapper.cpp"     
+     "../src/IAmControlReceiverShadow.cpp"  
+     "CAmControlReceiverShadowTest.cpp" 
+)
+
+
+ADD_EXECUTABLE(AmControlReceiverShadowTest ${CONTROL_RECEIVER_PLUGIN_INTERFACE_SRCS_CXX})
+
+
+TARGET_LINK_LIBRARIES(AmControlReceiverShadowTest 
+    ${DLT_LIBRARIES}
+    ${CMAKE_DL_LIBS}
+    ${CMAKE_THREAD_LIBS_INIT}
+    ${GTEST_LIBRARIES}
+    ${DBUS_LIBRARY}
+    ${SQLITE_LIBRARIES}
+    gmock
+)
+
+INSTALL(TARGETS AmControlReceiverShadowTest 
+        DESTINATION "~/AudioManagerTest/"
+        PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
+        COMPONENT tests
+)
+
+SET(ADD_DEPEND "audiomanager-bin" "dlt" "libdbus-1-3(>=1.2.16)" "libgtest-dev(>=1.6.0-1)" "google-mock" "libpthread-stubs0")
+set_property(GLOBAL APPEND PROPERTY tests_prop "${ADD_DEPEND}")
+

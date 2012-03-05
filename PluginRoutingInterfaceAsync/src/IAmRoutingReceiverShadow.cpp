@@ -33,6 +33,7 @@
 #include <errno.h>
 #include <string>
 #include "shared/CAmDltWrapper.h"
+#include "shared/CAmSerializer.h"
 
 using namespace am;
 

@@ -26,8 +26,6 @@
 #define ROUTINGRECEIVERASYNCSHADOW_H_
 
 #include "routing/IAmRoutingReceive.h"
-#include <pthread.h>
-#include <queue>
 #include "shared/CAmSerializer.h"
 #include "shared/CAmSocketHandler.h"
 

@@ -31,7 +31,6 @@
 #include "MockIAmRoutingReceive.h"
 #include "shared/CAmSocketHandler.h"
 #include "shared/CAmSerializer.h"
-#include "../../AudioManagerDaemon/include/CAmRoutingSender.h"
 
 #define UNIT_TEST 1
 

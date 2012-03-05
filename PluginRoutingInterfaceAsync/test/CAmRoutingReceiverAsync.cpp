@@ -28,6 +28,7 @@
 #include "TAmPluginTemplate.h"
 #include "MockIAmRoutingReceive.h"
 #include "shared/CAmDltWrapper.h"
+#include "routing/IAmRoutingSend.h"
 
 using namespace am;
 using namespace testing;
