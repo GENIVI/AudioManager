@@ -29,7 +29,7 @@ pkg_check_modules(DLT REQUIRED automotive-dlt)
 
 INCLUDE_DIRECTORIES(   
     ${CMAKE_CURRENT_BINARY_DIR}
-    ${AUDIO_include_FOLDER}
+    ${AUDIO_INCLUDE_FOLDER}
     ${DBUS_ARCH_INCLUDE_DIR}
     ${DBUS_include_FOLDER} 
     ${CMAKE_SOURCE_DIR} 
