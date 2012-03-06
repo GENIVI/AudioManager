@@ -40,20 +40,20 @@ COMPILE PROGRAMS
 ***********************************************************************************************************
 - compile options with default values:
 
-	 CMAKE_BUILD_TYPE                                                                               
-	 CMAKE_INSTALL_PREFIX             /usr/local                                                    
-	 USE_BUILD_LIBS                   OFF                                                           
-	 WITH_DBUS_WRAPPER                ON                                                            
-	 WITH_DOCUMENTATION               OFF                                                           
-	 WITH_MAIN                        ON                                                            
-	 WITH_PLUGIN_COMMAND              ON                                                            
-	 WITH_PLUGIN_CONTROL              ON                                                            
-	 WITH_PLUGIN_ROUTING              ON                                                            
-	 WITH_PPOLL                       ON                                                            
-	 WITH_SIMPLEDBUS_LOOP             OFF                                                           
-	 WITH_SOCKETHANDLER_LOOP          ON                                                            
-	 WITH_TELNET                      OFF                                                           
-	 WITH_TESTS                       ON  
+     CMAKE_BUILD_TYPE                                                                                                                                       
+     CMAKE_INSTALL_PREFIX             /usr/local                                                                                                            
+     GLIB_DBUS_TYPES_TOLERANT         ON                                                                                                                    
+     USE_BUILD_LIBS                   ON                                                                                                                    
+     WITH_DBUS_WRAPPER                ON                                                                                                                    
+     WITH_DLT                         ON                                                                                                                    
+     WITH_DOCUMENTATION               OFF                                                                                                                   
+     WITH_MAIN                        ON                                                                                                                    
+     WITH_PLUGIN_COMMAND              ON                                                                                                                    
+     WITH_PLUGIN_CONTROL              ON                                                                                                                    
+     WITH_PLUGIN_ROUTING              ON                                                                                                                    
+     WITH_PPOLL                       ON                                                                                                                    
+     WITH_TELNET                      ON                                                                                                                    
+     WITH_TESTS                       ON 
  
 
 In order to change these options, you can modify this values with ccmake, do the appropriate changes in 

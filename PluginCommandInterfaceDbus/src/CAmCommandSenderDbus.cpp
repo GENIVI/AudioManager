@@ -1,4 +1,4 @@
-/** Copyright (c) 2012 GENIVI Alliance
+/**
  *  Copyright (c) 2012 BMW
  *
  *  \author Christian Mueller, christian.ei.mueller@bmw.de BMW 2011,2012
@@ -26,9 +26,9 @@
 #include "shared/CAmDbusWrapper.h"
 
 
+using namespace am;
 DLT_DECLARE_CONTEXT(commandDbus)
 
-using namespace am;
 
 /**
  * factory for plugin loading

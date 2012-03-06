@@ -1,5 +1,4 @@
 /**
- * Copyright (C) 2012, GENIVI Alliance, Inc.
  * Copyright (C) 2012, BMW AG
  *
  * This file is part of GENIVI Project AudioManager.

@@ -1,5 +1,5 @@
-/** Copyright (c) 2012 GENIVI Alliance
- *  Copyright (c) 2012 BMW
+/**
+ *  Copyright (C) 2012, BMW AG
  *
  *  \author Christian Mueller, christian.ei.mueller@bmw.de BMW 2011,2012
  *

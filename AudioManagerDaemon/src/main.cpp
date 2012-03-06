@@ -1,5 +1,4 @@
 /**
- * Copyright (C) 2012, GENIVI Alliance, Inc.
  * Copyright (C) 2012, BMW AG
  *
  * This file is part of GENIVI Project AudioManager.
@@ -21,12 +20,12 @@
  *
  */
 
-//todo: create systemd compatibility
-//todo: all communication like all plugins loaded etc...
-//todo: check the startup sequence. Dbus shall be activated last...
-//todo: there is a bug in the visible flags of sinks and sources. fix it.
-//todo: clean up startup sequences controller, command and routing interfaces----
-//todo: package generation only works if package directory exists...
+/**
+ * \todo create systemd compatibility
+ * \todo all communication like all plugins loaded etc...
+ * \todo check the startup sequence. Dbus shall be activated last...
+ * \bug package generation only works if package directory exists...
+ */
 
 #include "config.h"
 
@@ -61,9 +60,9 @@
 #include "shared/CAmSocketHandler.h"
 
 
+using namespace am;
 DLT_DECLARE_CONTEXT(AudioManager)
 
-using namespace am;
 
 const char* USAGE_DESCRIPTION = "Usage:\tAudioManagerDaemon [options]\n"
         "options:\t\n"
@@ -265,7 +264,7 @@ int main(int argc, char *argv[])
     //parse the commandline options
     parseCommandLine(argc, (char**) argv);
 
-    CAmDltWrapper::instance(true)->registerApp("AudioManagerDeamon", "AudioManagerDeamon");
+    CAmDltWrapper::instance(enableNoDLTDebug)->registerApp("AudioManagerDeamon", "AudioManagerDeamon");
     CAmDltWrapper::instance()->registerContext(AudioManager, "Main", "Main Context");
     logInfo("The Audiomanager is started");
     logInfo("The version of the Audiomanager", DAEMONVERSION);

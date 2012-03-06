@@ -1,4 +1,3 @@
-# Copyright (C) 2012, GENIVI Alliance, Inc.
 # Copyright (C) 2012, BMW AG
 #
 # This file is part of GENIVI Project AudioManager.
@@ -117,11 +116,11 @@ SET(DOXY_PROTOTYPE ${CMAKE_SOURCE_DIR}/cmake/DoxyFile.in)
 SET(DOXY_FILE ${CMAKE_CURRENT_BINARY_DIR}/DoxyFile)
 
 CONFIGURE_FILE( ${CMAKE_SOURCE_DIR}/cmake/config.cmake ${CMAKE_SOURCE_DIR}/include/config.h )
-CONFIGURE_FILE( ${CMAKE_SOURCE_DIR}/cmake/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/DoxyFile )
+CONFIGURE_FILE( ${CMAKE_SOURCE_DIR}/AudioManagerDaemon/doc/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/DoxyFile )
 
 
 IF(WITH_DLT)    
-    pkg_check_modules(DLT REQUIRED automotive-dlt>=2.2.0)   #this is due to BUGFIX [GDLT-41]
+    pkg_check_modules(DLT REQUIRED automotive-dlt>=2.5.0)   #this is due to BUGFIX [GDLT-41]
 ENDIF(WITH_DLT)
 
 

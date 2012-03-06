@@ -1,5 +1,4 @@
 /**
- * Copyright (C) 2012, GENIVI Alliance, Inc.
  * Copyright (C) 2012, BMW AG
  *
  * This file is part of GENIVI Project AudioManager.
@@ -25,6 +24,7 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <string.h>
 
 namespace am
 {
@@ -46,6 +46,8 @@ void CAmDltWrapper::unregisterContext(DltContext & handle)
 {
 #ifdef WITH_DLT
     dlt_unregister_context(&handle);
+#else
+    (void) handle;
 #endif
 }
 
@@ -68,6 +70,9 @@ void CAmDltWrapper::registerApp(const char *appid, const char *description)
     dlt_register_app(appid, description);
     //register a default context
     dlt_register_context(&mDltContext, "def", "default Context registered by DLTWrapper CLass");
+#else
+    (void) appid;
+    (void) description;
 #endif
 }
 
@@ -76,8 +81,8 @@ void CAmDltWrapper::registerContext(DltContext& handle, const char *contextid, c
 #ifdef WITH_DLT
     dlt_register_context(&handle, contextid, description);
 #else
+    (void) handle;
     memcpy(&mDltContext.contextID,contextid,4);
-    strlen(description);
     const size_t str_len = strlen(description);
     if(str_len < 2000)
     {
@@ -89,6 +94,7 @@ void CAmDltWrapper::registerContext(DltContext& handle, const char *contextid, c
 
 void CAmDltWrapper::init(DltLogLevelType loglevel, DltContext* context)
 {
+    (void) loglevel;
     if (!context)
         context = &mDltContext;
 #ifdef WITH_DLT
