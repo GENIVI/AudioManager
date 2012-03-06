@@ -27,7 +27,10 @@
 #include "CAmDltWrapper.h"
 #include "CAmSocketHandler.h"
 
-//todo: performance improvement we could implement a memory pool that is more efficient here and avoids allocation and deallocation times.
+/**
+ * todo: performance improvement we could implement a memory pool that is more efficient here and avoids
+ * allocation and deallocation times.
+ */
 
 namespace am
 {
@@ -36,8 +39,11 @@ namespace am
  * The constructor must be called within the main threadcontext, after that using the
  * overloaded template function call will serialize all calls and call them within the
  * main thread context.\n
- * If you want to use synchronous calls make sure that you use one instance of this class
- * per thread otherwise you could be lost in never returning calls.
+ * \warning asynchronous calls may be used in the mainthread context, but if you want to use synchronous calls make sure that you use one
+ * instance of this class per thread otherwise you could be lost in never returning calls.\n
+ * Examples of the usage can be found in IAmCommandReceiverShadow of the ControlPlugin or IAmRoutingReceiverShadow of the
+ * PluginRoutingInterfaceAsync
+ *
  */
 class CAmSerializer
 {
@@ -269,6 +275,9 @@ private:
         }
     };
 
+    /**
+     * template for synchronous calls with one argument on a const function
+     */
     template<class TClass, typename TretVal, typename TargCall, typename Targ> class CAmSyncOneArgConstDelegate: public CAmDelegate
     {
     private:
@@ -343,6 +352,9 @@ private:
         }
     };
 
+    /**
+     * template for synchronous calls with two arguments on a const function
+     */
     template<class TClass, typename TretVal, typename TargCall, typename TargCall1, typename Targ, typename Targ1> class CAmSyncTwoArgConstDelegate: public CAmDelegate
     {
     private:
@@ -466,6 +478,9 @@ private:
         }
     };
 
+    /**
+     * delegate template for five arguments
+     */
     template<class TClass, typename TretVal, typename TargCAll, typename TargCall1, typename TargCall2, typename TargCall3, typename TargCall4, typename Targ, typename Targ1, typename Targ2, typename Targ3, typename Targ4> class CAmSyncFiveArgDelegate: public CAmDelegate
     {
     private:
@@ -511,6 +526,9 @@ private:
         }
     };
 
+    /**
+     * template for synchronous calls with six arguments
+     */
     template<class TClass, typename TretVal, typename TargCAll, typename TargCall1, typename TargCall2, typename TargCall3, typename TargCall4, typename TargCall5, typename Targ, typename Targ1, typename Targ2, typename Targ3, typename Targ4, typename Targ5> class CAmSyncSixArgDelegate: public CAmDelegate
     {
     private:
@@ -579,7 +597,8 @@ public:
      * calls a function with no arguments threadsafe
      * @param instance the instance of the class that shall be called
      * @param function the function that shall be called as memberfunction pointer.
-     * Here is an example:
+     * @tparam TClass1 the type of the Class to be called
+     * \section ex Example:
      * @code
      * class myClass
      * {
@@ -602,7 +621,10 @@ public:
      * calls a function with one arguments asynchronously threadsafe
      * @param instance the instance of the class that shall be called
      * @param function the function that shall be called as memberfunction pointer.
-     * Here is an example:
+     * @param argument the argument
+     * @tparam TClass1 the type of the Class to be called
+     * @tparam Targ the type of the argument to be called
+     * \section ex Example:
      * @code
      * class myClass
      * {
@@ -613,6 +635,7 @@ public:
      * myClass instanceMyClass;
      * serial<CommandSender,int>(&instanceMyClass,&myClass::myfunction,k);
      * @endcode
+     *
      */
     template<class TClass1, class Targ>
     void asyncCall(TClass1* instance, void (TClass1::*function)(Targ), Targ argument)
@@ -623,10 +646,13 @@ public:
 
     /**
      * calls a function with two arguments asynchronously threadsafe. for more see asyncCall with one argument
-     * @param instance
-     * @param function
-     * @param argument
-     * @param argument1
+     * @param instance pointer to the instance of the class
+     * @param function memberfunction poitner
+     * @param argument the first argument
+     * @param argument1 the second argument
+     * @tparam TClass1 the type of the Class to be called
+     * @tparam Targ the type of the argument to be called
+     * @tparam Targ1 the type of the first argument to be called
      */
     template<class TClass1, class Targ, class Targ1>
     void asyncCall(TClass1* instance, void (TClass1::*function)(Targ argument, Targ1 argument1), Targ argument, Targ1 argument1)
@@ -636,26 +662,7 @@ public:
     }
 
     /**
-     * calls a function with three arguments asynchronously threadsafe. for more see asyncCall with one argument
-     * @param instance
-     * @param function
-     * @param argument
-     * @param argument1    template<class TClass1, class TretVal, class Targ, class Targ1>
-     void syncCall(TClass1* instance, TretVal(TClass1::*function)(Targ,Targ1), TretVal& retVal, Targ& argument, Targ1& argument1)
-     {
-     CAmSyncTwoArgDelegate<TClass1, TretVal, Targ, Targ1>* p(new CAmSyncTwoArgDelegate<TClass1, TretVal, Targ, Targ1>(instance, function, argument, argument1));
-     send(static_cast<CAmDelegagePtr>(p));
-     int numReads;
-     CAmDelegagePtr ptr;
-     if ((numReads=read(mReturnPipe[0],&ptr, sizeof(ptr))) == -1)
-     {
-     logError("CAmSerializer::receiverCallback could not read pipe!");
-     throw std::runtime_error("CAmSerializer Could not read pipe!");
-     }
-     //working with friend class here is not the finest of all programming stiles but it works...
-     retVal=p->returnResults(argument,argument1);
-     }
-     * @param argument2
+     * calls a function with three arguments asynchronously threadsafe. for more see other asycCall
      */
     template<class TClass1, class Targ, class Targ1, class Targ2>
     void asyncCall(TClass1* instance, void (TClass1::*function)(Targ argument, Targ1 argument1, Targ2 argument2), Targ argument, Targ1 argument1, Targ2 argument2)
@@ -665,13 +672,7 @@ public:
     }
 
     /**
-     * calls a function with four arguments asynchronously threadsafe. for more see asyncCall with one argument
-     * @param instance
-     * @param function
-     * @param argument
-     * @param argument1
-     * @param argument2
-     * @param argument3
+     * calls a function with four arguments asynchronously threadsafe. for more see other asycCall
      */
     template<class TClass1, class Targ, class Targ1, class Targ2, class Targ3>
     void asyncCall(TClass1* instance, void (TClass1::*function)(Targ argument, Targ1 argument1, Targ2 argument2, Targ3 argument3), Targ argument, Targ1 argument1, Targ2 argument2, Targ3 argument3)
@@ -684,7 +685,10 @@ public:
      * calls a synchronous function with no arguments threadsafe
      * @param instance the instance of the class that shall be called
      * @param function the function that shall be called as memberfunction pointer.
-     * Here is an example:
+     * @param retVal the return parameter, no const allowed !
+     * @tparam TClass1 the type of the class to be called
+     * @tparam TretVal the type of the return parameter
+     * \section ex Example:
      * @code
      * class myClass
      * {
@@ -720,7 +724,14 @@ public:
      * calls a function with one argument synchronous threadsafe
      * @param instance the instance of the class that shall be called
      * @param function the function that shall be called as memberfunction pointer.
-     * Here is an example:
+     * @param retVal the return parameter, no const allowed !
+     * @param argument the argument, no const allowed !
+     * @tparam TClass1 the type of the class to be called
+     * @tparam TretVal the type of the return parameter
+     * @tparam TargCall the type of the argument like in the function to be called. here all references and const must be
+     * respected!
+     * @tparam Targ the type of the argument, here no const and no references allowed !
+     * \section ex Example:
      * @code
      * class myClass
      * {
@@ -752,6 +763,9 @@ public:
         delete p;
     }
 
+    /**
+     * calls a function with one argument synchronous threadsafe for const functions. For more see syncCall with one argument
+     */
     template<class TClass1, class TretVal, class TargCall, class Targ>
     void syncCall(TClass1* instance, TretVal (TClass1::*function)(TargCall) const, TretVal& retVal, Targ& argument)
     {
@@ -770,12 +784,7 @@ public:
     }
 
     /**
-     * calls a function with two arguments synchronously threadsafe. for more see syncCall with one argument
-     * @param instance
-     * @param function
-     * @param retVal
-     * @param argument
-     * @param argument1
+     * calls a function with two arguments synchronously threadsafe. For more see syncCall with one argument
      */
     template<class TClass1, class TretVal, class TargCall, class Targ1Call, class Targ, class Targ1>
     void syncCall(TClass1* instance, TretVal (TClass1::*function)(TargCall, Targ1Call), TretVal& retVal, Targ& argument, Targ1& argument1)
@@ -792,7 +801,9 @@ public:
         retVal = p->returnResults(argument, argument1);
         delete p;
     }
-
+    /**
+     * calls a function with two arguments synchronously threadsafe const. For more see syncCall with one argument
+     */
     template<class TClass1, class TretVal, class TargCall, class Targ1Call, class Targ, class Targ1>
     void syncCall(TClass1* instance, TretVal (TClass1::*function)(TargCall, Targ1Call) const, TretVal& retVal, Targ& argument, Targ1& argument1)
     {
@@ -811,12 +822,6 @@ public:
 
     /**
      * calls a function with three arguments synchronously threadsafe. for more see syncCall with one argument
-     * @param instance
-     * @param function
-     * @param retVal
-     * @param argument
-     * @param argument1
-     * @param argument2
      */
     template<class TClass1, class TretVal, class TargCall, class TargCall1, class TargCall2, class Targ, class Targ1, class Targ2>
     void syncCall(TClass1* instance, TretVal (TClass1::*function)(TargCall, TargCall1, TargCall2), TretVal& retVal, Targ& argument, Targ1& argument1, Targ2& argument2)
@@ -837,13 +842,6 @@ public:
 
     /**
      * calls a function with four arguments synchronously threadsafe. for more see syncCall with one argument
-     * @param instance
-     * @param function
-     * @param retVal
-     * @param argument
-     * @param argument1
-     * @param argument2
-     * @param argument3
      */
     template<class TClass1, class TretVal, class TargCall, class TargCall1, class TargCall2, class TargCall3, class Targ, class Targ1, class Targ2, class Targ3>
     void syncCall(TClass1* instance, TretVal (TClass1::*function)(TargCall, TargCall1, TargCall2, TargCall3), TretVal& retVal, Targ& argument, Targ1& argument1, Targ2& argument2, Targ3& argument3)
@@ -862,6 +860,9 @@ public:
         delete p;
     }
 
+    /**
+     * calls a function with five arguments synchronously threadsafe. for more see syncCall with one argument
+     */
     template<class TClass1, class TretVal, class TargCall, class TargCall1, class TargCall2, class TargCall3, class TargCall4, class Targ, class Targ1, class Targ2, class Targ3, class Targ4>
     void syncCall(TClass1* instance, TretVal (TClass1::*function)(TargCall, TargCall1, TargCall2, TargCall3, TargCall4), TretVal& retVal, Targ& argument, Targ1& argument1, Targ2& argument2, Targ3& argument3, Targ4& argument4)
     {
@@ -879,6 +880,9 @@ public:
         delete p;
     }
 
+    /**
+     * calls a function with six arguments synchronously threadsafe. for more see syncCall with one argument
+     */
     template<class TClass1, class TretVal, class TargCall, class TargCall1, class TargCall2, class TargCall3, class TargCall4, class TargCall5, class Targ, class Targ1, class Targ2, class Targ3, class Targ4, class Targ5>
     void syncCall(TClass1* instance, TretVal (TClass1::*function)(TargCall, TargCall1, TargCall2, TargCall3, TargCall4, TargCall5), TretVal& retVal, Targ& argument, Targ1& argument1, Targ2& argument2, Targ3& argument3, Targ4& argument4, Targ5& argument5)
     {
@@ -896,6 +900,9 @@ public:
         delete p;
     }
 
+    /**
+     * receiver callback for sockethandling, for more, see CAmSocketHandler
+     */
     void receiverCallback(const pollfd pollfd, const sh_pollHandle_t handle, void* userData)
     {
         (void) handle;
@@ -910,6 +917,9 @@ public:
         mListDelegatePoiters.assign(listPointers, listPointers + (numReads / sizeof(CAmDelegagePtr)));
     }
 
+    /**
+     * checker callback for sockethandling, for more, see CAmSocketHandler
+     */
     bool checkerCallback(const sh_pollHandle_t handle, void* userData)
     {
         (void) handle;
@@ -919,6 +929,9 @@ public:
         return (true);
     }
 
+    /**
+     * dispatcher callback for sockethandling, for more, see CAmSocketHandler
+     */
     bool dispatcherCallback(const sh_pollHandle_t handle, void* userData)
     {
         (void) handle;
@@ -938,7 +951,7 @@ public:
 
     /**
      * The constructor must be called in the mainthread context !
-     * @param iSocketHandler pointer to the sockethandler
+     * @param iSocketHandler pointer to the CAmSocketHandler
      */
     CAmSerializer(CAmSocketHandler *iSocketHandler) :
             mPipe(), //

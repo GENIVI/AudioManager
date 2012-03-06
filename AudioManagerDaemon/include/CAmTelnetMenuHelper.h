@@ -50,6 +50,9 @@ class CAmControlReceiver;
 class CAmRouter;
 class CAmSocketHandler;
 
+/**
+ * helper class for CAmTelnetServer
+ */
 class CAmTelnetMenuHelper
 {
 public:

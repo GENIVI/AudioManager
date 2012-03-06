@@ -393,7 +393,7 @@
 
 /**
  * \page comp Compiling & Co
- * \todo add README
+ * \section readme Readme
  * \include ../README
  */
 
