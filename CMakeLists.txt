@@ -120,7 +120,7 @@ CONFIGURE_FILE( ${CMAKE_SOURCE_DIR}/AudioManagerDaemon/docx/Doxyfile.in ${CMAKE_
 
 
 IF(WITH_DLT)    
-    pkg_check_modules(DLT REQUIRED automotive-dlt>=2.5.0)   #this is due to BUGFIX [GDLT-41]
+    pkg_check_modules(DLT REQUIRED automotive-dlt>=2.2.0)   
 ENDIF(WITH_DLT)
 
 
