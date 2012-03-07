@@ -96,7 +96,7 @@ void CAmCommandSenderDbus::setCommandRundown(const uint16_t handle)
      */
 }
 
-void CAmCommandSenderDbus::cbNewMainConnection(const am_MainConnectionType_s mainConnection)
+void CAmCommandSenderDbus::cbNewMainConnection(const am_MainConnectionType_s& mainConnection)
 {
     (void)mainConnection;
     //todo: change xml and interface to differetiate between new connection and removed one

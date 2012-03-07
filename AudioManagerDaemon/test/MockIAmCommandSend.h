@@ -36,7 +36,7 @@ class MockIAmCommandSend : public IAmCommandSend {
   MOCK_METHOD1(setCommandRundown,
       void(const uint16_t handle));
   MOCK_METHOD1(cbNewMainConnection,
-      void(const am_MainConnectionType_s mainConnection));
+      void(const am_MainConnectionType_s& mainConnection));
   MOCK_METHOD1(cbRemovedMainConnection,
       void(const am_mainConnectionID_t mainConnection));
   MOCK_METHOD1(cbNewSink,

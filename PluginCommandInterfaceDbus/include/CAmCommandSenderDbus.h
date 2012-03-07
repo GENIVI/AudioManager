@@ -47,7 +47,7 @@ public:
     am_Error_e startupInterface(IAmCommandReceive* commandreceiveinterface);
     void setCommandReady(const uint16_t handle);
     void setCommandRundown(const uint16_t handle);
-    void cbNewMainConnection(const am_MainConnectionType_s mainConnection);
+    void cbNewMainConnection(const am_MainConnectionType_s& mainConnection);
     void cbRemovedMainConnection(const am_mainConnectionID_t mainConnection);
     void cbNewSink(const am_SinkType_s& sink);
     void cbRemovedSink(const am_sinkID_t sinkID);
