@@ -116,7 +116,7 @@ SET(DOXY_PROTOTYPE ${CMAKE_SOURCE_DIR}/cmake/DoxyFile.in)
 SET(DOXY_FILE ${CMAKE_CURRENT_BINARY_DIR}/DoxyFile)
 
 CONFIGURE_FILE( ${CMAKE_SOURCE_DIR}/cmake/config.cmake ${CMAKE_SOURCE_DIR}/include/config.h )
-CONFIGURE_FILE( ${CMAKE_SOURCE_DIR}/AudioManagerDaemon/doc/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/DoxyFile )
+CONFIGURE_FILE( ${CMAKE_SOURCE_DIR}/AudioManagerDaemon/docx/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/DoxyFile )
 
 
 IF(WITH_DLT)    

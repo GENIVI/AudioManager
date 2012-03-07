@@ -1,0 +1,33 @@
+ /*
+ * Copyright (C) 2012, BMW AG
+ *
+ * This file is part of GENIVI Project AudioManager.
+ *
+ * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contribution License Agreements.
+ *
+ * \copyright
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
+ * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ * \author Christian Mueller (christian.ei.mueller@bmw.de)
+ *
+ */
+ /*!
+\page views The two views of the AudioManager
+In general, there are two views of the system:\n
+\section command The CommandInterface View View
+This is an abstracted view that the HMI and other controlling Instances have of the system. Every Information (with some little exceptions) here is maintained
+by the AudioManagerController, so that he can "fake" situations for the HMI.
+So why is that? Depending on the actual project it might be - for example - that not the volume at the sink must be changed, but instead of the source.
+The HMI does not know about sourceVolumes (and does not need to!) so the HMI would change the sink volume and the AudioManagerController can translate it to a
+sourceVolumeChange. The metrics of the volumes are different as well.
+It is the duty of the AudioManagementController to keep the commandInterface information consistent with the "real" situation.
+\section route RoutingInterface View
+Here are the "real" system states. All changes that are done on this interface are maintained by the AudioMangerDaemon and here is the actual situation always
+consistent with the reality. All actions on this interface are either triggered by the AudioManagerController or by the domains itself, like registration for
+example.
+\section over Overview
+\image html views.png
+*/

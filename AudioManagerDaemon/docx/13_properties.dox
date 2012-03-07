@@ -1,0 +1,33 @@
+ /*
+ * Copyright (C) 2012, BMW AG
+ *
+ * This file is part of GENIVI Project AudioManager.
+ *
+ * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contribution License Agreements.
+ *
+ * \copyright
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
+ * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ * \author Christian Mueller (christian.ei.mueller@bmw.de)
+ *
+ */
+/*!
+\page prop Properties
+ \section soundprop SoundProperties & MainSoundProperties
+SoundProperties are properties that are related to either a source or a sink. They are product specific and are used to set source or sink specific properties.
+This could be for example: equalizer settings, relative volume offsets but also bool information "surround sound on/off".
+A soundProperty is defined by its type (am_SoundProperty_e, a product specific enum) and a value (integer) that is interpreted according to the type.
+There are not limits how many properties a sink or a source can have. SoundProperties in contradiction to MainSoundProperties are not visible to the
+CommandInterface.\n
+- am::am_SoundProperty_s describe the of the SoundProperties
+- am::am_MainSoundProperty_s describe the attributes of MainSoundProperties
+ *
+\section sys SystemProperties
+are properties that apply to the whole system or parts of it but cannot be tight to a specific sink or source. They are product specific and could be used
+for example to set general behavior like all interrupts on/off for example. The information is only exchanged between the commandInterface and the
+AudioManagerController. The AudioManagerController has to interpret the value and react accordingly.
+- am::am_SystemProperty_s describes the attributes of Systemproperties
+*/

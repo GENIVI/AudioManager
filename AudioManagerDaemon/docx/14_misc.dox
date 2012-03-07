@@ -1,0 +1,38 @@
+ /*
+ * Copyright (C) 2012, BMW AG
+ *
+ * This file is part of GENIVI Project AudioManager.
+ *
+ * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contribution License Agreements.
+ *
+ * \copyright
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
+ * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ * \author Christian Mueller (christian.ei.mueller@bmw.de)
+ *
+ */
+/*!
+\page misc Miscellaneous
+
+\section connfor Connection Formats
+Every flow of audio is using a format to exchange data. The format that the source and the sink uses must match together in order to have an undisturbed
+experience. It is common that sources and sinks are capable of supporting more than one audioformat.\n
+So all sources and sinks register with a list of connectionFormats that they support and for each connection a format must be chosen that is then used
+to transport the audio data. Gateways (and Soundconverters) have the information which connectionFormat can be transformed into another one.
+- am::am_ConnectionFormat_e has all formats listed.
+
+\section pers Persistence & Lifecycle
+Details of persistence can be done when the si-team have defined the components and interfaces in the Enterprise Architect model.
+So much is clear: the persistence will be based on POSIX interfaces that can be used to read and write data.\n
+Persistence is a very system specific topic: what needs to be remembered over lifecycles, what will be reset to default? So this needs to be done via the
+AudioMangerController. The Controller will then enter the values read from the persistence and write them to the daemon.
+The lifecycle itself will be handles by the daemon which will then fire hooks in the controller to make sure appropriate actions are taken.
+
+\section speed Speed dependent volume
+The adjustments for the speed are done product specific in the controller. The speed information itself is retrieved by the AudioManagerDaemon, sampled and
+quantified and forwarded to the controller. The interface in not yet defined !\n
+Turning speed controlled volume on/off and possible settings are achieved via SinkSoundProperty settings.
+*/

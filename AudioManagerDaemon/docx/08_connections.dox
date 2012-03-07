@@ -1,0 +1,33 @@
+ /*
+ * Copyright (C) 2012, BMW AG
+ *
+ * This file is part of GENIVI Project AudioManager.
+ *
+ * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contribution License Agreements.
+ *
+ * \copyright
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
+ * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ * \author Christian Mueller (christian.ei.mueller@bmw.de)
+ *
+ */
+ /*!
+ \page connpage Connections & MainConnections
+ \section con Connections
+ A connection connects a source to a sink to let audio data flow. The direction of the flow is always source to sink. For each connection the connectionFormat
+ must be defined when the connection is demanded, if source or sink is not capable of supporting this format, the connection cannot be established.
+ ConnectionFormats are product specific, also are some standard formats defined within GENIVI that can be enhanced in the product area. Examples of formats:
+ analog, autodefined, stereo 48khz 16bit PCM, ....
+
+ \section maincon Mainconnections
+ is visible to the HMI and consists out of one or more connections. A MainConnection shall always connect a Source and a Sink visible to the HMI.
+ In contradiction to connections, the MainConnection does not know about connectionFormat. MainConnections are demanded by the commandInterface.
+ This picture demonstrates the relation between MainConnections and connections:
+ \image html Levels.png
+
+ \section att Attributes
+ - am::am_Connection_s describes the attributes of a conenction
+ - */

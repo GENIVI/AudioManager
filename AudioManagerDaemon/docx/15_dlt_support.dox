@@ -1,0 +1,23 @@
+ /*
+ * Copyright (C) 2012, BMW AG
+ *
+ * This file is part of GENIVI Project AudioManager.
+ *
+ * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contribution License Agreements.
+ *
+ * \copyright
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
+ * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ * \author Christian Mueller (christian.ei.mueller@bmw.de)
+ *
+ */
+ /*!
+\page dlt Dlt support
+\section compile Compilerswitch
+The AudioManager can be compiled with or without DLT support, in case that DLT is not compiled in (cmake option WITH_DLT), logging is switched off.
+You can log to the commandline by starting the Audiomanager with the option -V.\n
+If you want to log to the commandline and you have dlt compiled in, use the environment variable of the dlt to log to the command line.
+*/

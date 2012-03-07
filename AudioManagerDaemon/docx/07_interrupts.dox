@@ -1,0 +1,36 @@
+ /*
+ * Copyright (C) 2012, BMW AG
+ *
+ * This file is part of GENIVI Project AudioManager.
+ *
+ * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contribution License Agreements.
+ *
+ * \copyright
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
+ * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ * \author Christian Mueller (christian.ei.mueller@bmw.de)
+ *
+ */
+ /*!
+ 
+ \page interrupts Interrups & Low Level Interrupts
+ \section diff Differences
+ The only difference between a "normal" interrupt and a source for the audioManagement may lie in it's classification, so playing a "normal" interrupt is not
+ different to changing a source. An exception here are the so called "low level interrupts".\n
+ \section crit Criterias
+ These are special sources that fulfill the following criteria:
+   - direct connection to a sink that is "always on", so no extra actions and communications need to be done in order to play audio
+   - no dependencies to the current system state need to be checked before playing. This means that the source knows if it is allowed to play at the moment it
+   wants to play
+   - all information for the source that is needed to judge if it is allowed to play or not is either directly retrieved by the source or set static via a property.
+
+   This becomes very handy for implementing such things like park distance control. When the source is informed that it needs to output signals
+   (due to an emerging wall for example) it outputs the beeps directly to the amplifier that then overlays the sound to the current active source.\n
+   Settings that influence the behavior of low level interrupts like for example volume offset for park distance control or sound on/off for it need to be done via
+   sourceProperties on the source level, so that the judgment and the adoptions that need to be taken can be taken by the source without system interaction.
+   In order to give the AudioManagerController the chance to react on a low level interrupt (by lowering the main volume for example), a feedback path is provided
+   and the AudioManagerController is informed about the current state of the low level interrupt (via hooklInterruptStatusChange).\n
+*/

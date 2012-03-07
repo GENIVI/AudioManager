@@ -1,0 +1,32 @@
+ /*
+ * Copyright (C) 2012, BMW AG
+ *
+ * This file is part of GENIVI Project AudioManager.
+ *
+ * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contribution License Agreements.
+ *
+ * \copyright
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
+ * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ * \author Christian Mueller (christian.ei.mueller@bmw.de)
+ *
+ */
+/*!
+ \page classficationpage Classification of Sinks and Sources
+ \section classification Classification
+ The AudioManagement offers classification for sources and sinks. It can be used to group sources and sinks together and link certain behaviors to these groups.
+ An example for such a use is to group all interrupt sources in a class together and let the AudioManagerController react different for this class.\n
+ Elements can only have one class at a time. The AudioManagerDaemon will take care of registration of sourceClasses, sinkClasses and will assign unique IDs,
+ but the parameters of the Classes itself are product specific and have to be interpreted by the AudioManagerController. This concept allows for very individual
+ implementations of system behaviors.\n
+ Since Classes are held in the database, Classes can be registered and deregistered during runtime, it is recommended that the AudioManagerController enters
+ all source & sink classes at start-up into the database.A ClassProperty exists out of an enumeration (am_ClassProperty_e, project specific) and a corresponding
+ value (integer) that is interpreted by the AudioManagerController according to am_ClassProperty_e.\n
+ There is no restriction to the number of properties a class can have and how many classes can exist in a system.\n
+ \section attributes Attributes
+ - am::am_SourceClass_s describes the attributes of a source class\n
+ - am::am_SinkClass_s describes the attributes of a sink class\n
+*/

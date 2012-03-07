@@ -1,0 +1,29 @@
+ /*
+ * Copyright (C) 2012, BMW AG
+ *
+ * This file is part of GENIVI Project AudioManager.
+ *
+ * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contribution License Agreements.
+ *
+ * \copyright
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
+ * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ * \author Christian Mueller (christian.ei.mueller@bmw.de)
+ *
+ */
+
+/*!
+\page vol Volumes & MainVolumes
+\section mainVol MainVolumes
+This is the volume at the CommanInterface level. The exact definition is project specific and can be adopted for each project since the AudioManagerController
+and the HMI are the only ones who need to interfere with this volume. The actual value is an integer.
+- am::am_mainVolume_t defines the mainvolume
+
+\section volv Volumes
+These are the actual volumes that are set for sources and sinks. The unit is 0.1 db steps,The smallest value -3000 (=AM_MUTE). The minimum and maximum can be
+limited by actual project.
+- am::am_volume_t describes the volume
+*/

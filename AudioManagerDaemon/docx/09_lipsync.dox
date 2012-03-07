@@ -1,0 +1,37 @@
+ /*
+ * Copyright (C) 2012, BMW AG
+ *
+ * This file is part of GENIVI Project AudioManager.
+ *
+ * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contribution License Agreements.
+ *
+ * \copyright
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
+ * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ * \author Christian Mueller (christian.ei.mueller@bmw.de)
+ *
+ */
+ /*!
+ \page lip Lipsync
+ 
+ \section t The Task of the Audiomanager
+ It is the job of the AudioManager to retrieve all latency timing information from each connection, to aggregate this information and provide a latency #
+ information on a per MainConnection Basis. It is not the task of the AudioManager to actually delay or speed up video or audio signals to achieve a lipsync.
+ The actual correction shall be done in the with the information provided by the AudioManager.
+ The time information is always reported by the routingadapters for each connection. Delays that are introduced in a sink or a gateway are counting for the
+ connection that connects to this sink or gateway.
+ \section ex Example
+ \image html delay.jpg
+
+ This graph shows how the delay is calculated:
+ - Connection 1 has a delay 2ms + 60ms that is added due to the gateway
+ - Connection 2 has a delay 0ms + 10ms due to sink
+ So the routing adapters report 62ms and 10ms, the audiomanager will add this to 72ms and report this value for the main connection from sink to source.
+ The videoplayer getting this information can now delay his video against the audio for 72ms and be in perfect lipsync.\n
+ After the buildup of a connection the first timing information needs to be sent within 5 seconds, the timing information from the routing adapters need to
+ be sent via 4 seconds. If the latency for a connection is variable and changes over lifetime of the connection, the routing adapters shall resend the value
+ and the audiomanager will correct the over all latency.
+*/

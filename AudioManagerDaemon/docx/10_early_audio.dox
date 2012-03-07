@@ -1,0 +1,31 @@
+ /*
+ * Copyright (C) 2012, BMW AG
+ *
+ * This file is part of GENIVI Project AudioManager.
+ *
+ * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contribution License Agreements.
+ *
+ * \copyright
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
+ * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ * \author Christian Mueller (christian.ei.mueller@bmw.de)
+ *
+ */
+ /*!
+\page early Early Audio
+\section req The Requirement
+The requirement reviews showed that one very important aspect of managing audio within GENIVI is the early/late phase where the Linux part of the system is
+not available. This feature is addressed via special domains: EarlyDomains. These domains are acting "unmanaged" - meaning without the interaction with the
+AudioManager - providing a simpler set of features until the AudioManager is up and running. When the Linux system is then fully operable a handover is done
+from the EarlyDomains towards the AudioManager. In order to be able to operate without the Linux up and running, the EarlyDomains must be implemented on a
+second fast-boot or always-on controller, e.g. the so called vehicle processor.\n
+\section earlys Early Startup
+This picture shows the principle of the early startup:
+\image html early.png
+\section late Late Rundown
+This picture shows the principle of the late rundown:
+\image html late.png
+*/
