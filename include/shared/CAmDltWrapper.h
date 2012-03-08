@@ -325,7 +325,7 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
 template<typename T, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9> void logInfo(T value, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5, T6 value6, T7 value7, T8 value8, T9 value9)
 {
     CAmDltWrapper* inst(getWrapper());
-    inst->init(DLT_LOG_ERROR);
+    inst->init(DLT_LOG_INFO);
     inst->append(value);
     inst->append(value1);
     inst->append(value2);
@@ -356,7 +356,7 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
 template<typename T, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9, typename T10> void logInfo(T value, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5, T6 value6, T7 value7, T8 value8, T9 value9, T10 value10)
 {
     CAmDltWrapper* inst(getWrapper());
-    inst->init(DLT_LOG_ERROR);
+    inst->init(DLT_LOG_INFO);
     inst->append(value);
     inst->append(value1);
     inst->append(value2);
