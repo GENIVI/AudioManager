@@ -527,7 +527,7 @@ am_Error_e CAmRoutingSenderAsync::asyncCrossFade(const am_Handle_s handle, const
     (void) hotSink;
     (void) rampType;
     (void) time;
-    return E_NOT_USED;
+    return (E_NOT_USED);
 }
 
 am_Error_e CAmRoutingSenderAsync::setDomainState(const am_domainID_t domainID, const am_DomainState_e domainState)
