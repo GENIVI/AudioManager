@@ -16,6 +16,10 @@
  *  For further information see http://www.genivi.org/.
  */
 
+/**
+ * todo add removeCallback ...
+ */
+
 #ifndef DBUSWRAPPER_H_
 #define DBUSWRAPPER_H_
 
@@ -23,7 +27,7 @@
 #include <string>
 #include <list>
 #include "config.h"
-#include "shared/CAmSocketHandler.h"
+#include "CAmSocketHandler.h"
 
 namespace am
 {
