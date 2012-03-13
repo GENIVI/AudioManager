@@ -1,0 +1,49 @@
+ /*
+ * Copyright (C) 2012, BMW AG
+ *
+ * This file is part of GENIVI Project AudioManager.
+ *
+ * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contribution License Agreements.
+ *
+ * \copyright
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
+ * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ * \author Christian Mueller (christian.ei.mueller@bmw.de)
+ *
+ */
+
+/*!
+\page mainl Mainloop concept
+\section mconcept Mainloop
+The AudioManager comes with a build in mainloop that can be utilized by the plug-ins to serve their needs of communication and thread-safe calling.
+The mainloop, implemented in CAmSocketHandler works like this:\n
+\image html Mainloop.png
+
+\section sec Using the Mainloop
+Adding and removing callbacks and timers work via the am::CAmSocketHandler.\n
+To add a callback, use am::CAmSocketHandler::addFDPoll, to remove one, use am::CAmSocketHandler::removeFDPoll.\n
+To add a timer callback, use am::CAmSocketHandler::addTimer, use am::CAmSocketHandler::removeTimer and am::CAmSocketHandler::restartTimer and
+am::CAmSocketHandler::stopTimer.\n
+The mainloop is started via am::CAmSocketHandler::start_listenting and stopped via am::CAmSocketHandler::stop_listening.
+Example code can be found in am::CAmDbusWrapper.
+
+\section util Utilizing The Mainloop as Threadsafe Call Method
+The AudioManager itself is singlethreaded, so any calls from other threads inside the plugins directly to the interfaces is forbidden, the
+behavior is undefined. The reason for this is that communication and routing plugins are often only communication interfaces that can are ideally used
+with the am::CAmSocketHandler.\n
+am::CAmSerializer creates an intermediate object on the heap holding all informations of the function to be called and a pointer to the object to be called.
+After that, the class writes to a pipe witch triggers the mainloop to call the callback am::CAmSerializer::receiverCallback from the maincontext. The
+callback uses the intermediate object to do the actual call. \n
+\warning asynchronous calls can be used within the main thread, but synchronous not -> the call would block forever !\n
+For each thread that needs to use synchronous calls independent an own instance of am::CAmSerializer needs to be used.
+\subsection async Asynchronous calls
+\image html Deferred_Call_async.png
+\subsection sync Synchronous calls
+\image html Deferred_Call_sync.png
+
+
+
+ */

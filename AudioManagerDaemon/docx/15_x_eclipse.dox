@@ -1,0 +1,91 @@
+ /*
+ * Copyright (C) 2012, BMW AG
+ *
+ * This file is part of GENIVI Project AudioManager.
+ *
+ * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contribution License Agreements.
+ *
+ * \copyright
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
+ * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ * \author Christian Mueller (christian.ei.mueller@bmw.de)
+ *
+ */
+ 
+
+/*!
+\page eclip Download Compile Debug
+\section dw Get the source
+For compiling the source, you need to use git and the following packages:\n
+\code
+sudo apt-get install libdbus-1-dev libsqlite3-dev doxygen libgtest-dev google-mock git cmake build-essential python2.6-dev
+\endcode
+Getting the source got works with following command
+\code
+git clone https://<kavi-account>:<kavi-password>@git.genivi.org/srv/git/AudioManager
+\endcode
+\section build Compile
+In order to build the project (out of source build), please follow these instructions on the commandline:
+\code
+mkdir /build
+cd build
+cmake ..
+\endcode
+if you want to influence the build options, you can use ccmake for example (apt-get install ccmake)
+\code
+ccmake ..
+\endcode
+You will get a menue that let's you select different options for the build. Compiling with a simple
+\code
+make
+\endcode
+after the script finished, you should have:
+- a bin/ folder which contains all executables and the libraries:
+- a build/ folder which has all build objects (erase that if you need a clean build)
+- a doc/ folder in case you turned the documentation on
+
+in order to install the AudioManager, you can do
+\code
+sudo make install
+\endcode
+package generation is supported via CPack. To build packages, you have to
+\code
+make genivi_package
+\endocde
+this will create one package if your CMake version is < 2.8.5 (all binaries stripped):
+\code
+AudioManager-<git verison>-Linux.deb
+\endcode
+if your version is above, you will get 4 packages (all binaries stripped) :
+\code
+AudioManager-<git verison>-Linux-bin.deb                [AudioManager binary]
+AudioManager-<git verison>-Linux-dev.deb                [header files needed to compile plugins]
+AudioManager-<git verison>-Linux-sampleplugins.deb      [sample plugins]
+AudioManager-<git verison>-Linux-tests.deb              [tests including tests for sample plugins,
+installed in the ~/AudioMAnagerTests]
+\endcode
+to create a tar.gz file of all sources (not including .git, build and bin folder,config files), you can do:
+\code
+make package_source
+\endcode
+This will create the following package:
+\code
+AudioManager-<git verison>-Source.tar.gz
+\endcode
+All packages will be placed in a folder called packages
+\section ec Using Eclipse
+First you need to get eclipse, for example by downloading it from http://www.eclipse.org/ use the C++ CDT version.
+Import the project with\n
+File-> import project\n
+Select "existing code as makefile project" and choose the root folder auf the AudioManager\n
+In order to build with eclipse you need to tell eclipse where the makefile can be found:\n
+In project properties enter as build command:
+\code
+"make -j4 -C build" as build command
+\endcode
+\section deb Debugging with eclipse
+For debugging you need to modify debug configurations, choose the audiomanager as binary, the debugging should work.
+*/

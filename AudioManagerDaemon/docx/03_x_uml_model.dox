@@ -1,0 +1,49 @@
+ /*
+ * Copyright (C) 2012, BMW AG
+ *
+ * This file is part of GENIVI Project AudioManager.
+ *
+ * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contribution License Agreements.
+ *
+ * \copyright
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
+ * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ * \author Christian Mueller (christian.ei.mueller@bmw.de)
+ *
+ */
+
+/*!
+\page uml UML Model auf the AudioManager
+\section svn Audio Manager Branch
+The SVN link to the AudioManager branch can be found here: https://svn.genivi.org/uml-model/genivi/branch/eg-mg-audiomanager
+The last valid version that is compliant can be found on the trunk.\n
+For more information about the EA model, please see here:  https://collab.genivi.org/wiki/display/genivi/Audio+Management+UML+Model
+After the EA Model is updated via "Get All latest", the relevant parts for Audio Management are:\n
+- Requirements on System Level
+\code
+GENIVI Model -> Requirements View -> Media and Graphics -> Audio Management
+\endcode
+- Use Cases on System Level
+\code
+GENIVI Model -> Use Case View -> Audio Management
+\endcode
+- Requirements on Component Level
+\code
+GENIVI Model -> Logical View -> SW platform Requirements -> Multimedia -> AudioManagement
+\endcode
+- Use Cases on Component Level
+\code
+GENIVI Model -> Logical View -> Use Case Realizations -> AudioManagement
+\endcode
+- Component Diagram
+\code
+GENIVI Model -> Logical View -> SW Platform Components -> Audio Management
+\endcode
+- Implementation Class & Component diagrams:
+\code
+GENIVI Implementation -> Implementation View -> Audio Management
+\endcode
+*/

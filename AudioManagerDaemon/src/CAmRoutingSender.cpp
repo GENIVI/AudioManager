@@ -35,17 +35,6 @@ namespace am
 
 #define REQUIRED_INTERFACE_VERSION_MAJOR 1  //!< major interface version. All versions smaller than this will be rejected
 #define REQUIRED_INTERFACE_VERSION_MINOR 0 //!< minor interface version. All versions smaller than this will be rejected
-/**
- * macro to call all interfaces
- *
- */
-#define CALL_ALL_INTERFACES(...) 														 \
-		std::vector<InterfaceNamePairs>::iterator iter = mListInterfaces.begin();	 	 \
-		std::vector<InterfaceNamePairs>::iterator iterEnd = mListInterfaces.end();	 	 \
-		for (; iter<iterEnd;++iter)													     \
-		{																				 \
-			(*iter).routingInterface->__VA_ARGS__;										 \
-		}
 
 CAmRoutingSender::CAmRoutingSender(const std::vector<std::string>& listOfPluginDirectories) :
         mHandleCount(0), //

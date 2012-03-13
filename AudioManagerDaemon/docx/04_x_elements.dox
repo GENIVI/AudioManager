@@ -1,0 +1,57 @@
+ /*
+ * Copyright (C) 2012, BMW AG
+ *
+ * This file is part of GENIVI Project AudioManager.
+ *
+ * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contribution License Agreements.
+ *
+ * \copyright
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
+ * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ * \author Christian Mueller (christian.ei.mueller@bmw.de)
+ *
+ */
+ 
+/*!
+\page elementspage Elements of the AudioManagement
+
+ The audiomanagement in principle consists of the following elements:
+
+ \section source Sources
+ This is where audio comes from, for examples tuner, mediaplayer. But sources can also be part of a building block that processes audio, examples
+ are here crossfaders or gateways. Several Sinks can be connected to one source.\n
+ \subsection sourceattributes Attributes
+ - am::am_SourceType_s describes the attributes that are accessible from the AudioManagerCommandPlugins.\n
+ - am::am_Source_s describes the general attributes.\n
+
+ \section sinks Sinks
+ This is where audio flows to, for examples amplifier, headphones. But sources can also be part of a building block that processes audio,
+ examples are here crossfaders or gateways. Several Sources can be connected to one sink.\n
+ \subsection sinkattributes Attributes
+ - am::am_SinkType_s describes the attribiutes that are accessible form the AudioManagerCommandPlugins.\n
+ - am::am_Sink_s describes the general attributes.\n
+
+ \section gw Gateways
+ Gateways are described here: \ref gateway
+ A specialitry of a gateways is the convertionmatrix. It indicates which sinksoundformats can be transferred in which sourcesoundformats. A convertion
+ matrix looks like this:
+ \image html GatewayMatrix.png
+ \subsection gwattributes Attributes
+ - am::am_Gateway_s describe the attribiutes of a gateway\n
+
+ \section crossfaders Crossfaders
+ Cross-faders are special elements that can perform cross-fading between two sources connected to the sinks of the crossfader. The audio of either source
+ or both (mixed, during the fade) is put out at the source of the fader. Cross-fading within a source (for example from one song to another) is out of
+ scope audio management and must be performed in the source.\n
+ A crossfader has two sinks and one source, where one sink is the "hot" one. It is in the duty of the AudioManagerController to connect the correct
+ sources to the sinks in order to perform a cross-fade. When fading is started, the hotSink changes from either HS_SINKA or HS_SINKB to HS_INTERMEDIATE,
+ when the fading is finished, it changes to HS_SINKA or HS_SINKB (the sink that was "cold" before).Fading itself is done in the RoutingAdapters, the
+ implementation has to ensure the smooth and synchronous change of volumes. With different rampTypes, different kinds of cross-fade ramps can be supported.
+ The actual status of the "hot" sink is reported by the routingAdapter. Care has to be taken that the correct "hot" end of the crossfader is given
+ at registration time.\n
+ \subsection cfattributes Attributes
+ - am::am_Crossfader_s describes the attribiutes of a Crossfader
+*/

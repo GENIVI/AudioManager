@@ -1,4 +1,4 @@
- /*
+/*
  * Copyright (C) 2012, BMW AG
  *
  * This file is part of GENIVI Project AudioManager.
@@ -14,8 +14,13 @@
  * \author Christian Mueller (christian.ei.mueller@bmw.de)
  *
  */
-/*!
-\page comp Compiling & Co
-\section readme Readme
-\include README
+ 
+ /*!
+\page dep Dependencies
+\section deps Dependency Graph
+\image html dependencies.png
+\section deptest Depedency Graph for Tests
+\image html dependencies_test.png
+\section depgen Generated Dependency Graph
+\image html dependency_created.png
 */

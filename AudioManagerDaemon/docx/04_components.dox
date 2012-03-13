@@ -26,7 +26,10 @@
  \section audiomanagercomponents AudioManagerDaemon
 
  This component is owned and maintained by Genivi. It is the central audio framework component. There can be only one daemon in a system (singleton).\n
- The AudioManagerDaemon is subject to this documentation
+ The AudioManagerDaemon is subject to this documentation.
+ \subsection daemonover Daemon Overview
+ Here is an class overview of the AudioManagerDaemon:
+ \image html daemon_insight.png
 
  \section commander AudioManagerCommandPlugin
 
@@ -36,7 +39,8 @@
  CommandPlugin at a time.
  Since the implementation of this component is project specific, only examples are included.\n
  An example Dbus Implementation can be found in the folder PluginCommandInterfaceDbus.
- \n
+
+ \subsection commandIface Interfaces
  All commands that must be fulfilled by an AudioManagerCommandPlugin are described in am::IAmCommandSend.\n
  All commands that are presented to AudioManagerCommandPlugin by the AudioManagerDaemon are described in am::IAmCommandReceive.\n
 
@@ -47,7 +51,8 @@
  Among this there are commands to read/write the database and to perform actions on the Audiodomains like connect or disconnect. There must be only one
  Controller in the system at a time, like the AudioManagerCommandPlugins, the Controller is loaded at startup by the daemon\n
  A simple example Implementation can be found in the folder PluginControlInterface.
- \n
+
+ \subsection controlIface Interfaces
  All commands that must be fulfilled by an AudioManagerController are described in am::IAmControlSend.\n
  All commands that are presented to AudioManagerController by the AudioManagerDaemon are described in am::IAmControlReceive.\n
 
@@ -60,46 +65,21 @@
  know anything about the real system plugins - he sends his commands to sources and sinks. The daemon does the dispatching of these commands.
  The interface is mainly asynchronous.\
  Sample plugins can be found in the directory, for example PluginRoutingInterfaceAsync.\n
- \n
+
+ \subsection routingIface Interfaces
  All commands that must be fulfilled by an AudioManagerRoutingPlugin are described in am::IAmRoutingSend.\n
  All commands that are presented to AudioManagerRoutingPlugins by the AudioManagerDaemon are described in am::IAmRoutingReceive.\n
 
- \page elementspage Elements of the AudioManagement
+ \subsection subrouter Bus topology
+ The AudioManagerDaemon expects a bus behind each of the plugins. On one of these buses there can be several domains. In order to
+ reflect this, a domain has always a bus(plugin) and a node that it belongs to. So if a message needs to be transmitted to a domain,
+ it will always be sent to a node on a bus.
+ Here is a diagram showing the topology from the view of the AudioManagerDaemon:
+ \image html bus_topology.png
+ \subsection busname Busname
+ Since a plugin represents a bus for the AudioManagerDaemon, each plugin it has its unique name, the busname that is returned by
+ am::IAmRoutingSend::returnBusName. The AudioManagerDaemon used this information to link a plugin with a domain. All other elements like
+ sinks, sources etc are linked to domains. This is how the hierarchy looks like that is used:
+ \image html routing_hierarchy.png
 
- The audiomanagement in principle consists of the following elements:
-
- \section source Sources
- This is where audio comes from, for examples tuner, mediaplayer. But sources can also be part of a building block that processes audio, examples
- are here crossfaders or gateways. Several Sinks can be connected to one source.\n
- \subsection sourceattributes Attributes
- - am::am_SourceType_s describes the attributes that are accessible from the AudioManagerCommandPlugins.\n
- - am::am_Source_s describes the general attributes.\n
-
- \section sinks Sinks
- This is where audio flows to, for examples amplifier, headphones. But sources can also be part of a building block that processes audio,
- examples are here crossfaders or gateways. Several Sources can be connected to one sink.\n
- \subsection sinkattributes Attributes
- - am::am_SinkType_s describes the attribiutes that are accessible form the AudioManagerCommandPlugins.\n
- - am::am_Sink_s describes the general attributes.\n
-
- \section gw Gateways
- Gateways are described here: \ref gateway
- A specialitry of a gateways is the convertionmatrix. It indicates which sinksoundformats can be transferred in which sourcesoundformats. A convertion
- matrix looks like this:
- \image html GatewayMatrix.png
- \subsection gwattributes Attributes
- - am::am_Gateway_s describe the attribiutes of a gateway\n
-
- \section crossfaders Crossfaders
- Cross-faders are special elements that can perform cross-fading between two sources connected to the sinks of the crossfader. The audio of either source
- or both (mixed, during the fade) is put out at the source of the fader. Cross-fading within a source (for example from one song to another) is out of
- scope audio management and must be performed in the source.\n
- A crossfader has two sinks and one source, where one sink is the "hot" one. It is in the duty of the AudioManagerController to connect the correct
- sources to the sinks in order to perform a cross-fade. When fading is started, the hotSink changes from either HS_SINKA or HS_SINKB to HS_INTERMEDIATE,
- when the fading is finished, it changes to HS_SINKA or HS_SINKB (the sink that was "cold" before).Fading itself is done in the RoutingAdapters, the
- implementation has to ensure the smooth and synchronous change of volumes. With different rampTypes, different kinds of cross-fade ramps can be supported.
- The actual status of the "hot" sink is reported by the routingAdapter. Care has to be taken that the correct "hot" end of the crossfader is given
- at registration time.\n
- \subsection cfattributes Attributes
- - am::am_Crossfader_s describes the attribiutes of a Crossfader
 */

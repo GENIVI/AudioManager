@@ -43,8 +43,9 @@ class IAmShPollDispatch;
 class IAmShTimerCallBack;
 
 /**
- * The sockethandler implements a mainloop for the audiomanager. Plugins and different parts of the audiomanager add their filedescriptors to the handler to get called
- * on communication of the filedescriptors.
+ * The am::CAmSocketHandler implements a mainloop for the AudioManager. Plugins and different parts of the AudioManager add their filedescriptors to the handler
+ * to get called on communication of the filedescriptors.\n
+ * More information can be found here : \ref mainl
  */
 class CAmSocketHandler
 {

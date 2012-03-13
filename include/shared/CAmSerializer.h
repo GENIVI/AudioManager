@@ -39,10 +39,11 @@ namespace am
  * The constructor must be called within the main threadcontext, after that using the
  * overloaded template function call will serialize all calls and call them within the
  * main thread context.\n
+ * More details can be found here: \ref util
  * \warning asynchronous calls may be used in the mainthread context, but if you want to use synchronous calls make sure that you use one
  * instance of this class per thread otherwise you could be lost in never returning calls.\n
  * Examples of the usage can be found in IAmCommandReceiverShadow of the ControlPlugin or IAmRoutingReceiverShadow of the
- * PluginRoutingInterfaceAsync
+ * PluginRoutingInterfaceAsync.
  *
  */
 class CAmSerializer
