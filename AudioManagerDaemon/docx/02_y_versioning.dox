@@ -1,0 +1,26 @@
+/*
+ * Copyright (C) 2012, BMW AG
+ *
+ * This file is part of GENIVI Project AudioManager.
+ *
+ * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contribution License Agreements.
+ *
+ * \copyright
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
+ * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ * \author Christian Mueller (christian.ei.mueller@bmw.de)
+ *
+ */
+ 
+ /*!
+\page ver Versioning
+\section ver_graph The versioning schmeme
+The versioning scheme was decided in the February face2face 2012.
+\image html versioning.png
+For the daemon the third number (for example 1.0.X) describes the patch version. The versions are automatically created by git during the build process.
+The versioning scheme is used for the AudioManager daemon itself and for each of it's interfaces. The versioning of the Interfaces in EA is defined via the tag "version" and the name of the interfaceversion versionName, for example "CommandReceiveVersion". This information is generated into the interface header files and is used then by cmake to set the interface versions.
+Whenever changes are done, the minor version of the interface needs to be incremented.
+*/
