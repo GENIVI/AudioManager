@@ -26,4 +26,7 @@ add_subdirectory (AmDatabaseHandlerTest)
 add_subdirectory (AmRouterTest)
 add_subdirectory (AmRoutingInterfaceTest)
 add_subdirectory (AmSocketHandlerTest)
-add_subdirectory (AmTelnetServerTest)
+IF(WITH_TELNET)
+    add_subdirectory (AmTelnetServerTest)
+ENDIF(WITH_TELNET)
+
