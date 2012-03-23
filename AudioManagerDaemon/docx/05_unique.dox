@@ -17,7 +17,7 @@
 /*!
  \page uniquepage About unique IDs : Static vs Dynamic IDs
 
- \section why Why having two different kinds of ids?\n
+ \section why Why having two different kinds of ids?
  The complexity of up-to-date IVI-systems demand to support sources and sinks dynamically added and removed in order to support the variety of CE products,
  but parts of the system are never going to change - to start a dynamic registration here is a waste of system capacity.\n
  \section setup The setup
@@ -28,8 +28,7 @@
  AudioManagerController enters all elements of this domain in the database. Still, this domain can register additional elements during runtime.
  In case of static setups, the RoutingAdapter needs to ensure that all static elements are ready to be used when the domain registers.\n
  In order to ensure the uniqueness of IDs, there exist two separate ID areas (for each of sources, sinks, gateways and crossfaders):\n\n
-         Fixed area (from 1..100)\n
-         Variable area (starting from 101)\n\n
+ \image html unique.svg
  In case of dynamic added elements, the audiomanagerdaemon ensures the uniqueness of the ID's, in case of the static setup, the project has to ensure the
  uniqueness by assigning the IDs wisely. The knowledge of the static IDs need to be in the AudioManagerController, the RoutingAdapters and in the HMI
  (optional because IDs will be reported anyway).\n
