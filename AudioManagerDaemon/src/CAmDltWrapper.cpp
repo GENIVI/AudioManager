@@ -30,6 +30,7 @@ namespace am
 {
 
 CAmDltWrapper* CAmDltWrapper::mpDLTWrapper = NULL;
+pthread_mutex_t CAmDltWrapper::logMutex = PTHREAD_MUTEX_INITIALIZER;
 
 CAmDltWrapper *CAmDltWrapper::instance(const bool enableNoDLTDebug)
 {
