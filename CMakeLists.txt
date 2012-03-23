@@ -62,9 +62,6 @@ OPTION( WITH_PLUGIN_ROUTING
 OPTION( WITH_MAIN
 	"Build with daemon" ON)
 
-OPTION( WITH_PPOLL
-	"libc supports ppoll" ON)
-
 OPTION( WITH_TELNET
 	"build with Telnetserver (can only work with SocketHandler)" ON)
 	

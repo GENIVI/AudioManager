@@ -976,7 +976,7 @@ public:
         short event = 0;
         sh_pollHandle_t handle;
         event |= POLLIN;
-        iSocketHandler->addFDPoll(mPipe[0], event, NULL, &receiverCallbackT, NULL, &dispatcherCallbackT, NULL, handle);
+        iSocketHandler->addFDPoll(mPipe[0], event, NULL, &receiverCallbackT, &checkerCallbackT, &dispatcherCallbackT, NULL, handle);
     }
 
     ~CAmSerializer()

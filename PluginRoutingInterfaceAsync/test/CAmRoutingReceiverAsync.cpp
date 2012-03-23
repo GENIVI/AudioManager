@@ -388,12 +388,13 @@ TEST_F(CAmRoutingReceiverAsync,connectNoMoreThreads)
     am_ConnectionFormat_e format = CF_GENIVI_ANALOG;
 
     EXPECT_CALL(pReceiveInterface,ackConnect(_,_,E_OK)).Times(10);
-    for (int i = 0; i < 9; i++)
+    for (int i = 0; i < 10; i++)
     {
         handle.handle++;
         connectionID++;
         ASSERT_EQ(E_OK, pRouter->asyncConnect(handle,connectionID,sourceID,sinkID,format));
-    }ASSERT_EQ(E_NOT_POSSIBLE, pRouter->asyncConnect(handle,connectionID,sourceID,sinkID,format));
+    }
+    ASSERT_EQ(E_NOT_POSSIBLE, pRouter->asyncConnect(handle,connectionID,sourceID,sinkID,format));
     pSocketHandler.start_listenting();
 }
 

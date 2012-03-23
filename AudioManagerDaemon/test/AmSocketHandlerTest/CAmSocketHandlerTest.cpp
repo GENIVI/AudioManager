@@ -68,22 +68,18 @@ void am::CAmTimerCb::timer1Callback(sh_timerHandle_t handle, void* userData)
     timespec timeout;
     timeout.tv_nsec = 0;
     timeout.tv_sec = 1;
-    IAmShTimerCallBack *buf = &pTimer1Callback;
-    sh_timerHandle_t handle_;
-    mSocketHandler->addTimer(timeout, buf, handle_, NULL);
+    mSocketHandler->restartTimer(handle,timeout);
 }
 
 void am::CAmTimerCb::timer2Callback(sh_timerHandle_t handle, void* userData)
 {
     (void) handle;
     (void) userData;
-    std::cout << "callback2 called" << std::endl;
+   // std::cout << "callback2 called" << std::endl;
     timespec timeout;
-    timeout.tv_nsec = 0;
-    timeout.tv_sec = 1;
-    IAmShTimerCallBack *buf = &pTimer2Callback;
-    sh_timerHandle_t handle_;
-    mSocketHandler->addTimer(timeout, buf, handle_, NULL);
+    timeout.tv_nsec = 011110000;
+    timeout.tv_sec = 0;
+    mSocketHandler->restartTimer(handle,timeout);
 }
 
 void am::CAmTimerCb::timer3Callback(sh_timerHandle_t, void* userData)
@@ -118,6 +114,34 @@ void* playWithUnixSocketServer(void* data)
     myHandler.start_listenting();
     return (NULL);
 }
+
+TEST(CAmSocketHandlerTest,playWithTimers)
+{
+    gDispatchDone = 0;
+    CAmSocketHandler myHandler;
+    CAmTimerCb testCallback(&myHandler);
+    timespec timeoutTime, timeout2, timeout3, timeout4;
+    timeoutTime.tv_sec = 1;
+    timeoutTime.tv_nsec = 02223234;
+    timeout2.tv_nsec = 333000;
+    timeout2.tv_sec = 0;
+    timeout3.tv_nsec = 333;
+    timeout3.tv_sec = 3;
+    timeout4.tv_nsec = 0;
+    timeout4.tv_sec = 20;
+    IAmShTimerCallBack* buf = &testCallback.pTimer1Callback;
+    IAmShTimerCallBack* buf2 = &testCallback.pTimer2Callback;
+    IAmShTimerCallBack* buf3 = &testCallback.pTimer3Callback;
+    IAmShTimerCallBack* buf4 = &testCallback.pTimer4Callback;
+    sh_timerHandle_t handle;
+    myHandler.addTimer(timeoutTime, buf, handle, NULL);
+    myHandler.addTimer(timeout2, buf2, handle, NULL);
+    myHandler.addTimer(timeout3, buf3, handle, NULL);
+    myHandler.addTimer(timeout4, buf4, handle, NULL);
+    myHandler.start_listenting();
+
+}
+
 
 TEST(CAmSocketHandlerTest,playWithUNIXSockets)
 {
@@ -199,32 +223,6 @@ TEST(CAmSocketHandlerTest,playWithSockets)
     pthread_join(serverThread, NULL);
 }
 
-TEST(CAmSocketHandlerTest,playWithTimers)
-{
-    gDispatchDone = 0;
-    CAmSocketHandler myHandler;
-    CAmTimerCb testCallback(&myHandler);
-    timespec timeoutTime, timeout2, timeout3, timeout4;
-    timeoutTime.tv_sec = 3;
-    timeoutTime.tv_nsec = 0;
-    timeout2.tv_nsec = 0;
-    timeout2.tv_sec = 1;
-    timeout3.tv_nsec = 000000000;
-    timeout3.tv_sec = 2;
-    timeout4.tv_nsec = 0;
-    timeout4.tv_sec = 13;
-    IAmShTimerCallBack* buf = &testCallback.pTimer1Callback;
-    IAmShTimerCallBack* buf2 = &testCallback.pTimer2Callback;
-    IAmShTimerCallBack* buf3 = &testCallback.pTimer3Callback;
-    IAmShTimerCallBack* buf4 = &testCallback.pTimer4Callback;
-    sh_timerHandle_t handle;
-    myHandler.addTimer(timeoutTime, buf, handle, NULL);
-    myHandler.addTimer(timeout2, buf2, handle, NULL);
-    myHandler.addTimer(timeout3, buf3, handle, NULL);
-    myHandler.addTimer(timeout4, buf4, handle, NULL);
-    myHandler.start_listenting();
-
-}
 
 void CAmSocketHandlerTest::SetUp()
 {

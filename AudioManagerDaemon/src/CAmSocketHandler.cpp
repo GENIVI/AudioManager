@@ -25,14 +25,11 @@
 #include <sys/fcntl.h>
 #include <sys/errno.h>
 #include <sys/poll.h>
-#include <algorithm>
 #include <time.h>
+#include <algorithm>
 #include <features.h>
 #include <csignal>
 #include "shared/CAmDltWrapper.h"
-
-//todo: implement time correction if timer was interrupted by call
-//todo: change hitlist to a list that holds all information, because entering and removing items will be cheaper than with std::vector
 
 namespace am
 {
@@ -41,14 +38,11 @@ CAmSocketHandler::CAmSocketHandler() :
         mListPoll(), //
         mListTimer(), //
         mListActiveTimer(), //
-        mNextTimer(), //
         mLastInsertedHandle(0), //
         mLastInsertedPollHandle(0), //
         mRecreatePollfds(true), //
-        mTimeout()
+        mStartTime()
 {
-    mTimeout.tv_nsec = -1;
-    mTimeout.tv_sec = -1;
     gDispatchDone = 0;
 }
 
@@ -64,10 +58,6 @@ void CAmSocketHandler::start_listenting()
 {
     gDispatchDone = 0;
     int16_t pollStatus;
-    std::list<int16_t> hitList;
-
-    //init the timer
-    initTimer();
 
     //prepare the signalmask
     sigset_t sigmask;
@@ -78,16 +68,11 @@ void CAmSocketHandler::start_listenting()
     sigaddset(&sigmask, SIGHUP);
     sigaddset(&sigmask, SIGQUIT);
 
+    clock_gettime(CLOCK_MONOTONIC, &mStartTime);
     while (!gDispatchDone)
     {
         //first we go through the registered filedescriptors and check if someone needs preparation:
-        mListPoll_t::iterator prepIter = mListPoll.begin();
-        IAmShPollPrepare *prep = NULL;
-        for (; prepIter != mListPoll.end(); ++prepIter)
-        {
-            if ((prep = prepIter->prepareCB) != NULL)
-                prep->Call(prepIter->handle, prepIter->userData);
-        }
+        std::for_each(mListPoll.begin(), mListPoll.end(), CAmShCallPrep());
 
         if (mRecreatePollfds)
         {
@@ -97,8 +82,10 @@ void CAmSocketHandler::start_listenting()
             mRecreatePollfds = false;
         }
 
+        if (!mListActiveTimer.empty())
+            timerCorrection();
+
         //block until something is on a filedescriptor
-#ifdef WITH_PPOLL
 
         timespec buffertime;
         if ((pollStatus = ppoll(&mfdPollingArray[0], mfdPollingArray.size(), insertTime(buffertime), &sigmask)) < 0)
@@ -115,84 +102,41 @@ void CAmSocketHandler::start_listenting()
             }
         }
 
-#else
-        //sigprocmask (SIG_SETMASK, &mask, &oldmask);
-        if((pollStatus=poll(&mfdPollingArray[0],mfdPollingArray.size(),timespec2ms(mTimeout)))<0)
-        {
-
-            if(errno==EINTR)
-            {
-                //a signal was received, that means it's time to go...
-                //todo: add things to do here before going to sleep
-                exit(0);
-            }
-            logError("SocketHandler::start_listenting poll returned with error",errno);
-            exit(0);
-        }
-        //sigprocmask (SIG_SETMASK, &oldmask, NULL);
-#endif
-
+        clock_gettime(CLOCK_MONOTONIC, &mStartTime);
         if (pollStatus != 0) //only check filedescriptors if there was a change
         {
             //todo: here could be a timer that makes sure naughty plugins return!
 
             //freeze mListPoll by copying it - otherwise we get problems when we want to manipulate it during the next lines
-            mListPoll_t listPoll(mListPoll);
+            std::list<sh_poll_s> listPoll;
+            mListPoll_t::iterator listmPollIt;
 
-            //get all indexes of the fired events and save them int hitList
-            hitList.clear();
+            //remove all filedescriptors who did not fire
             std::vector<pollfd>::iterator it = mfdPollingArray.begin();
             do
             {
-                it = std::find_if(it, mfdPollingArray.end(), onlyFiredEvents);
+                it = std::find_if(it, mfdPollingArray.end(), eventFired);
                 if (it != mfdPollingArray.end())
-                    hitList.push_back(std::distance(mfdPollingArray.begin(), it++));
-
+                {
+                    listmPollIt = mListPoll.begin();
+                    std::advance(listmPollIt, std::distance(mfdPollingArray.begin(), it));
+                    listPoll.push_back(*listmPollIt);
+                    listPoll.back().pollfdValue = *it;
+                    it++;
+                }
             } while (it != mfdPollingArray.end());
 
-            //stage 1, call firedCB for all matched events, but only if callback is not zero!
-            std::list<int16_t>::iterator hListIt = hitList.begin();
-            for (; hListIt != hitList.end(); ++hListIt)
-            {
-                IAmShPollFired* fire = NULL;
-                if ((fire = listPoll.at(*hListIt).firedCB) != NULL)
-                    fire->Call(mfdPollingArray.at(*hListIt), listPoll.at(*hListIt).handle, listPoll.at(*hListIt).userData);
-            }
+            //stage 1, call firedCB
+            std::for_each(listPoll.begin(), listPoll.end(), CAmShCallFire());
 
-            //stage 2, lets ask around if some dispatching is necessary, if not, they are taken from the hitlist
-            hListIt = hitList.begin();
-            for (; hListIt != hitList.end(); ++hListIt)
-            {
-                IAmShPollCheck* check = NULL;
-                if ((check = listPoll.at(*hListIt).checkCB) != NULL)
-                {
-                    if (!check->Call(listPoll.at(*hListIt).handle, listPoll.at(*hListIt).userData))
-                    {
-                        hListIt = hitList.erase(hListIt);
-                    }
-                }
-            }
+            //stage 2, lets ask around if some dispatching is necessary, the ones who need stay on the list
+            listPoll.remove_if(noDispatching);
 
             //stage 3, the ones left need to dispatch, we do this as long as there is something to dispatch..
             do
             {
-                hListIt = hitList.begin();
-                for (; hListIt != hitList.end(); ++hListIt)
-                {
-                    IAmShPollDispatch *dispatch = NULL;
-                    if ((dispatch = listPoll.at(*hListIt).dispatchCB) != NULL)
-                    {
-                        if (!dispatch->Call(listPoll.at(*hListIt).handle, listPoll.at(*hListIt).userData))
-                        {
-                            hListIt = hitList.erase(hListIt);
-                        }
-                    }
-                    else //there is no dispatch function, so we just remove the file from the list...
-                    {
-                        hListIt = hitList.erase(hListIt);
-                    }
-                }
-            } while (!hitList.empty());
+                listPoll.remove_if(dispatchingFinished);
+            } while (!listPoll.empty());
 
         }
         else //Timerevent
@@ -288,20 +232,16 @@ am_Error_e CAmSocketHandler::addTimer(const timespec timeouts, IAmShTimerCallBac
     sh_timer_s timerItem;
 
     //create a new handle for the timer
-    handle = ++mLastInsertedHandle; //todo: overflow ruling !
+    handle = ++mLastInsertedHandle; //todo: overflow ruling !o
     timerItem.handle = handle;
     timerItem.countdown = timeouts;
     timerItem.timeout = timeouts;
     timerItem.callback = callback;
     timerItem.userData = userData;
 
-    //add timer to the list
-    mListActiveTimer.push_back(timerItem);
     mListTimer.push_back(timerItem);
-
-    //very important: sort the list so that the smallest value is front
+    mListActiveTimer.push_back(timerItem);
     mListActiveTimer.sort(compareCountdown);
-    mTimeout = mListActiveTimer.front().countdown;
     return (E_OK);
 }
 
@@ -348,16 +288,11 @@ am_Error_e CAmSocketHandler::restartTimer(const sh_timerHandle_t handle, const t
         }
     }
 
-    if (timeouts.tv_nsec != -1 && timeouts.tv_sec != -1)
-    {
-        timerItem.timeout = timeouts;
-    }
+    timerItem.timeout=timeouts;
+    timerItem.countdown=timeouts;
 
     mListActiveTimer.push_back(timerItem);
-
-    //very important: sort the list so that the smallest value is front
     mListActiveTimer.sort(compareCountdown);
-    mTimeout = mListActiveTimer.front().countdown;
     return (E_OK);
 }
 
@@ -370,15 +305,6 @@ am_Error_e CAmSocketHandler::stopTimer(const sh_timerHandle_t handle)
         if (it->handle == handle)
         {
             it = mListActiveTimer.erase(it);
-            if (!mListActiveTimer.empty())
-            {
-                mTimeout = mListActiveTimer.front().countdown;
-            }
-            else
-            {
-                mTimeout.tv_nsec = -1;
-                mTimeout.tv_sec = -1;
-            }
             return (E_OK);
         }
     }
@@ -387,7 +313,9 @@ am_Error_e CAmSocketHandler::stopTimer(const sh_timerHandle_t handle)
 
 /**
  * updates the eventFlags of a poll
- * @param handle
+ * @param handle    buffertime.tv_nsec = mTimeout.tv_nsec;
+ buffertime.tv_sec = mTimeout.tv_sec;
+ return ((mTimeout.tv_nsec == -1 && mTimeout.tv_sec == -1) ? NULL : &buffertime);
  * @param events
  * @return @return E_OK on succsess, E_NON_EXISTENT if fd was not found
  */
@@ -408,7 +336,7 @@ am_Error_e CAmSocketHandler::updateEventFlags(const sh_pollHandle_t handle, cons
 }
 
 /**
- * checks if a filedescriptor is valid
+ * checks if a filedescriptor is validCAmShSubstractTime
  * @param fd the filedescriptor
  * @return true if the fd is valid
  */
@@ -418,43 +346,25 @@ bool CAmSocketHandler::fdIsValid(const int fd) const
 }
 
 /**
- * whenever a timer is up, this function needs to be called.
- * Removes the fired timer, calls the callback and resets mTimeout
+ * timer is up.
  */
 void CAmSocketHandler::timerUp()
 {
-    //first fire the event
-    mListActiveTimer.front().callback->Call(mListActiveTimer.front().handle, mListActiveTimer.front().userData);
+    //first we need to correct all the countdown values by the one who fired
+    std::for_each(mListActiveTimer.begin(), mListActiveTimer.end(), CAmShSubstractTime(mListActiveTimer.begin()->countdown));
 
-    //then remove the first timer, the one who fired
-    mListActiveTimer.pop_front();
-    if (!mListActiveTimer.empty())
-    {
-        //substract the old value from all timers in the list
-        std::for_each(mListActiveTimer.begin(), mListActiveTimer.end(), CAmShSubstractTime(mTimeout));
-        mTimeout = mListActiveTimer.front().countdown;
-    }
-    else
-    {
-        mTimeout.tv_nsec = -1;
-        mTimeout.tv_sec = -1;
-    }
-}
+    //then find the last value that is zero. Since the first value is subtracted, we will always have the first one
+    std::list<sh_timer_s>::reverse_iterator overflowIter = std::find_if(mListActiveTimer.rbegin(), mListActiveTimer.rend(), CAmShCountdownUp());
 
-/**
- * init the timers
- */
-void CAmSocketHandler::initTimer()
-{
-    if (!mListActiveTimer.empty())
-    {
-        mTimeout = mListActiveTimer.front().countdown;
-    }
-    else
-    {
-        mTimeout.tv_nsec = -1;
-        mTimeout.tv_sec = -1;
-    }
+    //copy all fired timers into a list
+    std::vector<sh_timer_s> tempList(overflowIter, mListActiveTimer.rend());
+
+    //erase all fired timers
+    std::list<sh_timer_s>::iterator it(overflowIter.base());
+    mListActiveTimer.erase(mListActiveTimer.begin(), it);
+
+    //call the callbacks for the timers
+    std::for_each(tempList.begin(), tempList.end(), CAmShCallTimer());
 }
 
 /**
@@ -467,11 +377,48 @@ inline int CAmSocketHandler::timespec2ms(const timespec & time)
     return ((time.tv_nsec == -1 && time.tv_sec == -1) ? -1 : time.tv_sec * 1000 + time.tv_nsec / 1000000);
 }
 
+/**
+ * correct timers
+ */
+void CAmSocketHandler::timerCorrection()
+{
+    //get the current time and calculate the correction value
+    timespec currentTime, correctionTime;
+    clock_gettime(CLOCK_MONOTONIC, &currentTime);
+    correctionTime = timespecSub(currentTime, mStartTime);
+
+    //subtract the correction value from all items in the list
+    std::for_each(mListActiveTimer.begin(), mListActiveTimer.end(), CAmShSubstractTime(correctionTime));
+
+    //find the last occurrence of zero -> timer overflowed
+    std::list<sh_timer_s>::reverse_iterator overflowIter = std::find_if(mListActiveTimer.rbegin(), mListActiveTimer.rend(), CAmShCountdownUp());
+
+    //only if a timer overflowed
+    if (overflowIter != mListActiveTimer.rend())
+    {
+        //copy all timer that need to be called to a new list
+        std::vector<sh_timer_s> tempList(overflowIter, mListActiveTimer.rend());
+
+        //erase all fired timers
+        std::list<sh_timer_s>::iterator it(overflowIter.base());
+        mListActiveTimer.erase(mListActiveTimer.begin(), it);
+
+        //call the callbacks for the timers
+        std::for_each(tempList.begin(), tempList.end(), CAmShCallTimer());
+    }
+}
+
 inline timespec* CAmSocketHandler::insertTime(timespec& buffertime)
 {
-    buffertime.tv_nsec = mTimeout.tv_nsec;
-    buffertime.tv_sec = mTimeout.tv_sec;
-    return ((mTimeout.tv_nsec == -1 && mTimeout.tv_sec == -1) ? NULL : &buffertime);
+    if (!mListActiveTimer.empty())
+    {
+        buffertime = mListActiveTimer.front().countdown;
+        return (&buffertime);
+    }
+    else
+    {
+        return (NULL);
+    }
 }
 
 /**
@@ -480,23 +427,8 @@ inline timespec* CAmSocketHandler::insertTime(timespec& buffertime)
  */
 void CAmSocketHandler::CAmShSubstractTime::operator ()(sh_timer_s & t) const
 {
-    int val = 0;
-    if ((val = t.countdown.tv_nsec - param.tv_nsec) < 0)
-    {
-        t.countdown.tv_nsec = 1000000000 + val;
-        t.countdown.tv_sec--;
-    }
-    else
-    {
-        t.countdown.tv_nsec = val;
-    }
-    (t.countdown.tv_sec - param.tv_sec) < 0 ? 0 : (t.countdown.tv_sec -= param.tv_sec);
+    t.countdown = timespecSub(t.countdown, param);
 }
 
-void CAmSocketHandler::CAmShCopyPollfd::operator ()(const sh_poll_s & row)
-{
-    pollfd temp = row.pollfdValue;
-    temp.revents = 0;
-    mArray.push_back(temp);
 }
-}
+
