@@ -129,6 +129,8 @@ private:
     void setSourceSoundPropertiesExec(std::queue<std::string> & CmdQueue, int & filedescriptor);
     static void setSinkSoundProperties(std::queue<std::string> & CmdQueue, int & filedescriptor);
     void setSinkSoundPropertiesExec(std::queue<std::string> & CmdQueue, int & filedescriptor);
+    static void setSinkVolume(std::queue<std::string> & CmdQueue, int & filedescriptor);
+    void setSinkVolumeExec(std::queue<std::string> & CmdQueue, int & filedescriptor);
 
     // GET commands
     static void getRoutingCommand(std::queue<std::string> & CmdQueue, int & filedescriptor);
