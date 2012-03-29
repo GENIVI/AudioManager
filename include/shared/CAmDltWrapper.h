@@ -21,6 +21,7 @@
 
 #include "config.h"
 #include <string>
+#include <pthread.h>
 
 #ifdef WITH_DLT
 #include <dlt/dlt.h>
@@ -88,7 +89,6 @@ namespace am
 class CAmDltWrapper
 {
 public:
-    static pthread_mutex_t logMutex;
     static CAmDltWrapper* instance(const bool enableNoDLTDebug = false);
     void registerApp(const char *appid, const char * description);
     void registerContext(DltContext& handle, const char *contextid, const char * description);
@@ -118,6 +118,7 @@ private:
     DltContext mDltContext; //!< the default context
     DltContextData mDltContextData; //!< contextdata
     static CAmDltWrapper* mpDLTWrapper; //!< pointer to the wrapper instance
+    static pthread_mutex_t mMutex;
 
 };
 
@@ -137,11 +138,9 @@ inline CAmDltWrapper* getWrapper()
 template<typename T> void logInfo(T value)
 {
     CAmDltWrapper* inst(getWrapper());
-    pthread_mutex_lock(&inst->logMutex);
     inst->init(DLT_LOG_INFO);
     inst->append(value);
     inst->send();
-    pthread_mutex_unlock(&inst->logMutex);
 }
 
 /**
@@ -152,12 +151,12 @@ template<typename T> void logInfo(T value)
 template<typename T, typename T1> void logInfo(T value, T1 value1)
 {
     CAmDltWrapper* inst(getWrapper());
-    pthread_mutex_lock(&inst->logMutex);
+
     inst->init(DLT_LOG_INFO);
     inst->append(value);
     inst->append(value1);
     inst->send();
-    pthread_mutex_unlock(&inst->logMutex);
+
 }
 
 /**
@@ -169,13 +168,13 @@ template<typename T, typename T1> void logInfo(T value, T1 value1)
 template<typename T, typename T1, typename T2> void logInfo(T value, T1 value1, T2 value2)
 {
     CAmDltWrapper* inst(getWrapper());
-    pthread_mutex_lock(&inst->logMutex);
+
     inst->init(DLT_LOG_INFO);
     inst->append(value);
     inst->append(value1);
     inst->append(value2);
     inst->send();
-    pthread_mutex_unlock(&inst->logMutex);
+
 }
 
 /**
@@ -188,14 +187,14 @@ template<typename T, typename T1, typename T2> void logInfo(T value, T1 value1, 
 template<typename T, typename T1, typename T2, typename T3> void logInfo(T value, T1 value1, T2 value2, T3 value3)
 {
     CAmDltWrapper* inst(getWrapper());
-    pthread_mutex_lock(&inst->logMutex);
+
     inst->init(DLT_LOG_INFO);
     inst->append(value);
     inst->append(value1);
     inst->append(value2);
     inst->append(value3);
     inst->send();
-    pthread_mutex_unlock(&inst->logMutex);
+
 }
 
 /**
@@ -209,7 +208,7 @@ template<typename T, typename T1, typename T2, typename T3> void logInfo(T value
 template<typename T, typename T1, typename T2, typename T3, typename T4> void logInfo(T value, T1 value1, T2 value2, T3 value3, T4 value4)
 {
     CAmDltWrapper* inst(getWrapper());
-    pthread_mutex_lock(&inst->logMutex);
+
     inst->init(DLT_LOG_INFO);
     inst->append(value);
     inst->append(value1);
@@ -217,7 +216,7 @@ template<typename T, typename T1, typename T2, typename T3, typename T4> void lo
     inst->append(value3);
     inst->append(value4);
     inst->send();
-    pthread_mutex_unlock(&inst->logMutex);
+
 }
 
 /**
@@ -232,7 +231,7 @@ template<typename T, typename T1, typename T2, typename T3, typename T4> void lo
 template<typename T, typename T1, typename T2, typename T3, typename T4, typename T5> void logInfo(T value, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5)
 {
     CAmDltWrapper* inst(getWrapper());
-    pthread_mutex_lock(&inst->logMutex);
+
     inst->init(DLT_LOG_INFO);
     inst->append(value);
     inst->append(value1);
@@ -241,7 +240,7 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
     inst->append(value4);
     inst->append(value5);
     inst->send();
-    pthread_mutex_unlock(&inst->logMutex);
+
 }
 
 /**
@@ -257,7 +256,7 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
 template<typename T, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6> void logInfo(T value, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5, T6 value6)
 {
     CAmDltWrapper* inst(getWrapper());
-    pthread_mutex_lock(&inst->logMutex);
+
     inst->init(DLT_LOG_INFO);
     inst->append(value);
     inst->append(value1);
@@ -267,7 +266,7 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
     inst->append(value5);
     inst->append(value6);
     inst->send();
-    pthread_mutex_unlock(&inst->logMutex);
+
 }
 
 /**
@@ -284,7 +283,7 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
 template<typename T, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7> void logInfo(T value, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5, T6 value6, T7 value7)
 {
     CAmDltWrapper* inst(getWrapper());
-    pthread_mutex_lock(&inst->logMutex);
+
     inst->init(DLT_LOG_INFO);
     inst->append(value);
     inst->append(value1);
@@ -295,7 +294,7 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
     inst->append(value6);
     inst->append(value7);
     inst->send();
-    pthread_mutex_unlock(&inst->logMutex);
+
 }
 
 /**
@@ -313,7 +312,7 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
 template<typename T, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8> void logInfo(T value, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5, T6 value6, T7 value7, T8 value8)
 {
     CAmDltWrapper* inst(getWrapper());
-    pthread_mutex_lock(&inst->logMutex);
+
     inst->init(DLT_LOG_INFO);
     inst->append(value);
     inst->append(value1);
@@ -325,7 +324,7 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
     inst->append(value7);
     inst->append(value8);
     inst->send();
-    pthread_mutex_unlock(&inst->logMutex);
+
 }
 
 /**
@@ -344,7 +343,7 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
 template<typename T, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9> void logInfo(T value, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5, T6 value6, T7 value7, T8 value8, T9 value9)
 {
     CAmDltWrapper* inst(getWrapper());
-    pthread_mutex_lock(&inst->logMutex);
+
     inst->init(DLT_LOG_INFO);
     inst->append(value);
     inst->append(value1);
@@ -357,7 +356,7 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
     inst->append(value8);
     inst->append(value9);
     inst->send();
-    pthread_mutex_unlock(&inst->logMutex);
+
 }
 
 /**
@@ -377,7 +376,7 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
 template<typename T, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9, typename T10> void logInfo(T value, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5, T6 value6, T7 value7, T8 value8, T9 value9, T10 value10)
 {
     CAmDltWrapper* inst(getWrapper());
-    pthread_mutex_lock(&inst->logMutex);
+
     inst->init(DLT_LOG_INFO);
     inst->append(value);
     inst->append(value1);
@@ -391,7 +390,7 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
     inst->append(value9);
     inst->append(value10);
     inst->send();
-    pthread_mutex_unlock(&inst->logMutex);
+
 }
 
 /**
@@ -401,11 +400,11 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
 template<typename T> void logError(T value)
 {
     CAmDltWrapper* inst(getWrapper());
-    pthread_mutex_lock(&inst->logMutex);
+
     inst->init(DLT_LOG_ERROR);
     inst->append(value);
     inst->send();
-    pthread_mutex_unlock(&inst->logMutex);
+
 }
 
 /**
@@ -416,12 +415,12 @@ template<typename T> void logError(T value)
 template<typename T, typename T1> void logError(T value, T1 value1)
 {
     CAmDltWrapper* inst(getWrapper());
-    pthread_mutex_lock(&inst->logMutex);
+
     inst->init(DLT_LOG_ERROR);
     inst->append(value);
     inst->append(value1);
     inst->send();
-    pthread_mutex_unlock(&inst->logMutex);
+
 }
 
 /**
@@ -433,13 +432,13 @@ template<typename T, typename T1> void logError(T value, T1 value1)
 template<typename T, typename T1, typename T2> void logError(T value, T1 value1, T2 value2)
 {
     CAmDltWrapper* inst(getWrapper());
-    pthread_mutex_lock(&inst->logMutex);
+
     inst->init(DLT_LOG_ERROR);
     inst->append(value);
     inst->append(value1);
     inst->append(value2);
     inst->send();
-    pthread_mutex_unlock(&inst->logMutex);
+
 }
 
 /**
@@ -452,14 +451,14 @@ template<typename T, typename T1, typename T2> void logError(T value, T1 value1,
 template<typename T, typename T1, typename T2, typename T3> void logError(T value, T1 value1, T2 value2, T3 value3)
 {
     CAmDltWrapper* inst(getWrapper());
-    pthread_mutex_lock(&inst->logMutex);
+
     inst->init(DLT_LOG_ERROR);
     inst->append(value);
     inst->append(value1);
     inst->append(value2);
     inst->append(value3);
     inst->send();
-    pthread_mutex_unlock(&inst->logMutex);
+
 }
 
 /**
@@ -473,7 +472,7 @@ template<typename T, typename T1, typename T2, typename T3> void logError(T valu
 template<typename T, typename T1, typename T2, typename T3, typename T4> void logError(T value, T1 value1, T2 value2, T3 value3, T4 value4)
 {
     CAmDltWrapper* inst(getWrapper());
-    pthread_mutex_lock(&inst->logMutex);
+
     inst->init(DLT_LOG_ERROR);
     inst->append(value);
     inst->append(value1);
@@ -481,7 +480,7 @@ template<typename T, typename T1, typename T2, typename T3, typename T4> void lo
     inst->append(value3);
     inst->append(value4);
     inst->send();
-    pthread_mutex_unlock(&inst->logMutex);
+
 }
 
 /**
@@ -496,7 +495,7 @@ template<typename T, typename T1, typename T2, typename T3, typename T4> void lo
 template<typename T, typename T1, typename T2, typename T3, typename T4, typename T5> void logError(T value, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5)
 {
     CAmDltWrapper* inst(getWrapper());
-    pthread_mutex_lock(&inst->logMutex);
+
     inst->init(DLT_LOG_ERROR);
     inst->append(value);
     inst->append(value1);
@@ -505,7 +504,7 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
     inst->append(value4);
     inst->append(value5);
     inst->send();
-    pthread_mutex_unlock(&inst->logMutex);
+
 }
 
 /**
@@ -521,7 +520,7 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
 template<typename T, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6> void logError(T value, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5, T6 value6)
 {
     CAmDltWrapper* inst(getWrapper());
-    pthread_mutex_lock(&inst->logMutex);
+
     inst->init(DLT_LOG_ERROR);
     inst->append(value);
     inst->append(value1);
@@ -531,7 +530,7 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
     inst->append(value5);
     inst->append(value6);
     inst->send();
-    pthread_mutex_unlock(&inst->logMutex);
+
 }
 
 /**
@@ -548,7 +547,7 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
 template<typename T, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7> void logError(T value, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5, T6 value6, T7 value7)
 {
     CAmDltWrapper* inst(getWrapper());
-    pthread_mutex_lock(&inst->logMutex);
+
     inst->init(DLT_LOG_ERROR);
     inst->append(value);
     inst->append(value1);
@@ -559,7 +558,7 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
     inst->append(value6);
     inst->append(value7);
     inst->send();
-    pthread_mutex_unlock(&inst->logMutex);
+
 }
 
 /**
@@ -577,7 +576,7 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
 template<typename T, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8> void logError(T value, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5, T6 value6, T7 value7, T8 value8)
 {
     CAmDltWrapper* inst(getWrapper());
-    pthread_mutex_lock(&inst->logMutex);
+
     inst->init(DLT_LOG_ERROR);
     inst->append(value);
     inst->append(value1);
@@ -589,7 +588,7 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
     inst->append(value7);
     inst->append(value8);
     inst->send();
-    pthread_mutex_unlock(&inst->logMutex);
+
 }
 
 /**
@@ -608,7 +607,7 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
 template<typename T, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9> void logError(T value, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5, T6 value6, T7 value7, T8 value8, T9 value9)
 {
     CAmDltWrapper* inst(getWrapper());
-    pthread_mutex_lock(&inst->logMutex);
+
     inst->init(DLT_LOG_ERROR);
     inst->append(value);
     inst->append(value1);
@@ -621,7 +620,7 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
     inst->append(value8);
     inst->append(value9);
     inst->send();
-    pthread_mutex_unlock(&inst->logMutex);
+
 }
 
 /**
@@ -641,7 +640,7 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
 template<typename T, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9, typename T10> void logError(T value, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5, T6 value6, T7 value7, T8 value8, T9 value9, T10 value10)
 {
     CAmDltWrapper* inst(getWrapper());
-    pthread_mutex_lock(&inst->logMutex);
+
     inst->init(DLT_LOG_ERROR);
     inst->append(value);
     inst->append(value1);
@@ -655,7 +654,7 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
     inst->append(value9);
     inst->append(value10);
     inst->send();
-    pthread_mutex_unlock(&inst->logMutex);
+
 }
 
 /**
@@ -667,11 +666,11 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
 template<typename T> void log(DltContext* const context, DltLogLevelType loglevel, T value)
 {
     CAmDltWrapper* inst(getWrapper());
-    pthread_mutex_lock(&inst->logMutex);
+
     inst->init(loglevel, context);
     inst->append(value);
     inst->send();
-    pthread_mutex_unlock(&inst->logMutex);
+
 }
 
 /**
@@ -684,12 +683,12 @@ template<typename T> void log(DltContext* const context, DltLogLevelType logleve
 template<typename T, typename T1> void log(DltContext* const context, DltLogLevelType loglevel, T value, T1 value1)
 {
     CAmDltWrapper* inst(getWrapper());
-    pthread_mutex_lock(&inst->logMutex);
+
     inst->init(loglevel, context);
     inst->append(value);
     inst->append(value1);
     inst->send();
-    pthread_mutex_unlock(&inst->logMutex);
+
 }
 
 /**
@@ -703,13 +702,13 @@ template<typename T, typename T1> void log(DltContext* const context, DltLogLeve
 template<typename T, typename T1, typename T2> void log(DltContext* const context, DltLogLevelType loglevel, T value, T1 value1, T2 value2)
 {
     CAmDltWrapper* inst(getWrapper());
-    pthread_mutex_lock(&inst->logMutex);
+
     inst->init(loglevel, context);
     inst->append(value);
     inst->append(value1);
     inst->append(value2);
     inst->send();
-    pthread_mutex_unlock(&inst->logMutex);
+
 }
 
 /**
@@ -724,14 +723,14 @@ template<typename T, typename T1, typename T2> void log(DltContext* const contex
 template<typename T, typename T1, typename T2, typename T3> void log(DltContext* const context, DltLogLevelType loglevel, T value, T1 value1, T2 value2, T3 value3)
 {
     CAmDltWrapper* inst(getWrapper());
-    pthread_mutex_lock(&inst->logMutex);
+
     inst->init(loglevel, context);
     inst->append(value);
     inst->append(value1);
     inst->append(value2);
     inst->append(value3);
     inst->send();
-    pthread_mutex_unlock(&inst->logMutex);
+
 }
 
 /**
@@ -747,7 +746,7 @@ template<typename T, typename T1, typename T2, typename T3> void log(DltContext*
 template<typename T, typename T1, typename T2, typename T3, typename T4> void log(DltContext* const context, DltLogLevelType loglevel, T value, T1 value1, T2 value2, T3 value3, T4 value4)
 {
     CAmDltWrapper* inst(getWrapper());
-    pthread_mutex_lock(&inst->logMutex);
+
     inst->init(loglevel, context);
     inst->append(value);
     inst->append(value1);
@@ -755,7 +754,7 @@ template<typename T, typename T1, typename T2, typename T3, typename T4> void lo
     inst->append(value3);
     inst->append(value4);
     inst->send();
-    pthread_mutex_unlock(&inst->logMutex);
+
 }
 
 /**
@@ -772,7 +771,7 @@ template<typename T, typename T1, typename T2, typename T3, typename T4> void lo
 template<typename T, typename T1, typename T2, typename T3, typename T4, typename T5> void log(DltContext* const context, DltLogLevelType loglevel, T value, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5)
 {
     CAmDltWrapper* inst(getWrapper());
-    pthread_mutex_lock(&inst->logMutex);
+
     inst->init(loglevel, context);
     inst->append(value);
     inst->append(value1);
@@ -781,7 +780,7 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
     inst->append(value4);
     inst->append(value5);
     inst->send();
-    pthread_mutex_unlock(&inst->logMutex);
+
 }
 
 /**
@@ -799,7 +798,7 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
 template<typename T, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6> void log(DltContext* const context, DltLogLevelType loglevel, T value, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5, T6 value6)
 {
     CAmDltWrapper* inst(getWrapper());
-    pthread_mutex_lock(&inst->logMutex);
+
     inst->init(loglevel, context);
     inst->append(value);
     inst->append(value1);
@@ -809,7 +808,7 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
     inst->append(value5);
     inst->append(value6);
     inst->send();
-    pthread_mutex_unlock(&inst->logMutex);
+
 }
 
 /**
@@ -828,7 +827,7 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
 template<typename T, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7> void log(DltContext* const context, DltLogLevelType loglevel, T value, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5, T6 value6, T7 value7)
 {
     CAmDltWrapper* inst(getWrapper());
-    pthread_mutex_lock(&inst->logMutex);
+
     inst->init(loglevel, context);
     inst->append(value);
     inst->append(value1);
@@ -839,7 +838,7 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
     inst->append(value6);
     inst->append(value7);
     inst->send();
-    pthread_mutex_unlock(&inst->logMutex);
+
 }
 
 /**
@@ -859,7 +858,7 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
 template<typename T, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8> void log(DltContext* const context, DltLogLevelType loglevel, T value, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5, T6 value6, T7 value7, T8 value8)
 {
     CAmDltWrapper* inst(getWrapper());
-    pthread_mutex_lock(&inst->logMutex);
+
     inst->init(loglevel, context);
     inst->append(value);
     inst->append(value1);
@@ -871,7 +870,7 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
     inst->append(value7);
     inst->append(value8);
     inst->send();
-    pthread_mutex_unlock(&inst->logMutex);
+
 }
 }
 

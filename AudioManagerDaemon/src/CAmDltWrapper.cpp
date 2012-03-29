@@ -30,7 +30,7 @@ namespace am
 {
 
 CAmDltWrapper* CAmDltWrapper::mpDLTWrapper = NULL;
-pthread_mutex_t CAmDltWrapper::logMutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t CAmDltWrapper::mMutex = PTHREAD_MUTEX_INITIALIZER;
 
 CAmDltWrapper *CAmDltWrapper::instance(const bool enableNoDLTDebug)
 {
@@ -96,6 +96,7 @@ void CAmDltWrapper::registerContext(DltContext& handle, const char *contextid, c
 void CAmDltWrapper::init(DltLogLevelType loglevel, DltContext* context)
 {
     (void) loglevel;
+    pthread_mutex_lock(&mMutex);
     if (!context)
         context = &mDltContext;
 #ifdef WITH_DLT
@@ -115,6 +116,7 @@ void CAmDltWrapper::send()
     mDltContextData.buffer.str("");
     mDltContextData.buffer.clear();
 #endif
+    pthread_mutex_unlock(&mMutex);
 }
 
 void CAmDltWrapper::append(const int8_t value)

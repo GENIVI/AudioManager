@@ -22,6 +22,7 @@
 #include "IAmRoutingReceiverShadow.h"
 #include <semaphore.h>
 #include <memory.h>
+#include <map>
 
 namespace am
 {

@@ -132,7 +132,7 @@ CAmDbusWrapper::~CAmDbusWrapper()
  */
 void CAmDbusWrapper::registerCallback(const DBusObjectPathVTable* vtable, const std::string& path, void* userdata)
 {
-    logInfo("DBusWrapper::~registerCallback register callback:", path);
+    logInfo("DBusWrapper::registerCallback register callback:", path);
 
     std::string completePath = std::string(DBUS_SERVICE_OBJECT_PATH) + "/" + path;
     dbus_error_init(&mDBusError);
@@ -314,10 +314,9 @@ dbus_bool_t CAmDbusWrapper::addTimeoutDelegate(DBusTimeout *timeout, void* userD
     //prepare handle and callback. new is eval, but there is no other choice because we need the pointer!
     sh_timerHandle_t* handle = new sh_timerHandle_t;
     mpListTimerhandles.push_back(handle);
-    IAmShTimerCallBack* buffer = &pDbusTimerCallback;
 
     //add the timer to the pollLoop
-    mpSocketHandler->addTimer(pollTimeout, buffer, *handle, timeout);
+    mpSocketHandler->addTimer(pollTimeout, &pDbusTimerCallback, *handle, timeout);
 
     //save the handle with dbus context
     dbus_timeout_set_data(timeout, handle, NULL);
@@ -427,7 +426,7 @@ void CAmDbusWrapper::toggleTimeoutDelegate(DBusTimeout *timeout, void* userData)
         int localTimeout = dbus_timeout_get_interval(timeout);
         pollTimeout.tv_sec = localTimeout / 1000;
         pollTimeout.tv_nsec = (localTimeout % 1000) * 1000000;
-        mpSocketHandler->restartTimer(*handle, pollTimeout);
+        mpSocketHandler->updateTimer(*handle, pollTimeout);
     }
     else
     {
@@ -441,10 +440,7 @@ void CAmDbusWrapper::dbusTimerCallback(sh_timerHandle_t handle, void *userData)
     assert(userData!=NULL);
     if (dbus_timeout_get_enabled((DBusTimeout*) userData))
     {
-        timespec ts;
-        ts.tv_nsec = -1;
-        ts.tv_sec = -1;
-        mpSocketHandler->restartTimer(handle, ts);
+        mpSocketHandler->restartTimer(handle);
     }
     dbus_timeout_handle((DBusTimeout*) userData);
     logInfo("DBusWrapper::dbusTimerCallback was called");

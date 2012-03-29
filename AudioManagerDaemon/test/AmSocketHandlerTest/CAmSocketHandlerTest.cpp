@@ -68,18 +68,18 @@ void am::CAmTimerCb::timer1Callback(sh_timerHandle_t handle, void* userData)
     timespec timeout;
     timeout.tv_nsec = 0;
     timeout.tv_sec = 1;
-    mSocketHandler->restartTimer(handle,timeout);
+    mSocketHandler->updateTimer(handle,timeout);
 }
 
 void am::CAmTimerCb::timer2Callback(sh_timerHandle_t handle, void* userData)
 {
     (void) handle;
     (void) userData;
-   // std::cout << "callback2 called" << std::endl;
+    std::cout << "callback2 called" << std::endl;
     timespec timeout;
     timeout.tv_nsec = 011110000;
-    timeout.tv_sec = 0;
-    mSocketHandler->restartTimer(handle,timeout);
+    timeout.tv_sec = 1;
+    mSocketHandler->updateTimer(handle,timeout);
 }
 
 void am::CAmTimerCb::timer3Callback(sh_timerHandle_t, void* userData)
@@ -117,7 +117,6 @@ void* playWithUnixSocketServer(void* data)
 
 TEST(CAmSocketHandlerTest,playWithTimers)
 {
-    gDispatchDone = 0;
     CAmSocketHandler myHandler;
     CAmTimerCb testCallback(&myHandler);
     timespec timeoutTime, timeout2, timeout3, timeout4;
@@ -129,15 +128,11 @@ TEST(CAmSocketHandlerTest,playWithTimers)
     timeout3.tv_sec = 3;
     timeout4.tv_nsec = 0;
     timeout4.tv_sec = 20;
-    IAmShTimerCallBack* buf = &testCallback.pTimer1Callback;
-    IAmShTimerCallBack* buf2 = &testCallback.pTimer2Callback;
-    IAmShTimerCallBack* buf3 = &testCallback.pTimer3Callback;
-    IAmShTimerCallBack* buf4 = &testCallback.pTimer4Callback;
     sh_timerHandle_t handle;
-    myHandler.addTimer(timeoutTime, buf, handle, NULL);
-    myHandler.addTimer(timeout2, buf2, handle, NULL);
-    myHandler.addTimer(timeout3, buf3, handle, NULL);
-    myHandler.addTimer(timeout4, buf4, handle, NULL);
+    myHandler.addTimer(timeoutTime, &testCallback.pTimer1Callback, handle, NULL);
+    myHandler.addTimer(timeout2, &testCallback.pTimer2Callback, handle, NULL);
+    myHandler.addTimer(timeout3, &testCallback.pTimer3Callback, handle, NULL);
+    myHandler.addTimer(timeout4, &testCallback.pTimer4Callback, handle, NULL);
     myHandler.start_listenting();
 
 }

@@ -27,10 +27,13 @@
 #include <map>
 #include <signal.h>
 
+#include <iostream> //todo: remove me
 namespace am
 {
 
-static volatile sig_atomic_t gDispatchDone = 0; //this global is used to stop the mainloop
+#define MAX_NS 1000000000L
+
+static volatile sig_atomic_t gDispatchDone = 1; //this global is used to stop the mainloop
 
 typedef uint16_t sh_timerHandle_t; //!<this is a handle for a timer to be used with the SocketHandler
 typedef uint16_t sh_pollHandle_t; //!<this is a handle for a filedescriptor to be used with the SocketHandler
@@ -42,7 +45,10 @@ class IAmShPollPrepare
 {
 public:
     virtual void Call(const sh_pollHandle_t handle, void* userData)=0;
-    virtual ~IAmShPollPrepare(){};
+    virtual ~IAmShPollPrepare()
+    {
+    }
+    ;
 };
 
 /**
@@ -52,7 +58,10 @@ class IAmShPollFired
 {
 public:
     virtual void Call(const pollfd pollfd, const sh_pollHandle_t handle, void* userData)=0;
-    virtual ~ IAmShPollFired(){};
+    virtual ~ IAmShPollFired()
+    {
+    }
+    ;
 };
 
 /**
@@ -62,7 +71,10 @@ class IAmShPollCheck
 {
 public:
     virtual bool Call(const sh_pollHandle_t handle, void* userData)=0;
-    virtual ~ IAmShPollCheck(){};
+    virtual ~ IAmShPollCheck()
+    {
+    }
+    ;
 };
 
 /**
@@ -72,7 +84,10 @@ class IAmShPollDispatch
 {
 public:
     virtual bool Call(const sh_pollHandle_t handle, void* userData)=0;
-    virtual ~ IAmShPollDispatch(){};
+    virtual ~ IAmShPollDispatch()
+    {
+    }
+    ;
 };
 
 /**
@@ -82,7 +97,10 @@ class IAmShTimerCallBack
 {
 public:
     virtual void Call(const sh_timerHandle_t handle, void* userData)=0;
-    virtual ~IAmShTimerCallBack(){};
+    virtual ~IAmShTimerCallBack()
+    {
+    }
+    ;
 };
 
 /**
@@ -99,9 +117,10 @@ public:
     am_Error_e addFDPoll(const int fd, const short event, IAmShPollPrepare *prepare, IAmShPollFired *fired, IAmShPollCheck *check, IAmShPollDispatch *dispatch, void* userData, sh_pollHandle_t& handle);
     am_Error_e removeFDPoll(const sh_pollHandle_t handle);
     am_Error_e updateEventFlags(const sh_pollHandle_t handle, const short events);
-    am_Error_e addTimer(const timespec timeouts, IAmShTimerCallBack*& callback, sh_timerHandle_t& handle, void* userData);
+    am_Error_e addTimer(const timespec timeouts, IAmShTimerCallBack* callback, sh_timerHandle_t& handle, void* userData);
     am_Error_e removeTimer(const sh_timerHandle_t handle);
-    am_Error_e restartTimer(const sh_timerHandle_t handle, const timespec timeouts);
+    am_Error_e restartTimer(const sh_timerHandle_t handle);
+    am_Error_e updateTimer(const sh_timerHandle_t handle, const timespec timeouts);
     am_Error_e stopTimer(const sh_timerHandle_t handle);
     void start_listenting();
     void stop_listening();
@@ -110,30 +129,19 @@ private:
     {
         sh_timerHandle_t handle; //!<the handle of the timer
         timespec countdown; //!<the countdown, this value is decreased every time the timer is up
-        timespec timeout; //!<the original timer value
         IAmShTimerCallBack* callback; //!<the callbackfunction
         void * userData; //!<saves a void pointer together with the rest.
     };
 
-    typedef std::reverse_iterator<sh_timer_s> rListTimerIter;
-
-    class CAmShSubstractTime //!<functor to easy substract from each countdown value
-    {
-    private:
-        timespec param;
-    public:
-        CAmShSubstractTime(timespec param) :
-                param(param){}
-        inline void operator()(sh_timer_s& t) const;
-    };
+    typedef std::reverse_iterator<sh_timer_s> rListTimerIter; //!<typedef for reverseiterator on timer lists
 
     struct sh_poll_s //!<struct that holds information about polls
     {
         sh_pollHandle_t handle; //!<handle to uniquely adress a filedesriptor
-        IAmShPollPrepare *prepareCB;
-        IAmShPollFired *firedCB;
-        IAmShPollCheck *checkCB;
-        IAmShPollDispatch *dispatchCB;
+        IAmShPollPrepare *prepareCB; //!<pointer to preperation callback
+        IAmShPollFired *firedCB; //!<pointer to fired callback
+        IAmShPollCheck *checkCB; //!< pointer to check callback
+        IAmShPollDispatch *dispatchCB; //!<pointer to dispatch callback
         pollfd pollfdValue; //!<the array for polling the filedescriptors
         void *userData; //!<userdata saved together with the callback.
     };
@@ -141,101 +149,18 @@ private:
     typedef std::vector<pollfd> mListPollfd_t; //!<vector of filedescriptors
     typedef std::vector<sh_poll_s> mListPoll_t; //!<list for the callbacks
 
-    class CAmShCopyPollfd
-    {
-    private:
-        mListPollfd_t& mArray;
-    public:
-        CAmShCopyPollfd(mListPollfd_t& dest) :
-                mArray(dest){}
-        void operator()(const sh_poll_s& row)
-        {
-            pollfd temp = row.pollfdValue;
-            temp.revents = 0;
-            mArray.push_back(temp);
-        }
-    };
-
-    class CAmShMatchingFd
-    {
-    private:
-        int mFD, mEventFlag;
-    public:
-        CAmShMatchingFd(int fd, int eventFlag) :
-                mFD(fd), //
-                mEventFlag(eventFlag)
-        { }
-        bool operator()(const sh_poll_s& a)
-        {
-            return (((a.pollfdValue.fd == mFD) && (a.pollfdValue.events == mEventFlag)) ? true : false);
-        }
-    };
-
-    class CAmShCallFire
-    {
-    public:
-        CAmShCallFire(){};
-        void operator()(sh_poll_s& row)
-        {
-            row.firedCB->Call(row.pollfdValue, row.handle, row.userData);
-        }
-    };
-
-    class CAmShCallPrep
-    {
-    public:
-        CAmShCallPrep(){};
-        void operator()(sh_poll_s& row)
-        {
-            if (row.prepareCB)
-                row.prepareCB->Call(row.handle, row.userData);
-        }
-    };
-
-    class CAmShCallTimer
-    {
-    public:
-        CAmShCallTimer(){};
-        void operator()(sh_timer_s& row)
-        {
-            row.callback->Call(row.handle, row.userData);
-        }
-    };
-
-    class CAmShCountdownUp
-    {
-    public:
-        CAmShCountdownUp(){};
-        bool operator()(sh_timer_s& row)
-        {
-            if (row.countdown.tv_nsec == 0 && row.countdown.tv_sec == 0)
-                return (true);
-            return (false);
-        }
-    };
-
-    class CAmShCountdownSame
-    {
-    private:
-        sh_timer_s mCompareValue;
-    public:
-        CAmShCountdownSame(sh_timer_s& a) :
-                mCompareValue(a)
-        {}
-        bool operator()(const sh_timer_s& b)
-        {
-            return ((mCompareValue.countdown.tv_sec == b.countdown.tv_sec) && (mCompareValue.countdown.tv_nsec == b.countdown.tv_nsec) ? true : false);
-        }
-    };
-
     bool fdIsValid(const int fd) const;
-    void initTimer();
     void timerUp();
     void timerCorrection();
-    int timespec2ms(const timespec& time);
     timespec* insertTime(timespec& buffertime);
 
-    static bool compareCountdown(const sh_timer_s& a, const sh_timer_s& b)
+    /**
+     * compares countdown values
+     * @param a
+     * @param b
+     * @return true if b greater a
+     */
+    inline static bool compareCountdown(const sh_timer_s& a, const sh_timer_s& b)
     {
         return ((a.countdown.tv_sec == b.countdown.tv_sec) ? (a.countdown.tv_nsec < b.countdown.tv_nsec) : (a.countdown.tv_sec < b.countdown.tv_sec));
     }
@@ -246,7 +171,7 @@ private:
      * @param b
      * @return subtracted value
      */
-    static timespec timespecSub(const timespec& a, const timespec& b)
+    inline static timespec timespecSub(const timespec& a, const timespec& b)
     {
         timespec result;
 
@@ -259,7 +184,7 @@ private:
             result.tv_sec = a.tv_sec - b.tv_sec;
             if (a.tv_nsec < b.tv_nsec)
             {
-                result.tv_nsec = a.tv_nsec + 1000000000L - b.tv_nsec;
+                result.tv_nsec = a.tv_nsec + MAX_NS - b.tv_nsec;
                 result.tv_sec--; /* Borrow a second. */
             }
             else
@@ -270,20 +195,32 @@ private:
         return (result);
     }
 
-    static timespec timespecAdd(const timespec& a, const timespec b)
+    /**
+     * adds timespec values
+     * @param a
+     * @param b
+     * @return the added values
+     */
+    inline timespec timespecAdd(const timespec& a, const timespec& b)
     {
         timespec result;
         result.tv_sec = a.tv_sec + b.tv_sec;
         result.tv_nsec = a.tv_nsec + b.tv_nsec;
-        if (result.tv_nsec >= 1000000000L)
+        if (result.tv_nsec >= MAX_NS)
         {
             result.tv_sec++;
-            result.tv_nsec = result.tv_nsec - 1000000000L;
+            result.tv_nsec = result.tv_nsec - MAX_NS;
         }
         return (result);
     }
 
-    static int timespecCompare(const timespec& a, const timespec& b)
+    /**
+     * comapares timespec values
+     * @param a
+     * @param b
+     * @return
+     */
+    inline int timespecCompare(const timespec& a, const timespec& b)
     {
         //less
         if (a.tv_sec < b.tv_sec)
@@ -302,11 +239,21 @@ private:
             return (0);
     }
 
+    /**
+     * functor to return all fired events
+     * @param a
+     * @return
+     */
     inline static bool eventFired(const pollfd& a)
     {
         return (a.revents == 0 ? false : true);
     }
 
+    /**
+     * functor to help find the items that do not need dispatching
+     * @param a
+     * @return
+     */
     inline static bool noDispatching(const sh_poll_s& a)
     {
         //remove from list of there is no checkCB
@@ -315,6 +262,11 @@ private:
         return (!a.checkCB->Call(a.handle, a.userData));
     }
 
+    /**
+     * checks if dispatching is already finished
+     * @param a
+     * @return
+     */
     inline static bool dispatchingFinished(const sh_poll_s& a)
     {
         //remove from list of there is no dispatchCB
@@ -323,14 +275,129 @@ private:
         return (!a.dispatchCB->Call(a.handle, a.userData));
     }
 
-    mListPollfd_t mfdPollingArray;
-    mListPoll_t mListPoll;
+    class CAmShCopyPollfd //!< functor to copy filedescriptors into the poll array
+    {
+    private:
+        mListPollfd_t& mArray;
+    public:
+        CAmShCopyPollfd(mListPollfd_t& dest) :
+                mArray(dest)
+        {
+        }
+        void operator()(const sh_poll_s& row)
+        {
+            pollfd temp = row.pollfdValue;
+            temp.revents = 0;
+            mArray.push_back(temp);
+        }
+    };
+
+    class CAmShCallFire //!< functor to call the firecallbacks
+    {
+    public:
+        CAmShCallFire()
+        {
+        }
+        ;
+        void operator()(sh_poll_s& row)
+        {
+            row.firedCB->Call(row.pollfdValue, row.handle, row.userData);
+        }
+    };
+
+    class CAmShCallPrep //!< functor to call the preparation callbacks
+    {
+    public:
+        CAmShCallPrep()
+        {
+        }
+        ;
+        void operator()(sh_poll_s& row)
+        {
+            if (row.prepareCB)
+                row.prepareCB->Call(row.handle, row.userData);
+        }
+    };
+
+    class CAmShCallTimer //!<functor to call a timer
+    {
+    public:
+        CAmShCallTimer()
+        {
+        }
+        ;
+        void operator()(sh_timer_s& row)
+        {
+            row.callback->Call(row.handle, row.userData);
+        }
+    };
+
+    class CAmShCountdownUp //!<functor that checks if a timer is up
+    {
+    private:
+        timespec mDiffTime;
+    public:
+        CAmShCountdownUp(const timespec& differenceTime) :
+                mDiffTime(differenceTime)
+        {
+        }
+        ;
+        bool operator()(const sh_timer_s& row)
+        {
+            timespec sub = timespecSub(row.countdown, mDiffTime);
+            if (sub.tv_nsec == 0 && sub.tv_sec == 0)
+                return (true);
+            return (false);
+        }
+    };
+
+    class CAmShCountdownZero //!<functor that checks if a timer is zero
+    {
+    public:
+        CAmShCountdownZero()
+        {
+        }
+        ;
+        bool operator()(const sh_timer_s& row)
+        {
+            if (row.countdown.tv_nsec == 0 && row.countdown.tv_sec == 0)
+                return (true);
+            return (false);
+        }
+    };
+
+    class CAmShSubstractTime //!<functor to easy substract from each countdown value
+    {
+    private:
+        timespec param;
+    public:
+        CAmShSubstractTime(timespec param) :
+                param(param)
+        {
+        }
+        inline void operator()(sh_timer_s& t)
+        {
+            t.countdown = timespecSub(t.countdown, param);
+        }
+    };
+
+    mListPollfd_t mfdPollingArray; //!<the polling array for ppoll
+    mListPoll_t mListPoll; //!<list that holds all information for the ppoll
     std::list<sh_timer_s> mListTimer; //!<list of all timers
     std::list<sh_timer_s> mListActiveTimer; //!<list of all currently active timers
-    sh_timerHandle_t mLastInsertedHandle;
-    sh_pollHandle_t mLastInsertedPollHandle;
-    bool mRecreatePollfds;
-    timespec mStartTime;
+    sh_timerHandle_t mLastInsertedHandle; //!<keeps track of the last inserted timer handle
+    sh_pollHandle_t mLastInsertedPollHandle; //!<keeps track of the last inserted poll handle
+    bool mRecreatePollfds; //!<when this is true, the poll list needs to be recreated
+    timespec mStartTime; //!<here the actual time is saved for timecorrection
+
+//    void debugPrintTimerList ()
+//    {
+//        std::list<sh_timer_s>::iterator it(mListActiveTimer.begin());
+//        for(;it!=mListActiveTimer.end();++it)
+//        {
+//            std::cout<< "Handle " << it->handle << "sec " << it->countdown.tv_sec << "nsec " << it->countdown.tv_nsec<<std::endl;
+//        }
+//    }
 }
 ;
 
@@ -346,7 +413,10 @@ private:
 public:
     TAmShTimerCallBack(TClass* instance, void (TClass::*function)(sh_timerHandle_t handle, void* userData)) :
             mInstance(instance), //
-            mFunction(function){};
+            mFunction(function)
+    {
+    }
+    ;
 
     virtual void Call(sh_timerHandle_t handle, void* userData)
     {
@@ -366,15 +436,19 @@ private:
 public:
     TAmShPollPrepare(TClass* instance, void (TClass::*function)(const sh_timerHandle_t handle, void* userData)) :
             mInstance(instance), //
-            mFunction(function){};
+            mFunction(function)
+    {
+    }
+    ;
 
     virtual void Call(const sh_timerHandle_t handle, void* userData)
     {
         (*mInstance.*mFunction)(handle, userData);
-    };
+    }
+    ;
 };
 
-/**
+/**make private, not public
  * template for a callback
  */
 template<class TClass> class TAmShPollFired: public IAmShPollFired
@@ -386,12 +460,16 @@ private:
 public:
     TAmShPollFired(TClass* instance, void (TClass::*function)(const pollfd pollfd, const sh_pollHandle_t handle, void* userData)) :
             mInstance(instance), //
-            mFunction(function){};
+            mFunction(function)
+    {
+    }
+    ;
 
     virtual void Call(const pollfd pollfd, const sh_pollHandle_t handle, void* userData)
     {
         (*mInstance.*mFunction)(pollfd, handle, userData);
-    };
+    }
+    ;
 };
 
 /**
@@ -406,12 +484,16 @@ private:
 public:
     TAmShPollCheck(TClass* instance, bool (TClass::*function)(const sh_pollHandle_t handle, void* userData)) :
             mInstance(instance), //
-            mFunction(function){};
+            mFunction(function)
+    {
+    }
+    ;
 
     virtual bool Call(const sh_pollHandle_t handle, void* userData)
     {
         return ((*mInstance.*mFunction)(handle, userData));
-    };
+    }
+    ;
 };
 
 /**
@@ -426,12 +508,16 @@ private:
 public:
     TAmShPollDispatch(TClass* instance, bool (TClass::*function)(const sh_pollHandle_t handle, void* userData)) :
             mInstance(instance), //
-            mFunction(function){};
+            mFunction(function)
+    {
+    }
+    ;
 
     virtual bool Call(const sh_pollHandle_t handle, void* userData)
     {
         return ((*mInstance.*mFunction)(handle, userData));
-    };
+    }
+    ;
 };
 } /* namespace am */
 #endif /* SOCKETHANDLER_H_ */

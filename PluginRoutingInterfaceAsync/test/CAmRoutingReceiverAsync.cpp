@@ -79,13 +79,12 @@ void CAmEnvironment::SetUp()
 
     timespec t;
     t.tv_nsec = 0;
-    t.tv_sec = 2;
+    t.tv_sec = 1;
 
     sh_timerHandle_t handle;
 
-    IAmShTimerCallBack *buf = &ptimerCallback;
     //lets use a timeout so the test will finish
-    pSocketHandler.addTimer(t, buf, handle, (void*) NULL);
+    pSocketHandler.addTimer(t, &ptimerCallback, handle, (void*) NULL);
     pSocketHandler.start_listenting();
 
 }
@@ -155,11 +154,8 @@ void CAmEnvironment::timerCallback(sh_timerHandle_t handle, void *userData)
 {
     (void) handle;
     (void) userData;
+    pSocketHandler.restartTimer(handle);
     pSocketHandler.stop_listening();
-    timespec t;
-    t.tv_nsec = 0;
-    t.tv_sec = 2;
-    pSocketHandler.restartTimer(handle, t);
 }
 
 void CAmRoutingReceiverAsync::TearDown()
@@ -410,7 +406,7 @@ TEST_F(CAmRoutingReceiverAsync,connectAbortTooLate)
     am_sinkID_t sinkID = 1;
     am_ConnectionFormat_e format = CF_GENIVI_ANALOG;
 
-    EXPECT_CALL(pReceiveInterface,ackConnect(_,connectionID,E_OK)).Times(1);
+    EXPECT_CALL(pReceiveInterface,ackConnect(_,connectionID,E_OK)).Times(2);
     ASSERT_EQ(E_OK, pRouter->asyncConnect(handle,connectionID,sourceID,sinkID,format));
     sleep(3);
     ASSERT_EQ(E_NON_EXISTENT, pRouter->asyncAbort(handle));

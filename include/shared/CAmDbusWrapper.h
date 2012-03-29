@@ -26,6 +26,7 @@
 #include <dbus/dbus.h>
 #include <string>
 #include <list>
+#include <map>
 #include "config.h"
 #include "CAmSocketHandler.h"
 
