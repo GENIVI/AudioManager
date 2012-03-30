@@ -2185,17 +2185,20 @@ am_Error_e CAmDatabaseHandler::getListSinks(std::vector<am_Sink_s> & listSinks) 
 
         MY_SQLITE_FINALIZE(qSoundProperty)
 
-        //read out MainSoundProperties
-        std::string commandMainSoundProperty = "SELECT soundPropertyType, value FROM SinkMainSoundProperty" + i2s(temp.sinkID);
-        MY_SQLITE_PREPARE_V2(mpDatabase, commandMainSoundProperty.c_str(), -1, &qMAinSoundProperty, NULL)
-        while ((eCode = sqlite3_step(qMAinSoundProperty)) == SQLITE_ROW)
+        //read out MainSoundProperties if sink is visible
+        if(temp.visible)
         {
-            tempMainSoundProperty.type = (am_MainSoundPropertyType_e) sqlite3_column_int(qMAinSoundProperty, 0);
-            tempMainSoundProperty.value = sqlite3_column_int(qMAinSoundProperty, 1);
-            temp.listMainSoundProperties.push_back(tempMainSoundProperty);
-        }
+            std::string commandMainSoundProperty = "SELECT soundPropertyType, value FROM SinkMainSoundProperty" + i2s(temp.sinkID);
+            MY_SQLITE_PREPARE_V2(mpDatabase, commandMainSoundProperty.c_str(), -1, &qMAinSoundProperty, NULL)
+            while ((eCode = sqlite3_step(qMAinSoundProperty)) == SQLITE_ROW)
+            {
+                tempMainSoundProperty.type = (am_MainSoundPropertyType_e) sqlite3_column_int(qMAinSoundProperty, 0);
+                tempMainSoundProperty.value = sqlite3_column_int(qMAinSoundProperty, 1);
+                temp.listMainSoundProperties.push_back(tempMainSoundProperty);
+            }
 
-        MY_SQLITE_FINALIZE(qMAinSoundProperty)
+            MY_SQLITE_FINALIZE(qMAinSoundProperty)
+        }
 
         listSinks.push_back(temp);
         temp.listConnectionFormats.clear();
@@ -2263,17 +2266,21 @@ am_Error_e CAmDatabaseHandler::getListSources(std::vector<am_Source_s> & listSou
 
         MY_SQLITE_FINALIZE(qSoundProperty)
 
-        //read out MainSoundProperties
-        std::string commandMainSoundProperty = "SELECT soundPropertyType, value FROM SourceMainSoundProperty" + i2s(temp.sourceID);
-        MY_SQLITE_PREPARE_V2(mpDatabase, commandMainSoundProperty.c_str(), -1, &qMAinSoundProperty, NULL)
-        while ((eCode = sqlite3_step(qMAinSoundProperty)) == SQLITE_ROW)
+        //read out MainSoundProperties if source is visible
+        if(temp.visible)
         {
-            tempMainSoundProperty.type = (am_MainSoundPropertyType_e) sqlite3_column_int(qMAinSoundProperty, 0);
-            tempMainSoundProperty.value = sqlite3_column_int(qMAinSoundProperty, 1);
-            temp.listMainSoundProperties.push_back(tempMainSoundProperty);
+            std::string commandMainSoundProperty = "SELECT soundPropertyType, value FROM SourceMainSoundProperty" + i2s(temp.sourceID);
+            MY_SQLITE_PREPARE_V2(mpDatabase, commandMainSoundProperty.c_str(), -1, &qMAinSoundProperty, NULL)
+            while ((eCode = sqlite3_step(qMAinSoundProperty)) == SQLITE_ROW)
+            {
+                tempMainSoundProperty.type = (am_MainSoundPropertyType_e) sqlite3_column_int(qMAinSoundProperty, 0);
+                tempMainSoundProperty.value = sqlite3_column_int(qMAinSoundProperty, 1);
+                temp.listMainSoundProperties.push_back(tempMainSoundProperty);
+            }
+
+            MY_SQLITE_FINALIZE(qMAinSoundProperty)
         }
 
-        MY_SQLITE_FINALIZE(qMAinSoundProperty)
 
         listSources.push_back(temp);
         temp.listConnectionFormats.clear();
