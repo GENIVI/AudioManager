@@ -553,25 +553,46 @@ CAmRoutingSender::am_handleData_c CAmRoutingSender::returnHandleData(const am_Ha
 void CAmRoutingSender::setRoutingReady()
 {
     mpRoutingReceiver->waitOnStartup(false);
+
+    //create a list of handles
+    std::vector<uint16_t> listStartupHandles;
+    for (size_t i = 0; i <= mListInterfaces.size(); i++)
+    {
+        listStartupHandles.push_back(mpRoutingReceiver->getStartupHandle());
+    }
+
+    //set the receiver ready to wait for replies
+    mpRoutingReceiver->waitOnStartup(true);
+
     std::vector<InterfaceNamePairs>::iterator iter = mListInterfaces.begin();
     std::vector<InterfaceNamePairs>::iterator iterEnd = mListInterfaces.end();
+    std::vector<uint16_t>::const_iterator handleIter(listStartupHandles.begin());
     for (; iter < iterEnd; ++iter)
     {
-        (*iter).routingInterface->setRoutingReady(mpRoutingReceiver->getStartupHandle());
+        (*iter).routingInterface->setRoutingReady(*(handleIter++));
     }
-    mpRoutingReceiver->waitOnStartup(true);
 }
 
 void CAmRoutingSender::setRoutingRundown()
 {
     mpRoutingReceiver->waitOnRundown(false);
+    //create a list of handles
+    std::vector<uint16_t> listStartupHandles;
+    for (size_t i = 0; i <= mListInterfaces.size(); i++)
+    {
+        listStartupHandles.push_back(mpRoutingReceiver->getRundownHandle());
+    }
+
+    //set the receiver ready to wait for replies
+    mpRoutingReceiver->waitOnRundown(true);
+
     std::vector<InterfaceNamePairs>::iterator iter = mListInterfaces.begin();
     std::vector<InterfaceNamePairs>::iterator iterEnd = mListInterfaces.end();
+    std::vector<uint16_t>::const_iterator handleIter(listStartupHandles.begin());
     for (; iter < iterEnd; ++iter)
     {
-        (*iter).routingInterface->setRoutingRundown(mpRoutingReceiver->getStartupHandle());
+        (*iter).routingInterface->setRoutingRundown(*(handleIter++));
     }
-    mpRoutingReceiver->waitOnRundown(true);
 }
 
 void CAmRoutingSender::unloadLibraries(void)
