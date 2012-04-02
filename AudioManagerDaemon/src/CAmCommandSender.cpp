@@ -32,7 +32,6 @@ namespace am
 
 #define REQUIRED_INTERFACE_VERSION_MAJOR 1  //!< major interface version. All versions smaller than this will be rejected
 #define REQUIRED_INTERFACE_VERSION_MINOR 0 //!< minor interface version. All versions smaller than this will be rejected
-
 /**
  *  macro to call all interfaces
  */
@@ -241,25 +240,48 @@ void CAmCommandSender::cbRemovedSource(const am_sourceID_t source)
 void CAmCommandSender::setCommandReady()
 {
     mCommandReceiver->waitOnStartup(false);
+
+    //create a list of handles
+    std::vector<uint16_t> listStartupHandles;
+    for (size_t i = 0; i <= mListInterfaces.size(); i++)
+    {
+        listStartupHandles.push_back(mCommandReceiver->getStartupHandle());
+    }
+
+    //set the receiver ready to wait for replies
+    mCommandReceiver->waitOnStartup(true);
+
+    //now do the calls
     std::vector<IAmCommandSend*>::iterator iter = mListInterfaces.begin();
     std::vector<IAmCommandSend*>::iterator iterEnd = mListInterfaces.end();
+    std::vector<uint16_t>::const_iterator handleIter(listStartupHandles.begin());
     for (; iter < iterEnd; ++iter)
     {
-        (*iter)->setCommandReady(mCommandReceiver->getStartupHandle());
+        (*iter)->setCommandReady(*(handleIter++));
     }
-    mCommandReceiver->waitOnStartup(true);
 }
 
 void CAmCommandSender::setCommandRundown()
 {
     mCommandReceiver->waitOnRundown(false);
+    //create a list of handles
+    std::vector<uint16_t> listStartupHandles;
+    for (size_t i = 0; i <= mListInterfaces.size(); i++)
+    {
+        listStartupHandles.push_back(mCommandReceiver->getRundownHandle());
+    }
+
+    //set the receiver ready to wait for replies
+    mCommandReceiver->waitOnRundown(true);
+
+    //now do the calls
     std::vector<IAmCommandSend*>::iterator iter = mListInterfaces.begin();
     std::vector<IAmCommandSend*>::iterator iterEnd = mListInterfaces.end();
+    std::vector<uint16_t>::const_iterator handleIter(listStartupHandles.begin());
     for (; iter < iterEnd; ++iter)
     {
-        (*iter)->setCommandRundown(mCommandReceiver->getRundownHandle());
+        (*iter)->setCommandRundown(*(handleIter++));
     }
-    mCommandReceiver->waitOnRundown(true);
 }
 
 void CAmCommandSender::getInterfaceVersion(std::string & version) const
