@@ -106,12 +106,15 @@ endif(USE_BUILD_LIBS)
 
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 SET(AUDIO_INCLUDE_FOLDER ${CMAKE_SOURCE_DIR}/include)
-SET(PROJECT_INCLUDE_FOLDER ${CMAKE_SOURCE_DIR}/ProjectSpecific/include)
 SET(DOC_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/doc)
 SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin)
 SET(TEST_EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin/test)
 SET(DOXY_PROTOTYPE ${CMAKE_SOURCE_DIR}/cmake/DoxyFile.in)
 SET(DOXY_FILE ${CMAKE_CURRENT_BINARY_DIR}/DoxyFile)
+
+IF(EXISTS "ProjectSpecific/")
+    SET(PROJECT_INCLUDE_FOLDER ${CMAKE_SOURCE_DIR}/ProjectSpecific/include)
+endif(EXISTS "ProjectSpecific/")
 
 CONFIGURE_FILE( ${CMAKE_SOURCE_DIR}/cmake/config.cmake ${CMAKE_SOURCE_DIR}/include/config.h )
 CONFIGURE_FILE( ${CMAKE_SOURCE_DIR}/AudioManagerDaemon/docx/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/DoxyFile )
@@ -152,7 +155,9 @@ if(WITH_MAIN)
 	add_subdirectory (AudioManagerDaemon)
 endif(WITH_MAIN)
 
-add_subdirectory (ProjectSpecific)
+IF(EXISTS "ProjectSpecific/")
+    add_subdirectory (ProjectSpecific)
+endif(EXISTS "ProjectSpecific/")
 
 # uninstall target
 configure_file(
