@@ -39,7 +39,7 @@ namespace am
 class CAmDbusWrapper
 {
 public:
-    CAmDbusWrapper(CAmSocketHandler* socketHandler);
+    CAmDbusWrapper(CAmSocketHandler* socketHandler,DBusBusType type=DBUS_BUS_SESSION);
     virtual ~CAmDbusWrapper();
 
     void registerCallback(const DBusObjectPathVTable* vtable, const std::string& path, void* userdata);

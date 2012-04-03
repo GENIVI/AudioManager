@@ -46,7 +46,7 @@ DBUS_INTROSPECT_1_0_XML_DOCTYPE_DECL_NODE								\
 
 CAmDbusWrapper* CAmDbusWrapper::mpReference = NULL;
 
-CAmDbusWrapper::CAmDbusWrapper(CAmSocketHandler* socketHandler) :
+CAmDbusWrapper::CAmDbusWrapper(CAmSocketHandler* socketHandler, DBusBusType type) :
         pDbusDispatchCallback(this, &CAmDbusWrapper::dbusDispatchCallback), //
         pDbusFireCallback(this, &CAmDbusWrapper::dbusFireCallback), //
         pDbusCheckCallback(this, &CAmDbusWrapper::dbusCheckCallback), //
@@ -61,7 +61,7 @@ CAmDbusWrapper::CAmDbusWrapper(CAmSocketHandler* socketHandler) :
 
     dbus_error_init(&mDBusError);
     logInfo("DBusWrapper::DBusWrapper Opening DBus connection");
-    mpDbusConnection = dbus_bus_get(DBUS_BUS_SESSION, &mDBusError);
+    mpDbusConnection = dbus_bus_get(type, &mDBusError);
     if (dbus_error_is_set(&mDBusError))
     {
         logError("DBusWrapper::DBusWrapper Error while getting the DBus");

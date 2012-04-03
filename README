@@ -133,18 +133,21 @@ The commandline options of the AudioManager:
 
 	Usage:	AudioManagerDaemon [options]
 	options:	
-		-h: print this message	
-		-i: info about current settings 	
-		-v: print version	
-		-d: daemonize AudioManager 	
-		-p<path> path for sqlite database (default is in memory)	
-		-t<port> port for telnetconnection	
-		-m<max> number of max telnetconnections	
-		-c<Name> use controllerPlugin <Name> (full path with .so ending)	
-		-l<Name> replace command plugin directory with <Name> (full path)	
-		-r<Name> replace routing plugin directory with <Name> (full path)	
-		-L<Name> add command plugin directory with <Name> (full path)	
-		-R<Name> add routing plugin directory with <Name> (full path)	
+	
+    -h: print this message  
+    -i: info about current settings     
+    -v: print version   
+    -V: print DLT logs to stdout    
+    -d: daemonize AudioManager  
+    -T: DbusType to be used by CAmDbusWrapper (0=DBUS_SESSION[default], 1=DBUS_SYSTEM)  
+    -p<path> path for sqlite database (default is in memory)    
+    -t<port> port for telnetconnection  
+    -m<max> number of max telnetconnections 
+    -c<Name> use controllerPlugin <Name> (full path with .so ending)    
+    -l<Name> replace command plugin directory with <Name> (full path)   
+    -r<Name> replace routing plugin directory with <Name> (full path)   
+    -L<Name> add command plugin directory with <Name> (full path)   
+    -R<Name> add routing plugin directory with <Name> (full path)   	
 
 
 ***********************************************************************************************************

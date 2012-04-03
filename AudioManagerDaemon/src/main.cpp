@@ -73,6 +73,9 @@ const char* USAGE_DESCRIPTION = "Usage:\tAudioManagerDaemon [options]\n"
         "\t-V: print DLT logs to stdout\t\n"
 #endif
         "\t-d: daemonize AudioManager \t\n"
+#ifdef WITH_DBUS_WRAPPER
+        "\t-T: DbusType to be used by CAmDbusWrapper (0=DBUS_SESSION[default], 1=DBUS_SYSTEM)\t\n"
+#endif
         "\t-p<path> path for sqlite database (default is in memory)\t\n"
         "\t-t<port> port for telnetconnection\t\n"
         "\t-m<max> number of max telnetconnections\t\n"
@@ -90,6 +93,10 @@ unsigned int telnetport = DEFAULT_TELNETPORT;
 unsigned int maxConnections = MAX_TELNETCONNECTIONS;
 int fd0, fd1, fd2;
 bool enableNoDLTDebug = false;
+
+#ifdef WITH_DBUS_WRAPPER
+    DBusBusType dbusWrapperType=DBUS_BUS_SESSION;
+#endif
 
 /**
  * the out of memory handler
@@ -162,9 +169,17 @@ void parseCommandLine(int argc, char **argv)
     while (optind < argc)
     {
 #ifdef WITH_DLT
-        int option = getopt(argc, argv, "h::v::c::l::r::L::R::d::t::m::i::p::");
+    #ifdef WITH_DBUS_WRAPPER
+            int option = getopt(argc, argv, "h::v::c::l::r::L::R::d::t::m::i::p::T::");
+    #else
+            int option = getopt(argc, argv, "h::v::c::l::r::L::R::d::t::m::i::p::");
+    #endif WITH_DBUS_WRAPPER
 #else
-        int option = getopt(argc, argv, "h::v::V::c::l::r::L::R::d::t::m::i::p::");
+    #ifdef WITH_DBUS_WRAPPER
+            int option = getopt(argc, argv, "h::v::V::c::l::r::L::R::d::t::m::i::p::T::");
+    #else
+            int option = getopt(argc, argv, "h::v::V::c::l::r::L::R::d::t::m::i::p::");
+    #endif //WITH_DBUS_WRAPPER
 #endif
 
         switch (option)
@@ -222,6 +237,11 @@ void parseCommandLine(int argc, char **argv)
             case 'V':
             printf("[DLT] debug output to stdout enabled\n");
             enableNoDLTDebug = true;
+            break;
+#endif
+#ifdef WITH_DBUS_WRAPPER
+            case 'T':
+            dbusWrapperType=static_cast<DBusBusType>(atoi(optarg));
             break;
 #endif
         case 'h':
@@ -292,7 +312,7 @@ int main(int argc, char *argv[])
     CAmSocketHandler iSocketHandler;
 
 #ifdef WITH_DBUS_WRAPPER
-    CAmDbusWrapper iDBusWrapper(&iSocketHandler);
+    CAmDbusWrapper iDBusWrapper(&iSocketHandler,dbusWrapperType);
 #endif /*WITH_DBUS_WRAPPER */
 
     CAmDatabaseHandler iDatabaseHandler(databasePath);
