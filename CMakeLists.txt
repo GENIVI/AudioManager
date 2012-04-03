@@ -106,6 +106,7 @@ endif(USE_BUILD_LIBS)
 
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 SET(AUDIO_INCLUDE_FOLDER ${CMAKE_SOURCE_DIR}/include)
+SET(PROJECT_INCLUDE_FOLDER ${CMAKE_SOURCE_DIR}/ProjectSpecific/include)
 SET(DOC_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/doc)
 SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin)
 SET(TEST_EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin/test)
@@ -150,6 +151,8 @@ endif(WITH_PLUGIN_CONTROL)
 if(WITH_MAIN)
 	add_subdirectory (AudioManagerDaemon)
 endif(WITH_MAIN)
+
+add_subdirectory (ProjectSpecific)
 
 # uninstall target
 configure_file(

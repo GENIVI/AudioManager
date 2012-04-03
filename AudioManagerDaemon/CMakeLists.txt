@@ -23,7 +23,7 @@ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -rdynamic")
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 
 set(DOC_OUTPUT_PATH ${DOC_OUTPUT_PATH}/AudioManager)
-set(include_FOLDER "include")
+set(INCLUDE_FOLDER "include")
 
 pkg_check_modules(SQLITE REQUIRED sqlite3)
 
@@ -66,7 +66,8 @@ INCLUDE_DIRECTORIES(
 	${CMAKE_SOURCE_DIR} 
 	${CMAKE_CURRENT_BINARY_DIR}	
 	${AUDIO_INCLUDE_FOLDER}
-	${include_FOLDER}
+	${PROJECT_INCLUDE_FOLDER}
+	${INCLUDE_FOLDER}
 )
 
 IF(WITH_DLT)

@@ -25,8 +25,8 @@ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -DUNIT_TEST=1 -DDLT_CONTEXT=AudioMan
 set(STD_INCLUDE_DIRS "/usr/include")
 set(DBUS_FOLDER ${CMAKE_SOURCE_DIR}/../../../dbusInterfaces)
 set(AUDIO_INCLUDE_FOLDER ${CMAKE_SOURCE_DIR}/../../../include)
-set(DBUS_include_FOLDER ${CMAKE_SOURCE_DIR}/../../../../dbusinclude)
-set(include_FOLDER ${CMAKE_SOURCE_DIR}/../../include)
+set(DBUS_INCLUDE_FOLDER ${CMAKE_SOURCE_DIR}/../../../../dbusinclude)
+set(INCLUDE_FOLDER ${CMAKE_SOURCE_DIR}/../../include)
 
 
 FIND_PACKAGE(PkgConfig)
@@ -36,12 +36,12 @@ INCLUDE_DIRECTORIES(
     ${CMAKE_CURRENT_BINARY_DIR}
     ${AUDIO_INCLUDE_FOLDER}
     ${DBUS_ARCH_INCLUDE_DIR}
-    ${DBUS_include_FOLDER} 
+    ${DBUS_INCLUDE_FOLDER} 
     ${CMAKE_SOURCE_DIR} 
     ${STD_INCLUDE_DIRS}
     ${DLT_INCLUDE_DIRS}
     ${DBUS_INCLUDE_DIR}
-    ${include_FOLDER}
+    ${INCLUDE_FOLDER}
 )
    
 file(GLOB Socket_SRCS_CXX 

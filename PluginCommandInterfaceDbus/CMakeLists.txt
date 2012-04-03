@@ -20,7 +20,7 @@ PROJECT(PluginCommandInterfaceDbus)
 
 set(LIBRARY_OUTPUT_PATH ${PLUGINS_OUTPUT_PATH}/command)
 set(DOC_OUTPUT_PATH ${DOC_OUTPUT_PATH}/CommandDBusPlugin)
-set(include_FOLDER "include")
+set(INCLUDE_FOLDER "include")
 
 FILE(READ "${AUDIO_INCLUDE_FOLDER}/command/IAmCommandSend.h" VERSION_BUFFER LIMIT 6000)
 STRING(REGEX MATCH "CommandSendVersion*.[^0-9]*[0-9].[0-9]*[0-9]" LIB_INTERFACE_VERSION_STRING ${VERSION_BUFFER})
@@ -35,8 +35,9 @@ INCLUDE_DIRECTORIES(
  	${DBUS_INCLUDE_DIR}
 	${DBUS_ARCH_INCLUDE_DIR}
 	${AUDIO_INCLUDE_FOLDER}
+	${PROJECT_INCLUDE_FOLDER}
 	${DLT_INCLUDE_DIRS}
-	${include_FOLDER}
+	${INCLUDE_FOLDER}
 )
 
 # all source files go here
@@ -72,7 +73,7 @@ INSTALL(TARGETS PluginCommandInterfaceDbus
         COMPONENT sampleplugins
 )
 
-execute_process(COMMAND cp "${CMAKE_SOURCE_DIR}/PluginCommandInterfaceDbus/${include_FOLDER}/CommandInterface.xml" ${EXECUTABLE_OUTPUT_PATH}/CommandInterface.xml)
+execute_process(COMMAND cp "${CMAKE_SOURCE_DIR}/PluginCommandInterfaceDbus/${INCLUDE_FOLDER}/CommandInterface.xml" ${EXECUTABLE_OUTPUT_PATH}/CommandInterface.xml)
 
 SET(ADD_DEPEND "audiomanager-bin" "dlt" "libdbus-1-3(>=1.2.16)")
 set_property(GLOBAL APPEND PROPERTY sampleplugins_prop "${ADD_DEPEND}")
