@@ -308,7 +308,7 @@ int main(int argc, char *argv[])
 #else /*WITH_DBUS_WRAPPER*/
     CAmCommandReceiver iCommandReceiver(&iDatabaseHandler,&iControlSender,&iSocketHandler);
     CAmRoutingReceiver iRoutingReceiver(&iDatabaseHandler,&iRoutingSender,&iControlSender,&iSocketHandler);
-    ControlReceiver iControlReceiver(&iDatabaseHandler,&iRoutingSender,&iCommandSender,&iSocketHandler, &iRouter);
+    CAmControlReceiver iControlReceiver(&iDatabaseHandler,&iRoutingSender,&iCommandSender,&iSocketHandler, &iRouter);
 #endif /*WITH_DBUS_WRAPPER*/
 
 #ifdef WITH_TELNET
