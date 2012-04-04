@@ -58,6 +58,9 @@ IF(WITH_TESTS)
 #	add_subdirectory (test)
 ENDIF(WITH_TESTS)
 
+execute_process(COMMAND cp "${CMAKE_SOURCE_DIR}/PluginRoutingInterfaceDbus/${INCLUDE_FOLDER}/RoutingReceiver.xml" ${EXECUTABLE_OUTPUT_PATH}/RoutingReceiver.xml)
+execute_process(COMMAND cp "${CMAKE_SOURCE_DIR}/PluginRoutingInterfaceDbus/${INCLUDE_FOLDER}/RoutingSender.xml" ${EXECUTABLE_OUTPUT_PATH}/RoutingSender.xml)
+
 #IF(WITH_DOCUMENTATION)
 #	file(MAKE_DIRECTORY ${DOC_OUTPUT_PATH})
 #	configure_file(${DOXY_FILE}  ${DOC_OUTPUT_PATH}/Doxyfile  @ONLY IMMEDIATE)

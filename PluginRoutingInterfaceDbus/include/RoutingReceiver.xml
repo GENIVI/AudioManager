@@ -5,80 +5,170 @@
 
 <node>  
 	<interface name="org.genivi.audiomanager.RoutingReceiver">          
-
 	<method name="ackConnect">      
-		<arg name="handle" type="i" direction="in" />      
-		<arg name="connectionID" type="i" direction="in" /> 
-		<arg name="error" type="i" direction="in" />
+		<arg name="handle" type="q" direction="in" />      
+		<arg name="connectionID" type="q" direction="in" /> 
+		<arg name="error" type="q" direction="in" />
 	</method>
-        <method name="ackDisconnect">
-                <arg name="handle" type="i" direction="in" />
-                <arg name="connectionID" type="i" direction="in" />
-                <arg name="error" type="i" direction="in" />
-        </method>
-        <method name="ackSetSinkVolumeChange">
-                <arg name="handle" type="i" direction="in" />
-                <arg name="volume" type="i" direction="in" />
-                <arg name="error" type="i" direction="in" />
-        </method>
-        <method name="ackSetSourceVolumeChange">
-                <arg name="handle" type="i" direction="in" />
-                <arg name="connectionID" type="i" direction="in" />
-                <arg name="error" type="i" direction="in" />
-        </method>
-        <method name="ackSetSourceState">
-                <arg name="handle" type="u" direction="in" />
-                <arg name="error" type="n" direction="in" />
-        </method>
-        <method name="ackSetSinkSoundProperty">
-                <arg name="handle" type="u" direction="in" />
-                <arg name="error" type="n" direction="in" />
-        </method>
-        <method name="ackSetSourceSoundProperty">
-                <arg name="handle" type="u" direction="in" />
-                <arg name="error" type="n" direction="in" />
-        </method>
-        <method name="ackCrossFading">
-                <arg name="handle" type="u" direction="in" />
-                <arg name="hotsink" type="q" direction="in" />
-                <arg name="error" type="n" direction="in" />
-        </method>
-        <method name="ackSourceVolumeTick">
-                <arg name="handle" type="u" direction="in" />
-                <arg name="source" type="q" direction="in" />
-                <arg name="volume" type="n" direction="in" />
-        </method>
-        <method name="ackSinkVolumeTick">
-                <arg name="handle" type="u" direction="in" />
-                <arg name="sink" type="q" direction="in" />
-                <arg name="volume" type="n" direction="in" />
-        </method>
-
-
-        <method name="peekDomain">
-                <arg name="name" type="s" direction="in" />
-                <arg name="domainid" type="q" direction="in" />
-        </method>
-        <method name="registerDomain">
-                <arg name="domaindata" type="(qsssbbq)" direction="in" />
-                <arg name="domainid" type="q" direction="in" />
-        </method>
-        <method name="deregisterDomain">
-                <arg name="domainid" type="q" direction="in" />
-        </method>
-
-
+	<method name="ackDisconnect">
+		<arg name="handle" type="q" direction="in" />
+		<arg name="connectionID" type="q" direction="in" />
+		<arg name="error" type="q" direction="in" />
+	</method>
+	<method name="ackSetSinkVolume">
+		<arg name="handle" type="q" direction="in" />
+		<arg name="volume" type="i" direction="in" />
+		<arg name="error" type="q" direction="in" />
+	</method>
+	<method name="ackSetSourceVolume">
+		<arg name="handle" type="q" direction="in" />
+		<arg name="volume" type="i" direction="in" />
+		<arg name="error" type="q" direction="in" />
+	</method>
+	<method name="ackSetSourceState">
+		<arg name="handle" type="q" direction="in" />
+		<arg name="error" type="q" direction="in" />
+	</method>
+	<method name="ackSetSinkSoundProperties">
+		<arg name="handle" type="q" direction="in" />
+		<arg name="error" type="q" direction="in" />
+	</method>
+	<method name="ackSetSinkSoundProperty">
+		<arg name="handle" type="q" direction="in" />
+		<arg name="error" type="q" direction="in" />
+	</method>
+	<method name="ackSetSourceSoundProperties">
+		<arg name="handle" type="q" direction="in" />
+		<arg name="error" type="q" direction="in" />
+	</method>
+	<method name="ackSetSourceSoundProperty">
+		<arg name="handle" type="q" direction="in" />
+		<arg name="error" type="q" direction="in" />
+	</method>
+	<method name="ackCrossFading">
+		<arg name="handle" type="q" direction="in" />
+		<arg name="hotsink" type="n" direction="in" />
+		<arg name="error" type="q" direction="in" />
+	</method>
+	<method name="ackSourceVolumeTick">
+		<arg name="handle" type="q" direction="in" />
+		<arg name="source" type="q" direction="in" />
+		<arg name="volume" type="n" direction="in" />
+	</method>
+	<method name="ackSinkVolumeTick">
+		<arg name="handle" type="q" direction="in" />
+		<arg name="sink" type="q" direction="in" />
+		<arg name="volume" type="n" direction="in" />
+	</method>
+	<method name="peekDomain">
+		<arg name="name" type="s" direction="in" />
+		<arg name="domainid" type="q" direction="out" />
+		<arg name="error" type="q" direction="out" />
+	</method>
+	<method name="registerDomain">
+		<arg name="domaindata" type="qsssbbq" direction="in" /> <!-- am_domainID_t domainID; std::string name; std::string busname; std::string nodename; bool early; bool complete; am_DomainState_e state; -->
+		<arg name="returnBusname" type="s" direction="in" /> <!-- the busname for all communication to this domain -->
+		<arg name="returnPath" type="s" direction="in" /> <!-- the path for all communication to this domain -->
+		<arg name="returnInterface" type="s" direction="in" />  <!-- the interface for all communication to this domain -->
+		<arg name="domainid" type="q" direction="out" />
+		<arg name="error" type="q" direction="out" />
+	</method>
+	<method name="deregisterDomain">
+		<arg name="domainid" type="q" direction="in" />
+		<arg name="error" type="q" direction="out" />
+	</method>
+	<method name="registerGateway">
+		<arg name="gatewayData" type="qsqqqqqa(q)a(q)a(b)" direction="in" /> <!-- am_gatewayID_t gatewayID; std::string name; am_sinkID_t sinkID; am_sourceID_t sourceID; am_domainID_t domainSinkID; am_domainID_t domainSourceID; am_domainID_t controlDomainID; std::vector<am_ConnectionFormat_e> listSourceFormats; std::vector<am_ConnectionFormat_e> listSinkFormats; std::vector<bool> convertionMatrix; -->
+		<arg name="gatewayID" type="q" direction="out" />
+		<arg name="error" type="q" direction="out" />
+	</method>
+	<method name="deregisterGateway">
+		<arg name="gatewayID" type="q" direction="in" />
+		<arg name="error" type="q" direction="out" />
+	</method>
+	<method name="peekSink">
+		<arg name="name" type="s" direction="in" />
+		<arg name="sinkID" type="q" direction="out" />
+	    <arg name="error" type="q" direction="out" />
+	</method>
+	<method name="registerSink">      
+		<arg name="sinkData" type="qsqqnb(nn)nna(nn)ana(nn)" direction="in" /> <!-- am_sinkID_t sinkID; std::string name; am_domainID_t domainID; am_sinkClass_t sinkClassID; am_volume_t volume; bool visible; am_Availability_s available; am_MuteState_e muteState;am_mainVolume_t mainVolume; std::vector<am_SoundProperty_s> listSoundProperties; std::vector<am_ConnectionFormat_e> listConnectionFormats;  std::vector<am_MainSoundProperty_s> listMainSoundProperties; -->     
+		<arg name="sinkID" type="q" direction="out" /> 
+		<arg name="error" type="q" direction="out" />
+	</method>
+	<method name="deregisterSink">
+		<arg name="sinkID" type="q" direction="in" />  
+		<arg name="error" type="i" direction="out" />
+	</method>	
+	<method name="peekSource">
+		<arg name="name" type="s" direction="in" />
+		<arg name="sourceID" type="q" direction="out" />
+		<arg name="error" type="i" direction="out" />		
+	</method>
 	<method name="registerSource">      
-		<arg name="soucedata" type="(qqsqqnb(qq)q)" direction="in" />      
-		<arg name="sourceid" type="q" direction="in" /> 
+		<arg name="sourceData" type="qqsqqnb(nn)qa(nn)ana(nn)" direction="in" />  <!-- am_sourceID_t sourceID; am_domainID_t domainID; std::string name; am_sourceClass_t sourceClassID; am_SourceState_e sourceState; am_volume_t volume; bool visible; am_Availability_s available; am_InterruptState_e interruptState; std::vector<am_SoundProperty_s> listSoundProperties; std::vector<am_ConnectionFormat_e> listConnectionFormats; std::vector<am_MainSoundProperty_s> listMainSoundProperties; -->    
+		<arg name="sourceID" type="q" direction="out" /> 
+		<arg name="error" type="i" direction="out" />
 	</method>
-
-        <method name="deregisterSource">
-                <arg name="sourceid" type="q" direction="in" />  
-        </method>
-
-	<signal name="signal_systemReady">
-        </signal>
-
+	<method name="deregisterSource">
+		<arg name="sourceid" type="q" direction="in" />  
+		<arg name="error" type="i" direction="out" />			
+	</method>
+	<method name="registerCrossfader">      
+		<arg name="crossfaderData" type="qsqqqq" direction="in" />  <!-- am_crossfaderID_t crossfaderID; std::string name; am_sinkID_t sinkID_A; am_sinkID_t sinkID_B; am_sourceID_t sourceID; am_HotSink_e hotSink; -->
+		<arg name="crossfaderID" type="q" direction="out" /> 
+		<arg name="error" type="i" direction="out" />
+	</method>
+	<method name="deregisterCrossfader">
+		<arg name="crossfaderID" type="q" direction="in" />  
+		<arg name="error" type="i" direction="out" />			
+	</method>
+	<method name="peekSourceClassID">
+		<arg name="name" type="s" direction="in" />
+		<arg name="sourceClassID" type="q" direction="out" />
+		<arg name="error" type="i" direction="out" />
+	</method>	
+	<method name="peekSinkClassID">
+		<arg name="name" type="s" direction="in" />
+		<arg name="sinkClassID" type="q" direction="out" />
+		<arg name="error" type="i" direction="out" />
+	</method>
+	<method name="hookInterruptStatusChange">
+		<arg name="sourceID" type="q" direction="in" />
+		<arg name="interruptState" type="q" direction="in" />
+	</method>
+	<method name="hookDomainRegistrationComplete">
+		<arg name="domainID" type="q" direction="in" />
+	</method>
+	<method name="hookSinkAvailablityStatusChange">
+		<arg name="sinkID" type="q" direction="in" />
+        <arg name="availability" type="(nn)" direction="out"/>		
+	</method>	
+	<method name="hookSourceAvailablityStatusChange">
+		<arg name="sourceID" type="q" direction="in" />
+        <arg name="availability" type="(nn)"  direction="out"/>		
+	</method>		
+	<method name="hookDomainStateChange">
+		<arg name="domainID" type="q" direction="in" />
+        <arg name="domainState" type="q" direction="out"/>		
+	</method>			
+	<method name="hookTimingInformationChanged">
+		<arg name="connectionID" type="q" direction="in" />
+        <arg name="delay" type="n" direction="out"/>		
+	</method>		
+	<method name="sendChangedData"> <!--am_EarlyDataType_e type; am_DataType_u sinksource; am_EarlyData_u data; -->
+		<arg name="earlyData_volumes" type="a(qqn)" direction="in" /> <!-- only the volumes as array -->
+		<arg name="earlyData_soundproperties" type="a(qq(nn))" direction="in" /> <!--only the soundproperties as value -->
+	</method>		
+	<method name="confirmRoutingReady"> 
+		<arg name="domainID" type="q" direction="in" />
+	</method>
+	<method name="confirmRoutingRundown"> 
+		<arg name="domainID" type="q" direction="in" />
+	</method>
+	<signal name="setRoutingReady">
+	</signal>	
+	<signal name="setRoutingRundown">
+	</signal>	
 	</interface>
 </node>

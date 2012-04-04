@@ -1,7 +1,9 @@
 /**
  *  Copyright (c) copyright 2011-2012 Aricent® Group  and its licensors
+ *  Copyright (c) 2012 BMW
  *
- *  \author: Sampreeth Ramavana
+ *  \author Sampreeth Ramavana
+ *  \author Christian Mueller, christian.ei.mueller@bmw.de BMW 2011,2012
  *
  *  \copyright
  *  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -19,13 +21,12 @@
 #define _CAMSDBUSMESSAGEHANDLER_H_
 
 
-#include <audiomanagertypes.h>
 #include <dbus/dbus.h>
-#include <dlt/dlt.h>
 #include <vector>
 #include <sstream>
 #include <string>
 #include <list>
+#include "audiomanagertypes.h"
 
 namespace am {
 
@@ -33,11 +34,11 @@ namespace am {
 /**
  * handles DBus Messages, is used to extract & append parameters and send messages
  */
-class CAmDbusMessageHandler
+class CAmRoutingDbusMessageHandler
 {
 public:
-        CAmDbusMessageHandler();
-    ~CAmDbusMessageHandler();
+    CAmRoutingDbusMessageHandler();
+    ~CAmRoutingDbusMessageHandler();
 
     /**
      * sets the DBus Connection
@@ -75,14 +76,24 @@ public:
      * @return
      */
     dbus_uint16_t getUInt();
+    dbus_uint16_t getUInt(DBusMessageIter& iter, bool next);
     dbus_int16_t getInt();
-    dbus_uint32_t getUInt32();
-    dbus_int32_t getInt32();
+    dbus_int16_t getInt(DBusMessageIter& iter, bool next);
     dbus_bool_t getBool();
+    dbus_bool_t getBool(DBusMessageIter& iter, bool next);
     char getByte();
+    char getByte(DBusMessageIter& iter, bool next);
     double getDouble();
+    double getDouble(DBusMessageIter& iter, bool next);
     char* getString();
-    void getProperty(dbus_int16_t& type, dbus_int16_t& value);
+    char* getString(DBusMessageIter& iter, bool next);
+    am::am_Availability_s getAvailability();
+    std::vector<am::am_EarlyData_s> getEarlyData();
+    am_Domain_s getDomainData();
+    am_Source_s getSourceData();
+    am_Sink_s getSinkData();
+    am_Gateway_s getGatewayData();
+    am_MainSoundProperty_s getMainSoundProperty();
 
     /**
      * the overloaded append function appends different datatypes to the dbusmessage
@@ -93,6 +104,7 @@ public:
     void append(char toAppend);
     void append(bool toAppend);
     void append(double toAppend);
+    void append(const am::am_Error_e error);
     void append(const am::am_SinkType_s& sinkType);
     void append(const am::am_SourceType_s& sourceType);
     void append(const am::am_MainSoundProperty_s mainSoundProperty);
@@ -113,9 +125,9 @@ private:
     dbus_uint32_t mSerial;
     std::string mErrorName;
     std::string mErrorMsg;
-    DBusMessage* mDbusMessage;
-    DBusMessage* mReveiveMessage;
-    DBusConnection* mDBusConnection;
+    DBusMessage* mpDBusMessage;
+    DBusMessage* mpReveiveMessage;
+    DBusConnection* mpDBusConnection;
 };
 
 }

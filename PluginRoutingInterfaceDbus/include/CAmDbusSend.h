@@ -1,7 +1,9 @@
 /**
  *  Copyright (c) copyright 2011-2012 Aricent® Group  and its licensors
+ *  Copyright (c) 2012 BMW
  *
- *  \author: Sampreeth Ramavana
+ *  \author Sampreeth Ramavana
+ *  \author Christian Mueller, christian.ei.mueller@bmw.de BMW 2011,2012
  *
  *  \copyright
  *  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -20,25 +22,31 @@
 
 //#include "headers.h"
 #include <dbus/dbus.h>
+#include <string>
+#include <vector>
+#include "audiomanagertypes.h"
 
-class CAmDbusSend {
+namespace am
+{
+
+class CAmRoutingDbusSend
+{
 public:
-        CAmDbusSend(DBusConnection* conn, const char* bus_name,const char* path, const char* interface, const char* method);
-        virtual ~CAmDbusSend();
-	void appendString(char* string);
-	void appendInteger(int integer);
-	void sendReply(bool* reply);
-	void sendReply(int* reply);
-        void sendReply(void);
-        void Replyint32(int *reply);
+    CAmRoutingDbusSend(DBusConnection* conn, std::string bus_name, std::string  path, std::string  interface, std::string  method);
+    virtual ~CAmRoutingDbusSend();
+    void append(std::string string);
+    void append(uint16_t integer);
+    void append(int16_t integer);
+    void append(std::vector<am_SoundProperty_s> listSoundProperties);
+    void append(am_SoundProperty_s soundProperty);
+    am_Error_e send();
 
 private:
-	DBusMessage* m_msg;
-	DBusMessageIter m_args;
-	DBusConnection* m_conn;
-        DBusMessage* replymsg;
-        //DBusMessageIter args;
-        DBusMessageIter mDBusMessageIter;
+    DBusMessage* mpDbusMessage;
+    DBusConnection* mpDbusConnection;
+    DBusMessageIter mDbusMessageIter;
+    DBusError mDBusError;
 };
+}
 
 #endif /* _CAMDBUSSEND_H_ */

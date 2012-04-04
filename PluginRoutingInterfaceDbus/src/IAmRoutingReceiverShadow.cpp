@@ -1,7 +1,9 @@
 /**
  *  Copyright (c) copyright 2011-2012 Aricent® Group  and its licensors
+ *  Copyright (c) 2012 BMW
  *
- *  \author: Sampreeth Ramavana
+ *  \author Sampreeth Ramavana
+ *	\author Christian Mueller, christian.ei.mueller@bmw.de BMW 2011,2012
  *
  *  \copyright
  *  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -15,386 +17,578 @@
  *  For further information see http://www.genivi.org/.
  */
 
-
-#include <audiomanagertypes.h>
+#include "IAmRoutingReceiverShadow.h"
 #include <string.h>
 #include <fstream>
 #include <stdexcept>
 #include <cassert>
-#include "IAmRoutingReceiverShadow.h"
 #include "CAmRoutingSenderDbus.h"
+#include "shared/CAmDbusWrapper.h"
 #include "shared/CAmDltWrapper.h"
 
-using namespace am;
+namespace am
+{
 
 DLT_IMPORT_CONTEXT(routingDbus)
+
 
 /**
  * static ObjectPathTable is needed for DBus Callback handling
  */
 static DBusObjectPathVTable gObjectPathVTable;
 
-IAmRoutingReceiverShadow::IAmRoutingReceiverShadow()
-: 	mRoutingReceiveInterface(NULL),
-  	mDBusWrapper(NULL),
-	mFunctionMap(createMap()),
-  	mDBUSMessageHandler()
+IAmRoutingReceiverShadowDbus::IAmRoutingReceiverShadowDbus(CAmRoutingSenderDbus* pRoutingSenderDbus) :
+        mRoutingReceiveInterface(NULL), //
+        mDBusWrapper(NULL), //
+        mpRoutingSenderDbus(pRoutingSenderDbus), //
+        mFunctionMap(createMap()), //
+        mDBUSMessageHandler(), //
+        mNumberDomains(0), //
+        mHandle(0)
 {
-        log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow constructed");
+    log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow constructed");
 }
 
-IAmRoutingReceiverShadow::~IAmRoutingReceiverShadow()
+IAmRoutingReceiverShadowDbus::~IAmRoutingReceiverShadowDbus()
 {
-        log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow destructed");
+    log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow destructed");
 }
 
-
-void IAmRoutingReceiverShadow::registerDomain(DBusConnection *conn, DBusMessage *msg)
+void IAmRoutingReceiverShadowDbus::registerDomain(DBusConnection *conn, DBusMessage *msg)
 {
-        log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::registerDomain called");
+    log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::registerDomain called");
 
-        (void) conn;
-        assert(mRoutingReceiveInterface!=NULL);
-
-        mDBUSMessageHandler.initReceive(msg);
-
-        am_Domain_s mDomain;
-        mDomain.domainID = 0;
-
-        char *name = mDBUSMessageHandler.getString();
-        char *nodename = mDBUSMessageHandler.getString();
-        mDomain.early = mDBUSMessageHandler.getBool();
-        mDomain.state = (am_DomainState_e)mDBUSMessageHandler.getInt32();
-        log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::registerDomain called, name", name,"nodename", nodename,"mDomain.early", mDomain.early, "mDomain.state", mDomain.state );
-
-        mDomain.name = std::string(name);
-        mDomain.nodename = std::string(nodename);
-        mDomain.busname = "pulsePlugin";
-        mDomain.complete = 0; // will be set once hookdomainregistration event is received
-
-	// pass the data to the controller and the database
-        am_Error_e returnCode = mRoutingReceiveInterface->registerDomain(mDomain, mDomain.domainID);
-        log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::registerDomain domain ID, mDomain.domainID", mDomain.domainID );
-        mDBUSMessageHandler.initReply(msg);
-        mDBUSMessageHandler.append((dbus_uint32_t)mDomain.domainID);
-        mDBUSMessageHandler.sendMessage();
-        if (returnCode != E_OK)
-        {
-            log(&routingDbus, DLT_LOG_INFO, "error registering domain" );
-        }
+    (void) ((conn));
+    assert(mRoutingReceiveInterface != NULL);
+    mDBUSMessageHandler.initReceive(msg);
+    am_Domain_s domain(mDBUSMessageHandler.getDomainData());
+    CAmRoutingSenderDbus::rs_lookupData_s lookupData;
+    lookupData.busname = mDBUSMessageHandler.getString();
+    lookupData.path = mDBUSMessageHandler.getString();
+    lookupData.interface = mDBUSMessageHandler.getString();
+    log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::registerDomain called, name ", domain.name, "nodename ", domain.nodename);
+    domain.busname = "DbusRoutingPlugin";
+    am_Error_e returnCode = mRoutingReceiveInterface->registerDomain(domain, domain.domainID);
+    mDBUSMessageHandler.initReply(msg);
+    mDBUSMessageHandler.append(domain.domainID);
+    mDBUSMessageHandler.append(returnCode);
+    mDBUSMessageHandler.sendMessage();
+    if (returnCode != E_OK)
+    {
+        log(&routingDbus, DLT_LOG_INFO, "error registering domain");
+        return;
+    }
+    mpRoutingSenderDbus->addDomainLookup(domain.domainID, lookupData);
 }
 
-void IAmRoutingReceiverShadow::registerSource(DBusConnection *conn, DBusMessage *msg)
+void IAmRoutingReceiverShadowDbus::registerSource(DBusConnection* conn, DBusMessage* msg)
 {
-        log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::RegisterSource called");
-
-        (void) conn;
-        assert(mRoutingReceiveInterface!=NULL);
-
-        mDBUSMessageHandler.initReceive(msg);
-
-        am_Source_s mSource;
-
-        char *name = mDBUSMessageHandler.getString();
-	mSource.sourceID = 0;
-        mSource.sourceClassID = mDBUSMessageHandler.getInt32();
-        mSource.domainID = mDBUSMessageHandler.getInt32();
-        mSource.sourceState = SS_ON;
-        mSource.listConnectionFormats.push_back(CF_GENIVI_STEREO);
-        log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::registerSource called, name", name,"mSource.sourceClassID", mSource.sourceClassID,"mSource.domainID", mSource.domainID );
-
-        mSource.name = std::string(name);
-
-        am_Error_e returnCode = mRoutingReceiveInterface->registerSource(mSource, mSource.sourceID);
-        log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::registersource,  mSource.sourceID", mSource.sourceID );
-        mDBUSMessageHandler.initReply(msg);
-        mDBUSMessageHandler.append((dbus_uint32_t)mSource.sourceID);
-        mDBUSMessageHandler.sendMessage();
-        if (returnCode != E_OK)
-        {
-            log(&routingDbus, DLT_LOG_INFO, "error registering source" );
-        }
-
+    log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::RegisterSource called");
+    (void) ((conn));
+    assert(mRoutingReceiveInterface != NULL);
+    mDBUSMessageHandler.initReceive(msg);
+    am_Source_s sourceData(mDBUSMessageHandler.getSourceData());
+    log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::registerSource called, name", sourceData.name, "mSource.sourceClassID", sourceData.sourceClassID, "mSource.domainID", sourceData.domainID);
+    am_Error_e returnCode = mRoutingReceiveInterface->registerSource(sourceData, sourceData.sourceID);
+    mDBUSMessageHandler.initReply(msg);
+    mDBUSMessageHandler.append(sourceData.sourceID);
+    mDBUSMessageHandler.append(returnCode);
+    mDBUSMessageHandler.sendMessage();
+    if (returnCode != E_OK)
+    {
+        log(&routingDbus, DLT_LOG_INFO, "error registering source");
+        return;
+    }
+    mpRoutingSenderDbus->addSourceLookup(sourceData.sourceID, sourceData.domainID);
 }
 
-void IAmRoutingReceiverShadow::registerSink(DBusConnection *conn, DBusMessage *msg)
+void IAmRoutingReceiverShadowDbus::registerSink(DBusConnection* conn, DBusMessage* msg)
 {
-
-        (void) conn;
-        assert(mRoutingReceiveInterface!=NULL);
-
-        mDBUSMessageHandler.initReceive(msg);
-
-        am_Sink_s mSink;
-
-        char *name = mDBUSMessageHandler.getString();
-	mSink.sinkID = 0;
-        mSink.sinkClassID = mDBUSMessageHandler.getInt32();
-        mSink.domainID = mDBUSMessageHandler.getInt32();
-        mSink.muteState = MS_UNMUTED;
-        mSink.listConnectionFormats.push_back(CF_GENIVI_STEREO);
-        log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::registerSink called, name", name,"mSink.sinkClassID", mSink.sinkClassID,"mSink.domainID", mSink.domainID );
-
-        mSink.name = std::string(name);
-
-        am_Error_e returnCode = mRoutingReceiveInterface->registerSink(mSink, mSink.sinkID);
-        log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::registersink, mSink.sinkID", mSink.sinkID );
-        mDBUSMessageHandler.initReply(msg);
-        mDBUSMessageHandler.append((dbus_uint32_t)mSink.sinkID);
-        mDBUSMessageHandler.sendMessage();
-        if (returnCode != E_OK)
-        {
-            log(&routingDbus, DLT_LOG_INFO, "error registering sink" );
-        }
-
+    (void) ((conn));
+    assert(mRoutingReceiveInterface != NULL);
+    mDBUSMessageHandler.initReceive(msg);
+    am_Sink_s sinkData(mDBUSMessageHandler.getSinkData());
+    log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::registerSink called, name", sinkData.name, "mSink.sinkClassID", sinkData.sinkClassID, "mSink.domainID", sinkData.domainID);
+    am_Error_e returnCode = mRoutingReceiveInterface->registerSink(sinkData, sinkData.sinkID);
+    mDBUSMessageHandler.initReply(msg);
+    mDBUSMessageHandler.append(sinkData.sinkID);
+    mDBUSMessageHandler.append(returnCode);
+    mDBUSMessageHandler.sendMessage();
+    if (returnCode != E_OK)
+    {
+        log(&routingDbus, DLT_LOG_INFO, "error registering sink");
+        return;
+    }
+    mpRoutingSenderDbus->addSinkLookup(sinkData.sinkID, sinkData.domainID);
 }
 
-void IAmRoutingReceiverShadow::registerGateway(DBusConnection *conn, DBusMessage *msg)
+void IAmRoutingReceiverShadowDbus::registerGateway(DBusConnection* conn, DBusMessage* msg)
 {
-
-        (void) conn;
-        assert(mRoutingReceiveInterface!=NULL);
-
-        mDBUSMessageHandler.initReceive(msg);
-
-        am_Gateway_s mGateway;
-	mGateway.gatewayID = 0;
-
-        char *name = mDBUSMessageHandler.getString();
-        char *sink = mDBUSMessageHandler.getString();
-        char *source = mDBUSMessageHandler.getString();
-        char *domainsource = mDBUSMessageHandler.getString();
-        char *domainsink = mDBUSMessageHandler.getString();
-        char *controldomain = mDBUSMessageHandler.getString();
-	mGateway.listSinkFormats.push_back(CF_GENIVI_STEREO);
-	mGateway.listSourceFormats.push_back(CF_GENIVI_STEREO);
-        log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::registerGateway called, name", name,"sink", sink,"source", source );
-        log(&routingDbus, DLT_LOG_INFO, "domainsource", domainsource,"domainsink", domainsink,"controldomain", controldomain );
-
-        mGateway.name = std::string(name);
-        mGateway.sinkID = 101;
-        mGateway.sourceID = 101;
-        mGateway.domainSourceID = 1;
-        mGateway.domainSinkID = 1;
-        mGateway.controlDomainID = 1;
-	mGateway.convertionMatrix.push_back(true);
-
-        am_Error_e returnCode = mRoutingReceiveInterface->registerGateway(mGateway, mGateway.gatewayID);
-        mDBUSMessageHandler.initReply(msg);
-        mDBUSMessageHandler.append((dbus_uint32_t)mGateway.gatewayID);
-        mDBUSMessageHandler.sendMessage();
-        if (returnCode != E_OK)
-        {
-            log(&routingDbus, DLT_LOG_INFO, "error registering gateway" );
-        }
-
+    (void) ((conn));
+    assert(mRoutingReceiveInterface != NULL);
+    mDBUSMessageHandler.initReceive(msg);
+    am_Gateway_s gatewayData(mDBUSMessageHandler.getGatewayData());
+    am_Error_e returnCode = mRoutingReceiveInterface->registerGateway(gatewayData, gatewayData.gatewayID);
+    mDBUSMessageHandler.initReply(msg);
+    mDBUSMessageHandler.append(gatewayData.gatewayID);
+    mDBUSMessageHandler.append(returnCode);
+    mDBUSMessageHandler.sendMessage();
+    if (returnCode != E_OK)
+    {
+        log(&routingDbus, DLT_LOG_INFO, "error registering gateway");
+        return;
+    }
 }
 
-void IAmRoutingReceiverShadow::hookDomainRegistrationComplete(DBusConnection *conn, DBusMessage *msg)
+void IAmRoutingReceiverShadowDbus::hookDomainRegistrationComplete(DBusConnection* conn, DBusMessage* msg)
 {
-        (void) conn;
-        assert(mRoutingReceiveInterface!=NULL);
-
-        mDBUSMessageHandler.initReceive(msg);
-
-        int domainID = mDBUSMessageHandler.getInt32();
-        log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::hookDomainRegistrationComplete called, domainID", domainID);
-        mRoutingReceiveInterface->hookDomainRegistrationComplete((am_domainID_t)domainID);
-
+    (void) ((conn));
+    assert(mRoutingReceiveInterface != NULL);
+    mDBUSMessageHandler.initReceive(msg);
+    am_domainID_t domainID(mDBUSMessageHandler.getInt());
+    log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::hookDomainRegistrationComplete called, domainID", domainID);
+    mRoutingReceiveInterface->hookDomainRegistrationComplete((am_domainID_t)((domainID)));
 }
 
-void IAmRoutingReceiverShadow::ackConnect(DBusConnection *conn, DBusMessage *msg)
+void IAmRoutingReceiverShadowDbus::ackConnect(DBusConnection* conn, DBusMessage* msg)
 {
-
-        (void) conn;
-        assert(mRoutingReceiveInterface!=NULL);
-
-        mDBUSMessageHandler.initReceive(msg);
-        int handle = mDBUSMessageHandler.getInt32();
-        int conid = mDBUSMessageHandler.getInt32();
-        int error = mDBUSMessageHandler.getInt32();
-
-        log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::ackConnect called, handle", handle, "conid", conid, "error", error);
-
-        am_Handle_s myhandle;
-        myhandle.handleType = H_CONNECT;
-        myhandle.handle = handle;
-        am_connectionID_t mconnectionid = (am_connectionID_t)conid;
-        am_Error_e merror = (am_Error_e) error;
-        mRoutingReceiveInterface->ackConnect(myhandle,mconnectionid, merror);
+    (void) ((conn));
+    assert(mRoutingReceiveInterface != NULL);
+    mDBUSMessageHandler.initReceive(msg);
+    uint16_t handle(mDBUSMessageHandler.getUInt());
+    am_connectionID_t connectionID(mDBUSMessageHandler.getUInt());
+    am_Error_e error((am_Error_e)((mDBUSMessageHandler.getUInt())));
+    log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::ackConnect called, handle", handle, "connectionID", connectionID, "error", error);
+    am_Handle_s myhandle;
+    myhandle.handleType = H_CONNECT;
+    myhandle.handle = handle;
+    mRoutingReceiveInterface->ackConnect(myhandle, connectionID, error);
+    mpRoutingSenderDbus->removeHandle(handle);
 }
 
-
-
-void IAmRoutingReceiverShadow::ackDisconnect(DBusConnection *conn, DBusMessage *msg)
+void IAmRoutingReceiverShadowDbus::ackDisconnect(DBusConnection* conn, DBusMessage* msg)
 {
-
-        (void) conn;
-        assert(mRoutingReceiveInterface!=NULL);
-
-        mDBUSMessageHandler.initReceive(msg);
-
-        int handle = mDBUSMessageHandler.getInt32();
-        int conid = mDBUSMessageHandler.getInt32();
-        int error = mDBUSMessageHandler.getInt32();
-        log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::ackDisconnect called, handle", handle, "conid", conid, "error", error);
-
-        am_Handle_s myhandle;
-        myhandle.handleType = H_DISCONNECT;
-        myhandle.handle = handle;
-        am_connectionID_t mconnectionid = conid;
-        am_Error_e merror = (am_Error_e) error;
-        mRoutingReceiveInterface->ackDisconnect(myhandle,mconnectionid, merror);
-
+    (void) ((conn));
+    assert(mRoutingReceiveInterface != NULL);
+    mDBUSMessageHandler.initReceive(msg);
+    uint16_t handle(mDBUSMessageHandler.getUInt());
+    am_connectionID_t connectionID(mDBUSMessageHandler.getUInt());
+    am_Error_e error((am_Error_e)((mDBUSMessageHandler.getUInt())));
+    log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::ackDisconnect called, handle", handle, "connectionID", connectionID, "error", error);
+    am_Handle_s myhandle;
+    myhandle.handleType = H_DISCONNECT;
+    myhandle.handle = handle;
+    mRoutingReceiveInterface->ackDisconnect(myhandle, connectionID, error);
+    mpRoutingSenderDbus->removeHandle(handle);
 }
 
-void IAmRoutingReceiverShadow::ackSetSinkVolume(DBusConnection *conn, DBusMessage *msg)
+void IAmRoutingReceiverShadowDbus::ackSetSinkVolume(DBusConnection* conn, DBusMessage* msg)
 {
-
-        (void) conn;
-        assert(mRoutingReceiveInterface!=NULL);
-
-        mDBUSMessageHandler.initReceive(msg);
-
-        int handle = mDBUSMessageHandler.getInt32();
-        int volume = mDBUSMessageHandler.getInt32();
-        int error = mDBUSMessageHandler.getInt32();
-        log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::ackSetSinkVolume called, handle", handle, "error", error, "volume", volume);
-
-        am_Handle_s myhandle;
-        myhandle.handleType = H_SETSINKVOLUME;
-        myhandle.handle = handle;
-        am_volume_t mvolume = volume;
-        am_Error_e merror = (am_Error_e) error;
-        mRoutingReceiveInterface->ackSetSinkVolumeChange(myhandle,mvolume, merror);
-
+    (void) ((conn));
+    assert(mRoutingReceiveInterface != NULL);
+    mDBUSMessageHandler.initReceive(msg);
+    uint16_t handle(mDBUSMessageHandler.getUInt());
+    am_volume_t volume(mDBUSMessageHandler.getInt());
+    am_Error_e error((am_Error_e)((mDBUSMessageHandler.getUInt())));
+    log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::ackSetSinkVolume called, handle", handle, "error", error, "volume", volume);
+    am_Handle_s myhandle;
+    myhandle.handleType = H_SETSINKVOLUME;
+    myhandle.handle = handle;
+    mRoutingReceiveInterface->ackSetSinkVolumeChange(myhandle, volume, error);
+    mpRoutingSenderDbus->removeHandle(handle);
 }
 
-void IAmRoutingReceiverShadow::ackSinkVolumeTick(DBusConnection *conn, DBusMessage *msg)
+void IAmRoutingReceiverShadowDbus::ackSetSourceState(DBusConnection* conn, DBusMessage* msg)
 {
-
-        (void) conn;
-        assert(mRoutingReceiveInterface!=NULL);
-
-        mDBUSMessageHandler.initReceive(msg);
-
-        int handle = mDBUSMessageHandler.getInt32();
-        int sinkID = mDBUSMessageHandler.getInt32();
-        int volume = mDBUSMessageHandler.getInt32();
-        log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::ackSinkVolumeTick called, handle", handle, "sinkID", sinkID, "volume", volume);
-
-        am_Handle_s myhandle;
-        myhandle.handleType = H_SETSINKVOLUME;
-        myhandle.handle = handle;
-        am_volume_t mvolume = volume;
-        mRoutingReceiveInterface->ackSinkVolumeTick(myhandle,sinkID, mvolume);
-
+    (void) ((conn));
+    assert(mRoutingReceiveInterface != NULL);
+    mDBUSMessageHandler.initReceive(msg);
+    uint16_t handle(mDBUSMessageHandler.getUInt());
+    am_Error_e error((am_Error_e)((mDBUSMessageHandler.getUInt())));
+    log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::ackSetSourceState called, handle", handle, "error", error);
+    am_Handle_s myhandle;
+    myhandle.handleType = H_SETSOURCESTATE;
+    myhandle.handle = handle;
+    mRoutingReceiveInterface->ackSetSourceState(myhandle, error);
+    mpRoutingSenderDbus->removeHandle(handle);
 }
 
-void IAmRoutingReceiverShadow::ackSourceVolumeTick(DBusConnection *conn, DBusMessage *msg)
+void IAmRoutingReceiverShadowDbus::ackSinkVolumeTick(DBusConnection* conn, DBusMessage* msg)
 {
-
-        (void) conn;
-        assert(mRoutingReceiveInterface!=NULL);
-
-        mDBUSMessageHandler.initReceive(msg);
-
-        int handle = mDBUSMessageHandler.getInt32();
-        int sourceID = mDBUSMessageHandler.getInt32();
-        int volume = mDBUSMessageHandler.getInt32();
-        log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::ackSourceVolumeTick called, handle", handle, "sourceID", sourceID, "volume", volume);
-
-        am_Handle_s myhandle;
-        myhandle.handleType = H_SETSINKVOLUME;
-        myhandle.handle = handle;
-        am_volume_t mvolume = volume;
-        mRoutingReceiveInterface->ackSourceVolumeTick(myhandle,sourceID, mvolume);
-
+    (void) ((conn));
+    assert(mRoutingReceiveInterface != NULL);
+    mDBUSMessageHandler.initReceive(msg);
+    uint16_t handle(mDBUSMessageHandler.getUInt());
+    am_sinkID_t sinkID(mDBUSMessageHandler.getUInt());
+    am_volume_t volume(mDBUSMessageHandler.getInt());
+    log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::ackSinkVolumeTick called, handle", handle, "sinkID", sinkID, "volume", volume);
+    am_Handle_s myhandle;
+    myhandle.handleType = H_SETSINKVOLUME;
+    myhandle.handle = handle;
+    mRoutingReceiveInterface->ackSinkVolumeTick(myhandle, sinkID, volume);
 }
 
-void IAmRoutingReceiverShadow::ackSetSourceVolume(DBusConnection *conn, DBusMessage *msg)
+void IAmRoutingReceiverShadowDbus::ackSourceVolumeTick(DBusConnection* conn, DBusMessage* msg)
 {
-
-        (void) conn;
-        assert(mRoutingReceiveInterface!=NULL);
-
-        mDBUSMessageHandler.initReceive(msg);
-
-        int handle = mDBUSMessageHandler.getInt32();
-        int volume = mDBUSMessageHandler.getInt32();
-        int error = mDBUSMessageHandler.getInt32();
-        log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::ackSetSourceVolume called, handle", handle, "volume", volume, "error", error);
-
-        am_Handle_s myhandle;
-        myhandle.handleType = H_SETSOURCEVOLUME;
-        myhandle.handle = handle;
-        am_volume_t mvolume = volume;
-        am_Error_e merror = (am_Error_e) error;
-        mRoutingReceiveInterface->ackSetSourceVolumeChange(myhandle,mvolume, merror);
-
+    (void) ((conn));
+    assert(mRoutingReceiveInterface != NULL);
+    mDBUSMessageHandler.initReceive(msg);
+    uint16_t handle(mDBUSMessageHandler.getUInt());
+    am_sourceID_t sourceID(mDBUSMessageHandler.getUInt());
+    am_volume_t volume(mDBUSMessageHandler.getInt());
+    log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::ackSourceVolumeTick called, handle", handle, "sourceID", sourceID, "volume", volume);
+    am_Handle_s myhandle;
+    myhandle.handleType = H_SETSINKVOLUME;
+    myhandle.handle = handle;
+    mRoutingReceiveInterface->ackSourceVolumeTick(myhandle, sourceID, volume);
 }
 
-void IAmRoutingReceiverShadow::ackSetSinkSoundProperty(DBusConnection *conn, DBusMessage *msg)
+void IAmRoutingReceiverShadowDbus::ackSetSourceVolume(DBusConnection* conn, DBusMessage* msg)
 {
-
-        (void) conn;
-        assert(mRoutingReceiveInterface!=NULL);
-
-        mDBUSMessageHandler.initReceive(msg);
-
-        int handle = mDBUSMessageHandler.getInt32();
-        int error = mDBUSMessageHandler.getInt32();
-        log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::ackSetSinkSoundProperty called, handle", handle, "error", error);
-
-        am_Handle_s myhandle;
-        myhandle.handleType = H_SETSINKSOUNDPROPERTY;
-        myhandle.handle = handle;
-        am_Error_e merror = (am_Error_e) error;
-        mRoutingReceiveInterface->ackSetSinkSoundProperty(myhandle, merror);
-
+    (void) ((conn));
+    assert(mRoutingReceiveInterface != NULL);
+    mDBUSMessageHandler.initReceive(msg);
+    uint16_t handle(mDBUSMessageHandler.getUInt());
+    am_volume_t volume(mDBUSMessageHandler.getInt());
+    am_Error_e error((am_Error_e)((mDBUSMessageHandler.getUInt())));
+    log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::ackSetSourceVolume called, handle", handle, "volume", volume, "error", error);
+    am_Handle_s myhandle;
+    myhandle.handleType = H_SETSOURCEVOLUME;
+    myhandle.handle = handle;
+    mRoutingReceiveInterface->ackSetSourceVolumeChange(myhandle, volume, error);
+    mpRoutingSenderDbus->removeHandle(handle);
 }
 
-void IAmRoutingReceiverShadow::ackSetSourceSoundProperty(DBusConnection *conn, DBusMessage *msg)
+void IAmRoutingReceiverShadowDbus::ackSetSinkSoundProperty(DBusConnection* conn, DBusMessage* msg)
 {
-        (void) conn;
-        assert(mRoutingReceiveInterface!=NULL);
-
-        mDBUSMessageHandler.initReceive(msg);
-
-        int handle = mDBUSMessageHandler.getInt32();
-        int error = mDBUSMessageHandler.getInt32();
-        log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::ackSetSourceSoundProperty called, handle", handle, "error", error);
-
-
-        am_Handle_s myhandle;
-        myhandle.handleType = H_SETSOURCESOUNDPROPERTY;
-        myhandle.handle = handle;
-        am_Error_e merror = (am_Error_e) error;
-        mRoutingReceiveInterface->ackSetSourceSoundProperty(myhandle, merror);
-
+    (void) ((conn));
+    assert(mRoutingReceiveInterface != NULL);
+    mDBUSMessageHandler.initReceive(msg);
+    uint16_t handle(mDBUSMessageHandler.getUInt());
+    am_Error_e error((am_Error_e)((mDBUSMessageHandler.getUInt())));
+    log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::ackSetSinkSoundProperty called, handle", handle, "error", error);
+    am_Handle_s myhandle;
+    myhandle.handleType = H_SETSINKSOUNDPROPERTY;
+    myhandle.handle = handle;
+    mRoutingReceiveInterface->ackSetSinkSoundProperty(myhandle, error);
+    mpRoutingSenderDbus->removeHandle(handle);
 }
 
-DBusHandlerResult IAmRoutingReceiverShadow::receiveCallback(DBusConnection *conn, DBusMessage *msg, void *user_data)
+void IAmRoutingReceiverShadowDbus::ackSetSourceSoundProperty(DBusConnection* conn, DBusMessage* msg)
 {
-	assert(conn!=NULL);
-	assert(msg!=NULL);
-	assert(user_data!=NULL);
-        IAmRoutingReceiverShadow* reference=(IAmRoutingReceiverShadow*) user_data;
-	return (reference->receiveCallbackDelegate(conn,msg));
+    (void) ((conn));
+    assert(mRoutingReceiveInterface != NULL);
+    mDBUSMessageHandler.initReceive(msg);
+    uint16_t handle(mDBUSMessageHandler.getUInt());
+    am_Error_e error((am_Error_e)((mDBUSMessageHandler.getUInt())));
+    log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::ackSetSinkSoundProperty called, handle", handle, "error", error);
+    am_Handle_s myhandle;
+    myhandle.handleType = H_SETSOURCESOUNDPROPERTY;
+    myhandle.handle = handle;
+    mRoutingReceiveInterface->ackSetSourceSoundProperty(myhandle, error);
+    mpRoutingSenderDbus->removeHandle(handle);
 }
 
-void IAmRoutingReceiverShadow::sendIntrospection(DBusConnection *conn, DBusMessage *msg)
+void IAmRoutingReceiverShadowDbus::ackSetSinkSoundProperties(DBusConnection* conn, DBusMessage* msg)
 {
-	assert(conn!=NULL);
-	assert(msg!=NULL);
+    (void) ((conn));
+    assert(mRoutingReceiveInterface != NULL);
+    mDBUSMessageHandler.initReceive(msg);
+    uint16_t handle = mDBUSMessageHandler.getUInt();
+    am_Error_e error = (am_Error_e)((mDBUSMessageHandler.getUInt()));
+    log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::ackSetSinkSoundProperties called, handle", handle, "error", error);
+    am_Handle_s myhandle;
+    myhandle.handleType = H_SETSINKSOUNDPROPERTIES;
+    myhandle.handle = handle;
+    mRoutingReceiveInterface->ackSetSinkSoundProperties(myhandle, error);
+    mpRoutingSenderDbus->removeHandle(handle);
+}
+
+void IAmRoutingReceiverShadowDbus::ackSetSourceSoundProperties(DBusConnection* conn, DBusMessage* msg)
+{
+    (void) ((conn));
+    assert(mRoutingReceiveInterface != NULL);
+    mDBUSMessageHandler.initReceive(msg);
+    uint16_t handle = mDBUSMessageHandler.getUInt();
+    am_Error_e error = (am_Error_e)((mDBUSMessageHandler.getUInt()));
+    log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::ackSetSourceSoundProperties called, handle", handle, "error", error);
+    am_Handle_s myhandle;
+    myhandle.handleType = H_SETSOURCESOUNDPROPERTIES;
+    myhandle.handle = handle;
+    mRoutingReceiveInterface->ackSetSourceSoundProperties(myhandle, error);
+    mpRoutingSenderDbus->removeHandle(handle);
+}
+
+void IAmRoutingReceiverShadowDbus::ackCrossFading(DBusConnection* conn, DBusMessage* msg)
+{
+    (void) ((conn));
+    assert(mRoutingReceiveInterface != NULL);
+    mDBUSMessageHandler.initReceive(msg);
+    uint16_t handle = mDBUSMessageHandler.getUInt();
+    am_HotSink_e hotsink = (am_HotSink_e)((mDBUSMessageHandler.getInt()));
+    am_Error_e error = (am_Error_e)((mDBUSMessageHandler.getUInt()));
+    log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::ackCrossFading called, handle", handle, "error", error);
+    am_Handle_s myhandle;
+    myhandle.handleType = H_CROSSFADE;
+    myhandle.handle = handle;
+    mRoutingReceiveInterface->ackCrossFading(myhandle, hotsink, error);
+    mpRoutingSenderDbus->removeHandle(handle);
+}
+
+void IAmRoutingReceiverShadowDbus::peekDomain(DBusConnection* conn, DBusMessage* msg)
+{
+    (void) ((conn));
+    assert(mRoutingReceiveInterface != NULL);
+    mDBUSMessageHandler.initReceive(msg);
+    std::string name = std::string(mDBUSMessageHandler.getString());
+    log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::peekDomain called, name", name);
+    am_domainID_t domainID;
+    am_Error_e returnCode = mRoutingReceiveInterface->peekDomain(name, domainID);
+    mDBUSMessageHandler.initReply(msg);
+    mDBUSMessageHandler.append(domainID);
+    mDBUSMessageHandler.append(returnCode);
+    mDBUSMessageHandler.sendMessage();
+}
+
+void IAmRoutingReceiverShadowDbus::deregisterDomain(DBusConnection* conn, DBusMessage* msg)
+{
+    (void) ((conn));
+    assert(mRoutingReceiveInterface != NULL);
+    mDBUSMessageHandler.initReceive(msg);
+    am_domainID_t domainID = mDBUSMessageHandler.getUInt();
+    log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::deregisterDomain called, id", domainID);
+    am_Error_e returnCode = mRoutingReceiveInterface->deregisterDomain(domainID);
+    mDBUSMessageHandler.initReply(msg);
+    mDBUSMessageHandler.append(returnCode);
+    mDBUSMessageHandler.sendMessage();
+    mpRoutingSenderDbus->removeDomainLookup(domainID);
+}
+
+void IAmRoutingReceiverShadowDbus::deregisterGateway(DBusConnection* conn, DBusMessage* msg)
+{
+    (void) ((conn));
+    assert(mRoutingReceiveInterface != NULL);
+    mDBUSMessageHandler.initReceive(msg);
+    am_gatewayID_t gatewayID = mDBUSMessageHandler.getUInt();
+    log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::deregisterGateway called, id", gatewayID);
+    am_Error_e returnCode = mRoutingReceiveInterface->deregisterGateway(gatewayID);
+    mDBUSMessageHandler.initReply(msg);
+    mDBUSMessageHandler.append(returnCode);
+    mDBUSMessageHandler.sendMessage();
+}
+
+void IAmRoutingReceiverShadowDbus::peekSink(DBusConnection* conn, DBusMessage* msg)
+{
+    (void) ((conn));
+    assert(mRoutingReceiveInterface != NULL);
+    mDBUSMessageHandler.initReceive(msg);
+    std::string name = std::string(mDBUSMessageHandler.getString());
+    log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::peekSink called, name", name);
+    am_sinkID_t sinkID;
+    am_Error_e returnCode = mRoutingReceiveInterface->peekSink(name, sinkID);
+    mDBUSMessageHandler.initReply(msg);
+    mDBUSMessageHandler.append(sinkID);
+    mDBUSMessageHandler.append(returnCode);
+    mDBUSMessageHandler.sendMessage();
+}
+
+void IAmRoutingReceiverShadowDbus::deregisterSink(DBusConnection* conn, DBusMessage* msg)
+{
+    (void) ((conn));
+    assert(mRoutingReceiveInterface != NULL);
+    mDBUSMessageHandler.initReceive(msg);
+    am_sinkID_t sinkID = mDBUSMessageHandler.getInt();
+    log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::deregisterSink called, id", sinkID);
+    am_Error_e returnCode = mRoutingReceiveInterface->deregisterSink(sinkID);
+    mDBUSMessageHandler.initReply(msg);
+    mDBUSMessageHandler.append(returnCode);
+    mDBUSMessageHandler.sendMessage();
+    mpRoutingSenderDbus->removeSinkLookup(sinkID);
+}
+
+void IAmRoutingReceiverShadowDbus::peekSource(DBusConnection* conn, DBusMessage* msg)
+{
+    (void) ((conn));
+    assert(mRoutingReceiveInterface != NULL);
+    mDBUSMessageHandler.initReceive(msg);
+    std::string name = std::string(mDBUSMessageHandler.getString());
+    log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::peekSource called, name", name);
+    am_sourceID_t sourceID;
+    am_Error_e returnCode = mRoutingReceiveInterface->peekSource(name, sourceID);
+    mDBUSMessageHandler.initReply(msg);
+    mDBUSMessageHandler.append(sourceID);
+    mDBUSMessageHandler.append(returnCode);
+    mDBUSMessageHandler.sendMessage();
+}
+
+void IAmRoutingReceiverShadowDbus::deregisterSource(DBusConnection* conn, DBusMessage* msg)
+{
+    (void) ((conn));
+    assert(mRoutingReceiveInterface != NULL);
+    mDBUSMessageHandler.initReceive(msg);
+    am_sourceID_t sourceID = mDBUSMessageHandler.getInt();
+    log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::deregisterSource called, id", sourceID);
+    am_Error_e returnCode = mRoutingReceiveInterface->deregisterSource(sourceID);
+    mDBUSMessageHandler.initReply(msg);
+    mDBUSMessageHandler.append(returnCode);
+    mDBUSMessageHandler.sendMessage();
+    mpRoutingSenderDbus->removeSourceLookup(sourceID);
+}
+
+void IAmRoutingReceiverShadowDbus::registerCrossfader(DBusConnection* conn, DBusMessage* msg)
+{
+    (void) ((conn));
+    assert(mRoutingReceiveInterface != NULL);
+    mDBUSMessageHandler.initReceive(msg);
+    am_Crossfader_s crossfader;
+    crossfader.crossfaderID = mDBUSMessageHandler.getInt();
+    crossfader.name = std::string(mDBUSMessageHandler.getString());
+    crossfader.sinkID_A = mDBUSMessageHandler.getInt();
+    crossfader.sinkID_B = mDBUSMessageHandler.getInt();
+    crossfader.sourceID = mDBUSMessageHandler.getInt();
+    crossfader.hotSink = (am_HotSink_e)((mDBUSMessageHandler.getInt()));
+    log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::registerCrossfader called, name", crossfader.name);
+    am_Error_e returnCode = mRoutingReceiveInterface->registerCrossfader(crossfader, crossfader.crossfaderID);
+    mDBUSMessageHandler.initReply(msg);
+    mDBUSMessageHandler.append(crossfader.crossfaderID);
+    mDBUSMessageHandler.append(returnCode);
+    mDBUSMessageHandler.sendMessage();
+    if (returnCode != E_OK)
+    {
+        log(&routingDbus, DLT_LOG_INFO, "error registering crossfader");
+        return;
+    }
+    //todo: add Crossfader lookup
+}
+
+void IAmRoutingReceiverShadowDbus::deregisterCrossfader(DBusConnection* conn, DBusMessage* msg)
+{
+    (void) ((conn));
+    assert(mRoutingReceiveInterface != NULL);
+    mDBUSMessageHandler.initReceive(msg);
+    am_crossfaderID_t crossfaderID = mDBUSMessageHandler.getInt();
+    log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::deregisterCrossfader called, id", crossfaderID);
+    am_Error_e returnCode = mRoutingReceiveInterface->deregisterCrossfader(crossfaderID);
+    mDBUSMessageHandler.initReply(msg);
+    mDBUSMessageHandler.append(returnCode);
+    mDBUSMessageHandler.sendMessage();
+    //todo: remove Crossfader lookup
+}
+
+void IAmRoutingReceiverShadowDbus::peekSourceClassID(DBusConnection* conn, DBusMessage* msg)
+{
+    (void) ((conn));
+    assert(mRoutingReceiveInterface != NULL);
+    mDBUSMessageHandler.initReceive(msg);
+    std::string name = std::string(mDBUSMessageHandler.getString());
+    log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::peekSourceClassID called, name", name);
+    am_sourceClass_t sourceClassID;
+    am_Error_e returnCode = mRoutingReceiveInterface->peekSourceClassID(name, sourceClassID);
+    mDBUSMessageHandler.initReply(msg);
+    mDBUSMessageHandler.append(sourceClassID);
+    mDBUSMessageHandler.append(returnCode);
+    mDBUSMessageHandler.sendMessage();
+}
+
+void IAmRoutingReceiverShadowDbus::peekSinkClassID(DBusConnection* conn, DBusMessage* msg)
+{
+    (void) ((conn));
+    assert(mRoutingReceiveInterface != NULL);
+    mDBUSMessageHandler.initReceive(msg);
+    std::string name = std::string(mDBUSMessageHandler.getString());
+    log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::peekSinkClassID called, name", name);
+    am_sinkClass_t sinkClassID;
+    am_Error_e returnCode = mRoutingReceiveInterface->peekSinkClassID(name, sinkClassID);
+    mDBUSMessageHandler.initReply(msg);
+    mDBUSMessageHandler.append(sinkClassID);
+    mDBUSMessageHandler.append(returnCode);
+    mDBUSMessageHandler.sendMessage();
+}
+
+void IAmRoutingReceiverShadowDbus::hookInterruptStatusChange(DBusConnection* conn, DBusMessage* msg)
+{
+    (void) ((conn));
+    assert(mRoutingReceiveInterface != NULL);
+    mDBUSMessageHandler.initReceive(msg);
+    am_sourceID_t sourceID = mDBUSMessageHandler.getInt();
+    am_InterruptState_e interruptState = (am_InterruptState_e)((mDBUSMessageHandler.getInt()));
+    log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::hookInterruptStatusChange called, sourceID", sourceID);
+    mRoutingReceiveInterface->hookInterruptStatusChange(sourceID, interruptState);
+}
+
+void IAmRoutingReceiverShadowDbus::hookSinkAvailablityStatusChange(DBusConnection* conn, DBusMessage* msg)
+{
+    (void) ((conn));
+    assert(mRoutingReceiveInterface != NULL);
+    mDBUSMessageHandler.initReceive(msg);
+    am_sinkID_t sinkID = mDBUSMessageHandler.getInt();
+    am_Availability_s avialabilty = mDBUSMessageHandler.getAvailability();
+    log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::hookSinkAvailablityStatusChange called, sinkID", sinkID);
+    mRoutingReceiveInterface->hookSinkAvailablityStatusChange(sinkID, avialabilty);
+}
+
+void IAmRoutingReceiverShadowDbus::hookSourceAvailablityStatusChange(DBusConnection* conn, DBusMessage* msg)
+{
+    (void) ((conn));
+    assert(mRoutingReceiveInterface != NULL);
+    mDBUSMessageHandler.initReceive(msg);
+    am_sourceID_t sourceID = mDBUSMessageHandler.getInt();
+    am_Availability_s avialabilty = mDBUSMessageHandler.getAvailability();
+    log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::hookSourceAvailablityStatusChange called, sourceID", sourceID);
+    mRoutingReceiveInterface->hookSourceAvailablityStatusChange(sourceID, avialabilty);
+}
+
+void IAmRoutingReceiverShadowDbus::hookDomainStateChange(DBusConnection* conn, DBusMessage* msg)
+{
+    (void) ((conn));
+    assert(mRoutingReceiveInterface != NULL);
+    mDBUSMessageHandler.initReceive(msg);
+    am_domainID_t domainID = mDBUSMessageHandler.getInt();
+    am_DomainState_e domainState = (am_DomainState_e)((mDBUSMessageHandler.getInt()));
+    log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::hookDomainStateChange called, hookDomainStateChange", domainID);
+    mRoutingReceiveInterface->hookDomainStateChange(domainID, domainState);
+}
+
+void IAmRoutingReceiverShadowDbus::hookTimingInformationChanged(DBusConnection* conn, DBusMessage* msg)
+{
+    (void) ((conn));
+    assert(mRoutingReceiveInterface != NULL);
+    mDBUSMessageHandler.initReceive(msg);
+    am_connectionID_t connectionID(mDBUSMessageHandler.getInt());
+    am_timeSync_t time(mDBUSMessageHandler.getInt());
+    log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::hookTimingInformationChanged called, connectionID", connectionID);
+    mRoutingReceiveInterface->hookTimingInformationChanged(connectionID, time);
+}
+
+void IAmRoutingReceiverShadowDbus::sendChangedData(DBusConnection* conn, DBusMessage* msg)
+{
+    (void) ((conn));
+    assert(mRoutingReceiveInterface != NULL);
+    mDBUSMessageHandler.initReceive(msg);
+    std::vector < am_EarlyData_s > listEarlyData(mDBUSMessageHandler.getEarlyData());
+    log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::hookTimingInformationChanged called, sendChangedData");
+    mRoutingReceiveInterface->sendChangedData(listEarlyData);
+}
+
+DBusHandlerResult IAmRoutingReceiverShadowDbus::receiveCallback(DBusConnection* conn, DBusMessage* msg, void* user_data)
+{
+    assert(conn != NULL);
+    assert(msg != NULL);
+    assert(user_data != NULL);
+    IAmRoutingReceiverShadowDbus* reference = (IAmRoutingReceiverShadowDbus*) ((user_data));
+    return (reference->receiveCallbackDelegate(conn, msg));
+}
+
+void IAmRoutingReceiverShadowDbus::sendIntrospection(DBusConnection* conn, DBusMessage* msg)
+{
+    assert(conn != NULL);
+    assert(msg != NULL);
     DBusMessage* reply;
     DBusMessageIter args;
     dbus_uint32_t serial = 0;
 
     // create a reply from the message
     reply = dbus_message_new_method_return(msg);
-    //std::ifstream in(ROUTING_XML_FILE);
-    //assert(in!=NULL);
     std::ifstream in("RoutingReceiver.xml", std::ifstream::in);
     if (!in)
     {
@@ -423,69 +617,121 @@ void IAmRoutingReceiverShadow::sendIntrospection(DBusConnection *conn, DBusMessa
     dbus_message_unref(reply);
 }
 
-DBusHandlerResult IAmRoutingReceiverShadow::receiveCallbackDelegate(DBusConnection *conn, DBusMessage *msg)
+DBusHandlerResult IAmRoutingReceiverShadowDbus::receiveCallbackDelegate(DBusConnection* conn, DBusMessage* msg)
 {
-
-	if (dbus_message_is_method_call(msg, DBUS_INTERFACE_INTROSPECTABLE, "Introspect")) {
-		sendIntrospection(conn,msg);
-		return (DBUS_HANDLER_RESULT_HANDLED);
-	}
-
-	functionMap_t::iterator iter = mFunctionMap.begin();
-	std::string k(dbus_message_get_member(msg));
-        log(&routingDbus, DLT_LOG_INFO, k.c_str());
-        iter=mFunctionMap.find(k);
+    if (dbus_message_is_method_call(msg, DBUS_INTERFACE_INTROSPECTABLE, "Introspect"))
+    {
+        sendIntrospection(conn, msg);
+        return (DBUS_HANDLER_RESULT_HANDLED);
+    }
+    functionMap_t::iterator iter = mFunctionMap.begin();
+    std::string k(dbus_message_get_member(msg));
+    log(&routingDbus, DLT_LOG_INFO, k.c_str());
+    iter = mFunctionMap.find(k);
     if (iter != mFunctionMap.end())
     {
-    	std::string p(iter->first);
-    	CallBackMethod cb=iter->second;
-    	(this->*cb)(conn,msg);
-    	return (DBUS_HANDLER_RESULT_HANDLED);
+        std::string p(iter->first);
+        CallBackMethod cb = iter->second;
+        (this->*cb)(conn, msg);
+        return (DBUS_HANDLER_RESULT_HANDLED);
     }
-
-	return (DBUS_HANDLER_RESULT_NOT_YET_HANDLED);
+    return (DBUS_HANDLER_RESULT_NOT_YET_HANDLED);
 }
 
-void IAmRoutingReceiverShadow::setRoutingReceiver(IAmRoutingReceive*& receiver)
+void IAmRoutingReceiverShadowDbus::setRoutingReceiver(IAmRoutingReceive*& receiver)
 {
-	assert(receiver!=NULL);
-        mRoutingReceiveInterface=receiver;
-
-        gObjectPathVTable.message_function=IAmRoutingReceiverShadow::receiveCallback;
-
-	DBusConnection* connection;
-        mRoutingReceiveInterface->getDBusConnectionWrapper(mDBusWrapper);
-	assert(mDBusWrapper!=NULL);
-
-	mDBusWrapper->getDBusConnection(connection);
-	assert(connection!=NULL);
-	mDBUSMessageHandler.setDBusConnection(connection);
-
-        std::string path(ROUTING_NODE);
-	mDBusWrapper->registerCallback(&gObjectPathVTable,path,this);
-
+    assert(receiver != NULL);
+    mRoutingReceiveInterface = receiver;
+    gObjectPathVTable.message_function = IAmRoutingReceiverShadowDbus::receiveCallback;
+    DBusConnection* connection;
+    mRoutingReceiveInterface->getDBusConnectionWrapper(mDBusWrapper);
+    assert(mDBusWrapper != NULL);
+    mDBusWrapper->getDBusConnection(connection);
+    assert(connection != NULL);
+    mDBUSMessageHandler.setDBusConnection(connection);
+    std::string path(ROUTING_NODE);
+    {
+        assert(receiver != NULL);
+    }
+    mDBusWrapper->registerCallback(&gObjectPathVTable, path, this);
 }
 
-IAmRoutingReceiverShadow::functionMap_t IAmRoutingReceiverShadow::createMap()
+void IAmRoutingReceiverShadowDbus::confirmRoutingReady(DBusConnection* conn, DBusMessage* msg)
 {
-	functionMap_t m;
-        m["ackConnect"]=&IAmRoutingReceiverShadow::ackConnect ;
-        m["ackDisconnect"]=&IAmRoutingReceiverShadow::ackDisconnect ;
-        m["ackSetSinkVolume"]=&IAmRoutingReceiverShadow::ackSetSinkVolume ;
-        m["ackSetSourceVolume"]=&IAmRoutingReceiverShadow::ackSetSourceVolume ;
-        m["ackSinkVolumeTick"]=&IAmRoutingReceiverShadow::ackSinkVolumeTick ;
-        m["ackSourceVolumeTick"]=&IAmRoutingReceiverShadow::ackSourceVolumeTick ;
-        m["ackSetSinkSoundProperty"]=&IAmRoutingReceiverShadow::ackSetSinkSoundProperty ;
-        m["ackSetSourceSoundProperty"]=&IAmRoutingReceiverShadow::ackSetSourceSoundProperty ;
+    (void) ((conn));
+    assert(mRoutingReceiveInterface != NULL);
+    mDBUSMessageHandler.initReceive(msg);
+    am_domainID_t domainID(mDBUSMessageHandler.getInt());
+    log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadowDbus::confirmRoutingReady called, domainID", domainID);
 
-        m["registerDomain"]=&IAmRoutingReceiverShadow::registerDomain ;
-        m["registerSource"]=&IAmRoutingReceiverShadow::registerSource ;
-        m["registerSink"]=&IAmRoutingReceiverShadow::registerSink ;
-        m["registerGateway"]=&IAmRoutingReceiverShadow::registerGateway ;
-
-        m["hookDomainRegistrationComplete"]=&IAmRoutingReceiverShadow::hookDomainRegistrationComplete;
-	return (m);
+    mNumberDomains--;
+    if(mNumberDomains==0)
+        mRoutingReceiveInterface->confirmRoutingRundown(mHandle);
 }
 
+void IAmRoutingReceiverShadowDbus::confirmRoutingRundown(DBusConnection* conn, DBusMessage* msg)
+{
+    (void) ((conn));
+    assert(mRoutingReceiveInterface != NULL);
+    mDBUSMessageHandler.initReceive(msg);
+    am_domainID_t domainID(mDBUSMessageHandler.getInt());
+    log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadowDbus::confirmRoutingRundown called, domainID", domainID);
 
+    mNumberDomains--;
+    if(mNumberDomains==0)
+        mRoutingReceiveInterface->confirmRoutingReady(mHandle);
+}
 
+void IAmRoutingReceiverShadowDbus::gotReady(int16_t numberDomains, uint16_t handle)
+{
+    mNumberDomains=numberDomains;
+    mHandle=handle;
+}
+void IAmRoutingReceiverShadowDbus::gotRundown(int16_t numberDomains, uint16_t handle)
+{
+    mNumberDomains=numberDomains;
+    mHandle=handle;
+}
+
+IAmRoutingReceiverShadowDbus::functionMap_t IAmRoutingReceiverShadowDbus::createMap()
+{
+    functionMap_t m;
+    m["ackConnect"] = &IAmRoutingReceiverShadowDbus::ackConnect;
+    m["ackDisconnect"] = &IAmRoutingReceiverShadowDbus::ackDisconnect;
+    m["ackSetSinkVolume"] = &IAmRoutingReceiverShadowDbus::ackSetSinkVolume;
+    m["ackSetSourceVolume"] = &IAmRoutingReceiverShadowDbus::ackSetSourceVolume;
+    m["ackSetSourceState"] = &IAmRoutingReceiverShadowDbus::ackSetSourceState;
+    m["ackSinkVolumeTick"] = &IAmRoutingReceiverShadowDbus::ackSinkVolumeTick;
+    m["ackSourceVolumeTick"] = &IAmRoutingReceiverShadowDbus::ackSourceVolumeTick;
+    m["ackSetSinkSoundProperty"] = &IAmRoutingReceiverShadowDbus::ackSetSinkSoundProperty;
+    m["ackSetSourceSoundProperty"] = &IAmRoutingReceiverShadowDbus::ackSetSourceSoundProperty;
+    m["ackSetSinkSoundProperties"] = &IAmRoutingReceiverShadowDbus::ackSetSinkSoundProperties;
+    m["ackSetSourceSoundProperties"] = &IAmRoutingReceiverShadowDbus::ackSetSourceSoundProperties;
+    m["ackCrossFading"] = &IAmRoutingReceiverShadowDbus::ackCrossFading;
+    m["registerDomain"] = &IAmRoutingReceiverShadowDbus::registerDomain;
+    m["registerSource"] = &IAmRoutingReceiverShadowDbus::registerSource;
+    m["registerSink"] = &IAmRoutingReceiverShadowDbus::registerSink;
+    m["registerGateway"] = &IAmRoutingReceiverShadowDbus::registerGateway;
+    m["peekDomain"] = &IAmRoutingReceiverShadowDbus::peekDomain;
+    m["deregisterDomain"] = &IAmRoutingReceiverShadowDbus::deregisterDomain;
+    m["deregisterGateway"] = &IAmRoutingReceiverShadowDbus::deregisterGateway;
+    m["peekSink"] = &IAmRoutingReceiverShadowDbus::peekSink;
+    m["deregisterSink"] = &IAmRoutingReceiverShadowDbus::deregisterSink;
+    m["peekSource"] = &IAmRoutingReceiverShadowDbus::peekSource;
+    m["deregisterSource"] = &IAmRoutingReceiverShadowDbus::deregisterSource;
+    m["registerCrossfader"] = &IAmRoutingReceiverShadowDbus::registerCrossfader;
+    m["deregisterCrossfader"] = &IAmRoutingReceiverShadowDbus::deregisterCrossfader;
+    m["peekSourceClassID"] = &IAmRoutingReceiverShadowDbus::peekSourceClassID;
+    m["peekSinkClassID"] = &IAmRoutingReceiverShadowDbus::peekSinkClassID;
+    m["hookInterruptStatusChange"] = &IAmRoutingReceiverShadowDbus::hookInterruptStatusChange;
+    m["hookDomainRegistrationComplete"] = &IAmRoutingReceiverShadowDbus::hookDomainRegistrationComplete;
+    m["hookSinkAvailablityStatusChange"] = &IAmRoutingReceiverShadowDbus::hookSinkAvailablityStatusChange;
+    m["hookSourceAvailablityStatusChange"] = &IAmRoutingReceiverShadowDbus::hookSourceAvailablityStatusChange;
+    m["hookDomainStateChange"] = &IAmRoutingReceiverShadowDbus::hookDomainStateChange;
+    m["hookTimingInformationChanged"] = &IAmRoutingReceiverShadowDbus::hookTimingInformationChanged;
+    m["sendChangedData"] = &IAmRoutingReceiverShadowDbus::sendChangedData;
+    m["confirmRoutingReady"] =  &IAmRoutingReceiverShadowDbus::confirmRoutingReady;
+    m["confirmRoutingRundown"] =  &IAmRoutingReceiverShadowDbus::confirmRoutingRundown;
+    return (m);
+}
+}

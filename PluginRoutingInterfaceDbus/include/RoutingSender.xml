@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE node PUBLIC
+  "-//freedesktop//DTD D-Bus Object Introspection 1.0//EN"
+  "http://standards.freedesktop.org/dbus/1.0/introspect.dtd">
+
+<node>  
+	<interface name='org.pulseaudio.genivi.RoutingSender'>	
+	<method name='asyncAbort'>										
+		<arg name='handle' type='q' direction='in' />  
+		<arg name='error' type='n' direction='out' />
+    </method>    	 						
+	<method name='asyncConnect'>      									
+		<arg name='handle' type='q' direction='in' />      				
+		<arg name='connectionID' type='q' direction='in' />	
+		<arg name='sourceID' type='q' direction='in' />      				
+		<arg name='sinkID' type='q' direction='in' /> 
+		<arg name='connectionFormat' type='n' direction='in' /> 
+		<arg name='error' type='n' direction='out' />										
+	</method>    											
+	<method name='asyncDisconnect'>	
+		<arg name='handle' type='q' direction='in' />  
+		<arg name='connectionID' type='q' direction='in' />		
+		<arg name='error' type='n' direction='out' />								    				
+	</method>											
+	<method name='setSinkVolume'>									
+		<arg name='handle' type='q' direction='in' />      				
+		<arg name='sinkID' type='q' direction='in' />		
+		<arg name='volume' type='n' direction='in' />									
+		<arg name='ramp' type='n' direction='in' />					
+		<arg name='time' type='q' direction='in' />	
+		<arg name='error' type='n' direction='out' />					
+	</method>											
+	<method name='setSourceVolume'>	  							
+		<arg name='handle' type='q' direction='in' />      				
+		<arg name='sourceID' type='q' direction='in' />		
+		<arg name='volume' type='n' direction='in' />									
+		<arg name='ramp' type='n' direction='in' />					
+		<arg name='time' type='q' direction='in' />	
+		<arg name='error' type='n' direction='out' />					
+	</method>		
+	<method name='asyncSetSourceState'>	
+		<arg name='handle' type='q' direction='in' />  
+		<arg name='sourceID' type='q' direction='in' />	
+		<arg name='sourceState' type='n' direction='in' />	
+		<arg name='error' type='n' direction='out' />								    				
+	</method>						
+	<method name='asyncSetSinkSoundProperties'>								
+		<arg name='handle' type='q' direction='in' />      				
+		<arg name='sinkID' type='q' direction='in' />				
+		<arg name='listSoundProperties' type='a(nn)' direction='in' />				
+		<arg name='error' type='n' direction='out' />				
+	</method>	
+		<method name='asyncSetSinkSoundProperty'>								
+		<arg name='handle' type='q' direction='in' />      				
+		<arg name='sinkID' type='q' direction='in' />				
+		<arg name='soundProperty' type='(nn)' direction='in' />				
+		<arg name='error' type='n' direction='out' />				
+	</method>	
+	<method name='asyncSetSourceSoundProperty'>								
+		<arg name='handle' type='q' direction='in' />      				
+		<arg name='sourceID' type='q' direction='in' />				
+		<arg name='soundProperty' type='(nn)' direction='in' />				
+		<arg name='error' type='n' direction='out' />				
+	</method>	
+	<method name='asyncSetSourceSoundProperties'>								
+		<arg name='handle' type='q' direction='in' />      				
+		<arg name='sourceID' type='q' direction='in' />				
+		<arg name='listSoundProperties' type='a(nn)' direction='in' />				
+		<arg name='error' type='n' direction='out' />				
+	</method>	
+	<method name='asyncCrossFade'>								
+		<arg name='handle' type='q' direction='in' />      				
+		<arg name='crossfaderID' type='q' direction='in' />				
+		<arg name='hotSink' type='q' direction='in' />			
+		<arg name='rampType' type='q' direction='in' />		
+		<arg name='time' type='q' direction='in' />		
+		<arg name='error' type='n' direction='out' />				
+	</method>		
+	<method name='setDomainState'>								
+		<arg name='domainID' type='q' direction='in' />				
+		<arg name='domainState' type='q' direction='in' />			
+		<arg name='error' type='n' direction='out' />				
+	</method>		                                                                                
+</interface>																						
+</node>
