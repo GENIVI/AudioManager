@@ -19,8 +19,15 @@
 #define ROUTINGSENDER_H_
 
 #include "routing/IAmRoutingSend.h"
+#include <dbus/dbus.h>
+#include <map>
+#include "CAmDbusMessageHandler.h"
+#include "IAmRoutingReceiverShadow.h"
+#include "shared/CAmDbusWrapper.h"
 
 using namespace am;
+
+const char ROUTING_NODE[]="RoutingReceiver";
 
 class CAmRoutingSenderDbus: public IAmRoutingSend
 {
@@ -44,6 +51,16 @@ public:
     am_Error_e setDomainState(const am_domainID_t domainID, const am_DomainState_e domainState) ;
     am_Error_e returnBusName(std::string& BusName) const ;
     void getInterfaceVersion(std::string& version) const ;
+
+private:
+        CAmDbusMessageHandler mDBusMessageHandler;
+        IAmRoutingReceiverShadow mRoutingReceiverShadow;
+
+        CAmDbusWrapper* mDBusWrapper;
+        IAmRoutingReceive *mRoutingReceiveInterface;
+
+
+        DBusConnection* connection;
 };
 
 #endif /* ROUTINGSENDER_H_ */

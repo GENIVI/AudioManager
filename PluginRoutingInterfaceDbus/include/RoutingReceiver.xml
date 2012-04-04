@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE node PUBLIC
+  "-//freedesktop//DTD D-Bus Object Introspection 1.0//EN"
+  "http://standards.freedesktop.org/dbus/1.0/introspect.dtd">
+
+<node>  
+	<interface name="org.genivi.audiomanager.RoutingReceiver">          
+
+	<method name="ackConnect">      
+		<arg name="handle" type="i" direction="in" />      
+		<arg name="connectionID" type="i" direction="in" /> 
+		<arg name="error" type="i" direction="in" />
+	</method>
+        <method name="ackDisconnect">
+                <arg name="handle" type="i" direction="in" />
+                <arg name="connectionID" type="i" direction="in" />
+                <arg name="error" type="i" direction="in" />
+        </method>
+        <method name="ackSetSinkVolumeChange">
+                <arg name="handle" type="i" direction="in" />
+                <arg name="volume" type="i" direction="in" />
+                <arg name="error" type="i" direction="in" />
+        </method>
+        <method name="ackSetSourceVolumeChange">
+                <arg name="handle" type="i" direction="in" />
+                <arg name="connectionID" type="i" direction="in" />
+                <arg name="error" type="i" direction="in" />
+        </method>
+        <method name="ackSetSourceState">
+                <arg name="handle" type="u" direction="in" />
+                <arg name="error" type="n" direction="in" />
+        </method>
+        <method name="ackSetSinkSoundProperty">
+                <arg name="handle" type="u" direction="in" />
+                <arg name="error" type="n" direction="in" />
+        </method>
+        <method name="ackSetSourceSoundProperty">
+                <arg name="handle" type="u" direction="in" />
+                <arg name="error" type="n" direction="in" />
+        </method>
+        <method name="ackCrossFading">
+                <arg name="handle" type="u" direction="in" />
+                <arg name="hotsink" type="q" direction="in" />
+                <arg name="error" type="n" direction="in" />
+        </method>
+        <method name="ackSourceVolumeTick">
+                <arg name="handle" type="u" direction="in" />
+                <arg name="source" type="q" direction="in" />
+                <arg name="volume" type="n" direction="in" />
+        </method>
+        <method name="ackSinkVolumeTick">
+                <arg name="handle" type="u" direction="in" />
+                <arg name="sink" type="q" direction="in" />
+                <arg name="volume" type="n" direction="in" />
+        </method>
+
+
+        <method name="peekDomain">
+                <arg name="name" type="s" direction="in" />
+                <arg name="domainid" type="q" direction="in" />
+        </method>
+        <method name="registerDomain">
+                <arg name="domaindata" type="(qsssbbq)" direction="in" />
+                <arg name="domainid" type="q" direction="in" />
+        </method>
+        <method name="deregisterDomain">
+                <arg name="domainid" type="q" direction="in" />
+        </method>
+
+
+	<method name="registerSource">      
+		<arg name="soucedata" type="(qqsqqnb(qq)q)" direction="in" />      
+		<arg name="sourceid" type="q" direction="in" /> 
+	</method>
+
+        <method name="deregisterSource">
+                <arg name="sourceid" type="q" direction="in" />  
+        </method>
+
+	<signal name="signal_systemReady">
+        </signal>
+
+	</interface>
+</node>

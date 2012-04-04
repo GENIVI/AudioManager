@@ -15,7 +15,16 @@
  *  For further information see http://www.genivi.org/.
  */
 
+#include "shared/CAmDltWrapper.h"
+#include "shared/CAmDbusWrapper.h"
 #include "CAmRoutingSenderDbus.h"
+#include "CAmDbusSend.h"
+
+#define PULSE_INTERFACE_TARGET "org.genivi.pulse"
+#define PULSE_REGISTER_PATH "/pulse"
+#define PULSE_INTERFACE_NAME "org.genivi.pulse"
+
+DLT_DECLARE_CONTEXT(routingDbus)
 
 extern "C" IAmRoutingSend* PluginRoutingInterfaceDbusFactory()
 {
@@ -28,54 +37,77 @@ extern "C" void destroyRoutingPluginInterfaceDbus(IAmRoutingSend* routingSendInt
 }
 
 CAmRoutingSenderDbus::CAmRoutingSenderDbus()
+    : 	mDBusMessageHandler(),
+        mRoutingReceiverShadow(),
+        mDBusWrapper(NULL),
+        mRoutingReceiveInterface(NULL)
 {
+    CAmDltWrapper::instance()->registerContext(routingDbus, "DRS", "DBus Plugin");
+    log(&routingDbus, DLT_LOG_INFO, "RoutingSender constructed");
 }
 
 CAmRoutingSenderDbus::~CAmRoutingSenderDbus()
 {
+    log(&routingDbus, DLT_LOG_INFO, "RoutingSender destructed");
+    CAmDltWrapper::instance()->unregisterContext(routingDbus);
 }
 
 am_Error_e CAmRoutingSenderDbus::asyncAbort(const am_Handle_s handle)
 {
-    (void) handle;
-    return (E_NOT_USED);
+    CAmDbusSend send = CAmDbusSend(connection,PULSE_INTERFACE_TARGET,PULSE_REGISTER_PATH, PULSE_INTERFACE_NAME, "abort");
+    send.appendInteger(handle.handleType);
+    send.appendInteger(handle.handle);
+    send.sendReply();
+    return (E_OK);
 }
 
 am_Error_e CAmRoutingSenderDbus::asyncConnect(const am_Handle_s handle, const am_connectionID_t connectionID, const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_ConnectionFormat_e connectionFormat)
 {
-    (void) handle;
-    (void) connectionID;
-    (void) sourceID;
-    (void) sinkID;
     (void) connectionFormat;
-    return (E_NOT_USED);
+    log(&routingDbus, DLT_LOG_INFO, "pulse async connect");
+    CAmDbusSend send = CAmDbusSend(connection,PULSE_INTERFACE_TARGET,PULSE_REGISTER_PATH, PULSE_INTERFACE_NAME, "connect");
+    send.appendInteger(handle.handle);
+    send.appendInteger(connectionID);
+    send.appendInteger(sourceID);
+    send.appendInteger(sinkID);
+    send.sendReply();
+    return (E_OK);
 }
 
 am_Error_e CAmRoutingSenderDbus::asyncDisconnect(const am_Handle_s handle, const am_connectionID_t connectionID)
 {
-    (void) handle;
-    (void) connectionID;
-    return (E_NOT_USED);
+    log(&routingDbus, DLT_LOG_INFO, "pulse async disconnect");
+    CAmDbusSend send = CAmDbusSend(connection,PULSE_INTERFACE_TARGET,PULSE_REGISTER_PATH, PULSE_INTERFACE_NAME, "disconnect");
+    send.appendInteger(handle.handle);
+    send.appendInteger(connectionID);
+    send.sendReply();
+    return (E_OK);
 }
 
 am_Error_e CAmRoutingSenderDbus::asyncSetSinkVolume(const am_Handle_s handle, const am_sinkID_t sinkID, const am_volume_t volume, const am_RampType_e ramp, const am_time_t time)
 {
-    (void) handle;
-    (void) sinkID;
-    (void) volume;
-    (void) ramp;
-    (void) time;
-    return (E_NOT_USED);
+    log(&routingDbus, DLT_LOG_INFO, "pulse set sink volume");
+    CAmDbusSend send = CAmDbusSend(connection,PULSE_INTERFACE_TARGET,PULSE_REGISTER_PATH, PULSE_INTERFACE_NAME, "setSinkVolume");
+    send.appendInteger(handle.handle);
+    send.appendInteger(sinkID);
+    send.appendInteger(volume);
+    send.appendInteger(ramp);
+    send.appendInteger(time);
+    send.sendReply();
+    return (E_OK);
 }
 
 am_Error_e CAmRoutingSenderDbus::asyncSetSourceVolume(const am_Handle_s handle, const am_sourceID_t sourceID, const am_volume_t volume, const am_RampType_e ramp, const am_time_t time)
 {
-    (void) handle;
-    (void) sourceID;
-    (void) volume;
-    (void) ramp;
-    (void) time;
-    return (E_NOT_USED);
+    log(&routingDbus, DLT_LOG_INFO, "pulse set source volume");
+    CAmDbusSend send = CAmDbusSend(connection,PULSE_INTERFACE_TARGET,PULSE_REGISTER_PATH, PULSE_INTERFACE_NAME, "setSourceVolume");
+    send.appendInteger(handle.handle);
+    send.appendInteger(sourceID);
+    send.appendInteger(volume);
+    send.appendInteger(ramp);
+    send.appendInteger(time);
+    send.sendReply();
+    return (E_OK);
 }
 
 am_Error_e CAmRoutingSenderDbus::asyncSetSourceState(const am_Handle_s handle, const am_sourceID_t sourceID, const am_SourceState_e state)
@@ -105,13 +137,23 @@ am_Error_e CAmRoutingSenderDbus::setDomainState(const am_domainID_t domainID, co
 
 am_Error_e CAmRoutingSenderDbus::startupInterface(IAmRoutingReceive *routingreceiveinterface)
 {
-    (void)routingreceiveinterface;
-    return (E_NOT_USED);
+    log(&routingDbus, DLT_LOG_INFO, "startupInterface called");
+    mRoutingReceiveInterface=routingreceiveinterface;
+    mRoutingReceiverShadow.setRoutingReceiver(mRoutingReceiveInterface);
+    mRoutingReceiveInterface->getDBusConnectionWrapper(mDBusWrapper);
+    //assert(mDBusWrapper!=NULL);
+    mDBusWrapper->getDBusConnection(connection);
+    //assert(connection!=NULL);
+    mDBusMessageHandler.setDBusConnection(connection);
+    return (E_OK);
 }
 
 void CAmRoutingSenderDbus::setRoutingReady(const uint16_t handle)
 {
     (void) handle;
+    log(&routingDbus, DLT_LOG_INFO, "sending systemReady signal");
+    mDBusMessageHandler.initSignal(std::string(ROUTING_NODE),"signal_systemReady");
+    mDBusMessageHandler.sendMessage();
 }
 
 void CAmRoutingSenderDbus::setRoutingRundown(const uint16_t handle)
@@ -127,10 +169,14 @@ am_Error_e CAmRoutingSenderDbus::returnBusName(std::string & BusName) const
 
 am_Error_e CAmRoutingSenderDbus::asyncSetSinkSoundProperty(const am_Handle_s handle, const am_sinkID_t sinkID, const am_SoundProperty_s & soundProperty)
 {
-    (void) handle;
-    (void) sinkID;
-    (void) soundProperty;
-    return (E_NOT_USED);
+    log(&routingDbus, DLT_LOG_INFO, "pulse set sink sound property ");
+    CAmDbusSend send = CAmDbusSend(connection,PULSE_INTERFACE_TARGET,PULSE_REGISTER_PATH, PULSE_INTERFACE_NAME, "setSinkSoundProperty");
+    send.appendInteger(handle.handle);
+    send.appendInteger(soundProperty.type);
+    send.appendInteger(soundProperty.value);
+    send.appendInteger(sinkID);
+    send.sendReply();
+    return (E_OK);
 }
 
 am_Error_e CAmRoutingSenderDbus::asyncSetSinkSoundProperties(const am_Handle_s handle, const am_sinkID_t sinkID, const std::vector<am_SoundProperty_s> & listSoundProperties)
