@@ -84,6 +84,8 @@ am_Error_e CAmControlSenderBase::hookUserConnectionRequest(const am_sourceID_t s
     }
     am_MainConnection_s mainConnectionData;
     mainConnectionData.mainConnectionID = 0;
+    mainConnectionData.sinkID = sinkID;
+    mainConnectionData.sourceID = sourceID;
     mainConnectionData.connectionState = CS_CONNECTING;
     mainConnectionData.delay = 0;
     mainConnectionData.listConnectionID = listConnectionIDs;
