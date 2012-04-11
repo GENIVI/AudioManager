@@ -56,6 +56,20 @@ COMPILE PROGRAMS
      WITH_TESTS                       ON 
  
 
+Passing options to cmake:
+***********************************************************************************************************
+-DVERSION="XXX"
+    when building the AudioManager without taking it from the git (and thus having a .git folder), you 
+    can set the version via via passing -DVERSION="XXX" to cmake, default: "homebrew-${CMAKE_SOURCE_DIR}"
+-DDBUS_SERVICE_PREFIX="XXX"
+    sets the service prefix for Dbus, default "org.genivi.audiomanager\0"
+-DDBUS_SERVICE_OBJECT_PATH="XXX"
+    sets the object path for Dbus, default "/org/genivi/audiomanager\0"
+-DDEFAULT_TELNETPORT="XXX"
+    sets the default telnetport, default 6060. Can be overwriten by command line parameter
+-DMAX_TELNETCONNECTIONS="XXX"
+    sets the default maximum number of telnetconnections, default is 3
+
 In order to change these options, you can modify this values with ccmake, do the appropriate changes in 
 CmakeList.txt or via the commandline for cmake or (when installed via ccmake)
 

@@ -6,3 +6,5 @@ doc/
 packages/
 .*
 /packages
+/patch
+ProjectSpecific/
