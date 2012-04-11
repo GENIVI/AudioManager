@@ -27,6 +27,8 @@
 #include <dbus/dbus.h>
 #include "shared/CAmDltWrapper.h"
 
+#define MAX_NS 1000000000L
+
 using namespace am;
 
 DLT_DECLARE_CONTEXT(PluginRoutingAsync)
@@ -137,11 +139,8 @@ CAmWorkerThreadPool::~CAmWorkerThreadPool()
 }
 
 CAmWorker::CAmWorker(CAmWorkerThreadPool *pool):
-pPool(pool), mCancelSem()
-{
-}
-
-void CAmWorker::setCancelSempaphore(sem_t* cancel)
+pPool(pool), mCancelSem ( ) { }
+void CAmWorker ::setCancelSempaphore ( sem_t * cancel )
 {
     mCancelSem=cancel;
 }
@@ -149,17 +148,23 @@ void CAmWorker::setCancelSempaphore(sem_t* cancel)
 bool CAmWorker::timedWait(timespec timer)
 {
     timespec temp;
-    if(clock_gettime(0, &temp)==-1)
+    if (clock_gettime(0, &temp) == -1)
     {
         logError("Worker::timedWait error on getting time");
     }
-    temp.tv_nsec+=timer.tv_nsec;
-    temp.tv_sec+=timer.tv_sec;
+    temp.tv_nsec += timer.tv_nsec;
+    temp.tv_sec += timer.tv_sec;
+
+    if (temp.tv_nsec >= MAX_NS)
+    {
+        temp.tv_sec++;
+        temp.tv_nsec = temp.tv_nsec - MAX_NS;
+    }
     //if(sem_wait(mCancelSem)==-1)
-        if (sem_timedwait(mCancelSem,&temp)==-1)
-        {
-            //a timeout happened
-        if(errno == ETIMEDOUT)
+    if (sem_timedwait(mCancelSem, &temp) == -1)
+    {
+        //a timeout happened
+        if (errno == ETIMEDOUT)
         {
             logInfo("Worker::timedWait timed out - no bug !");
             return (false);
@@ -175,8 +180,8 @@ bool CAmWorker::timedWait(timespec timer)
     return (true);
 }
 
-CAmRoutingSenderAsync::CAmRoutingSenderAsync():
-mReceiveInterface(0), mDomains(createDomainTable()), mSinks(createSinkTable()), mSources ( createSourceTable ( ) ), mGateways ( createGatewayTable ( ) ), mMapHandleWorker ( ) , mMapConnectionIDRoute ( ) , mPool (10)
+CAmRoutingSenderAsync::CAmRoutingSenderAsync() :
+        mReceiveInterface(0), mDomains(createDomainTable()), mSinks(createSinkTable()), mSources(createSourceTable()), mGateways(createGatewayTable()), mMapHandleWorker(), mMapConnectionIDRoute(), mPool(10)
 {
 }
 
