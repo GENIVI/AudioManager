@@ -68,7 +68,16 @@ am_Error_e CAmControlSenderBase::hookUserConnectionRequest(const am_sourceID_t s
     am_Handle_s handle;
     mControlReceiveInterface->getRoute(true, sourceID, sinkID, listRoutes);
     if (listRoutes.empty())
-        return E_NOT_POSSIBLE;
+        return (E_NOT_POSSIBLE);
+
+    std::vector<am_MainConnection_s> listAllMainConnections;
+    mControlReceiveInterface->getListMainConnections(listAllMainConnections);
+    std::vector<am_MainConnection_s>::iterator itAll(listAllMainConnections.begin());
+    for(;itAll!=listAllMainConnections.end();++itAll)
+    {
+        if(itAll->sinkID==sinkID && itAll->sourceID==sourceID)
+            return (E_ALREADY_EXISTS);
+    }
 
     std::vector<handleStatus> listHandleStaus;
     std::vector<am_RoutingElement_s>::iterator it(listRoutes[0].route.begin());
@@ -119,7 +128,7 @@ am_Error_e CAmControlSenderBase::hookUserDisconnectionRequest(const am_mainConne
     mainConnectionSet set;
     set.connectionID = connectionID;
     set.listHandleStaus = listHandleStaus;
-    mListOpenConnections.push_back(set);
+    mListOpenDisconnections.push_back(set);
     return E_OK;
 }
 
