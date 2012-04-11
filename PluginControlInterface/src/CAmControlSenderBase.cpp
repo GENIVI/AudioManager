@@ -73,9 +73,9 @@ am_Error_e CAmControlSenderBase::hookUserConnectionRequest(const am_sourceID_t s
     std::vector<am_MainConnection_s> listAllMainConnections;
     mControlReceiveInterface->getListMainConnections(listAllMainConnections);
     std::vector<am_MainConnection_s>::iterator itAll(listAllMainConnections.begin());
-    for(;itAll!=listAllMainConnections.end();++itAll)
+    for (; itAll != listAllMainConnections.end(); ++itAll)
     {
-        if(itAll->sinkID==sinkID && itAll->sourceID==sourceID)
+        if (itAll->sinkID == sinkID && itAll->sourceID == sourceID)
             return (E_ALREADY_EXISTS);
     }
 
@@ -200,9 +200,33 @@ am_Error_e CAmControlSenderBase::hookUserVolumeStep(const am_sinkID_t SinkID, co
 
 am_Error_e CAmControlSenderBase::hookUserSetSinkMuteState(const am_sinkID_t sinkID, const am_MuteState_e muteState)
 {
-    (void) sinkID;
-    (void) muteState;
-    return E_NOT_USED;
+    assert(sinkID!=0);
+
+    mainVolumeSet set;
+    set.sinkID = sinkID;
+    am_Error_e error;
+    am_Sink_s sink;
+    mControlReceiveInterface->getSinkInfoDB(sinkID, sink);
+
+    if (muteState == MS_MUTED)
+    {
+        set.mainVolume = sink.mainVolume;
+        if ((error = mControlReceiveInterface->setSinkVolume(set.handle, sinkID, 0, RAMP_GENIVI_DIRECT, 20)) != E_OK)
+        {
+            return error;
+        }
+    }
+    else
+    {
+        set.mainVolume=sink.mainVolume;
+        if ((error = mControlReceiveInterface->setSinkVolume(set.handle, sinkID, set.mainVolume, RAMP_GENIVI_DIRECT, 20)) != E_OK)
+        {
+            return error;
+        }
+    }
+    mListOpenVolumeChanges.push_back(set);
+    mControlReceiveInterface->changeSinkMuteStateDB(muteState,sinkID);
+    return (E_OK);
 }
 
 am_Error_e CAmControlSenderBase::hookSystemRegisterDomain(const am_Domain_s & domainData, am_domainID_t & domainID)
