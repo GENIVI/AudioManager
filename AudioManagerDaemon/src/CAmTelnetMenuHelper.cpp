@@ -78,7 +78,7 @@ void CAmTelnetMenuHelper::createCommandMaps()
     mListCommands.insert(std::make_pair("conn", sCommandPrototypeInfo("list all connections", &CAmTelnetMenuHelper::listConnectionsCommand)));
     mListCommands.insert(std::make_pair("sources", sCommandPrototypeInfo("list all available sources", &CAmTelnetMenuHelper::listSourcesCommand)));
     mListCommands.insert(std::make_pair("sinks", sCommandPrototypeInfo("list all available sinks", &CAmTelnetMenuHelper::listSinksCommands)));
-    mListCommands.insert(std::make_pair("crfaders", sCommandPrototypeInfo("list all crossfaders", &CAmTelnetMenuHelper::listCrossfaders)));
+    mListCommands.insert(std::make_pair("crfader", sCommandPrototypeInfo("list all crossfaders", &CAmTelnetMenuHelper::listCrossfaders)));
     mListCommands.insert(std::make_pair("domains", sCommandPrototypeInfo("list all domains", &CAmTelnetMenuHelper::listDomainsCommand)));
     mListCommands.insert(std::make_pair("gws", sCommandPrototypeInfo("list all gateways", &CAmTelnetMenuHelper::listGatewaysCommand)));
     mListCommands.insert(std::make_pair("mainconn", sCommandPrototypeInfo("list all main connections", &CAmTelnetMenuHelper::listMainConnectionsCommand)));
@@ -625,11 +625,13 @@ void CAmTelnetMenuHelper::listCrossfadersExec(std::queue<std::string> & CmdQueue
     if(E_OK == mpDatabasehandler->getListCrossfaders(listCrossfaders))
     {
         std::stringstream output;
-        output << "\tCrossfaders: " << listCrossfaders.size() << std::endl;
+        output << "\tCrossfader: " << listCrossfaders.size() << std::endl;
         for (std::vector<am_Crossfader_s>::iterator iter(listCrossfaders.begin()); iter < listCrossfaders.end(); iter++)
         {
             output << "\tID: " << iter->crossfaderID
                    << "\tName: " << iter->name
+                   << "\tSinkA: " << iter->sinkID_A
+                   << "\tSinkB: " << iter->sinkID_B
                    << "\tSourceID: " << iter->sourceID << std::endl;
         }
 
@@ -1256,10 +1258,10 @@ void CAmTelnetMenuHelper::listMainSourcesCommandExec(std::queue<std::string> & C
         std::vector<am_SourceType_s>::iterator iter;
         for (iter = listMainSources.begin(); iter < listMainSources.end(); iter++)
         {
-            output << "\t" << iter->name << "\tID: " << iter->sourceID
-                           << "\tClassID: " << iter->sourceClassID
-                           << "\tavailability: " << static_cast<int>(iter->availability.availability)
-                           << "\tavailabilityReason: " << static_cast<int>(iter->availability.availabilityReason) << std::endl;
+            output << "\tID: " << iter->sourceID
+                   << "\tName: " << iter->name
+                   << "\tsourceClassID: " << iter->sourceClassID
+                   << "\tavailability: " << iter->availability.availability <<  std::endl;
         }
         sendTelnetLine(filedescriptor,output);
     }
@@ -1291,12 +1293,11 @@ void CAmTelnetMenuHelper::listMainSinksCommandExec(std::queue<std::string> & Cmd
         std::vector<am_SinkType_s>::iterator iter;
         for (   iter = listMainSinks.begin(); iter < listMainSinks.end(); iter++)
         {
-            output << "\t" << iter->name << "\tID: " << iter->sinkID
-                           << "\tClassID: " << iter->sinkClassID
-                           << "\tavailability: " << static_cast<int>(iter->availability.availability)
-                           << "\tavailabilityReason: " << static_cast<int>(iter->availability.availabilityReason)
-                           << "\tMuteState: " << iter->muteState
-                           << "\tVolume: " << iter->volume << std::endl;
+            output << "\tID: " << iter->sinkID
+                   << "\tsinkClassID: " << iter->sinkClassID
+                   << "\tName: " << iter->name
+                   << "\tAvailable: " << iter->availability.availability
+                   << "\tVolume: " << iter->volume << std::endl;
         }
         sendTelnetLine(filedescriptor,output);
     }
