@@ -122,7 +122,10 @@ am_Error_e CAmControlSenderBase::hookUserDisconnectionRequest(const am_mainConne
     {
         handleStatus status;
         status.status = false;
-        mControlReceiveInterface->disconnect(status.handle, *it);
+        if((error=mControlReceiveInterface->disconnect(status.handle, *it)))
+        {
+            logError("Could not disconnect, Error", error);
+        }
         listHandleStaus.push_back(status);
     }
     mainConnectionSet set;
@@ -173,7 +176,21 @@ am_Error_e CAmControlSenderBase::hookUserVolumeChange(const am_sinkID_t SinkID, 
     set.sinkID = SinkID;
     set.mainVolume = newVolume;
     am_Error_e error;
-    if ((error = mControlReceiveInterface->setSinkVolume(set.handle, SinkID, newVolume, RAMP_GENIVI_DIRECT, 20)) != E_OK)
+
+    std::vector<mainVolumeSet>::iterator it(mListOpenVolumeChanges.begin());
+    for(;it!=mListOpenVolumeChanges.end();++it)
+    {
+        if (it->sinkID==SinkID)
+            return E_NOT_POSSIBLE;
+    }
+
+    am_Sink_s sinkData;
+    mControlReceiveInterface->getSinkInfoDB(SinkID,sinkData);
+
+    if (sinkData.mainVolume==newVolume)
+        return E_NO_CHANGE;
+
+    if ((error = mControlReceiveInterface->setSinkVolume(set.handle, SinkID, newVolume*3199, RAMP_UNKNOWN, 20)) != E_OK)
     {
         return error;
     }
@@ -188,9 +205,15 @@ am_Error_e CAmControlSenderBase::hookUserVolumeStep(const am_sinkID_t SinkID, co
     set.sinkID = SinkID;
     am_Error_e error;
     am_Sink_s sink;
+    std::vector<mainVolumeSet>::iterator it(mListOpenVolumeChanges.begin());
+    for(;it!=mListOpenVolumeChanges.end();++it)
+    {
+        if (it->sinkID==SinkID)
+            return E_NOT_POSSIBLE;
+    }
     mControlReceiveInterface->getSinkInfoDB(SinkID, sink);
-    set.mainVolume = sink.volume + increment;
-    if ((error = mControlReceiveInterface->setSinkVolume(set.handle, SinkID, set.mainVolume, RAMP_GENIVI_DIRECT, 20)) != E_OK)
+    set.mainVolume = sink.volume + increment*3199;
+    if ((error = mControlReceiveInterface->setSinkVolume(set.handle, SinkID, set.mainVolume, RAMP_UNKNOWN, 20)) != E_OK)
     {
         return error;
     }
@@ -414,6 +437,8 @@ void CAmControlSenderBase::cbAckSetSinkVolumeChange(const am_Handle_s handle, co
         if (handle.handle == it->handle.handle)
         {
             mControlReceiveInterface->changeSinkMainVolumeDB(it->mainVolume, it->sinkID);
+            mListOpenVolumeChanges.erase(it);
+            break;
         }
     }
 }

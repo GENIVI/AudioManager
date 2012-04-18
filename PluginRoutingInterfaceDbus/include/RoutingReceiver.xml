@@ -17,12 +17,12 @@
 	</method>
 	<method name="ackSetSinkVolume">
 		<arg name="handle" type="q" direction="in" />
-		<arg name="volume" type="i" direction="in" />
+		<arg name="volume" type="n" direction="in" />
 		<arg name="error" type="q" direction="in" />
 	</method>
 	<method name="ackSetSourceVolume">
 		<arg name="handle" type="q" direction="in" />
-		<arg name="volume" type="i" direction="in" />
+		<arg name="volume" type="n" direction="in" />
 		<arg name="error" type="q" direction="in" />
 	</method>
 	<method name="ackSetSourceState">

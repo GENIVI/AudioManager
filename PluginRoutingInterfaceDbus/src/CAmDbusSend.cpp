@@ -116,25 +116,17 @@ void CAmRoutingDbusSend::append(am_SoundProperty_s soundProperty)
 am_Error_e CAmRoutingDbusSend::send()
 {
 
-    am_Error_e error;
+    int16_t error;
     DBusMessage* reply(dbus_connection_send_with_reply_and_block(mpDbusConnection, mpDbusMessage, -1, &mDBusError));
     if (!reply)
     {
         log(&routingDbus, DLT_LOG_ERROR, "CAmRoutingDbusSend::send failed, dbus error", mDBusError.message);
         return (E_UNKNOWN);
     }
-    if (!dbus_message_iter_init(reply, &mDbusMessageIter))
-    {
-        log(&routingDbus, DLT_LOG_ERROR, "DBusMessageHandler::send DBus Message has no arguments!");
-    }
-    if (DBUS_TYPE_INT16 != dbus_message_iter_get_arg_type(&mDbusMessageIter))
-    {
-        log(&routingDbus, DLT_LOG_ERROR, "DBusMessageHandler::getBool DBUS handler argument is no error!");
-    }
-    else
-    {
-        dbus_message_iter_get_basic(&mDbusMessageIter, &error);
-    }
-    return (error);
+    if(!dbus_message_get_args(reply, &mDBusError, //
+            DBUS_TYPE_INT16, &error, //
+            DBUS_TYPE_INVALID))
+        return (E_UNKNOWN);
+    return (static_cast<am_Error_e>(error));
 }
 }

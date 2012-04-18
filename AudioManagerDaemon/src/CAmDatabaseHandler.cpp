@@ -273,7 +273,7 @@ am_Error_e CAmDatabaseHandler::enterMainConnectionDB(const am_MainConnection_s &
         }
         else
         {
-            logError("DatabaseHandler::enterMainConnectionDB did not find route for MainConnection:", eCode);
+            logError("DatabaseHandler::enterMainConnectionDB did not find route for MainConnection: ", eCode);
             MY_SQLITE_FINALIZE(query)
             return (E_DATABASE_ERROR);
         }
@@ -899,7 +899,7 @@ am_Error_e CAmDatabaseHandler::changeMainConnectionRouteDB(const am_mainConnecti
         }
         else
         {
-            logError("DatabaseHandler::changeMainConnectionRouteDB did not find route for MainConnection:", eCode);
+            logError("DatabaseHandler::changeMainConnectionRouteDB did not find route for MainConnection: ", eCode);
             MY_SQLITE_FINALIZE(query)
             return (E_DATABASE_ERROR);
         }

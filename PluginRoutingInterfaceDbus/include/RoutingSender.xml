@@ -4,11 +4,11 @@
   "http://standards.freedesktop.org/dbus/1.0/introspect.dtd">
 
 <node>  
-	<interface name='org.pulseaudio.genivi.RoutingSender'>	
+	<interface name='org.pulseaudio.genivi.RoutingSend'>	
 	<method name='asyncAbort'>										
 		<arg name='handle' type='q' direction='in' />  
 		<arg name='error' type='n' direction='out' />
-    </method>    	 						
+    	</method>    	 						
 	<method name='asyncConnect'>      									
 		<arg name='handle' type='q' direction='in' />      				
 		<arg name='connectionID' type='q' direction='in' />	
@@ -22,7 +22,7 @@
 		<arg name='connectionID' type='q' direction='in' />		
 		<arg name='error' type='n' direction='out' />								    				
 	</method>											
-	<method name='setSinkVolume'>									
+	<method name='asyncSetSinkVolume'>									
 		<arg name='handle' type='q' direction='in' />      				
 		<arg name='sinkID' type='q' direction='in' />		
 		<arg name='volume' type='n' direction='in' />									
@@ -30,7 +30,7 @@
 		<arg name='time' type='q' direction='in' />	
 		<arg name='error' type='n' direction='out' />					
 	</method>											
-	<method name='setSourceVolume'>	  							
+	<method name='asyncSetSourceVolume'>	  							
 		<arg name='handle' type='q' direction='in' />      				
 		<arg name='sourceID' type='q' direction='in' />		
 		<arg name='volume' type='n' direction='in' />									
@@ -81,5 +81,5 @@
 		<arg name='domainState' type='q' direction='in' />			
 		<arg name='error' type='n' direction='out' />				
 	</method>		                                                                                
-</interface>																						
+	</interface>																							
 </node>
