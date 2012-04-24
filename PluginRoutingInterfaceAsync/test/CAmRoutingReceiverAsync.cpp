@@ -493,7 +493,6 @@ TEST_F(CAmRoutingReceiverAsync,connectNoMoreThreads)
     {
         handle.handle++;
         connectionID++;
-        std::cout << "asyncConnect: " << connectionID << ", " << handle.handle << std::endl;
         ASSERT_EQ(E_OK, pRouter->asyncConnect(handle,connectionID,sourceID,sinkID,format));
     }
     ASSERT_EQ(E_NOT_POSSIBLE, pRouter->asyncConnect(handle,connectionID,sourceID,sinkID,format));
