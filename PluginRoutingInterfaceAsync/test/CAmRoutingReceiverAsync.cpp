@@ -78,7 +78,7 @@ void CAmEnvironment::SetUp()
     pRouter->setRoutingReady(10);
 
     timespec t;
-    t.tv_nsec = 0;
+    t.tv_nsec = 500000000;
     t.tv_sec = 1;
 
     sh_timerHandle_t handle;
@@ -371,29 +371,6 @@ TEST_F(CAmRoutingReceiverAsync,disconnect)
     pSocketHandler.start_listenting();
 }
 
-TEST_F(CAmRoutingReceiverAsync,connectNoMoreThreads)
-{
-
-    am_Handle_s handle;
-    handle.handle = 1;
-    handle.handleType = H_CONNECT;
-
-    am_connectionID_t connectionID = 1;
-    am_sourceID_t sourceID = 2;
-    am_sinkID_t sinkID = 1;
-    am_ConnectionFormat_e format = CF_GENIVI_ANALOG;
-
-    EXPECT_CALL(pReceiveInterface,ackConnect(_,_,E_OK)).Times(10);
-    for (int i = 0; i < 10; i++)
-    {
-        handle.handle++;
-        connectionID++;
-        ASSERT_EQ(E_OK, pRouter->asyncConnect(handle,connectionID,sourceID,sinkID,format));
-    }
-    ASSERT_EQ(E_NOT_POSSIBLE, pRouter->asyncConnect(handle,connectionID,sourceID,sinkID,format));
-    pSocketHandler.start_listenting();
-}
-
 TEST_F(CAmRoutingReceiverAsync,connectAbortTooLate)
 {
 
@@ -406,7 +383,7 @@ TEST_F(CAmRoutingReceiverAsync,connectAbortTooLate)
     am_sinkID_t sinkID = 1;
     am_ConnectionFormat_e format = CF_GENIVI_ANALOG;
 
-    EXPECT_CALL(pReceiveInterface,ackConnect(_,connectionID,E_OK)).Times(2);
+    EXPECT_CALL(pReceiveInterface,ackConnect(_,connectionID,E_OK)).Times(1);
     ASSERT_EQ(E_OK, pRouter->asyncConnect(handle,connectionID,sourceID,sinkID,format));
     sleep(3);
     ASSERT_EQ(E_NON_EXISTENT, pRouter->asyncAbort(handle));
@@ -496,6 +473,30 @@ TEST_F(CAmRoutingReceiverAsync,connect)
 
     EXPECT_CALL(pReceiveInterface, ackConnect(_,connectionID,E_OK));
     ASSERT_EQ(E_OK, pRouter->asyncConnect(handle,connectionID,sourceID,sinkID,format));
+    pSocketHandler.start_listenting();
+}
+
+TEST_F(CAmRoutingReceiverAsync,connectNoMoreThreads)
+{
+
+    am_Handle_s handle;
+    handle.handle = 1;
+    handle.handleType = H_CONNECT;
+
+    am_connectionID_t connectionID = 1;
+    am_sourceID_t sourceID = 2;
+    am_sinkID_t sinkID = 1;
+    am_ConnectionFormat_e format = CF_GENIVI_ANALOG;
+
+    EXPECT_CALL(pReceiveInterface,ackConnect(_,_,E_OK)).Times(10);
+    for (int i = 0; i < 10; i++)
+    {
+        handle.handle++;
+        connectionID++;
+        std::cout << "asyncConnect: " << connectionID << ", " << handle.handle << std::endl;
+        ASSERT_EQ(E_OK, pRouter->asyncConnect(handle,connectionID,sourceID,sinkID,format));
+    }
+    ASSERT_EQ(E_NOT_POSSIBLE, pRouter->asyncConnect(handle,connectionID,sourceID,sinkID,format));
     pSocketHandler.start_listenting();
 }
 

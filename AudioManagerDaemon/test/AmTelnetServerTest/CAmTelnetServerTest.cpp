@@ -89,7 +89,7 @@ void CAmEnvironment::SetUp()
 
 void CAmEnvironment::TearDown()
 {
-
+    pthread_cancel(mSocketHandlerThread);
 }
 
 void CAmEnvironment::setSocketHandler(CAmSocketHandler* pSocketHandler)
