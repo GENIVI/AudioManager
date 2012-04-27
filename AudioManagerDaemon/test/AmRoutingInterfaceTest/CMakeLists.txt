@@ -24,7 +24,10 @@ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUNIT_TEST=1 -DDLT_CONTEXT=AudioManage
 
 FIND_PACKAGE(PkgConfig)
 pkg_check_modules(SQLITE REQUIRED sqlite3)
-pkg_check_modules(DLT REQUIRED automotive-dlt)
+
+IF(WITH_DLT)    
+    pkg_check_modules(DLT REQUIRED automotive-dlt>=2.2.0)   
+ENDIF(WITH_DLT)
 
 INCLUDE_DIRECTORIES(   
     ${CMAKE_CURRENT_BINARY_DIR}

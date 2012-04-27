@@ -30,7 +30,10 @@ set(INCLUDE_FOLDER ${CMAKE_SOURCE_DIR}/../../include)
 
 
 FIND_PACKAGE(PkgConfig)
-pkg_check_modules(DLT REQUIRED automotive-dlt)
+
+IF(WITH_DLT)    
+    pkg_check_modules(DLT REQUIRED automotive-dlt>=2.2.0)   
+ENDIF(WITH_DLT)
 
 INCLUDE_DIRECTORIES(   
     ${CMAKE_CURRENT_BINARY_DIR}
