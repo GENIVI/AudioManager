@@ -158,13 +158,13 @@ DBusHandlerResult CAmDbusWrapper::cbRootIntrospection(DBusConnection *conn, DBus
     logInfo("DBusWrapper::~cbRootIntrospection called:");
 
     mpReference = (CAmDbusWrapper*) reference;
-    std::list<std::string> nodesList = mpReference->mListNodes;
+    std::vector<std::string> nodesList = mpReference->mListNodes;
     DBusMessage * reply;
     DBusMessageIter args;
     dbus_uint32_t serial = 0;
     if (dbus_message_is_method_call(msg, DBUS_INTERFACE_INTROSPECTABLE, "Introspect"))
     {
-        std::list<std::string>::iterator nodeIter = nodesList.begin();
+        std::vector<std::string>::iterator nodeIter = nodesList.begin();
         const char *xml = ROOT_INTROSPECT_XML;
         std::stringstream introspect;
         introspect << std::string(xml);
@@ -323,7 +323,7 @@ dbus_bool_t CAmDbusWrapper::addTimeoutDelegate(DBusTimeout *timeout, void* userD
 
     //save timeout in Socket context
     userData = timeout;
-    logInfo("DBusWrapper::addTimeoutDelegate a timeout was added");
+    logInfo("DBusWrapper::addTimeoutDelegate a timeout was added, timeout",localTimeout," handle ", *handle);
     return (true);
 }
 
@@ -437,13 +437,13 @@ void CAmDbusWrapper::toggleTimeoutDelegate(DBusTimeout *timeout, void* userData)
 
 void CAmDbusWrapper::dbusTimerCallback(sh_timerHandle_t handle, void *userData)
 {
+    logInfo("DBusWrapper::dbusTimerCallback was called");
     assert(userData!=NULL);
     if (dbus_timeout_get_enabled((DBusTimeout*) userData))
     {
         mpSocketHandler->restartTimer(handle);
     }
     dbus_timeout_handle((DBusTimeout*) userData);
-    logInfo("DBusWrapper::dbusTimerCallback was called");
 }
 }
 

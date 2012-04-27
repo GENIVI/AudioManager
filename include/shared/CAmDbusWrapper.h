@@ -77,7 +77,7 @@ private:
     DBusObjectPathVTable mObjectPathVTable; //!< the vpathtable
     DBusConnection* mpDbusConnection; //!< pointer to the dbus connection used
     DBusError mDBusError; //!< dbuserror
-    std::list<std::string> mListNodes; //!< holds a list of all nodes of the dbus
+    std::vector<std::string> mListNodes; //!< holds a list of all nodes of the dbus
     std::vector<sh_timerHandle_t*> mpListTimerhandles; //!< pointer to the timer handles
     CAmSocketHandler *mpSocketHandler; //!< pointer to the sockethandler
     std::map<DBusWatch*, sh_pollHandle_t> mMapHandleWatch; //!< map to the handle watches
