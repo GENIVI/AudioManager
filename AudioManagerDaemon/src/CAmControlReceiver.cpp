@@ -130,7 +130,7 @@ am_Error_e CAmControlReceiver::setSinkSoundProperty(am_Handle_s & handle, const 
 {
     logInfo("CAmControlReceiver::setSinkSoundProperty got called, sinkID=", sinkID, "soundProperty.Type=", soundProperty.type, "soundProperty.value=", soundProperty.value);
 
-    uint16_t value;
+    int16_t value;
     if (mDatabaseHandler->getSinkSoundPropertyValue(sinkID, soundProperty.type, value) != E_OK)
         return (E_UNKNOWN);
     if (value == soundProperty.value)
@@ -142,7 +142,7 @@ am_Error_e CAmControlReceiver::setSinkSoundProperties(am_Handle_s & handle, cons
 {
     logInfo("CAmControlReceiver::setSinkSoundProperties got called, sinkID=", sinkID);
 
-    uint16_t value;
+    int16_t value;
     bool noChange = true;
     std::vector<am_SoundProperty_s>::const_iterator it = listSoundProperties.begin();
     for (; it != listSoundProperties.end(); ++it)
@@ -161,7 +161,7 @@ am_Error_e CAmControlReceiver::setSourceSoundProperty(am_Handle_s & handle, cons
 {
     logInfo("CAmControlReceiver::setSourceSoundProperty got called, sourceID=", sourceID, "soundProperty.Type=", soundProperty.type, "soundProperty.value=", soundProperty.value);
 
-    uint16_t value;
+    int16_t value;
     if (mDatabaseHandler->getSourceSoundPropertyValue(sourceID, soundProperty.type, value) != E_OK)
         return (E_UNKNOWN);
     if (value == soundProperty.value)
@@ -173,7 +173,7 @@ am_Error_e CAmControlReceiver::setSourceSoundProperties(am_Handle_s & handle, co
 {
     logInfo("CAmControlReceiver::setSourceSoundProperties got called, sourceID=", sourceID);
 
-    uint16_t value;
+    int16_t value;
     bool noChange = true;
     std::vector<am_SoundProperty_s>::const_iterator it = listSoundProperties.begin();
     for (; it != listSoundProperties.end(); ++it)

@@ -3789,7 +3789,7 @@ am_Error_e CAmDatabaseHandler::getSourceVolume(const am_sourceID_t sourceID, am_
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::getSinkSoundPropertyValue(const am_sinkID_t sinkID, const am_SoundPropertyType_e propertyType, uint16_t & value) const
+am_Error_e CAmDatabaseHandler::getSinkSoundPropertyValue(const am_sinkID_t sinkID, const am_SoundPropertyType_e propertyType, int16_t & value) const
 {
     assert(sinkID!=0);
     if (!existSink(sinkID))
@@ -3800,14 +3800,13 @@ am_Error_e CAmDatabaseHandler::getSinkSoundPropertyValue(const am_sinkID_t sinkI
     std::string command = "SELECT value FROM SinkSoundProperty" + i2s(sinkID) + " WHERE soundPropertyType=" + i2s(propertyType);
     MY_SQLITE_PREPARE_V2(mpDatabase, command.c_str(), -1, &query, NULL)
 
-    while ((eCode = sqlite3_step(query)) == SQLITE_ROW)
+    if ((eCode = sqlite3_step(query)) == SQLITE_ROW)
     {
         value = sqlite3_column_int(query, 0);
     }
-
-    if (eCode != SQLITE_DONE)
+    else
     {
-        logError("DatabaseHandler::getSinkSoundPropertyValue SQLITE error code:", eCode);
+        logError("DatabaseHandler::getDomainState database error!:", eCode);
         MY_SQLITE_FINALIZE(query)
         return (E_DATABASE_ERROR);
     }
@@ -3817,7 +3816,7 @@ am_Error_e CAmDatabaseHandler::getSinkSoundPropertyValue(const am_sinkID_t sinkI
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::getSourceSoundPropertyValue(const am_sourceID_t sourceID, const am_SoundPropertyType_e propertyType, uint16_t & value) const
+am_Error_e CAmDatabaseHandler::getSourceSoundPropertyValue(const am_sourceID_t sourceID, const am_SoundPropertyType_e propertyType, int16_t & value) const
 {
     assert(sourceID!=0);
     if (!existSource(sourceID))
@@ -4111,7 +4110,7 @@ am_Error_e CAmDatabaseHandler::changeSinkSoundPropertyDB(const am_SoundProperty_
     assert(sinkID!=0);
 
     MY_SQLITE_FINALIZE(query)
-    logInfo("DatabaseHandler::changeSinkSoundPropertyDB changed MainSinkSoundProperty of sink:", sinkID, "type:", soundProperty.type, "to:", soundProperty.value);
+    logInfo("DatabaseHandler::changeSinkSoundPropertyDB changed SinkSoundProperty of sink:", sinkID, "type:", soundProperty.type, "to:", soundProperty.value);
     return (E_OK);
 }
 

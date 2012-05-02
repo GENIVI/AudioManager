@@ -127,6 +127,7 @@ am_Error_e CAmRoutingDbusSend::send()
             DBUS_TYPE_INT16, &error, //
             DBUS_TYPE_INVALID))
         return (E_UNKNOWN);
+    dbus_message_unref(reply);
     return (static_cast<am_Error_e>(error));
 }
 }

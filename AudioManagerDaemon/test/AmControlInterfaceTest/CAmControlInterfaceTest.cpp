@@ -418,7 +418,7 @@ TEST_F(CAmControlInterfaceTest,ackSetSinkSoundProperty)
     std::vector<am_Handle_s> handlesList;
     am_Handle_s handle;
     am_SoundProperty_s soundProperty;
-    uint16_t oldvalue;
+    int16_t oldvalue;
     pCF.createSink(sink);
     pCF.createDomain(domain);
     domain.name = "mock";
@@ -470,7 +470,7 @@ TEST_F(CAmControlInterfaceTest,ackSetSourceSoundProperty)
     std::vector<am_Handle_s> handlesList;
     am_Handle_s handle;
     am_SoundProperty_s soundProperty;
-    uint16_t oldvalue;
+    int16_t oldvalue;
     pCF.createSource(source);
     pCF.createDomain(domain);
     domain.name = "mock";

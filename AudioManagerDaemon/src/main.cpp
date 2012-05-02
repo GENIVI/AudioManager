@@ -173,7 +173,7 @@ void parseCommandLine(int argc, char **argv)
             int option = getopt(argc, argv, "h::v::c::l::r::L::R::d::t::m::i::p::T::");
     #else
             int option = getopt(argc, argv, "h::v::c::l::r::L::R::d::t::m::i::p::");
-    #endif WITH_DBUS_WRAPPER
+    #endif //WITH_DBUS_WRAPPER
 #else
     #ifdef WITH_DBUS_WRAPPER
             int option = getopt(argc, argv, "h::v::V::c::l::r::L::R::d::t::m::i::p::T::");
