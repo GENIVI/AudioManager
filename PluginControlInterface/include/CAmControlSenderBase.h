@@ -78,6 +78,10 @@ public:
 
 private:
     IAmControlReceive * mControlReceiveInterface;
+
+    void disconnect(am_mainConnectionID_t connectionID);
+    void connect(am_sourceID_t sourceID, am_sinkID_t sinkID, am_mainConnectionID_t mainConnectionID);
+
     struct handleStatus
     {
         bool status;
@@ -148,10 +152,78 @@ private:
         }
     };
 
+    enum cs_stateflow_e
+    {
+        SF_NONE,
+        SF_CONNECT,
+        SF_NAVI,
+        SF_TA
+    };
+
+    enum cs_connectSf_e
+    {
+        SFC_RAMP_DOWN,
+        SFC_SOURCE_STATE_OFF,
+        SFC_DISCONNECT,
+        SFC_CONNECT,
+        SFC_SOURCE_STATE_ON,
+        SFC_RAMP_UP,
+        SFC_FINISHED
+    };
+
+    enum cs_naviSf_e
+    {
+        NAVC_RAMP_DOWN,
+        NAVC_CONNECT,
+        NAVC_SOURCE_STATE_ON,
+        NAVC_RAMP_UP,
+        NAVC_WAIT_STATE,
+        NAVC_RAMP_DOWN_AGAIN,
+        NAVC_SOURCE_VOLUME_BACK,
+        NAVC_SOURCE_ACTIVITY_BACK,
+        NAVC_DISCONNECT,
+        NAVC_FINISHED
+    };
+
+    enum cs_trafficSf_e
+    {
+        TA_RAMP_DOWN,
+        TA_CONNECT,
+        TA_SOURCE_STATE_ON,
+        TA_RAMP_UP,
+        TA_WAIT_STATE,
+        TA_RAMP_DOWN_AGAIN,
+        TA_SOURCE_STATE_OFF,
+        TA_SOURCE_STATE_OLD_OFF,
+        TA_DISCONNECT,
+        TA_FINISHED
+    };
+
+    struct cs_connectData_s
+    {
+        am_mainConnectionID_t currentMainConnection;
+        am_mainConnectionID_t newMainConnection;
+        am_sourceID_t oldSourceID;
+        am_sinkID_t sinkID;
+        am_sourceID_t sourceID;
+    };
+
+    void callStateFlowHandler();
+    void callConnectHandler();
+    void callNaviHandler();
+    void callTAHandler();
+
     std::vector<mainConnectionSet> mListOpenConnections;
     std::vector<mainConnectionSet> mListOpenDisconnections;
     std::vector<mainVolumeSet> mListOpenVolumeChanges;
     std::vector<mainSinkSoundPropertySet> mListMainSoundPropertyChanges;
+
+    cs_connectSf_e mConnectSf;
+    cs_naviSf_e mNaviSf;
+    cs_trafficSf_e mTrafficSf;
+    cs_connectData_s mConnectData;
+    cs_stateflow_e mStateflow;
+
 };
 
 #endif /* CONTROLSENDER_H_ */
