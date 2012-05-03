@@ -21,6 +21,7 @@
 
 #include "CAmDatabaseHandler.h"
 #include <cassert>
+#include <stdexcept>
 #include <vector>
 #include <fstream>
 #include <sstream>
@@ -3844,7 +3845,7 @@ am_Error_e CAmDatabaseHandler::getSourceSoundPropertyValue(const am_sourceID_t s
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::getDomainState(const am_domainID_t domainID, am_DomainState_e state) const
+am_Error_e CAmDatabaseHandler::getDomainState(const am_domainID_t domainID, am_DomainState_e& state) const
 {
     assert(domainID!=0);
     sqlite3_stmt* query = NULL;

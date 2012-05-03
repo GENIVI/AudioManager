@@ -38,6 +38,7 @@ CAmRoutingReceiver::CAmRoutingReceiver(CAmDatabaseHandler *iDatabaseHandler, CAm
         mpSocketHandler(iSocketHandler), //
         mListStartupHandles(), //
         mListRundownHandles(), //
+        handleCount(0), //
         mWaitStartup(false), //
         mWaitRundown(false)
 {
@@ -55,6 +56,7 @@ CAmRoutingReceiver::CAmRoutingReceiver(CAmDatabaseHandler *iDatabaseHandler, CAm
         mpDBusWrapper(iDBusWrapper), //
         mListStartupHandles(), //
         mListRundownHandles(), //
+        handleCount(0), //
         mWaitStartup(false), //
         mWaitRundown(false)
 {

@@ -26,6 +26,7 @@
 #include <string>
 #include <cassert>
 #include <cstdlib>
+#include <stdexcept>
 #include "shared/CAmDltWrapper.h"
 #include "shared/CAmSocketHandler.h"
 
@@ -104,8 +105,8 @@ CAmDbusWrapper::CAmDbusWrapper(CAmSocketHandler* socketHandler, DBusBusType type
     }
     if (DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER != ret)
     {
-        logError("DBusWrapper::DBusWrapper Wrapper is not the Primary Owner ! Another instance already running?", ret);
-        exit(1);
+        logError("DBusWrapper::DBusWrapper Wrapper is not the Primary Owner ! Another instance already running?");
+        throw std::runtime_error("DBusWrapper::DBusWrapper Wrapper is not the Primary Owner ! Another instance already running?");
     }
 }
 
@@ -260,9 +261,15 @@ void CAmDbusWrapper::removeWatchDelegate(DBusWatch *watch, void *userData)
     std::map<DBusWatch*, sh_pollHandle_t>::iterator iterator = mMapHandleWatch.begin();
     iterator = mMapHandleWatch.find(watch);
     if (iterator != mMapHandleWatch.end())
+    {
         mpSocketHandler->removeFDPoll(iterator->second);
-    logInfo("DBusWrapper::removeWatch removed watch with handle", iterator->second);
-    mMapHandleWatch.erase(iterator);
+        logInfo("DBusWrapper::removeWatch removed watch with handle", iterator->second);
+        mMapHandleWatch.erase(iterator);
+    }
+    else
+    {
+        logError("DBusWrapper::removeWatch could not find handle !");
+    }
 }
 
 void CAmDbusWrapper::toogleWatch(DBusWatch *watch, void *userData)
@@ -302,6 +309,8 @@ dbus_bool_t CAmDbusWrapper::addTimeout(DBusTimeout *timeout, void* userData)
 
 dbus_bool_t CAmDbusWrapper::addTimeoutDelegate(DBusTimeout *timeout, void* userData)
 {
+    (void)userData;
+
     if (!dbus_timeout_get_enabled(timeout))
         return (false);
 

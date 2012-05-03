@@ -129,7 +129,7 @@ public:
     am_Error_e getDomainOfSource(const am_sourceID_t sourceID, am_domainID_t& domainID) const;
     am_Error_e getDomainOfSink(const am_sinkID_t sinkID, am_domainID_t& domainID) const;
     am_Error_e getSoureState(const am_sourceID_t sourceID, am_SourceState_e& sourceState) const;
-    am_Error_e getDomainState(const am_domainID_t domainID, am_DomainState_e state) const;
+    am_Error_e getDomainState(const am_domainID_t domainID, am_DomainState_e& state) const;
     am_Error_e getRoutingTree(bool onlyfree, CAmRoutingTree& tree, std::vector<CAmRoutingTreeItem*>& flatTree);
     am_Error_e peekDomain(const std::string& name, am_domainID_t& domainID);
     am_Error_e peekSink(const std::string& name, am_sinkID_t& sinkID);

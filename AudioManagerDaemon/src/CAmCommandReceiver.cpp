@@ -33,7 +33,9 @@ namespace am
 CAmCommandReceiver::CAmCommandReceiver(CAmDatabaseHandler *iDatabaseHandler, CAmControlSender *iControlSender, CAmSocketHandler *iSocketHandler) :
         mDatabaseHandler(iDatabaseHandler), //
         mControlSender(iControlSender), //
+        mDBusWrapper(NULL), //
         mSocketHandler(iSocketHandler), //
+        handleCount(0),//
         mListStartupHandles(), //
         mListRundownHandles(), //
         mWaitStartup(false), //
@@ -50,6 +52,7 @@ CAmCommandReceiver::CAmCommandReceiver(CAmDatabaseHandler *iDatabaseHandler, CAm
         mControlSender(iControlSender), //
         mDBusWrapper(iDBusWrapper), //
         mSocketHandler(iSocketHandler), //
+        handleCount(0),//
         mListStartupHandles(), //
         mListRundownHandles(), //
         mWaitStartup(false), //
@@ -165,6 +168,7 @@ am_Error_e CAmCommandReceiver::getDBusConnectionWrapper(CAmDbusWrapper*& dbusCon
     dbusConnectionWrapper = mDBusWrapper;
     return (E_OK);
 #else
+    dbusConnectionWrapper = NULL;
     return (E_UNKNOWN);
 #endif /*WITH_DBUS_WRAPPER*/
 }

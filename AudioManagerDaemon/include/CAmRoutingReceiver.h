@@ -95,9 +95,9 @@ private:
     CAmSocketHandler *mpSocketHandler; //!< pointer to sockethandler
     CAmDbusWrapper *mpDBusWrapper; //!< pointer to dbuswrapper
 
-    uint16_t handleCount; //!< counts all handles
     std::vector<uint16_t> mListStartupHandles; //!< list of handles that wait for a confirm
     std::vector<uint16_t> mListRundownHandles; //!< list of handles that wait for a confirm
+    uint16_t handleCount; //!< counts all handles
     bool mWaitStartup; //!< if true confirmation will be sent if list of handles = 0
     bool mWaitRundown; //!< if true confirmation will be sent if list of handles = 0
 

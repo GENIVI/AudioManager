@@ -107,6 +107,7 @@ CAmCommandSender::CAmCommandSender(const std::vector<std::string>& listOfPluginD
         if (!commander)
         {
             logInfo("CommandPlugin initialization failed. Entry Function not callable");
+            dlclose(tempLibHandle);
             continue;
         }
 
@@ -120,6 +121,7 @@ CAmCommandSender::CAmCommandSender(const std::vector<std::string>& listOfPluginD
         if (majorVersion < REQUIRED_INTERFACE_VERSION_MAJOR || ((majorVersion == REQUIRED_INTERFACE_VERSION_MAJOR) && (minorVersion > REQUIRED_INTERFACE_VERSION_MINOR)))
         {
             logInfo("CommandInterface initialization failed. Version of Interface to old");
+            dlclose(tempLibHandle);
             continue;
         }
 

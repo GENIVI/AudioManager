@@ -147,7 +147,7 @@ dbus_bool_t CAmDbusMessageHandler::getBool()
 
 char CAmDbusMessageHandler::getByte()
 {
-    char param;
+    char param(0);
 
     if (DBUS_TYPE_BYTE != dbus_message_iter_get_arg_type(&mDBusMessageIter))
     {
@@ -165,7 +165,7 @@ char CAmDbusMessageHandler::getByte()
 
 dbus_uint16_t CAmDbusMessageHandler::getUInt()
 {
-    dbus_uint16_t param;
+    dbus_uint16_t param(0);
 
 #ifdef GLIB_DBUS_TYPES_TOLERANT
     if (DBUS_TYPE_UINT16 != dbus_message_iter_get_arg_type(&mDBusMessageIter) && DBUS_TYPE_UINT32 != dbus_message_iter_get_arg_type(&mDBusMessageIter))
@@ -187,7 +187,7 @@ dbus_uint16_t CAmDbusMessageHandler::getUInt()
 
 dbus_int16_t CAmDbusMessageHandler::getInt()
 {
-    dbus_int16_t param;
+    dbus_int16_t param(0);
 
 #ifdef GLIB_DBUS_TYPES_TOLERANT
     if (DBUS_TYPE_INT16 != dbus_message_iter_get_arg_type(&mDBusMessageIter) && DBUS_TYPE_INT32 != dbus_message_iter_get_arg_type(&mDBusMessageIter))
@@ -209,7 +209,7 @@ dbus_int16_t CAmDbusMessageHandler::getInt()
 
 double CAmDbusMessageHandler::getDouble()
 {
-    double param;
+    double param(0);
     if (DBUS_TYPE_DOUBLE != dbus_message_iter_get_arg_type(&mDBusMessageIter))
     {
         log(&commandDbus, DLT_LOG_ERROR, "DBusMessageHandler::getDouble DBUS handler argument is no double!");

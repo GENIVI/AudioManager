@@ -270,44 +270,8 @@ static void signalHandler(int sig, siginfo_t *siginfo, void *context)
     exit(1);
 }
 
-/**
- * main
- * @param argc
- * @param argv
- * @return
- */
-int main(int argc, char *argv[])
+void mainProgram()
 {
-    listCommandPluginDirs.push_back(std::string(DEFAULT_PLUGIN_COMMAND_DIR));
-    listRoutingPluginDirs.push_back(std::string(DEFAULT_PLUGIN_ROUTING_DIR));
-
-    //parse the commandline options
-    parseCommandLine(argc, (char**) argv);
-
-    CAmDltWrapper::instance(enableNoDLTDebug)->registerApp("AudioManagerDeamon", "AudioManagerDeamon");
-    CAmDltWrapper::instance()->registerContext(AudioManager, "Main", "Main Context");
-    logInfo("The Audiomanager is started");
-    logInfo("The version of the Audiomanager", DAEMONVERSION);
-
-    //now the signal handler:
-    struct sigaction signalAction;
-    memset(&signalAction, '\0', sizeof(signalAction));
-    signalAction.sa_sigaction = &signalHandler;
-    signalAction.sa_flags = SA_SIGINFO;
-    sigaction(SIGINT, &signalAction, NULL);
-    sigaction(SIGQUIT, &signalAction, NULL);
-    sigaction(SIGTERM, &signalAction, NULL);
-    sigaction(SIGHUP, &signalAction, NULL);
-    sigaction(SIGQUIT, &signalAction, NULL);
-
-    struct sigaction signalChildAction;
-    memset(&signalChildAction, '\0', sizeof(signalChildAction));
-    signalChildAction.sa_flags = SA_NOCLDWAIT;
-    sigaction(SIGCHLD, &signalChildAction, NULL);
-
-    //register new out of memory handler
-    std::set_new_handler(&OutOfMemoryHandler);
-
     //Instantiate all classes. Keep in same order !
     CAmSocketHandler iSocketHandler;
 
@@ -350,6 +314,60 @@ int main(int argc, char *argv[])
 
     //start the mainloop here....
     iSocketHandler.start_listenting();
+
+}
+
+/**
+ * main
+ * @param argc
+ * @param argv
+ * @return
+ */
+int main(int argc, char *argv[])
+{
+    listCommandPluginDirs.push_back(std::string(DEFAULT_PLUGIN_COMMAND_DIR));
+    listRoutingPluginDirs.push_back(std::string(DEFAULT_PLUGIN_ROUTING_DIR));
+
+    //parse the commandline options
+    parseCommandLine(argc, (char**) argv);
+
+    CAmDltWrapper::instance(enableNoDLTDebug)->registerApp("AudioManagerDeamon", "AudioManagerDeamon");
+    CAmDltWrapper::instance()->registerContext(AudioManager, "Main", "Main Context");
+    logInfo("The Audiomanager is started");
+    logInfo("The version of the Audiomanager", DAEMONVERSION);
+
+    //now the signal handler:
+    struct sigaction signalAction;
+    memset(&signalAction, '\0', sizeof(signalAction));
+    signalAction.sa_sigaction = &signalHandler;
+    signalAction.sa_flags = SA_SIGINFO;
+    sigaction(SIGINT, &signalAction, NULL);
+    sigaction(SIGQUIT, &signalAction, NULL);
+    sigaction(SIGTERM, &signalAction, NULL);
+    sigaction(SIGHUP, &signalAction, NULL);
+    sigaction(SIGQUIT, &signalAction, NULL);
+
+    struct sigaction signalChildAction;
+    memset(&signalChildAction, '\0', sizeof(signalChildAction));
+    signalChildAction.sa_flags = SA_NOCLDWAIT;
+    sigaction(SIGCHLD, &signalChildAction, NULL);
+
+    //register new out of memory handler
+    std::set_new_handler(&OutOfMemoryHandler);
+
+    try
+    {
+        //we do this to catch all exceptions and have a graceful ending just in case
+        mainProgram();
+    }
+
+    catch (std::exception& exc)
+    {
+        logError("The AudioManager ended by throwing the exception", exc.what());
+        //todo: ergency exit here... call destructors etc...
+        exit(EXIT_FAILURE);
+    }
+
 
     close(fd0);
     close(fd1);

@@ -33,7 +33,8 @@
 using namespace am;
 using namespace testing;
 
-CAmCommandSenderDbusSignalTest::CAmCommandSenderDbusSignalTest()
+CAmCommandSenderDbusSignalTest::CAmCommandSenderDbusSignalTest() :
+        ppCommandSend(NULL) //
 {
     CAmDltWrapper::instance()->registerApp("dbusTest", "dbusTest");
     logInfo("dbusCommandInterfaceSignalTest started");

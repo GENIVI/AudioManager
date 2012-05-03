@@ -36,6 +36,7 @@ namespace am {
 CAmDatabaseObserver::CAmDatabaseObserver(CAmCommandSender *iCommandSender, CAmRoutingSender *iRoutingSender, CAmSocketHandler *iSocketHandler) :
         mCommandSender(iCommandSender), //
         mRoutingSender(iRoutingSender), //
+        mTelnetServer(NULL), //
         mSerializer(iSocketHandler) //
 {
     assert(mCommandSender!=0);

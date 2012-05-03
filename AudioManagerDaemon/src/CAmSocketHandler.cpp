@@ -312,6 +312,8 @@ am_Error_e CAmSocketHandler::updateTimer(const sh_timerHandle_t handle, const ti
 
     //we add here the time difference between startTime and currenttime, because this time will be substracted later on in timecorrection
     timespec currentTime, timeoutsCorrected;
+    currentTime.tv_nsec=timeoutsCorrected.tv_nsec=0;
+    currentTime.tv_sec=timeoutsCorrected.tv_sec=0;
     clock_gettime(CLOCK_MONOTONIC, &currentTime);
     if (!gDispatchDone) //the mainloop is started
         timeoutsCorrected = timespecAdd(timeouts, timespecSub(currentTime, mStartTime));

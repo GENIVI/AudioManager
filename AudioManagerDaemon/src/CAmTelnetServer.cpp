@@ -69,6 +69,7 @@ CAmTelnetServer::CAmTelnetServer(CAmSocketHandler *iSocketHandler, CAmCommandSen
 
     //setup the port Listener
     mConnectFD = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+    assert (mConnectFD>0);
     setsockopt(mConnectFD, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int));
     memset(&servAddr, 0, sizeof(servAddr));
     servAddr.sin_family = AF_INET;
@@ -106,6 +107,8 @@ void CAmTelnetServer::connectSocket(const pollfd pfd, const sh_pollHandle_t hand
     connection_s connection;
     connection.handle = 0;
     connection.filedescriptor = accept(pfd.fd, (struct sockaddr*) &answer, &len);
+
+    assert(connection.filedescriptor>0);
 
     // Notiy menuhelper
     mTelnetMenuHelper.newSocketConnection(connection.filedescriptor);
@@ -167,6 +170,11 @@ bool CAmTelnetServer::dispatchData(const sh_pollHandle_t handle, void *userData)
         if (iterator->handle == handle)
             break;
     }
+    if (iterator==mListConnections.end())
+    {
+        logError("CAmTelnetServer::dispatchData could not find handle !");
+        return (false);
+    }
 
     std::string command;
     std::queue<std::string> MsgQueue;
@@ -174,9 +182,12 @@ bool CAmTelnetServer::dispatchData(const sh_pollHandle_t handle, void *userData)
     {
         sliceCommand(mListMessages.front(), command, MsgQueue);
         mListMessages.pop();
+        mTelnetMenuHelper.enterCmdQueue(MsgQueue, iterator->filedescriptor);
     }
-
-    mTelnetMenuHelper.enterCmdQueue(MsgQueue, iterator->filedescriptor);
+    else
+    {
+        logError("CAmTelnetServer::dispatchData Message queue was empty!");
+    }
 
     // must return false to stop endless polling
     return (false);

@@ -330,7 +330,6 @@ TEST_F(CAmDatabaseHandlerTest,getSourceInfo)
         {
             equal = equal && pCF.compareSource(listIterator, secondDynamicSource);
         }
-        pCF.compareSource(listIterator, secondDynamicSource);
 
     }ASSERT_EQ(true, equal);
 

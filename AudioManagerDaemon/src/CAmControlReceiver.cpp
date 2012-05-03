@@ -63,6 +63,7 @@ am_Error_e CAmControlReceiver::connect(am_Handle_s & handle, am_connectionID_t &
     tempConnection.sourceID = sourceID;
     tempConnection.connectionFormat = format;
     tempConnection.connectionID = 0;
+    tempConnection.delay=-1;
 
     //todo: enter function to find out what happends if the same connection is in the course of being build up.
     if (mDatabaseHandler->existConnection(tempConnection))
