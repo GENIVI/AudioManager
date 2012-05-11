@@ -16,7 +16,7 @@
  */
 
 #include "CAmCommandSenderDbusTest.h"
-#include <python2.6/Python.h>
+#include <Python.h>
 #include <iostream>
 #include <fstream>
 #include <sstream>
