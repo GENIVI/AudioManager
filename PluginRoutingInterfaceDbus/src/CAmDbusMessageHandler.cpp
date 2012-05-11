@@ -469,7 +469,7 @@ am_Gateway_s CAmRoutingDbusMessageHandler::getGatewayData()
     {
         dbus_message_iter_recurse(&mDBusMessageIter, &arrayIter);
         convertion = getBool(arrayIter, false);
-        gatewayData.convertionMatrix.push_back(connectionFormat);
+        gatewayData.convertionMatrix.push_back(convertion);
     } while (dbus_message_iter_next(&arrayIter));
     return (gatewayData);
 }

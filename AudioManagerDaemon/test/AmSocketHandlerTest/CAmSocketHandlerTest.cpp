@@ -313,7 +313,7 @@ void am::CAmSamplePlugin::receiveData(const pollfd pollfd, const sh_pollHandle_t
     //initialize buffer
     char buffer[10];
     //read until buffer is full or no more data is there
-    int read = recv(pollfd.fd, buffer, 7, NULL);
+    int read = recv(pollfd.fd, buffer, 7, 0);
     if (read > 1)
     {
         //read the message and store it in a queue

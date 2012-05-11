@@ -46,8 +46,26 @@ CAmTelnetServer* CAmTelnetServer::mpInstance = NULL;
 #define PRINT_BOOL(var) var ? output+="true\t\t" : output+="false\t\t";
 
 CAmTelnetServer::CAmTelnetServer(CAmSocketHandler *iSocketHandler, CAmCommandSender *iCommandSender, CAmCommandReceiver *iCommandReceiver, CAmRoutingSender *iRoutingSender, CAmRoutingReceiver *iRoutingReceiver, CAmControlSender *iControlSender, CAmControlReceiver *iControlReceiver, CAmDatabaseHandler *iDatabasehandler, CAmRouter *iRouter, unsigned int servPort, unsigned int maxConnections) :
-        telnetConnectFiredCB(this, &CAmTelnetServer::connectSocket), telnetReceiveFiredCB(this, &CAmTelnetServer::receiveData), telnetDispatchCB(this, &CAmTelnetServer::dispatchData), telnetCheckCB(this, &CAmTelnetServer::check), mpSocketHandler(iSocketHandler), mpCommandSender(iCommandSender), mpCommandReceiver(iCommandReceiver), mpRoutingSender(iRoutingSender), mpRoutingReceiver(iRoutingReceiver), mpControlSender(iControlSender), mpControlReceiver(iControlReceiver), mpDatabasehandler(iDatabasehandler), mpRouter(iRouter), mConnecthandle(), mListMessages(), mListConnections(), mConnectFD(NULL), mServerPort(servPort), mMaxConnections(maxConnections), mTelnetMenuHelper(iSocketHandler, iCommandSender, iCommandReceiver, iRoutingSender, iRoutingReceiver, iControlSender, iControlReceiver,
-                iDatabasehandler, iRouter, this)
+        telnetConnectFiredCB(this, &CAmTelnetServer::connectSocket), //
+        telnetReceiveFiredCB(this, &CAmTelnetServer::receiveData), //
+        telnetDispatchCB(this, &CAmTelnetServer::dispatchData), //
+        telnetCheckCB(this, &CAmTelnetServer::check), //
+        mpSocketHandler(iSocketHandler), //
+        mpCommandSender(iCommandSender), //
+        mpCommandReceiver(iCommandReceiver), //
+        mpRoutingSender(iRoutingSender), //
+        mpRoutingReceiver(iRoutingReceiver), //
+        mpControlSender(iControlSender), //
+        mpControlReceiver(iControlReceiver), //
+        mpDatabasehandler(iDatabasehandler), //
+        mpRouter(iRouter), //
+        mConnecthandle(), //
+        mListMessages(), //
+        mListConnections(), //
+        mConnectFD(0), //
+        mServerPort(servPort), //
+        mMaxConnections(maxConnections), //
+        mTelnetMenuHelper(iSocketHandler, iCommandSender, iCommandReceiver, iRoutingSender, iRoutingReceiver, iControlSender, iControlReceiver, iDatabasehandler, iRouter, this)
 {
     assert(mpSocketHandler!=NULL);
     assert(mpCommandReceiver!=NULL);
@@ -152,7 +170,7 @@ void CAmTelnetServer::receiveData(const pollfd pollfd, const sh_pollHandle_t han
     //initialize buffer
     char buffer[100];
     //read until buffer is full or no more data is there
-    int read = recv(pollfd.fd, buffer, 100, NULL);
+    int read = recv(pollfd.fd, buffer, 100, 0);
     if (read > 1)
     {
         //read the message and store it in a queue - its a telnet connection so data will be sent on enter !
