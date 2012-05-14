@@ -36,6 +36,7 @@ CAmRoutingReceiver::CAmRoutingReceiver(CAmDatabaseHandler *iDatabaseHandler, CAm
         mpRoutingSender(iRoutingSender), //
         mpControlSender(iControlSender), //
         mpSocketHandler(iSocketHandler), //
+        mpDBusWrapper(NULL), //
         mListStartupHandles(), //
         mListRundownHandles(), //
         handleCount(0), //

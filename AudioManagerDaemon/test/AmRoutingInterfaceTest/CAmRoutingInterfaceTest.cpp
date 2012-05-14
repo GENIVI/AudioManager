@@ -214,6 +214,8 @@ TEST_F(CAmRoutingInterfaceTest,setSinkSoundProperty)
     am_domainID_t domainID;
     am_Handle_s handle;
     am_SoundProperty_s soundProperty;
+    soundProperty.value=5;
+    soundProperty.type=SP_EXAMPLE_MID;
     std::vector<am_Handle_s> listHandles;
     pCF.createSink(sink);
     pCF.createDomain(domain);
@@ -221,9 +223,11 @@ TEST_F(CAmRoutingInterfaceTest,setSinkSoundProperty)
     domain.busname = "mock";
     sink.sinkID = 2;
     sink.domainID = 1;
+    sink.listSoundProperties.push_back(soundProperty);
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
     EXPECT_CALL(pMockInterface,asyncSetSinkSoundProperty(_,sinkID,_)).WillOnce(Return(E_OK));
+    soundProperty.value=10;
     ASSERT_EQ(E_OK, pControlReceiver.setSinkSoundProperty(handle,sinkID,soundProperty));
     ASSERT_NE(handle.handle, 0);
     ASSERT_EQ(handle.handleType, H_SETSINKSOUNDPROPERTY);
