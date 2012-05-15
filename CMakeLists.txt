@@ -75,7 +75,7 @@ OPTION ( USE_BUILD_LIBS
 	
 OPTION ( GLIB_DBUS_TYPES_TOLERANT
     "build dbus with tolerance towards glib 16bit/32bit handling" ON)
-
+    
 #Can be changed via passing -DDBUS_SERVICE_PREFIX="XXX" to cmake
 IF(NOT DEFINED DBUS_SERVICE_PREFIX)
 	SET( DBUS_SERVICE_PREFIX "org.genivi.audiomanager\0" )
@@ -124,7 +124,6 @@ endif(EXISTS "ProjectSpecific/")
 CONFIGURE_FILE( ${CMAKE_SOURCE_DIR}/cmake/config.cmake ${CMAKE_SOURCE_DIR}/include/config.h )
 CONFIGURE_FILE( ${CMAKE_SOURCE_DIR}/AudioManagerDaemon/docx/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/DoxyFile )
 
-
 IF(WITH_DLT)    
     pkg_check_modules(DLT REQUIRED automotive-dlt>=2.2.0)   
 ENDIF(WITH_DLT)
@@ -160,9 +159,9 @@ if(WITH_MAIN)
 	add_subdirectory (AudioManagerDaemon)
 endif(WITH_MAIN)
 
-IF(EXISTS "ProjectSpecific/")
+IF(EXISTS "${CMAKE_SOURCE_DIR}/ProjectSpecific/")
     add_subdirectory (ProjectSpecific)
-endif(EXISTS "ProjectSpecific/")
+endif(EXISTS "${CMAKE_SOURCE_DIR}/ProjectSpecific/")
 
 # uninstall target
 configure_file(
