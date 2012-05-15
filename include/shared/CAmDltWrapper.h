@@ -102,6 +102,8 @@ public:
     void append(const uint16_t value);
     void append(const int32_t value);
     void append(const uint32_t value);
+    void append(const uint64_t value);
+    void append(const int64_t value);
     void append(const char*& value);
     void append(const std::string& value);
     void append(const bool value);

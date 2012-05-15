@@ -200,6 +200,24 @@ void CAmDltWrapper::append(const bool value)
 #endif
 }
 
+void CAmDltWrapper::append(const int64_t value)
+{
+#ifdef WITH_DLT
+    dlt_user_log_write_int64(&mDltContextData, value);
+#else
+    appendNoDLT(value);
+#endif
+}
+
+void CAmDltWrapper::append(const uint64_t value)
+{
+#ifdef WITH_DLT
+    dlt_user_log_write_uint64(&mDltContextData, value);
+#else
+    appendNoDLT(value);
+#endif
+}
+
 #ifndef WITH_DLT
 template<class T> void CAmDltWrapper::appendNoDLT(T value)
 {

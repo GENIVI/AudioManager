@@ -19,7 +19,7 @@
  */
 
 #include "CAmSocketHandlerTest.h"
-#include <stdio.h>
+#include <cstdio>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <sys/ioctl.h>
