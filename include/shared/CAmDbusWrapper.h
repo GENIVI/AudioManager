@@ -81,6 +81,7 @@ private:
     std::vector<sh_timerHandle_t*> mpListTimerhandles; //!< pointer to the timer handles
     CAmSocketHandler *mpSocketHandler; //!< pointer to the sockethandler
     std::map<DBusWatch*, sh_pollHandle_t> mMapHandleWatch; //!< map to the handle watches
+    DBusBusType mDbusType;
 };
 
 }

@@ -56,13 +56,14 @@ CAmDbusWrapper::CAmDbusWrapper(CAmSocketHandler* socketHandler, DBusBusType type
         mDBusError(), //
         mListNodes(), //
         mpListTimerhandles(), //
-        mpSocketHandler(socketHandler)
+        mpSocketHandler(socketHandler), //
+        mDbusType(type)
 {
     assert(mpSocketHandler!=0);
 
     dbus_error_init(&mDBusError);
     logInfo("DBusWrapper::DBusWrapper Opening DBus connection");
-    mpDbusConnection = dbus_bus_get(type, &mDBusError);
+    mpDbusConnection = dbus_bus_get(mDbusType, &mDBusError);
     if (dbus_error_is_set(&mDBusError))
     {
         logError("DBusWrapper::DBusWrapper Error while getting the DBus");
@@ -96,6 +97,7 @@ CAmDbusWrapper::CAmDbusWrapper(CAmSocketHandler* socketHandler, DBusBusType type
 
     //register callback for Introspectio
     mObjectPathVTable.message_function = CAmDbusWrapper::cbRootIntrospection;
+    logInfo("dbusconnection ",mpDbusConnection);
     dbus_connection_register_object_path(mpDbusConnection, DBUS_SERVICE_OBJECT_PATH, &mObjectPathVTable, this);
     int ret = dbus_bus_request_name(mpDbusConnection, DBUS_SERVICE_PREFIX, DBUS_NAME_FLAG_DO_NOT_QUEUE, &mDBusError);
     if (dbus_error_is_set(&mDBusError))
@@ -137,7 +139,7 @@ void CAmDbusWrapper::registerCallback(const DBusObjectPathVTable* vtable, const 
 
     std::string completePath = std::string(DBUS_SERVICE_OBJECT_PATH) + "/" + path;
     dbus_error_init(&mDBusError);
-    mpDbusConnection = dbus_bus_get(DBUS_BUS_SESSION, &mDBusError);
+    mpDbusConnection = dbus_bus_get(mDbusType, &mDBusError);
     dbus_connection_register_object_path(mpDbusConnection, completePath.c_str(), vtable, userdata);
     if (dbus_error_is_set(&mDBusError))
     {
