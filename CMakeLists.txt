@@ -70,6 +70,9 @@ OPTION( WITH_MAIN
 OPTION( WITH_TELNET
 	"build with Telnetserver (can only work with SocketHandler)" ON)
 	
+OPTION ( WITH_SYSTEMD_WATCHDOG
+    "build with systemD support & watchdog" ON)
+	
 OPTION ( USE_BUILD_LIBS
 	"build with default library path = build path" ON)
 	
@@ -148,7 +151,7 @@ endif(WITH_PLUGIN_COMMAND)
 
 if(WITH_PLUGIN_ROUTING)
 	add_subdirectory (PluginRoutingInterfaceDbus)
-	add_subdirectory (PluginRoutingInterfaceAsync)
+#	add_subdirectory (PluginRoutingInterfaceAsync)
 endif(WITH_PLUGIN_ROUTING)
 
 if(WITH_PLUGIN_CONTROL)

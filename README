@@ -40,20 +40,20 @@ COMPILE PROGRAMS
 ***********************************************************************************************************
 - compile options with default values:
 
-     CMAKE_BUILD_TYPE                                                                                                                                       
-     CMAKE_INSTALL_PREFIX             /usr/local                                                                                                            
-     GLIB_DBUS_TYPES_TOLERANT         ON                                                                                                                    
-     USE_BUILD_LIBS                   ON                                                                                                                    
-     WITH_DBUS_WRAPPER                ON                                                                                                                    
-     WITH_DLT                         ON                                                                                                                    
-     WITH_DOCUMENTATION               OFF                                                                                                                   
-     WITH_MAIN                        ON                                                                                                                    
-     WITH_PLUGIN_COMMAND              ON                                                                                                                    
-     WITH_PLUGIN_CONTROL              ON                                                                                                                    
-     WITH_PLUGIN_ROUTING              ON                                                                                                                    
-     WITH_PPOLL                       ON                                                                                                                    
-     WITH_TELNET                      ON                                                                                                                    
-     WITH_TESTS                       ON 
+		 CMAKE_BUILD_TYPE                                                                                                                                    
+		 CMAKE_INSTALL_PREFIX             /usr/local                                                                                                         
+		 GLIB_DBUS_TYPES_TOLERANT         ON                                                                                                                 
+		 USE_BUILD_LIBS                   ON                                                                                                                 
+		 WITH_DBUS_WRAPPER                ON                                                                                                                 
+		 WITH_DLT                         ON                                                                                                                
+		 WITH_DOCUMENTATION               OFF                                                                                                                
+		 WITH_MAIN                        ON                                                                                                                 
+		 WITH_PLUGIN_COMMAND              ON                                                                                                                 
+		 WITH_PLUGIN_CONTROL              ON                                                                                                                 
+		 WITH_PLUGIN_ROUTING              ON                                                                                                                 
+		 WITH_SYSTEMD_WATCHDOG            ON                                                                                                                 
+		 WITH_TELNET                      ON                                                                                                                 
+		 WITH_TESTS                       ON
  
 
 Passing options to cmake:
@@ -135,7 +135,20 @@ if your version is above, you will get 4 packages (all binaries stripped) :
 
 to create a tar.gz file of all sources (not including .git, build and bin folder,config files), you can do:
 
-	make package_source	
+	make package_source			 CMAKE_BUILD_TYPE                                                                                                                                    
+		 CMAKE_INSTALL_PREFIX             /usr/local                                                                                                         
+		 GLIB_DBUS_TYPES_TOLERANT         ON                                                                                                                 
+		 USE_BUILD_LIBS                   ON                                                                                                                 
+		 WITH_DBUS_WRAPPER                ON                                                                                                                 
+		 WITH_DLT                         OFF                                                                                                                
+		 WITH_DOCUMENTATION               OFF                                                                                                                
+		 WITH_MAIN                        ON                                                                                                                 
+		 WITH_PLUGIN_COMMAND              ON                                                                                                                 
+		 WITH_PLUGIN_CONTROL              ON                                                                                                                 
+		 WITH_PLUGIN_ROUTING              ON                                                                                                                 
+		 WITH_SYSTEMD_WATCHDOG            ON                                                                                                                 
+		 WITH_TELNET                      ON                                                                                                                 
+		 WITH_TESTS                       OFF
 
 This will create the following package:
 

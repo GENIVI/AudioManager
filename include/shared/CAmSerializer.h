@@ -24,6 +24,7 @@
 #include <cassert>
 #include <memory>
 #include <stdexcept>
+#include <unistd.h>
 #include "CAmDltWrapper.h"
 #include "CAmSocketHandler.h"
 

@@ -56,13 +56,13 @@
 #include "CAmCommandReceiver.h"
 #include "CAmControlReceiver.h"
 #include "CAmDatabaseObserver.h"
+#include "CAmWatchdog.h"
 #include "shared/CAmDltWrapper.h"
 #include "shared/CAmSocketHandler.h"
 
 
 using namespace am;
 DLT_DECLARE_CONTEXT(AudioManager)
-
 
 const char* USAGE_DESCRIPTION = "Usage:\tAudioManagerDaemon [options]\n"
         "options:\t\n"
@@ -279,6 +279,10 @@ void mainProgram()
     CAmDbusWrapper iDBusWrapper(&iSocketHandler,dbusWrapperType);
 #endif /*WITH_DBUS_WRAPPER */
 
+#ifdef WITH_SYSTEMD_WATCHDOG
+    CAmWatchdog iWatchdog(&iSocketHandler);
+#endif /*WITH_SYSTEMD_WATCHDOG*/
+
     CAmDatabaseHandler iDatabaseHandler(databasePath);
     CAmRoutingSender iRoutingSender(listRoutingPluginDirs);
     CAmCommandSender iCommandSender(listCommandPluginDirs);
@@ -312,6 +316,10 @@ void mainProgram()
     //when the routingInterface is done, all plugins are loaded:
     iControlSender.setControllerReady();
 
+#ifdef WITH_SYSTEMD_WATCHDOG
+    iWatchdog.startWatchdog();
+#endif /*WITH_SYSTEMD_WATCHDOG*/
+
     //start the mainloop here....
     iSocketHandler.start_listenting();
 
@@ -323,7 +331,7 @@ void mainProgram()
  * @param argv
  * @return
  */
-int main(int argc, char *argv[])
+int main(int argc, char *argv[], char** envp)
 {
     listCommandPluginDirs.push_back(std::string(DEFAULT_PLUGIN_COMMAND_DIR));
     listRoutingPluginDirs.push_back(std::string(DEFAULT_PLUGIN_ROUTING_DIR));

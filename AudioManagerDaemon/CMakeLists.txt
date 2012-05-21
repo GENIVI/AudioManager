@@ -27,6 +27,15 @@ set(INCLUDE_FOLDER "include")
 
 pkg_check_modules(SQLITE REQUIRED sqlite3)
 
+IF (WITH_SYSTEMD_WATCHDOG)
+	pkg_check_modules(SYSTEMD libsystemd-daemon)
+	IF (SYSTEMD_FOUND)
+		message(STATUS "Found libsystemd-daemon")
+	ELSE (SYSTEMD_FOUND)
+		message(STATUS "Did not find libsystemd-daemon, using own lib")
+	ENDIF(SYSTEMD_FOUND)
+ENDIF (WITH_SYSTEMD_WATCHDOG)
+
 IF(WITH_DBUS_WRAPPER)
     FIND_PACKAGE(DBUS REQUIRED)
 ENDIF(WITH_DBUS_WRAPPER)
@@ -46,7 +55,15 @@ SET(AUDIOMAN_SRCS_CXX
     src/CAmRouter.cpp
     src/CAmDltWrapper.cpp
     src/CAmTelnetMenuHelper.cpp
+    src/CAmWatchdog.cpp
 )
+
+IF (NOT SYSTEMD_FOUND)
+	SET (AUDIOMAN_SRCS_CXX
+		${AUDIOMAN_SRCS_CXX}
+		src/sd-daemon.c
+	)
+ENDIF (NOT SYSTEMD_FOUND)
 
 IF(WITH_DBUS_WRAPPER)
     SET (AUDIOMAN_SRCS_CXX
@@ -90,19 +107,27 @@ IF(WITH_DBUS_WRAPPER)
     	${SQLITE_LIBRARIES}
     	${CMAKE_DL_LIBS}
     	${DBUS_LIBRARY}
+    	rt
     )
 ELSE(WITH_DBUS_WRAPPER)
     TARGET_LINK_LIBRARIES(AudioManager 
         ${SQLITE_LIBRARIES}
         ${CMAKE_DL_LIBS}
+        rt
     )
 ENDIF(WITH_DBUS_WRAPPER)
 
 IF(WITH_DLT)
     TARGET_LINK_LIBRARIES(AudioManager
-        ${DLT_LIBRARIES}
+        ${DLT_LIBRARIES} 
     )
-ENDIF(WITH_DLT)  
+ENDIF(WITH_DLT) 
+
+IF (SYSTEMD_FOUND)
+	TARGET_LINK_LIBRARIES(AudioManager
+        ${SYSTEMD_LIBRARIES} 
+	)
+ENDIF (SYSTEMD_FOUND)
 
 IF(WITH_TESTS)
 	add_subdirectory (test)

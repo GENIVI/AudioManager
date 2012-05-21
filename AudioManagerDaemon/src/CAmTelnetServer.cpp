@@ -33,6 +33,7 @@
 #include <istream>
 #include <iostream>
 #include <iterator>
+#include <unistd.h>
 #include "CAmDatabaseHandler.h"
 #include "CAmRoutingSender.h"
 #include "CAmTelnetMenuHelper.h"
