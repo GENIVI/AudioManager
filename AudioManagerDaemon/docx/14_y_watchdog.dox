@@ -1,0 +1,44 @@
+ /*
+ * Copyright (C) 2012, BMW AG
+ *
+ * This file is part of GENIVI Project AudioManager.
+ *
+ * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contribution License Agreements.
+ *
+ * \copyright
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
+ * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ * \author Christian Mueller (christian.ei.mueller@bmw.de)
+ *
+ */
+
+/*!
+\page watchd The watchdog
+\section watchdconcept The watchdog concept
+The watchdog concept of the audiomanger is based on systemd. When systemd is configured via the unit file to use a watchdog and watchdog support is activated
+in the audiomanager, the audiomanager will reset the watchdog via the mainloop in the given interval to prevent systemd from restarting the audiomanager.\n
+If the audiomanager is stuck for whatever reason, systemd will not get this update and restart the audiomanager.
+
+
+\section configwatch Watchdog configuration
+By default, the watchdog is enabled in the audiomanager, you can disable the watchdog functionality by setting the cmake build option "WITH_SYSTEMD_WATCHDOG" to
+OFF, either by modifying the cmake cache with ccache or by passing -DWITH_SYSTEMD_WATCHDOG=OFF to cmake.\n
+The interval for checking the watchdog can be set in the unitfile of systemd by setting "WatchdogSec". The other settings need to be done as well:
+\code
+Restart=always
+WatchdogSec=2
+NotifyAccess=main
+\endcode
+The intervall for pinging systemd is set to the half of "WatchdogSec".
+
+\section winteg Integration with systemd
+The audiomanager will use the library proviced by "libsystemd-daemon" if it is available on the system. If this library is not available, the files sd-daemon.c and sd-daemon.h
+that are provided with the audiomanager and released under MIT licence by Lennard Poettering will be used to connect to systemd.
+
+more information can be found here: am::CAmWatchdog and sd-daemon.h .
+
+
+ */

@@ -25,7 +25,7 @@ Description=The GENIVI AudioManager
 [Service]
 #Type=notify
 User=christian
-ExecStart=/home/christian/workspace/AudioManager/bin/AudioManager
+ExecStart=/usr/bin/AudioManager
 Restart=always
 WatchdogSec=2
 NotifyAccess=main

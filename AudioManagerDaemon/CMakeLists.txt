@@ -28,7 +28,7 @@ set(INCLUDE_FOLDER "include")
 pkg_check_modules(SQLITE REQUIRED sqlite3)
 
 IF (WITH_SYSTEMD_WATCHDOG)
-	pkg_check_modules(SYSTEMD libsystemd-daemon)
+	pkg_check_modules(SYSTEMD [libsystemd-daemon >= 44])
 	IF (SYSTEMD_FOUND)
 		message(STATUS "Found libsystemd-daemon")
 	ELSE (SYSTEMD_FOUND)
