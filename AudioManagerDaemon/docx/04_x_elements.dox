@@ -18,6 +18,10 @@
 /*!
 \page elementspage Elements of the AudioManagement
 
+ \section cDiag Overview Class Diagram
+ This class diagram shows a logical overview of the relevant elements in the AudioManager with their relations.
+ \image html ClassDiagramm.png
+
  The audiomanagement in principle consists of the following elements:
 
  \section source Sources
@@ -54,4 +58,6 @@
  at registration time.\n
  \subsection cfattributes Attributes
  - am::am_Crossfader_s describes the attribiutes of a Crossfader
+
+ 
 */

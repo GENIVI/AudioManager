@@ -1,0 +1,92 @@
+ /*
+ * Copyright (C) 2012, BMW AG
+ *
+ * This file is part of GENIVI Project AudioManager.
+ *
+ * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contribution License Agreements.
+ *
+ * \copyright
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
+ * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ * \author Christian Mueller (christian.ei.mueller@bmw.de)
+ *
+ */
+ 
+/*!
+\page sourcesink The relation of sources & sinks with the AudioManager
+
+\section claDi Class diagramm of the relation between sources, sinks and the AudioManager
+In general, the relationship is defined as well as the interfaces that are used to communicate the informations back and forth. But since the
+exchange of these informations is abstracted by the RoutingPlugins, the architecture cannot define explicit mechanisms here.\n
+A lot of attributes that are part of sources and sinks belong logical to them and might be implemented by the RoutingPlugin. The relation between
+sources, sinks and the AudioManagerDaemon is shown in this \ref cDiag .
+
+\section boil The REAL interaction
+A lot of information is related to sources and sinks as can be seen here: \ref cDiag . But not all informations are actually communicated to the
+sources and sinks since the routing adaptor will take care of handling some of these informations.\n
+Here are some informations that is believed to be actually communicated to the sources and sinks:
+
+ \section conFormats Connection Formats
+ The am::am_ConnectionFormat_e formats for a connection are chosen when the connection is build up. So if there are more than one possbilities 
+ that can be used for a connection (am::am_Sink_s::listConnectionFormats and am::am_Source_s::listConnectionFormats) the correct one is chosen
+ upon a connect. If this is relevant to the sources and sinks, the routingAdaptor must communicate to the sources and sinks accordingly.
+ \image html SettingConnectionFormats.png
+ 
+ 
+ \section sstates Source States
+ This diagrams shows the sequence that is used to set the sources states am::am_SourceState_e. Since the source states are set by the 
+ AudioManagerController, the exact behavior is product specific.
+ \image html SourceStates.png
+ 
+ \section avail Availability
+ This diagram shows the sequence that is used to communicate the availability am::am_Availability_s. from the sources. Please note that the availability reasons 
+ am::am_AvailabilityReason_e are product specific.
+ \image html AvailabilityofSources.png 
+ Here is the same for the sinks:
+ \image html AvailabilityofSinks.png
+ 
+ \section vol Volumes
+ Volumes am::am_volume_t are set to the sinks, mainly, but depending on the used audio routing system it might be that they can be set on the source level as well. 
+ If this is not the case, proper measures must be taken to do this.
+  Changes of a source:
+ \image html VolumeChangesofSources.png
+  Changes of a sink:
+ \image html VolumeChangesofSinks.png
+ 
+ \section SoundProperties
+ The am::am_SoundProperty_s are set to the sources and sinks. More information about SoundProperties can be found here: \ref prop.
+  Changes of a sink:
+ \image html SoundPropertyChangeofSink.png
+ Changes of a source:
+ \image html SoundPropertyChangeofSource.png
+ 
+ \section in Interrupt States
+ The am::am_InterruptState_e are reported by low level interrupts from the sources to the AudioManagement. More details here: \ref interrupts .
+ \image html InterruptStatusChange.png
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+*/
