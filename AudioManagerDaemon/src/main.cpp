@@ -333,6 +333,7 @@ void mainProgram()
  */
 int main(int argc, char *argv[], char** envp)
 {
+    (void) envp;
     listCommandPluginDirs.push_back(std::string(DEFAULT_PLUGIN_COMMAND_DIR));
     listRoutingPluginDirs.push_back(std::string(DEFAULT_PLUGIN_ROUTING_DIR));
 
