@@ -61,6 +61,7 @@ TARGET_LINK_LIBRARIES(AmControlReceiverShadowTest
     ${DBUS_LIBRARY}
     ${SQLITE_LIBRARIES}
     gmock
+    rt
 )
 
 INSTALL(TARGETS AmControlReceiverShadowTest 
