@@ -25,7 +25,10 @@ FIND_PACKAGE(GTest REQUIRED)
 find_package (Threads)
 FIND_PACKAGE(PkgConfig)
 FIND_PACKAGE(DBUS REQUIRED)
-pkg_check_modules(DLT REQUIRED automotive-dlt)
+IF(WITH_DLT)
+    pkg_check_modules(DLT REQUIRED automotive-dlt)
+)
+ENDIF(WITH_DLT)
 pkg_check_modules(SQLITE REQUIRED sqlite3)
 
 INCLUDE_DIRECTORIES(   
@@ -34,7 +37,6 @@ INCLUDE_DIRECTORIES(
     ${CMAKE_CURRENT_BINARY_DIR}
     ${AUDIO_INCLUDE_FOLDER}
     ${CMAKE_SOURCE_DIR} 
-    ${DLT_INCLUDE_DIRS}
     ${INCLUDE_FOLDER}
     ${GTEST_INCLUDE_DIR}
     ${DBUS_INCLUDE_DIR}
@@ -42,6 +44,12 @@ INCLUDE_DIRECTORIES(
     "../../AudioManagerDaemon/include"
     "../include"
 )
+
+IF(WITH_DLT)
+INCLUDE_DIRECTORIES(${INCLUDE_DIRECTORIES}
+    ${DLT_INCLUDE_DIRS}
+)
+ENDIF(WITH_DLT)
    
 file(GLOB ASYNC_PLUGIN_INTERFACE_SRCS_CXX 
      "../../AudioManagerDaemon/src/CAmSocketHandler.cpp"
@@ -53,9 +61,7 @@ file(GLOB ASYNC_PLUGIN_INTERFACE_SRCS_CXX
 
 ADD_EXECUTABLE(AmRoutingReceiveAsyncTest ${ASYNC_PLUGIN_INTERFACE_SRCS_CXX})
 
-
 TARGET_LINK_LIBRARIES(AmRoutingReceiveAsyncTest 
-    ${DLT_LIBRARIES}
     ${CMAKE_DL_LIBS}
     ${CMAKE_THREAD_LIBS_INIT}
     ${GTEST_LIBRARIES}
@@ -63,6 +69,12 @@ TARGET_LINK_LIBRARIES(AmRoutingReceiveAsyncTest
     ${SQLITE_LIBRARIES}
     gmock
 )
+
+IF(WITH_DLT)
+    TARGET_LINK_LIBRARIES(AmRoutingReceiveAsyncTest
+        ${DLT_LIBRARIES} 
+    )
+ENDIF(WITH_DLT) 
 
 INSTALL(TARGETS AmRoutingReceiveAsyncTest 
         DESTINATION "~/AudioManagerTest/"
