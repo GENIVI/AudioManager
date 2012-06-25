@@ -243,7 +243,7 @@ void CAmCommandSender::setCommandReady()
 
     //create a list of handles
     std::vector<uint16_t> listStartupHandles;
-    for (size_t i = 0; i <= mListInterfaces.size(); i++)
+    for (size_t i = 0; i < mListInterfaces.size(); i++)
     {
         listStartupHandles.push_back(mCommandReceiver->getStartupHandle());
     }
@@ -266,7 +266,7 @@ void CAmCommandSender::setCommandRundown()
     mCommandReceiver->waitOnRundown(false);
     //create a list of handles
     std::vector<uint16_t> listStartupHandles;
-    for (size_t i = 0; i <= mListInterfaces.size(); i++)
+    for (size_t i = 0; i < mListInterfaces.size(); i++)
     {
         listStartupHandles.push_back(mCommandReceiver->getRundownHandle());
     }

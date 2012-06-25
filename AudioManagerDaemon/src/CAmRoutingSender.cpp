@@ -556,7 +556,7 @@ void CAmRoutingSender::setRoutingReady()
 
     //create a list of handles
     std::vector<uint16_t> listStartupHandles;
-    for (size_t i = 0; i <= mListInterfaces.size(); i++)
+    for (size_t i = 0; i < mListInterfaces.size(); i++)
     {
         listStartupHandles.push_back(mpRoutingReceiver->getStartupHandle());
     }
@@ -578,7 +578,7 @@ void CAmRoutingSender::setRoutingRundown()
     mpRoutingReceiver->waitOnRundown(false);
     //create a list of handles
     std::vector<uint16_t> listStartupHandles;
-    for (size_t i = 0; i <= mListInterfaces.size(); i++)
+    for (size_t i = 0; i < mListInterfaces.size(); i++)
     {
         listStartupHandles.push_back(mpRoutingReceiver->getRundownHandle());
     }
