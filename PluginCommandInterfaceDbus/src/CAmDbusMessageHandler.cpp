@@ -38,6 +38,7 @@ CAmDbusMessageHandler::CAmDbusMessageHandler() :
         mpReveiveMessage(NULL), //
         mpDBusConnection(NULL)
 {
+    CAmDltWrapper::instance()->registerContext(commandDbus, "DBP", "DBus Plugin");
     log(&commandDbus, DLT_LOG_INFO, "DBusMessageHandler constructed");
 }
 

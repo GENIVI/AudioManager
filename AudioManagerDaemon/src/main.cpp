@@ -235,7 +235,7 @@ void parseCommandLine(int argc, char **argv)
             break;
 #ifndef WITH_DLT
             case 'V':
-            printf("[DLT] debug output to stdout enabled\n");
+            printf("\e[0;34m[DLT]\e[0;30m\tDebug output to stdout enabled\n");
             enableNoDLTDebug = true;
             break;
 #endif

@@ -23,7 +23,6 @@
 #include <set>
 #include "CAmDbusMessageHandler.h"
 #include "shared/CAmDltWrapper.h"
-#include "shared/CAmDbusWrapper.h"
 
 
 using namespace am;
@@ -53,7 +52,6 @@ CAmCommandSenderDbus::CAmCommandSenderDbus() :
         mpIAmCommandReceive(NULL), //
         mReady(false)
 {
-    CAmDltWrapper::instance()->registerContext(commandDbus, "DBP", "DBus Plugin");
     log(&commandDbus, DLT_LOG_INFO, "DbusCommandSender constructor called");
 }
 

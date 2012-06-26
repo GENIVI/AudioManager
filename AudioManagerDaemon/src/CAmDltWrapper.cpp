@@ -61,7 +61,7 @@ CAmDltWrapper::CAmDltWrapper(const bool enableNoDLTDebug) :
 {
     (void) enableNoDLTDebug;
 #ifndef WITH_DLT
-    std::cout << "[DLT] Running without DLT-support" << std::endl;
+    std::cout << "\e[0;34m[DLT]\e[0;30m\tRunning without DLT-support" << std::endl;
 #endif
 }
 
@@ -82,7 +82,7 @@ void CAmDltWrapper::registerContext(DltContext& handle, const char *contextid, c
 #ifdef WITH_DLT
     dlt_register_context(&handle, contextid, description);
 #else
-    (void) handle;
+    strncpy(handle.contextID,contextid,4);
 
     // store only the first contextID
     if(0 == strlen(mDltContext.contextID))
@@ -96,6 +96,8 @@ void CAmDltWrapper::registerContext(DltContext& handle, const char *contextid, c
         }
     }
 
+    std::cout << "\e[0;34m[DLT]\e[0;30m\tRegistering Context " << contextid << " , " << description << std::endl;
+
 #endif
 }
 
@@ -107,6 +109,9 @@ void CAmDltWrapper::init(DltLogLevelType loglevel, DltContext* context)
         context = &mDltContext;
 #ifdef WITH_DLT
     dlt_user_log_write_start(context, &mDltContextData, loglevel);
+#else
+    if(mEnableNoDLTDebug)
+        std::cout << "\e[0;34m[" << context->contextID << "]\e[0;30m\t";
 #endif
 
 }
@@ -117,7 +122,7 @@ void CAmDltWrapper::send()
     dlt_user_log_write_finish(&mDltContextData);
 #else
     if(mEnableNoDLTDebug)
-        std::cout << "[" << mDltContext.contextID << "] " << mDltContextData.buffer.str().c_str() << std::endl;
+        std::cout << mDltContextData.buffer.str().c_str() << std::endl;
 
     mDltContextData.buffer.str("");
     mDltContextData.buffer.clear();

@@ -40,6 +40,7 @@ CAmRoutingDbusMessageHandler::CAmRoutingDbusMessageHandler() :
         mpReveiveMessage(NULL), //
         mpDBusConnection(NULL)
 {
+    CAmDltWrapper::instance()->registerContext(routingDbus, "DRS", "DBus Plugin");
     log(&routingDbus, DLT_LOG_INFO, "DBusMessageHandler constructed");
 }
 
