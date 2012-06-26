@@ -42,8 +42,14 @@ CAmWatchdog::CAmWatchdog(CAmSocketHandler* CAmSocketHandler) :
 {
     assert(mpCAmSocketHandler);
 
+
     //first retrieve the timeout interval
-    int watchdogTimeout = atoi(getenv("WATCHDOG_USEC"));
+
+    int watchdogTimeout = 0;
+
+    char* wusec=getenv("WATCHDOG_USEC");
+    if (wusec)
+        watchdogTimeout=atoi(wusec);
 
     if (watchdogTimeout > 0)
     {

@@ -71,7 +71,7 @@ OPTION( WITH_TELNET
 	"build with Telnetserver (can only work with SocketHandler)" ON)
 	
 OPTION ( WITH_SYSTEMD_WATCHDOG
-    "build with systemD support & watchdog" ON)
+    "build with systemD support & watchdog" OFF)
 	
 OPTION ( USE_BUILD_LIBS
 	"build with default library path = build path" ON)
@@ -163,7 +163,7 @@ if(WITH_MAIN)
 endif(WITH_MAIN)
 
 IF(EXISTS "${CMAKE_SOURCE_DIR}/ProjectSpecific/")
-    add_subdirectory (ProjectSpecific)
+    #add_subdirectory (ProjectSpecific)
 endif(EXISTS "${CMAKE_SOURCE_DIR}/ProjectSpecific/")
 
 # uninstall target
