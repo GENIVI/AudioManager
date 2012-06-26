@@ -95,6 +95,7 @@ void CAmTelnetMenuHelper::createCommandMaps()
     mSetCommands.insert(std::make_pair("routing", sCommandPrototypeInfo("use 'routing sourceId sinkId' to get all\n\t  possible routes between a sourceID and a sinkID", &CAmTelnetMenuHelper::setRoutingCommand)));
     mSetCommands.insert(std::make_pair("disc", sCommandPrototypeInfo("use 'disc connectionID' to disconnect \n\t  this connection", &CAmTelnetMenuHelper::setDisconnectConnId)));
     mSetCommands.insert(std::make_pair("sinkvolume", sCommandPrototypeInfo("use 'sinkvolume sinkID volume' to set \n\t  absorption in db of sink", &CAmTelnetMenuHelper::setSinkVolume)));
+    mSetCommands.insert(std::make_pair("sinkprop", sCommandPrototypeInfo("use 'sinkprop type value' to set \n\t  a specific sinksoundproperty", &CAmTelnetMenuHelper::setSinkSoundProperty)));
 
     // Get commands
     mGetCommands.insert(std::make_pair("help", sCommandPrototypeInfo(std::string("show all possible commands"), &CAmTelnetMenuHelper::helpCommand)));
@@ -1067,14 +1068,14 @@ void CAmTelnetMenuHelper::setSourceSoundPropertiesExec(std::queue<std::string> &
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::setSinkSoundProperties(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::setSinkSoundProperty(std::queue<std::string> & CmdQueue, int & filedescriptor)
 /****************************************************************************/
 {
-    instance->setConnectionExec(CmdQueue, filedescriptor);
+    instance->setSinkSoundPropertyExec(CmdQueue, filedescriptor);
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::setSinkSoundPropertiesExec(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::setSinkSoundPropertyExec(std::queue<std::string> & CmdQueue, int & filedescriptor)
 /****************************************************************************/
 {
     unsigned int tmpType = 0;
@@ -1185,6 +1186,7 @@ void CAmTelnetMenuHelper::setSinkVolumeExec(std::queue<std::string> & CmdQueue, 
         return;
     }
 }
+
 
 /****************************************************************************/
 void CAmTelnetMenuHelper::listPluginsCommand(std::queue<std::string> & CmdQueue, int & filedescriptor)
