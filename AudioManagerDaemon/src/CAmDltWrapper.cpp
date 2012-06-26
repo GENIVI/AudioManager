@@ -83,13 +83,19 @@ void CAmDltWrapper::registerContext(DltContext& handle, const char *contextid, c
     dlt_register_context(&handle, contextid, description);
 #else
     (void) handle;
-    memcpy(&mDltContext.contextID,contextid,4);
-    const size_t str_len = strlen(description);
-    if(str_len < 2000)
+
+    // store only the first contextID
+    if(0 == strlen(mDltContext.contextID))
     {
-        mDltContextData.context_description = new char[str_len + 1];
-        (void) strcpy(mDltContextData.context_description,description);
+        memcpy(&mDltContext.contextID,contextid,4);
+        const size_t str_len = strlen(description);
+        if(str_len < 2000)
+        {
+            mDltContextData.context_description = new char[str_len + 1];
+            (void) strcpy(mDltContextData.context_description,description);
+        }
     }
+
 #endif
 }
 
