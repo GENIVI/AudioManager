@@ -17,7 +17,7 @@
  
  /*!
 \page ver Versioning
-\section ver_graph The versioning schmeme
+\section ver_graph The versioning scheme
 The versioning scheme was decided in the February face2face 2012.
 \image html versioning.png
 For the daemon the third number (for example 1.0.X) describes the patch version. The versions are automatically created by git during the build process.
