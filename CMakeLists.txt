@@ -142,7 +142,7 @@ IF(WITH_DOCUMENTATION)
 ENDIF(WITH_DOCUMENTATION)
 
 ##global build flags set(CPACK_RPM_COMPONENT_INSTALL ON)
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Wextra -std=c++98 -D_GNU_SOURCE -pedantic -Wno-variadic-macros")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Wextra -std=c++98 -D_GNU_SOURCE -pedantic -Wno-variadic-macros -Wno-long-long")
 #set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Wextra -std=c++98 -D_GNU_SOURCE")
 
 if(WITH_PLUGIN_COMMAND)
@@ -192,7 +192,7 @@ SET(CPACK_DEBIAN_PACKAGE_DEPENDS "*")
 SET(CPACK_STRIP_FILES TRUE)
 SET(CPACK_PACKAGE_DESCRIPTION_FILE ${CMAKE_SOURCE_DIR}/README)
 SET(CPACK_SOURCE_GENERATOR "TGZ")
-SET(CPACK_SOURCE_IGNORE_FILES ".settings*" ".cproject" ".project" "/\\\\.metadata" "\\\\.#" "/#" ".*~" "/\\\\.git" "${CMAKE_CURRENT_BINARY_DIR}" "bin/" "packages/" "config.h") 
+SET(CPACK_SOURCE_IGNORE_FILES ".settings*" ".cproject" "/\\\\.metadata" "\\\\.#" "/#" ".*~" "/\\\\.git" "${CMAKE_CURRENT_BINARY_DIR}" "bin/" "packages/" "config.h") 
 
 #evaluate the properties
 if(WITH_MAIN)
