@@ -589,15 +589,16 @@ void IAmRoutingReceiverShadowDbus::sendIntrospection(DBusConnection* conn, DBusM
 
     // create a reply from the message
     reply = dbus_message_new_method_return(msg);
-    std::ifstream in("RoutingReceiver.xml", std::ifstream::in);
+    std::string fullpath(EXECUTABLE_OUTPUT_PATH);
+    fullpath.append("/RoutingReceiver.xml");
+    std::ifstream in(fullpath.c_str(), std::ifstream::in);
     if (!in)
     {
-        logError("IAmCommandReceiverShadow::sendIntrospection could not load xml file");
+        logError("IAmCommandReceiverShadow::sendIntrospection could not load xml file ",fullpath);
         throw std::runtime_error("IAmCommandReceiverShadow::sendIntrospection Could not load introspecton XML");
     }
     std::string introspect((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
     const char* string = introspect.c_str();
-    log(&routingDbus, DLT_LOG_INFO, introspect.c_str());
 
     // add the arguments to the reply
     dbus_message_iter_init_append(reply, &args);
