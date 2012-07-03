@@ -63,16 +63,13 @@ void CAmTelnetMenuHelper::createCommandMaps()
 /****************************************************************************/
 {
     // ROOT commands
-
     mRootCommands.clear();
-
     mRootCommands.insert(std::make_pair("help", sCommandPrototypeInfo("show all possible commands", &CAmTelnetMenuHelper::helpCommand)));
     mRootCommands.insert(std::make_pair("list", sCommandPrototypeInfo("Go into 'list'-submenu", &CAmTelnetMenuHelper::rootListCommand)));
     mRootCommands.insert(std::make_pair("info", sCommandPrototypeInfo("Go into 'info'-submenu", &CAmTelnetMenuHelper::rootInfoCommand)));
     mRootCommands.insert(std::make_pair("set", sCommandPrototypeInfo("Go into 'set'-submenu", &CAmTelnetMenuHelper::rootSetCommand)));
     mRootCommands.insert(std::make_pair("get", sCommandPrototypeInfo("Go into 'get'-submenu", &CAmTelnetMenuHelper::rootGetCommand)));
     mRootCommands.insert(std::make_pair("exit", sCommandPrototypeInfo("quit telnet session", &CAmTelnetMenuHelper::exitCommand)));
-
     // List commands
     mListCommands.insert(std::make_pair("help", sCommandPrototypeInfo(std::string("show all possible commands"), &CAmTelnetMenuHelper::helpCommand)));
     mListCommands.insert(std::make_pair("conn", sCommandPrototypeInfo("list all connections", &CAmTelnetMenuHelper::listConnectionsCommand)));
@@ -86,7 +83,6 @@ void CAmTelnetMenuHelper::createCommandMaps()
     mListCommands.insert(std::make_pair("mainsources", sCommandPrototypeInfo("list all main sources", &CAmTelnetMenuHelper::listMainSourcesCommand)));
     mListCommands.insert(std::make_pair("..", sCommandPrototypeInfo("one step back in menu tree (back to root folder)", &CAmTelnetMenuHelper::oneStepBackCommand)));
     mListCommands.insert(std::make_pair("exit", sCommandPrototypeInfo("close telnet session", &CAmTelnetMenuHelper::exitCommand)));
-
     // Set commands
     mSetCommands.insert(std::make_pair("help", sCommandPrototypeInfo(std::string("show all possible commands"), &CAmTelnetMenuHelper::helpCommand)));
     mSetCommands.insert(std::make_pair("..", sCommandPrototypeInfo("one step back in menu tree (back to root folder)", &CAmTelnetMenuHelper::oneStepBackCommand)));
@@ -95,8 +91,10 @@ void CAmTelnetMenuHelper::createCommandMaps()
     mSetCommands.insert(std::make_pair("routing", sCommandPrototypeInfo("use 'routing sourceId sinkId' to get all\n\t  possible routes between a sourceID and a sinkID", &CAmTelnetMenuHelper::setRoutingCommand)));
     mSetCommands.insert(std::make_pair("disc", sCommandPrototypeInfo("use 'disc connectionID' to disconnect \n\t  this connection", &CAmTelnetMenuHelper::setDisconnectConnId)));
     mSetCommands.insert(std::make_pair("sinkvolume", sCommandPrototypeInfo("use 'sinkvolume sinkID volume' to set \n\t  absorption in db of sink", &CAmTelnetMenuHelper::setSinkVolume)));
+    mSetCommands.insert(std::make_pair("sinkvolstep", sCommandPrototypeInfo("use 'sinkvolstep sinkID volumestep' to increment \n\t or decrement  volume", &CAmTelnetMenuHelper::setVolumeStep)));
     mSetCommands.insert(std::make_pair("sinkprop", sCommandPrototypeInfo("use 'sinkprop type value' to set \n\t  a specific sinksoundproperty", &CAmTelnetMenuHelper::setSinkSoundProperty)));
-
+    mSetCommands.insert(std::make_pair("sinkmute", sCommandPrototypeInfo("use 'sinkmute sinkid mutestate' to mute \n\t or unmute", &CAmTelnetMenuHelper::setSinkMuteState)));
+    mSetCommands.insert(std::make_pair("sourceprop", sCommandPrototypeInfo("use 'sourceprop type value' to set \n\t  a specific sinksoundproperty", &CAmTelnetMenuHelper::setSourceSoundProperty)));
     // Get commands
     mGetCommands.insert(std::make_pair("help", sCommandPrototypeInfo(std::string("show all possible commands"), &CAmTelnetMenuHelper::helpCommand)));
     mGetCommands.insert(std::make_pair("routing", sCommandPrototypeInfo("show current routing", &CAmTelnetMenuHelper::getRoutingCommand)));
@@ -104,7 +102,6 @@ void CAmTelnetMenuHelper::createCommandMaps()
     mGetCommands.insert(std::make_pair("recv", sCommandPrototypeInfo("show receiverversion ", &CAmTelnetMenuHelper::getReceiverversionCommand)));
     mGetCommands.insert(std::make_pair("..", sCommandPrototypeInfo("one step back in menu tree (back to root folder)", &CAmTelnetMenuHelper::oneStepBackCommand)));
     mGetCommands.insert(std::make_pair("exit", sCommandPrototypeInfo("close telnet session", &CAmTelnetMenuHelper::exitCommand)));
-
     // Info comands
     mInfoCommands.insert(std::make_pair("help", sCommandPrototypeInfo(std::string("show all possible commands"), &CAmTelnetMenuHelper::helpCommand)));
     mInfoCommands.insert(std::make_pair("sysprop", sCommandPrototypeInfo("show all systemproperties", &CAmTelnetMenuHelper::infoSystempropertiesCommand)));
@@ -119,23 +116,19 @@ void CAmTelnetMenuHelper::newSocketConnection(int filedescriptor)
     EMainState state = eRootState;
     std::map<int, EMainState>::iterator it;
     std::stringstream welcome;
-
     it = mCurrentMainStateMap.find(filedescriptor);
     if (it != mCurrentMainStateMap.end())
     {
         // socket connection already exists, delete entry and go back to root state
         mCurrentMainStateMap.erase(it);
     }
-
     it = mCurrentMainStateMap.begin();
-
     // insert new socket connection
     mCurrentMainStateMap.insert(it, std::make_pair<int, EMainState>(filedescriptor, state));
-
     // Send welcome message
     welcome << COLOR_WELCOME << "Welcome to GENIVI AudioManager " << DAEMONVERSION << COLOR_DEFAULT << "\n>";
     send(filedescriptor, welcome.str().c_str(), welcome.str().size(), 0);
-    logInfo("[TN] New connection: ",filedescriptor);
+    logInfo("[TN] New connection: ", filedescriptor);
 }
 
 /****************************************************************************/
@@ -143,7 +136,6 @@ void CAmTelnetMenuHelper::socketConnectionsClosed(int filedescriptor)
 /****************************************************************************/
 {
     std::map<int, EMainState>::iterator it;
-
     it = mCurrentMainStateMap.find(filedescriptor);
     if (it != mCurrentMainStateMap.end())
     {
@@ -151,24 +143,22 @@ void CAmTelnetMenuHelper::socketConnectionsClosed(int filedescriptor)
     }
     else
     {
-        logError("[TN] socketConnectionsClosed, fd not found, ",filedescriptor);
+        logError("[TN] socketConnectionsClosed, fd not found, ", filedescriptor);
     }
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::enterCmdQueue(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::enterCmdQueue(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
     std::map<int, EMainState>::iterator it;
     std::string cmd;
     tCommandMap::iterator cmditer;
-
     // find current filedescriptor to get the current state of the telnet session
     it = mCurrentMainStateMap.find(filedescriptor);
     while (!CmdQueue.empty())
     {
         cmd = CmdQueue.front();
-
         // Now remove the first command, it's stored in 'cmd'
         CmdQueue.pop();
         // telnet session found. depending on the current state, different commands are available
@@ -180,6 +170,7 @@ void CAmTelnetMenuHelper::enterCmdQueue(std::queue<std::string> & CmdQueue, int 
                 cmditer->second.CommandPrototype(CmdQueue, filedescriptor);
             else
                 sendError(filedescriptor, "Command not found\n");
+
             break;
         case eListState:
             cmditer = mListCommands.find(cmd);
@@ -187,6 +178,7 @@ void CAmTelnetMenuHelper::enterCmdQueue(std::queue<std::string> & CmdQueue, int 
                 cmditer->second.CommandPrototype(CmdQueue, filedescriptor);
             else
                 sendError(filedescriptor, "Command not found\n");
+
             break;
         case eInfoState:
             cmditer = mInfoCommands.find(cmd);
@@ -194,6 +186,7 @@ void CAmTelnetMenuHelper::enterCmdQueue(std::queue<std::string> & CmdQueue, int 
                 cmditer->second.CommandPrototype(CmdQueue, filedescriptor);
             else
                 sendError(filedescriptor, "Command not found\n");
+
             break;
         case eGetState:
             cmditer = mGetCommands.find(cmd);
@@ -201,6 +194,7 @@ void CAmTelnetMenuHelper::enterCmdQueue(std::queue<std::string> & CmdQueue, int 
                 cmditer->second.CommandPrototype(CmdQueue, filedescriptor);
             else
                 sendError(filedescriptor, "Command not found\n");
+
             break;
         case eSetState:
             cmditer = mSetCommands.find(cmd);
@@ -208,6 +202,7 @@ void CAmTelnetMenuHelper::enterCmdQueue(std::queue<std::string> & CmdQueue, int 
                 cmditer->second.CommandPrototype(CmdQueue, filedescriptor);
             else
                 sendError(filedescriptor, "Command not found\n");
+
             break;
         default:
             break;
@@ -218,27 +213,26 @@ void CAmTelnetMenuHelper::enterCmdQueue(std::queue<std::string> & CmdQueue, int 
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::sendError(int & filedescriptor, std::string error_string)
+void CAmTelnetMenuHelper::sendError(int& filedescriptor, std::string error_string)
 /****************************************************************************/
 {
     send(filedescriptor, error_string.c_str(), error_string.size(), 0);
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::sendTelnetLine(int & filedescriptor, std::stringstream &line)
+void CAmTelnetMenuHelper::sendTelnetLine(int& filedescriptor, std::stringstream& line)
 /****************************************************************************/
 {
     send(filedescriptor, line.str().c_str(), line.str().size(), 0);
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::sendCurrentCmdPrompt(int & filedescriptor)
+void CAmTelnetMenuHelper::sendCurrentCmdPrompt(int& filedescriptor)
 /****************************************************************************/
 {
     std::map<int, EMainState>::iterator it;
     std::stringstream outputstream;
     outputstream << std::endl;
-
     it = mCurrentMainStateMap.find(filedescriptor);
     if (it != mCurrentMainStateMap.end())
     {
@@ -262,28 +256,26 @@ void CAmTelnetMenuHelper::sendCurrentCmdPrompt(int & filedescriptor)
         default:
             break;
         }
-
         send(filedescriptor, outputstream.str().c_str(), outputstream.str().size(), 0);
-
     }
     else
     {
-        logInfo("[TN] sendCurrentCmdPrompt, fd not found: ",filedescriptor);
+        logInfo("[TN] sendCurrentCmdPrompt, fd not found: ", filedescriptor);
     }
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::exitCommand(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::exitCommand(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
     instance->exitCommandExec(CmdQueue, filedescriptor);
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::oneStepBackCommandExec(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::oneStepBackCommandExec(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
-    (void) CmdQueue;
+    (void) (CmdQueue);
     std::map<int, EMainState>::iterator it;
     it = mCurrentMainStateMap.find(filedescriptor);
     if (it != mCurrentMainStateMap.end())
@@ -313,60 +305,58 @@ void CAmTelnetMenuHelper::oneStepBackCommandExec(std::queue<std::string> & CmdQu
             it->second = eRootState;
             break;
         }
-
-        logInfo("[TN] oneStepBackCommandExec, state: ",it->second);
+        logInfo("[TN] oneStepBackCommandExec, state: ", it->second);
     }
+
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::oneStepBackCommand(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::oneStepBackCommand(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
     instance->oneStepBackCommandExec(CmdQueue, filedescriptor);
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::exitCommandExec(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::exitCommandExec(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
-    (void) CmdQueue;
+    (void) (CmdQueue);
     std::map<int, EMainState>::iterator it;
     std::stringstream line;
     std::stringstream output;
-
     // Sending a last message to the client
     output << "bye!" << COLOR_DEFAULT << std::endl;
     sendTelnetLine(filedescriptor, output);
-
     tCommandMap::iterator iter;
     it = mCurrentMainStateMap.find(filedescriptor);
     if (it != mCurrentMainStateMap.end())
     {
         if (NULL != mpTelenetServer)
         {
-            logInfo("[TN] exitCommandExec, removing fd ",filedescriptor);
+            logInfo("[TN] exitCommandExec, removing fd ", filedescriptor);
             mpTelenetServer->disconnectClient(filedescriptor);
             mCurrentMainStateMap.erase(it);
         }
         else
         {
-            logError("[TN] exitCommandExec, mpTelenetServer == NULL, fd ",filedescriptor);
+            logError("[TN] exitCommandExec, mpTelenetServer == NULL, fd ", filedescriptor);
         }
     }
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::helpCommand(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::helpCommand(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
     instance->helpCommandExec(CmdQueue, filedescriptor);
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::helpCommandExec(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::helpCommandExec(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
-    (void) CmdQueue;
+    (void) (CmdQueue);
     std::map<int, EMainState>::iterator it;
     std::stringstream line;
     tCommandMap::iterator cmdIter;
@@ -379,7 +369,6 @@ void CAmTelnetMenuHelper::helpCommandExec(std::queue<std::string> & CmdQueue, in
         switch (it->second)
         {
         case eRootState:
-
             cmdIter = mRootCommands.begin();
             while (cmdIter != mRootCommands.end())
             {
@@ -422,22 +411,24 @@ void CAmTelnetMenuHelper::helpCommandExec(std::queue<std::string> & CmdQueue, in
         default:
             break;
         }
+
         sendTelnetLine(filedescriptor, line);
     }
+
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::rootGetCommand(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::rootGetCommand(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
     instance->rootGetCommandExec(CmdQueue, filedescriptor);
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::rootGetCommandExec(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::rootGetCommandExec(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
-    (void) CmdQueue;
+    (void) (CmdQueue);
     std::map<int, EMainState>::iterator it;
     it = mCurrentMainStateMap.find(filedescriptor);
     if (it != mCurrentMainStateMap.end())
@@ -447,17 +438,17 @@ void CAmTelnetMenuHelper::rootGetCommandExec(std::queue<std::string> & CmdQueue,
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::rootSetCommand(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::rootSetCommand(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
     instance->rootSetCommandExec(CmdQueue, filedescriptor);
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::rootSetCommandExec(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::rootSetCommandExec(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
-    (void) CmdQueue;
+    (void) (CmdQueue);
     std::map<int, EMainState>::iterator it;
     it = mCurrentMainStateMap.find(filedescriptor);
     if (it != mCurrentMainStateMap.end())
@@ -467,17 +458,17 @@ void CAmTelnetMenuHelper::rootSetCommandExec(std::queue<std::string> & CmdQueue,
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::rootListCommand(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::rootListCommand(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
     instance->rootListCommandExec(CmdQueue, filedescriptor);
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::rootListCommandExec(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::rootListCommandExec(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
-    (void) CmdQueue;
+    (void) (CmdQueue);
     std::map<int, EMainState>::iterator it;
     it = mCurrentMainStateMap.find(filedescriptor);
     if (it != mCurrentMainStateMap.end())
@@ -487,17 +478,17 @@ void CAmTelnetMenuHelper::rootListCommandExec(std::queue<std::string> & CmdQueue
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::rootInfoCommand(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::rootInfoCommand(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
     instance->rootInfoCommandExec(CmdQueue, filedescriptor);
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::rootInfoCommandExec(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::rootInfoCommandExec(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
-    (void) CmdQueue;
+    (void) (CmdQueue);
     std::map<int, EMainState>::iterator it;
     it = mCurrentMainStateMap.find(filedescriptor);
     if (it != mCurrentMainStateMap.end())
@@ -507,241 +498,207 @@ void CAmTelnetMenuHelper::rootInfoCommandExec(std::queue<std::string> & CmdQueue
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::listConnectionsCommand(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::listConnectionsCommand(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
     instance->listConnectionsCommandExec(CmdQueue, filedescriptor);
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::listConnectionsCommandExec(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::listConnectionsCommandExec(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
-    (void) CmdQueue;
-
-    std::vector<am_Connection_s> listConnections;
-    if(E_OK == mpDatabasehandler->getListConnections(listConnections))
+    (void) (CmdQueue);
+    std::vector < am_Connection_s > listConnections;
+    if (E_OK == mpDatabasehandler->getListConnections(listConnections))
     {
         std::stringstream output;
         output << "\tConnections: " << listConnections.size() << std::endl;
         for (std::vector<am_Connection_s>::iterator iter(listConnections.begin()); iter < listConnections.end(); iter++)
         {
-            output << "\tID: " << iter->connectionID
-                   << "\tSrcID: " << iter->sourceID
-                   << "\tSinkID: " << iter->sinkID
-                   << "\tFormat: " << iter->connectionFormat
-                   << "\tdelay: " << iter->delay << std::endl;
+            output << "\tID: " << iter->connectionID << "\tSrcID: " << iter->sourceID << "\tSinkID: " << iter->sinkID << "\tFormat: " << iter->connectionFormat << "\tdelay: " << iter->delay << std::endl;
         }
         sendTelnetLine(filedescriptor, output);
     }
     else
     {
-        sendError(filedescriptor,"ERROR: mDatabasehandler->getListConnections");
+        sendError(filedescriptor, "ERROR: mDatabasehandler->getListConnections");
     }
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::listSourcesCommand(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::listSourcesCommand(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
     instance->listSourcesCommandExec(CmdQueue, filedescriptor);
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::listSourcesCommandExec(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::listSourcesCommandExec(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
-    (void) CmdQueue;
-
-    std::vector<am_Source_s> listSources;
-    if(E_OK == mpDatabasehandler->getListSources(listSources))
+    (void) (CmdQueue);
+    std::vector < am_Source_s > listSources;
+    if (E_OK == mpDatabasehandler->getListSources(listSources))
     {
         std::stringstream output;
         output << "\tSources: " << listSources.size() << std::endl;
         for (std::vector<am_Source_s>::iterator iter(listSources.begin()); iter < listSources.end(); iter++)
         {
-            output << "\tID: " << iter->sourceID
-                   << "\tName: " << iter->name
-                   << "\tDomainID: " << iter->domainID
-                   << "\tState: " << iter->sourceState
-                   << "\tVolume: " << iter->volume << std::endl;
+            output << "\tID: " << iter->sourceID << "\tName: " << iter->name << "\tDomainID: " << iter->domainID << "\tState: " << iter->sourceState << "\tVolume: " << iter->volume << std::endl;
         }
         sendTelnetLine(filedescriptor, output);
     }
     else
     {
-        sendError(filedescriptor,"ERROR: mDatabasehandler->getListSources");
+        sendError(filedescriptor, "ERROR: mDatabasehandler->getListSources");
     }
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::listSinksCommands(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::listSinksCommands(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
     instance->listSinksCommandsExec(CmdQueue, filedescriptor);
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::listSinksCommandsExec(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::listSinksCommandsExec(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
-    (void) CmdQueue;
-
-    std::vector<am_Sink_s> listSinks;
-    if(E_OK == mpDatabasehandler->getListSinks(listSinks))
+    (void) (CmdQueue);
+    std::vector < am_Sink_s > listSinks;
+    if (E_OK == mpDatabasehandler->getListSinks(listSinks))
     {
         std::stringstream output;
         output << "\tSinks: " << listSinks.size() << std::endl;
         for (std::vector<am_Sink_s>::iterator iter(listSinks.begin()); iter < listSinks.end(); iter++)
         {
-            output << "\tID: " << iter->sinkID
-                   << "\tDomainID: " << iter->domainID
-                   << "\tName: " << iter->name
-                   << "\tAvailable: " << iter->available.availability
-                   << "\tVolume: " << iter->volume << std::endl;
+            output << "\tID: " << iter->sinkID << "\tDomainID: " << iter->domainID << "\tName: " << iter->name << "\tAvailable: " << iter->available.availability << "\tVolume: " << iter->volume << std::endl;
         }
-
         sendTelnetLine(filedescriptor, output);
     }
     else
     {
-        sendError(filedescriptor,"ERROR: mDatabasehandler->getListSinks");
+        sendError(filedescriptor, "ERROR: mDatabasehandler->getListSinks");
     }
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::listCrossfaders(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::listCrossfaders(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
     instance->listCrossfadersExec(CmdQueue, filedescriptor);
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::listCrossfadersExec(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::listCrossfadersExec(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
-    (void) CmdQueue;
-
-    std::vector<am_Crossfader_s> listCrossfaders;
-    if(E_OK == mpDatabasehandler->getListCrossfaders(listCrossfaders))
+    (void) (CmdQueue);
+    std::vector < am_Crossfader_s > listCrossfaders;
+    if (E_OK == mpDatabasehandler->getListCrossfaders(listCrossfaders))
     {
         std::stringstream output;
         output << "\tCrossfader: " << listCrossfaders.size() << std::endl;
         for (std::vector<am_Crossfader_s>::iterator iter(listCrossfaders.begin()); iter < listCrossfaders.end(); iter++)
         {
-            output << "\tID: " << iter->crossfaderID
-                   << "\tName: " << iter->name
-                   << "\tSinkA: " << iter->sinkID_A
-                   << "\tSinkB: " << iter->sinkID_B
-                   << "\tSourceID: " << iter->sourceID << std::endl;
+            output << "\tID: " << iter->crossfaderID << "\tName: " << iter->name << "\tSinkA: " << iter->sinkID_A << "\tSinkB: " << iter->sinkID_B << "\tSourceID: " << iter->sourceID << std::endl;
         }
-
         sendTelnetLine(filedescriptor, output);
     }
     else
     {
-        sendError(filedescriptor,"ERROR: mDatabasehandler->getListCrossfaders");
+        sendError(filedescriptor, "ERROR: mDatabasehandler->getListCrossfaders");
     }
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::listDomainsCommand(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::listDomainsCommand(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
     instance->listDomainsCommandExec(CmdQueue, filedescriptor);
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::listDomainsCommandExec(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::listDomainsCommandExec(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
-    (void) CmdQueue;
-
-    std::vector<am_Domain_s> listDomains;
-    if(E_OK == mpDatabasehandler->getListDomains(listDomains))
+    (void) (CmdQueue);
+    std::vector < am_Domain_s > listDomains;
+    if (E_OK == mpDatabasehandler->getListDomains(listDomains))
     {
         std::stringstream output;
         output << "\tDomains: " << listDomains.size() << std::endl;
         for (std::vector<am_Domain_s>::iterator iter(listDomains.begin()); iter < listDomains.end(); iter++)
         {
-            output << "\tID: " << iter->domainID
-                   << "\tName: " << iter->name
-                   << "\tBusname: " << iter->busname
-                   << "\tNodename: " << iter->nodename
-                   << "\tState: " << static_cast<int>(iter->state) << std::endl;
+            output << "\tID: " << iter->domainID << "\tName: " << iter->name << "\tBusname: " << iter->busname << "\tNodename: " << iter->nodename << "\tState: " << static_cast<int>(iter->state) << std::endl;
         }
-
         sendTelnetLine(filedescriptor, output);
     }
     else
     {
-        sendError(filedescriptor,"ERROR: mDatabasehandler->getListDomains");
+        sendError(filedescriptor, "ERROR: mDatabasehandler->getListDomains");
     }
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::listGatewaysCommand(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::listGatewaysCommand(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
     instance->listGatewaysCommandExec(CmdQueue, filedescriptor);
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::listGatewaysCommandExec(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::listGatewaysCommandExec(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
-    (void) CmdQueue;
-
-    std::vector<am_Gateway_s> listGateways;
-    if(E_OK == mpDatabasehandler->getListGateways(listGateways))
+    (void) (CmdQueue);
+    std::vector < am_Gateway_s > listGateways;
+    if (E_OK == mpDatabasehandler->getListGateways(listGateways))
     {
         std::stringstream output;
         output << "\tGateways: " << listGateways.size();
-
-        for( std::vector<am_Gateway_s>::iterator iter(listGateways.begin()); iter < listGateways.end(); iter++)
+        for (std::vector<am_Gateway_s>::iterator iter(listGateways.begin()); iter < listGateways.end(); iter++)
         {
-            output << "\tID: " << iter->gatewayID
-                   << "\tName: " << iter->name
-                   << "\tSourceID: " << iter->sourceID
-                   << "\tSinkID: " << iter->sinkID << std::endl;
+            output << "\tID: " << iter->gatewayID << "\tName: " << iter->name << "\tSourceID: " << iter->sourceID << "\tSinkID: " << iter->sinkID << std::endl;
         }
         sendTelnetLine(filedescriptor, output);
     }
     else
     {
-        sendError(filedescriptor,"ERROR: mDatabasehandler->getListGateways");
+        sendError(filedescriptor, "ERROR: mDatabasehandler->getListGateways");
     }
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::getRoutingCommand(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::getRoutingCommand(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
     instance->getRoutingCommandExec(CmdQueue, filedescriptor);
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::getRoutingCommandExec(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::getRoutingCommandExec(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
-    (void) CmdQueue;
-    (void) filedescriptor;
-    //TODO: fill with function
+    (void) (CmdQueue);
+    (void) (filedescriptor);
+//TODO: fill with function
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::getSenderversionCommand(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::getSenderversionCommand(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
     instance->getSenderversionCommandExec(CmdQueue, filedescriptor);
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::getSenderversionCommandExec(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::getSenderversionCommandExec(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
-    (void) CmdQueue;
-
+    (void) (CmdQueue);
     std::stringstream output;
     std::string versionCommand;
     std::string versionRouting;
@@ -750,23 +707,21 @@ void CAmTelnetMenuHelper::getSenderversionCommandExec(std::queue<std::string> & 
     mpRoutingSender->getInterfaceVersion(versionRouting);
     mpCommandSender->getInterfaceVersion(versionCommand);
     output << "\tSender versions:" << std::endl << "\tCtrl: " << versionControl << " | " << "Cmd: " << versionCommand << " | " << "Routing: " << versionRouting << std::endl;
-
     sendTelnetLine(filedescriptor, output);
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::getReceiverversionCommand(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::getReceiverversionCommand(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
     instance->getReceiverversionCommandExec(CmdQueue, filedescriptor);
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::getReceiverversionCommandExec(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::getReceiverversionCommandExec(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
-    (void) CmdQueue;
-
+    (void) (CmdQueue);
     std::stringstream output;
     std::string versionCommand;
     std::string versionRouting;
@@ -774,67 +729,227 @@ void CAmTelnetMenuHelper::getReceiverversionCommandExec(std::queue<std::string> 
     mpControlReceiver->getInterfaceVersion(versionControl);
     mpRoutingReceiver->getInterfaceVersion(versionRouting);
     mpCommandReceiver->getInterfaceVersion(versionCommand);
-    output << "\tReceiver versions:" << std::endl << "\tCtrl: " << versionControl << " | " << "Cmd: " <<  versionCommand << " | " << "Routing: " << versionRouting << std::endl;
-
+    output << "\tReceiver versions:" << std::endl << "\tCtrl: " << versionControl << " | " << "Cmd: " << versionCommand << " | " << "Routing: " << versionRouting << std::endl;
     sendTelnetLine(filedescriptor, output);
-
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::infoSystempropertiesCommand(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::infoSystempropertiesCommand(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
     instance->infoSystempropertiesCommandExec(CmdQueue, filedescriptor);
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::infoSystempropertiesCommandExec(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::setVolumeStep(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
-    (void) CmdQueue;
-    std::vector<am_SystemProperty_s> listSystemProperties;
+    instance->setSinkVolumeExec(CmdQueue,filedescriptor);
+}
 
-    if(E_OK == mpDatabasehandler->getListSystemProperties(listSystemProperties))
+/****************************************************************************/
+void CAmTelnetMenuHelper::setVolumeStepExec(std::queue<std::string>& CmdQueue, int& filedescriptor)
+/****************************************************************************/
+{
+    if (CmdQueue.size() >= 2)
+    {
+        int16_t volumestep = 0;
+        am_sinkID_t sinkID = 0;
+        bool error = false;
+        std::istringstream istream_sinkID(CmdQueue.front());
+        CmdQueue.pop();
+        std::istringstream istream_volumestep(CmdQueue.front());
+        CmdQueue.pop();
+        if (!(istream_volumestep >> volumestep))
+            error = true;
+
+        if (!(istream_sinkID >> sinkID))
+            error = true;
+
+        if (error)
+        {
+            sendError(filedescriptor, "Error parsing setVolumeStep 'sinkID' or 'volumestep'");
+            return;
+        }
+        if (E_OK == mpCommandReceiver->volumeStep(sinkID,volumestep))
+        {
+            std::stringstream output;
+            output << "SetSinkVolumeStep set: " << sinkID << "->" << volumestep << std::endl;
+            sendTelnetLine(filedescriptor, output);
+        }
+        else
+        {
+            sendError(filedescriptor, "Error SetSinkVolumeStep");
+        }
+    }
+    else
+    {
+        sendError(filedescriptor, "Not enough arguments to set SetSinkVolumeStep, please enter 'sinkID' and 'volumestep' after command");
+        return;
+    }
+}
+
+/****************************************************************************/
+void CAmTelnetMenuHelper::setSinkMuteState(std::queue<std::string>& CmdQueue, int& filedescriptor)
+/****************************************************************************/
+{
+    instance->setSinkMuteStateExec(CmdQueue,filedescriptor);
+}
+
+/****************************************************************************/
+void CAmTelnetMenuHelper::setSinkMuteStateExec(std::queue<std::string>& CmdQueue, int& filedescriptor)
+/****************************************************************************/
+{
+    if (CmdQueue.size() >= 2)
+    {
+        u_int16_t tmp = 0;
+        am_MuteState_e MuteState = MS_UNKNOWN;
+        am_sinkID_t sinkID = 0;
+        bool error = false;
+        std::istringstream istream_sinkID(CmdQueue.front());
+        CmdQueue.pop();
+        std::istringstream istream_mutestate(CmdQueue.front());
+        CmdQueue.pop();
+        if (!(istream_mutestate >> tmp))
+            error = true;
+
+        if (!(istream_sinkID >> sinkID))
+            error = true;
+
+        if(tmp < MS_MAX)
+        {
+            MuteState = static_cast<am_MuteState_e>(tmp);
+        }
+        else
+        {
+            sendError(filedescriptor, "You tried to set an invalid am_MuteState_e");
+            error = true;
+        }
+
+        if (error)
+        {
+            sendError(filedescriptor, "Error parsing setSinkMuteState 'sinkID' or 'mutestate'");
+            return;
+        }
+        if (E_OK == mpCommandReceiver->setSinkMuteState(sinkID,MuteState))
+        {
+            std::stringstream output;
+            output << "setSinkMuteState set: " << sinkID << "->" << MuteState << std::endl;
+            sendTelnetLine(filedescriptor, output);
+        }
+        else
+        {
+            sendError(filedescriptor, "Error setSinkMuteState");
+        }
+    }
+    else
+    {
+        sendError(filedescriptor, "Not enough arguments to set setSinkMuteState, please enter 'sinkID' and 'mutestate' after command");
+        return;
+    }
+}
+
+/****************************************************************************/
+void CAmTelnetMenuHelper::setSourceSoundProperty(std::queue<std::string>& CmdQueue, int& filedescriptor)
+/****************************************************************************/
+{
+    instance->setSourceSoundPropertiesExec(CmdQueue,filedescriptor);
+}
+
+/****************************************************************************/
+void CAmTelnetMenuHelper::setSourceSoundPropertyExec(std::queue<std::string>& CmdQueue, int& filedescriptor)
+/****************************************************************************/
+{
+    unsigned int tmpType = 0;
+    bool error = false;
+    if (CmdQueue.size() >= 3)
+    {
+        std::istringstream istream_sourceID(CmdQueue.front());
+        CmdQueue.pop();
+        std::istringstream istream_type(CmdQueue.front());
+        CmdQueue.pop();
+        std::istringstream istream_value(CmdQueue.front());
+        CmdQueue.pop();
+        if (!(istream_type >> tmpType))
+            error = true;
+
+        am_MainSoundProperty_s soundProperty;
+        if (tmpType < MSP_MAX)
+            soundProperty.type = static_cast<am_MainSoundPropertyType_e>(tmpType);
+        else
+            error = true;
+
+        if (!(istream_value >> soundProperty.value))
+            error = true;
+
+        am_sourceID_t sourceID = 0;
+        if (!(istream_sourceID >> sourceID))
+            error = true;
+
+        if (error)
+        {
+            sendError(filedescriptor, "Error parsing setMainSourceSoundProperty 'type', 'value' or 'sourceID'");
+            return;
+        }
+        if (E_OK == mpCommandReceiver->setMainSourceSoundProperty(soundProperty, sourceID))
+        {
+            std::stringstream output;
+            output << "setMainSourceSoundProperty set: " << soundProperty.type << "->" << soundProperty.value << std::endl;
+            sendTelnetLine(filedescriptor, output);
+        }
+        else
+        {
+            sendError(filedescriptor, "Error setMainSourceSoundProperty");
+        }
+    }
+    else
+    {
+        sendError(filedescriptor, "Not enough arguments to set setMainSourceSoundProperty, please enter 'sourceID', 'type' and 'value' after command");
+        return;
+    }
+}
+
+/****************************************************************************/
+void CAmTelnetMenuHelper::infoSystempropertiesCommandExec(std::queue<std::string>& CmdQueue, int& filedescriptor)
+/****************************************************************************/
+{
+    (void) (CmdQueue);
+    std::vector < am_SystemProperty_s > listSystemProperties;
+    if (E_OK == mpDatabasehandler->getListSystemProperties(listSystemProperties))
     {
         std::stringstream output;
         output << "\tSystemproperties: " << listSystemProperties.size() << std::endl;
-
         std::vector<am_SystemProperty_s>::iterator it;
         for (it = listSystemProperties.begin(); it < listSystemProperties.end(); it++)
         {
             output << "\tType: " << it->type << " Value: " << it->value << std::endl;
         }
-
         sendTelnetLine(filedescriptor, output);
     }
     else
     {
-        sendError(filedescriptor,"ERROR: mDatabasehandler->getListSystemProperties");
+        sendError(filedescriptor, "ERROR: mDatabasehandler->getListSystemProperties");
     }
-
-
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::setRoutingCommand(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::setRoutingCommand(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
     instance->setRoutingCommandExec(CmdQueue, filedescriptor);
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::setRoutingCommandExec(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::setRoutingCommandExec(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
     if (CmdQueue.size() >= 2)
     {
         bool error = false;
-
         std::istringstream istream_sourceID(CmdQueue.front());
         CmdQueue.pop();
         std::istringstream istream_sinkID(CmdQueue.front());
         CmdQueue.pop();
-
         am_sourceID_t sourceID = 0;
         if (!(istream_sourceID >> sourceID))
             error = true;
@@ -848,17 +963,14 @@ void CAmTelnetMenuHelper::setRoutingCommandExec(std::queue<std::string> & CmdQue
             sendError(filedescriptor, "Error parsing sourcID and sinkID");
             return;
         }
-
-        std::vector<am_Route_s> routingList;
+        std::vector < am_Route_s > routingList;
         if (E_OK == mpRouter->getRoute(true, sourceID, sinkID, routingList))
         {
             std::stringstream output;
-
             std::vector<am_Route_s>::iterator rlIter = routingList.begin();
             for (int rlCnt = 1; rlIter < routingList.end(); rlIter++)
             {
                 output << "#" << rlCnt << " ";
-
                 std::vector<am_RoutingElement_s>::iterator reIter = rlIter->route.begin();
                 for (; reIter < rlIter->route.end(); reIter++)
                 {
@@ -866,7 +978,6 @@ void CAmTelnetMenuHelper::setRoutingCommandExec(std::queue<std::string> & CmdQue
                     reIter->domainID;
                     output << ">(" << reIter->sourceID << ")->--[D:" << reIter->domainID << "][F:" << reIter->connectionFormat << "]-->-(" << reIter->sinkID << ")" << std::endl;
                 }
-
                 rlCnt++;
             }
 
@@ -876,40 +987,35 @@ void CAmTelnetMenuHelper::setRoutingCommandExec(std::queue<std::string> & CmdQue
         {
             sendError(filedescriptor, "Error getting route");
         }
-
     }
     else
     {
-        if(!CmdQueue.empty())
-           CmdQueue.pop();
+        if (!CmdQueue.empty())
+            CmdQueue.pop();
 
-        sendError(filedescriptor,"Not enough arguments to set routing. Please enter sourceID and sinkID after command");
+        sendError(filedescriptor, "Not enough arguments to set routing. Please enter sourceID and sinkID after command");
     }
-
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::setConnection(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::setConnection(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
     instance->setConnectionExec(CmdQueue, filedescriptor);
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::setConnectionExec(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::setConnectionExec(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
     bool error = false;
     am_Error_e rError = E_OK;
-
     if (CmdQueue.size() >= 2)
     {
         std::istringstream istream_sourceID(CmdQueue.front());
         CmdQueue.pop();
-
         std::istringstream istream_sinkID(CmdQueue.front());
         CmdQueue.pop();
-
         am_sourceID_t sourceID = 0;
         if (!(istream_sourceID >> sourceID))
             error = true;
@@ -923,11 +1029,9 @@ void CAmTelnetMenuHelper::setConnectionExec(std::queue<std::string> & CmdQueue, 
             sendError(filedescriptor, "Error parsing sinkID and/or sourceID");
             return;
         }
-
-        // Try to set up connection
+// Try to set up connection
         am_mainConnectionID_t connID = 0;
         rError = mpCommandReceiver->connect(sourceID, sinkID, connID);
-
         if (E_OK == rError)
         {
             std::stringstream output;
@@ -938,13 +1042,12 @@ void CAmTelnetMenuHelper::setConnectionExec(std::queue<std::string> & CmdQueue, 
         {
             sendError(filedescriptor, "Error connecting sourceID and sinkID");
         }
-
     }
     else
     {
-        // remove 1 element if list is not empty
-        if(!CmdQueue.empty())
-           CmdQueue.pop();
+// remove 1 element if list is not empty
+        if (!CmdQueue.empty())
+            CmdQueue.pop();
 
         sendError(filedescriptor, "Not enough arguments to set routing. Please enter sourceID and sinkID after command");
         return;
@@ -952,26 +1055,23 @@ void CAmTelnetMenuHelper::setConnectionExec(std::queue<std::string> & CmdQueue, 
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::setDisconnectConnId(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::setDisconnectConnId(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
     instance->setDisconnectConnIdExec(CmdQueue, filedescriptor);
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::setDisconnectConnIdExec(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::setDisconnectConnIdExec(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
     am_mainConnectionID_t connID = 0;
-
     bool error = false;
     am_Error_e rError = E_OK;
-
     if (CmdQueue.size() >= 1)
     {
         std::istringstream istream_connID(CmdQueue.front());
         CmdQueue.pop();
-
         if (!(istream_connID >> connID))
             error = true;
 
@@ -980,10 +1080,8 @@ void CAmTelnetMenuHelper::setDisconnectConnIdExec(std::queue<std::string> & CmdQ
             sendError(filedescriptor, "Error parsing connID");
             return;
         }
-
-        // Try to disconnect connection id
+// Try to disconnect connection id
         rError = mpCommandReceiver->disconnect(connID);
-
         if (E_OK == rError)
         {
             std::stringstream output;
@@ -1003,29 +1101,25 @@ void CAmTelnetMenuHelper::setDisconnectConnIdExec(std::queue<std::string> & CmdQ
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::setSourceSoundProperties(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::setSourceSoundProperties(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
     instance->setConnectionExec(CmdQueue, filedescriptor);
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::setSourceSoundPropertiesExec(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::setSourceSoundPropertiesExec(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
     if (CmdQueue.size() >= 3)
     {
         bool error = false;
-
         std::istringstream istream_sourceID(CmdQueue.front());
         CmdQueue.pop();
-
         std::istringstream istream_type(CmdQueue.front());
         CmdQueue.pop();
-
         std::istringstream istream_value(CmdQueue.front());
         CmdQueue.pop();
-
         unsigned int tmpType = 0;
         if (!(istream_type >> tmpType))
             error = true;
@@ -1048,7 +1142,6 @@ void CAmTelnetMenuHelper::setSourceSoundPropertiesExec(std::queue<std::string> &
             sendError(filedescriptor, "Error parsing MainSinkSoundProperty 'type', 'value' or 'sourceID'");
             return;
         }
-
         if (E_OK == mpCommandReceiver->setMainSourceSoundProperty(soundProperty, sourceID))
         {
             std::stringstream output;
@@ -1068,30 +1161,26 @@ void CAmTelnetMenuHelper::setSourceSoundPropertiesExec(std::queue<std::string> &
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::setSinkSoundProperty(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::setSinkSoundProperty(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
     instance->setSinkSoundPropertyExec(CmdQueue, filedescriptor);
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::setSinkSoundPropertyExec(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::setSinkSoundPropertyExec(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
     unsigned int tmpType = 0;
     bool error = false;
-
     if (CmdQueue.size() >= 3)
     {
         std::istringstream istream_sinkID(CmdQueue.front());
         CmdQueue.pop();
-
         std::istringstream istream_type(CmdQueue.front());
         CmdQueue.pop();
-
         std::istringstream istream_value(CmdQueue.front());
         CmdQueue.pop();
-
         if (!(istream_type >> tmpType))
             error = true;
 
@@ -1113,7 +1202,6 @@ void CAmTelnetMenuHelper::setSinkSoundPropertyExec(std::queue<std::string> & Cmd
             sendError(filedescriptor, "Error parsing MainSinkSoundProperty 'type', 'value' or 'sinkID'");
             return;
         }
-
         if (E_OK == mpCommandReceiver->setMainSinkSoundProperty(soundProperty, sinkID))
         {
             std::stringstream output;
@@ -1133,14 +1221,14 @@ void CAmTelnetMenuHelper::setSinkSoundPropertyExec(std::queue<std::string> & Cmd
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::setSinkVolume(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::setSinkVolume(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
     instance->setSinkVolumeExec(CmdQueue, filedescriptor);
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::setSinkVolumeExec(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::setSinkVolumeExec(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
     if (CmdQueue.size() >= 2)
@@ -1149,18 +1237,14 @@ void CAmTelnetMenuHelper::setSinkVolumeExec(std::queue<std::string> & CmdQueue, 
         am_sinkID_t sinkID = 0;
         am_Handle_s handle;
         bool error = false;
-
-
         std::istringstream istream_sinkID(CmdQueue.front());
         CmdQueue.pop();
-
         std::istringstream istream_volume(CmdQueue.front());
         CmdQueue.pop();
-
         if (!(istream_volume >> volume))
             error = true;
 
-        if(!(istream_sinkID >> sinkID))
+        if (!(istream_sinkID >> sinkID))
             error = true;
 
         if (error)
@@ -1168,47 +1252,42 @@ void CAmTelnetMenuHelper::setSinkVolumeExec(std::queue<std::string> & CmdQueue, 
             sendError(filedescriptor, "Error parsing SetSinkVolume 'sinkID' or 'volume'");
             return;
         }
-
-        if (E_OK == mpControlReceiver->setSinkVolume(handle,sinkID,volume*10,RAMP_GENIVI_DIRECT,0))
+        if (E_OK == mpCommandReceiver->setVolume(sinkID,volume))
         {
             std::stringstream output;
-            output << "SetSinkVolume set: " << sinkID << "->" << volume << std::endl;
+            output << "setVolume set: " << sinkID << "->" << volume << std::endl;
             sendTelnetLine(filedescriptor, output);
         }
         else
         {
-            sendError(filedescriptor, "Error SetSinkVolume");
+            sendError(filedescriptor, "Error setVolume");
         }
     }
     else
     {
-        sendError(filedescriptor, "Not enough arguments to set SetSinkVolume, please enter 'sinkID' and 'volume' after command");
+        sendError(filedescriptor, "Not enough arguments to set setVolume, please enter 'sinkID' and 'volume' after command");
         return;
     }
 }
 
-
 /****************************************************************************/
-void CAmTelnetMenuHelper::listPluginsCommand(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::listPluginsCommand(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
     instance->listPluginsCommandExec(CmdQueue, filedescriptor);
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::listPluginsCommandExec(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::listPluginsCommandExec(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
-    (void) CmdQueue;
-    std::vector<std::string> PlugInNames;
+    (void) (CmdQueue);
+    std::vector < std::string > PlugInNames;
     std::vector<std::string>::iterator iter;
     std::stringstream output;
-
-
-    if(E_OK == mpCommandSender->getListPlugins(PlugInNames))
+    if (E_OK == mpCommandSender->getListPlugins(PlugInNames))
     {
         output << "\tCommandSender Plugins loaded: " << PlugInNames.size() << std::endl;
-
         for (iter = PlugInNames.begin(); iter < PlugInNames.end(); iter++)
         {
             output << iter->c_str() << std::endl;
@@ -1216,14 +1295,11 @@ void CAmTelnetMenuHelper::listPluginsCommandExec(std::queue<std::string> & CmdQu
     }
     else
     {
-        sendError(filedescriptor,"ERROR: mCommandSender->getListPlugins");
+        sendError(filedescriptor, "ERROR: mCommandSender->getListPlugins");
     }
-
-
-    if(E_OK == mpRoutingSender->getListPlugins(PlugInNames))
+    if (E_OK == mpRoutingSender->getListPlugins(PlugInNames))
     {
         output << std::endl << "\tRoutingSender Plugins loaded: " << PlugInNames.size() << std::endl;
-
         for (iter = PlugInNames.begin(); iter < PlugInNames.end(); iter++)
         {
             output << iter->c_str() << std::endl;
@@ -1231,96 +1307,83 @@ void CAmTelnetMenuHelper::listPluginsCommandExec(std::queue<std::string> & CmdQu
     }
     else
     {
-        sendError(filedescriptor,"ERROR: mRoutingSender->getListPlugins");
+        sendError(filedescriptor, "ERROR: mRoutingSender->getListPlugins");
     }
-
     sendTelnetLine(filedescriptor, output);
 }
 
-
 /****************************************************************************/
-void CAmTelnetMenuHelper::listMainSourcesCommand(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::listMainSourcesCommand(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
-    instance->listMainSourcesCommandExec(CmdQueue,filedescriptor);
+    instance->listMainSourcesCommandExec(CmdQueue, filedescriptor);
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::listMainSourcesCommandExec(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::listMainSourcesCommandExec(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
-    (void) CmdQueue;
-    std::vector<am_SourceType_s> listMainSources;
-
-    if(E_OK == mpDatabasehandler->getListMainSources(listMainSources))
+    (void) (CmdQueue);
+    std::vector < am_SourceType_s > listMainSources;
+    if (E_OK == mpDatabasehandler->getListMainSources(listMainSources))
     {
         std::stringstream output;
         output << std::endl << "\tMainSources:  " << listMainSources.size() << std::endl;
-
         std::vector<am_SourceType_s>::iterator iter;
         for (iter = listMainSources.begin(); iter < listMainSources.end(); iter++)
         {
-            output << "\tID: " << iter->sourceID
-                   << "\tName: " << iter->name
-                   << "\tsourceClassID: " << iter->sourceClassID
-                   << "\tavailability: " << iter->availability.availability <<  std::endl;
+            output << "\tID: " << iter->sourceID << "\tName: " << iter->name << "\tsourceClassID: " << iter->sourceClassID << "\tavailability: " << iter->availability.availability << std::endl;
         }
-        sendTelnetLine(filedescriptor,output);
+        sendTelnetLine(filedescriptor, output);
     }
     else
     {
-        sendError(filedescriptor,"ERROR: mDatabasehandler->getListMainSources");
+        sendError(filedescriptor, "ERROR: mDatabasehandler->getListMainSources");
     }
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::listMainSinksCommand(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::listMainSinksCommand(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
-    instance->listMainSinksCommandExec(CmdQueue,filedescriptor);
+    instance->listMainSinksCommandExec(CmdQueue, filedescriptor);
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::listMainSinksCommandExec(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::listMainSinksCommandExec(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
-    (void) CmdQueue;
-    std::vector<am_SinkType_s> listMainSinks;
-
-    if(E_OK == mpDatabasehandler->getListMainSinks(listMainSinks))
+    (void) (CmdQueue);
+    std::vector < am_SinkType_s > listMainSinks;
+    if (E_OK == mpDatabasehandler->getListMainSinks(listMainSinks))
     {
         std::stringstream output;
         output << std::endl << "\tMainSinks: " << listMainSinks.size() << std::endl;
-
         std::vector<am_SinkType_s>::iterator iter;
-        for (   iter = listMainSinks.begin(); iter < listMainSinks.end(); iter++)
+        for (iter = listMainSinks.begin(); iter < listMainSinks.end(); iter++)
         {
-            output << "\tID: " << iter->sinkID
-                   << "\tsinkClassID: " << iter->sinkClassID
-                   << "\tName: " << iter->name
-                   << "\tAvailable: " << iter->availability.availability
-                   << "\tVolume: " << iter->volume << std::endl;
+            output << "\tID: " << iter->sinkID << "\tsinkClassID: " << iter->sinkClassID << "\tName: " << iter->name << "\tAvailable: " << iter->availability.availability << "\tVolume: " << iter->volume << std::endl;
         }
-        sendTelnetLine(filedescriptor,output);
+        sendTelnetLine(filedescriptor, output);
     }
     else
     {
-        sendError(filedescriptor,"ERROR: mDatabasehandler->getListMainSinks");
+        sendError(filedescriptor, "ERROR: mDatabasehandler->getListMainSinks");
     }
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::listMainConnectionsCommand(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::listMainConnectionsCommand(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
-    instance->listMainConnectionsCommandExec(CmdQueue,filedescriptor);
+    instance->listMainConnectionsCommandExec(CmdQueue, filedescriptor);
 }
 
 /****************************************************************************/
-void CAmTelnetMenuHelper::listMainConnectionsCommandExec(std::queue<std::string> & CmdQueue, int & filedescriptor)
+void CAmTelnetMenuHelper::listMainConnectionsCommandExec(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
-    (void) CmdQueue;
+    (void) (CmdQueue);
     std::vector<am_MainConnection_s> listMainConnections;
 
     if(E_OK == mpDatabasehandler->getListMainConnections(listMainConnections))
