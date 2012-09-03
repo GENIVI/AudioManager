@@ -78,8 +78,9 @@ void CAmRoutingDbusMessageHandler::initSignal(std::string path, std::string sign
 {
     assert(!path.empty());
     assert(!signalName.empty());
-    std::string completePath = std::string(DBUS_SERVICE_OBJECT_PATH) + "/" + path + ROUTING_NODE;
-    mpDBusMessage = dbus_message_new_signal(completePath.c_str(), DBUS_SERVICE_PREFIX, signalName.c_str());
+    std::string completePath = std::string(DBUS_SERVICE_OBJECT_PATH) + "/" + path;
+	std::string completeInterface = std::string(DBUS_SERVICE_PREFIX) + "." + ROUTING_NODE;
+    mpDBusMessage = dbus_message_new_signal(completePath.c_str(), completeInterface.c_str(), signalName.c_str());
 
     if (mpDBusMessage == NULL)
     {
