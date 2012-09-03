@@ -76,7 +76,7 @@ void CAmDbusMessageHandler::initSignal(std::string path, std::string signalName)
 {
     assert(!path.empty());
     assert(!signalName.empty());
-    std::string completePath = std::string(DBUS_SERVICE_OBJECT_PATH) + "/" + path;
+    std::string completePath = std::string(DBUS_SERVICE_OBJECT_PATH) + "/" + path+ MY_NODE;
     mpDBusMessage = dbus_message_new_signal(completePath.c_str(), DBUS_SERVICE_PREFIX, signalName.c_str());
 
     if (mpDBusMessage == NULL)
