@@ -164,22 +164,22 @@ void CAmDatabaseObserver::mainConnectionStateChanged(const am_mainConnectionID_t
 
 void CAmDatabaseObserver::mainSinkSoundPropertyChanged(const am_sinkID_t sinkID, const am_MainSoundProperty_s& SoundProperty)
 {
-    mSerializer.asyncCall<CAmCommandSender, const am_sinkID_t, const am_MainSoundProperty_s&>(mCommandSender, &CAmCommandSender::cbMainSinkSoundPropertyChanged, sinkID, SoundProperty);
+    mSerializer.asyncCall<CAmCommandSender, const am_sinkID_t, const am_MainSoundProperty_s>(mCommandSender, &CAmCommandSender::cbMainSinkSoundPropertyChanged, sinkID, SoundProperty);
 }
 
 void CAmDatabaseObserver::mainSourceSoundPropertyChanged(const am_sourceID_t sourceID, const am_MainSoundProperty_s & SoundProperty)
 {
-    mSerializer.asyncCall<CAmCommandSender, const am_sourceID_t, const am_MainSoundProperty_s&>(mCommandSender, &CAmCommandSender::cbMainSourceSoundPropertyChanged, sourceID, SoundProperty);
+    mSerializer.asyncCall<CAmCommandSender, const am_sourceID_t, const am_MainSoundProperty_s>(mCommandSender, &CAmCommandSender::cbMainSourceSoundPropertyChanged, sourceID, SoundProperty);
 }
 
 void CAmDatabaseObserver::sinkAvailabilityChanged(const am_sinkID_t sinkID, const am_Availability_s & availability)
 {
-    mSerializer.asyncCall<CAmCommandSender, const am_sinkID_t, const am_Availability_s&>(mCommandSender, &CAmCommandSender::cbSinkAvailabilityChanged, sinkID, availability);
+    mSerializer.asyncCall<CAmCommandSender, const am_sinkID_t, const am_Availability_s>(mCommandSender, &CAmCommandSender::cbSinkAvailabilityChanged, sinkID, availability);
 }
 
 void CAmDatabaseObserver::sourceAvailabilityChanged(const am_sourceID_t sourceID, const am_Availability_s & availability)
 {
-    mSerializer.asyncCall<CAmCommandSender, const am_sourceID_t, const am_Availability_s&>(mCommandSender, &CAmCommandSender::cbSourceAvailabilityChanged, sourceID, availability);
+    mSerializer.asyncCall<CAmCommandSender, const am_sourceID_t, const am_Availability_s>(mCommandSender, &CAmCommandSender::cbSourceAvailabilityChanged, sourceID, availability);
 }
 
 void CAmDatabaseObserver::volumeChanged(const am_sinkID_t sinkID, const am_mainVolume_t volume)
@@ -194,7 +194,7 @@ void CAmDatabaseObserver::sinkMuteStateChanged(const am_sinkID_t sinkID, const a
 
 void CAmDatabaseObserver::systemPropertyChanged(const am_SystemProperty_s& SystemProperty)
 {
-    mSerializer.asyncCall<CAmCommandSender, const am_SystemProperty_s&>(mCommandSender, &CAmCommandSender::cbSystemPropertyChanged, SystemProperty);
+    mSerializer.asyncCall<CAmCommandSender, const am_SystemProperty_s>(mCommandSender, &CAmCommandSender::cbSystemPropertyChanged, SystemProperty);
 }
 
 void CAmDatabaseObserver::timingInformationChanged(const am_mainConnectionID_t mainConnection, const am_timeSync_t time)
