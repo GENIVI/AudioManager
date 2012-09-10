@@ -140,6 +140,7 @@ private:
         };
     };
 
+
     /**
      * delegate template for three arguments
      */
@@ -647,6 +648,33 @@ public:
     }
 
     /**
+     * calls a function with one argument called by reference asynchronously threadsafe
+     * @param instance the instance of the class that shall be called
+     * @param function the function that shall be called as memberfunction pointer.
+     * @param argument the argument
+     * @tparam TClass1 the type of the Class to be called
+     * @tparam Targ the type of the argument to be called
+     * \section ex Example:
+     * @code
+     * class myClass
+     * {
+     * public:
+     *      void myfunction(int k);
+     * }
+     * CAmSerializer serial(&Sockethandler);
+     * myClass instanceMyClass;
+     * serial<CommandSender,int>(&instanceMyClass,&myClass::myfunction,k);
+     * @endcode
+     *
+     */
+    template<class TClass1, class Targ>
+    void asyncCall(TClass1* instance, void (TClass1::*function)(Targ&), Targ& argument)
+    {
+        CAmDelegagePtr p(new CAmOneArgDelegate<TClass1, Targ&>(instance, function, argument));
+        send(p);
+    }
+
+    /**
      * calls a function with two arguments asynchronously threadsafe. for more see asyncCall with one argument
      * @param instance pointer to the instance of the class
      * @param function memberfunction poitner
@@ -659,7 +687,60 @@ public:
     template<class TClass1, class Targ, class Targ1>
     void asyncCall(TClass1* instance, void (TClass1::*function)(Targ argument, Targ1 argument1), Targ argument, Targ1 argument1)
     {
+        logInfo("took without ref");
         CAmDelegagePtr p(new CAmTwoArgDelegate<TClass1, Targ, Targ1>(instance, function, argument, argument1));
+        send(p);
+    }
+
+    /**
+     * calls a function with two arguments asynchronously threadsafe, first argument is a reference. for more see asyncCall with one argument
+     * @param instance pointer to the instance of the class
+     * @param function memberfunction poitner
+     * @param argument the first argument
+     * @param argument1 the second argument
+     * @tparam TClass1 the type of the Class to be called
+     * @tparam Targ the type of the argument to be called
+     * @tparam Targ1 the type of the first argument to be called
+     */
+    template<class TClass1, class Targ, class Targ1>
+    void asyncCall(TClass1* instance, void (TClass1::*function)(Targ& argument, Targ1 argument1), Targ& argument, Targ1 argument1)
+    {
+        CAmDelegagePtr p(new CAmTwoArgDelegate<TClass1, Targ&, Targ1>(instance, function, argument, argument1));
+        send(p);
+    }
+
+    /**
+     * calls a function with two arguments asynchronously threadsafe, second argument is a reference. for more see asyncCall with one argument
+     * @param instance pointer to the instance of the class
+     * @param function memberfunction poitner
+     * @param argument the first argument
+     * @param argument1 the second argument
+     * @tparam TClass1 the type of the Class to be called
+     * @tparam Targ the type of the argument to be called
+     * @tparam Targ1 the type of the first argument to be called
+     */
+    template<class TClass1, class Targ, class Targ1>
+    void asyncCall(TClass1* instance, void (TClass1::*function)(Targ argument, Targ1& argument1), Targ argument, Targ1& argument1)
+    {
+        logInfo("took ref");
+        CAmDelegagePtr p(new CAmTwoArgDelegate<TClass1, Targ, Targ1&>(instance, function, argument, argument1));
+        send(p);
+    }
+
+    /**
+     * calls a function with two arguments asynchronously threadsafe, both arguments are references. for more see asyncCall with one argument
+     * @param instance pointer to the instance of the class
+     * @param function memberfunction poitner
+     * @param argument the first argument
+     * @param argument1 the second argument
+     * @tparam TClass1 the type of the Class to be called
+     * @tparam Targ the type of the argument to be called
+     * @tparam Targ1 the type of the first argument to be called
+     */
+    template<class TClass1, class Targ, class Targ1>
+    void asyncCall(TClass1* instance, void (TClass1::*function)(Targ& argument, Targ1& argument1), Targ& argument, Targ1& argument1)
+    {
+        CAmDelegagePtr p(new CAmTwoArgDelegate<TClass1, Targ&, Targ1&>(instance, function, argument, argument1));
         send(p);
     }
 
@@ -670,6 +751,77 @@ public:
     void asyncCall(TClass1* instance, void (TClass1::*function)(Targ argument, Targ1 argument1, Targ2 argument2), Targ argument, Targ1 argument1, Targ2 argument2)
     {
         CAmDelegagePtr p(new CAmThreeArgDelegate<TClass1, Targ, Targ1, Targ2>(instance, function, argument, argument1, argument2));
+        send(p);
+    }
+
+    /**
+     * calls a function with three arguments asynchronously threadsafe. for more see other asycCall
+     */
+    template<class TClass1, class Targ, class Targ1, class Targ2>
+    void asyncCall(TClass1* instance, void (TClass1::*function)(Targ& argument, Targ1 argument1, Targ2 argument2), Targ& argument, Targ1 argument1, Targ2 argument2)
+    {
+        CAmDelegagePtr p(new CAmThreeArgDelegate<TClass1, Targ&, Targ1, Targ2>(instance, function, argument, argument1, argument2));
+        send(p);
+    }
+
+
+    /**
+     * calls a function with three arguments asynchronously threadsafe. for more see other asycCall
+     */
+    template<class TClass1, class Targ, class Targ1, class Targ2>
+    void asyncCall(TClass1* instance, void (TClass1::*function)(Targ argument, Targ1& argument1, Targ2 argument2), Targ argument, Targ1& argument1, Targ2 argument2)
+    {
+        CAmDelegagePtr p(new CAmThreeArgDelegate<TClass1, Targ, Targ1&, Targ2>(instance, function, argument, argument1, argument2));
+        send(p);
+    }
+
+    /**
+     * calls a function with three arguments asynchronously threadsafe. for more see other asycCall
+     */
+    template<class TClass1, class Targ, class Targ1, class Targ2>
+    void asyncCall(TClass1* instance, void (TClass1::*function)(Targ argument, Targ1 argument1, Targ2& argument2), Targ argument, Targ1 argument1, Targ2& argument2)
+    {
+        CAmDelegagePtr p(new CAmThreeArgDelegate<TClass1, Targ, Targ1, Targ2&>(instance, function, argument, argument1, argument2));
+        send(p);
+    }
+
+    /**
+     * calls a function with three arguments asynchronously threadsafe. for more see other asycCall
+     */
+    template<class TClass1, class Targ, class Targ1, class Targ2>
+    void asyncCall(TClass1* instance, void (TClass1::*function)(Targ argument, Targ1& argument1, Targ2& argument2), Targ argument, Targ1& argument1, Targ2& argument2)
+    {
+        CAmDelegagePtr p(new CAmThreeArgDelegate<TClass1, Targ, Targ1&, Targ2&>(instance, function, argument, argument1, argument2));
+        send(p);
+    }
+
+    /**
+     * calls a function with three arguments asynchronously threadsafe. for more see other asycCall
+     */
+    template<class TClass1, class Targ, class Targ1, class Targ2>
+    void asyncCall(TClass1* instance, void (TClass1::*function)(Targ& argument, Targ1& argument1, Targ2& argument2), Targ& argument, Targ1& argument1, Targ2& argument2)
+    {
+        CAmDelegagePtr p(new CAmThreeArgDelegate<TClass1, Targ&, Targ1&, Targ2&>(instance, function, argument, argument1, argument2));
+        send(p);
+    }
+
+    /**
+     * calls a function with three arguments asynchronously threadsafe. for more see other asycCall
+     */
+    template<class TClass1, class Targ, class Targ1, class Targ2>
+    void asyncCall(TClass1* instance, void (TClass1::*function)(Targ& argument, Targ1& argument1, Targ2 argument2), Targ& argument, Targ1& argument1, Targ2 argument2)
+    {
+        CAmDelegagePtr p(new CAmThreeArgDelegate<TClass1, Targ&, Targ1&, Targ2>(instance, function, argument, argument1, argument2));
+        send(p);
+    }
+
+    /**
+     * calls a function with three arguments asynchronously threadsafe. for more see other asycCall
+     */
+    template<class TClass1, class Targ, class Targ1, class Targ2>
+    void asyncCall(TClass1* instance, void (TClass1::*function)(Targ& argument, Targ1 argument1, Targ2& argument2), Targ& argument, Targ1 argument1, Targ2& argument2)
+    {
+        CAmDelegagePtr p(new CAmThreeArgDelegate<TClass1, Targ&, Targ1, Targ2&>(instance, function, argument, argument1, argument2));
         send(p);
     }
 
@@ -837,7 +989,7 @@ public:
             logError("CAmSerializer::receiverCallback could not read pipe!");
             throw std::runtime_error("CAmSerializer Could not read pipe!");
         }
-        //working with friend class here is not the finest of all programming stiles but it works...
+        //working with friend class here is not the finest of all programming stiles but it worCAmTwoArgDelegateks...
         retVal = p->returnResults(argument, argument1, argument2);
         delete p;
     }
