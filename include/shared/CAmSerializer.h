@@ -130,7 +130,86 @@ private:
                 mFunction(function), //
                 mArgument(argument), //
                 mArgument1(argument1)
+        { };
+
+        bool call(int* pipe)
+        {
+            (void) pipe;
+            (*mInstance.*mFunction)(mArgument, mArgument1);
+            return (true);
+        };
+    };
+
+    /**
+     * delegate template for two arguments
+     */
+    template<class TClass, typename Targ, typename Targ1> class CAmTwoArgDelegateFirstRef: public CAmDelegate
+    {
+    private:
+        TClass* mInstance;
+        void (TClass::*mFunction)(Targ& argument, Targ1 argument1);
+        Targ mArgument;
+        Targ1 mArgument1;
+
+    public:
+        CAmTwoArgDelegateFirstRef(TClass* instance, void (TClass::*function)(Targ& argument, Targ1 argument1), Targ& argument, Targ1 argument1) :
+                mInstance(instance), //
+                mFunction(function), //
+                mArgument(argument), //
+                mArgument1(argument1)
+        { };
+
+        bool call(int* pipe)
+        {
+            (void) pipe;
+            (*mInstance.*mFunction)(mArgument, mArgument1);
+            return (true);
+        };
+    };
+
+
+    template<class TClass, typename Targ, typename Targ1> class CAmTwoArgDelegateSecondRef: public CAmDelegate
+    {
+    private:
+        TClass* mInstance;
+        void (TClass::*mFunction)(Targ argument, Targ1& argument1);
+        Targ mArgument;
+        Targ1 mArgument1;
+
+    public:
+        CAmTwoArgDelegateSecondRef(TClass* instance, void (TClass::*function)(Targ argument, Targ1& argument1), Targ argument, Targ1& argument1) :
+                mInstance(instance), //
+                mFunction(function), //
+                mArgument(argument), //
+                mArgument1(argument1)
         {};
+
+        bool call(int* pipe)
+        {
+            (void) pipe;
+            (*mInstance.*mFunction)(mArgument, mArgument1);
+            return (true);
+        };
+    };
+
+    /**
+     * delegate template for two arguments
+     */
+    template<class TClass, typename Targ, typename Targ1> class CAmTwoArgDelegateAllRef: public CAmDelegate
+    {
+    private:
+        TClass* mInstance;
+        void (TClass::*mFunction)(Targ& argument, Targ1& argument1);
+        Targ mArgument;
+        Targ1 mArgument1;
+
+    public:
+        CAmTwoArgDelegateAllRef(TClass* instance, void (TClass::*function)(Targ& argument, Targ1& argument1), Targ& argument, Targ1& argument1) :
+                mInstance(instance), //
+                mFunction(function), //
+                mArgument(argument), //
+                mArgument1(argument1)
+        { };
 
         bool call(int* pipe)
         {
@@ -172,6 +251,209 @@ private:
         }
         ;
     };
+
+    /**
+      * delegate template for three arguments
+      */
+     template<class TClass, typename Targ, typename Targ1, typename Targ2> class CAmThreeArgDelegateFirstRef: public CAmDelegate
+     {
+     private:
+         TClass* mInstance;
+         void (TClass::*mFunction)(Targ& argument, Targ1 argument1, Targ2 argument2);
+         Targ mArgument;
+         Targ1 mArgument1;
+         Targ2 mArgument2;
+
+     public:
+         CAmThreeArgDelegateFirstRef(TClass* instance, void (TClass::*function)(Targ& argument, Targ1 argument1, Targ2 argument2), Targ& argument, Targ1 argument1, Targ2 argument2) :
+                 mInstance(instance), //
+                 mFunction(function), //
+                 mArgument(argument), //
+                 mArgument1(argument1), //
+                 mArgument2(argument2)
+         {};
+
+         bool call(int* pipe)
+         {
+             (void) pipe;
+             (*mInstance.*mFunction)(mArgument, mArgument1, mArgument2);
+             return (true);
+         };
+     };
+
+     /**
+       * delegate template for three arguments
+       */
+      template<class TClass, typename Targ, typename Targ1, typename Targ2> class CAmThreeArgDelegateSecondRef: public CAmDelegate
+      {
+      private:
+          TClass* mInstance;
+          void (TClass::*mFunction)(Targ argument, Targ1& argument1, Targ2 argument2);
+          Targ mArgument;
+          Targ1 mArgument1;
+          Targ2 mArgument2;
+
+      public:
+          CAmThreeArgDelegateSecondRef(TClass* instance, void (TClass::*function)(Targ argument, Targ1& argument1, Targ2 argument2), Targ argument, Targ1& argument1, Targ2 argument2) :
+                  mInstance(instance), //
+                  mFunction(function), //
+                  mArgument(argument), //
+                  mArgument1(argument1), //
+                  mArgument2(argument2)
+          {};
+
+          bool call(int* pipe)
+          {
+              (void) pipe;
+              (*mInstance.*mFunction)(mArgument, mArgument1, mArgument2);
+              return (true);
+          };
+      };
+
+      /**
+        * delegate template for three arguments
+        */
+       template<class TClass, typename Targ, typename Targ1, typename Targ2> class CAmThreeArgDelegateThirdRef: public CAmDelegate
+       {
+       private:
+           TClass* mInstance;
+           void (TClass::*mFunction)(Targ argument, Targ1 argument1, Targ2& argument2);
+           Targ mArgument;
+           Targ1 mArgument1;
+           Targ2 mArgument2;
+
+       public:
+           CAmThreeArgDelegateThirdRef(TClass* instance, void (TClass::*function)(Targ argument, Targ1 argument1, Targ2& argument2), Targ argument, Targ1 argument1, Targ2& argument2) :
+                   mInstance(instance), //
+                   mFunction(function), //
+                   mArgument(argument), //
+                   mArgument1(argument1), //
+                   mArgument2(argument2)
+           {};
+
+           bool call(int* pipe)
+           {
+               (void) pipe;
+               (*mInstance.*mFunction)(mArgument, mArgument1, mArgument2);
+               return (true);
+           };
+       };
+
+       /**
+         * delegate template for three arguments
+         */
+        template<class TClass, typename Targ, typename Targ1, typename Targ2> class CAmThreeArgDelegateFirstSecondRef: public CAmDelegate
+        {
+        private:
+            TClass* mInstance;
+            void (TClass::*mFunction)(Targ& argument, Targ1& argument1, Targ2 argument2);
+            Targ mArgument;
+            Targ1 mArgument1;
+            Targ2 mArgument2;
+
+        public:
+            CAmThreeArgDelegateFirstSecondRef(TClass* instance, void (TClass::*function)(Targ& argument, Targ1& argument1, Targ2 argument2), Targ& argument, Targ1& argument1, Targ2 argument2) :
+                    mInstance(instance), //
+                    mFunction(function), //
+                    mArgument(argument), //
+                    mArgument1(argument1), //
+                    mArgument2(argument2)
+            {};
+
+            bool call(int* pipe)
+            {
+                (void) pipe;
+                (*mInstance.*mFunction)(mArgument, mArgument1, mArgument2);
+                return (true);
+            };
+        };
+
+        /**
+          * delegate template for three arguments
+          */
+         template<class TClass, typename Targ, typename Targ1, typename Targ2> class CAmThreeArgDelegateFirstThirdRef: public CAmDelegate
+         {
+         private:
+             TClass* mInstance;
+             void (TClass::*mFunction)(Targ& argument, Targ1 argument1, Targ2& argument2);
+             Targ mArgument;
+             Targ1 mArgument1;
+             Targ2 mArgument2;
+
+         public:
+             CAmThreeArgDelegateFirstThirdRef(TClass* instance, void (TClass::*function)(Targ& argument, Targ1 argument1, Targ2& argument2), Targ& argument, Targ1 argument1, Targ2& argument2) :
+                     mInstance(instance), //
+                     mFunction(function), //
+                     mArgument(argument), //
+                     mArgument1(argument1), //
+                     mArgument2(argument2)
+             {};
+
+             bool call(int* pipe)
+             {
+                 (void) pipe;
+                 (*mInstance.*mFunction)(mArgument, mArgument1, mArgument2);
+                 return (true);
+             };
+         };
+
+         /**
+           * delegate template for three arguments
+           */
+          template<class TClass, typename Targ, typename Targ1, typename Targ2> class CAmThreeArgDelegateSecondThirdRef: public CAmDelegate
+          {
+          private:
+              TClass* mInstance;
+              void (TClass::*mFunction)(Targ argument, Targ1& argument1, Targ2& argument2);
+              Targ mArgument;
+              Targ1 mArgument1;
+              Targ2 mArgument2;
+
+          public:
+              CAmThreeArgDelegateSecondThirdRef(TClass* instance, void (TClass::*function)(Targ argument, Targ1& argument1, Targ2& argument2), Targ argument, Targ1& argument1, Targ2& argument2) :
+                      mInstance(instance), //
+                      mFunction(function), //
+                      mArgument(argument), //
+                      mArgument1(argument1), //
+                      mArgument2(argument2)
+              {};
+
+              bool call(int* pipe)
+              {
+                  (void) pipe;
+                  (*mInstance.*mFunction)(mArgument, mArgument1, mArgument2);
+                  return (true);
+              };
+          };
+
+          /**
+            * delegate template for three arguments
+            */
+           template<class TClass, typename Targ, typename Targ1, typename Targ2> class CAmThreeArgDelegateAllRef: public CAmDelegate
+           {
+           private:
+               TClass* mInstance;
+               void (TClass::*mFunction)(Targ& argument, Targ1& argument1, Targ2& argument2);
+               Targ mArgument;
+               Targ1 mArgument1;
+               Targ2 mArgument2;
+
+           public:
+               CAmThreeArgDelegateAllRef(TClass* instance, void (TClass::*function)(Targ& argument, Targ1& argument1, Targ2& argument2), Targ& argument, Targ1& argument1, Targ2& argument2) :
+                       mInstance(instance), //
+                       mFunction(function), //
+                       mArgument(argument), //
+                       mArgument1(argument1), //
+                       mArgument2(argument2)
+               {};
+
+               bool call(int* pipe)
+               {
+                   (void) pipe;
+                   (*mInstance.*mFunction)(mArgument, mArgument1, mArgument2);
+                   return (true);
+               };
+           };
 
     /**
      * delegate template for four arguments
@@ -590,6 +872,7 @@ private:
             throw std::runtime_error("could not write to pipe !");
         }
     }
+
     int mPipe[2]; //!< the pipe
     int mReturnPipe[2]; //!< pipe handling returns
     std::deque<CAmDelegagePtr> mListDelegatePoiters; //!< intermediate queue to store the pipe results
@@ -705,7 +988,7 @@ public:
     template<class TClass1, class Targ, class Targ1>
     void asyncCall(TClass1* instance, void (TClass1::*function)(Targ& argument, Targ1 argument1), Targ& argument, Targ1 argument1)
     {
-        CAmDelegagePtr p(new CAmTwoArgDelegate<TClass1, Targ&, Targ1>(instance, function, argument, argument1));
+        CAmDelegagePtr p(new CAmTwoArgDelegateFirstRef<TClass1, Targ, Targ1>(instance, function, argument, argument1));
         send(p);
     }
 
@@ -723,7 +1006,7 @@ public:
     void asyncCall(TClass1* instance, void (TClass1::*function)(Targ argument, Targ1& argument1), Targ argument, Targ1& argument1)
     {
         logInfo("took ref");
-        CAmDelegagePtr p(new CAmTwoArgDelegate<TClass1, Targ, Targ1&>(instance, function, argument, argument1));
+        CAmDelegagePtr p(new CAmTwoArgDelegateSecondRef<TClass1, Targ, Targ1>(instance, function, argument, argument1));
         send(p);
     }
 
@@ -740,7 +1023,7 @@ public:
     template<class TClass1, class Targ, class Targ1>
     void asyncCall(TClass1* instance, void (TClass1::*function)(Targ& argument, Targ1& argument1), Targ& argument, Targ1& argument1)
     {
-        CAmDelegagePtr p(new CAmTwoArgDelegate<TClass1, Targ&, Targ1&>(instance, function, argument, argument1));
+        CAmDelegagePtr p(new CAmTwoArgDelegateAllRef<TClass1, Targ, Targ1>(instance, function, argument, argument1));
         send(p);
     }
 
@@ -760,7 +1043,7 @@ public:
     template<class TClass1, class Targ, class Targ1, class Targ2>
     void asyncCall(TClass1* instance, void (TClass1::*function)(Targ& argument, Targ1 argument1, Targ2 argument2), Targ& argument, Targ1 argument1, Targ2 argument2)
     {
-        CAmDelegagePtr p(new CAmThreeArgDelegate<TClass1, Targ&, Targ1, Targ2>(instance, function, argument, argument1, argument2));
+        CAmDelegagePtr p(new CAmThreeArgDelegateFirstRef<TClass1, Targ, Targ1, Targ2>(instance, function, argument, argument1, argument2));
         send(p);
     }
 
@@ -771,7 +1054,7 @@ public:
     template<class TClass1, class Targ, class Targ1, class Targ2>
     void asyncCall(TClass1* instance, void (TClass1::*function)(Targ argument, Targ1& argument1, Targ2 argument2), Targ argument, Targ1& argument1, Targ2 argument2)
     {
-        CAmDelegagePtr p(new CAmThreeArgDelegate<TClass1, Targ, Targ1&, Targ2>(instance, function, argument, argument1, argument2));
+        CAmDelegagePtr p(new CAmThreeArgDelegateSecondRef<TClass1, Targ, Targ1, Targ2>(instance, function, argument, argument1, argument2));
         send(p);
     }
 
@@ -781,7 +1064,7 @@ public:
     template<class TClass1, class Targ, class Targ1, class Targ2>
     void asyncCall(TClass1* instance, void (TClass1::*function)(Targ argument, Targ1 argument1, Targ2& argument2), Targ argument, Targ1 argument1, Targ2& argument2)
     {
-        CAmDelegagePtr p(new CAmThreeArgDelegate<TClass1, Targ, Targ1, Targ2&>(instance, function, argument, argument1, argument2));
+        CAmDelegagePtr p(new CAmThreeArgDelegateThirdRef<TClass1, Targ, Targ1, Targ2>(instance, function, argument, argument1, argument2));
         send(p);
     }
 
@@ -791,7 +1074,7 @@ public:
     template<class TClass1, class Targ, class Targ1, class Targ2>
     void asyncCall(TClass1* instance, void (TClass1::*function)(Targ argument, Targ1& argument1, Targ2& argument2), Targ argument, Targ1& argument1, Targ2& argument2)
     {
-        CAmDelegagePtr p(new CAmThreeArgDelegate<TClass1, Targ, Targ1&, Targ2&>(instance, function, argument, argument1, argument2));
+        CAmDelegagePtr p(new CAmThreeArgDelegateSecondThirdRef<TClass1, Targ, Targ1, Targ2>(instance, function, argument, argument1, argument2));
         send(p);
     }
 
@@ -801,7 +1084,7 @@ public:
     template<class TClass1, class Targ, class Targ1, class Targ2>
     void asyncCall(TClass1* instance, void (TClass1::*function)(Targ& argument, Targ1& argument1, Targ2& argument2), Targ& argument, Targ1& argument1, Targ2& argument2)
     {
-        CAmDelegagePtr p(new CAmThreeArgDelegate<TClass1, Targ&, Targ1&, Targ2&>(instance, function, argument, argument1, argument2));
+        CAmDelegagePtr p(new CAmThreeArgDelegateAllRef<TClass1, Targ, Targ1, Targ2>(instance, function, argument, argument1, argument2));
         send(p);
     }
 
@@ -811,7 +1094,7 @@ public:
     template<class TClass1, class Targ, class Targ1, class Targ2>
     void asyncCall(TClass1* instance, void (TClass1::*function)(Targ& argument, Targ1& argument1, Targ2 argument2), Targ& argument, Targ1& argument1, Targ2 argument2)
     {
-        CAmDelegagePtr p(new CAmThreeArgDelegate<TClass1, Targ&, Targ1&, Targ2>(instance, function, argument, argument1, argument2));
+        CAmDelegagePtr p(new CAmThreeArgDelegateFirstSecondRef<TClass1, Targ, Targ1, Targ2>(instance, function, argument, argument1, argument2));
         send(p);
     }
 
@@ -821,7 +1104,7 @@ public:
     template<class TClass1, class Targ, class Targ1, class Targ2>
     void asyncCall(TClass1* instance, void (TClass1::*function)(Targ& argument, Targ1 argument1, Targ2& argument2), Targ& argument, Targ1 argument1, Targ2& argument2)
     {
-        CAmDelegagePtr p(new CAmThreeArgDelegate<TClass1, Targ&, Targ1, Targ2&>(instance, function, argument, argument1, argument2));
+        CAmDelegagePtr p(new CAmThreeArgDelegateFirstThirdRef<TClass1, Targ, Targ1, Targ2>(instance, function, argument, argument1, argument2));
         send(p);
     }
 
