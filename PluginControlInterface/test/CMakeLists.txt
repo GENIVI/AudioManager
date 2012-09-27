@@ -19,10 +19,11 @@ cmake_minimum_required(VERSION 2.6)
 PROJECT(AmControlReceiverShadowTest)
 
 set(EXECUTABLE_OUTPUT_PATH ${TEST_EXECUTABLE_OUTPUT_PATH})
-FIND_PACKAGE(GTest REQUIRED) 
 
-find_package (Threads)
+FIND_PACKAGE (Threads)
 FIND_PACKAGE(PkgConfig)
+FIND_PACKAGE(GMock REQUIRED)
+
 IF(WITH_DLT)    
     pkg_check_modules(DLT REQUIRED automotive-dlt>=2.2.0)   
 ENDIF(WITH_DLT)
@@ -35,9 +36,10 @@ INCLUDE_DIRECTORIES(
     ${CMAKE_SOURCE_DIR} 
     ${DLT_INCLUDE_DIRS}
     ${INCLUDE_FOLDER}
-    ${GTEST_INCLUDE_DIR}
     ${DBUS_INCLUDE_DIR}
     ${DBUS_ARCH_INCLUDE_DIR}
+    ${GOOGLE_TEST_INCLUDE_DIR}
+    ${GMOCK_INCLUDE_DIR}
     "../../AudioManagerDaemon/include"
     "../include"
 )
@@ -57,12 +59,14 @@ TARGET_LINK_LIBRARIES(AmControlReceiverShadowTest
     ${DLT_LIBRARIES}
     ${CMAKE_DL_LIBS}
     ${CMAKE_THREAD_LIBS_INIT}
-    ${GTEST_LIBRARIES}
     ${DBUS_LIBRARY}
     ${SQLITE_LIBRARIES}
-    gmock
+    gtest
+    ${GMOCK_LIBRARY}
     rt
 )
+
+ADD_DEPENDENCIES(AmControlReceiverShadowTest gtest)
 
 INSTALL(TARGETS AmControlReceiverShadowTest 
         DESTINATION "~/AudioManagerTest/"
@@ -70,6 +74,6 @@ INSTALL(TARGETS AmControlReceiverShadowTest
         COMPONENT tests
 )
 
-SET(ADD_DEPEND "audiomanager-bin" "dlt" "libdbus-1-3(>=1.2.16)" "libgtest-dev(>=1.6.0-1)" "google-mock" "libpthread-stubs0")
+SET(ADD_DEPEND "audiomanager-bin" "dlt" "libdbus-1-3(>=1.2.16)" "google-mock" "libpthread-stubs0")
 set_property(GLOBAL APPEND PROPERTY tests_prop "${ADD_DEPEND}")
 

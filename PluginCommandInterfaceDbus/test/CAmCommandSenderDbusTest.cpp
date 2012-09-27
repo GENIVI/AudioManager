@@ -109,7 +109,7 @@ arg0=list;
 ACTION(returnListMainSinkSoundProperties){
 std::vector<am::am_MainSoundProperty_s> list;
 am::am_MainSoundProperty_s listItem;
-listItem.type=MSP_MAX;
+listItem.type=MSP_EXAMPLE_MID;
 listItem.value=223;
 list.push_back(listItem);
 listItem.type=MSP_UNKNOWN;
@@ -481,7 +481,7 @@ TEST_F(CAmCommandSenderDbusTest, MessageTest)
     while (std::getline(ifs, line))
     {
         //we could parse here, but this is the fastest way....
-        ASSERT_EQ(line.compare("(dbus.Int16(9), dbus.Array([dbus.Struct((dbus.Int16(4), dbus.Int16(223)), signature=None), dbus.Struct((dbus.Int16(0), dbus.Int16(2)), signature=None)], signature=dbus.Signature('(nn)')))"), 0);
+        ASSERT_EQ(line.compare("(dbus.Int16(9), dbus.Array([dbus.Struct((dbus.Int16(2), dbus.Int16(223)), signature=None), dbus.Struct((dbus.Int16(0), dbus.Int16(2)), signature=None)], signature=dbus.Signature('(nn)')))"), 0);
     }
     ifs.close();
 
@@ -506,7 +506,7 @@ TEST_F(CAmCommandSenderDbusTest, MessageTest)
     while (std::getline(ifs, line))
     {
         //we could parse here, but this is the fastest way....
-        ASSERT_EQ(line.compare("(dbus.Int16(9), dbus.Array([dbus.Struct((dbus.Int16(4), dbus.Int16(223)), signature=None), dbus.Struct((dbus.Int16(0), dbus.Int16(2)), signature=None)], signature=dbus.Signature('(nn)')))"), 0);
+        ASSERT_EQ(line.compare("(dbus.Int16(9), dbus.Array([dbus.Struct((dbus.Int16(2), dbus.Int16(223)), signature=None), dbus.Struct((dbus.Int16(0), dbus.Int16(2)), signature=None)], signature=dbus.Signature('(nn)')))"), 0);
     }
     ifs.close();
 

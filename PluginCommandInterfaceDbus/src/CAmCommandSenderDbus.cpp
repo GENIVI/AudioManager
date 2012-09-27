@@ -34,6 +34,7 @@ DLT_DECLARE_CONTEXT(commandDbus)
  */
 extern "C" IAmCommandSend* PluginCommandInterfaceDbusFactory()
 {
+    CAmDltWrapper::instance()->registerContext(commandDbus, "DBP", "DBus Plugin");
     return (new CAmCommandSenderDbus());
 }
 

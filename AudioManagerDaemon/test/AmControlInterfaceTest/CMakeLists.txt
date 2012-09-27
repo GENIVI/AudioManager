@@ -21,6 +21,7 @@ PROJECT(AmControlInterfaceTest)
 
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -DUNIT_TEST=1 -DDLT_CONTEXT=AudioManager")
 
+FIND_PACKAGE(GMock REQUIRED)
 FIND_PACKAGE(PkgConfig)
 pkg_check_modules(SQLITE REQUIRED sqlite3)
 
@@ -37,8 +38,9 @@ INCLUDE_DIRECTORIES(
     ${STD_INCLUDE_DIRS}
     ${DLT_INCLUDE_DIRS}
     ${DBUS_INCLUDE_DIR}
-    ${GTEST_INCLUDE_DIR}
     ${INCLUDE_FOLDER}
+    ${GOOGLE_TEST_INCLUDE_DIR}
+    ${GMOCK_INCLUDE_DIR}
 )
    
 file(GLOB CONTROL_INTERFACE_SRCS_CXX 
@@ -64,9 +66,11 @@ TARGET_LINK_LIBRARIES(AmControlInterfaceTest
     ${DLT_LIBRARIES}
     ${DBUS_LIBRARY}
     ${CMAKE_THREAD_LIBS_INIT}
-    ${GTEST_LIBRARIES}
-    gmock
+    gtest
+    ${GMOCK_LIBRARY}
 )
+
+ADD_DEPENDENCIES(AmControlInterfaceTest gtest)
 
 INSTALL(TARGETS AmControlInterfaceTest 
         DESTINATION "~/AudioManagerTest/"
@@ -74,7 +78,7 @@ INSTALL(TARGETS AmControlInterfaceTest
         COMPONENT tests
 )
 
-SET(ADD_DEPEND "audiomanager-bin" "sqlite3(>=3.6.22)" "dlt" "libdbus-1-3(>=1.2.16)" "libgtest-dev(>=1.6.0-1)" "google-mock" "libpthread-stubs0")
+SET(ADD_DEPEND "audiomanager-bin" "sqlite3(>=3.6.22)" "dlt" "libdbus-1-3(>=1.2.16)" "google-mock" "libpthread-stubs0")
 set_property(GLOBAL APPEND PROPERTY tests_prop "${ADD_DEPEND}")
 
 

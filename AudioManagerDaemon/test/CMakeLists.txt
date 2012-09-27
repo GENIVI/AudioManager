@@ -19,7 +19,6 @@ cmake_minimum_required(VERSION 2.6)
 
 
 set(EXECUTABLE_OUTPUT_PATH ${TEST_EXECUTABLE_OUTPUT_PATH})
-FIND_PACKAGE(GTest REQUIRED) 
 
 add_subdirectory (AmControlInterfaceTest)
 add_subdirectory (AmDatabaseHandlerTest)

@@ -30,6 +30,7 @@ DLT_DECLARE_CONTEXT(routingDbus)
 
 extern "C" IAmRoutingSend* PluginRoutingInterfaceDbusFactory()
 {
+    CAmDltWrapper::instance()->registerContext(routingDbus, "DRS", "DBus Plugin");
     return (new CAmRoutingSenderDbus());
 }
 

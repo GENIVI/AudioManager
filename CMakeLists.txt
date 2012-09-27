@@ -81,7 +81,7 @@ OPTION ( GLIB_DBUS_TYPES_TOLERANT
     
 #Can be changed via passing -DDBUS_SERVICE_PREFIX="XXX" to cmake
 IF(NOT DEFINED DBUS_SERVICE_PREFIX)
-	SET( DBUS_SERVICE_PREFIX "org.genivi.audiomanager\0" )
+	SET( DBUS_SERVICE_PREFIX "org.genivi.audiomanager\0")
 ENDIF(NOT DEFINED DBUS_SERVICE_PREFIX)
 
 #Can be changed via passing -DDBUS_SERVICE_OBJECT_PATH="XXX" to cmake
@@ -112,6 +112,10 @@ else(USE_BUILD_LIBS)
 	SET(CONTROLLER_PLUGIN "${CMAKE_INSTALL_PREFIX}/lib/${LIB_INSTALL_SUFFIX}/control/libPluginControlInterface.so")
 endif(USE_BUILD_LIBS)
 
+IF(EXISTS "ProjectSpecific/")
+    SET(PROJECT_INCLUDE_FOLDER ${CMAKE_SOURCE_DIR}/ProjectSpecific/include)
+endif(EXISTS "ProjectSpecific/")
+
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 SET(AUDIO_INCLUDE_FOLDER ${CMAKE_SOURCE_DIR}/include)
 SET(DOC_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/doc)
@@ -120,10 +124,6 @@ SET(TEST_EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin/test)
 SET(DOXY_PROTOTYPE ${CMAKE_SOURCE_DIR}/cmake/DoxyFile.in)
 SET(DOXY_FILE ${CMAKE_CURRENT_BINARY_DIR}/DoxyFile)
 
-IF(EXISTS "ProjectSpecific/")
-    SET(PROJECT_INCLUDE_FOLDER ${CMAKE_SOURCE_DIR}/ProjectSpecific/include)
-endif(EXISTS "ProjectSpecific/")
-
 CONFIGURE_FILE( ${CMAKE_SOURCE_DIR}/cmake/config.cmake ${CMAKE_SOURCE_DIR}/include/config.h )
 CONFIGURE_FILE( ${CMAKE_SOURCE_DIR}/AudioManagerDaemon/docx/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/DoxyFile )
 
@@ -131,6 +131,10 @@ IF(WITH_DLT)
     pkg_check_modules(DLT REQUIRED automotive-dlt>=2.2.0)   
 ENDIF(WITH_DLT)
 
+IF(WITH_TESTS)
+	add_subdirectory(googleTest)
+	set(GOOGLE_TEST_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/googleTest/include")	
+ENDIF(WITH_TESTS)
 
 IF(WITH_DOCUMENTATION)
 	find_package(Doxygen)
@@ -163,7 +167,7 @@ if(WITH_MAIN)
 endif(WITH_MAIN)
 
 IF(EXISTS "${CMAKE_SOURCE_DIR}/ProjectSpecific/")
-    #add_subdirectory (ProjectSpecific)
+    add_subdirectory (ProjectSpecific)
 endif(EXISTS "${CMAKE_SOURCE_DIR}/ProjectSpecific/")
 
 # uninstall target
@@ -185,7 +189,7 @@ SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "AudioManager: This component manages audi
 SET(CPACK_PACKAGE_VERSION "${DAEMONVERSION}")
 SET(CPACK_RESOURCE_FILE_LICENSE ${CMAKE_SOURCE_DIR}/LICENCE)
 SET(CPACK_RESOURCE_FILE_README ${CMAKE_SOURCE_DIR}/README)
-SET(CPACK_PACKAGE_CONTACT "Christian Mueller (BMW) christian.ei.mueller@bmw.de")
+SET(CPACK_PACKAGE_CONTACT "Christian Linke(BMW) christian.linke@bmw.de")
 SET(CPACK_PACKAGE_INSTALL_DIRECTORY "genivi")
 SET(CPACK_DEBIAN_ARCHITECTURE ${CMAKE_SYSTEM_PROCESSOR})
 SET(CPACK_DEBIAN_PACKAGE_DEPENDS "*")
@@ -193,6 +197,16 @@ SET(CPACK_STRIP_FILES TRUE)
 SET(CPACK_PACKAGE_DESCRIPTION_FILE ${CMAKE_SOURCE_DIR}/README)
 SET(CPACK_SOURCE_GENERATOR "TGZ")
 SET(CPACK_SOURCE_IGNORE_FILES ".settings*" ".cproject" "/\\\\.metadata" "\\\\.#" "/#" ".*~" "/\\\\.git" "${CMAKE_CURRENT_BINARY_DIR}" "bin/" "packages/" "config.h") 
+
+IF(WITH_TESTS)
+	get_property(ADD_DEPEND GLOBAL PROPERTY tests_prop)
+	list(REMOVE_DUPLICATES ADD_DEPEND)
+	list(APPEND ALL_DEPEND ${ADD_DEPEND})
+	FOREACH (dep ${ADD_DEPEND})	
+		SET(tests_DEPENDENCIES "${dep} ,${tests_DEPENDENCIES}")
+	ENDFOREACH(dep)
+	STRING(REGEX REPLACE ".$" "" tests_DEPENDENCIES ${tests_DEPENDENCIES})
+ENDIF(WITH_TESTS)
 
 #evaluate the properties
 if(WITH_MAIN)
@@ -214,16 +228,6 @@ FOREACH (dep ${ADD_DEPEND})
 ENDFOREACH(dep)
 STRING(REGEX REPLACE ".$" "" sampleplugins_DEPENDENCIES ${sampleplugins_DEPENDENCIES})
 endif(WITH_PLUGIN_COMMAND OR WITH_PLUGIN_CONTROL OR WITH_PLUGIN_ROUTING)
-
-if(WITH_TESTS)
-get_property(ADD_DEPEND GLOBAL PROPERTY tests_prop)
-list(REMOVE_DUPLICATES ADD_DEPEND)
-list(APPEND ALL_DEPEND ${ADD_DEPEND})
-FOREACH (dep ${ADD_DEPEND})	
-	SET(tests_DEPENDENCIES "${dep} ,${tests_DEPENDENCIES}")
-ENDFOREACH(dep)
-STRING(REGEX REPLACE ".$" "" tests_DEPENDENCIES ${tests_DEPENDENCIES})
-endif(WITH_TESTS)
 
 get_property(ADD_DEPEND GLOBAL PROPERTY dev_prop)
 list(REMOVE_DUPLICATES ADD_DEPEND)

@@ -20,15 +20,18 @@ cmake_minimum_required(VERSION 2.6)
 PROJECT(AmRoutingReceiverAsync)
 
 set(EXECUTABLE_OUTPUT_PATH ${TEST_EXECUTABLE_OUTPUT_PATH})
-FIND_PACKAGE(GTest REQUIRED) 
+set(GOOGLE_TEST_INCLUDE_DIR "googleTest/include")
 
-find_package (Threads)
+FIND_PACKAGE(Threads)
 FIND_PACKAGE(PkgConfig)
 FIND_PACKAGE(DBUS REQUIRED)
+FIND_PACKAGE(GMock REQUIRED)
+
 IF(WITH_DLT)
     pkg_check_modules(DLT REQUIRED automotive-dlt)
 )
 ENDIF(WITH_DLT)
+
 pkg_check_modules(SQLITE REQUIRED sqlite3)
 
 INCLUDE_DIRECTORIES(   
@@ -38,9 +41,10 @@ INCLUDE_DIRECTORIES(
     ${AUDIO_INCLUDE_FOLDER}
     ${CMAKE_SOURCE_DIR} 
     ${INCLUDE_FOLDER}
-    ${GTEST_INCLUDE_DIR}
     ${DBUS_INCLUDE_DIR}
     ${DBUS_ARCH_INCLUDE_DIR}
+    ${GOOGLE_TEST_INCLUDE_DIR}
+    ${GMOCK_INCLUDE_DIR}
     "../../AudioManagerDaemon/include"
     "../include"
 )
@@ -64,11 +68,13 @@ ADD_EXECUTABLE(AmRoutingReceiveAsyncTest ${ASYNC_PLUGIN_INTERFACE_SRCS_CXX})
 TARGET_LINK_LIBRARIES(AmRoutingReceiveAsyncTest 
     ${CMAKE_DL_LIBS}
     ${CMAKE_THREAD_LIBS_INIT}
-    ${GTEST_LIBRARIES}
     ${DBUS_LIBRARY}
     ${SQLITE_LIBRARIES}
-    gmock
+    gtest
+    ${GMOCK_LIBRARY}
 )
+
+ADD_DEPENDENCIES(AmRoutingReceiveAsyncTest gtest)
 
 IF(WITH_DLT)
     TARGET_LINK_LIBRARIES(AmRoutingReceiveAsyncTest
@@ -82,7 +88,7 @@ INSTALL(TARGETS AmRoutingReceiveAsyncTest
         COMPONENT tests
 )
 
-SET(ADD_DEPEND "audiomanager-bin" "dlt" "libdbus-1-3(>=1.2.16)" "libgtest-dev(>=1.6.0-1)" "google-mock" "libpthread-stubs0")
+SET(ADD_DEPEND "audiomanager-bin" "dlt" "libdbus-1-3(>=1.2.16)" "google-mock" "libpthread-stubs0")
 set_property(GLOBAL APPEND PROPERTY tests_prop "${ADD_DEPEND}")
 
 
