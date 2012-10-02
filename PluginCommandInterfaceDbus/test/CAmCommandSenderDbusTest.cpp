@@ -122,7 +122,7 @@ ACTION(returnListSourceClasses){
 std::vector<am::am_SourceClass_s> list;
 am::am_SourceClass_s listItem;
 am::am_ClassProperty_s property;
-property.classProperty=CP_GENIVI_SINK_TYPE;
+property.classProperty=CP_MAX;
 property.value=12;
 listItem.name="FirstCLass";
 listItem.sourceClassID=23;
@@ -139,7 +139,7 @@ ACTION(returnListSinkClasses){
 std::vector<am::am_SinkClass_s> list;
 am::am_SinkClass_s listItem;
 am::am_ClassProperty_s property;
-property.classProperty=CP_GENIVI_SOURCE_TYPE;
+property.classProperty=CP_MAX;
 property.value=122;
 listItem.name="FirstCLass";
 listItem.sinkClassID=2123;
