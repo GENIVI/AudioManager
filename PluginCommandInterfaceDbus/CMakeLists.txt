@@ -73,7 +73,9 @@ INSTALL(TARGETS PluginCommandInterfaceDbus
         COMPONENT sampleplugins
 )
 
-execute_process(COMMAND cp "${CMAKE_SOURCE_DIR}/PluginCommandInterfaceDbus/${INCLUDE_FOLDER}/CommandInterface.xml" ${EXECUTABLE_OUTPUT_PATH}/CommandInterface.xml)
+execute_process(
+	COMMAND mkdir -p "${CMAKE_SOURCE_DIR}/bin"
+	COMMAND cp "${CMAKE_SOURCE_DIR}/PluginCommandInterfaceDbus/${INCLUDE_FOLDER}/CommandInterface.xml" ${EXECUTABLE_OUTPUT_PATH}/CommandInterface.xml)
 
 SET(ADD_DEPEND "audiomanager-bin" "dlt" "libdbus-1-3(>=1.2.16)")
 set_property(GLOBAL APPEND PROPERTY sampleplugins_prop "${ADD_DEPEND}")
