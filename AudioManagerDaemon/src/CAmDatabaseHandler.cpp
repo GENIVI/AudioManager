@@ -1247,16 +1247,19 @@ am_Error_e CAmDatabaseHandler::removeSinkDB(const am_sinkID_t sinkID)
 
     std::string command = "DELETE from " + std::string(SINK_TABLE) + " WHERE sinkID=" + i2s(sinkID);
     std::string command1 = "DROP table SinkConnectionFormat" + i2s(sinkID);
-    std::string command2 = "DROP table SinkMainSoundProperty" + i2s(sinkID);
-    std::string command3 = "DROP table SinkSoundProperty" + i2s(sinkID);
+    std::string command2 = "DROP table SinkSoundProperty" + i2s(sinkID);
+    std::string command3 = "DROP table SinkMainSoundProperty" + i2s(sinkID);
     if (!sqQuery(command))
         return (E_DATABASE_ERROR);
     if (!sqQuery(command1))
         return (E_DATABASE_ERROR);
     if (!sqQuery(command2))
         return (E_DATABASE_ERROR);
-    if (!sqQuery(command3))
-        return (E_DATABASE_ERROR);
+    if (visible) //only drop table if it ever existed
+    {
+        if (!sqQuery(command3))
+            return (E_DATABASE_ERROR);
+    }
     logInfo("DatabaseHandler::removeSinkDB removed:", sinkID);
 
     if (mpDatabaseObserver != NULL)
@@ -1286,8 +1289,12 @@ am_Error_e CAmDatabaseHandler::removeSourceDB(const am_sourceID_t sourceID)
         return (E_DATABASE_ERROR);
     if (!sqQuery(command2))
         return (E_DATABASE_ERROR);
-    if (!sqQuery(command3))
-        return (E_DATABASE_ERROR);
+
+    if(visible)
+    {
+        if (!sqQuery(command3))
+            return (E_DATABASE_ERROR);
+    }
     logInfo("DatabaseHandler::removeSourceDB removed:", sourceID);
     if (mpDatabaseObserver)
         mpDatabaseObserver->removedSource(sourceID, visible);
