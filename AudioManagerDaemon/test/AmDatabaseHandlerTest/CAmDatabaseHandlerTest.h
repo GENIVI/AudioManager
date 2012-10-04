@@ -24,7 +24,7 @@
 #define UNIT_TEST 1
 
 #include "gtest/gtest.h"
-#include <gmock/gmock.h>
+#include "gmock/gmock.h"
 
 #include "CAmDatabaseHandler.h"
 #include "CAmControlReceiver.h"

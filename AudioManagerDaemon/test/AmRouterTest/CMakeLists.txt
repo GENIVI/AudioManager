@@ -21,7 +21,7 @@ PROJECT(AmRouterTest)
 
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -DUNIT_TEST=1 -DDLT_CONTEXT=AudioManager")
 
-FIND_PACKAGE(GMock REQUIRED)
+
 FIND_PACKAGE(PkgConfig)
 pkg_check_modules(SQLITE REQUIRED sqlite3)
 
@@ -67,10 +67,10 @@ TARGET_LINK_LIBRARIES( AmRouterTest
 	${DBUS_LIBRARY}
 	${CMAKE_THREAD_LIBS_INIT}
     gtest
-    ${GMOCK_LIBRARY}
+    gmock
 )
 
-ADD_DEPENDENCIES(AmRouterTest gtest)
+ADD_DEPENDENCIES(AmRouterTest gtest gmock)
 
 INSTALL(TARGETS AmRouterTest 
         DESTINATION "~/AudioManagerTest/"
@@ -78,6 +78,6 @@ INSTALL(TARGETS AmRouterTest
         COMPONENT tests
 )
 
-SET(ADD_DEPEND "audiomanager-bin" "sqlite3(>=3.6.22)" "dlt" "libdbus-1-3(>=1.2.16)" "google-mock" "libpthread-stubs0")
+SET(ADD_DEPEND "audiomanager-bin" "sqlite3(>=3.6.22)" "dlt" "libdbus-1-3(>=1.2.16)"  "libpthread-stubs0")
 set_property(GLOBAL APPEND PROPERTY tests_prop "${ADD_DEPEND}")
 

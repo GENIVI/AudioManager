@@ -28,7 +28,7 @@ set(AUDIO_INCLUDE_FOLDER ${CMAKE_SOURCE_DIR}/../../../include)
 set(DBUS_INCLUDE_FOLDER ${CMAKE_SOURCE_DIR}/../../../../dbusinclude)
 set(INCLUDE_FOLDER ${CMAKE_SOURCE_DIR}/../../include)
 
-FIND_PACKAGE(GMock REQUIRED)
+
 FIND_PACKAGE(PkgConfig)
 
 IF(WITH_DLT)    
@@ -62,10 +62,10 @@ TARGET_LINK_LIBRARIES(AmSocketHandlerTest
     ${DBUS_LIBRARY}
     ${CMAKE_THREAD_LIBS_INIT}
     gtest
-    ${GMOCK_LIBRARY}
+    gmock
 )
 
-ADD_DEPENDENCIES(AmSocketHandlerTest gtest)
+ADD_DEPENDENCIES(AmSocketHandlerTest gtest gmock)
 
 INSTALL(TARGETS AmSocketHandlerTest 
         DESTINATION "~/AudioManagerTest/"
@@ -73,7 +73,7 @@ INSTALL(TARGETS AmSocketHandlerTest
         COMPONENT tests
 )
 
-SET(ADD_DEPEND "sqlite3(>=3.6.22)" "dlt" "libdbus-1-3(>=1.2.16)" "google-mock" "libpthread-stubs0")
+SET(ADD_DEPEND "sqlite3(>=3.6.22)" "dlt" "libdbus-1-3(>=1.2.16)"  "libpthread-stubs0")
 set_property(GLOBAL APPEND PROPERTY tests_prop "${ADD_DEPEND}")
 
 

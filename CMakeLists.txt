@@ -144,9 +144,10 @@ IF(WITH_DLT)
     pkg_check_modules(DLT REQUIRED automotive-dlt>=2.2.0)   
 ENDIF(WITH_DLT)
 
-IF(WITH_TESTS)
-	add_subdirectory(googleTest)
-	set(GOOGLE_TEST_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/googleTest/include")	
+IF(WITH_TESTS)	
+	add_subdirectory(googleMock)
+	set(GMOCK_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/googleMock/include")
+	set(GOOGLE_TEST_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/googleMock/gtest/include")
 ENDIF(WITH_TESTS)
 
 IF(WITH_DOCUMENTATION)

@@ -22,7 +22,7 @@
 #define ROUTINGINTERFACETEST_H_
 
 #include "gtest/gtest.h"
-#include <gmock/gmock.h>
+#include "gmock/gmock.h"
 #include <algorithm>
 #include <string>
 #include <vector>

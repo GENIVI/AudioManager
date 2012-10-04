@@ -20,7 +20,7 @@
 
 #include "command/IAmCommandReceive.h"
 #include "gtest/gtest.h"
-#include <gmock/gmock.h>
+#include "gmock/gmock.h"
 
 namespace am {
 

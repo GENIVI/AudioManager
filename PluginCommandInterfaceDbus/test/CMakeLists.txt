@@ -28,7 +28,7 @@ FIND_PACKAGE(Threads)
 FIND_PACKAGE(DBUS REQUIRED)
 FIND_PACKAGE(PkgConfig)
 FIND_PACKAGE(PythonLibs REQUIRED)
-FIND_PACKAGE(GMock REQUIRED)
+
 
 IF(WITH_DLT)    
     pkg_check_modules(DLT REQUIRED automotive-dlt>=2.2.0)   
@@ -81,7 +81,7 @@ TARGET_LINK_LIBRARIES(AmCommandSenderDbusTest
     ${CMAKE_THREAD_LIBS_INIT}
     ${PYTHON_LIBRARY}
     gtest
-    ${GMOCK_LIBRARY}
+    gmock
 )
 
 
@@ -92,7 +92,7 @@ TARGET_LINK_LIBRARIES(AmCommandSenderDbusSignalTest
     ${CMAKE_THREAD_LIBS_INIT}
     ${PYTHON_LIBRARY}
     gtest
-    ${GMOCK_LIBRARY}
+    gmock
 )
 
 INSTALL(TARGETS AmCommandSenderDbusTest 
@@ -107,6 +107,6 @@ INSTALL(TARGETS AmCommandSenderDbusSignalTest
         COMPONENT tests
 )
 
-SET(ADD_DEPEND "audiomanager-bin" "sqlite3(>=3.6.22)" "dlt" "libdbus-1-3(>=1.2.16)" "gtest" "google-mock" "libpthread-stubs0")
+SET(ADD_DEPEND "audiomanager-bin" "sqlite3(>=3.6.22)" "dlt" "libdbus-1-3(>=1.2.16)" "gtest"  "libpthread-stubs0")
 set_property(GLOBAL APPEND PROPERTY tests_prop "${ADD_DEPEND}")
 

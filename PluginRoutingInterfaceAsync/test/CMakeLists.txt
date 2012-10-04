@@ -25,7 +25,7 @@ set(GOOGLE_TEST_INCLUDE_DIR "googleTest/include")
 FIND_PACKAGE(Threads)
 FIND_PACKAGE(PkgConfig)
 FIND_PACKAGE(DBUS REQUIRED)
-FIND_PACKAGE(GMock REQUIRED)
+
 
 IF(WITH_DLT)
     pkg_check_modules(DLT REQUIRED automotive-dlt)
@@ -71,10 +71,10 @@ TARGET_LINK_LIBRARIES(AmRoutingReceiveAsyncTest
     ${DBUS_LIBRARY}
     ${SQLITE_LIBRARIES}
     gtest
-    ${GMOCK_LIBRARY}
+    gmock
 )
 
-ADD_DEPENDENCIES(AmRoutingReceiveAsyncTest gtest)
+ADD_DEPENDENCIES(AmRoutingReceiveAsyncTest gtest gmock)
 
 IF(WITH_DLT)
     TARGET_LINK_LIBRARIES(AmRoutingReceiveAsyncTest
@@ -88,7 +88,7 @@ INSTALL(TARGETS AmRoutingReceiveAsyncTest
         COMPONENT tests
 )
 
-SET(ADD_DEPEND "audiomanager-bin" "dlt" "libdbus-1-3(>=1.2.16)" "google-mock" "libpthread-stubs0")
+SET(ADD_DEPEND "audiomanager-bin" "dlt" "libdbus-1-3(>=1.2.16)"  "libpthread-stubs0")
 set_property(GLOBAL APPEND PROPERTY tests_prop "${ADD_DEPEND}")
 
 

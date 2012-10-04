@@ -19,7 +19,7 @@
 #define TESTROUTINGINTERFACEASYNC_H_
 
 #include "gtest/gtest.h"
-#include <gmock/gmock.h>
+#include "gmock/gmock.h"
 
 #include "MockIAmRoutingReceive.h"
 #include "shared/CAmSocketHandler.h"
