@@ -21,7 +21,7 @@
 #ifndef SOCKETHANDLERTEST_H_
 #define SOCKETHANDLERTEST_H_
 
-#include <gtest/gtest.h>
+#include "gtest/gtest.h"
 #include <queue>
 #include "shared/CAmSocketHandler.h"
 

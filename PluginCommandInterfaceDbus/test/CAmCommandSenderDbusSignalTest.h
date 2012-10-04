@@ -19,7 +19,7 @@
 #define DBUSCOMMANINTERFACESIGNALSTEST_H_
 
 
-#include <gtest/gtest.h>
+#include "gtest/gtest.h"
 #include <gmock/gmock.h>
 
 #define UNIT_TEST 1

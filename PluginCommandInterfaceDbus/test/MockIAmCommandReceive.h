@@ -19,7 +19,7 @@
 #define MOCKCOMMANDRECEIVENTERFACE_H_
 
 #include "command/IAmCommandReceive.h"
-#include <gtest/gtest.h>
+#include "gtest/gtest.h"
 #include <gmock/gmock.h>
 
 namespace am {

@@ -18,7 +18,7 @@
 #ifndef CAMCONTROLRECEIVERSHADOWTEST_H_
 #define CAMCONTROLRECEIVERSHADOWTEST_H_
 
-#include <gtest/gtest.h>
+#include "gtest/gtest.h"
 #include <gmock/gmock.h>
 #include "MockIAmControlReceive.h"
 #include "shared/CAmSocketHandler.h"

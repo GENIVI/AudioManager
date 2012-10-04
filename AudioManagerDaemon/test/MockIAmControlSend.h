@@ -22,7 +22,7 @@
 #define MOCKCONTROLINTERFACE_H_
 
 #include "control/IAmControlSend.h"
-#include <gtest/gtest.h>
+#include "gtest/gtest.h"
 #include <gmock/gmock.h>
 
 namespace am {

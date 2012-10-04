@@ -18,7 +18,7 @@
 #ifndef TESTROUTINGINTERFACEASYNC_H_
 #define TESTROUTINGINTERFACEASYNC_H_
 
-#include <gtest/gtest.h>
+#include "gtest/gtest.h"
 #include <gmock/gmock.h>
 
 #include "MockIAmRoutingReceive.h"

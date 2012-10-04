@@ -21,7 +21,7 @@
 #ifndef ROUTINGINTERFACETEST_H_
 #define ROUTINGINTERFACETEST_H_
 
-#include <gtest/gtest.h>
+#include "gtest/gtest.h"
 #include <gmock/gmock.h>
 #include <algorithm>
 #include <string>

@@ -22,7 +22,7 @@
 #define MOCKROUTINGINTERFACE_H_
 
 #include "routing/IAmRoutingSend.h"
-#include <gtest/gtest.h>
+#include "gtest/gtest.h"
 #include <gmock/gmock.h>
 
 namespace am {
