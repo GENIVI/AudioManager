@@ -86,6 +86,11 @@ public:
     void confirmRoutingReady() ;
     void confirmCommandRundown() ;
     void confirmRoutingRundown() ;
+    static void CallsetControllerRundown()
+    {
+        if (mInstance)
+            mInstance->setControllerRundown();
+    }
 
 #ifdef UNIT_TEST
     friend class IAmControlBackdoor;
@@ -93,6 +98,7 @@ public:
 private:
     void* mlibHandle; //!< pointer to the loaded control plugin interface
     IAmControlSend* mController; //!< pointer to the ControlSend interface
+    static CAmControlSender* mInstance;
 };
 
 }

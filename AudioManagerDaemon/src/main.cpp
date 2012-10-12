@@ -267,7 +267,10 @@ static void signalHandler(int sig, siginfo_t *siginfo, void *context)
     logError("signal handler was called, exit now...");
     gDispatchDone = 1;
     //todo: maually fire the mainloop
-    exit(1);
+    CAmControlSender::CallsetControllerRundown();
+
+    //todo: Maybe we can remove this here in a productive system. For now it's handy :-)
+    exit (-1);
 }
 
 void mainProgram()

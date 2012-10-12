@@ -34,6 +34,8 @@ namespace am
 #define REQUIRED_INTERFACE_VERSION_MAJOR 1  //!< major interface version. All versions smaller than this will be rejected
 #define REQUIRED_INTERFACE_VERSION_MINOR 0 //!< minor interface version. All versions smaller than this will be rejected
 
+CAmControlSender* CAmControlSender::mInstance=NULL;
+
 CAmControlSender::CAmControlSender(std::string controlPluginFile) :
         mlibHandle(NULL), //
         mController(NULL)
@@ -45,6 +47,7 @@ CAmControlSender::CAmControlSender(std::string controlPluginFile) :
     }
     else if (!controlPluginFile.empty())
     {
+        mInstance=this;
         IAmControlSend* (*createFunc)();
         createFunc = getCreateFunction<IAmControlSend*()>(controlPluginFile, mlibHandle);
         assert(createFunc!=NULL);
