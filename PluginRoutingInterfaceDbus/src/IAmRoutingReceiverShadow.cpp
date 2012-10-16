@@ -510,10 +510,12 @@ void IAmRoutingReceiverShadowDbus::hookInterruptStatusChange(DBusConnection* con
     (void) ((conn));
     assert(mRoutingReceiveInterface != NULL);
     mDBUSMessageHandler.initReceive(msg);
-    am_sourceID_t sourceID = mDBUSMessageHandler.getInt();
-    am_InterruptState_e interruptState = (am_InterruptState_e)((mDBUSMessageHandler.getInt()));
+    am_sourceID_t sourceID = mDBUSMessageHandler.getUInt();
+    am_InterruptState_e interruptState = (am_InterruptState_e)((mDBUSMessageHandler.getUInt()));
     log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::hookInterruptStatusChange called, sourceID", sourceID);
     mRoutingReceiveInterface->hookInterruptStatusChange(sourceID, interruptState);
+    mDBUSMessageHandler.initReply(msg);
+    mDBUSMessageHandler.sendMessage();
 }
 
 void IAmRoutingReceiverShadowDbus::hookSinkAvailablityStatusChange(DBusConnection* conn, DBusMessage* msg)

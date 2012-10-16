@@ -4,7 +4,7 @@
   "http://standards.freedesktop.org/dbus/1.0/introspect.dtd">
 
 <node>  
-	<interface name="org.genivi.audiomanager.RoutingReceiver">          
+	<interface name="org.genivi.audiomanager.RoutingInterface">          
 	<method name="ackConnect">      
 		<arg name="handle" type="q" direction="in" />      
 		<arg name="connectionID" type="q" direction="in" /> 
