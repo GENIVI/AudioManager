@@ -62,6 +62,9 @@ CAmDbusWrapper::CAmDbusWrapper(CAmSocketHandler* socketHandler, DBusBusType type
     assert(mpSocketHandler!=0);
 
     dbus_error_init(&mDBusError);
+
+    if (!dbus_threads_init_default())
+        logError("CAmDbusWrapper::CAmDbusWrapper threads init call failed");
     logInfo("DBusWrapper::DBusWrapper Opening DBus connection");
     mpDbusConnection = dbus_bus_get(mDbusType, &mDBusError);
     if (dbus_error_is_set(&mDBusError))
