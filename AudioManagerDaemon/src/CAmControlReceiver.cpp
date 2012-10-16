@@ -21,6 +21,7 @@
 
 #include "CAmControlReceiver.h"
 #include <cassert>
+#include <stdlib.h>
 #include "config.h"
 #include "CAmDatabaseHandler.h"
 #include "CAmRoutingSender.h"
@@ -482,6 +483,9 @@ void CAmControlReceiver::confirmControllerReady()
 
 void CAmControlReceiver::confirmControllerRundown()
 {
+    logInfo ("CAmControlReceiver::confirmControllerRundown(), exiting regularly");
+    //once the controller is ready, it will exit.
+    exit (0);
     //todo: one time implement here system interaction with NSM
 }
 

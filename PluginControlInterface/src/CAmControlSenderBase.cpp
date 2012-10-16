@@ -558,6 +558,8 @@ void CAmControlSenderBase::cbAckSetSinkSoundProperties(const am_Handle_s handle,
 
 void CAmControlSenderBase::setControllerRundown()
 {
+    logInfo("CAmControlSenderBase::setControllerRundown() was called");
+    mControlReceiveInterface->confirmControllerRundown();
 }
 
 am_Error_e CAmControlSenderBase::getConnectionFormatChoice(const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_Route_s listRoute, const std::vector<am_ConnectionFormat_e> listPossibleConnectionFormats, std::vector<am_ConnectionFormat_e> & listPrioConnectionFormats)

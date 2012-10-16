@@ -264,13 +264,11 @@ static void signalHandler(int sig, siginfo_t *siginfo, void *context)
     (void) sig;
     (void) siginfo;
     (void) context;
-    logError("signal handler was called, exit now...");
+    logInfo("signal handler was called, signal",sig);
     gDispatchDone = 1;
     //todo: maually fire the mainloop
     CAmControlSender::CallsetControllerRundown();
 
-    //todo: Maybe we can remove this here in a productive system. For now it's handy :-)
-    exit (-1);
 }
 
 void mainProgram()
@@ -357,7 +355,6 @@ int main(int argc, char *argv[], char** envp)
     sigaction(SIGQUIT, &signalAction, NULL);
     sigaction(SIGTERM, &signalAction, NULL);
     sigaction(SIGHUP, &signalAction, NULL);
-    sigaction(SIGQUIT, &signalAction, NULL);
 
     struct sigaction signalChildAction;
     memset(&signalChildAction, '\0', sizeof(signalChildAction));
