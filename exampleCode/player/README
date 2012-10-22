@@ -1,0 +1,5 @@
+This code is a sample player for the AudioManager and was used for the POC in 2012.
+
+It is based on a QT sample player.
+
+In order to compile it, open it with a QT Creator.
