@@ -124,7 +124,7 @@ void CAmTelnetMenuHelper::newSocketConnection(int filedescriptor)
     }
     it = mCurrentMainStateMap.begin();
     // insert new socket connection
-    mCurrentMainStateMap.insert(it, std::make_pair<int, EMainState>(filedescriptor, state));
+    mCurrentMainStateMap.insert(it, std::make_pair(filedescriptor, state));
     // Send welcome message
     welcome << COLOR_WELCOME << "Welcome to GENIVI AudioManager " << DAEMONVERSION << COLOR_DEFAULT << "\n>";
     send(filedescriptor, welcome.str().c_str(), welcome.str().size(), 0);
