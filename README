@@ -1,7 +1,10 @@
-GENIVI AudioManager
+GENIVI_AudioManager
 ===================
-Christian Linke <christian.linke@bmw.de>
+:Author: Christian Linke <christian.linke@bmw.de>
+:doctitle: GENIVI_AudioManager
 
+Copyright
+---------
 Copyright (C) 2012, GENIVI Alliance, Inc.
 Copyright (C) 2012, BMW AG
 

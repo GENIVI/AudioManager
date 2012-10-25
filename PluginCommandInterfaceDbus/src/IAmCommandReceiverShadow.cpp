@@ -23,6 +23,7 @@
 #include "audiomanagertypes.h"
 #include "CAmCommandSenderDbus.h"
 #include "shared/CAmDltWrapper.h"
+#include "configCommandDbus.h"
 
 using namespace am;
 
@@ -344,8 +345,7 @@ void IAmCommandReceiverShadow::sendIntrospection(DBusConnection *conn, DBusMessa
 
     // create a reply from the message
     reply = dbus_message_new_method_return(msg);
-    std::string fullpath(EXECUTABLE_OUTPUT_PATH);
-    fullpath.append("/CommandInterface.xml");
+    std::string fullpath(COMMAND_DBUS_INTROSPECTION_FILE);
     std::ifstream in(fullpath.c_str(), std::ifstream::in);
     if (!in)
     {

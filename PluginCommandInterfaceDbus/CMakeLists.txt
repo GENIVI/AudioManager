@@ -21,11 +21,23 @@ PROJECT(PluginCommandInterfaceDbus)
 set(LIBRARY_OUTPUT_PATH ${PLUGINS_OUTPUT_PATH}/command)
 set(DOC_OUTPUT_PATH ${DOC_OUTPUT_PATH}/CommandDBusPlugin)
 set(INCLUDE_FOLDER "include")
+message(STATUS "prefix ${CMAKE_INSTALL_PREFIX}")
+SET(SHARED_FOLDER "${CMAKE_INSTALL_PREFIX}/share")
 
 FILE(READ "${AUDIO_INCLUDE_FOLDER}/command/IAmCommandSend.h" VERSION_BUFFER LIMIT 6000)
 STRING(REGEX MATCH "CommandSendVersion*.[^0-9]*[0-9].[0-9]*[0-9]" LIB_INTERFACE_VERSION_STRING ${VERSION_BUFFER})
 STRING(REGEX REPLACE "CommandSendVersion*.." "" LIB_INTERFACE_VERSION ${LIB_INTERFACE_VERSION_STRING})
 MESSAGE(STATUS "Building against command interface version ${LIB_INTERFACE_VERSION}")
+
+IF(USE_BUILD_LIBS) 
+    SET(COMMAND_DBUS_INTROSPECTION_FOLDER ${EXECUTABLE_OUTPUT_PATH})
+    SET(COMMAND_DBUS_INTROSPECTION_FILE ${EXECUTABLE_OUTPUT_PATH}/CommandInterface.xml)
+ELSE(USE_BUILD_LIBS) 
+    SET(COMMAND_DBUS_INTROSPECTION_FOLDER ${SHARED_FOLDER}/audiomanager)
+    SET(COMMAND_DBUS_INTROSPECTION_FILE ${SHARED_FOLDER}/audiomanager/CommandInterface.xml)
+ENDIF(USE_BUILD_LIBS)
+
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.cmake ${CMAKE_CURRENT_SOURCE_DIR}/include/configCommandDbus.h )
 
 FIND_PACKAGE(DBUS REQUIRED)
 
@@ -73,9 +85,16 @@ INSTALL(TARGETS PluginCommandInterfaceDbus
         COMPONENT sampleplugins
 )
 
-execute_process(
-	COMMAND mkdir -p "${CMAKE_SOURCE_DIR}/bin"
-	COMMAND cp "${CMAKE_SOURCE_DIR}/PluginCommandInterfaceDbus/${INCLUDE_FOLDER}/CommandInterface.xml" ${EXECUTABLE_OUTPUT_PATH}/CommandInterface.xml)
+INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/CommandInterface.xml 
+        DESTINATION "${COMMAND_DBUS_INTROSPECTION_FOLDER}"
+        COMPONENT sampleplugins
+)
+
+IF(USE_BUILD_LIBS) 
+    execute_process(
+	    COMMAND mkdir -p "${CMAKE_SOURCE_DIR}/bin"
+	    COMMAND cp "${CMAKE_SOURCE_DIR}/PluginCommandInterfaceDbus/${INCLUDE_FOLDER}/CommandInterface.xml" ${EXECUTABLE_OUTPUT_PATH}/CommandInterface.xml)
+ENDIF(USE_BUILD_LIBS) 
 
 SET(ADD_DEPEND "audiomanager-bin" "dlt" "libdbus-1-3(>=1.2.16)")
 set_property(GLOBAL APPEND PROPERTY sampleplugins_prop "${ADD_DEPEND}")

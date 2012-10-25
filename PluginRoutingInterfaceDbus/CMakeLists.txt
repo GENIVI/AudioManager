@@ -22,10 +22,22 @@ set(LIBRARY_OUTPUT_PATH ${PLUGINS_OUTPUT_PATH}/routing)
 set(DOC_OUTPUT_PATH ${DOC_OUTPUT_PATH}/RoutingPlugin)
 set(INCLUDE_FOLDER "include")
 
+SET(SHARED_FOLDER "${CMAKE_INSTALL_PREFIX}/share")
 FILE(READ "${AUDIO_INCLUDE_FOLDER}/routing/IAmRoutingSend.h" VERSION_BUFFER LIMIT 6000)
 STRING(REGEX MATCH "RoutingSendVersion*.[^0-9]*[0-9].[0-9]*[0-9]" LIB_INTERFACE_VERSION_STRING ${VERSION_BUFFER})
 STRING(REGEX REPLACE "RoutingSendVersion*.." "" LIB_INTERFACE_VERSION ${LIB_INTERFACE_VERSION_STRING})
 MESSAGE(STATUS "Building against routing interface version ${LIB_INTERFACE_VERSION}")
+
+IF(USE_BUILD_LIBS) 
+    SET(ROUTING_DBUS_INTROSPECTION_FOLDER ${EXECUTABLE_OUTPUT_PATH})
+    SET(ROUTING_DBUS_INTROSPECTION_FILE ${EXECUTABLE_OUTPUT_PATH}/RoutingReceiver.xml)
+ELSE(USE_BUILD_LIBS) 
+    SET(ROUTING_DBUS_INTROSPECTION_FOLDER ${SHARED_FOLDER}/audiomanager)
+    SET(ROUTING_DBUS_INTROSPECTION_FILE ${SHARED_FOLDER}/audiomanager/RoutingReceiver.xml)
+ENDIF(USE_BUILD_LIBS)
+
+
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.cmake ${CMAKE_CURRENT_SOURCE_DIR}/include/configRoutingDbus.h )
 
 FIND_PACKAGE(DBUS REQUIRED)
 
@@ -58,12 +70,15 @@ IF(WITH_TESTS)
 #	add_subdirectory (test)
 ENDIF(WITH_TESTS)
 
-execute_process(
-		COMMAND mkdir -p "${CMAKE_SOURCE_DIR}/bin"
-		COMMAND cp "${CMAKE_SOURCE_DIR}/PluginRoutingInterfaceDbus/${INCLUDE_FOLDER}/RoutingReceiver.xml" ${EXECUTABLE_OUTPUT_PATH}/RoutingReceiver.xml)
-execute_process(
-		COMMAND mkdir -p "${CMAKE_SOURCE_DIR}/bin"
-		COMMAND cp "${CMAKE_SOURCE_DIR}/PluginRoutingInterfaceDbus/${INCLUDE_FOLDER}/RoutingSender.xml" ${EXECUTABLE_OUTPUT_PATH}/RoutingSender.xml)
+IF(USE_BUILD_LIBS) 
+    execute_process(
+    		COMMAND mkdir -p "${CMAKE_SOURCE_DIR}/bin"
+    		COMMAND cp "${CMAKE_SOURCE_DIR}/PluginRoutingInterfaceDbus/${INCLUDE_FOLDER}/RoutingReceiver.xml" ${EXECUTABLE_OUTPUT_PATH}/RoutingReceiver.xml)
+    execute_process(
+    		COMMAND mkdir -p "${CMAKE_SOURCE_DIR}/bin"
+    		COMMAND cp "${CMAKE_SOURCE_DIR}/PluginRoutingInterfaceDbus/${INCLUDE_FOLDER}/RoutingSender.xml" ${EXECUTABLE_OUTPUT_PATH}/RoutingSender.xml)
+ENDIF(USE_BUILD_LIBS) 
+
 
 #IF(WITH_DOCUMENTATION)
 #	file(MAKE_DIRECTORY ${DOC_OUTPUT_PATH})
@@ -79,6 +94,12 @@ INSTALL(TARGETS PluginRoutingInterfaceDbus
         PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
         COMPONENT sampleplugins
 )
+
+INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/RoutingReceiver.xml 
+        DESTINATION "${ROUTING_DBUS_INTROSPECTION_FOLDER}"
+        COMPONENT sampleplugins
+)
+
 
 SET(ADD_DEPEND "audiomanager-bin" "dlt" "libdbus-1-3(>=1.2.16)")
 set_property(GLOBAL APPEND PROPERTY sampleplugins_prop "${ADD_DEPEND}")

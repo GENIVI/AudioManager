@@ -25,6 +25,7 @@
 #include "CAmRoutingSenderDbus.h"
 #include "shared/CAmDbusWrapper.h"
 #include "shared/CAmDltWrapper.h"
+#include "configRoutingDbus.h"
 
 namespace am
 {
@@ -591,8 +592,7 @@ void IAmRoutingReceiverShadowDbus::sendIntrospection(DBusConnection* conn, DBusM
 
     // create a reply from the message
     reply = dbus_message_new_method_return(msg);
-    std::string fullpath(EXECUTABLE_OUTPUT_PATH);
-    fullpath.append("/RoutingReceiver.xml");
+    std::string fullpath(ROUTING_DBUS_INTROSPECTION_FILE);
     std::ifstream in(fullpath.c_str(), std::ifstream::in);
     if (!in)
     {
