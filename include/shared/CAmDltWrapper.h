@@ -95,6 +95,7 @@ public:
     void unregisterContext(DltContext& handle);
 
     void init(DltLogLevelType loglevel, DltContext* context = NULL);
+    void deinit();
     void send();
     void append(const int8_t value);
     void append(const uint8_t value);
@@ -148,7 +149,7 @@ template<typename T> void logInfo(T value)
 /**
  * logs a given value with infolevel with the default context
  * @param value
- * @param value1
+ * @param value1mDltContext
  */
 template<typename T, typename T1> void logInfo(T value, T1 value1)
 {

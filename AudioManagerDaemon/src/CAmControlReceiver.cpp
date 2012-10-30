@@ -485,6 +485,8 @@ void CAmControlReceiver::confirmControllerRundown()
 {
     logInfo ("CAmControlReceiver::confirmControllerRundown(), exiting regularly");
     //once the controller is ready, it will exit.
+    CAmDltWrapper* inst(getWrapper());
+    inst->deinit();
     exit (0);
     //todo: one time implement here system interaction with NSM
 }

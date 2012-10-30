@@ -52,6 +52,13 @@ void CAmDltWrapper::unregisterContext(DltContext & handle)
 #endif
 }
 
+void CAmDltWrapper::deinit()
+{
+#ifdef WITH_DLT
+    unregisterContext(mDltContext);
+#endif
+}
+
 CAmDltWrapper::CAmDltWrapper(const bool enableNoDLTDebug) :
 #ifndef WITH_DLT
         mEnableNoDLTDebug(enableNoDLTDebug),
@@ -244,7 +251,10 @@ void CAmDltWrapper::enableNoDLTDebug(const bool enableNoDLTDebug)
 CAmDltWrapper::~CAmDltWrapper()
 {
     if (mpDLTWrapper)
+    {
+        mpDLTWrapper->unregisterContext(mDltContext);
         delete mpDLTWrapper;
+    }
 }
 }
 
