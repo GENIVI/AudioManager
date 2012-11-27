@@ -1288,12 +1288,12 @@ am_Error_e CAmDatabaseHandler::removeSourceDB(const am_sourceID_t sourceID)
         return (E_DATABASE_ERROR);
     if (!sqQuery(command1))
         return (E_DATABASE_ERROR);
-    if (!sqQuery(command2))
+    if (!sqQuery(command3))
         return (E_DATABASE_ERROR);
 
     if(visible)
     {
-        if (!sqQuery(command3))
+        if (!sqQuery(command2))
             return (E_DATABASE_ERROR);
     }
     logInfo("DatabaseHandler::removeSourceDB removed:", sourceID);
