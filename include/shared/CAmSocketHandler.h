@@ -111,6 +111,40 @@ public:
 class CAmSocketHandler
 {
 public:
+    template<class TClass> class TAmShPollFired: public IAmShPollFired
+    {
+    private:
+        TClass* mInstance;
+        void (TClass::*mFunction)(const pollfd pollfd, const sh_pollHandle_t handle, void* userData);
+
+    public:
+        TAmShPollFired(TClass* instance, void (TClass::*function)(const pollfd pollfd, const sh_pollHandle_t handle, void* userData)) :
+                mInstance(instance), //
+                mFunction(function) {};
+
+        virtual void Call(const pollfd pollfd, const sh_pollHandle_t handle, void* userData)
+        {
+            (*mInstance.*mFunction)(pollfd, handle, userData);
+        };
+    };
+
+    template<class TClass> class TAmShPollCheck: public IAmShPollCheck
+    {
+    private:
+        TClass* mInstance;
+        bool (TClass::*mFunction)(const sh_pollHandle_t handle, void* userData);
+
+    public:
+        TAmShPollCheck(TClass* instance, bool (TClass::*function)(const sh_pollHandle_t handle, void* userData)) :
+                mInstance(instance), //
+                mFunction(function) {};
+
+        virtual bool Call(const sh_pollHandle_t handle, void* userData)
+        {
+            return ((*mInstance.*mFunction)(handle, userData));
+        };
+    };
+
     CAmSocketHandler();
     ~CAmSocketHandler();
 
@@ -124,7 +158,29 @@ public:
     am_Error_e stopTimer(const sh_timerHandle_t handle);
     void start_listenting();
     void stop_listening();
+    void exit_mainloop();
+    static void static_exit_mainloop();
+    void receiverCallback(const pollfd pollfd, const sh_pollHandle_t handle, void* userData)
+        {
+            (void) pollfd;
+            (void) handle;
+            (void) userData;
+        };
+    bool checkerCallback(const sh_pollHandle_t handle, void* userData)
+        {
+            (void) handle;
+            (void) userData;
+            return (false);
+        };
+
+    TAmShPollFired<CAmSocketHandler> receiverCallbackT;
+    TAmShPollCheck<CAmSocketHandler> checkerCallbackT;
+
 private:
+
+    static CAmSocketHandler* mInstance;
+    int mPipe[2];
+
     struct sh_timer_s //!<struct that holds information of timers
     {
         sh_timerHandle_t handle; //!<the handle of the timer

@@ -143,7 +143,7 @@ CAmRoutingSender::CAmRoutingSender(const std::vector<std::string>& listOfPluginD
 
 CAmRoutingSender::~CAmRoutingSender()
 {
-    unloadLibraries();
+    //unloadLibraries();
     HandlesMap::iterator it = mlistActiveHandles.begin();
 
     //clean up heap if existent

@@ -34,16 +34,33 @@
 namespace am
 {
 
+CAmSocketHandler* CAmSocketHandler::mInstance=NULL;
+
 CAmSocketHandler::CAmSocketHandler() :
+        mPipe(),
         mListPoll(), //
         mListTimer(), //
         mListActiveTimer(), //
         mLastInsertedHandle(0), //
         mLastInsertedPollHandle(0), //
         mRecreatePollfds(true), //
-        mStartTime()
+        mStartTime(), //
+        receiverCallbackT(this, &CAmSocketHandler::receiverCallback),//
+        checkerCallbackT(this, &CAmSocketHandler::checkerCallback)//
 {
     gDispatchDone = 1;
+    mInstance=this;
+
+    if (pipe(mPipe) == -1)
+    {
+        logError("CAmSerializer could not create pipe!");
+    }
+
+    //add the pipe to the poll - nothing needs to be proccessed here we just need the pipe to trigger the ppoll
+    short event = 0;
+    sh_pollHandle_t handle;
+    event |= POLLIN;
+    addFDPoll(mPipe[0], event, NULL, &receiverCallbackT, &checkerCallbackT, NULL, NULL, handle);
 }
 
 CAmSocketHandler::~CAmSocketHandler()
@@ -497,6 +514,24 @@ void CAmSocketHandler::timerCorrection()
             //call the callbacks for the timers
             std::for_each(tempList.begin(), tempList.end(), CAmShCallTimer());
         }
+    }
+}
+
+void CAmSocketHandler::exit_mainloop()
+{
+    //end the while loop
+    stop_listening();
+
+    //fire the ending filedescriptor
+    int p(1);
+    write(mPipe[1], &p, sizeof(p));
+}
+
+void CAmSocketHandler::static_exit_mainloop()
+{
+    if (mInstance!=0)
+    {
+        mInstance->exit_mainloop();
     }
 }
 

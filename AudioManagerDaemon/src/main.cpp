@@ -265,9 +265,14 @@ static void signalHandler(int sig, siginfo_t *siginfo, void *context)
     (void) siginfo;
     (void) context;
     logInfo("signal handler was called, signal",sig);
-    gDispatchDone = 1;
     //todo: maually fire the mainloop
     CAmControlSender::CallsetControllerRundown();
+
+    //deinit the DLT
+    CAmDltWrapper* inst(getWrapper());
+    inst->deinit();
+
+    CAmSocketHandler::static_exit_mainloop();
 
 }
 
@@ -376,7 +381,6 @@ int main(int argc, char *argv[], char** envp)
         //todo: ergency exit here... call destructors etc...
         exit(EXIT_FAILURE);
     }
-
 
     close(fd0);
     close(fd1);

@@ -74,8 +74,8 @@ CAmControlSender::CAmControlSender(std::string controlPluginFile) :
 
 CAmControlSender::~CAmControlSender()
 {
-    if (mlibHandle)
-        dlclose(mlibHandle);
+    //if (mlibHandle)
+    //    dlclose(mlibHandle);
 }
 
 am_Error_e CAmControlSender::hookUserConnectionRequest(const am_sourceID_t sourceID, const am_sinkID_t sinkID, am_mainConnectionID_t & mainConnectionID)

@@ -133,7 +133,7 @@ CAmCommandSender::CAmCommandSender(const std::vector<std::string>& listOfPluginD
 
 CAmCommandSender::~CAmCommandSender()
 {
-    unloadLibraries();
+    //unloadLibraries();
 }
 
 am_Error_e CAmCommandSender::startupInterfaces(CAmCommandReceiver *iCommandReceiver)
