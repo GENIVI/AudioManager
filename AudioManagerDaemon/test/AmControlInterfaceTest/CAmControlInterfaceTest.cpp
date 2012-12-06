@@ -28,6 +28,8 @@
 using namespace am;
 using namespace testing;
 
+DLT_DECLARE_CONTEXT(AudioManager)
+
 CAmControlInterfaceTest::CAmControlInterfaceTest() :
         pSocketHandler(), //
         pDBusWrapper((CAmDbusWrapper*) 1), //
@@ -47,6 +49,9 @@ CAmControlInterfaceTest::CAmControlInterfaceTest() :
         pControlReceiver(&pDatabaseHandler, &pRoutingSender, &pCommandSender, &pSocketHandler, &pRouter), //
         pRoutingReceiver(&pDatabaseHandler, &pRoutingSender, &pControlSender, &pSocketHandler, pDBusWrapper)
 {
+	CAmDltWrapper::instance(0)->registerApp("AudioManagerDeamon", "AudioManagerDeamon");
+    CAmDltWrapper::instance()->registerContext(AudioManager, "Main", "Main Context");
+    logInfo("The Audiomanager is started");
     pDatabaseHandler.registerObserver(&pDatabaseObserver);
     pControlInterfaceBackdoor.replaceController(&pControlSender, &pMockControlInterface);
     pRoutingInterfaceBackdoor.injectInterface(&pRoutingSender, &pMockRoutingInterface, "mock");
@@ -257,6 +262,64 @@ TEST_F(CAmControlInterfaceTest,ackDisconnect)
 
     //Now let's try to disconnect what is not existing...
     ASSERT_EQ(E_NON_EXISTENT, pControlReceiver.disconnect(handle,2));
+}
+
+TEST_F(CAmControlInterfaceTest,ackDisconnectFailAndRetry)
+{
+	logInfo("ackDisconnectFailAndRetry test started");
+    am_connectionID_t connectionID;
+    am_Sink_s sink;
+    am_sinkID_t sinkID;
+    am_Domain_s domain;
+    am_domainID_t domainID;
+    std::vector<am_Connection_s> connectionList;
+    std::vector<am_Handle_s> handlesList;
+    am_Handle_s handle;
+    pCF.createSink(sink);
+    pCF.createDomain(domain);
+    domain.name = "mock";
+    domain.busname = "mock";
+    sink.sinkID = 2;
+    sink.domainID = 1;
+
+    //prepare the stage
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
+
+    //now we first need to connect, we expect a call on the routing interface
+    EXPECT_CALL(pMockRoutingInterface,asyncConnect(_,1,2,2,CF_GENIVI_STEREO)).WillOnce(Return(E_OK));
+    ASSERT_EQ(E_OK, pControlReceiver.connect(handle,connectionID,CF_GENIVI_STEREO,2,2));
+
+    //answer with an ack to insert the connection in the database
+    EXPECT_CALL(pMockControlInterface,cbAckConnect(_,E_OK)).Times(1);
+    pRoutingReceiver.ackConnect(handle, connectionID, E_OK);
+
+    //now we can start to disconnect and expect a call on the routing interface
+    EXPECT_CALL(pMockRoutingInterface,asyncDisconnect(_,1)).WillOnce(Return(E_OK));
+    ASSERT_EQ(E_OK, pControlReceiver.disconnect(handle,1));
+
+    //during the disconnection, the connection is still in the list!
+    ASSERT_EQ(E_OK, pDatabaseHandler.getListConnections(connectionList));
+    ASSERT_TRUE(!connectionList.empty());
+
+    //then we fire the ack and expect a call on the controlInterface
+    EXPECT_CALL(pMockControlInterface,cbAckDisconnect(_,E_NON_EXISTENT)).Times(1);
+    pRoutingReceiver.ackDisconnect(handle, connectionID, E_NON_EXISTENT);
+
+    //make sure the handle is gone
+    ASSERT_EQ(E_OK, pControlReceiver.getListHandles(handlesList));
+    ASSERT_TRUE(handlesList.empty());
+
+    //make sure the connection is still there
+    ASSERT_EQ(E_OK, pDatabaseHandler.getListConnections(connectionList));
+    ASSERT_FALSE(connectionList.empty());
+    
+    ASSERT_TRUE(pDatabaseHandler.existConnectionID(1));
+
+    //Now let's try to disconnect now
+    EXPECT_CALL(pMockRoutingInterface,asyncDisconnect(_,1)).WillOnce(Return(E_OK));
+    ASSERT_EQ(E_OK, pControlReceiver.disconnect(handle,1));
+    logInfo("ackDisconnectFailAndRetry test finished");
 }
 
 TEST_F(CAmControlInterfaceTest,setSourceState)
