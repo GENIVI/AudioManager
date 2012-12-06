@@ -214,7 +214,6 @@ am_Error_e CAmRoutingSender::asyncDisconnect(am_Handle_s& handle, const am_conne
         handle = createHandle(handleData, H_DISCONNECT);
         mMapHandleInterface.insert(std::make_pair(+ handle.handle, iter->second));
         am_Error_e returnVal = iter->second->asyncDisconnect(handle, connectionID);
-        mMapConnectionInterface.erase(iter);
         return (returnVal);
     }
 
