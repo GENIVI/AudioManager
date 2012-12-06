@@ -399,6 +399,7 @@ TEST_F(CAmRoutingInterfaceTest,disconnect)
     ASSERT_TRUE(listHandles[1].handleType==handle.handleType);
 }
 
+
 TEST_F(CAmRoutingInterfaceTest,nothingTodisconnect)
 {
     am_Handle_s handle;

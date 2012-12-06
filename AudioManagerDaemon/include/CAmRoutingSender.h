@@ -52,6 +52,7 @@ public:
     am_Error_e removeSourceLookup(const am_sourceID_t sourceID);
     am_Error_e removeSinkLookup(const am_sinkID_t sinkID);
     am_Error_e removeCrossfaderLookup(const am_crossfaderID_t crossfaderID);
+    am_Error_e removeConnectionLookup(const am_connectionID_t connectionID);
 
     am_Error_e startupInterfaces(CAmRoutingReceiver* iRoutingReceiver);
     void setRoutingReady();

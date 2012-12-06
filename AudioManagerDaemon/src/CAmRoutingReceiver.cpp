@@ -92,6 +92,10 @@ void CAmRoutingReceiver::ackDisconnect(const am_Handle_s handle, const am_connec
     if (error == E_OK)
     {
         mpDatabaseHandler->removeConnection(connectionID);
+        if (mpRoutingSender->removeConnectionLookup(connectionID)!=E_OK)
+        {
+            logError("CAmRoutingReceiver::ackDisconnect could not remove connectionId from lookup");
+        }
     }
     mpControlSender->cbAckDisconnect(handle, error);
 }
@@ -378,4 +382,17 @@ void am::CAmRoutingReceiver::waitOnRundown(bool rundown)
 {
     mWaitRundown = rundown;
 }
+
+am_Error_e CAmRoutingSender::removeConnectionLookup(const am_connectionID_t connectionID)
+{
+    ConnectionInterfaceMap::iterator iter = mMapConnectionInterface.begin();
+    iter = mMapConnectionInterface.find(connectionID);
+    if (iter != mMapConnectionInterface.end())
+    {
+        mMapConnectionInterface.erase(iter);
+        return (E_OK);
+    }
+    return (E_UNKNOWN);
+}
+
 }
