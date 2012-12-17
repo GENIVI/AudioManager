@@ -36,14 +36,21 @@ namespace am
 
 CAmControlSender* CAmControlSender::mInstance=NULL;
 
-CAmControlSender::CAmControlSender(std::string controlPluginFile) :
+CAmControlSender::CAmControlSender(std::string controlPluginFile,CAmSocketHandler* sockethandler) :
+        receiverCallbackT(this, &CAmControlSender::receiverCallback),//
+        checkerCallbackT(this, &CAmControlSender::checkerCallback),//
+        dispatcherCallbackT(this, &CAmControlSender::dispatcherCallback), //
+        mPipe(), //
         mlibHandle(NULL), //
-        mController(NULL)
+        mController(NULL), //
+        mSignal(0)
 {
+    assert(sockethandler);
     std::ifstream isfile(controlPluginFile.c_str());
     if (!isfile)
     {
         logError("ControlSender::ControlSender: Controller plugin not found:", controlPluginFile);
+        throw std::runtime_error("Could not find controller plugin!");
     }
     else if (!controlPluginFile.empty())
     {
@@ -70,6 +77,18 @@ CAmControlSender::CAmControlSender(std::string controlPluginFile) :
     {
         logError("ControlSender::ControlSender: No controller loaded !");
     }
+
+    //here we need a pipe to be able to call the rundown function out of the mainloop
+    if (pipe(mPipe) == -1)
+    {
+        logError("CAmControlSender could not create pipe!");
+    }
+
+    //add the pipe to the poll - nothing needs to be proccessed here we just need the pipe to trigger the ppoll
+    short event = 0;
+    sh_pollHandle_t handle;
+    event |= POLLIN;
+    sockethandler->addFDPoll(mPipe[0], event, NULL, &receiverCallbackT, &checkerCallbackT, &dispatcherCallbackT, NULL, handle);
 }
 
 CAmControlSender::~CAmControlSender()
@@ -323,10 +342,11 @@ void CAmControlSender::setControllerReady()
     mController->setControllerReady();
 }
 
-void CAmControlSender::setControllerRundown()
+void CAmControlSender::setControllerRundown(const int16_t signal)
 {
     assert(mController);
-    mController->setControllerRundown();
+    logInfo("CAmControlSender::setControllerRundown received, signal=",signal);
+    mController->setControllerRundown(signal);
 }
 
 am_Error_e am::CAmControlSender::getConnectionFormatChoice(const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_Route_s listRoute, const std::vector<am_ConnectionFormat_e> listPossibleConnectionFormats, std::vector<am_ConnectionFormat_e> & listPrioConnectionFormats)
@@ -340,27 +360,150 @@ void CAmControlSender::getInterfaceVersion(std::string & version) const
     version = ControlSendVersion;
 }
 
-void CAmControlSender::confirmCommandReady()
+void CAmControlSender::confirmCommandReady(const am_Error_e error)
 {
     assert(mController);
-    mController->confirmCommandReady();
+    mController->confirmCommandReady(error);
 }
 
-void CAmControlSender::confirmRoutingReady()
+void CAmControlSender::confirmRoutingReady(const am_Error_e error)
 {
     assert(mController);
-    mController->confirmRoutingReady();
+    mController->confirmRoutingReady(error);
 }
 
-void CAmControlSender::confirmCommandRundown()
+void CAmControlSender::confirmCommandRundown(const am_Error_e error)
 {
     assert(mController);
-    mController->confirmCommandRundown();
+    mController->confirmCommandRundown(error);
 }
 
-void CAmControlSender::confirmRoutingRundown()
+void CAmControlSender::confirmRoutingRundown(const am_Error_e error)
 {
     assert(mController);
-    mController->confirmRoutingRundown();
+    mController->confirmRoutingRundown(error);
 }
+
+void CAmControlSender::hookSystemNodeStateChanged(const NsmNodeState_e NodeStateId)
+{
+    assert(mController);
+    mController->hookSystemNodeStateChanged(NodeStateId);
+}
+
+void CAmControlSender::hookSystemNodeApplicationModeChanged(const NsmApplicationMode_e ApplicationModeId)
+{
+    assert(mController);
+    mController->hookSystemNodeApplicationModeChanged(ApplicationModeId);
+}
+
+am_Error_e CAmControlSender::hookSystemUpdateSink(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s> listSoundProperties, const std::vector<am_ConnectionFormat_e> listConnectionFormats, std::vector<am_MainSoundProperty_s> listMainSoundProperties)
+{
+    assert(mController);
+    return (mController->hookSystemUpdateSink(sinkID,sinkClassID,listSoundProperties,listConnectionFormats,listMainSoundProperties));
+}
+
+am_Error_e CAmControlSender::hookSystemUpdateSource(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_SoundProperty_s> listSoundProperties, const std::vector<am_ConnectionFormat_e> listConnectionFormats, std::vector<am_MainSoundProperty_s> listMainSoundProperties)
+{
+    assert(mController);
+    return (mController->hookSystemUpdateSource(sourceID,sourceClassID,listSoundProperties,listConnectionFormats,listMainSoundProperties));
+}
+
+am_Error_e CAmControlSender::hookSystemUpdateGateway(const am_gatewayID_t gatewayID, const std::vector<am_ConnectionFormat_e> listSourceConnectionFormats, const std::vector<am_ConnectionFormat_e> listSinkConnectionFromats, const std::vector<bool> convertionMatrix)
+{
+    assert(mController);
+    return (mController->hookSystemUpdateGateway(gatewayID,listSourceConnectionFormats,listSinkConnectionFromats,convertionMatrix));
+}
+
+void CAmControlSender::cbAckSetVolume(const am_Handle_s handle, const std::vector<am_Volumes_s> listVolumes, const am_Error_e error)
+{
+    assert(mController);
+    mController->cbAckSetVolume(handle,listVolumes,error);
+}
+
+void CAmControlSender::cbAckSetSinkNotificationConfiguration(const am_Handle_s handle, const am_Error_e error)
+{
+    assert(mController);
+    mController->cbAckSetSinkNotificationConfiguration(handle,error);
+}
+
+void CAmControlSender::cbAckSetSourceNotificationConfiguration(const am_Handle_s handle, const am_Error_e error)
+{
+    assert(mController);
+    mController->cbAckSetSourceNotificationConfiguration(handle,error);
+}
+
+void CAmControlSender::hookSinkNotificationDataChanged(const am_sinkID_t sinkID, const am_NotificationPayload_s payload)
+{
+    assert(mController);
+    mController->hookSinkNotificationDataChanged(sinkID,payload);
+}
+
+void CAmControlSender::hookSourceNotificationDataChanged(const am_sourceID_t sourceID, const am_NotificationPayload_s payload)
+{
+    assert(mController);
+    mController->hookSourceNotificationDataChanged(sourceID,payload);
+}
+
+am_Error_e CAmControlSender::hookUserSetMainSinkNotificationConfiguration(const am_sinkID_t sinkID, const am_NotificationConfiguration_s notificationConfiguration)
+{
+    assert(mController);
+    return (mController->hookUserSetMainSinkNotificationConfiguration(sinkID,notificationConfiguration));
+}
+
+am_Error_e CAmControlSender::hookUserSetMainSourceNotificationConfiguration(const am_sourceID_t sourceID, const am_NotificationConfiguration_s notificationConfiguration)
+{
+    assert(mController);
+    return (mController->hookUserSetMainSourceNotificationConfiguration(sourceID,notificationConfiguration));
+}
+
+void CAmControlSender::receiverCallback(const pollfd pollfd, const sh_pollHandle_t handle, void* userData)
+{
+   (void) handle;
+   (void) userData;
+   //get the signal number from the socket
+   read(pollfd.fd, &mSignal, sizeof(mSignal));
+}
+
+bool CAmControlSender::checkerCallback(const sh_pollHandle_t handle, void* userData)
+{
+   (void) handle;
+   (void) userData;
+   return (true);
+}
+
+void CAmControlSender::hookSystemSessionStateChanged(const std::string sessionName, const int32_t seatID, const NsmSessionState_e sessionStateID)
+{
+    assert(mController);
+    mController->hookSystemSessionStateChanged(sessionName,seatID,sessionStateID);
+}
+
+NsmErrorStatus_e CAmControlSender::hookSystemLifecycleRequest(const uint32_t Request, const uint32_t RequestId)
+{
+    assert(mController);
+    return (mController->hookSystemLifecycleRequest(Request,RequestId));
+}
+
+/**for testing only contructor - do not use !
+ *
+ */
+CAmControlSender::CAmControlSender() :
+    receiverCallbackT(this, &CAmControlSender::receiverCallback),//
+    checkerCallbackT(this, &CAmControlSender::checkerCallback),//
+    dispatcherCallbackT(this, &CAmControlSender::dispatcherCallback), //
+    mPipe(), //
+    mlibHandle(NULL), //
+    mController(NULL), //
+    mSignal(0)
+{
+    logInfo("CAmControlSender was loaded in test mode!");
+}
+
+bool CAmControlSender::dispatcherCallback(const sh_pollHandle_t handle, void* userData)
+{
+   (void)handle;
+   (void)userData;
+   setControllerRundown(mSignal);
+   return (false);
+}
+
 }

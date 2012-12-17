@@ -57,6 +57,7 @@
 #include "CAmControlReceiver.h"
 #include "CAmDatabaseObserver.h"
 #include "CAmWatchdog.h"
+#include "CAmNodeStateCommunicator.h"
 #include "shared/CAmDltWrapper.h"
 #include "shared/CAmSocketHandler.h"
 
@@ -265,15 +266,32 @@ static void signalHandler(int sig, siginfo_t *siginfo, void *context)
     (void) siginfo;
     (void) context;
     logInfo("signal handler was called, signal",sig);
-    //todo: maually fire the mainloop
-    CAmControlSender::CallsetControllerRundown();
 
-    //deinit the DLT
-    CAmDltWrapper* inst(getWrapper());
-    inst->deinit();
+    switch (sig)
+    {
+        /*ctl +c lets call direct controllerRundown, because we might be blocked at the moment.
+        But there is the risk of interrupting something important */
+        case SIGINT:
+            CAmControlSender::CallsetControllerRundown(sig);
+            break;
 
-    CAmSocketHandler::static_exit_mainloop();
+        /* huch- we are getting killed. Better take the fast but risky way: */
+        case SIGQUIT:
+            CAmControlSender::CallsetControllerRundown(sig);
+            break;
 
+        /* more friendly here assuming systemd wants to stop us, so we can use the mainloop */
+        case SIGTERM:
+            CAmControlSender::CallsetControllerRundownSafe(sig);
+            break;
+
+        /* looks friendly, too, so lets take the long run */
+        case SIGHUP:
+            CAmControlSender::CallsetControllerRundownSafe(sig);
+            break;
+        default:
+            break;
+    }
 }
 
 void mainProgram()
@@ -283,6 +301,7 @@ void mainProgram()
 
 #ifdef WITH_DBUS_WRAPPER
     CAmDbusWrapper iDBusWrapper(&iSocketHandler,dbusWrapperType);
+    CAmNodeStateCommunicator iNodeStateCommunicator(&iDBusWrapper);
 #endif /*WITH_DBUS_WRAPPER */
 
 #ifdef WITH_SYSTEMD_WATCHDOG
@@ -292,18 +311,20 @@ void mainProgram()
     CAmDatabaseHandler iDatabaseHandler(databasePath);
     CAmRoutingSender iRoutingSender(listRoutingPluginDirs);
     CAmCommandSender iCommandSender(listCommandPluginDirs);
-    CAmControlSender iControlSender(controllerPlugin);
+    CAmControlSender iControlSender(controllerPlugin,&iSocketHandler);
     CAmRouter iRouter(&iDatabaseHandler, &iControlSender);
 
 #ifdef WITH_DBUS_WRAPPER
     CAmCommandReceiver iCommandReceiver(&iDatabaseHandler, &iControlSender, &iSocketHandler, &iDBusWrapper);
     CAmRoutingReceiver iRoutingReceiver(&iDatabaseHandler, &iRoutingSender, &iControlSender, &iSocketHandler, &iDBusWrapper);
-    CAmControlReceiver iControlReceiver(&iDatabaseHandler, &iRoutingSender, &iCommandSender, &iSocketHandler, &iRouter);
+    CAmControlReceiver iControlReceiver(&iDatabaseHandler,&iRoutingSender,&iCommandSender,&iSocketHandler, &iRouter, &iNodeStateCommunicator);
+    iNodeStateCommunicator.registerControlSender(&iControlSender);
 #else /*WITH_DBUS_WRAPPER*/
     CAmCommandReceiver iCommandReceiver(&iDatabaseHandler,&iControlSender,&iSocketHandler);
     CAmRoutingReceiver iRoutingReceiver(&iDatabaseHandler,&iRoutingSender,&iControlSender,&iSocketHandler);
     CAmControlReceiver iControlReceiver(&iDatabaseHandler,&iRoutingSender,&iCommandSender,&iSocketHandler, &iRouter);
 #endif /*WITH_DBUS_WRAPPER*/
+
 
 #ifdef WITH_TELNET
     CAmTelnetServer iTelnetServer(&iSocketHandler, &iCommandSender, &iCommandReceiver, &iRoutingSender, &iRoutingReceiver, &iControlSender, &iControlReceiver, &iDatabaseHandler, &iRouter, telnetport, maxConnections);
@@ -378,13 +399,18 @@ int main(int argc, char *argv[], char** envp)
     catch (std::exception& exc)
     {
         logError("The AudioManager ended by throwing the exception", exc.what());
-        //todo: ergency exit here... call destructors etc...
+        std::cerr<<"The AudioManager ended by throwing an exception "<<exc.what()<<std::endl;
         exit(EXIT_FAILURE);
     }
 
     close(fd0);
     close(fd1);
     close(fd2);
+
+    //deinit the DLT
+    CAmDltWrapper* inst(getWrapper());
+    inst->deinit();
+
     exit(0);
 
 }

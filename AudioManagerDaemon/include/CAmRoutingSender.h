@@ -72,6 +72,9 @@ public:
     am_Error_e getListHandles(std::vector<am_Handle_s> & listHandles) const;
     am_Error_e getListPlugins(std::vector<std::string>& interfaces) const;
     void getInterfaceVersion(std::string& version) const;
+    am_Error_e asyncSetVolumes(am_Handle_s& handle, const std::vector<am_Volumes_s>& listVolumes);
+    am_Error_e asyncSetSinkNotificationConfiguration(am_Handle_s& handle, const am_sinkID_t sinkID, const am_NotificationConfiguration_s& notificationConfiguration);
+    am_Error_e asyncSetSourceNotificationConfiguration(am_Handle_s& handle, const am_sourceID_t sourceID, const am_NotificationConfiguration_s& notificationConfiguration);
 
     struct InterfaceNamePairs //!< is used to pair interfaces with busnames
     {
@@ -88,6 +91,7 @@ public:
             am_sourceID_t sourceID;
             am_crossfaderID_t crossfaderID;
             am_connectionID_t connectionID;
+            am_DataType_u volumeID;
         };
 
         union
@@ -97,6 +101,8 @@ public:
             am_volume_t volume;
             am_HotSink_e hotSink;
             std::vector<am_SoundProperty_s>* soundProperties;
+            std::vector<am_Volumes_s>* listVolumes;
+            am_NotificationConfiguration_s* notificationConfiguration;
         };
 
     };

@@ -73,8 +73,8 @@ mNumThreads(numThreads)
     mListWorkers.resize(mNumThreads);
     for (int i=0;i<mNumThreads;i++)
     {
-        sem_init(&mListWorkers[i].block,NULL,NULL);
-        sem_init(&mListWorkers[i].cancel,NULL,NULL);
+        sem_init(&mListWorkers[i].block,0,0);
+        sem_init(&mListWorkers[i].cancel,0,0);
         mListWorkers[i].busy=false;
         mListWorkers[i].workerID=++workerID;
         pthread_create(&mListWorkers[i].threadID,NULL,&CAmWorkerThreadPool::CAmWorkerThread,(void*)&mListWorkers[i]);
@@ -234,7 +234,7 @@ void CAmRoutingSenderAsync::setRoutingReady(const uint16_t handle)
 void CAmRoutingSenderAsync::setRoutingRundown(const uint16_t handle)
 {
     assert(mReceiveInterface!=0);
-    mShadow->confirmRoutingRundown(handle);
+    mShadow->confirmRoutingRundown(handle,E_OK);
 }
 
 am_Error_e CAmRoutingSenderAsync::asyncAbort(const am_Handle_s handle)
@@ -315,7 +315,7 @@ am_Error_e CAmRoutingSenderAsync::asyncConnect(const am_Handle_s handle, const a
 
     //save the handle related to the workerID
     pthread_mutex_lock(&mMapHandleWorkerMutex);
-    mMapHandleWorker.insert(std::make_pair(handle.handle, work));
+    mMapHandleWorker.insert(std::make_pair(+handle.handle, work));
     pthread_mutex_unlock(&mMapHandleWorkerMutex);
 
     return (E_OK);
@@ -350,7 +350,7 @@ am_Error_e CAmRoutingSenderAsync::asyncDisconnect(const am_Handle_s handle, cons
 
     //save the handle related to the workerID
     pthread_mutex_lock(&mMapHandleWorkerMutex);
-    mMapHandleWorker.insert(std::make_pair(handle.handle, work));
+    mMapHandleWorker.insert(std::make_pair(+handle.handle, work));
     pthread_mutex_unlock(&mMapHandleWorkerMutex);
 
     return (E_OK);
@@ -392,7 +392,7 @@ am_Error_e CAmRoutingSenderAsync::asyncSetSinkVolume(const am_Handle_s handle, c
 
     //save the handle related to the workerID
     pthread_mutex_lock(&mMapHandleWorkerMutex);
-    mMapHandleWorker.insert(std::make_pair(handle.handle, work));
+    mMapHandleWorker.insert(std::make_pair(+handle.handle, work));
     pthread_mutex_unlock(&mMapHandleWorkerMutex);
 
     return (E_OK);
@@ -434,7 +434,7 @@ am_Error_e CAmRoutingSenderAsync::asyncSetSourceVolume(const am_Handle_s handle,
 
     //save the handle related to the workerID
     pthread_mutex_lock(&mMapHandleWorkerMutex);
-    mMapHandleWorker.insert(std::make_pair(handle.handle, work));
+    mMapHandleWorker.insert(std::make_pair(+handle.handle, work));
     pthread_mutex_unlock(&mMapHandleWorkerMutex);
 
     return (E_OK);
@@ -476,7 +476,7 @@ am_Error_e CAmRoutingSenderAsync::asyncSetSourceState(const am_Handle_s handle, 
 
     //save the handle related to the workerID
     pthread_mutex_lock(&mMapHandleWorkerMutex);
-    mMapHandleWorker.insert(std::make_pair(handle.handle, work));
+    mMapHandleWorker.insert(std::make_pair(+handle.handle, work));
     pthread_mutex_unlock(&mMapHandleWorkerMutex);
 
     return (E_OK);
@@ -518,7 +518,7 @@ am_Error_e CAmRoutingSenderAsync::asyncSetSinkSoundProperty(const am_Handle_s ha
 
     //save the handle related to the workerID
     pthread_mutex_lock(&mMapHandleWorkerMutex);
-    mMapHandleWorker.insert(std::make_pair(handle.handle, work));
+    mMapHandleWorker.insert(std::make_pair(+handle.handle, work));
     pthread_mutex_unlock(&mMapHandleWorkerMutex);
 
     return (E_OK);
@@ -607,7 +607,7 @@ am_Error_e CAmRoutingSenderAsync::asyncSetSourceSoundProperty(const am_Handle_s 
 
     //save the handle related to the workerID
     pthread_mutex_lock(&mMapHandleWorkerMutex);
-    mMapHandleWorker.insert(std::make_pair(handle.handle, work));
+    mMapHandleWorker.insert(std::make_pair(+handle.handle, work));
     pthread_mutex_unlock(&mMapHandleWorkerMutex);
 
     return (E_OK);
@@ -877,6 +877,32 @@ am_Error_e CAmRoutingSenderAsync::asyncSetSinkSoundProperties(const am_Handle_s 
     (void) handle;
     (void) sinkID;
     (void) listSoundProperties;
+    return (E_NOT_USED);
+}
+
+am_Error_e am::CAmRoutingSenderAsync::asyncSetVolumes(const am_Handle_s handle, const std::vector<am_Volumes_s>& listVolumes)
+{
+    (void)handle;
+    (void)listVolumes;
+    //todo: implement
+    return (E_NOT_USED);
+}
+
+am_Error_e am::CAmRoutingSenderAsync::asyncSetSinkNotificationConfiguration(const am_Handle_s handle, const am_sinkID_t sinkID, const am_NotificationConfiguration_s& notificationConfiguration)
+{
+    (void)handle;
+    (void)sinkID;
+    (void)notificationConfiguration;
+    //todo: implement
+    return (E_NOT_USED);
+}
+
+am_Error_e am::CAmRoutingSenderAsync::asyncSetSourceNotificationConfiguration(const am_Handle_s handle, const am_sourceID_t sourceID, const am_NotificationConfiguration_s& notificationConfiguration)
+{
+    (void)handle;
+    (void)sourceID;
+    (void)notificationConfiguration;
+    //todo: implement
     return (E_NOT_USED);
 }
 
@@ -1283,7 +1309,7 @@ void syncRegisterWorker::start2work()
     }
 
     mAsyncSender->updateSinkListSafe(mListSinks);
-    mShadow->confirmRoutingReady(mHandle);
+    mShadow->confirmRoutingReady(mHandle,E_OK);
 }
 
 void syncRegisterWorker::cancelWork()

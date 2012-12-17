@@ -23,7 +23,7 @@
 Description=The GENIVI AudioManager
 
 [Service]
-#Type=notify
+Type=notify
 User=christian
 ExecStart=/usr/bin/AudioManager
 Restart=always

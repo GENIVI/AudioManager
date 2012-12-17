@@ -102,8 +102,8 @@ public:
     void setCommandRundown();
     void setRoutingReady();
     void setRoutingRundown();
-    void confirmControllerReady();
-    void confirmControllerRundown();
+    void confirmControllerReady(am_Error_e error);
+    void confirmControllerRundown(am_Error_e error);
     am_Error_e getSocketHandler(CAmSocketHandler*& socketHandler);
 private:
     IAmControlReceive *mpIAmControlReceiver;

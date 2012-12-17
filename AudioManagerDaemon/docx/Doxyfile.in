@@ -78,9 +78,9 @@ LAYOUT_FILE            =
 # configuration options related to warning and progress messages
 #---------------------------------------------------------------------------
 QUIET                  = YES
-WARNINGS               = YES
-WARN_IF_UNDOCUMENTED   = YES
-WARN_IF_DOC_ERROR      = YES
+WARNINGS               = NO
+WARN_IF_UNDOCUMENTED   = NO
+WARN_IF_DOC_ERROR      = NO
 WARN_NO_PARAMDOC       = NO
 WARN_FORMAT            = "$file:$line: $text "
 WARN_LOGFILE           =
@@ -93,7 +93,7 @@ FILE_PATTERNS          = *.h *.cpp *.dox
 RECURSIVE              = YES
 EXCLUDE                = 
 EXCLUDE_SYMLINKS       = NO
-EXCLUDE_PATTERNS       = */test/* */Plugin*/* */build*/*
+EXCLUDE_PATTERNS       = */test/* */Plugin*/* */build*/* */cmake/* */exampleCode/* */googleMock/* */ProjectSpecific/*
 EXCLUDE_SYMBOLS        =
 EXAMPLE_PATH           = @CMAKE_SOURCE_DIR@
 EXAMPLE_PATTERNS       = 

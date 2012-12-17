@@ -33,6 +33,8 @@ namespace am
 class CAmEnvironment: public ::testing::Environment
 {
 public:
+    CAmSocketHandler pSocketHandler;
+    MockIAmRoutingReceive pReceiveInterface;
     static std::vector<std::string> returnListPlugins();
     static am_Error_e handleDomainRegister(const am_Domain_s& domainData, am_domainID_t& domainID);
     static am_Error_e handleSourceRegister(const am_Source_s& sourceData, am_sourceID_t& sourceID);

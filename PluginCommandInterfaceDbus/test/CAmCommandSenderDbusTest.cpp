@@ -122,7 +122,7 @@ ACTION(returnListSourceClasses){
 std::vector<am::am_SourceClass_s> list;
 am::am_SourceClass_s listItem;
 am::am_ClassProperty_s property;
-property.classProperty=CP_MAX;
+property.classProperty=static_cast<am_ClassProperty_e>(2);
 property.value=12;
 listItem.name="FirstCLass";
 listItem.sourceClassID=23;
@@ -139,7 +139,7 @@ ACTION(returnListSinkClasses){
 std::vector<am::am_SinkClass_s> list;
 am::am_SinkClass_s listItem;
 am::am_ClassProperty_s property;
-property.classProperty=CP_MAX;
+property.classProperty=static_cast<am_ClassProperty_e>(1);
 property.value=122;
 listItem.name="FirstCLass";
 listItem.sinkClassID=2123;
@@ -202,7 +202,7 @@ TEST_F(CAmCommandSenderDbusTest, MessageTest)
 
 //	ok, here we give the DBusWrapper pointer to the Plugin and start the interface
     EXPECT_CALL(pReceiveInterface,getDBusConnectionWrapper(_)).WillRepeatedly(DoAll(SetArgReferee<0>(&pDBusWrapper), Return(E_OK)));
-    EXPECT_CALL(pReceiveInterface, confirmCommandReady(10));
+    EXPECT_CALL(pReceiveInterface, confirmCommandReady(10,E_OK));
 
     ppCommandSend->startupInterface(&pReceiveInterface);
     ppCommandSend->setCommandReady(10);

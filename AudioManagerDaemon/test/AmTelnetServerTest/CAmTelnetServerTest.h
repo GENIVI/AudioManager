@@ -63,7 +63,7 @@ class CAmEnvironment : public ::testing::Environment
   std::vector<std::string> mlistRoutingPluginDirs;
   std::vector<std::string> mlistCommandPluginDirs;
 
-  //SocketHandler*    mpSocketHandler;
+  CAmSocketHandler     mSocketHandler;
   CAmDatabaseHandler   mDatabasehandler;
   CAmRoutingSender     mRoutingSender;
   CAmCommandSender     mCommandSender;

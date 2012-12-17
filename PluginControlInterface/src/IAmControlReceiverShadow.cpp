@@ -319,14 +319,14 @@ void IAmControlReceiverShadow::setRoutingRundown()
     mCAmSerializer.asyncCall<IAmControlReceive>(mpIAmControlReceiver, &IAmControlReceive::setRoutingRundown);
 }
 
-void IAmControlReceiverShadow::confirmControllerReady()
+void am::IAmControlReceiverShadow::confirmControllerReady(am_Error_e error)
 {
-    mCAmSerializer.asyncCall<IAmControlReceive>(mpIAmControlReceiver, &IAmControlReceive::confirmControllerReady);
+    mCAmSerializer.asyncCall<IAmControlReceive,am_Error_e>(mpIAmControlReceiver,&IAmControlReceive::confirmControllerReady,error);
 }
 
-void IAmControlReceiverShadow::confirmControllerRundown()
+void am::IAmControlReceiverShadow::confirmControllerRundown(am_Error_e error)
 {
-    mCAmSerializer.asyncCall<IAmControlReceive>(mpIAmControlReceiver, &IAmControlReceive::confirmControllerRundown);
+	mCAmSerializer.asyncCall<IAmControlReceive,am_Error_e>(mpIAmControlReceiver, &IAmControlReceive::confirmControllerRundown,error);
 }
 
 am_Error_e IAmControlReceiverShadow::getSocketHandler(CAmSocketHandler *& socketHandler)
@@ -517,5 +517,7 @@ am_Error_e IAmControlReceiverShadow::getListGatewaysOfDomain(am_domainID_t domai
     mCAmSerializer.syncCall<IAmControlReceive, am_Error_e, const am_domainID_t, std::vector<am_gatewayID_t>&, am_domainID_t, std::vector<am_gatewayID_t> >(mpIAmControlReceiver, &IAmControlReceive::getListGatewaysOfDomain, error, domainID, listGatewaysID);
     return (error);
 }
+
+
 
 } /* namespace am */

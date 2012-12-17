@@ -99,12 +99,12 @@ void IAmRoutingReceiverShadow::hookInterruptStatusChange(const am_sourceID_t sou
 
 void IAmRoutingReceiverShadow::hookSinkAvailablityStatusChange(const am_sinkID_t sinkID, const am_Availability_s & availability)
 {
-    mSerializer.asyncCall<IAmRoutingReceive, const am_sinkID_t, const am_Availability_s&>(mRoutingReceiveInterface, &IAmRoutingReceive::hookSinkAvailablityStatusChange, sinkID, availability);
+    mSerializer.asyncCall<IAmRoutingReceive, const am_sinkID_t, const am_Availability_s>(mRoutingReceiveInterface, &IAmRoutingReceive::hookSinkAvailablityStatusChange, sinkID, availability);
 }
 
 void IAmRoutingReceiverShadow::hookSourceAvailablityStatusChange(const am_sourceID_t sourceID, const am_Availability_s & availability)
 {
-    mSerializer.asyncCall<IAmRoutingReceive, const am_sourceID_t, const am_Availability_s&>(mRoutingReceiveInterface, &IAmRoutingReceive::hookSourceAvailablityStatusChange, sourceID, availability);
+    mSerializer.asyncCall<IAmRoutingReceive, const am_sourceID_t, const am_Availability_s>(mRoutingReceiveInterface, &IAmRoutingReceive::hookSourceAvailablityStatusChange, sourceID, availability);
 }
 
 void IAmRoutingReceiverShadow::hookDomainStateChange(const am_domainID_t domainID, const am_DomainState_e domainState)
@@ -173,14 +173,14 @@ am_Error_e am::IAmRoutingReceiverShadow::registerCrossfader(const am_Crossfader_
     return (error);
 }
 
-void am::IAmRoutingReceiverShadow::confirmRoutingReady(uint16_t starupHandle)
+void am::IAmRoutingReceiverShadow::confirmRoutingReady(uint16_t starupHandle, am_Error_e error)
 {
-    mSerializer.asyncCall<IAmRoutingReceive,uint16_t>(mRoutingReceiveInterface,&IAmRoutingReceive::confirmRoutingReady,starupHandle);
+    mSerializer.asyncCall<IAmRoutingReceive,uint16_t,am_Error_e>(mRoutingReceiveInterface,&IAmRoutingReceive::confirmRoutingReady,starupHandle,error);
 }
 
-void am::IAmRoutingReceiverShadow::confirmRoutingRundown(uint16_t rundownHandle)
+void am::IAmRoutingReceiverShadow::confirmRoutingRundown(uint16_t rundownHandle, am_Error_e error)
 {
-    mSerializer.asyncCall<IAmRoutingReceive,uint16_t>(mRoutingReceiveInterface,&IAmRoutingReceive::confirmRoutingRundown,rundownHandle);
+    mSerializer.asyncCall<IAmRoutingReceive,uint16_t,am_Error_e>(mRoutingReceiveInterface,&IAmRoutingReceive::confirmRoutingRundown,rundownHandle,error);
 }
 
 

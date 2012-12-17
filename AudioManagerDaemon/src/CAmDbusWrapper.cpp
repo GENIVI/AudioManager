@@ -302,7 +302,6 @@ void CAmDbusWrapper::toogleWatchDelegate(DBusWatch *watch, void *userData)
     iterator = mMapHandleWatch.find(watch);
     if (iterator != mMapHandleWatch.end())
         mpSocketHandler->updateEventFlags(iterator->second, event);
-    logInfo("DBusWrapper::toogleWatchDelegate watch was toggeled");
 }
 
 dbus_bool_t CAmDbusWrapper::addTimeout(DBusTimeout *timeout, void* userData)
@@ -337,7 +336,6 @@ dbus_bool_t CAmDbusWrapper::addTimeoutDelegate(DBusTimeout *timeout, void* userD
 
     //save timeout in Socket context
     userData = timeout;
-    logInfo("DBusWrapper::addTimeoutDelegate a timeout was added, timeout",localTimeout," handle ", *handle);
     return (true);
 }
 
@@ -366,8 +364,7 @@ void CAmDbusWrapper::removeTimeoutDelegate(DBusTimeout *timeout, void* userData)
         }
     }
     delete handle;
-    logInfo("DBusWrapper::removeTimeoutDelegate a timeout was removed");
-}
+ }
 
 void CAmDbusWrapper::toggleTimeout(DBusTimeout *timeout, void* userData)
 {
@@ -446,12 +443,10 @@ void CAmDbusWrapper::toggleTimeoutDelegate(DBusTimeout *timeout, void* userData)
     {
         mpSocketHandler->stopTimer(*handle);
     }
-    logInfo("DBusWrapper::toggleTimeoutDelegate was called");
 }
 
 void CAmDbusWrapper::dbusTimerCallback(sh_timerHandle_t handle, void *userData)
 {
-    logInfo("DBusWrapper::dbusTimerCallback was called");
     assert(userData!=NULL);
     if (dbus_timeout_get_enabled((DBusTimeout*) userData))
     {

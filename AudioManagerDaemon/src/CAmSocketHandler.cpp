@@ -34,9 +34,9 @@
 namespace am
 {
 
-CAmSocketHandler* CAmSocketHandler::mInstance=NULL;
-
 CAmSocketHandler::CAmSocketHandler() :
+        receiverCallbackT(this, &CAmSocketHandler::receiverCallback),//
+        checkerCallbackT(this, &CAmSocketHandler::checkerCallback),//
         mPipe(),
         mListPoll(), //
         mListTimer(), //
@@ -44,12 +44,9 @@ CAmSocketHandler::CAmSocketHandler() :
         mLastInsertedHandle(0), //
         mLastInsertedPollHandle(0), //
         mRecreatePollfds(true), //
-        mStartTime(), //
-        receiverCallbackT(this, &CAmSocketHandler::receiverCallback),//
-        checkerCallbackT(this, &CAmSocketHandler::checkerCallback)//
+        mStartTime() //
 {
     gDispatchDone = 1;
-    mInstance=this;
 
     if (pipe(mPipe) == -1)
     {
@@ -525,14 +522,6 @@ void CAmSocketHandler::exit_mainloop()
     //fire the ending filedescriptor
     int p(1);
     write(mPipe[1], &p, sizeof(p));
-}
-
-void CAmSocketHandler::static_exit_mainloop()
-{
-    if (mInstance!=0)
-    {
-        mInstance->exit_mainloop();
-    }
 }
 
 /**

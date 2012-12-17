@@ -64,9 +64,6 @@ OPTION( WITH_PLUGIN_CONTROL
 OPTION( WITH_PLUGIN_ROUTING
 	"Build routing pluings" ON)
 
-OPTION( WITH_MAIN
-	"Build with daemon" ON)
-
 OPTION( WITH_TELNET
 	"build with Telnetserver (can only work with SocketHandler)" ON)
 	
@@ -99,6 +96,21 @@ ENDIF(NOT DEFINED DEFAULT_TELNETPORT)
 IF(NOT DEFINED MAX_TELNETCONNECTIONS)
 	SET( MAX_TELNETCONNECTIONS 3 )
 ENDIF(NOT DEFINED MAX_TELNETCONNECTIONS)
+
+#Can be changed via passing -DNSM_BUS_INTERFACE="XXX" to cmake
+IF(NOT DEFINED NSM_BUS_INTERFACE)
+	SET( NSM_BUS_INTERFACE "org.genivi.NodeStateManager")
+ENDIF(NOT DEFINED NSM_BUS_INTERFACE)
+
+#Can be changed via passing -DNSM_PATH="XXX" to cmake
+IF(NOT DEFINED NSM_PATH)
+	SET( NSM_PATH "/org/genivi/NodeStateManager")
+ENDIF(NOT DEFINED NSM_PATH)
+
+#Can be changed via passing -DNSM_INTERFACE="XXX" to cmake
+IF(NOT DEFINED NSM_INTERFACE)
+	SET( NSM_INTERFACE "org.genivi.NodeStateManager.Consumer")
+ENDIF(NOT DEFINED NSM_INTERFACE)
 
 SET(PLUGINS_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin/plugins)
 SET(LIB_INSTALL_SUFFIX "audioManager")
@@ -137,7 +149,6 @@ SET(TEST_EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin/test)
 SET(DOXY_PROTOTYPE ${CMAKE_SOURCE_DIR}/cmake/DoxyFile.in)
 SET(DOXY_FILE ${CMAKE_CURRENT_BINARY_DIR}/DoxyFile)
 
-CONFIGURE_FILE( ${CMAKE_SOURCE_DIR}/cmake/config.cmake ${CMAKE_SOURCE_DIR}/include/config.h )
 CONFIGURE_FILE( ${CMAKE_SOURCE_DIR}/AudioManagerDaemon/docx/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/DoxyFile )
 
 IF(WITH_DLT)    
@@ -160,7 +171,7 @@ IF(WITH_DOCUMENTATION)
 ENDIF(WITH_DOCUMENTATION)
 
 ##global build flags set(CPACK_RPM_COMPONENT_INSTALL ON)
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Wextra -std=c++98 -D_GNU_SOURCE -pedantic -Wno-variadic-macros -Wno-long-long")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Wextra -std=gnu++0x -D_GNU_SOURCE -pedantic -Wno-variadic-macros -Wno-long-long")
 #set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Wextra -std=c++98 -D_GNU_SOURCE")
 
 if(WITH_PLUGIN_COMMAND)
@@ -169,16 +180,14 @@ endif(WITH_PLUGIN_COMMAND)
 
 if(WITH_PLUGIN_ROUTING)
 	add_subdirectory (PluginRoutingInterfaceDbus)
-#	add_subdirectory (PluginRoutingInterfaceAsync)
+	add_subdirectory (PluginRoutingInterfaceAsync)
 endif(WITH_PLUGIN_ROUTING)
 
 if(WITH_PLUGIN_CONTROL)
 	add_subdirectory (PluginControlInterface)
 endif(WITH_PLUGIN_CONTROL)
 
-if(WITH_MAIN)
-	add_subdirectory (AudioManagerDaemon)
-endif(WITH_MAIN)
+add_subdirectory (AudioManagerDaemon)
 
 IF(EXISTS "${CMAKE_SOURCE_DIR}/ProjectSpecific/")
     add_subdirectory (ProjectSpecific)

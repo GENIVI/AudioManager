@@ -44,9 +44,8 @@ static CAmSocketHandler* mpSocketHandler = NULL;
 void* startSocketHandler(void* data)
 {
     CAmEnvironment* Env = static_cast<CAmEnvironment*>(data);
-    CAmSocketHandler mySocketHandler;
-    Env->setSocketHandler(&mySocketHandler);
-    mySocketHandler.start_listenting();
+    Env->setSocketHandler(&Env->mSocketHandler);
+    Env->mSocketHandler.start_listenting();
     Env->setSocketHandler(NULL);
     return (NULL);
 }
@@ -54,11 +53,11 @@ void* startSocketHandler(void* data)
 CAmEnvironment::CAmEnvironment()
 : mlistRoutingPluginDirs()
 , mlistCommandPluginDirs()
-//, mpSocketHandler(NULL)
+, mSocketHandler()
 , mDatabasehandler(std::string(":memory:"))
 , mRoutingSender(mlistRoutingPluginDirs)
 , mCommandSender(mlistRoutingPluginDirs)
-, mControlSender(controllerPlugin)
+, mControlSender(controllerPlugin,&mSocketHandler)
 , mRouter(&mDatabasehandler,&mControlSender)
 , mpCommandReceiver(NULL)
 , mpRoutingReceiver(NULL)
@@ -172,7 +171,7 @@ TEST_F(CAmTelnetServerTest,sendCmdTelnetServer)
     std::string string("help");
 
     ssize_t sizesent = send(staticSocket, string.c_str(), string.size(), 0);
-    ASSERT_EQ(sizesent,string.size());
+    ASSERT_EQ(static_cast<uint>(sizesent),string.size());
 
     char buffer[1000];
     memset(buffer,0,sizeof(buffer));
@@ -187,7 +186,7 @@ TEST_F(CAmTelnetServerTest,closeTelnetServerConnection)
     mpSocketHandler->stop_listening();
 
     ssize_t sizesent = send(staticSocket, string.c_str(), string.size(), 0);
-    ASSERT_EQ(sizesent,string.size());
+    ASSERT_EQ(static_cast<uint>(sizesent),string.size());
 
     char buffer[1000];
     memset(buffer,0,sizeof(buffer));

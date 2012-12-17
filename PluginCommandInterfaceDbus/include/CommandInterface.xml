@@ -5,7 +5,6 @@
 
 <node>
      <interface name="org.genivi.audiomanager.CommandInterface">
-
         <method name="Connect">
             <arg type="q" name="sourceID" direction="in"/>
             <arg type="q" name="sinkID" direction="in"/>
@@ -92,7 +91,7 @@
 
         <method name="GetListSystemProperties">
             <arg type="n" name="result" direction="out"/> <!-- method return code (am_Error_e) -->
-            <arg type="a(nn)" name="listSystemProperties" direction="in"/> <!-- am_SystemProperty_e type; int16_t value; -->
+            <arg type="a(nn)" name="listSystemProperties" direction="out"/> <!-- am_SystemProperty_e type; int16_t value; -->
         </method>
 
         <method name="GetTimingInformation">
@@ -100,24 +99,35 @@
             <arg type="n" name="result" direction="out"/> <!-- method return code (am_Error_e) -->
             <arg type="n" name="delay" direction="out"/>
         </method>
+        
+        <method name="GetListSinkMainNotificationConfigurations">
+            <arg type="q" name="sinkID" direction="in"/>
+            <arg type="n" name="result" direction="out"/> <!-- method return code (am_Error_e) -->
+            <arg type="a(nnn)" name="listMainNotificationConfigurations" direction="out"/> <!-- am_am_notification_e type; am_NotificationStatus_e status; int16t parameter; -->
+        </method>
+        
+        <method name="GetListSourceMainNotificationConfigurations">
+            <arg type="q" name="sourceID" direction="in"/>
+            <arg type="n" name="result" direction="out"/> <!-- method return code (am_Error_e) -->
+            <arg type="a(nnn)" name="listMainNotificationConfigurations" direction="out"/> <!-- am_am_notification_e type; am_NotificationStatus_e status; int16t parameter; -->
+        </method>
 
-        <signal name="NumberOfMainConnectionsChanged">
-        </signal>
+        <signal name="NumberOfMainConnectionsChanged"></signal>
 
-	<signal name="SinkAdded">
-            	<arg type="(qs(nn)nnq)" name="newSink" direction="out"/><!-- am_sinkID_t sinkID; std::string name; am_Availability_s availability; am_mainVolume_t volume; am_MuteState_e muteState; am_sinkClass_t sinkClassID; -->
+		<signal name="SinkAdded">
+            	<arg type="(qs(nn)nnq)" name="newSink" direction="out"/> <!-- am_sinkID_t sinkID; std::string name; am_Availability_s availability; am_mainVolume_t volume; am_MuteState_e muteState; am_sinkClass_t sinkClassID; -->
         </signal>
 		
-	<signal name="SinkRemoved">
+		<signal name="SinkRemoved">
 		<arg type="q" name="removedSinkID" direction="out"/>
         </signal>
 
-	<signal name="SourceAdded">
-            	<arg type="(qs(nn)q)" name="newSource" direction="out"/><!-- am_sourceID_t sourceID; std::string name; 	am_Availability_s availability; am_sourceClass_t sourceClassID; -->
+		<signal name="SourceAdded">
+            	<arg type="(qs(nn)q)" name="newSource" direction="out"/> <!-- am_sourceID_t sourceID; std::string name; 	am_Availability_s availability; am_sourceClass_t sourceClassID; -->
         </signal>
 		
-	<signal name="SourceRemoved">
-		<arg type="q" name="removedSourceID" direction="out"/>
+		<signal name="SourceRemoved">
+			<arg type="q" name="removedSourceID" direction="out"/>
         </signal>
 
         <signal name="NumberOfSinkClassesChanged">
@@ -169,6 +179,38 @@
             <arg type="q" name="mainConnection" direction="out"/>
             <arg type="n" name="time" direction="out"/>
         </signal>
-
+        
+        <signal name="SinkUpdated">
+			<arg type="q" name="sinkID" direction="out"/>
+			<arg type="q" name="sinkClassID" direction="out"/>
+			<arg type="a(nn)" name="listMainSinkProperties" direction="out"/> <!-- am_MainSoundPropertyType_e type; int16_t value; -->
+        </signal>
+        
+        <signal name="SourceUpdated">
+			<arg type="q" name="sourceID" direction="out"/>
+			<arg type="q" name="sourceClassID" direction="out"/>
+			<arg type="a(nn)" name="listMainSinkProperties" direction="out"/> <!-- am_MainSoundPropertyType_e type; int16_t value; -->
+        </signal>
+        
+        <signal name="SourceNotification">
+			<arg type="q" name="sourceID" direction="out"/>
+			<arg type="(nn)" name="notificationPayload" direction="out"/> <!-- am_notification_e type; int16_t value; -->
+        </signal>
+        
+        <signal name="SinkNotification">
+			<arg type="q" name="sinkID" direction="out"/>
+			<arg type="(nn)" name="notificationPayload" direction="out"/> <!-- am_notification_e type; int16_t value; -->
+        </signal>
+        
+        <signal name="SinkMainNotificationConfigurationChanged">
+			<arg type="q" name="sinkID" direction="out"/>
+			<arg type="(nnn)" name="mainNotificationConfiguration" direction="out"/> <!-- am_am_notification_e type; am_NotificationStatus_e status; int16t parameter; -->
+        </signal>
+        
+        <signal name="SourceMainNotificationConfigurationChanged">
+			<arg type="q" name="sourceID" direction="out"/>
+			<arg type="(nnn)" name="mainNotificationConfiguration" direction="out"/> <!-- am_am_notification_e type; am_NotificationStatus_e status; int16t parameter; -->
+        </signal>
+       
     </interface>
 </node>

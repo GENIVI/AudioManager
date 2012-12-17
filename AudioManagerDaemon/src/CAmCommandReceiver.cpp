@@ -39,7 +39,9 @@ CAmCommandReceiver::CAmCommandReceiver(CAmDatabaseHandler *iDatabaseHandler, CAm
         mListStartupHandles(), //
         mListRundownHandles(), //
         mWaitStartup(false), //
-        mWaitRundown(false)
+        mWaitRundown(false),
+        mLastErrorStartup(E_OK), //
+        mLastErrorRundown(E_OK) //
 
 {
     assert(mDatabaseHandler!=NULL);
@@ -184,18 +186,22 @@ void CAmCommandReceiver::getInterfaceVersion(std::string & version) const
     version = CommandReceiveVersion;
 }
 
-void CAmCommandReceiver::confirmCommandReady(const uint16_t handle)
+void CAmCommandReceiver::confirmCommandReady(const uint16_t handle, const am_Error_e error)
 {
+	if (error !=E_OK)
+		mLastErrorStartup=error;
     mListStartupHandles.erase(std::remove(mListStartupHandles.begin(), mListStartupHandles.end(), handle), mListStartupHandles.end());
     if (mWaitStartup && mListStartupHandles.empty())
-        mControlSender->confirmCommandReady();
+        mControlSender->confirmCommandReady(mLastErrorStartup);
 }
 
-void CAmCommandReceiver::confirmCommandRundown(const uint16_t handle)
+void CAmCommandReceiver::confirmCommandRundown(const uint16_t handle, const am_Error_e error)
 {
+	if (error !=E_OK)
+		mLastErrorRundown=error;
     mListRundownHandles.erase(std::remove(mListRundownHandles.begin(), mListRundownHandles.end(), handle), mListRundownHandles.end());
     if (mWaitRundown && mListRundownHandles.empty())
-        mControlSender->confirmCommandRundown();
+        mControlSender->confirmCommandRundown(mLastErrorRundown);
 }
 
 uint16_t CAmCommandReceiver::getStartupHandle()
@@ -215,11 +221,35 @@ uint16_t CAmCommandReceiver::getRundownHandle()
 void CAmCommandReceiver::waitOnStartup(bool startup)
 {
     mWaitStartup = startup;
+    mLastErrorStartup=E_OK;
+}
+
+am_Error_e CAmCommandReceiver::getListSinkMainNotificationConfigurations(const am_sinkID_t sinkID, std::vector<am_NotificationConfiguration_s>& listMainNotificationConfigurations) const
+{
+    return (mDatabaseHandler->getListSinkMainNotificationConfigurations(sinkID,listMainNotificationConfigurations));
+}
+
+am_Error_e CAmCommandReceiver::getListSourceMainNotificationConfigurations(const am_sourceID_t sourceID, std::vector<am_NotificationConfiguration_s>& listMainNotificationConfigurations) const
+{
+    return (mDatabaseHandler->getListSourceMainNotificationConfigurations(sourceID,listMainNotificationConfigurations));
+}
+
+am_Error_e CAmCommandReceiver::setSinkMainNotificationConfiguration(const am_sinkID_t sinkID, const am_NotificationConfiguration_s mainNotificationConfiguration)
+{
+    logInfo("CommandReceiver::setSinkMainNotificationConfiguration got called, sinkID=", sinkID, " notificationType=",mainNotificationConfiguration.notificationType, " parameter=", mainNotificationConfiguration.notificationParameter, "status=",mainNotificationConfiguration.notificationStatus);
+    return (mControlSender->hookUserSetMainSinkNotificationConfiguration(sinkID,mainNotificationConfiguration));
+}
+
+am_Error_e CAmCommandReceiver::setSourceMainNotificationConfiguration(const am_sourceID_t sourceID, const am_NotificationConfiguration_s mainNotificationConfiguration)
+{
+    logInfo("CommandReceiver::setSourceMainNotificationConfiguration got called, sourceID=", sourceID, " notificationType=",mainNotificationConfiguration.notificationType, " parameter=", mainNotificationConfiguration.notificationParameter, "status=",mainNotificationConfiguration.notificationStatus);
+    return (mControlSender->hookUserSetMainSourceNotificationConfiguration(sourceID,mainNotificationConfiguration));
 }
 
 void CAmCommandReceiver::waitOnRundown(bool rundown)
 {
     mWaitRundown = rundown;
+    mLastErrorStartup=E_OK;
 }
 
 }

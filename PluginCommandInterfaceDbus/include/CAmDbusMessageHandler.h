@@ -80,6 +80,7 @@ public:
     double getDouble();
     char* getString();
     void getProperty(dbus_int16_t& type, dbus_int16_t& value);
+    void getNotificationConfiguration(dbus_int16_t& notificationType, dbus_int16_t& notificationStatus, dbus_int16_t& notificationParameter);
 
     /**
      * the overloaded append function appends different datatypes to the dbusmessage
@@ -101,6 +102,9 @@ public:
     void append(const std::vector<am::am_SourceClass_s>& listSourceClasses);
     void append(const std::vector<am::am_SinkClass_s>& listSinkClasses);
     void append(const std::vector<am::am_SystemProperty_s>& listSystemProperties);
+    void append(const std::vector<am::am_NotificationConfiguration_s>& listNotifications);
+    void append(const am::am_NotificationPayload_s& notificationPayload);
+    void append(const am::am_NotificationConfiguration_s& notificationConfiguration);
 
 private:
 

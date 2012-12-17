@@ -54,6 +54,8 @@ file(GLOB CONTROL_INTERFACE_SRCS_CXX
     "../../src/CAmDltWrapper.cpp"
     "../../src/CAmSocketHandler.cpp"
     "../../src/CAmCommandReceiver.cpp"
+    "../../src/CAmNodeStateCommunicator.cpp"
+    "../../src/CAmDbusWrapper.cpp"
     "../CAmCommonFunctions.cpp" 
     "*.cpp"    
 )

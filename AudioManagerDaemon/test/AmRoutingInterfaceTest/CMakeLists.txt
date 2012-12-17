@@ -57,6 +57,8 @@ file(GLOB ROUTING_INTERFACE_SRCS_CXX
     "../../src/CAmSocketHandler.cpp"
     "../../src/CAmRoutingReceiver.cpp"
     "../../src/CAmCommandReceiver.cpp"
+    "../../src/CAmNodeStateCommunicator.cpp"
+    "../../src/CAmDbusWrapper.cpp"
     "*.cpp"
 )
 

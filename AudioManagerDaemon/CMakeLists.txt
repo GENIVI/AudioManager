@@ -69,6 +69,7 @@ IF(WITH_DBUS_WRAPPER)
     SET (AUDIOMAN_SRCS_CXX
         ${AUDIOMAN_SRCS_CXX}
         src/CAmDbusWrapper.cpp
+        src/CAmNodeStateCommunicator.cpp
     )
 ENDIF(WITH_DBUS_WRAPPER)
 
@@ -129,10 +130,6 @@ IF (SYSTEMD_FOUND)
 	)
 ENDIF (SYSTEMD_FOUND)
 
-IF(WITH_TESTS)
-	add_subdirectory (test)
-ENDIF(WITH_TESTS)
-
 #IF(WITH_DOCUMENTATION)
 #	file(MAKE_DIRECTORY ${DOC_OUTPUT_PATH})
 #	configure_file(${DOXY_FILE}  ${DOC_OUTPUT_PATH}/Doxyfile  @ONLY IMMEDIATE)
@@ -153,6 +150,27 @@ INSTALL(DIRECTORY "${AUDIO_INCLUDE_FOLDER}/"
         DESTINATION include
         COMPONENT dev
 )
+
+IF(WITH_DBUS_WRAPPER)
+    IF(USE_BUILD_LIBS) 
+        SET(NSM_INTROSPECTION_FILE ${EXECUTABLE_OUTPUT_PATH}/LifeCycleConsumer.xml)
+            execute_process(
+    	    COMMAND mkdir -p "${CMAKE_SOURCE_DIR}/bin"
+    	    COMMAND cp "${CMAKE_SOURCE_DIR}/cmake/LifecycleConsumer.xml" ${NSM_INTROSPECTION_FILE})
+    ELSE(USE_BUILD_LIBS) 
+        SET(NSM_INTROSPECTION_FILE ${CMAKE_INSTALL_PREFIX}/share/audiomanager/LifeCycleConsumer.xml)
+        INSTALL(
+            FILES ${CMAKE_SOURCE_DIR}/cmake/LifecycleConsumer.xml
+            DESTINATION "${NSM_INTROSPECTION_FILE}"
+            COMPONENT bin)
+    ENDIF(USE_BUILD_LIBS)
+ENDIF(WITH_DBUS_WRAPPER)
+
+CONFIGURE_FILE( ${CMAKE_SOURCE_DIR}/cmake/config.cmake ${CMAKE_SOURCE_DIR}/include/config.h )
+
+IF(WITH_TESTS)
+	add_subdirectory (test)
+ENDIF(WITH_TESTS)
 
 # General packet dependency
 SET(ADD_DEPEND_BIN_PROP "sqlite3(>=3.6.22)")

@@ -345,6 +345,32 @@ void CAmRoutingSenderDbus::removeSourceLookup(am_sourceID_t sourceID)
     mMapHandles.erase(sourceID);
 }
 
+am_Error_e CAmRoutingSenderDbus::asyncSetVolumes(const am_Handle_s handle, const std::vector<am_Volumes_s>& listVolumes)
+{
+    (void) handle;
+    (void) listVolumes;
+    //todo: implement asyncSetVolumes;
+    return (E_NOT_USED);
+}
+
+am_Error_e CAmRoutingSenderDbus::asyncSetSinkNotificationConfiguration(const am_Handle_s handle, const am_sinkID_t sinkID, const am_NotificationConfiguration_s& notificationConfiguration)
+{
+    (void) handle;
+    (void) sinkID;
+    (void) notificationConfiguration;
+    //todo: implement asyncSetSinkNotificationConfiguration;
+    return (E_NOT_USED);
+}
+
+am_Error_e CAmRoutingSenderDbus::asyncSetSourceNotificationConfiguration(const am_Handle_s handle, const am_sourceID_t sourceID, const am_NotificationConfiguration_s& notificationConfiguration)
+{
+    (void) handle;
+    (void) sourceID;
+    (void) notificationConfiguration;
+    //todo: implement asyncSetSourceNotificationConfiguration;
+    return (E_NOT_USED);
+}
+
 void CAmRoutingSenderDbus::removeSinkLookup(am_sinkID_t sinkID)
 {
     mMapHandles.erase(sinkID);

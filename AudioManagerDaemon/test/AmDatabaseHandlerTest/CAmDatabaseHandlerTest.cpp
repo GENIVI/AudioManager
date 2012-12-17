@@ -45,7 +45,7 @@ CAmDatabaseHandlerTest::CAmDatabaseHandlerTest() :
         pMockInterface(), //
         pRoutingInterfaceBackdoor(), //
         pCommandInterfaceBackdoor(), //
-        pControlSender(""), //
+        pControlSender(), //
         pRouter(&pDatabaseHandler, &pControlSender), //
         pControlReceiver(&pDatabaseHandler, &pRoutingSender, &pCommandSender,  &pSocketHandler, &pRouter), //
         pObserver(&pCommandSender,&pRoutingSender, &pSocketHandler)
@@ -1913,6 +1913,285 @@ TEST_F(CAmDatabaseHandlerTest,enterSinksCorrect)
         }
     }
     ASSERT_EQ(true, equal);
+}
+
+TEST_F(CAmDatabaseHandlerTest,enterNotificationConfigurationCorrect)
+{
+    am_Sink_s testSinkData;
+    pCF.createSink(testSinkData);
+    testSinkData.sinkID = 4;
+    am_sinkID_t sinkID;
+    std::vector<am_Sink_s> listSinks;
+
+    am_NotificationConfiguration_s notify;
+    notify.notificationType=NT_UNKNOWN;
+    notify.notificationStatus=NS_CHANGE;
+    notify.notificationParameter=25;
+    testSinkData.listNotificationConfigurations.push_back(notify);
+
+    //enter the sink in the database
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(testSinkData,sinkID))
+        << "ERROR: database error";
+
+    //read it again
+    ASSERT_EQ(E_OK,pDatabaseHandler.getListSinks(listSinks))
+        << "ERROR: database error";
+
+    ASSERT_EQ(listSinks.begin()->listNotificationConfigurations.begin()->notificationParameter,notify.notificationParameter);
+    ASSERT_EQ(listSinks.begin()->listNotificationConfigurations.begin()->notificationStatus,notify.notificationStatus);
+    ASSERT_EQ(listSinks.begin()->listNotificationConfigurations.begin()->notificationType,notify.notificationType);
+}
+
+TEST_F(CAmDatabaseHandlerTest,enterMainNotificationConfigurationCorrect)
+{
+    am_Sink_s testSinkData;
+    pCF.createSink(testSinkData);
+    testSinkData.sinkID = 4;
+    am_sinkID_t sinkID;
+    std::vector<am_Sink_s> listSinks;
+
+    am_NotificationConfiguration_s notify;
+    notify.notificationType=NT_UNKNOWN;
+    notify.notificationStatus=NS_CHANGE;
+    notify.notificationParameter=25;
+
+    testSinkData.listMainNotificationConfigurations.push_back(notify);
+
+    //enter the sink in the database
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(testSinkData,sinkID))
+        << "ERROR: database error";
+
+    //read it again
+    ASSERT_EQ(E_OK,pDatabaseHandler.getListSinks(listSinks))
+        << "ERROR: database error";
+
+    ASSERT_EQ(listSinks.begin()->listMainNotificationConfigurations.begin()->notificationParameter,notify.notificationParameter);
+    ASSERT_EQ(listSinks.begin()->listMainNotificationConfigurations.begin()->notificationStatus,notify.notificationStatus);
+    ASSERT_EQ(listSinks.begin()->listMainNotificationConfigurations.begin()->notificationType,notify.notificationType);
+}
+
+TEST_F(CAmDatabaseHandlerTest,removeNotifications)
+{
+    am_Sink_s testSinkData;
+    pCF.createSink(testSinkData);
+    testSinkData.sinkID = 4;
+    am_sinkID_t sinkID;
+    std::vector<am_Sink_s> listSinks;
+
+    am_NotificationConfiguration_s notify;
+    notify.notificationType=NT_UNKNOWN;
+    notify.notificationStatus=NS_CHANGE;
+    notify.notificationParameter=25;
+
+    testSinkData.listMainNotificationConfigurations.push_back(notify);
+
+    //enter the sink in the database
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(testSinkData,sinkID))
+        << "ERROR: database error";
+
+    //read it again
+    ASSERT_EQ(E_OK,pDatabaseHandler.getListSinks(listSinks))
+        << "ERROR: database error";
+
+    ASSERT_EQ(listSinks.begin()->listMainNotificationConfigurations.begin()->notificationParameter,notify.notificationParameter);
+    ASSERT_EQ(listSinks.begin()->listMainNotificationConfigurations.begin()->notificationStatus,notify.notificationStatus);
+    ASSERT_EQ(listSinks.begin()->listMainNotificationConfigurations.begin()->notificationType,notify.notificationType);
+
+    //now we remove the sink
+    ASSERT_EQ(E_OK,pDatabaseHandler.removeSinkDB(sinkID));
+}
+
+TEST_F(CAmDatabaseHandlerTest,getMainNotificationsSink)
+{
+    am_Sink_s testSinkData;
+    pCF.createSink(testSinkData);
+    testSinkData.sinkID = 4;
+    am_sinkID_t sinkID;
+    std::vector<am_Sink_s> listSinks;
+    std::vector<am_NotificationConfiguration_s>returnList;
+
+    am_NotificationConfiguration_s notify;
+    notify.notificationType=NT_UNKNOWN;
+    notify.notificationStatus=NS_CHANGE;
+    notify.notificationParameter=25;
+
+    testSinkData.listMainNotificationConfigurations.push_back(notify);
+
+    am_NotificationConfiguration_s notify1;
+    notify1.notificationType=NT_MAX;
+    notify1.notificationStatus=NS_PERIODIC;
+    notify1.notificationParameter=5;
+
+    testSinkData.listMainNotificationConfigurations.push_back(notify1);
+
+    //enter the sink in the database
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(testSinkData,sinkID))
+        << "ERROR: database error";
+
+    //read it again
+    ASSERT_EQ(E_OK,pDatabaseHandler.getListSinkMainNotificationConfigurations(sinkID,returnList))
+        << "ERROR: database error";
+
+    ASSERT_EQ(returnList[0].notificationParameter,notify.notificationParameter);
+    ASSERT_EQ(returnList[0].notificationStatus,notify.notificationStatus);
+    ASSERT_EQ(returnList[0].notificationType,notify.notificationType);
+
+    ASSERT_EQ(returnList[1].notificationParameter,notify1.notificationParameter);
+    ASSERT_EQ(returnList[1].notificationStatus,notify1.notificationStatus);
+    ASSERT_EQ(returnList[1].notificationType,notify1.notificationType);
+
+}
+
+TEST_F(CAmDatabaseHandlerTest,getMainNotificationsSources)
+{
+    am_Source_s testSourceData;
+    pCF.createSource(testSourceData);
+    testSourceData.sourceID = 4;
+    am_sourceID_t sourceID;
+    std::vector<am_Source_s> listSources;
+    std::vector<am_NotificationConfiguration_s>returnList;
+
+    am_NotificationConfiguration_s notify;
+    notify.notificationType=NT_UNKNOWN;
+    notify.notificationStatus=NS_CHANGE;
+    notify.notificationParameter=25;
+
+    testSourceData.listMainNotificationConfigurations.push_back(notify);
+
+    am_NotificationConfiguration_s notify1;
+    notify1.notificationType=NT_MAX;
+    notify1.notificationStatus=NS_PERIODIC;
+    notify1.notificationParameter=5;
+
+    testSourceData.listMainNotificationConfigurations.push_back(notify1);
+
+    //enter the sink in the database
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceDB(testSourceData,sourceID))
+        << "ERROR: database error";
+
+    //read it again
+    ASSERT_EQ(E_OK,pDatabaseHandler.getListSourceMainNotificationConfigurations(sourceID,returnList))
+        << "ERROR: database error";
+
+    ASSERT_EQ(returnList[0].notificationParameter,notify.notificationParameter);
+    ASSERT_EQ(returnList[0].notificationStatus,notify.notificationStatus);
+    ASSERT_EQ(returnList[0].notificationType,notify.notificationType);
+
+    ASSERT_EQ(returnList[1].notificationParameter,notify1.notificationParameter);
+    ASSERT_EQ(returnList[1].notificationStatus,notify1.notificationStatus);
+    ASSERT_EQ(returnList[1].notificationType,notify1.notificationType);
+
+}
+
+TEST_F(CAmDatabaseHandlerTest,changeMainNotificationsSources)
+{
+    am_Source_s testSourceData;
+    pCF.createSource(testSourceData);
+    testSourceData.sourceID = 4;
+    am_sourceID_t sourceID;
+    std::vector<am_Source_s> listSources;
+    std::vector<am_NotificationConfiguration_s>returnList,returnList1;
+
+    am_NotificationConfiguration_s notify;
+    notify.notificationType=NT_UNKNOWN;
+    notify.notificationStatus=NS_CHANGE;
+    notify.notificationParameter=25;
+
+    testSourceData.listMainNotificationConfigurations.push_back(notify);
+
+    am_NotificationConfiguration_s notify1;
+    notify1.notificationType=NT_MAX;
+    notify1.notificationStatus=NS_PERIODIC;
+    notify1.notificationParameter=5;
+
+    am_NotificationConfiguration_s notify2;
+    notify2.notificationType=NT_MAX;
+    notify2.notificationStatus=NS_CHANGE;
+    notify2.notificationParameter=10;
+
+    testSourceData.listMainNotificationConfigurations.push_back(notify1);
+
+    //enter the sink in the database
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceDB(testSourceData,sourceID))
+        << "ERROR: database error";
+
+    //read it again
+    ASSERT_EQ(E_OK,pDatabaseHandler.getListSourceMainNotificationConfigurations(sourceID,returnList))
+        << "ERROR: database error";
+
+    ASSERT_EQ(returnList[0].notificationParameter,notify.notificationParameter);
+    ASSERT_EQ(returnList[0].notificationStatus,notify.notificationStatus);
+    ASSERT_EQ(returnList[0].notificationType,notify.notificationType);
+
+    ASSERT_EQ(returnList[1].notificationParameter,notify1.notificationParameter);
+    ASSERT_EQ(returnList[1].notificationStatus,notify1.notificationStatus);
+    ASSERT_EQ(returnList[1].notificationType,notify1.notificationType);
+
+    //change a setting
+    ASSERT_EQ(E_OK,pDatabaseHandler.changeMainSourceNotificationConfigurationDB(sourceID,notify2));
+
+    ASSERT_EQ(E_OK,pDatabaseHandler.getListSourceMainNotificationConfigurations(sourceID,returnList1))
+        << "ERROR: database error";
+
+    ASSERT_EQ(returnList1[1].notificationParameter,notify2.notificationParameter);
+    ASSERT_EQ(returnList1[1].notificationStatus,notify2.notificationStatus);
+    ASSERT_EQ(returnList1[1].notificationType,notify2.notificationType);
+
+}
+
+TEST_F(CAmDatabaseHandlerTest,changeMainNotificationsSink)
+{
+    am_Sink_s testSinkData;
+    pCF.createSink(testSinkData);
+    testSinkData.sinkID = 4;
+    am_sinkID_t sinkID;
+    std::vector<am_Sink_s> listSinks;
+    std::vector<am_NotificationConfiguration_s>returnList,returnList1;
+
+    am_NotificationConfiguration_s notify;
+    notify.notificationType=NT_UNKNOWN;
+    notify.notificationStatus=NS_CHANGE;
+    notify.notificationParameter=25;
+
+    testSinkData.listMainNotificationConfigurations.push_back(notify);
+
+    am_NotificationConfiguration_s notify1;
+    notify1.notificationType=NT_MAX;
+    notify1.notificationStatus=NS_PERIODIC;
+    notify1.notificationParameter=5;
+
+    am_NotificationConfiguration_s notify2;
+    notify2.notificationType=NT_MAX;
+    notify2.notificationStatus=NS_CHANGE;
+    notify2.notificationParameter=27;
+
+    testSinkData.listMainNotificationConfigurations.push_back(notify1);
+
+    //enter the sink in the database
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(testSinkData,sinkID))
+        << "ERROR: database error";
+
+    //read it again
+    ASSERT_EQ(E_OK,pDatabaseHandler.getListSinkMainNotificationConfigurations(sinkID,returnList))
+        << "ERROR: database error";
+
+    ASSERT_EQ(returnList[0].notificationParameter,notify.notificationParameter);
+    ASSERT_EQ(returnList[0].notificationStatus,notify.notificationStatus);
+    ASSERT_EQ(returnList[0].notificationType,notify.notificationType);
+
+    ASSERT_EQ(returnList[1].notificationParameter,notify1.notificationParameter);
+    ASSERT_EQ(returnList[1].notificationStatus,notify1.notificationStatus);
+    ASSERT_EQ(returnList[1].notificationType,notify1.notificationType);
+
+    ASSERT_EQ(E_OK,pDatabaseHandler.changeMainSinkNotificationConfigurationDB(sinkID,notify2))
+        << "ERROR: database error";
+
+    ASSERT_EQ(E_OK,pDatabaseHandler.getListSinkMainNotificationConfigurations(sinkID,returnList1))
+        << "ERROR: database error";
+
+    ASSERT_EQ(returnList1[1].notificationParameter,notify2.notificationParameter);
+    ASSERT_EQ(returnList1[1].notificationStatus,notify2.notificationStatus);
+    ASSERT_EQ(returnList1[1].notificationType,notify2.notificationType);
 }
 
 //Commented out - gives always a warning..

@@ -30,7 +30,7 @@ CAmRouterTest::CAmRouterTest() :
         plistCommandPluginDirs(), //
         pSocketHandler(), //
         pDatabaseHandler(std::string(":memory:")), //
-        pControlSender(std::string("")), //
+        pControlSender(), //
         pRouter(&pDatabaseHandler, &pControlSender), //
         pRoutingSender(plistRoutingPluginDirs), //
         pCommandSender(plistCommandPluginDirs), //
@@ -121,7 +121,7 @@ TEST_F(CAmRouterTest,simpleRoute2withDomainNoMatchFormats)
     compareRoute.sourceID = sourceID;
 
     ASSERT_EQ(E_OK, pRouter.getRoute(true,sourceID,sinkID,listRoutes));
-    ASSERT_EQ(0, listRoutes.size());
+    ASSERT_EQ(static_cast<uint>(0), listRoutes.size());
 
 }
 
@@ -182,7 +182,7 @@ TEST_F(CAmRouterTest,simpleRoute2withDomain)
     compareRoute.sourceID = sourceID;
 
     ASSERT_EQ(E_OK, pRouter.getRoute(true,sourceID,sinkID,listRoutes));
-    ASSERT_EQ(1, listRoutes.size());
+    ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
     ASSERT_TRUE(pCF.compareRoute(compareRoute,listRoutes[0]));
 
 }
@@ -290,7 +290,7 @@ TEST_F(CAmRouterTest,simpleRoute2DomainsOnlyFree)
     compareRoute.sourceID = sourceID;
 
     ASSERT_EQ(E_OK, pRouter.getRoute(true,sourceID,sinkID,listRoutes));
-    ASSERT_EQ(1, listRoutes.size());
+    ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
     ASSERT_TRUE(pCF.compareRoute(compareRoute,listRoutes[0]));
 
 }
@@ -412,10 +412,10 @@ TEST_F(CAmRouterTest,simpleRoute2DomainsOnlyFreeNotFree)
     ASSERT_EQ(E_OK,pDatabaseHandler.enterConnectionDB(connection1,id2));
 
     ASSERT_EQ(E_OK, pRouter.getRoute(true,sourceID,sinkID,listRoutes));
-    ASSERT_EQ(0, listRoutes.size());
+    ASSERT_EQ(static_cast<uint>(0), listRoutes.size());
 
     ASSERT_EQ(E_OK, pRouter.getRoute(false,sourceID,sinkID,listRoutes));
-    ASSERT_EQ(1, listRoutes.size());
+    ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
     ASSERT_TRUE(pCF.compareRoute(compareRoute,listRoutes[0]));
 }
 
@@ -575,7 +575,7 @@ TEST_F(CAmRouterTest,simpleRoute3DomainsListConnectionFormats_2)
     compareRoute.sourceID = sourceID;
 
     ASSERT_EQ(E_OK, pRouter.getRoute(false,sourceID,sinkID,listRoutes));
-    ASSERT_EQ(1, listRoutes.size());
+    ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
     ASSERT_TRUE(pCF.compareRoute(compareRoute,listRoutes[0]));
 }
 
@@ -729,7 +729,7 @@ TEST_F(CAmRouterTest,simpleRoute3DomainsListConnectionFormats_1)
     compareRoute.sourceID = sourceID;
 
     ASSERT_EQ(E_OK, pRouter.getRoute(false,sourceID,sinkID,listRoutes));
-    ASSERT_EQ(1, listRoutes.size());
+    ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
     ASSERT_TRUE(pCF.compareRoute(compareRoute,listRoutes[0]));
 }
 
@@ -878,7 +878,7 @@ TEST_F(CAmRouterTest,simpleRoute3DomainsListConnectionFormats)
     compareRoute.sourceID = sourceID;
 
     ASSERT_EQ(E_OK, pRouter.getRoute(false,sourceID,sinkID,listRoutes));
-    ASSERT_EQ(1, listRoutes.size());
+    ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
     ASSERT_TRUE(pCF.compareRoute(compareRoute,listRoutes[0]));
 }
 
@@ -1112,7 +1112,7 @@ TEST_F(CAmRouterTest,simpleRoute4Domains2Routes)
     compareRoute1.sourceID = sourceID;
 
     ASSERT_EQ(E_OK, pRouter.getRoute(false,sourceID,sinkID,listRoutes));
-    ASSERT_EQ(2, listRoutes.size());
+    ASSERT_EQ(static_cast<uint>(2), listRoutes.size());
     ASSERT_TRUE(pCF.compareRoute(compareRoute,listRoutes[0]));
     ASSERT_TRUE(pCF.compareRoute(compareRoute1,listRoutes[1]));
 }
@@ -1259,7 +1259,7 @@ TEST_F(CAmRouterTest,simpleRoute3DomainsNoConnection)
     compareRoute.sourceID = sourceID;
 
     ASSERT_EQ(E_OK, pRouter.getRoute(false,sourceID,sinkID,listRoutes));
-    ASSERT_EQ(0, listRoutes.size());
+    ASSERT_EQ(static_cast<uint>(0), listRoutes.size());
 }
 //test that checks just 2 domains, one sink one source with only one connection format each
 TEST_F(CAmRouterTest,simpleRoute2Domains)
@@ -1364,7 +1364,7 @@ TEST_F(CAmRouterTest,simpleRoute2Domains)
     compareRoute.sourceID = sourceID;
 
     ASSERT_EQ(E_OK, pRouter.getRoute(false,sourceID,sinkID,listRoutes));
-    ASSERT_EQ(1, listRoutes.size());
+    ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
     ASSERT_TRUE(pCF.compareRoute(compareRoute,listRoutes[0]));
 
 }
@@ -1472,7 +1472,7 @@ TEST_F(CAmRouterTest,simpleRoute2DomainsNoMatchConnectionFormats)
     compareRoute.sourceID = sourceID;
 
     ASSERT_EQ(E_OK, pRouter.getRoute(false,sourceID,sinkID,listRoutes));
-    ASSERT_EQ(0, listRoutes.size());
+    ASSERT_EQ(static_cast<uint>(0),  listRoutes.size());
 }
 
 //test that checks 3 domains, one sink one source.
@@ -1616,7 +1616,7 @@ TEST_F(CAmRouterTest,simpleRoute3Domains)
     compareRoute.sourceID = sourceID;
 
     ASSERT_EQ(E_OK, pRouter.getRoute(false,sourceID,sinkID,listRoutes));
-    ASSERT_EQ(1, listRoutes.size());
+    ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
     ASSERT_TRUE(pCF.compareRoute(compareRoute,listRoutes[0]));
 }
 

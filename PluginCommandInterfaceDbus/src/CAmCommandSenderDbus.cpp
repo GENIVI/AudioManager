@@ -82,14 +82,14 @@ void CAmCommandSenderDbus::setCommandReady(const uint16_t handle)
     //todo:implement handle handling
     log(&commandDbus, DLT_LOG_INFO, "cbCommunicationReady called");
     mReady = true;
-    mpIAmCommandReceive->confirmCommandReady(handle);
+    mpIAmCommandReceive->confirmCommandReady(handle,E_OK);
 }
 
 void CAmCommandSenderDbus::setCommandRundown(const uint16_t handle)
 {
     log(&commandDbus, DLT_LOG_INFO, "cbCommunicationRundown called");
     mReady = false;
-    mpIAmCommandReceive->confirmCommandRundown(handle);
+    mpIAmCommandReceive->confirmCommandRundown(handle,E_OK);
     /**
      * todo: implement DbusCommandSender::cbCommunicationRundown()
      */
@@ -320,3 +320,82 @@ void CAmCommandSenderDbus::getInterfaceVersion(std::string & version) const
     version = CommandSendVersion;
 }
 
+void am::CAmCommandSenderDbus::cbSinkUpdated(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)
+{
+    log(&commandDbus, DLT_LOG_INFO, "cbSinkUpdated called, sinkID", sinkID);
+
+    if (mReady)
+    {
+        mCAmDbusMessageHandler.initSignal(std::string(MY_NODE), std::string("SinkUpdated"));
+        mCAmDbusMessageHandler.append(static_cast<dbus_uint16_t>(sinkID));
+        mCAmDbusMessageHandler.append(static_cast<dbus_uint16_t>(sinkClassID));
+        mCAmDbusMessageHandler.append(listMainSoundProperties);
+        mCAmDbusMessageHandler.sendMessage();
+    }
+}
+
+void am::CAmCommandSenderDbus::cbSourceUpdated(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)
+{
+    log(&commandDbus, DLT_LOG_INFO, "cbSourceUpdated called, sourceID", sourceID);
+
+    if (mReady)
+    {
+        mCAmDbusMessageHandler.initSignal(std::string(MY_NODE), std::string("SinkUpdated"));
+        mCAmDbusMessageHandler.append(static_cast<dbus_uint16_t>(sourceID));
+        mCAmDbusMessageHandler.append(static_cast<dbus_uint16_t>(sourceClassID));
+        mCAmDbusMessageHandler.append(listMainSoundProperties);
+        mCAmDbusMessageHandler.sendMessage();
+    }
+}
+
+void am::CAmCommandSenderDbus::cbSinkNotification(const am_sinkID_t sinkID, const am_NotificationPayload_s notification)
+{
+    log(&commandDbus, DLT_LOG_INFO, "cbSinkNotification called, sinkID", sinkID);
+
+    if (mReady)
+    {
+        mCAmDbusMessageHandler.initSignal(std::string(MY_NODE), std::string("SinkNotification"));
+        mCAmDbusMessageHandler.append(static_cast<dbus_uint16_t>(sinkID));
+        mCAmDbusMessageHandler.append(notification);
+        mCAmDbusMessageHandler.sendMessage();
+    }
+}
+
+void am::CAmCommandSenderDbus::cbSourceNotification(const am_sourceID_t sourceID, const am_NotificationPayload_s notification)
+{
+    log(&commandDbus, DLT_LOG_INFO, "cbSourceNotification called, sourceID", sourceID);
+
+    if (mReady)
+    {
+        mCAmDbusMessageHandler.initSignal(std::string(MY_NODE), std::string("SourceNotification"));
+        mCAmDbusMessageHandler.append(static_cast<dbus_uint16_t>(sourceID));
+        mCAmDbusMessageHandler.append(notification);
+        mCAmDbusMessageHandler.sendMessage();
+    }
+}
+
+void am::CAmCommandSenderDbus::cbSinkMainNotificationConfigurationChanged(const am_sinkID_t sinkID, const am_NotificationConfiguration_s mainNotificationConfiguration)
+{
+    log(&commandDbus, DLT_LOG_INFO, "cbSinkMainNotificationConfigurationChanged called, sinkID", sinkID);
+
+    if (mReady)
+    {
+        mCAmDbusMessageHandler.initSignal(std::string(MY_NODE), std::string("SinkMainNotificationConfigurationChanged"));
+        mCAmDbusMessageHandler.append(static_cast<dbus_uint16_t>(sinkID));
+        mCAmDbusMessageHandler.append(mainNotificationConfiguration);
+        mCAmDbusMessageHandler.sendMessage();
+    }
+}
+
+void am::CAmCommandSenderDbus::cbSourceMainNotificationConfigurationChanged(const am_sourceID_t sourceID, const am_NotificationConfiguration_s mainNotificationConfiguration)
+{
+    log(&commandDbus, DLT_LOG_INFO, "cbSourceMainNotificationConfigurationChanged called, sourceID", sourceID);
+
+    if (mReady)
+    {
+        mCAmDbusMessageHandler.initSignal(std::string(MY_NODE), std::string("SinkMainNotificationConfigurationChanged"));
+        mCAmDbusMessageHandler.append(static_cast<dbus_uint16_t>(sourceID));
+        mCAmDbusMessageHandler.append(mainNotificationConfiguration);
+        mCAmDbusMessageHandler.sendMessage();
+    }
+}

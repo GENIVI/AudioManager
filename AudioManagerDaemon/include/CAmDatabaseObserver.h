@@ -66,6 +66,10 @@ public:
     void sinkMuteStateChanged(const am_sinkID_t sinkID, const am_MuteState_e muteState);
     void systemPropertyChanged(const am_SystemProperty_s& SystemProperty);
     void timingInformationChanged(const am_mainConnectionID_t mainConnection, const am_timeSync_t time);
+    void sinkUpdated(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties, const bool visible);
+    void sourceUpdated(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties, const bool visible);
+    void sinkMainNotificationConfigurationChanged(const am_sinkID_t sinkID, const am_NotificationConfiguration_s mainNotificationConfiguration);
+    void sourceMainNotificationConfigurationChanged(const am_sourceID_t sourceID, const am_NotificationConfiguration_s mainNotificationConfiguration);
 
 private:
     CAmCommandSender *mCommandSender; //!< pointer to the comandSender

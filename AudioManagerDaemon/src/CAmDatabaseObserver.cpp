@@ -202,4 +202,27 @@ void CAmDatabaseObserver::timingInformationChanged(const am_mainConnectionID_t m
 {
     mSerializer.asyncCall<CAmCommandSender, const am_mainConnectionID_t, const am_timeSync_t>(mCommandSender, &CAmCommandSender::cbTimingInformationChanged, mainConnection, time);
 }
+
+void CAmDatabaseObserver::sinkUpdated(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties, const bool visible)
+{
+    if (visible)
+        mSerializer.asyncCall<CAmCommandSender, const am_sinkID_t, const am_sinkClass_t, const std::vector<am_MainSoundProperty_s> >(mCommandSender, &CAmCommandSender::cbSinkUpdated, sinkID, sinkClassID, listMainSoundProperties);
+}
+
+void CAmDatabaseObserver::sourceUpdated(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties, const bool visible)
+{
+    if (visible)
+        mSerializer.asyncCall<CAmCommandSender, const am_sourceID_t, const am_sourceClass_t, const std::vector<am_MainSoundProperty_s> >(mCommandSender, &CAmCommandSender::cbSinkUpdated, sourceID, sourceClassID, listMainSoundProperties);
+}
+
+void CAmDatabaseObserver::sinkMainNotificationConfigurationChanged(const am_sinkID_t sinkID, const am_NotificationConfiguration_s mainNotificationConfiguration)
+{
+    mSerializer.asyncCall<CAmCommandSender, const am_sinkID_t, const am_NotificationConfiguration_s> (mCommandSender, &CAmCommandSender::cbSinkMainNotificationConfigurationChanged, sinkID, mainNotificationConfiguration);
+}
+
+void CAmDatabaseObserver::sourceMainNotificationConfigurationChanged(const am_sourceID_t sourceID, const am_NotificationConfiguration_s mainNotificationConfiguration)
+{
+    mSerializer.asyncCall<CAmCommandSender, const am_sourceID_t, const am_NotificationConfiguration_s>(mCommandSender, &CAmCommandSender::cbSourceMainNotificationConfigurationChanged, sourceID, mainNotificationConfiguration);
+}
+
 }

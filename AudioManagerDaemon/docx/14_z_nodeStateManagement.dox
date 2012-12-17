@@ -1,0 +1,32 @@
+ /*
+ * Copyright (C) 2012, BMW AG
+ *
+ * This file is part of GENIVI Project AudioManager.
+ *
+ * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contribution License Agreements.
+ *
+ * \copyright
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
+ * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ * \\author Christian Linke (christian.linke@bmw.de)
+ *
+ */
+
+/*!
+\page nsm The Node state management
+\section The Node state managemer
+The nodestatemanager is part of the GENIVI compliance. It basically handles startup and rundown of components in the IVI context.\n
+For more information, please go to http://projects.genivi.org
+
+\section nsmiact The Interaction between the NodeStateManager and the AudioManager
+It is the job of am::CAmNodeStateCommunicator to interact with the nodestatemanager via DBUS.\n
+The ControllerPlugin can register by the NSM to be informed when a shutdown will occour. For this, the Audiomanager presents an DBus interface, defined in LifeCycleConsumer.xml that will be called from the NSM during a shutdown,
+but only after the Controller registered by the NSM via am::CAmNodeStateCommunicator::nsmRegisterShutdownClient.\n
+The controller has to answer this request during the timeout with am::CAmNodeStateCommunicator::nsmSendLifecycleRequestComplete .
+For more information, check am::CAmNodeStateCommunicator and http://projects.genivi.org
+
+
+ */

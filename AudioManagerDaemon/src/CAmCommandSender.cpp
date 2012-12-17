@@ -297,6 +297,36 @@ am_Error_e am::CAmCommandSender::getListPlugins(std::vector<std::string> & inter
     return (E_OK);
 }
 
+void CAmCommandSender::cbSinkUpdated(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)
+{
+    CALL_ALL_INTERFACES(cbSinkUpdated(sinkID,sinkClassID,listMainSoundProperties));
+}
+
+void CAmCommandSender::cbSourceUpdated(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)
+{
+    CALL_ALL_INTERFACES(cbSourceUpdated(sourceID,sourceClassID,listMainSoundProperties));
+}
+
+void CAmCommandSender::cbSinkNotification(const am_sinkID_t sinkID, const am_NotificationPayload_s notification)
+{
+    CALL_ALL_INTERFACES(cbSinkNotification(sinkID,notification));
+}
+
+void CAmCommandSender::cbSourceNotification(const am_sourceID_t sourceID, const am_NotificationPayload_s notification)
+{
+    CALL_ALL_INTERFACES(cbSourceNotification(sourceID,notification));
+}
+
+void CAmCommandSender::cbSinkMainNotificationConfigurationChanged(const am_sinkID_t sinkID, const am_NotificationConfiguration_s mainNotificationConfiguration)
+{
+    CALL_ALL_INTERFACES(cbSinkMainNotificationConfigurationChanged(sinkID,mainNotificationConfiguration));
+}
+
+void CAmCommandSender::cbSourceMainNotificationConfigurationChanged(const am_sourceID_t sourceID, const am_NotificationConfiguration_s mainNotificationConfiguration)
+{
+    CALL_ALL_INTERFACES(cbSourceMainNotificationConfigurationChanged(sourceID,mainNotificationConfiguration));
+}
+
 void CAmCommandSender::unloadLibraries(void)
 {
     std::vector<void*>::iterator iterator = mListLibraryHandles.begin();

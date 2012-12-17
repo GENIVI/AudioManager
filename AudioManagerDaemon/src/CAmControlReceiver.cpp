@@ -22,22 +22,42 @@
 #include "CAmControlReceiver.h"
 #include <cassert>
 #include <stdlib.h>
+#include <stdexcept>
 #include "config.h"
 #include "CAmDatabaseHandler.h"
 #include "CAmRoutingSender.h"
 #include "CAmCommandSender.h"
 #include "CAmRouter.h"
+#include "CAmNodeStateCommunicator.h"
 #include "shared/CAmDltWrapper.h"
 #include "shared/CAmSocketHandler.h"
 
+
 namespace am {
+
+CAmControlReceiver::CAmControlReceiver(CAmDatabaseHandler *iDatabaseHandler, CAmRoutingSender *iRoutingSender, CAmCommandSender *iCommandSender, CAmSocketHandler *iSocketHandler, CAmRouter* iRouter, CAmNodeStateCommunicator* iNodeStateCommunicator) :
+        mDatabaseHandler(iDatabaseHandler), //
+        mRoutingSender(iRoutingSender), //
+        mCommandSender(iCommandSender), //
+        mSocketHandler(iSocketHandler), //
+        mRouter(iRouter), //
+        mNodeStateCommunicator(iNodeStateCommunicator)
+{
+    assert(mDatabaseHandler!=NULL);
+    assert(mRoutingSender!=NULL);
+    assert(mCommandSender!=NULL);
+    assert(mSocketHandler!=NULL);
+    assert(mRouter!=NULL);
+    assert(iNodeStateCommunicator!=NULL);
+}
 
 CAmControlReceiver::CAmControlReceiver(CAmDatabaseHandler *iDatabaseHandler, CAmRoutingSender *iRoutingSender, CAmCommandSender *iCommandSender, CAmSocketHandler *iSocketHandler, CAmRouter* iRouter) :
         mDatabaseHandler(iDatabaseHandler), //
         mRoutingSender(iRoutingSender), //
         mCommandSender(iCommandSender), //
         mSocketHandler(iSocketHandler), //
-        mRouter(iRouter)
+        mRouter(iRouter), //
+        mNodeStateCommunicator(NULL)
 {
     assert(mDatabaseHandler!=NULL);
     assert(mRoutingSender!=NULL);
@@ -476,14 +496,26 @@ void CAmControlReceiver::setRoutingReady()
     mRoutingSender->setRoutingReady();
 }
 
-void CAmControlReceiver::confirmControllerReady()
+void CAmControlReceiver::confirmControllerReady(const am_Error_e error)
 {
     //todo: one time implement here system interaction with NSM
+	if (error!=E_OK)
+		logError("CAmControlReceiver::confirmControllerReady controller reported error", error);
 }
 
-void CAmControlReceiver::confirmControllerRundown()
+void CAmControlReceiver::confirmControllerRundown(const am_Error_e error)
 {
-    logInfo ("CAmControlReceiver::confirmControllerRundown(), will exit now");
+	if (error!=E_OK)
+	{
+		logError("CAmControlReceiver::confirmControllerRundown() exited with error ",error);
+		//we might be blocked here -> so lets better exit right away
+		throw std::runtime_error("controller Confirmed with error");
+	}
+
+	logInfo ("CAmControlReceiver::confirmControllerRundown(), will exit now");
+
+	//end the mainloop here...
+	mSocketHandler->exit_mainloop();
 }
 
 am_Error_e CAmControlReceiver::getSocketHandler(CAmSocketHandler *& socketHandler)
@@ -508,5 +540,136 @@ void CAmControlReceiver::getInterfaceVersion(std::string & version) const
 {
     version = ControlReceiveVersion;
 }
+
+am_Error_e CAmControlReceiver::changeSourceDB(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_SoundProperty_s> listSoundProperties, const std::vector<am_ConnectionFormat_e> listConnectionFormats, const std::vector<am_MainSoundProperty_s> listMainSoundProperties)
+{
+    logInfo("CAmControlReceiver::changeSource was called, sourceID", sourceID);
+    return (mDatabaseHandler->changeSource(sourceID,sourceClassID,listSoundProperties,listConnectionFormats,listMainSoundProperties));
+}
+
+am_Error_e CAmControlReceiver::changeSinkDB(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s> listSoundProperties, const std::vector<am_ConnectionFormat_e> listConnectionFormats, const std::vector<am_MainSoundProperty_s> listMainSoundProperties)
+{
+    logInfo("CAmControlReceiver::changeSink was called with sinkID", sinkID);
+    return (mDatabaseHandler->changeSink(sinkID,sinkClassID,listSoundProperties,listConnectionFormats,listMainSoundProperties));
+}
+
+am_Error_e CAmControlReceiver::changeGatewayDB(const am_gatewayID_t gatewayID, const std::vector<am_ConnectionFormat_e> listSourceConnectionFormats, const std::vector<am_ConnectionFormat_e> listSinkConnectionFormats, const std::vector<bool> convertionMatrix)
+{
+    logInfo("CAmControlReceiver::changeGatewayDB was called with gatewayID", gatewayID);
+    return (mDatabaseHandler->changeGatewayDB(gatewayID,listSourceConnectionFormats,listSinkConnectionFormats,convertionMatrix));
+}
+
+am_Error_e CAmControlReceiver::setVolumes(am_Handle_s& handle, const std::vector<am_Volumes_s> listVolumes)
+{
+    logInfo("CAmControlReceiver::setVolumes got called");
+    return (mRoutingSender->asyncSetVolumes(handle,listVolumes));
+}
+
+am_Error_e CAmControlReceiver::setSinkNotificationConfiguration(am_Handle_s& handle, const am_sinkID_t sinkID, const am_NotificationConfiguration_s notificationConfiguration)
+{
+    logInfo("CAmControlReceiver::setSinkNotificationConfiguration called, sinkID=",sinkID,"notificationConfiguration.notificationType=",notificationConfiguration.notificationType,"notificationConfiguration.notificationStatus",notificationConfiguration.notificationStatus,"notificationConfiguration.notificationParameter",notificationConfiguration.notificationParameter);
+    return (mRoutingSender->asyncSetSinkNotificationConfiguration(handle,sinkID,notificationConfiguration));
+}
+
+am_Error_e CAmControlReceiver::setSourceNotificationConfiguration(am_Handle_s& handle, const am_sourceID_t sourceID, const am_NotificationConfiguration_s notificationConfiguration)
+{
+    logInfo("CAmControlReceiver::setSourceNotificationConfiguration called, sourceID=",sourceID,"notificationConfiguration.notificationType=",notificationConfiguration.notificationType,"notificationConfiguration.notificationStatus",notificationConfiguration.notificationStatus,"notificationConfiguration.notificationParameter",notificationConfiguration.notificationParameter);
+    return (mRoutingSender->asyncSetSourceNotificationConfiguration(handle,sourceID,notificationConfiguration));
+}
+
+void CAmControlReceiver::sendSinkMainNotificationPayload(const am_sinkID_t sinkID, const am_NotificationPayload_s notificationPayload)
+{
+    logInfo("CAmControlReceiver::sendSinkMainNotificationPayload called, sinkID=",sinkID,"type=",notificationPayload.notificationType,"value=",notificationPayload.notificationValue);
+    mCommandSender->cbSinkNotification(sinkID,notificationPayload);
+}
+
+void CAmControlReceiver::sendSourceMainNotificationPayload(const am_sourceID_t sourceID, const am_NotificationPayload_s notificationPayload)
+{
+    logInfo("CAmControlReceiver::sendSourceMainNotificationPayload called, sourceID=",sourceID,"type=",notificationPayload.notificationType,"value=",notificationPayload.notificationValue);
+    mCommandSender->cbSourceNotification(sourceID,notificationPayload);
+}
+
+am_Error_e CAmControlReceiver::changeMainSinkNotificationConfigurationDB(const am_sinkID_t sinkID, const am_NotificationConfiguration_s mainNotificationConfiguration)
+{
+    logInfo("CAmControlReceiver::changeMainSinkNotificationConfigurationDB was called with sinkID", sinkID);
+    return (mDatabaseHandler->changeMainSinkNotificationConfigurationDB(sinkID,mainNotificationConfiguration));
+}
+
+am_Error_e CAmControlReceiver::changeMainSourceNotificationConfigurationDB(const am_sourceID_t sourceID, const am_NotificationConfiguration_s mainNotificationConfiguration)
+{
+    logInfo("CAmControlReceiver::changeMainSourceNotificationConfigurationDB was called with sourceID", sourceID);
+    return (mDatabaseHandler->changeMainSourceNotificationConfigurationDB(sourceID,mainNotificationConfiguration));
+}
+
+am_Error_e CAmControlReceiver::nsmGetRestartReasonProperty(NsmRestartReason_e& restartReason)
+{
+    if (!mNodeStateCommunicator)
+        return (E_NON_EXISTENT);
+    return (mNodeStateCommunicator->nsmGetRestartReasonProperty(restartReason));
+}
+
+am_Error_e CAmControlReceiver::nsmGetShutdownReasonProperty(NsmShutdownReason_e& ShutdownReason)
+{
+    if (!mNodeStateCommunicator)
+        return (E_NON_EXISTENT);
+    return (mNodeStateCommunicator->nsmGetShutdownReasonProperty(ShutdownReason));
+}
+
+am_Error_e CAmControlReceiver::nsmGetRunningReasonProperty(NsmRunningReason_e& nsmRunningReason)
+{
+    if (!mNodeStateCommunicator)
+        return (E_NON_EXISTENT);
+    return (mNodeStateCommunicator->nsmGetRunningReasonProperty(nsmRunningReason));
+}
+
+NsmErrorStatus_e CAmControlReceiver::nsmGetNodeState(NsmNodeState_e& nsmNodeState)
+{
+    if (!mNodeStateCommunicator)
+        return (NsmErrorStatus_Error);
+    return (mNodeStateCommunicator->nsmGetNodeState(nsmNodeState));
+}
+
+NsmErrorStatus_e CAmControlReceiver::nsmGetSessionState(const std::string& sessionName, const NsmSeat_e& seatID, NsmSessionState_e& sessionState)
+{
+    if (!mNodeStateCommunicator)
+        return (NsmErrorStatus_Error);
+    return (mNodeStateCommunicator->nsmGetSessionState(sessionName,seatID,sessionState));
+}
+
+NsmErrorStatus_e CAmControlReceiver::nsmGetApplicationMode(NsmApplicationMode_e& applicationMode)
+{
+    if (!mNodeStateCommunicator)
+        return (NsmErrorStatus_Error);
+    return (mNodeStateCommunicator->nsmGetApplicationMode(applicationMode));
+}
+
+NsmErrorStatus_e CAmControlReceiver::nsmRegisterShutdownClient(const uint32_t shutdownMode, const uint32_t timeoutMs)
+{
+    if (!mNodeStateCommunicator)
+        return (NsmErrorStatus_Error);
+    return (mNodeStateCommunicator->nsmRegisterShutdownClient(shutdownMode,timeoutMs));
+}
+
+NsmErrorStatus_e CAmControlReceiver::nsmUnRegisterShutdownClient(const uint32_t shutdownMode)
+{
+    if (!mNodeStateCommunicator)
+        return (NsmErrorStatus_Error);
+    return (mNodeStateCommunicator->nsmUnRegisterShutdownClient(shutdownMode));
+}
+
+am_Error_e CAmControlReceiver::nsmGetInterfaceVersion(uint32_t& version)
+{
+    if (!mNodeStateCommunicator)
+        return (E_NON_EXISTENT);
+    return (mNodeStateCommunicator->nsmGetInterfaceVersion(version));
+}
+
+NsmErrorStatus_e CAmControlReceiver::nsmSendLifecycleRequestComplete(const uint32_t RequestId, const NsmErrorStatus_e status)
+{
+    if (!mNodeStateCommunicator)
+        return (NsmErrorStatus_Error);
+    return (mNodeStateCommunicator->nsmSendLifecycleRequestComplete(RequestId,status));
+}
+
 }
 

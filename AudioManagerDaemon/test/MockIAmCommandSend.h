@@ -71,6 +71,20 @@ class MockIAmCommandSend : public IAmCommandSend {
       void(const am_mainConnectionID_t mainConnectionID, const am_timeSync_t time));
   MOCK_CONST_METHOD1(getInterfaceVersion,
       void(std::string& version));
+  MOCK_METHOD3(cbSinkUpdated,
+      void(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties));
+  MOCK_METHOD3(cbSourceUpdated,
+      void(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties));
+  MOCK_METHOD2(cbSinkNotification,
+      void(const am_sinkID_t sinkID, const am_NotificationPayload_s notification));
+  MOCK_METHOD2(cbSourceNotification,
+      void(const am_sourceID_t sourceID, const am_NotificationPayload_s notification));
+  MOCK_METHOD2(cbSinkMainNotificationConfigurationChanged,
+      void(const am_sinkID_t sinkID, const am_NotificationConfiguration_s mainNotificationConfiguration));
+  MOCK_METHOD2(cbSourceMainNotificationConfigurationChanged,
+      void(const am_sourceID_t sourceID, const am_NotificationConfiguration_s mainNotificationConfiguration));
+
+
 };
 
 }  // namespace am

@@ -416,6 +416,87 @@ void IAmCommandReceiverShadow::setCommandReceiver(IAmCommandReceive*& receiver)
     mpCAmDbusWrapper->registerCallback(&gObjectPathVTable, path, this);
 }
 
+void am::IAmCommandReceiverShadow::getListSinkMainNotificationConfigurations(DBusConnection* conn, DBusMessage* msg)
+{
+    log(&commandDbus, DLT_LOG_INFO, "CommandReceiverShadow::getListSinkMainNotificationConfigurations called");
+
+    (void) conn;
+    assert(mpIAmCommandReceive!=NULL);
+
+    mDBUSMessageHandler.initReceive(msg);
+    am_sinkID_t sinkID = static_cast<am_sinkID_t>(mDBUSMessageHandler.getUInt());
+    std::vector<am_NotificationConfiguration_s> listNotificationConfigurations;
+    am_Error_e returnCode = mpIAmCommandReceive->getListSinkMainNotificationConfigurations(sinkID,listNotificationConfigurations);
+    mDBUSMessageHandler.initReply(msg);
+    mDBUSMessageHandler.append((dbus_int16_t) returnCode);
+    mDBUSMessageHandler.append(listNotificationConfigurations);
+    mDBUSMessageHandler.sendMessage();
+}
+
+void am::IAmCommandReceiverShadow::getListSourceMainNotificationConfigurations(DBusConnection* conn, DBusMessage* msg)
+{
+    log(&commandDbus, DLT_LOG_INFO, "CommandReceiverShadow::getListSourceMainNotificationConfigurations called");
+
+    (void) conn;
+    assert(mpIAmCommandReceive!=NULL);
+
+    mDBUSMessageHandler.initReceive(msg);
+    am_sourceID_t sourceID = static_cast<am_sourceID_t>(mDBUSMessageHandler.getUInt());
+    std::vector<am_NotificationConfiguration_s> listNotificationConfigurations;
+    am_Error_e returnCode = mpIAmCommandReceive->getListSourceMainNotificationConfigurations(sourceID,listNotificationConfigurations);
+    mDBUSMessageHandler.initReply(msg);
+    mDBUSMessageHandler.append((dbus_int16_t) returnCode);
+    mDBUSMessageHandler.append(listNotificationConfigurations);
+    mDBUSMessageHandler.sendMessage();
+
+}
+
+void am::IAmCommandReceiverShadow::setSinkMainNotificationConfiguration(DBusConnection* conn, DBusMessage* msg)
+{
+    log(&commandDbus, DLT_LOG_INFO, "CommandReceiverShadow::setSinkMainNotificationConfiguration called");
+
+    (void) conn;
+    assert(mpIAmCommandReceive!=NULL);
+
+    mDBUSMessageHandler.initReceive(msg);
+    am_sinkID_t sinkID = (am_sinkID_t) mDBUSMessageHandler.getUInt();
+    dbus_int16_t type = 0;
+    dbus_int16_t status = 0;
+    dbus_int16_t parameter = 0;
+    mDBUSMessageHandler.getNotificationConfiguration(type, status, parameter);
+    am_NotificationConfiguration_s mainNotificationConfiguration;
+    mainNotificationConfiguration.notificationType = static_cast<am_NotificationType_e> (type);
+    mainNotificationConfiguration.notificationStatus = static_cast<am_NotificationStatus_e> (status);
+    mainNotificationConfiguration.notificationParameter = static_cast<int16_t>(parameter);
+    am_Error_e returnCode = mpIAmCommandReceive->setSinkMainNotificationConfiguration(sinkID,mainNotificationConfiguration);
+    mDBUSMessageHandler.initReply(msg);
+    mDBUSMessageHandler.append((dbus_int16_t) returnCode);
+    mDBUSMessageHandler.sendMessage();
+}
+
+void am::IAmCommandReceiverShadow::setSourceMainNotificationConfiguration(DBusConnection* conn, DBusMessage* msg)
+{
+    log(&commandDbus, DLT_LOG_INFO, "CommandReceiverShadow::setSourceMainNotificationConfiguration called");
+
+    (void) conn;
+    assert(mpIAmCommandReceive!=NULL);
+
+    mDBUSMessageHandler.initReceive(msg);
+    am_sourceID_t sourceID = (am_sourceID_t) mDBUSMessageHandler.getUInt();
+    dbus_int16_t type = 0;
+    dbus_int16_t status = 0;
+    dbus_int16_t parameter = 0;
+    mDBUSMessageHandler.getNotificationConfiguration(type, status, parameter);
+    am_NotificationConfiguration_s mainNotificationConfiguration;
+    mainNotificationConfiguration.notificationType = static_cast<am_NotificationType_e> (type);
+    mainNotificationConfiguration.notificationStatus = static_cast<am_NotificationStatus_e> (status);
+    mainNotificationConfiguration.notificationParameter = static_cast<int16_t>(parameter);
+    am_Error_e returnCode = mpIAmCommandReceive->setSourceMainNotificationConfiguration(sourceID,mainNotificationConfiguration);
+    mDBUSMessageHandler.initReply(msg);
+    mDBUSMessageHandler.append((dbus_int16_t) returnCode);
+    mDBUSMessageHandler.sendMessage();
+}
+
 IAmCommandReceiverShadow::functionMap_t IAmCommandReceiverShadow::createMap()
 {
     functionMap_t m;
@@ -436,6 +517,10 @@ IAmCommandReceiverShadow::functionMap_t IAmCommandReceiverShadow::createMap()
     m["GetListSystemProperties"] = &IAmCommandReceiverShadow::getListSystemProperties;
     m["GetTimingInformation"] = &IAmCommandReceiverShadow::getTimingInformation;
     m["SetSystemProperty"] = &IAmCommandReceiverShadow::setSystemProperty;
+    m["getListSinkMainNotificationConfigurations"] = &IAmCommandReceiverShadow::getListSinkMainNotificationConfigurations;
+    m["getListSourceMainNotificationConfigurations"] = &IAmCommandReceiverShadow::getListSourceMainNotificationConfigurations;
+    m["setSinkMainNotificationConfiguration"] = &IAmCommandReceiverShadow::setSinkMainNotificationConfiguration;
+    m["setSourceMainNotificationConfiguration"] = & IAmCommandReceiverShadow::setSourceMainNotificationConfiguration;
     return (m);
 }
 

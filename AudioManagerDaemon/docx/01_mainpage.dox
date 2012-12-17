@@ -26,4 +26,5 @@ can be found at https://collab.genivi.org/wiki/display/genivi/GENIVI+Home \n
 \par About AudioManager
 The AudioManager is a Deamon that manages all Audio Connections in a GENIVI headunit.
 It is a managing instance that uses so called RoutingAdaptors to control AudioDomains that then do the "real" connections.
+
 */

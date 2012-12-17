@@ -91,7 +91,6 @@ void CAmWatchdog::timerCallback(sh_timerHandle_t handle, void* userData)
     }
 
     mpCAmSocketHandler->restartTimer(handle);
-    logInfo("restarted watchdog ");
 }
 
 void CAmWatchdog::startWatchdog()

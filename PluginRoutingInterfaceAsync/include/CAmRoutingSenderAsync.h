@@ -138,6 +138,9 @@ public:
     am_Error_e setDomainState(const am_domainID_t domainID, const am_DomainState_e domainState) ;
     am_Error_e returnBusName(std::string& BusName) const ;
     void getInterfaceVersion(std::string& version) const ;
+    am_Error_e asyncSetVolumes(const am_Handle_s handle, const std::vector<am_Volumes_s>& listVolumes) ;
+    am_Error_e asyncSetSinkNotificationConfiguration(const am_Handle_s handle, const am_sinkID_t sinkID, const am_NotificationConfiguration_s& notificationConfiguration) ;
+    am_Error_e asyncSetSourceNotificationConfiguration(const am_Handle_s handle, const am_sourceID_t sourceID, const am_NotificationConfiguration_s& notificationConfiguration) ;
 
     /**
      * threadafe insert of route and connectionID

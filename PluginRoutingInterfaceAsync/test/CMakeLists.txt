@@ -29,7 +29,6 @@ FIND_PACKAGE(DBUS REQUIRED)
 
 IF(WITH_DLT)
     pkg_check_modules(DLT REQUIRED automotive-dlt)
-)
 ENDIF(WITH_DLT)
 
 pkg_check_modules(SQLITE REQUIRED sqlite3)

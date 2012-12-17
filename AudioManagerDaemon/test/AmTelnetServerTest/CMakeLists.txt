@@ -63,6 +63,8 @@ file(GLOB TELNET_SRCS_CXX
     "../../src/CAmRouter.cpp"
     "../../src/CAmDltWrapper.cpp"
     "../../src/CAmTelnetMenuHelper.cpp"
+    "../../src/CAmNodeStateCommunicator.cpp"
+    "../../src/CAmDbusWrapper.cpp"
     "*.cpp"    
 )
 

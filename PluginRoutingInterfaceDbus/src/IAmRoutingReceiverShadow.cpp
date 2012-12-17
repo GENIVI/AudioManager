@@ -669,7 +669,7 @@ void IAmRoutingReceiverShadowDbus::confirmRoutingReady(DBusConnection* conn, DBu
 
     mNumberDomains--;
     if(mNumberDomains==0)
-        mRoutingReceiveInterface->confirmRoutingRundown(mHandle);
+        mRoutingReceiveInterface->confirmRoutingRundown(mHandle,E_OK);
 }
 
 void IAmRoutingReceiverShadowDbus::confirmRoutingRundown(DBusConnection* conn, DBusMessage* msg)
@@ -682,7 +682,7 @@ void IAmRoutingReceiverShadowDbus::confirmRoutingRundown(DBusConnection* conn, D
 
     mNumberDomains--;
     if(mNumberDomains==0)
-        mRoutingReceiveInterface->confirmRoutingReady(mHandle);
+        mRoutingReceiveInterface->confirmRoutingReady(mHandle,E_OK);
 }
 
 void IAmRoutingReceiverShadowDbus::gotReady(int16_t numberDomains, uint16_t handle)

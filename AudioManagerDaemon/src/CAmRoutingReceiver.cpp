@@ -41,7 +41,9 @@ CAmRoutingReceiver::CAmRoutingReceiver(CAmDatabaseHandler *iDatabaseHandler, CAm
         mListRundownHandles(), //
         handleCount(0), //
         mWaitStartup(false), //
-        mWaitRundown(false)
+        mWaitRundown(false), //
+	    mLastStartupError(E_OK), //
+	    mLastRundownError(E_OK) //
 {
     assert(mpDatabaseHandler!=NULL);
     assert(mpRoutingSender!=NULL);
@@ -59,7 +61,9 @@ CAmRoutingReceiver::CAmRoutingReceiver(CAmDatabaseHandler *iDatabaseHandler, CAm
         mListRundownHandles(), //
         handleCount(0), //
         mWaitStartup(false), //
-        mWaitRundown(false)
+        mWaitRundown(false),
+	    mLastStartupError(E_OK), //
+	    mLastRundownError(E_OK) //
 {
     assert(mpDatabaseHandler!=NULL);
     assert(mpRoutingSender!=NULL);
@@ -345,18 +349,22 @@ void CAmRoutingReceiver::getInterfaceVersion(std::string & version) const
     version = RoutingReceiveVersion;
 }
 
-void CAmRoutingReceiver::confirmRoutingReady(const uint16_t handle)
+void CAmRoutingReceiver::confirmRoutingReady(const uint16_t handle,	const am_Error_e error)
 {
+	if (error!=E_OK)
+		mLastStartupError=error;
     mListStartupHandles.erase(std::remove(mListStartupHandles.begin(), mListStartupHandles.end(), handle), mListStartupHandles.end());
     if (mWaitStartup && mListStartupHandles.empty())
-        mpControlSender->confirmRoutingReady();
+        mpControlSender->confirmRoutingReady(mLastStartupError);
 }
 
-void CAmRoutingReceiver::confirmRoutingRundown(const uint16_t handle)
+void CAmRoutingReceiver::confirmRoutingRundown(const uint16_t handle, const am_Error_e error)
 {
+	if (error!=E_OK)
+		mLastRundownError=error;
     mListRundownHandles.erase(std::remove(mListRundownHandles.begin(), mListRundownHandles.end(), handle), mListRundownHandles.end());
     if (mWaitRundown && mListRundownHandles.empty())
-        mpControlSender->confirmRoutingRundown();
+        mpControlSender->confirmRoutingRundown(mLastRundownError);
 }
 
 uint16_t am::CAmRoutingReceiver::getStartupHandle()
@@ -376,11 +384,88 @@ uint16_t am::CAmRoutingReceiver::getRundownHandle()
 void am::CAmRoutingReceiver::waitOnStartup(bool startup)
 {
     mWaitStartup = startup;
+    mLastStartupError=E_OK;
+}
+
+am_Error_e CAmRoutingReceiver::updateGateway(const am_gatewayID_t gatewayID, std::vector<am_ConnectionFormat_e> listSourceFormats, const std::vector<am_ConnectionFormat_e> listSinkFormats, std::vector<bool> convertionMatrix)
+{
+    return (mpControlSender->hookSystemUpdateGateway(gatewayID,listSourceFormats,listSinkFormats,convertionMatrix));
+}
+
+am_Error_e CAmRoutingReceiver::updateSink(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s> listSoundProperties, const std::vector<am_ConnectionFormat_e> listConnectionFormats, std::vector<am_MainSoundProperty_s> listMainSoundProperties)
+{
+    return (mpControlSender->hookSystemUpdateSink(sinkID,sinkClassID,listSoundProperties,listConnectionFormats,listMainSoundProperties));
+}
+
+am_Error_e CAmRoutingReceiver::updateSource(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, std::vector<am_SoundProperty_s> listSoundProperties, std::vector<am_ConnectionFormat_e> listConnectionFormats, const std::vector<am_MainSoundProperty_s> listMainSoundProperties)
+{
+    return (mpControlSender->hookSystemUpdateSource(sourceID,sourceClassID,listSoundProperties,listConnectionFormats,listMainSoundProperties));
+}
+
+void CAmRoutingReceiver::ackSetVolumes(const am_Handle_s handle, const std::vector<am_Volumes_s> listvolumes, const am_Error_e error)
+{
+    CAmRoutingSender::am_handleData_c handleData = mpRoutingSender->returnHandleData(handle);
+    if (error == E_OK && handleData.volumeID.sink != 0)
+    {
+        std::vector<am_Volumes_s>::const_iterator iterator (listvolumes.begin());
+
+        for (;iterator!=listvolumes.end();++iterator)
+        {
+            if (iterator->volumeType==VT_SINK)
+            {
+                mpDatabaseHandler->changeSinkVolume(iterator->volumeID.sink,iterator->volume);
+            }
+            else if (iterator->volumeType==VT_SOURCE)
+            {
+                mpDatabaseHandler->changeSourceVolume(iterator->volumeID.source,iterator->volume);
+            }
+        }
+
+    }
+    mpRoutingSender->removeHandle(handle);
+    mpControlSender->cbAckSetVolume(handle,listvolumes,error);
+}
+
+void CAmRoutingReceiver::ackSinkNotificationConfiguration(const am_Handle_s handle, const am_Error_e error)
+{
+    CAmRoutingSender::am_handleData_c handleData = mpRoutingSender->returnHandleData(handle);
+    if (error == E_OK && handleData.sinkID != 0)
+    {
+        mpDatabaseHandler->changeSinkNotificationConfigurationDB(handleData.sinkID,*handleData.notificationConfiguration);
+        delete handleData.notificationConfiguration;
+    }
+    mpRoutingSender->removeHandle(handle);
+    mpControlSender->cbAckSetSinkNotificationConfiguration(handle,error);
+}
+
+void CAmRoutingReceiver::ackSourceNotificationConfiguration(const am_Handle_s handle, const am_Error_e error)
+{
+    CAmRoutingSender::am_handleData_c handleData = mpRoutingSender->returnHandleData(handle);
+    if (error == E_OK && handleData.sourceID != 0)
+    {
+        mpDatabaseHandler->changeSourceNotificationConfigurationDB(handleData.sourceID,*handleData.notificationConfiguration);
+        delete handleData.notificationConfiguration;
+    }
+    mpRoutingSender->removeHandle(handle);
+    mpControlSender->cbAckSetSourceNotificationConfiguration(handle,error);
+}
+
+void CAmRoutingReceiver::hookSinkNotificationDataChange(const am_sinkID_t sinkID, const am_NotificationPayload_s payload)
+{
+    logInfo("CAmRoutingReceiver::hookSinkNotificationDataChange received, sinkID=",sinkID,"notificationType=",payload.notificationType,"notificationValue=",payload.notificationValue);
+    mpControlSender->hookSinkNotificationDataChanged(sinkID,payload);
+}
+
+void CAmRoutingReceiver::hookSourceNotificationDataChange(const am_sourceID_t sourceID, const am_NotificationPayload_s payload)
+{
+    logInfo("CAmRoutingReceiver::hookSourceNotificationDataChange received, sinkID=",sourceID,"notificationType=",payload.notificationType,"notificationValue=",payload.notificationValue);
+    mpControlSender->hookSourceNotificationDataChanged(sourceID,payload);
 }
 
 void am::CAmRoutingReceiver::waitOnRundown(bool rundown)
 {
     mWaitRundown = rundown;
+    mLastRundownError=E_OK;
 }
 
 am_Error_e CAmRoutingSender::removeConnectionLookup(const am_connectionID_t connectionID)

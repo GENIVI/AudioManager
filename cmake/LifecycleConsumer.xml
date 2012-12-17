@@ -1,0 +1,23 @@
+<node>
+  <!--
+	org.genivi.NodeStateManager.LifeCycleConsumer:
+	@short_description: Interface of a life cycle client.
+	
+	This interface contains functions, which need to be implemented by life cycle clients, to be able to receive life cycle requests.
+  -->
+  <interface name="org.genivi.NodeStateManager.LifeCycleConsumer">
+    <!-- 
+    	LifecycleRequest:
+    	@Request:     The type of the life cycle request. Can be NSM_SHUTDOWNTYPE_RUNUP, NSM_SHUTDOWNTYPE_NORMAL or NSM_SHUTDOWNTYPE_FAST.
+    	@RequestId:   The Id of the client (current request). This Id needs to be passed to the NSM again via the interface "LifecycleRequestComplete", when the client has processed the "LifecycleRequest".
+    	@ErrorCode:   Client's return value, passed to the NodeStateManager. Based upon NsmErrorStatus_e. NsmErrorStatus_Ok: Request was successfully processed. NsmErrorStatus_ResponsePending: Processing of request started. LifecycleRequestComplete will be called to pass the status after completion. NsmErrorStatus_Error: An error occured, the request could not be processed. 
+    
+    	The method has to be implemented by every life cycle client and is called by the NodeStateManager, when the node is shutting down (fast or normal) or an ongoing shutdown is cancelled (run up).
+    -->
+    <method name="LifecycleRequest">
+      <arg name="Request"   direction="in"  type="u"/>
+      <arg name="RequestId" direction="in"  type="u"/>
+      <arg name="ErrorCode" direction="out" type="i"/>
+    </method>
+  </interface>
+</node>

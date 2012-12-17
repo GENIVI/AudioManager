@@ -596,6 +596,78 @@ void CAmRoutingSender::setRoutingRundown()
     }
 }
 
+am_Error_e CAmRoutingSender::asyncSetVolumes(am_Handle_s& handle, const std::vector<am_Volumes_s>& listVolumes)
+{
+    am_handleData_c handleData;
+    IAmRoutingSend* pRoutingInterface(NULL);
+    if (listVolumes.empty())
+        return (E_NOT_POSSIBLE);
+
+    //we need an interface so lets get either the sink or source ID from the first entry in the listVolumes
+    if (listVolumes[0].volumeType==VT_SINK)
+    {
+        am_sinkID_t sinkID=listVolumes[0].volumeID.sink;
+        SinkInterfaceMap::iterator iter = mMapSinkInterface.begin();
+        iter = mMapSinkInterface.find(sinkID);
+        if(iter!=mMapSinkInterface.end())
+            pRoutingInterface=iter->second;
+        else
+            return(E_NON_EXISTENT);
+    }
+
+    else if (listVolumes[0].volumeType==VT_SOURCE)
+    {
+        am_sourceID_t sourceID=listVolumes[0].volumeID.source;
+        SourceInterfaceMap::iterator iter = mMapSourceInterface.begin();
+        iter = mMapSourceInterface.find(sourceID);
+        if (iter!=mMapSourceInterface.end())
+            pRoutingInterface=iter->second;
+        else
+            return(E_NON_EXISTENT);
+    }
+    else
+        return (E_NON_EXISTENT);
+
+    handleData.volumeID=listVolumes[0].volumeID;
+    handleData.listVolumes= new std::vector<am_Volumes_s>(listVolumes);
+    handle = createHandle(handleData, H_SETVOLUMES);
+
+    mMapHandleInterface.insert(std::make_pair(+ handle.handle, pRoutingInterface));
+    return (pRoutingInterface->asyncSetVolumes(handle, listVolumes));
+}
+
+am_Error_e CAmRoutingSender::asyncSetSinkNotificationConfiguration(am_Handle_s& handle, const am_sinkID_t sinkID, const am_NotificationConfiguration_s& notificationConfiguration)
+{
+    am_handleData_c handleData;
+    SinkInterfaceMap::iterator iter = mMapSinkInterface.begin();
+    iter = mMapSinkInterface.find(sinkID);
+    if (iter != mMapSinkInterface.end())
+    {
+        handleData.sinkID = sinkID;
+        handleData.notificationConfiguration = new am_NotificationConfiguration_s(notificationConfiguration);
+        handle = createHandle(handleData, H_SETSINKNOTIFICATION);
+        mMapHandleInterface.insert(std::make_pair(+ handle.handle, iter->second));
+        return (iter->second->asyncSetSinkNotificationConfiguration(handle, sinkID,notificationConfiguration));
+    }
+    return (E_NON_EXISTENT);
+}
+
+am_Error_e CAmRoutingSender::asyncSetSourceNotificationConfiguration(am_Handle_s& handle, const am_sourceID_t sourceID, const am_NotificationConfiguration_s& notificationConfiguration)
+{
+    am_handleData_c handleData;
+    SourceInterfaceMap::iterator iter = mMapSourceInterface.begin();
+    iter = mMapSourceInterface.find(sourceID);
+    if (iter != mMapSourceInterface.end())
+    {
+        handleData.sourceID = sourceID;
+        handleData.notificationConfiguration = new am_NotificationConfiguration_s(notificationConfiguration);
+        handle = createHandle(handleData, H_SETSOURCENOTIFICATION);
+        mMapHandleInterface.insert(std::make_pair(+ handle.handle, iter->second));
+        return (iter->second->asyncSetSourceNotificationConfiguration(handle, sourceID,notificationConfiguration));
+    }
+    return (E_NON_EXISTENT);
+}
+
 void CAmRoutingSender::unloadLibraries(void)
 {
     std::vector<void*>::iterator iterator = mListLibraryHandles.begin();

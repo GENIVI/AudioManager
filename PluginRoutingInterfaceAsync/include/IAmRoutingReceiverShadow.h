@@ -56,8 +56,8 @@ public:
     am_Error_e registerSource(const am_Source_s& sourceData, am_sourceID_t& sourceID) ;
     am_Error_e deregisterSource(const am_sourceID_t sourceID) ;
     am_Error_e registerCrossfader(const am_Crossfader_s& crossfaderData, am_crossfaderID_t& crossfaderID) ;
-    void confirmRoutingReady(uint16_t starupHandle);
-    void confirmRoutingRundown(uint16_t rundownHandle);
+    void confirmRoutingReady(uint16_t starupHandle, am_Error_e error);
+    void confirmRoutingRundown(uint16_t rundownHandle,am_Error_e error);
 
 private:
 

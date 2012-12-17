@@ -556,10 +556,13 @@ void CAmControlSenderBase::cbAckSetSinkSoundProperties(const am_Handle_s handle,
     (void) handle;
 }
 
-void CAmControlSenderBase::setControllerRundown()
+void CAmControlSenderBase::setControllerRundown(const int16_t signal)
 {
-    logInfo("CAmControlSenderBase::setControllerRundown() was called");
-    mControlReceiveInterface->confirmControllerRundown();
+    logInfo("CAmControlSenderBase::setControllerRundown() was called signal=",signal);
+    if (signal==2)
+        mControlReceiveInterface->confirmControllerRundown(E_UNKNOWN);
+
+    mControlReceiveInterface->confirmControllerRundown(E_OK);
 }
 
 am_Error_e CAmControlSenderBase::getConnectionFormatChoice(const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_Route_s listRoute, const std::vector<am_ConnectionFormat_e> listPossibleConnectionFormats, std::vector<am_ConnectionFormat_e> & listPrioConnectionFormats)
@@ -577,20 +580,6 @@ void CAmControlSenderBase::getInterfaceVersion(std::string & version) const
     version = ControlSendVersion;
 }
 
-void CAmControlSenderBase::confirmCommandReady()
-{
-    logInfo("ControlSenderPlugin got Routing Ready confirmed");
-}
-
-void CAmControlSenderBase::confirmRoutingReady()
-{
-    logInfo("ControlSenderPlugin got Command Ready confirmed");
-}
-
-void CAmControlSenderBase::confirmRoutingRundown()
-{
-    logInfo("ControlSenderPlugin got Command Rundown confirmed");
-}
 
 void CAmControlSenderBase::disconnect(am_mainConnectionID_t connectionID)
 {
@@ -619,11 +608,6 @@ void CAmControlSenderBase::disconnect(am_mainConnectionID_t connectionID)
     set.connectionID = connectionID;
     set.listHandleStaus = listHandleStaus;
     mListOpenDisconnections.push_back(set);
-}
-
-void CAmControlSenderBase::confirmCommandRundown()
-{
-    logInfo("ControlSenderPlugin got Routing Rundown confirmed");
 }
 
 void CAmControlSenderBase::connect(am_sourceID_t sourceID, am_sinkID_t sinkID, am_mainConnectionID_t mainConnectionID)
@@ -769,6 +753,130 @@ void CAmControlSenderBase::callNaviHandler()
        default:
            break;
        }
+}
+
+void CAmControlSenderBase::confirmCommandReady(const am_Error_e error)
+{
+    (void) error;
+    logInfo("ControlSenderPlugin got Command Ready confirmed");
+}
+
+void CAmControlSenderBase::confirmRoutingReady(const am_Error_e error)
+{
+    (void)error;
+    logInfo("ControlSenderPlugin got Routing Ready confirmed");
+}
+
+void CAmControlSenderBase::confirmCommandRundown(const am_Error_e error)
+{
+    (void)error;
+	logInfo("ControlSenderPlugin got Command Rundown confirmed");
+}
+
+void CAmControlSenderBase::confirmRoutingRundown(const am_Error_e error)
+{
+    (void)error;
+	logInfo("ControlSenderPlugin got Routing Rundown confirmed");
+}
+
+void CAmControlSenderBase::hookSystemNodeStateChanged(const NsmNodeState_e NodeStateId)
+{
+    (void) NodeStateId;
+    //here you can process informations about the notestate
+}
+
+void CAmControlSenderBase::hookSystemNodeApplicationModeChanged(const NsmApplicationMode_e ApplicationModeId)
+{
+    (void) ApplicationModeId;
+}
+
+void CAmControlSenderBase::hookSystemSessionStateChanged(const std::string sessionName, const int32_t seatID, const NsmSessionState_e sessionStateID)
+{
+    (void) sessionName;
+    (void) seatID;
+    (void) sessionStateID;
+}
+
+am_Error_e CAmControlSenderBase::hookSystemUpdateSink(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s> listSoundProperties, const std::vector<am_ConnectionFormat_e> listConnectionFormats, std::vector<am_MainSoundProperty_s> listMainSoundProperties)
+{
+    (void) sinkID;
+    (void) sinkClassID;
+    (void) listMainSoundProperties;
+    (void) listConnectionFormats;
+    (void) listSoundProperties;
+    return (E_NOT_USED);
+ }
+
+am_Error_e CAmControlSenderBase::hookSystemUpdateSource(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_SoundProperty_s> listSoundProperties, const std::vector<am_ConnectionFormat_e> listConnectionFormats, std::vector<am_MainSoundProperty_s> listMainSoundProperties)
+{
+    (void) sourceID;
+    (void) sourceClassID;
+    (void) listSoundProperties;
+    (void) listMainSoundProperties;
+    (void) listConnectionFormats;
+    return (E_NOT_USED);
+ }
+
+am_Error_e CAmControlSenderBase::hookSystemUpdateGateway(const am_gatewayID_t gatewayID, const std::vector<am_ConnectionFormat_e> listSourceConnectionFormats, const std::vector<am_ConnectionFormat_e> listSinkConnectionFormats, const std::vector<bool> convertionMatrix)
+{
+    (void) gatewayID;
+    (void) listSourceConnectionFormats;
+    (void) listSinkConnectionFormats;
+    (void) convertionMatrix;
+    return (E_NOT_USED);
+}
+
+void CAmControlSenderBase::cbAckSetVolume(const am_Handle_s handle, const std::vector<am_Volumes_s> listVolumes, const am_Error_e error)
+{
+    (void) handle;
+    (void) listVolumes;
+    (void) error;
+}
+
+void CAmControlSenderBase::cbAckSetSinkNotificationConfiguration(const am_Handle_s handle, const am_Error_e error)
+{
+    (void) handle;
+    (void) error;
+}
+
+void CAmControlSenderBase::cbAckSetSourceNotificationConfiguration(const am_Handle_s handle, const am_Error_e error)
+{
+    (void) handle;
+    (void) error;
+}
+
+void CAmControlSenderBase::hookSinkNotificationDataChanged(const am_sinkID_t sinkID, const am_NotificationPayload_s payload)
+{
+    (void) sinkID;
+    (void) payload;
+}
+
+void CAmControlSenderBase::hookSourceNotificationDataChanged(const am_sourceID_t sourceID, const am_NotificationPayload_s payload)
+{
+    (void) sourceID;
+    (void) payload;
+}
+
+am_Error_e CAmControlSenderBase::hookUserSetMainSinkNotificationConfiguration(const am_sinkID_t sinkID, const am_NotificationConfiguration_s notificationConfiguration)
+{
+    (void) sinkID;
+    (void) notificationConfiguration;
+    return (E_NOT_USED);
+}
+
+am_Error_e CAmControlSenderBase::hookUserSetMainSourceNotificationConfiguration(const am_sourceID_t sourceID, const am_NotificationConfiguration_s notificationConfiguration)
+{
+    (void) sourceID;
+    (void) notificationConfiguration;
+    return (E_NOT_USED);
+}
+
+NsmErrorStatus_e CAmControlSenderBase::hookSystemLifecycleRequest(const uint32_t Request, const uint32_t RequestId)
+{
+    (void) Request;
+    (void) RequestId;
+    logInfo("CAmControlSenderBase::hookSystemLifecycleRequest request=",Request," requestID=",RequestId);
+    return (NsmErrorStatus_Error);
 }
 
 void CAmControlSenderBase::callTAHandler()

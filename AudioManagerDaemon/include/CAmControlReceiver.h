@@ -32,6 +32,7 @@ class CAmDatabaseHandler;
 class CAmRoutingSender;
 class CAmCommandSender;
 class CAmRouter;
+class CAmNodeStateCommunicator;
 
 /**
  * This class is used to receive all commands from the control interface
@@ -39,6 +40,7 @@ class CAmRouter;
 class CAmControlReceiver: public IAmControlReceive
 {
 public:
+    CAmControlReceiver(CAmDatabaseHandler *iDatabaseHandler, CAmRoutingSender *iRoutingSender, CAmCommandSender *iCommandSender, CAmSocketHandler *iSocketHandler, CAmRouter* iRouter, CAmNodeStateCommunicator* iNodeStateCommunicator);
     CAmControlReceiver(CAmDatabaseHandler *iDatabaseHandler, CAmRoutingSender *iRoutingSender, CAmCommandSender *iCommandSender, CAmSocketHandler *iSocketHandler, CAmRouter* iRouter);
     ~CAmControlReceiver();
     am_Error_e getRoute(const bool onlyfree, const am_sourceID_t sourceID, const am_sinkID_t sinkID, std::vector<am_Route_s>& returnList);
@@ -109,10 +111,30 @@ public:
     void setCommandRundown();
     void setRoutingReady();
     void setRoutingRundown();
-    void confirmControllerReady();
-    void confirmControllerRundown();
+    void confirmControllerReady(const am_Error_e error);
+    void confirmControllerRundown(const am_Error_e error);
     am_Error_e getSocketHandler(CAmSocketHandler*& socketHandler);
     void getInterfaceVersion(std::string& version) const;
+    am_Error_e changeSourceDB(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_SoundProperty_s> listSoundProperties, const std::vector<am_ConnectionFormat_e> listConnectionFormats, const std::vector<am_MainSoundProperty_s> listMainSoundProperties);
+    am_Error_e changeSinkDB(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s> listSoundProperties, const std::vector<am_ConnectionFormat_e> listConnectionFormats, const std::vector<am_MainSoundProperty_s> listMainSoundProperties);
+    am_Error_e changeGatewayDB(const am_gatewayID_t gatewayID, const std::vector<am_ConnectionFormat_e> listSourceConnectionFormats, const std::vector<am_ConnectionFormat_e> listSinkConnectionFormats, const std::vector<bool> convertionMatrix);
+    am_Error_e setVolumes(am_Handle_s& handle, const std::vector<am_Volumes_s> listVolumes);
+    am_Error_e setSinkNotificationConfiguration(am_Handle_s& handle, const am_sinkID_t sinkID, const am_NotificationConfiguration_s notificationConfiguration);
+    am_Error_e setSourceNotificationConfiguration(am_Handle_s& handle, const am_sourceID_t sourceID, const am_NotificationConfiguration_s norificationConfiguration);
+    void sendSinkMainNotificationPayload(const am_sinkID_t sinkID, const am_NotificationPayload_s notificationPayload);
+    void sendSourceMainNotificationPayload(const am_sourceID_t sourceID, const am_NotificationPayload_s notificationPayload);
+    am_Error_e changeMainSinkNotificationConfigurationDB(const am_sinkID_t sinkID, const am_NotificationConfiguration_s mainNotificationConfiguration);
+    am_Error_e changeMainSourceNotificationConfigurationDB(const am_sourceID_t sourceID, const am_NotificationConfiguration_s mainNotificationConfiguration);
+    am_Error_e nsmGetRestartReasonProperty(NsmRestartReason_e& restartReason) ;
+    am_Error_e nsmGetShutdownReasonProperty(NsmShutdownReason_e& ShutdownReason) ;
+    am_Error_e nsmGetRunningReasonProperty(NsmRunningReason_e& nsmRunningReason) ;
+    NsmErrorStatus_e nsmGetNodeState(NsmNodeState_e& nsmNodeState) ;
+    NsmErrorStatus_e nsmGetSessionState(const std::string& sessionName, const NsmSeat_e& seatID, NsmSessionState_e& sessionState) ;
+    NsmErrorStatus_e nsmGetApplicationMode(NsmApplicationMode_e& applicationMode) ;
+    NsmErrorStatus_e nsmRegisterShutdownClient(const uint32_t shutdownMode, const uint32_t timeoutMs) ;
+    NsmErrorStatus_e nsmUnRegisterShutdownClient(const uint32_t shutdownMode) ;
+    am_Error_e nsmGetInterfaceVersion(uint32_t& version) ;
+    NsmErrorStatus_e nsmSendLifecycleRequestComplete(const uint32_t RequestId, const NsmErrorStatus_e status) ;
 
 private:
     CAmDatabaseHandler* mDatabaseHandler; //!< pointer tto the databasehandler
@@ -120,6 +142,7 @@ private:
     CAmCommandSender* mCommandSender; //!< pointer to the command send interface
     CAmSocketHandler* mSocketHandler; //!< pointer to the socketHandler
     CAmRouter* mRouter; //!< pointer to the Router
+    CAmNodeStateCommunicator* mNodeStateCommunicator;
 };
 
 }

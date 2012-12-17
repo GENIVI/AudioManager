@@ -622,4 +622,87 @@ void CAmDbusMessageHandler::append(const std::vector<am::am_SystemProperty_s> & 
         mErrorMsg = "Cannot create reply!";
     }
 }
+
+void CAmDbusMessageHandler::getNotificationConfiguration(dbus_int16_t& notificationType, dbus_int16_t& notificationStatus, dbus_int16_t& notificationParameter)
+{
+    DBusMessageIter arrayIter;
+    if (DBUS_TYPE_STRUCT != dbus_message_iter_get_arg_type(&mDBusMessageIter))
+    {
+        log(&commandDbus, DLT_LOG_ERROR, "DBusMessageHandler::getProperty DBUS handler argument is no array!");
+        mErrorName = std::string(DBUS_ERROR_INVALID_ARGS);
+        mErrorMsg = "DBus argument is no array";
+    }
+    else
+    {
+        dbus_message_iter_recurse(&mDBusMessageIter, &arrayIter);
+        dbus_message_iter_get_basic(&arrayIter, &notificationType);
+        dbus_message_iter_next(&arrayIter);
+        dbus_message_iter_get_basic(&arrayIter, &notificationStatus);
+        dbus_message_iter_next(&arrayIter);
+        dbus_message_iter_get_basic(&arrayIter, &notificationParameter);
+        dbus_message_iter_next(&mDBusMessageIter);
+    }
+}
+
+void CAmDbusMessageHandler::append(const std::vector<am::am_NotificationConfiguration_s>& listNotifications)
+{
+    DBusMessageIter arrayIter;
+    DBusMessageIter structIter;
+    std::vector<am::am_NotificationConfiguration_s>::const_iterator listIterator = listNotifications.begin();
+    dbus_bool_t success = true;
+
+    success = success && dbus_message_iter_open_container(&mDBusMessageIter, DBUS_TYPE_ARRAY, "(nnn)", &arrayIter);
+    for (; listIterator < listNotifications.end(); ++listIterator)
+    {
+        success = success && dbus_message_iter_open_container(&arrayIter, DBUS_TYPE_STRUCT, NULL, &structIter);
+        success = success && dbus_message_iter_append_basic(&structIter, DBUS_TYPE_INT16, &listIterator->notificationType);
+        success = success && dbus_message_iter_append_basic(&structIter, DBUS_TYPE_INT16, &listIterator->notificationStatus);
+        success = success && dbus_message_iter_append_basic(&structIter, DBUS_TYPE_INT16, &listIterator->notificationParameter);
+        success = success && dbus_message_iter_close_container(&arrayIter, &structIter);
+    }
+    success = success && dbus_message_iter_close_container(&mDBusMessageIter, &arrayIter);
+
+    if (!success)
+    {
+        log(&commandDbus, DLT_LOG_ERROR, "DBusMessageHandler::append Cannot allocate DBus message!");
+        mErrorName = std::string(DBUS_ERROR_NO_MEMORY);
+        mErrorMsg = "Cannot create reply!";
+    }
+}
+
+void CAmDbusMessageHandler::append(const am::am_NotificationPayload_s& notificationPayload)
+{
+    DBusMessageIter structIter;
+    dbus_bool_t success = true;
+    success = success && dbus_message_iter_open_container(&mDBusMessageIter, DBUS_TYPE_STRUCT, NULL, &structIter);
+    success = success && dbus_message_iter_append_basic(&structIter, DBUS_TYPE_INT16, &notificationPayload.notificationType);
+    success = success && dbus_message_iter_append_basic(&structIter, DBUS_TYPE_INT16, &notificationPayload.notificationValue);
+    success = success && dbus_message_iter_close_container(&mDBusMessageIter, &structIter);
+
+    if (!success)
+    {
+        log(&commandDbus, DLT_LOG_ERROR, "DBusMessageHandler::append Cannot allocate DBus message!");
+        mErrorName = std::string(DBUS_ERROR_NO_MEMORY);
+        mErrorMsg = "Cannot create reply!";
+    }
+}
+
+void CAmDbusMessageHandler::append(const am::am_NotificationConfiguration_s& notificationConfiguration)
+{
+    DBusMessageIter structIter;
+    dbus_bool_t success = true;
+    success = success && dbus_message_iter_open_container(&mDBusMessageIter, DBUS_TYPE_STRUCT, NULL, &structIter);
+    success = success && dbus_message_iter_append_basic(&structIter, DBUS_TYPE_INT16, &notificationConfiguration.notificationType);
+    success = success && dbus_message_iter_append_basic(&structIter, DBUS_TYPE_INT16, &notificationConfiguration.notificationStatus);
+    success = success && dbus_message_iter_append_basic(&structIter, DBUS_TYPE_INT16, &notificationConfiguration.notificationParameter);
+    success = success && dbus_message_iter_close_container(&mDBusMessageIter, &structIter);
+
+    if (!success)
+    {
+        log(&commandDbus, DLT_LOG_ERROR, "DBusMessageHandler::append Cannot allocate DBus message!");
+        mErrorName = std::string(DBUS_ERROR_NO_MEMORY);
+        mErrorMsg = "Cannot create reply!";
+    }
+}
+
 }

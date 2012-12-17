@@ -59,6 +59,10 @@ public:
     void getListSinkClasses(DBusConnection *conn, DBusMessage *msg);
     void getListSystemProperties(DBusConnection *conn, DBusMessage *msg);
     void getTimingInformation(DBusConnection *conn, DBusMessage *msg);
+    void getListSinkMainNotificationConfigurations(DBusConnection *conn, DBusMessage *msg);
+    void getListSourceMainNotificationConfigurations(DBusConnection *conn, DBusMessage *msg);
+    void setSinkMainNotificationConfiguration(DBusConnection *conn, DBusMessage *msg);
+    void setSourceMainNotificationConfiguration(DBusConnection *conn, DBusMessage *msg);
 
     /**
      * sets the pointer to the CommandReceiveInterface and registers Callback

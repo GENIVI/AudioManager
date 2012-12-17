@@ -27,6 +27,7 @@
 #endif
 
 #include "control/IAmControlSend.h"
+#include "shared/CAmSocketHandler.h"
 
 namespace am
 {
@@ -37,11 +38,12 @@ namespace am
 class CAmControlSender
 {
 public:
-    CAmControlSender(std::string controlPluginFile);
+    CAmControlSender(std::string controlPluginFile,CAmSocketHandler* sockethandler);
+    CAmControlSender();
     ~CAmControlSender();
     am_Error_e startupController(IAmControlReceive* controlreceiveinterface) ;
     void setControllerReady() ;
-    void setControllerRundown() ;
+    void setControllerRundown(const int16_t signal) ;
     am_Error_e hookUserConnectionRequest(const am_sourceID_t sourceID, const am_sinkID_t sinkID, am_mainConnectionID_t& mainConnectionID) ;
     am_Error_e hookUserDisconnectionRequest(const am_mainConnectionID_t connectionID) ;
     am_Error_e hookUserSetMainSinkSoundProperty(const am_sinkID_t sinkID, const am_MainSoundProperty_s& soundProperty) ;
@@ -81,24 +83,68 @@ public:
     void cbAckSetSinkSoundProperties(const am_Handle_s handle, const am_Error_e error) ;
     void cbAckSetSinkSoundProperty(const am_Handle_s handle, const am_Error_e error) ;
     am_Error_e getConnectionFormatChoice(const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_Route_s listRoute, const std::vector<am_ConnectionFormat_e> listPossibleConnectionFormats, std::vector<am_ConnectionFormat_e>& listPrioConnectionFormats) ;
+    void confirmCommandReady(const am_Error_e error) ;
+    void confirmRoutingReady(const am_Error_e error) ;
+    void confirmCommandRundown(const am_Error_e error) ;
+    void confirmRoutingRundown(const am_Error_e error) ;
     void getInterfaceVersion(std::string& version) const ;
-    void confirmCommandReady() ;
-    void confirmRoutingReady() ;
-    void confirmCommandRundown() ;
-    void confirmRoutingRundown() ;
-    static void CallsetControllerRundown()
+    am_Error_e hookSystemUpdateSink(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s> listSoundProperties, const std::vector<am_ConnectionFormat_e> listConnectionFormats, std::vector<am_MainSoundProperty_s> listMainSoundProperties) ;
+    am_Error_e hookSystemUpdateSource(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_SoundProperty_s> listSoundProperties, const std::vector<am_ConnectionFormat_e> listConnectionFormats, std::vector<am_MainSoundProperty_s> listMainSoundProperties) ;
+    am_Error_e hookSystemUpdateGateway(const am_gatewayID_t gatewayID, const std::vector<am_ConnectionFormat_e> listSourceConnectionFormats, const std::vector<am_ConnectionFormat_e> listSinkConnectionFromats, const std::vector<bool> convertionMatrix) ;
+    void cbAckSetVolume(const am_Handle_s handle, const std::vector<am_Volumes_s> listVolumes, const am_Error_e error) ;
+    void cbAckSetSinkNotificationConfiguration(const am_Handle_s handle, const am_Error_e error) ;
+    void cbAckSetSourceNotificationConfiguration(const am_Handle_s handle, const am_Error_e error) ;
+    void hookSinkNotificationDataChanged(const am_sinkID_t sinkID, const am_NotificationPayload_s payload) ;
+    void hookSourceNotificationDataChanged(const am_sourceID_t sourceID, const am_NotificationPayload_s payload) ;
+    am_Error_e hookUserSetMainSinkNotificationConfiguration(const am_sinkID_t sinkID, const am_NotificationConfiguration_s notificationConfiguration) ;
+    am_Error_e hookUserSetMainSourceNotificationConfiguration(const am_sourceID_t sourceID, const am_NotificationConfiguration_s notificationConfiguration) ;
+    void hookSystemNodeStateChanged(const NsmNodeState_e NodeStateId) ;
+    void hookSystemNodeApplicationModeChanged(const NsmApplicationMode_e ApplicationModeId) ;
+    void hookSystemSessionStateChanged(const std::string sessionName, const int32_t seatID, const NsmSessionState_e sessionStateID) ;
+    NsmErrorStatus_e hookSystemLifecycleRequest(const uint32_t Request, const uint32_t RequestId) ;
+
+    void receiverCallback(const pollfd pollfd, const sh_pollHandle_t handle, void* userData);
+    bool checkerCallback(const sh_pollHandle_t handle, void* userData);
+    bool dispatcherCallback(const sh_pollHandle_t handle, void* userData);
+
+    void setControllerRundownSafe(int16_t signal)
+    {
+        int16_t p(signal);
+        write(mPipe[1], &p, sizeof(p));
+    }
+
+    TAmShPollFired<CAmControlSender> receiverCallbackT;
+    TAmShPollCheck<CAmControlSender> checkerCallbackT;
+    TAmShPollDispatch<CAmControlSender> dispatcherCallbackT;
+
+    //todo: add getSessionstate, interface nachbilden von org.genivi.NodeStateManager.LifeCycleConsumer, antwort nach NSM
+    //chek interface version RegisterShutdownClient, UnRegisterShutdownClient, GetSessionState, GetApplicationMode, GetNodeState
+
+    //we need this here to call the rundown from the signal handler. In case everything screwed up
+    static void CallsetControllerRundown(int16_t signal)
     {
         if (mInstance)
-            mInstance->setControllerRundown();
+            mInstance->setControllerRundown(signal);
+    }
+
+    //this static callback is used from the signal handler. It is used when a normal rundown is assumed and the mainloop is used to call rundown.
+    static void CallsetControllerRundownSafe(int16_t signal)
+    {
+        if (mInstance)
+        {
+            mInstance->setControllerRundownSafe(signal);
+        }
     }
 
 #ifdef UNIT_TEST
     friend class IAmControlBackdoor;
 #endif
 private:
+    int mPipe[2];
     void* mlibHandle; //!< pointer to the loaded control plugin interface
     IAmControlSend* mController; //!< pointer to the ControlSend interface
     static CAmControlSender* mInstance;
+    int16_t mSignal;
 };
 
 }

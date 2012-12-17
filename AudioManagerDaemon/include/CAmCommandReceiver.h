@@ -60,9 +60,13 @@ public:
     am_Error_e getTimingInformation(const am_mainConnectionID_t mainConnectionID, am_timeSync_t& delay) const;
     am_Error_e getDBusConnectionWrapper(CAmDbusWrapper*& dbusConnectionWrapper) const;
     am_Error_e getSocketHandler(CAmSocketHandler*& socketHandler) const;
+    void confirmCommandReady(const uint16_t handle, const am_Error_e error);
+    void confirmCommandRundown(const uint16_t handle, const am_Error_e error);
     void getInterfaceVersion(std::string& version) const;
-    void confirmCommandReady(const uint16_t handle);
-    void confirmCommandRundown(const uint16_t handle);
+    am_Error_e getListSinkMainNotificationConfigurations(const am_sinkID_t sinkID, std::vector<am_NotificationConfiguration_s>& listMainNotificationConfigurations) const;
+    am_Error_e getListSourceMainNotificationConfigurations(const am_sourceID_t sourceID, std::vector<am_NotificationConfiguration_s>& listMainNotificationConfigurations) const;
+    am_Error_e setSinkMainNotificationConfiguration(const am_sinkID_t sinkID, const am_NotificationConfiguration_s mainNotificationConfiguration);
+    am_Error_e setSourceMainNotificationConfiguration(const am_sourceID_t sourceID, const am_NotificationConfiguration_s mainNotificationConfiguration);
 
     uint16_t getStartupHandle(); //!< returns a startup handle
     uint16_t getRundownHandle(); //!< returns a rundown handle
@@ -81,6 +85,8 @@ private:
     std::vector<uint16_t> mListRundownHandles; //!< list of handles that wait for a confirm
     bool mWaitStartup; //!< if true confirmation will be sent if list of handles = 0
     bool mWaitRundown; //!< if true confirmation will be sent if list of handles = 0
+    am_Error_e mLastErrorStartup;
+    am_Error_e mLastErrorRundown;
 };
 
 }

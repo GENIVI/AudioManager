@@ -43,7 +43,7 @@ CAmControlInterfaceTest::CAmControlInterfaceTest() :
         pRoutingInterfaceBackdoor(), //
         pCommandInterfaceBackdoor(), //
         pControlInterfaceBackdoor(), //
-        pControlSender(std::string("")), //
+        pControlSender(), //
         pRouter(&pDatabaseHandler,&pControlSender), //
         pDatabaseObserver(&pCommandSender, &pRoutingSender, &pSocketHandler), //
         pControlReceiver(&pDatabaseHandler, &pRoutingSender, &pCommandSender, &pSocketHandler, &pRouter), //
