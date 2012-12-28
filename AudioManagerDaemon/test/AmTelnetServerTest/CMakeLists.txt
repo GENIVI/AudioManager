@@ -75,7 +75,7 @@ TARGET_LINK_LIBRARIES(AmTelnetServerTest
     ${DLT_LIBRARIES}
     ${DBUS_LIBRARY}    
     ${CMAKE_THREAD_LIBS_INIT}
-    ${CMAKE_THREAD_LIBS_INIT}
+    ${CMAKE_DL_LIBS}
     gtest
     gmock
 )

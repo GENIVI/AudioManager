@@ -68,6 +68,7 @@ TARGET_LINK_LIBRARIES( AmRouterTest
 	${DLT_LIBRARIES}
 	${DBUS_LIBRARY}
 	${CMAKE_THREAD_LIBS_INIT}
+	${CMAKE_DL_LIBS}
     gtest
     gmock
 )
