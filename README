@@ -94,6 +94,12 @@ sets the default telnetport, default 6060. Can be overwriten by command line par
 .-DMAX_TELNETCONNECTIONS="XXX"
 sets the default maximum number of telnetconnections, default is 3
 
+.-DNSM_PATH="XXX"
+sets the path of the NSM DBUS interface
+
+.-DNSM_INTERFACE="XXX"
+sets the interface to the NSM DBUS interface
+
 In order to change these options, you can modify this values with ccmake, do the appropriate changes in 
 CmakeList.txt or via the commandline for cmake or (when installed via ccmake)
 
@@ -104,13 +110,16 @@ You will need to fullfill some dependencies in order to comile the GENIVI AudioM
 * sqlite3 [tested on version 3.6.22]
 * automotive-dlt [greater 2.5.0]                
 * doxygen (only when WITH_DOCUMENTATION==ON) [tested on version 1.6.3]
-* nodestatemanager headers [tested with version 0.1.0]
 
 To install them in a build environment like Ubuntu you can use:
 ----
 sudo apt-get install libdbus-1-dev libsqlite3-dev doxygen git cmake build-essential
 ----
 
+=== The NodeStateManager
+
+The nodestatemanager headers are needed to compile the audiomanager. If the nodestatemanagerincludes are not found, 
+the headers shipped with the audiomanager are used.
 The nodestatemanager can be retrieved from projects.genivi.org . You can install the headers on you system by
 
 ----
