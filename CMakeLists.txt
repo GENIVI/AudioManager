@@ -75,6 +75,9 @@ OPTION ( USE_BUILD_LIBS
 	
 OPTION ( GLIB_DBUS_TYPES_TOLERANT
     "build dbus with tolerance towards glib 16bit/32bit handling" ON)
+
+OPTION ( WITH_NSM
+    "build with NSM support" ON)
     
   
 #Can be changed via passing -DDBUS_SERVICE_PREFIX="XXX" to cmake

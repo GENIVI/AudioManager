@@ -301,7 +301,9 @@ void mainProgram()
 
 #ifdef WITH_DBUS_WRAPPER
     CAmDbusWrapper iDBusWrapper(&iSocketHandler,dbusWrapperType);
+#ifdef WITH_NSM
     CAmNodeStateCommunicator iNodeStateCommunicator(&iDBusWrapper);
+#endif /*WITH_NSM*/
 #endif /*WITH_DBUS_WRAPPER */
 
 #ifdef WITH_SYSTEMD_WATCHDOG
@@ -317,8 +319,12 @@ void mainProgram()
 #ifdef WITH_DBUS_WRAPPER
     CAmCommandReceiver iCommandReceiver(&iDatabaseHandler, &iControlSender, &iSocketHandler, &iDBusWrapper);
     CAmRoutingReceiver iRoutingReceiver(&iDatabaseHandler, &iRoutingSender, &iControlSender, &iSocketHandler, &iDBusWrapper);
+#ifdef WITH_NSM
     CAmControlReceiver iControlReceiver(&iDatabaseHandler,&iRoutingSender,&iCommandSender,&iSocketHandler, &iRouter, &iNodeStateCommunicator);
     iNodeStateCommunicator.registerControlSender(&iControlSender);
+#else /*WITH_NSM*/
+    CAmControlReceiver iControlReceiver(&iDatabaseHandler,&iRoutingSender,&iCommandSender,&iSocketHandler, &iRouter);
+#endif /*WITH_NSM*/
 #else /*WITH_DBUS_WRAPPER*/
     CAmCommandReceiver iCommandReceiver(&iDatabaseHandler,&iControlSender,&iSocketHandler);
     CAmRoutingReceiver iRoutingReceiver(&iDatabaseHandler,&iRoutingSender,&iControlSender,&iSocketHandler);

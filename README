@@ -70,7 +70,8 @@ These are the compile options with default values:
  WITH_PLUGIN_ROUTING              ON                                                                                                             
  WITH_SYSTEMD_WATCHDOG            OFF                                                                                                            
  WITH_TELNET                      ON                                                                                                             
- WITH_TESTS                       ON                                                                                                             
+ WITH_TESTS                       ON 
+ WITH_NSM						  ON                                                                                                            
  gmock_build_tests                OFF                                                                                                            
  gtest_build_samples              OFF                                                                                                            
  gtest_build_tests                OFF                                                                                                            
