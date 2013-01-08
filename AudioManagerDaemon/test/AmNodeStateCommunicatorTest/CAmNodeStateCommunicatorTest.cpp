@@ -20,7 +20,6 @@
  */
 
 #include "CAmNodeStateCommunicatorTest.h"
-#include <Python.h>
 #include "shared/CAmDltWrapper.h"
 #include "shared/CAmSocketHandler.h"
 #include "shared/CAmDbusWrapper.h"

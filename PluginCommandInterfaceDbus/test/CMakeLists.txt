@@ -19,7 +19,10 @@ cmake_minimum_required(VERSION 2.6)
 
 PROJECT(CAmCommandSenderDbusTests)
 
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -DUNIT_TEST=1 -DDLT_CONTEXT=AudioManager")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w -g -DUNIT_TEST=1 -DDLT_CONTEXT=AudioManager")
+
+string (REPLACE "-g -Wall -Wextra" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+string (REPLACE "-pedantic" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
 
 set(STD_INCLUDE_DIRS "/usr/include")
 set(EXECUTABLE_OUTPUT_PATH ${TEST_EXECUTABLE_OUTPUT_PATH})

@@ -7,6 +7,7 @@
 
 # BUILD_SHARED_LIBS is a standard CMake variable, but we declare it here to
 # make it prominent in the GUI.
+
 set (CMAKE_CXX_FLAGS "-std=gnu++0x -D_GNU_SOURCE -Wno-variadic-macros")
 
 option(BUILD_SHARED_LIBS "Build shared libraries (DLLs)." OFF)

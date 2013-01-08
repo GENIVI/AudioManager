@@ -1801,7 +1801,8 @@ TEST_F(CAmRouterTest,simpleRoute4Domains)
     compareRoute.sourceID = sourceID;
 
     ASSERT_EQ(E_OK, pRouter.getRoute(false,sourceID,sinkID,listRoutes));
-    ASSERT_EQ(1, listRoutes.size());
+    size_t size(1);
+    ASSERT_EQ(size, listRoutes.size());
     ASSERT_TRUE(pCF.compareRoute(compareRoute,listRoutes[0]));
 }
 
