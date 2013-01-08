@@ -578,7 +578,10 @@ void CAmNodeStateCommunicator::sendMessage(DBusMessage* message, DBusMessage* or
 {
     dbus_uint32_t serial = dbus_message_get_serial(origMessage);
 
-    dbus_connection_send(mpDBusConnection, message, &serial);
+    if(!dbus_connection_send(mpDBusConnection, message, &serial))
+    {
+    	logError( "CAmNodeStateCommunicator::sendMessage DBUS handler Out Of Memory!");
+    }
     dbus_connection_flush(mpDBusConnection);
     dbus_message_unref(message);
 }
@@ -695,11 +698,7 @@ DBusHandlerResult CAmNodeStateCommunicator::signalCallback(DBusConnection* conn,
             return (DBUS_HANDLER_RESULT_NOT_YET_HANDLED);
         }
     }
-    else
-    {
-        return (DBUS_HANDLER_RESULT_NOT_YET_HANDLED);
-    }
-    printf("asdasdas\n");
+
     return (DBUS_HANDLER_RESULT_NOT_YET_HANDLED);
 }
 
@@ -714,22 +713,25 @@ am_Error_e CAmNodeStateCommunicator::readIntegerProperty(const std::string prope
     if (!message)
     {
         logError("CAmNodeStateCommunicator::readIntegerProperty dbus error:", error.message);
+        dbus_message_unref(message);
         return (E_UNKNOWN);
     }
 
 
     dbus_message_iter_init_append(message, &iter);
-    const char *interface=std::string(NSM_INTERFACE).c_str();
+    const char *interface=NSM_INTERFACE;
     const char *propertyChar=property.c_str();
     if (!dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &interface))
     {
         logError("CAmNodeStateCommunicator::readIntegerProperty append error");
+        dbus_message_unref(message);
         return (E_UNKNOWN);
     }
 
     if (!dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &propertyChar))
     {
         logError("CAmNodeStateCommunicator::readIntegerProperty append error");
+        dbus_message_unref(message);
         return (E_UNKNOWN);
     }
 
@@ -737,13 +739,22 @@ am_Error_e CAmNodeStateCommunicator::readIntegerProperty(const std::string prope
     if (!reply)
     {
         logError("CAmNodeStateCommunicator::readIntegerProperty failed, dbus error", error.message);
+        dbus_message_unref(message);
         return (E_UNKNOWN);
     }
 
-    dbus_message_iter_init(reply,&iterVariant);
+    if(!dbus_message_iter_init(reply,&iterVariant))
+    {
+    	logError("CAmNodeStateCommunicator::readIntegerProperty failed, dbus error", error.message);
+		dbus_message_unref(message);
+		dbus_message_unref(reply);
+		return (E_UNKNOWN);
+    }
     if (dbus_message_iter_get_arg_type (&iterVariant)!= DBUS_TYPE_VARIANT)
     {
         logError("CAmNodeStateCommunicator::readIntegerProperty failed, dbus return type wrong");
+        dbus_message_unref(reply);
+        dbus_message_unref(message);
         return (E_UNKNOWN);
     }
     DBusMessageIter subiter;
@@ -751,11 +762,14 @@ am_Error_e CAmNodeStateCommunicator::readIntegerProperty(const std::string prope
     if (dbus_message_iter_get_arg_type (&subiter)!= DBUS_TYPE_INT32)
     {
         logError("CAmNodeStateCommunicator::readIntegerProperty failed, dbus return type wrong");
+        dbus_message_unref(reply);
+        dbus_message_unref(message);
         return (E_UNKNOWN);
     }
 
    dbus_message_iter_get_basic(&subiter,&value);
-    dbus_message_unref(reply);
+   dbus_message_unref(reply);
+   dbus_message_unref(message);
 
     return (E_OK);
 }

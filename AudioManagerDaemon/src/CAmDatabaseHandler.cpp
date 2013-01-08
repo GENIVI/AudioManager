@@ -152,7 +152,10 @@ CAmDatabaseHandler::CAmDatabaseHandler(std::string databasePath) :
 
     if (infile)
     {
-        remove(mPath.c_str());
+        if(remove(mPath.c_str())==0)
+        {
+        	logError("DatabaseHandler::DatabaseHandler Knocked down database failed !");
+        }
         logInfo("DatabaseHandler::DatabaseHandler Knocked down database");
     }
 
@@ -3658,7 +3661,6 @@ am_timeSync_t CAmDatabaseHandler::calculateMainConnectionDelay(const am_mainConn
     if ((eCode = sqlite3_finalize(query)) != SQLITE_OK)
     {
         logError("DatabaseHandler::calculateMainConnectionDelay SQLITE Finalize error code:", eCode);
-        MY_SQLITE_FINALIZE(query)
         return (E_DATABASE_ERROR);
     }
     if (min < 0)

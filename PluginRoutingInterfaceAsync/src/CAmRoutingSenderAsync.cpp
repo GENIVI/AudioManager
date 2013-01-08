@@ -181,7 +181,15 @@ bool CAmWorker::timedWait(timespec timer)
 }
 
 CAmRoutingSenderAsync::CAmRoutingSenderAsync() :
-        mReceiveInterface(0), mDomains(createDomainTable()), mSinks(createSinkTable()), mSources(createSourceTable()), mGateways(createGatewayTable()), mMapHandleWorker(), mMapConnectionIDRoute(), mPool(10)
+        mReceiveInterface(0), //
+        mDomains(createDomainTable()), //
+        mSinks(createSinkTable()), //
+        mSources(createSourceTable()), //
+        mGateways(createGatewayTable()), //
+        mMapHandleWorker(), //
+        mMapConnectionIDRoute(), //
+        mPool(10),
+        mInterruptThread(0)
 {
 }
 
@@ -965,7 +973,8 @@ asycDisConnectWorker::asycDisConnectWorker(CAmRoutingSenderAsync *asyncSender, C
         mAsyncSender(asyncSender), //
         mShadow(shadow), //
         mHandle(handle), //
-        mConnectionID(connectionID)
+        mConnectionID(connectionID), //
+        mConnectionFormat(CF_UNKNOWN)
 {
 }
 

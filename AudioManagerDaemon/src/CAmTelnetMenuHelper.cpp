@@ -127,7 +127,7 @@ void CAmTelnetMenuHelper::newSocketConnection(int filedescriptor)
     mCurrentMainStateMap.insert(it, std::make_pair(filedescriptor, state));
     // Send welcome message
     welcome << COLOR_WELCOME << "Welcome to GENIVI AudioManager " << DAEMONVERSION << COLOR_DEFAULT << "\n>";
-    send(filedescriptor, welcome.str().c_str(), welcome.str().size(), 0);
+    assert(send(filedescriptor, welcome.str().c_str(), welcome.str().size(), 0)>=0);
     logInfo("[TN] New connection: ", filedescriptor);
 }
 
@@ -216,14 +216,14 @@ void CAmTelnetMenuHelper::enterCmdQueue(std::queue<std::string>& CmdQueue, int& 
 void CAmTelnetMenuHelper::sendError(int& filedescriptor, std::string error_string)
 /****************************************************************************/
 {
-    send(filedescriptor, error_string.c_str(), error_string.size(), 0);
+    assert(send(filedescriptor, error_string.c_str(), error_string.size(), 0)>=0);
 }
 
 /****************************************************************************/
 void CAmTelnetMenuHelper::sendTelnetLine(int& filedescriptor, std::stringstream& line)
 /****************************************************************************/
 {
-    send(filedescriptor, line.str().c_str(), line.str().size(), 0);
+    assert(send(filedescriptor, line.str().c_str(), line.str().size(), 0)>=0);
 }
 
 /****************************************************************************/
@@ -256,7 +256,7 @@ void CAmTelnetMenuHelper::sendCurrentCmdPrompt(int& filedescriptor)
         default:
             break;
         }
-        send(filedescriptor, outputstream.str().c_str(), outputstream.str().size(), 0);
+        assert(send(filedescriptor, outputstream.str().c_str(), outputstream.str().size(), 0)>=0);
     }
     else
     {

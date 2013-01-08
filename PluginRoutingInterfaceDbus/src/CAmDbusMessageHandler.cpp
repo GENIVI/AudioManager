@@ -265,6 +265,8 @@ double CAmRoutingDbusMessageHandler::getDouble()
 am::am_Availability_s CAmRoutingDbusMessageHandler::getAvailability()
 {
     am::am_Availability_s availability;
+    availability.availability=A_UNKNOWN;
+    availability.availabilityReason=AR_UNKNOWN;
     if (DBUS_TYPE_STRUCT != dbus_message_iter_get_arg_type(&mDBusMessageIter))
     {
         log(&routingDbus, DLT_LOG_ERROR, "DBusMessageHandler::getAvailability DBUS handler argument is no struct!");

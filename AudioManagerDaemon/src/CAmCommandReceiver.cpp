@@ -58,7 +58,9 @@ CAmCommandReceiver::CAmCommandReceiver(CAmDatabaseHandler *iDatabaseHandler, CAm
         mListStartupHandles(), //
         mListRundownHandles(), //
         mWaitStartup(false), //
-        mWaitRundown(false)
+        mWaitRundown(false), //
+        mLastErrorStartup(E_UNKNOWN), //
+        mLastErrorRundown(E_UNKNOWN)
 {
     assert(mDatabaseHandler!=NULL);
     assert(mSocketHandler!=NULL);

@@ -546,9 +546,14 @@ am_Handle_s CAmRoutingSender::createHandle(const am_handleData_c& handleData, co
  */
 CAmRoutingSender::am_handleData_c CAmRoutingSender::returnHandleData(const am_Handle_s handle) const
 {
+
     HandlesMap::const_iterator it = mlistActiveHandles.begin();
     it = mlistActiveHandles.find(handle);
-    return (it->second);
+    if (it!=mlistActiveHandles.end())
+        return (it->second);
+    am_handleData_c handleData;
+    handleData.sinkID=0;
+    return (handleData);
 }
 
 void CAmRoutingSender::setRoutingReady()

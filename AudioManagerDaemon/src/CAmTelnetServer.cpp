@@ -89,12 +89,12 @@ CAmTelnetServer::CAmTelnetServer(CAmSocketHandler *iSocketHandler, CAmCommandSen
     //setup the port Listener
     mConnectFD = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
     assert (mConnectFD>0);
-    setsockopt(mConnectFD, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int));
+    assert(setsockopt(mConnectFD, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int))==0);
     memset(&servAddr, 0, sizeof(servAddr));
     servAddr.sin_family = AF_INET;
     servAddr.sin_addr.s_addr = INADDR_ANY;
     servAddr.sin_port = htons(servPort);
-    bind(mConnectFD, (struct sockaddr *) &servAddr, sizeof(servAddr));
+    assert(bind(mConnectFD, (struct sockaddr *) &servAddr, sizeof(servAddr))==0);
 
     if (listen(mConnectFD, mMaxConnections) < 0)
     {
