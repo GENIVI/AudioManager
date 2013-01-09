@@ -25,7 +25,6 @@
 #include <fstream>
 #include <stdexcept>
 #include "CAmControlSender.h"
-#include "shared/CAmDbusWrapper.h"
 #include "shared/CAmDltWrapper.h"
 #include "config.h"
 

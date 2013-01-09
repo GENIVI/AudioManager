@@ -63,10 +63,15 @@ file(GLOB TELNET_SRCS_CXX
     "../../src/CAmRouter.cpp"
     "../../src/CAmDltWrapper.cpp"
     "../../src/CAmTelnetMenuHelper.cpp"
-    "../../src/CAmNodeStateCommunicator.cpp"
     "../../src/CAmDbusWrapper.cpp"
     "*.cpp"    
 )
+
+IF(WITH_NSM)
+    SET (CONTROL_INTERFACE_SRCS_CXX
+        ${CONTROL_INTERFACE_SRCS_CXX}
+    "../../src/CAmNodeStateCommunicator.cpp")
+ENDIF(WITH_NSM)
 
 ADD_EXECUTABLE(AmTelnetServerTest ${TELNET_SRCS_CXX})
 

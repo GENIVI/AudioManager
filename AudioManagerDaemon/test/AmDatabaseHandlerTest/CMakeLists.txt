@@ -55,11 +55,16 @@ file(GLOB DATABASE_SRCS_CXX
     "../../src/CAmSocketHandler.cpp"
     "../../src/CAmCommandReceiver.cpp"
     "../../src/CAmRoutingReceiver.cpp"
-    "../../src/CAmNodeStateCommunicator.cpp"
     "../../src/CAmDbusWrapper.cpp"
     "../CAmCommonFunctions.cpp" 
     "*.cpp"
     )
+    
+IF(WITH_NSM)
+    SET (CONTROL_INTERFACE_SRCS_CXX
+        ${CONTROL_INTERFACE_SRCS_CXX}
+    "../../src/CAmNodeStateCommunicator.cpp")
+ENDIF(WITH_NSM)
 
 ADD_EXECUTABLE( AmDatabaseHandlerTest ${DATABASE_SRCS_CXX})
 

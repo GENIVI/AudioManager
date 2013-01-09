@@ -71,9 +71,15 @@ IF(WITH_DBUS_WRAPPER)
     SET (AUDIOMAN_SRCS_CXX
         ${AUDIOMAN_SRCS_CXX}
         src/CAmDbusWrapper.cpp
-        src/CAmNodeStateCommunicator.cpp
     )
 ENDIF(WITH_DBUS_WRAPPER)
+
+IF(WITH_NSM)
+    SET (AUDIOMAN_SRCS_CXX
+        ${AUDIOMAN_SRCS_CXX}
+        src/CAmNodeStateCommunicator.cpp
+    )
+ENDIF(WITH_NSM)
 
 IF(WITH_SOCKETHANDLER_LOOP)
     SET (AUDIOMAN_SRCS_CXX
@@ -154,7 +160,7 @@ INSTALL(DIRECTORY "${AUDIO_INCLUDE_FOLDER}/"
         COMPONENT dev
 )
 
-IF(WITH_DBUS_WRAPPER)
+IF(WITH_NSM)
     IF(USE_BUILD_LIBS) 
         SET(NSM_INTROSPECTION_FILE ${EXECUTABLE_OUTPUT_PATH}/LifeCycleConsumer.xml)
             execute_process(
@@ -167,7 +173,7 @@ IF(WITH_DBUS_WRAPPER)
             DESTINATION "${NSM_INTROSPECTION_FILE}"
             COMPONENT bin)
     ENDIF(USE_BUILD_LIBS)
-ENDIF(WITH_DBUS_WRAPPER)
+ENDIF(WITH_NSM)
 
 CONFIGURE_FILE( ${CMAKE_SOURCE_DIR}/cmake/config.cmake ${CMAKE_SOURCE_DIR}/include/config.h )
 

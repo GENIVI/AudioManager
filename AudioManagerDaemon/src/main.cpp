@@ -30,10 +30,13 @@
 #include "config.h"
 
 #ifdef  WITH_TELNET
-#include "CAmTelnetServer.h"
+    #include "CAmTelnetServer.h"
 #endif
 #ifdef WITH_DBUS_WRAPPER
-#include <shared/CAmDbusWrapper.h>
+    #include "shared/CAmDbusWrapper.h"
+#endif
+#ifdef WITH_NSM
+    #include "CAmNodeStateCommunicator.h"
 #endif
 
 #include <sys/resource.h>
@@ -57,9 +60,9 @@
 #include "CAmControlReceiver.h"
 #include "CAmDatabaseObserver.h"
 #include "CAmWatchdog.h"
-#include "CAmNodeStateCommunicator.h"
 #include "shared/CAmDltWrapper.h"
 #include "shared/CAmSocketHandler.h"
+
 
 
 using namespace am;

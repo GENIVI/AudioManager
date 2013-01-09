@@ -28,9 +28,12 @@
 #include "CAmRoutingSender.h"
 #include "CAmCommandSender.h"
 #include "CAmRouter.h"
-#include "CAmNodeStateCommunicator.h"
 #include "shared/CAmDltWrapper.h"
 #include "shared/CAmSocketHandler.h"
+#ifdef WITH_NSM
+    #include "CAmNodeStateCommunicator.h"
+#endif
+
 
 
 namespace am {
@@ -605,70 +608,133 @@ am_Error_e CAmControlReceiver::nsmGetRestartReasonProperty(NsmRestartReason_e& r
 {
     if (!mNodeStateCommunicator)
         return (E_NON_EXISTENT);
+#ifdef WITH_NSM
     return (mNodeStateCommunicator->nsmGetRestartReasonProperty(restartReason));
+#else
+    (void)restartReason;
+    return (E_NON_EXISTENT);
+#endif
 }
 
 am_Error_e CAmControlReceiver::nsmGetShutdownReasonProperty(NsmShutdownReason_e& ShutdownReason)
 {
     if (!mNodeStateCommunicator)
         return (E_NON_EXISTENT);
+#ifdef WITH_NSM
     return (mNodeStateCommunicator->nsmGetShutdownReasonProperty(ShutdownReason));
+#else
+    (void)ShutdownReason;
+    return (E_NON_EXISTENT);
+#endif
+
 }
 
 am_Error_e CAmControlReceiver::nsmGetRunningReasonProperty(NsmRunningReason_e& nsmRunningReason)
 {
     if (!mNodeStateCommunicator)
         return (E_NON_EXISTENT);
+#ifdef WITH_NSM
     return (mNodeStateCommunicator->nsmGetRunningReasonProperty(nsmRunningReason));
+#else
+    (void)nsmRunningReason;
+    return (E_NON_EXISTENT);
+#endif
+
 }
 
 NsmErrorStatus_e CAmControlReceiver::nsmGetNodeState(NsmNodeState_e& nsmNodeState)
 {
     if (!mNodeStateCommunicator)
         return (NsmErrorStatus_Error);
+#ifdef WITH_NSM
     return (mNodeStateCommunicator->nsmGetNodeState(nsmNodeState));
+#else
+    (void) nsmNodeState;
+    return (NsmErrorStatus_Error);
+#endif
+
 }
 
 NsmErrorStatus_e CAmControlReceiver::nsmGetSessionState(const std::string& sessionName, const NsmSeat_e& seatID, NsmSessionState_e& sessionState)
 {
     if (!mNodeStateCommunicator)
         return (NsmErrorStatus_Error);
+#ifdef WITH_NSM
     return (mNodeStateCommunicator->nsmGetSessionState(sessionName,seatID,sessionState));
+#else
+    (void) sessionName;
+    (void) seatID;
+    (void) sessionState;
+    return (NsmErrorStatus_Error);
+#endif
+
 }
 
 NsmErrorStatus_e CAmControlReceiver::nsmGetApplicationMode(NsmApplicationMode_e& applicationMode)
 {
     if (!mNodeStateCommunicator)
         return (NsmErrorStatus_Error);
+#ifdef WITH_NSM
     return (mNodeStateCommunicator->nsmGetApplicationMode(applicationMode));
+#else
+    (void) applicationMode;
+    return (NsmErrorStatus_Error);
+#endif
+
 }
 
 NsmErrorStatus_e CAmControlReceiver::nsmRegisterShutdownClient(const uint32_t shutdownMode, const uint32_t timeoutMs)
 {
     if (!mNodeStateCommunicator)
         return (NsmErrorStatus_Error);
+#ifdef WITH_NSM
     return (mNodeStateCommunicator->nsmRegisterShutdownClient(shutdownMode,timeoutMs));
+#else
+    (void) shutdownMode;
+    (void) timeoutMs;
+    return (NsmErrorStatus_Error);
+#endif
+
 }
 
 NsmErrorStatus_e CAmControlReceiver::nsmUnRegisterShutdownClient(const uint32_t shutdownMode)
 {
     if (!mNodeStateCommunicator)
         return (NsmErrorStatus_Error);
+#ifdef WITH_NSM
     return (mNodeStateCommunicator->nsmUnRegisterShutdownClient(shutdownMode));
+#else
+    (void) shutdownMode;
+    return (NsmErrorStatus_Error);
+#endif
+
 }
 
 am_Error_e CAmControlReceiver::nsmGetInterfaceVersion(uint32_t& version)
 {
     if (!mNodeStateCommunicator)
         return (E_NON_EXISTENT);
+#ifdef WITH_NSM
     return (mNodeStateCommunicator->nsmGetInterfaceVersion(version));
+#else
+    (void) version;
+    return (E_NON_EXISTENT);
+#endif
+
 }
 
 NsmErrorStatus_e CAmControlReceiver::nsmSendLifecycleRequestComplete(const uint32_t RequestId, const NsmErrorStatus_e status)
 {
     if (!mNodeStateCommunicator)
         return (NsmErrorStatus_Error);
+#ifdef WITH_NSM
     return (mNodeStateCommunicator->nsmSendLifecycleRequestComplete(RequestId,status));
+#else
+    (void) RequestId;
+    (void) status;
+    return (NsmErrorStatus_Error);
+#endif
+
 }
 
 }

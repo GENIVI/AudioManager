@@ -48,17 +48,22 @@ file(GLOB CONTROL_INTERFACE_SRCS_CXX
     "../../src/CAmRoutingSender.cpp"
     "../../src/CAmRoutingReceiver.cpp"
     "../../src/CAmCommandSender.cpp"
+    "../../src/CAmCommandReceiver.cpp"
     "../../src/CAmControlReceiver.cpp"
     "../../src/CAmControlSender.cpp"
     "../../src/CAmRouter.cpp"
     "../../src/CAmDltWrapper.cpp"
     "../../src/CAmSocketHandler.cpp"
-    "../../src/CAmCommandReceiver.cpp"
-    "../../src/CAmNodeStateCommunicator.cpp"
     "../../src/CAmDbusWrapper.cpp"
     "../CAmCommonFunctions.cpp" 
     "*.cpp"    
 )
+
+IF(WITH_NSM)
+    SET (CONTROL_INTERFACE_SRCS_CXX
+        ${CONTROL_INTERFACE_SRCS_CXX}
+    "../../src/CAmNodeStateCommunicator.cpp")
+ENDIF(WITH_NSM)
 
 ADD_EXECUTABLE(AmControlInterfaceTest ${CONTROL_INTERFACE_SRCS_CXX})
 
