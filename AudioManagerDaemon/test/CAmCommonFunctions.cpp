@@ -109,6 +109,11 @@ bool equalMainSoundProperty(const am_MainSoundProperty_s a, const am_MainSoundPr
     return (a.type == b.type && a.value == b.value);
 }
 
+bool equalNotificationConfiguration(const am_NotificationConfiguration_s a, const am_NotificationConfiguration_s b)
+{
+    return (a.notificationParameter == b.notificationParameter && a.notificationStatus == b.notificationStatus && a.notificationType == b.notificationType);
+}
+
 bool equalRoutingElement(const am_RoutingElement_s a, const am_RoutingElement_s b)
 {
     return (a.connectionFormat == b.connectionFormat && a.domainID == b.domainID && a.sinkID == b.sinkID && a.sourceID == b.sourceID);
@@ -235,6 +240,8 @@ void CAmCommonFunctions::createSink(am_Sink_s& sink) const
     sink.listConnectionFormats = getStandardConnectionFormatList();
     sink.listSoundProperties = getStandardSoundPropertyList();
     sink.listMainSoundProperties = getStandardMainSoundPropertyList();
+    sink.listNotificationConfigurations = getStandardNotificationConfigurationList();
+    sink.listMainNotificationConfigurations = getStandardNotificationConfigurationList();
     sink.mainVolume = 12;
     sink.muteState = MS_UNMUTED;
     sink.visible = true;
@@ -252,6 +259,8 @@ void CAmCommonFunctions::createSource(am_Source_s& source) const
     source.listConnectionFormats = getStandardConnectionFormatList();
     source.listSoundProperties = getStandardSoundPropertyList();
     source.listMainSoundProperties = getStandardMainSoundPropertyList();
+    source.listMainNotificationConfigurations=getStandardNotificationConfigurationList();
+    source.listNotificationConfigurations=getStandardNotificationConfigurationList();
     source.interruptState = IS_OFF;
     source.visible = true;
     source.volume = 23;
@@ -305,6 +314,23 @@ std::vector<bool> CAmCommonFunctions::getStandardConvertionMatrix()
     convMatrix.push_back(true);
     convMatrix.push_back(true);
     return convMatrix;
+}
+
+std::vector<am_NotificationConfiguration_s> am::CAmCommonFunctions::getStandardNotificationConfigurationList()
+{
+    std::vector<am_NotificationConfiguration_s> listNotificationConfigurations;
+    am_NotificationConfiguration_s tempNotificationConfiguration;
+    tempNotificationConfiguration.notificationParameter=12;
+    tempNotificationConfiguration.notificationStatus=NS_PERIODIC;
+    tempNotificationConfiguration.notificationType=NT_MAX;
+    listNotificationConfigurations.push_back(tempNotificationConfiguration);
+
+    tempNotificationConfiguration.notificationParameter=16;
+    tempNotificationConfiguration.notificationStatus=NS_CHANGE;
+    tempNotificationConfiguration.notificationType=NT_UNKNOWN;
+    listNotificationConfigurations.push_back(tempNotificationConfiguration);
+
+    return (listNotificationConfigurations);
 }
 
 void CAmCommonFunctions::connectionList2RoutingList(std::vector<am_RoutingElement_s> & routingList, const std::vector<am_Connection_s>& connectionList)

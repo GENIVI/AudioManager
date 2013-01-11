@@ -31,6 +31,7 @@ using namespace testing;
 //extern int GetRandomNumber(int nLow, int nHigh);
 //extern bool equalSoundProperty (const am_SoundProperty_s a, const am_SoundProperty_s b);
 extern bool equalMainSoundProperty(const am_MainSoundProperty_s a, const am_MainSoundProperty_s b);
+extern bool equalNotificationConfiguration(const am_NotificationConfiguration_s a, const am_NotificationConfiguration_s b);
 //extern bool equalRoutingElement(const am_RoutingElement_s a, const am_RoutingElement_s b);
 extern bool equalClassProperties(const am_ClassProperty_s a, const am_ClassProperty_s b);
 extern std::string int2string(int i);
@@ -214,7 +215,7 @@ TEST_F(CAmDatabaseHandlerTest,getMainConnectionInfo)
 
 }
 
-TEST_F(CAmDatabaseHandlerTest,getSinKInfo)
+TEST_F(CAmDatabaseHandlerTest,getSinkInfo)
 {
     //fill the connection database
     am_Sink_s staticSink, firstDynamicSink, secondDynamicSink;
@@ -271,7 +272,18 @@ TEST_F(CAmDatabaseHandlerTest,getSinKInfo)
 
     am_Sink_s sinkData;
     ASSERT_EQ(E_OK, pDatabaseHandler.getSinkInfoDB(secondDynamicSinkID,sinkData));
-    ASSERT_TRUE( (secondDynamicSink.available.availability == sinkData.available.availability) && (secondDynamicSink.available.availabilityReason == sinkData.available.availabilityReason) && (secondDynamicSink.sinkClassID == sinkData.sinkClassID) && (secondDynamicSink.domainID == sinkData.domainID) && (secondDynamicSink.visible == sinkData.visible) && (secondDynamicSink.name.compare(sinkData.name) == 0) && (secondDynamicSink.volume == sinkData.volume) && std::equal(secondDynamicSink.listConnectionFormats.begin(), secondDynamicSink.listConnectionFormats.end(), sinkData.listConnectionFormats.begin()) && std::equal(secondDynamicSink.listMainSoundProperties.begin(), secondDynamicSink.listMainSoundProperties.end(), sinkData.listMainSoundProperties.begin(), equalMainSoundProperty));
+    ASSERT_TRUE( (secondDynamicSink.available.availability == sinkData.available.availability) && //
+            (secondDynamicSink.available.availabilityReason == sinkData.available.availabilityReason) && //
+            (secondDynamicSink.sinkClassID == sinkData.sinkClassID) && //
+            (secondDynamicSink.domainID == sinkData.domainID) && //
+            (secondDynamicSink.visible == sinkData.visible) && //
+            (secondDynamicSink.name.compare(sinkData.name) == 0) && //
+            (secondDynamicSink.volume == sinkData.volume) && //
+            std::equal(secondDynamicSink.listConnectionFormats.begin(), secondDynamicSink.listConnectionFormats.end(), sinkData.listConnectionFormats.begin()) && //
+            std::equal(secondDynamicSink.listMainSoundProperties.begin(), secondDynamicSink.listMainSoundProperties.end(), sinkData.listMainSoundProperties.begin(), equalMainSoundProperty) && //
+            std::equal(secondDynamicSink.listNotificationConfigurations.begin(), secondDynamicSink.listNotificationConfigurations.end(), sinkData.listNotificationConfigurations.begin(), equalNotificationConfiguration) && //
+            std::equal(secondDynamicSink.listMainNotificationConfigurations.begin(), secondDynamicSink.listMainNotificationConfigurations.end(), sinkData.listMainNotificationConfigurations.begin(), equalNotificationConfiguration) //
+            );
 
 }
 
@@ -335,8 +347,16 @@ TEST_F(CAmDatabaseHandlerTest,getSourceInfo)
 
     am_Source_s sourceData;
     ASSERT_EQ(E_OK, pDatabaseHandler.getSourceInfoDB(secondDynamicSourceID,sourceData));
-    ASSERT_TRUE(
-            (secondDynamicSource.available.availability == sourceData.available.availability) && (secondDynamicSource.available.availabilityReason == sourceData.available.availabilityReason) && (secondDynamicSource.sourceClassID == sourceData.sourceClassID) && (secondDynamicSource.domainID == sourceData.domainID) && (secondDynamicSource.interruptState == sourceData.interruptState) && (secondDynamicSource.visible == sourceData.visible) && (secondDynamicSource.name.compare(sourceData.name) == 0) && (secondDynamicSource.volume == sourceData.volume) && std::equal(secondDynamicSource.listConnectionFormats.begin(), secondDynamicSource.listConnectionFormats.end(), sourceData.listConnectionFormats.begin()) && std::equal(secondDynamicSource.listMainSoundProperties.begin(), secondDynamicSource.listMainSoundProperties.end(), sourceData.listMainSoundProperties.begin(), equalMainSoundProperty));
+    ASSERT_TRUE((secondDynamicSource.available.availability == sourceData.available.availability) && //
+            (secondDynamicSource.available.availabilityReason == sourceData.available.availabilityReason) && //
+            (secondDynamicSource.sourceClassID == sourceData.sourceClassID) && (secondDynamicSource.domainID == sourceData.domainID) && //
+            (secondDynamicSource.interruptState == sourceData.interruptState) && (secondDynamicSource.visible == sourceData.visible) && //
+            (secondDynamicSource.name.compare(sourceData.name) == 0) && (secondDynamicSource.volume == sourceData.volume) && //
+            std::equal(secondDynamicSource.listConnectionFormats.begin(), secondDynamicSource.listConnectionFormats.end(), sourceData.listConnectionFormats.begin()) && //
+            std::equal(secondDynamicSource.listMainSoundProperties.begin(), secondDynamicSource.listMainSoundProperties.end(), sourceData.listMainSoundProperties.begin(), equalMainSoundProperty) && //
+            std::equal(secondDynamicSource.listMainNotificationConfigurations.begin(), secondDynamicSource.listMainNotificationConfigurations.end(), sourceData.listMainNotificationConfigurations.begin(), equalNotificationConfiguration) && //
+            std::equal(secondDynamicSource.listNotificationConfigurations.begin(), secondDynamicSource.listNotificationConfigurations.end(), sourceData.listNotificationConfigurations.begin(), equalNotificationConfiguration) //
+    );
 
 }
 
@@ -1917,7 +1937,7 @@ TEST_F(CAmDatabaseHandlerTest,enterSinksCorrect)
 
 TEST_F(CAmDatabaseHandlerTest,enterNotificationConfigurationCorrect)
 {
-    am_Sink_s testSinkData;
+    am_Sink_s testSinkData, readoutData;
     pCF.createSink(testSinkData);
     testSinkData.sinkID = 4;
     am_sinkID_t sinkID;
@@ -1937,9 +1957,17 @@ TEST_F(CAmDatabaseHandlerTest,enterNotificationConfigurationCorrect)
     ASSERT_EQ(E_OK,pDatabaseHandler.getListSinks(listSinks))
         << "ERROR: database error";
 
-    ASSERT_EQ(listSinks.begin()->listNotificationConfigurations.begin()->notificationParameter,notify.notificationParameter);
-    ASSERT_EQ(listSinks.begin()->listNotificationConfigurations.begin()->notificationStatus,notify.notificationStatus);
-    ASSERT_EQ(listSinks.begin()->listNotificationConfigurations.begin()->notificationType,notify.notificationType);
+    ASSERT_EQ(listSinks.begin()->listNotificationConfigurations[2].notificationParameter,notify.notificationParameter);
+    ASSERT_EQ(listSinks.begin()->listNotificationConfigurations[2].notificationStatus,notify.notificationStatus);
+    ASSERT_EQ(listSinks.begin()->listNotificationConfigurations[2].notificationType,notify.notificationType);
+
+    ASSERT_EQ(E_OK,pDatabaseHandler.getSinkInfoDB(testSinkData.sinkID,readoutData))
+            << "ERROR: database error";
+
+    ASSERT_EQ(readoutData.listNotificationConfigurations[2].notificationParameter,notify.notificationParameter);
+    ASSERT_EQ(readoutData.listNotificationConfigurations[2].notificationStatus,notify.notificationStatus);
+    ASSERT_EQ(readoutData.listNotificationConfigurations[2].notificationType,notify.notificationType);
+
 }
 
 TEST_F(CAmDatabaseHandlerTest,enterMainNotificationConfigurationCorrect)
@@ -1965,12 +1993,12 @@ TEST_F(CAmDatabaseHandlerTest,enterMainNotificationConfigurationCorrect)
     ASSERT_EQ(E_OK,pDatabaseHandler.getListSinks(listSinks))
         << "ERROR: database error";
 
-    ASSERT_EQ(listSinks.begin()->listMainNotificationConfigurations.begin()->notificationParameter,notify.notificationParameter);
-    ASSERT_EQ(listSinks.begin()->listMainNotificationConfigurations.begin()->notificationStatus,notify.notificationStatus);
-    ASSERT_EQ(listSinks.begin()->listMainNotificationConfigurations.begin()->notificationType,notify.notificationType);
+    ASSERT_EQ(listSinks.begin()->listMainNotificationConfigurations[2].notificationParameter,notify.notificationParameter);
+    ASSERT_EQ(listSinks.begin()->listMainNotificationConfigurations[2].notificationStatus,notify.notificationStatus);
+    ASSERT_EQ(listSinks.begin()->listMainNotificationConfigurations[2].notificationType,notify.notificationType);
 }
 
-TEST_F(CAmDatabaseHandlerTest,removeNotifications)
+TEST_F(CAmDatabaseHandlerTest,removeNotificationsSink)
 {
     am_Sink_s testSinkData;
     pCF.createSink(testSinkData);
@@ -1993,12 +2021,43 @@ TEST_F(CAmDatabaseHandlerTest,removeNotifications)
     ASSERT_EQ(E_OK,pDatabaseHandler.getListSinks(listSinks))
         << "ERROR: database error";
 
-    ASSERT_EQ(listSinks.begin()->listMainNotificationConfigurations.begin()->notificationParameter,notify.notificationParameter);
-    ASSERT_EQ(listSinks.begin()->listMainNotificationConfigurations.begin()->notificationStatus,notify.notificationStatus);
-    ASSERT_EQ(listSinks.begin()->listMainNotificationConfigurations.begin()->notificationType,notify.notificationType);
+    ASSERT_EQ(listSinks.begin()->listMainNotificationConfigurations[2].notificationParameter,notify.notificationParameter);
+    ASSERT_EQ(listSinks.begin()->listMainNotificationConfigurations[2].notificationStatus,notify.notificationStatus);
+    ASSERT_EQ(listSinks.begin()->listMainNotificationConfigurations[2].notificationType,notify.notificationType);
 
     //now we remove the sink
     ASSERT_EQ(E_OK,pDatabaseHandler.removeSinkDB(sinkID));
+}
+
+TEST_F(CAmDatabaseHandlerTest,removeNotificationsSource)
+{
+    am_Source_s testSourceData;
+    pCF.createSource(testSourceData);
+    testSourceData.sourceID = 4;
+    am_sourceID_t sourceID;
+    std::vector<am_Source_s> listSources;
+
+    am_NotificationConfiguration_s notify;
+    notify.notificationType=NT_UNKNOWN;
+    notify.notificationStatus=NS_CHANGE;
+    notify.notificationParameter=25;
+
+    testSourceData.listMainNotificationConfigurations.push_back(notify);
+
+    //enter the sink in the database
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceDB(testSourceData,sourceID))
+        << "ERROR: database error";
+
+    //read it again
+    ASSERT_EQ(E_OK,pDatabaseHandler.getListSources(listSources))
+        << "ERROR: database error";
+
+    ASSERT_EQ(listSources.begin()->listMainNotificationConfigurations[2].notificationParameter,notify.notificationParameter);
+    ASSERT_EQ(listSources.begin()->listMainNotificationConfigurations[2].notificationStatus,notify.notificationStatus);
+    ASSERT_EQ(listSources.begin()->listMainNotificationConfigurations[2].notificationType,notify.notificationType);
+
+    //now we remove the sink
+    ASSERT_EQ(E_OK,pDatabaseHandler.removeSourceDB(sourceID));
 }
 
 TEST_F(CAmDatabaseHandlerTest,getMainNotificationsSink)
@@ -2032,13 +2091,7 @@ TEST_F(CAmDatabaseHandlerTest,getMainNotificationsSink)
     ASSERT_EQ(E_OK,pDatabaseHandler.getListSinkMainNotificationConfigurations(sinkID,returnList))
         << "ERROR: database error";
 
-    ASSERT_EQ(returnList[0].notificationParameter,notify.notificationParameter);
-    ASSERT_EQ(returnList[0].notificationStatus,notify.notificationStatus);
-    ASSERT_EQ(returnList[0].notificationType,notify.notificationType);
-
-    ASSERT_EQ(returnList[1].notificationParameter,notify1.notificationParameter);
-    ASSERT_EQ(returnList[1].notificationStatus,notify1.notificationStatus);
-    ASSERT_EQ(returnList[1].notificationType,notify1.notificationType);
+    std::equal(testSinkData.listMainNotificationConfigurations.begin(),testSinkData.listMainNotificationConfigurations.end(),returnList.begin(),equalNotificationConfiguration);
 
 }
 
@@ -2073,13 +2126,7 @@ TEST_F(CAmDatabaseHandlerTest,getMainNotificationsSources)
     ASSERT_EQ(E_OK,pDatabaseHandler.getListSourceMainNotificationConfigurations(sourceID,returnList))
         << "ERROR: database error";
 
-    ASSERT_EQ(returnList[0].notificationParameter,notify.notificationParameter);
-    ASSERT_EQ(returnList[0].notificationStatus,notify.notificationStatus);
-    ASSERT_EQ(returnList[0].notificationType,notify.notificationType);
-
-    ASSERT_EQ(returnList[1].notificationParameter,notify1.notificationParameter);
-    ASSERT_EQ(returnList[1].notificationStatus,notify1.notificationStatus);
-    ASSERT_EQ(returnList[1].notificationType,notify1.notificationType);
+    std::equal(testSourceData.listMainNotificationConfigurations.begin(),testSourceData.listMainNotificationConfigurations.end(),returnList.begin(),equalNotificationConfiguration);
 
 }
 
@@ -2119,13 +2166,7 @@ TEST_F(CAmDatabaseHandlerTest,changeMainNotificationsSources)
     ASSERT_EQ(E_OK,pDatabaseHandler.getListSourceMainNotificationConfigurations(sourceID,returnList))
         << "ERROR: database error";
 
-    ASSERT_EQ(returnList[0].notificationParameter,notify.notificationParameter);
-    ASSERT_EQ(returnList[0].notificationStatus,notify.notificationStatus);
-    ASSERT_EQ(returnList[0].notificationType,notify.notificationType);
-
-    ASSERT_EQ(returnList[1].notificationParameter,notify1.notificationParameter);
-    ASSERT_EQ(returnList[1].notificationStatus,notify1.notificationStatus);
-    ASSERT_EQ(returnList[1].notificationType,notify1.notificationType);
+    std::equal(testSourceData.listMainNotificationConfigurations.begin(),testSourceData.listMainNotificationConfigurations.end(),returnList.begin(),equalNotificationConfiguration);
 
     //change a setting
     ASSERT_EQ(E_OK,pDatabaseHandler.changeMainSourceNotificationConfigurationDB(sourceID,notify2));
@@ -2133,9 +2174,9 @@ TEST_F(CAmDatabaseHandlerTest,changeMainNotificationsSources)
     ASSERT_EQ(E_OK,pDatabaseHandler.getListSourceMainNotificationConfigurations(sourceID,returnList1))
         << "ERROR: database error";
 
-    ASSERT_EQ(returnList1[1].notificationParameter,notify2.notificationParameter);
-    ASSERT_EQ(returnList1[1].notificationStatus,notify2.notificationStatus);
-    ASSERT_EQ(returnList1[1].notificationType,notify2.notificationType);
+    ASSERT_EQ(returnList1[3].notificationParameter,notify2.notificationParameter);
+    ASSERT_EQ(returnList1[3].notificationStatus,notify2.notificationStatus);
+    ASSERT_EQ(returnList1[3].notificationType,notify2.notificationType);
 
 }
 
@@ -2175,13 +2216,7 @@ TEST_F(CAmDatabaseHandlerTest,changeMainNotificationsSink)
     ASSERT_EQ(E_OK,pDatabaseHandler.getListSinkMainNotificationConfigurations(sinkID,returnList))
         << "ERROR: database error";
 
-    ASSERT_EQ(returnList[0].notificationParameter,notify.notificationParameter);
-    ASSERT_EQ(returnList[0].notificationStatus,notify.notificationStatus);
-    ASSERT_EQ(returnList[0].notificationType,notify.notificationType);
-
-    ASSERT_EQ(returnList[1].notificationParameter,notify1.notificationParameter);
-    ASSERT_EQ(returnList[1].notificationStatus,notify1.notificationStatus);
-    ASSERT_EQ(returnList[1].notificationType,notify1.notificationType);
+    std::equal(testSinkData.listMainNotificationConfigurations.begin(),testSinkData.listMainNotificationConfigurations.end(),returnList.begin(),equalNotificationConfiguration);
 
     ASSERT_EQ(E_OK,pDatabaseHandler.changeMainSinkNotificationConfigurationDB(sinkID,notify2))
         << "ERROR: database error";
@@ -2189,9 +2224,9 @@ TEST_F(CAmDatabaseHandlerTest,changeMainNotificationsSink)
     ASSERT_EQ(E_OK,pDatabaseHandler.getListSinkMainNotificationConfigurations(sinkID,returnList1))
         << "ERROR: database error";
 
-    ASSERT_EQ(returnList1[1].notificationParameter,notify2.notificationParameter);
-    ASSERT_EQ(returnList1[1].notificationStatus,notify2.notificationStatus);
-    ASSERT_EQ(returnList1[1].notificationType,notify2.notificationType);
+    ASSERT_EQ(returnList1[3].notificationParameter,notify2.notificationParameter);
+    ASSERT_EQ(returnList1[3].notificationStatus,notify2.notificationStatus);
+    ASSERT_EQ(returnList1[3].notificationType,notify2.notificationType);
 }
 
 //Commented out - gives always a warning..

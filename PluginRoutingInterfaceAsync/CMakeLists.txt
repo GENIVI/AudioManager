@@ -17,6 +17,11 @@ cmake_minimum_required(VERSION 2.6)
 
 PROJECT(PluginRoutingInterfaceAsync)
 
+OPTION (WITH_ROUTING_INTERFACE_ASYNC
+        "build with routing interface async plugin" ON)
+        
+IF (WITH_ROUTING_INTERFACE_ASYNC)
+
 set(LIBRARY_OUTPUT_PATH ${PLUGINS_OUTPUT_PATH}/routing)
 set(DOC_OUTPUT_PATH ${DOC_OUTPUT_PATH}/RoutingAsync)
 set(INCLUDE_FOLDER "include")
@@ -78,4 +83,4 @@ INSTALL(TARGETS PluginRoutingInterfaceAsync
 SET(ADD_DEPEND "audiomanager-bin" "dlt" "libdbus-1-3(>=1.2.16)" "libpthread-stubs0")
 set_property(GLOBAL APPEND PROPERTY sampleplugins_prop "${ADD_DEPEND}")
 
-
+ENDIF (WITH_ROUTING_INTERFACE_ASYNC)

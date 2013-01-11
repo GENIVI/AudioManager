@@ -18,6 +18,11 @@ cmake_minimum_required(VERSION 2.6)
 
 PROJECT(PluginControlInterface)
 
+OPTION (WITH_TEST_CONTROLLER 
+        "Build with the test controller" ON)
+
+IF (WITH_TEST_CONTROLLER)
+
 set(LIBRARY_OUTPUT_PATH ${PLUGINS_OUTPUT_PATH}/control)
 set(DOC_OUTPUT_PATH ${DOC_OUTPUT_PATH}/ControlPlugin)
 set(INCLUDE_FOLDER "include")
@@ -72,3 +77,5 @@ INSTALL(TARGETS PluginControlInterface
 
 SET(ADD_DEPEND "audiomanager-bin")
 set_property(GLOBAL APPEND PROPERTY sampleplugins_prop "${ADD_DEPEND}")
+
+ENDIF (WITH_TEST_CONTROLLER)

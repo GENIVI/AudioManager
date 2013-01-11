@@ -34,6 +34,7 @@ public:
     static std::vector<am_SoundProperty_s> getStandardSoundPropertyList();
     static std::vector<am_MainSoundProperty_s> getStandardMainSoundPropertyList();
     static std::vector<bool> getStandardConvertionMatrix();
+    static std::vector<am_NotificationConfiguration_s> getStandardNotificationConfigurationList();
     bool compareSource(std::vector<am_Source_s>::iterator listIterator, const am_Source_s& sourceData);
     bool compareSink(std::vector<am_Sink_s>::iterator listIterator, const am_Sink_s& sinkData);
     bool compareGateway(std::vector<am_Gateway_s>::iterator listIterator, const am_Gateway_s& gatewayData);

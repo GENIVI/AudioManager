@@ -855,7 +855,7 @@ am_Error_e CAmDatabaseHandler::enterSourceDB(const am_Source_s & sourceData, am_
     command = "INSERT INTO SourceConnectionFormat" + i2s(sourceID) + std::string("(soundFormat) VALUES (?)");
     MY_SQLITE_PREPARE_V2(mpDatabase, command.c_str(), -1, &query, NULL)
     std::vector<am_ConnectionFormat_e>::const_iterator connectionFormatIterator = sourceData.listConnectionFormats.begin();
-    for (; connectionFormatIterator < sourceData.listConnectionFormats.end(); ++connectionFormatIterator)
+    for (; connectionFormatIterator != sourceData.listConnectionFormats.end(); ++connectionFormatIterator)
     {
         MY_SQLITE_BIND_INT(query, 1, *connectionFormatIterator)
         if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
@@ -872,7 +872,7 @@ am_Error_e CAmDatabaseHandler::enterSourceDB(const am_Source_s & sourceData, am_
     command = "INSERT INTO SourceSoundProperty" + i2s(sourceID) + std::string("(soundPropertyType,value) VALUES (?,?)");
     MY_SQLITE_PREPARE_V2(mpDatabase, command.c_str(), -1, &query, NULL)
     std::vector<am_SoundProperty_s>::const_iterator SoundPropertyIterator = sourceData.listSoundProperties.begin();
-    for (; SoundPropertyIterator < sourceData.listSoundProperties.end(); ++SoundPropertyIterator)
+    for (; SoundPropertyIterator != sourceData.listSoundProperties.end(); ++SoundPropertyIterator)
     {
         MY_SQLITE_BIND_INT(query, 1, SoundPropertyIterator->type)
         MY_SQLITE_BIND_INT(query, 2, SoundPropertyIterator->value)
@@ -913,7 +913,7 @@ am_Error_e CAmDatabaseHandler::enterSourceDB(const am_Source_s & sourceData, am_
         command = "INSERT INTO SourceMainSoundProperty" + i2s(sourceID) + std::string("(soundPropertyType,value) VALUES (?,?)");
         MY_SQLITE_PREPARE_V2(mpDatabase, command.c_str(), -1, &query, NULL)
         std::vector<am_MainSoundProperty_s>::const_iterator mainSoundPropertyIterator = sourceData.listMainSoundProperties.begin();
-        for (; mainSoundPropertyIterator < sourceData.listMainSoundProperties.end(); ++mainSoundPropertyIterator)
+        for (; mainSoundPropertyIterator != sourceData.listMainSoundProperties.end(); ++mainSoundPropertyIterator)
         {
             MY_SQLITE_BIND_INT(query, 1, mainSoundPropertyIterator->type)
             MY_SQLITE_BIND_INT(query, 2, mainSoundPropertyIterator->value)
@@ -935,7 +935,7 @@ am_Error_e CAmDatabaseHandler::enterSourceDB(const am_Source_s & sourceData, am_
         command = "INSERT INTO SourceMainNotificationConfiguration" + i2s(sourceID) + std::string("(notificationType,notificationStatus,notificationParameter) VALUES (?,?,?)");
         MY_SQLITE_PREPARE_V2(mpDatabase, command.c_str(), -1, &query, NULL)
         std::vector<am_NotificationConfiguration_s>::const_iterator mainNotificationConfigurationIterator(sourceData.listMainNotificationConfigurations.begin());
-        for (; mainNotificationConfigurationIterator < sourceData.listMainNotificationConfigurations.end(); ++mainNotificationConfigurationIterator)
+        for (; mainNotificationConfigurationIterator != sourceData.listMainNotificationConfigurations.end(); ++mainNotificationConfigurationIterator)
         {
             MY_SQLITE_BIND_INT(query, 1, mainNotificationConfigurationIterator->notificationType)
             MY_SQLITE_BIND_INT(query, 2, mainNotificationConfigurationIterator->notificationStatus)
@@ -1577,11 +1577,12 @@ am_Error_e CAmDatabaseHandler::getSinkInfoDB(const am_sinkID_t sinkID, am_Sink_s
         return (E_NON_EXISTENT);
     }
 
-    sqlite3_stmt* query = NULL, *qConnectionFormat = NULL, *qSoundProperty = NULL, *qMAinSoundProperty = NULL;
+    sqlite3_stmt* query = NULL, *qConnectionFormat = NULL, *qSoundProperty = NULL, *qMAinSoundProperty = NULL, *qMainNotification = NULL, *qNotification = NULL;
     int eCode = 0;
     am_ConnectionFormat_e tempConnectionFormat;
     am_SoundProperty_s tempSoundProperty;
     am_MainSoundProperty_s tempMainSoundProperty;
+    am_NotificationConfiguration_s tempNotificationConfiguration,tempMainNotification;
     std::string command = "SELECT name, domainID, sinkClassID, volume, visible, availability, availabilityReason, muteState, mainVolume, sinkID FROM " + std::string(SINK_TABLE) + " WHERE reserved=0 and sinkID=" + i2s(sinkID);
     MY_SQLITE_PREPARE_V2(mpDatabase, command.c_str(), -1, &query, NULL)
 
@@ -1621,17 +1622,45 @@ am_Error_e CAmDatabaseHandler::getSinkInfoDB(const am_sinkID_t sinkID, am_Sink_s
 
         MY_SQLITE_FINALIZE(qSoundProperty)
 
-        //read out MainSoundProperties
-        std::string commandMainSoundProperty = "SELECT soundPropertyType, value FROM SinkMainSoundProperty" + i2s(sinkID);
-        MY_SQLITE_PREPARE_V2(mpDatabase, commandMainSoundProperty.c_str(), -1, &qMAinSoundProperty, NULL)
-        while ((eCode = sqlite3_step(qMAinSoundProperty)) == SQLITE_ROW)
-        {
-            tempMainSoundProperty.type = (am_MainSoundPropertyType_e) sqlite3_column_int(qMAinSoundProperty, 0);
-            tempMainSoundProperty.value = sqlite3_column_int(qMAinSoundProperty, 1);
-            sinkData.listMainSoundProperties.push_back(tempMainSoundProperty);
-        }
+        std::string notificationCommand = "SELECT notificationType, notificationStatus, notificationParameter FROM SinkNotificationConfiguration" + i2s(sinkID);
+        MY_SQLITE_PREPARE_V2(mpDatabase, notificationCommand.c_str(), -1, &qNotification, NULL)
 
-        MY_SQLITE_FINALIZE(qMAinSoundProperty)
+        while ((eCode = sqlite3_step(qNotification)) == SQLITE_ROW)
+        {
+            tempNotificationConfiguration.notificationType =  static_cast<am_NotificationType_e>(sqlite3_column_int(qNotification, 0));
+            tempNotificationConfiguration.notificationStatus = static_cast<am_NotificationStatus_e>(sqlite3_column_int(qNotification, 1));
+            tempNotificationConfiguration.notificationParameter= static_cast<int16_t>(sqlite3_column_int(qNotification, 2));
+            sinkData.listNotificationConfigurations.push_back(tempNotificationConfiguration);
+        }
+        MY_SQLITE_FINALIZE(qNotification)
+
+        if (sinkData.visible)
+        {
+
+            //read out MainSoundProperties
+            std::string commandMainSoundProperty = "SELECT soundPropertyType, value FROM SinkMainSoundProperty" + i2s(sinkID);
+            MY_SQLITE_PREPARE_V2(mpDatabase, commandMainSoundProperty.c_str(), -1, &qMAinSoundProperty, NULL)
+            while ((eCode = sqlite3_step(qMAinSoundProperty)) == SQLITE_ROW)
+            {
+                tempMainSoundProperty.type = (am_MainSoundPropertyType_e) sqlite3_column_int(qMAinSoundProperty, 0);
+                tempMainSoundProperty.value = sqlite3_column_int(qMAinSoundProperty, 1);
+                sinkData.listMainSoundProperties.push_back(tempMainSoundProperty);
+            }
+
+            MY_SQLITE_FINALIZE(qMAinSoundProperty)
+
+            std::string mainNotificationCommand = "SELECT notificationType, notificationStatus, notificationParameter FROM SinkMainNotificationConfiguration" + i2s(sinkID);
+            MY_SQLITE_PREPARE_V2(mpDatabase, mainNotificationCommand.c_str(), -1, &qMainNotification, NULL)
+
+            while ((eCode = sqlite3_step(qMainNotification)) == SQLITE_ROW)
+            {
+                tempMainNotification.notificationType =  static_cast<am_NotificationType_e>(sqlite3_column_int(qMainNotification, 0));
+                tempMainNotification.notificationStatus = static_cast<am_NotificationStatus_e>(sqlite3_column_int(qMainNotification, 1));
+                tempMainNotification.notificationParameter= static_cast<int16_t>(sqlite3_column_int(qMainNotification, 2));
+                sinkData.listMainNotificationConfigurations.push_back(tempMainNotification);
+            }
+            MY_SQLITE_FINALIZE(qMainNotification)
+        }
     }
 
     else if (eCode != SQLITE_DONE)
@@ -1655,11 +1684,12 @@ am_Error_e CAmDatabaseHandler::getSourceInfoDB(const am_sourceID_t sourceID, am_
         return (E_NON_EXISTENT);
     }
 
-    sqlite3_stmt* query = NULL, *qConnectionFormat = NULL, *qSoundProperty = NULL, *qMAinSoundProperty = NULL;
+    sqlite3_stmt* query = NULL, *qConnectionFormat = NULL, *qSoundProperty = NULL, *qMAinSoundProperty = NULL, *qMainNotification = NULL, *qNotification = NULL;
     int eCode = 0;
     am_ConnectionFormat_e tempConnectionFormat;
     am_SoundProperty_s tempSoundProperty;
     am_MainSoundProperty_s tempMainSoundProperty;
+    am_NotificationConfiguration_s tempNotificationConfiguration,tempMainNotification;
     std::string command = "SELECT name, domainID, sourceClassID, sourceState, volume, visible, availability, availabilityReason, interruptState, sourceID FROM " + std::string(SOURCE_TABLE) + " WHERE reserved=0 AND sourceID=" + i2s(sourceID);
     MY_SQLITE_PREPARE_V2(mpDatabase, command.c_str(), -1, &query, NULL)
 
@@ -1699,17 +1729,46 @@ am_Error_e CAmDatabaseHandler::getSourceInfoDB(const am_sourceID_t sourceID, am_
 
         MY_SQLITE_FINALIZE(qSoundProperty)
 
-        //read out MainSoundProperties
-        std::string commandMainSoundProperty = "SELECT soundPropertyType, value FROM SourceMainSoundProperty" + i2s(sourceID);
-        MY_SQLITE_PREPARE_V2(mpDatabase, commandMainSoundProperty.c_str(), -1, &qMAinSoundProperty, NULL)
-        while ((eCode = sqlite3_step(qMAinSoundProperty)) == SQLITE_ROW)
-        {
-            tempMainSoundProperty.type = (am_MainSoundPropertyType_e) sqlite3_column_int(qMAinSoundProperty, 0);
-            tempMainSoundProperty.value = sqlite3_column_int(qMAinSoundProperty, 1);
-            sourceData.listMainSoundProperties.push_back(tempMainSoundProperty);
-        }
+        std::string notificationCommand = "SELECT notificationType, notificationStatus, notificationParameter FROM SourceNotificationConfiguration" + i2s(sourceID);
+        MY_SQLITE_PREPARE_V2(mpDatabase, notificationCommand.c_str(), -1, &qNotification, NULL)
 
-        MY_SQLITE_FINALIZE(qMAinSoundProperty)
+        while ((eCode = sqlite3_step(qNotification)) == SQLITE_ROW)
+        {
+            tempNotificationConfiguration.notificationType =  static_cast<am_NotificationType_e>(sqlite3_column_int(qNotification, 0));
+            tempNotificationConfiguration.notificationStatus = static_cast<am_NotificationStatus_e>(sqlite3_column_int(qNotification, 1));
+            tempNotificationConfiguration.notificationParameter= static_cast<int16_t>(sqlite3_column_int(qNotification, 2));
+            sourceData.listNotificationConfigurations.push_back(tempNotificationConfiguration);
+        }
+        MY_SQLITE_FINALIZE(qNotification)
+
+        if (sourceData.visible)
+        {
+
+            //read out MainSoundProperties
+            std::string commandMainSoundProperty = "SELECT soundPropertyType, value FROM SourceMainSoundProperty" + i2s(sourceID);
+            MY_SQLITE_PREPARE_V2(mpDatabase, commandMainSoundProperty.c_str(), -1, &qMAinSoundProperty, NULL)
+            while ((eCode = sqlite3_step(qMAinSoundProperty)) == SQLITE_ROW)
+            {
+                tempMainSoundProperty.type = (am_MainSoundPropertyType_e) sqlite3_column_int(qMAinSoundProperty, 0);
+                tempMainSoundProperty.value = sqlite3_column_int(qMAinSoundProperty, 1);
+                sourceData.listMainSoundProperties.push_back(tempMainSoundProperty);
+            }
+
+            MY_SQLITE_FINALIZE(qMAinSoundProperty)
+
+            std::string mainNotificationCommand = "SELECT notificationType, notificationStatus, notificationParameter FROM SourceMainNotificationConfiguration" + i2s(sourceID);
+            MY_SQLITE_PREPARE_V2(mpDatabase, mainNotificationCommand.c_str(), -1, &qMainNotification, NULL)
+
+            while ((eCode = sqlite3_step(qMainNotification)) == SQLITE_ROW)
+            {
+                tempMainNotification.notificationType =  static_cast<am_NotificationType_e>(sqlite3_column_int(qMainNotification, 0));
+                tempMainNotification.notificationStatus = static_cast<am_NotificationStatus_e>(sqlite3_column_int(qMainNotification, 1));
+                tempMainNotification.notificationParameter= static_cast<int16_t>(sqlite3_column_int(qMainNotification, 2));
+                sourceData.listMainNotificationConfigurations.push_back(tempMainNotification);
+            }
+            MY_SQLITE_FINALIZE(qMainNotification)
+
+        }
     }
     else if (eCode != SQLITE_DONE)
     {
@@ -1789,7 +1848,13 @@ am_Error_e CAmDatabaseHandler::changeSinkClassInfoDB(const am_SinkClass_s& sinkC
         {
             logError("DatabaseHandler::setSinkClassInfoDB SQLITE Step error code:", eCode);
             MY_SQLITE_FINALIZE(query)
-            return (E_DATABASE_ERROR);
+            return (E_DATABASE_ERROR);    if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
+            {
+                logError("DatabaseHandler::changeMainSourceNotificationConfigurationDB SQLITE Step error code:", eCode);
+                MY_SQLITE_FINALIZE(query)
+                return (E_DATABASE_ERROR);
+            }
+            MY_SQLITE_FINALIZE(query)
         }
         MY_SQLITE_RESET(query)
     }
@@ -2352,12 +2417,13 @@ am_Error_e CAmDatabaseHandler::getListSinks(std::vector<am_Sink_s> & listSinks) 
 am_Error_e CAmDatabaseHandler::getListSources(std::vector<am_Source_s> & listSources) const
 {
     listSources.clear();
-    sqlite3_stmt* query = NULL, *qConnectionFormat = NULL, *qSoundProperty = NULL, *qMAinSoundProperty = NULL;
+    sqlite3_stmt* query = NULL, *qConnectionFormat = NULL, *qSoundProperty = NULL, *qMAinSoundProperty = NULL, *qNotification(NULL), *qMainNotification(NULL);
     int eCode = 0;
     am_Source_s temp;
     am_ConnectionFormat_e tempConnectionFormat;
     am_SoundProperty_s tempSoundProperty;
     am_MainSoundProperty_s tempMainSoundProperty;
+    am_NotificationConfiguration_s tempNotificationConfiguration;
     std::string command = "SELECT name, domainID, sourceClassID, sourceState, volume, visible, availability, availabilityReason, interruptState, sourceID FROM " + std::string(SOURCE_TABLE) + " WHERE reserved=0";
     MY_SQLITE_PREPARE_V2(mpDatabase, command.c_str(), -1, &query, NULL)
 
@@ -2397,6 +2463,18 @@ am_Error_e CAmDatabaseHandler::getListSources(std::vector<am_Source_s> & listSou
 
         MY_SQLITE_FINALIZE(qSoundProperty)
 
+        std::string notificationCommand = "SELECT notificationType, notificationStatus, notificationParameter FROM SourceNotificationConfiguration" + i2s(temp.sourceID);
+        MY_SQLITE_PREPARE_V2(mpDatabase, notificationCommand.c_str(), -1, &qNotification, NULL)
+
+        while ((eCode = sqlite3_step(qNotification)) == SQLITE_ROW)
+        {
+            tempNotificationConfiguration.notificationType =  static_cast<am_NotificationType_e>(sqlite3_column_int(qNotification, 0));
+            tempNotificationConfiguration.notificationStatus = static_cast<am_NotificationStatus_e>(sqlite3_column_int(qNotification, 1));
+            tempNotificationConfiguration.notificationParameter= static_cast<int16_t>(sqlite3_column_int(qNotification, 2));
+            temp.listNotificationConfigurations.push_back(tempNotificationConfiguration);
+        }
+        MY_SQLITE_FINALIZE(qNotification)
+
         //read out MainSoundProperties if source is visible
         if(temp.visible)
         {
@@ -2410,6 +2488,18 @@ am_Error_e CAmDatabaseHandler::getListSources(std::vector<am_Source_s> & listSou
             }
 
             MY_SQLITE_FINALIZE(qMAinSoundProperty)
+
+            std::string mainNotificationCommand = "SELECT notificationType, notificationStatus, notificationParameter FROM SourceMainNotificationConfiguration" + i2s(temp.sourceID);
+            MY_SQLITE_PREPARE_V2(mpDatabase, mainNotificationCommand.c_str(), -1, &qMainNotification, NULL)
+
+            while ((eCode = sqlite3_step(qMainNotification)) == SQLITE_ROW)
+            {
+                tempNotificationConfiguration.notificationType =  static_cast<am_NotificationType_e>(sqlite3_column_int(qMainNotification, 0));
+                tempNotificationConfiguration.notificationStatus = static_cast<am_NotificationStatus_e>(sqlite3_column_int(qMainNotification, 1));
+                tempNotificationConfiguration.notificationParameter= static_cast<int16_t>(sqlite3_column_int(qMainNotification, 2));
+                temp.listMainNotificationConfigurations.push_back(tempNotificationConfiguration);
+            }
+            MY_SQLITE_FINALIZE(qMainNotification)
         }
 
 

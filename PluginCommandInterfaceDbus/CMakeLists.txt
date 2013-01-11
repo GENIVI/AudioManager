@@ -18,6 +18,11 @@ cmake_minimum_required(VERSION 2.6)
 
 PROJECT(PluginCommandInterfaceDbus)
 
+OPTION (WITH_COMMAND_INTERFACE_DBUS
+        "build with commandinterface dbus plugin" ON )
+
+IF (WITH_COMMAND_INTERFACE_DBUS)
+
 set(LIBRARY_OUTPUT_PATH ${PLUGINS_OUTPUT_PATH}/command)
 set(DOC_OUTPUT_PATH ${DOC_OUTPUT_PATH}/CommandDBusPlugin)
 set(INCLUDE_FOLDER "include")
@@ -98,3 +103,5 @@ ENDIF(USE_BUILD_LIBS)
 
 SET(ADD_DEPEND "audiomanager-bin" "dlt" "libdbus-1-3(>=1.2.16)")
 set_property(GLOBAL APPEND PROPERTY sampleplugins_prop "${ADD_DEPEND}")
+
+ENDIF (WITH_COMMAND_INTERFACE_DBUS)

@@ -61,8 +61,8 @@ file(GLOB ROUTING_SRCS_CXX
     )
     
 IF(WITH_NSM)
-    SET (CONTROL_INTERFACE_SRCS_CXX
-        ${CONTROL_INTERFACE_SRCS_CXX}
+    SET (ROUTING_SRCS_CXX
+        ${ROUTING_SRCS_CXX}
     "../../src/CAmNodeStateCommunicator.cpp")
 ENDIF(WITH_NSM)
 

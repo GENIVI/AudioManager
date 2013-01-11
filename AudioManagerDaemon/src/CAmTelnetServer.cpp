@@ -34,6 +34,8 @@
 #include <iostream>
 #include <iterator>
 #include <unistd.h>
+#include <stdexcept>
+#include <cstdlib>
 #include "CAmDatabaseHandler.h"
 #include "CAmRoutingSender.h"
 #include "CAmTelnetMenuHelper.h"
@@ -94,11 +96,16 @@ CAmTelnetServer::CAmTelnetServer(CAmSocketHandler *iSocketHandler, CAmCommandSen
     servAddr.sin_family = AF_INET;
     servAddr.sin_addr.s_addr = INADDR_ANY;
     servAddr.sin_port = htons(servPort);
-    assert(bind(mConnectFD, (struct sockaddr *) &servAddr, sizeof(servAddr))==0);
+    if(bind(mConnectFD, (struct sockaddr *) &servAddr, sizeof(servAddr))!=0)
+    {
+        logError("CAmTelnetServer::CAmTelnetServer bind failed, error",errno);
+        throw std::runtime_error("CAmTelnetServer::CAmTelnetServer bind failed");
+    }
 
     if (listen(mConnectFD, mMaxConnections) < 0)
     {
         logError("TelnetServer::TelnetServerk cannot listen ", errno);
+        throw std::runtime_error("CAmTelnetServer::CAmTelnetServer bind failed");
     }
     else
         logInfo("TelnetServer::TelnetServer started listening on port", mServerPort);
