@@ -80,7 +80,7 @@ public:
     double getDouble();
     char* getString();
     void getProperty(dbus_int16_t& type, dbus_int16_t& value);
-    void getNotificationConfiguration(dbus_int16_t& notificationType, dbus_int16_t& notificationStatus, dbus_int16_t& notificationParameter);
+    void getNotificationConfiguration(dbus_int16_t& type, dbus_int16_t& status, dbus_int16_t& parameter);
 
     /**
      * the overloaded append function appends different datatypes to the dbusmessage

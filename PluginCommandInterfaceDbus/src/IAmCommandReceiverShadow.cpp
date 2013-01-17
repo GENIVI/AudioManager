@@ -426,7 +426,7 @@ void am::IAmCommandReceiverShadow::getListSinkMainNotificationConfigurations(DBu
     mDBUSMessageHandler.initReceive(msg);
     am_sinkID_t sinkID = static_cast<am_sinkID_t>(mDBUSMessageHandler.getUInt());
     std::vector<am_NotificationConfiguration_s> listNotificationConfigurations;
-    am_Error_e returnCode = mpIAmCommandReceive->getListSinkMainNotificationConfigurations(sinkID,listNotificationConfigurations);
+    am_Error_e returnCode = mpIAmCommandReceive->getListMainSinkNotificationConfigurations(sinkID,listNotificationConfigurations);
     mDBUSMessageHandler.initReply(msg);
     mDBUSMessageHandler.append((dbus_int16_t) returnCode);
     mDBUSMessageHandler.append(listNotificationConfigurations);
@@ -443,7 +443,7 @@ void am::IAmCommandReceiverShadow::getListSourceMainNotificationConfigurations(D
     mDBUSMessageHandler.initReceive(msg);
     am_sourceID_t sourceID = static_cast<am_sourceID_t>(mDBUSMessageHandler.getUInt());
     std::vector<am_NotificationConfiguration_s> listNotificationConfigurations;
-    am_Error_e returnCode = mpIAmCommandReceive->getListSourceMainNotificationConfigurations(sourceID,listNotificationConfigurations);
+    am_Error_e returnCode = mpIAmCommandReceive->getListMainSourceNotificationConfigurations(sourceID,listNotificationConfigurations);
     mDBUSMessageHandler.initReply(msg);
     mDBUSMessageHandler.append((dbus_int16_t) returnCode);
     mDBUSMessageHandler.append(listNotificationConfigurations);
@@ -465,10 +465,10 @@ void am::IAmCommandReceiverShadow::setSinkMainNotificationConfiguration(DBusConn
     dbus_int16_t parameter = 0;
     mDBUSMessageHandler.getNotificationConfiguration(type, status, parameter);
     am_NotificationConfiguration_s mainNotificationConfiguration;
-    mainNotificationConfiguration.notificationType = static_cast<am_NotificationType_e> (type);
-    mainNotificationConfiguration.notificationStatus = static_cast<am_NotificationStatus_e> (status);
-    mainNotificationConfiguration.notificationParameter = static_cast<int16_t>(parameter);
-    am_Error_e returnCode = mpIAmCommandReceive->setSinkMainNotificationConfiguration(sinkID,mainNotificationConfiguration);
+    mainNotificationConfiguration.type = static_cast<am_NotificationType_e> (type);
+    mainNotificationConfiguration.status = static_cast<am_NotificationStatus_e> (status);
+    mainNotificationConfiguration.parameter = static_cast<int16_t>(parameter);
+    am_Error_e returnCode = mpIAmCommandReceive->setMainSinkNotificationConfiguration(sinkID,mainNotificationConfiguration);
     mDBUSMessageHandler.initReply(msg);
     mDBUSMessageHandler.append((dbus_int16_t) returnCode);
     mDBUSMessageHandler.sendMessage();
@@ -488,10 +488,10 @@ void am::IAmCommandReceiverShadow::setSourceMainNotificationConfiguration(DBusCo
     dbus_int16_t parameter = 0;
     mDBUSMessageHandler.getNotificationConfiguration(type, status, parameter);
     am_NotificationConfiguration_s mainNotificationConfiguration;
-    mainNotificationConfiguration.notificationType = static_cast<am_NotificationType_e> (type);
-    mainNotificationConfiguration.notificationStatus = static_cast<am_NotificationStatus_e> (status);
-    mainNotificationConfiguration.notificationParameter = static_cast<int16_t>(parameter);
-    am_Error_e returnCode = mpIAmCommandReceive->setSourceMainNotificationConfiguration(sourceID,mainNotificationConfiguration);
+    mainNotificationConfiguration.type = static_cast<am_NotificationType_e> (type);
+    mainNotificationConfiguration.status = static_cast<am_NotificationStatus_e> (status);
+    mainNotificationConfiguration.parameter = static_cast<int16_t>(parameter);
+    am_Error_e returnCode = mpIAmCommandReceive->setMainSourceNotificationConfiguration(sourceID,mainNotificationConfiguration);
     mDBUSMessageHandler.initReply(msg);
     mDBUSMessageHandler.append((dbus_int16_t) returnCode);
     mDBUSMessageHandler.sendMessage();

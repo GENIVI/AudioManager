@@ -170,44 +170,44 @@ class MockIAmControlReceive : public IAmControlReceive {
     MOCK_METHOD1(getSocketHandler,
         am_Error_e(CAmSocketHandler*& socketHandler));
     MOCK_METHOD5(changeSourceDB,
-        am_Error_e(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_SoundProperty_s> listSoundProperties, const std::vector<am_ConnectionFormat_e> listConnectionFormats, const std::vector<am_MainSoundProperty_s> listMainSoundProperties));
+        am_Error_e(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_ConnectionFormat_e>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties));
     MOCK_METHOD5(changeSinkDB,
-        am_Error_e(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s> listSoundProperties, const std::vector<am_ConnectionFormat_e> listConnectionFormats, const std::vector<am_MainSoundProperty_s> listMainSoundProperties));
+        am_Error_e(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_ConnectionFormat_e>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties));
     MOCK_METHOD4(changeGatewayDB,
-        am_Error_e(const am_gatewayID_t gatewayID, const std::vector<am_ConnectionFormat_e> listSourceConnectionFormats, const std::vector<am_ConnectionFormat_e> listSinkConnectionFormats, const std::vector<bool> convertionMatrix));
+        am_Error_e(const am_gatewayID_t gatewayID, const std::vector<am_ConnectionFormat_e>& listSourceConnectionFormats, const std::vector<am_ConnectionFormat_e>& listSinkConnectionFormats, const std::vector<bool>& convertionMatrix));
     MOCK_METHOD2(setVolumes,
-        am_Error_e(am_Handle_s& handle, const std::vector<am_Volumes_s> listVolumes));
+        am_Error_e(am_Handle_s& handle, const std::vector<am_Volumes_s>& listVolumes));
     MOCK_METHOD3(setSinkNotificationConfiguration,
-        am_Error_e(am_Handle_s& handle, const am_sinkID_t sinkID, const am_NotificationConfiguration_s notificationConfiguration));
+        am_Error_e(am_Handle_s& handle, const am_sinkID_t sinkID, const am_NotificationConfiguration_s& notificationConfiguration));
     MOCK_METHOD3(setSourceNotificationConfiguration,
-        am_Error_e(am_Handle_s& handle, const am_sourceID_t sourceID, const am_NotificationConfiguration_s norificationConfiguration));
-    MOCK_METHOD2(sendSinkMainNotificationPayload,
-        void(const am_sinkID_t sinkID, const am_NotificationPayload_s notificationPayload));
-    MOCK_METHOD2(sendSourceMainNotificationPayload,
-        void(const am_sourceID_t sourceID, const am_NotificationPayload_s notificationPayload));
+        am_Error_e(am_Handle_s& handle, const am_sourceID_t sourceID, const am_NotificationConfiguration_s& notificationConfiguration));
+    MOCK_METHOD2(sendMainSinkNotificationPayload,
+        void(const am_sinkID_t sinkID, const am_NotificationPayload_s& notificationPayload));
+    MOCK_METHOD2(sendMainSourceNotificationPayload,
+        void(const am_sourceID_t sourceID, const am_NotificationPayload_s& notificationPayload));
     MOCK_METHOD2(changeMainSinkNotificationConfigurationDB,
-        am_Error_e(const am_sinkID_t sinkID, const am_NotificationConfiguration_s mainNotificationConfiguration));
+        am_Error_e(const am_sinkID_t sinkID, const am_NotificationConfiguration_s& mainNotificationConfiguration));
     MOCK_METHOD2(changeMainSourceNotificationConfigurationDB,
-        am_Error_e(const am_sourceID_t sourceID, const am_NotificationConfiguration_s mainNotificationConfiguration));
-    MOCK_METHOD1(nsmGetRestartReasonProperty,
+        am_Error_e(const am_sourceID_t sourceID, const am_NotificationConfiguration_s& mainNotificationConfiguration));
+    MOCK_METHOD1(getRestartReasonPropertyNSM,
         am_Error_e(NsmRestartReason_e& restartReason));
-    MOCK_METHOD1(nsmGetShutdownReasonProperty,
+    MOCK_METHOD1(getShutdownReasonPropertyNSM,
         am_Error_e(NsmShutdownReason_e& ShutdownReason));
-    MOCK_METHOD1(nsmGetRunningReasonProperty,
+    MOCK_METHOD1(getRunningReasonPropertyNSM,
         am_Error_e(NsmRunningReason_e& nsmRunningReason));
-    MOCK_METHOD1(nsmGetNodeState,
+    MOCK_METHOD1(getNodeStateNSM,
         NsmErrorStatus_e(NsmNodeState_e& nsmNodeState));
-    MOCK_METHOD3(nsmGetSessionState,
-        NsmErrorStatus_e(const std::string& sessionName, const NsmSeat_e& seatID, NsmSessionState_e& sessionState));
-    MOCK_METHOD1(nsmGetApplicationMode,
+    MOCK_METHOD3(getSessionStateNSM,
+        NsmErrorStatus_e(const std::string& sessionName, const NsmSeat_e seatID, NsmSessionState_e& sessionState));
+    MOCK_METHOD1(getApplicationModeNSM,
         NsmErrorStatus_e(NsmApplicationMode_e& applicationMode));
-    MOCK_METHOD2(nsmRegisterShutdownClient,
+    MOCK_METHOD2(registerShutdownClientNSM,
         NsmErrorStatus_e(const uint32_t shutdownMode, const uint32_t timeoutMs));
-    MOCK_METHOD1(nsmUnRegisterShutdownClient,
+    MOCK_METHOD1(unRegisterShutdownClientNSM,
         NsmErrorStatus_e(const uint32_t shutdownMode));
-    MOCK_METHOD1(nsmGetInterfaceVersion,
+    MOCK_METHOD1(getInterfaceVersionNSM,
         am_Error_e(uint32_t& version));
-    MOCK_METHOD2(nsmSendLifecycleRequestComplete,
+    MOCK_METHOD2(sendLifecycleRequestCompleteNSM,
         NsmErrorStatus_e(const uint32_t RequestId, const NsmErrorStatus_e status));
 
 };

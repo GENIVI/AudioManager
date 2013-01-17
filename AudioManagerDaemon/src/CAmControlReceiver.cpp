@@ -544,67 +544,67 @@ void CAmControlReceiver::getInterfaceVersion(std::string & version) const
     version = ControlReceiveVersion;
 }
 
-am_Error_e CAmControlReceiver::changeSourceDB(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_SoundProperty_s> listSoundProperties, const std::vector<am_ConnectionFormat_e> listConnectionFormats, const std::vector<am_MainSoundProperty_s> listMainSoundProperties)
+am_Error_e CAmControlReceiver::changeSourceDB(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_ConnectionFormat_e>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)
 {
-    logInfo("CAmControlReceiver::changeSource was called, sourceID", sourceID);
-    return (mDatabaseHandler->changeSource(sourceID,sourceClassID,listSoundProperties,listConnectionFormats,listMainSoundProperties));
+    logInfo("CAmControlReceiver::changeSourceDB was called, sourceID", sourceID);
+    return (mDatabaseHandler->changeSourceDB(sourceID,sourceClassID,listSoundProperties,listConnectionFormats,listMainSoundProperties));
 }
 
-am_Error_e CAmControlReceiver::changeSinkDB(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s> listSoundProperties, const std::vector<am_ConnectionFormat_e> listConnectionFormats, const std::vector<am_MainSoundProperty_s> listMainSoundProperties)
+am_Error_e CAmControlReceiver::changeSinkDB(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_ConnectionFormat_e>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)
 {
-    logInfo("CAmControlReceiver::changeSink was called with sinkID", sinkID);
-    return (mDatabaseHandler->changeSink(sinkID,sinkClassID,listSoundProperties,listConnectionFormats,listMainSoundProperties));
+    logInfo("CAmControlReceiver::changeSinkDB was called with sinkID", sinkID);
+    return (mDatabaseHandler->changeSinkDB(sinkID,sinkClassID,listSoundProperties,listConnectionFormats,listMainSoundProperties));
 }
 
-am_Error_e CAmControlReceiver::changeGatewayDB(const am_gatewayID_t gatewayID, const std::vector<am_ConnectionFormat_e> listSourceConnectionFormats, const std::vector<am_ConnectionFormat_e> listSinkConnectionFormats, const std::vector<bool> convertionMatrix)
+am_Error_e CAmControlReceiver::changeGatewayDB(const am_gatewayID_t gatewayID, const std::vector<am_ConnectionFormat_e>& listSourceConnectionFormats, const std::vector<am_ConnectionFormat_e>& listSinkConnectionFormats, const std::vector<bool>& convertionMatrix)
 {
     logInfo("CAmControlReceiver::changeGatewayDB was called with gatewayID", gatewayID);
     return (mDatabaseHandler->changeGatewayDB(gatewayID,listSourceConnectionFormats,listSinkConnectionFormats,convertionMatrix));
 }
 
-am_Error_e CAmControlReceiver::setVolumes(am_Handle_s& handle, const std::vector<am_Volumes_s> listVolumes)
+am_Error_e CAmControlReceiver::setVolumes(am_Handle_s& handle, const std::vector<am_Volumes_s>& listVolumes)
 {
     logInfo("CAmControlReceiver::setVolumes got called");
     return (mRoutingSender->asyncSetVolumes(handle,listVolumes));
 }
 
-am_Error_e CAmControlReceiver::setSinkNotificationConfiguration(am_Handle_s& handle, const am_sinkID_t sinkID, const am_NotificationConfiguration_s notificationConfiguration)
+am_Error_e CAmControlReceiver::setSinkNotificationConfiguration(am_Handle_s& handle, const am_sinkID_t sinkID, const am_NotificationConfiguration_s& notificationConfiguration)
 {
-    logInfo("CAmControlReceiver::setSinkNotificationConfiguration called, sinkID=",sinkID,"notificationConfiguration.notificationType=",notificationConfiguration.notificationType,"notificationConfiguration.notificationStatus",notificationConfiguration.notificationStatus,"notificationConfiguration.notificationParameter",notificationConfiguration.notificationParameter);
+    logInfo("CAmControlReceiver::setSinkNotificationConfiguration called, sinkID=",sinkID,"notificationConfiguration.type=",notificationConfiguration.type,"notificationConfiguration.status",notificationConfiguration.status,"notificationConfiguration.parameter",notificationConfiguration.parameter);
     return (mRoutingSender->asyncSetSinkNotificationConfiguration(handle,sinkID,notificationConfiguration));
 }
 
-am_Error_e CAmControlReceiver::setSourceNotificationConfiguration(am_Handle_s& handle, const am_sourceID_t sourceID, const am_NotificationConfiguration_s notificationConfiguration)
+am_Error_e CAmControlReceiver::setSourceNotificationConfiguration(am_Handle_s& handle, const am_sourceID_t sourceID, const am_NotificationConfiguration_s& notificationConfiguration)
 {
-    logInfo("CAmControlReceiver::setSourceNotificationConfiguration called, sourceID=",sourceID,"notificationConfiguration.notificationType=",notificationConfiguration.notificationType,"notificationConfiguration.notificationStatus",notificationConfiguration.notificationStatus,"notificationConfiguration.notificationParameter",notificationConfiguration.notificationParameter);
+    logInfo("CAmControlReceiver::setSourceNotificationConfiguration called, sourceID=",sourceID,"notificationConfiguration.type=",notificationConfiguration.type,"notificationConfiguration.status",notificationConfiguration.status,"notificationConfiguration.parameter",notificationConfiguration.parameter);
     return (mRoutingSender->asyncSetSourceNotificationConfiguration(handle,sourceID,notificationConfiguration));
 }
 
-void CAmControlReceiver::sendSinkMainNotificationPayload(const am_sinkID_t sinkID, const am_NotificationPayload_s notificationPayload)
+void CAmControlReceiver::sendMainSinkNotificationPayload(const am_sinkID_t sinkID, const am_NotificationPayload_s& notificationPayload)
 {
-    logInfo("CAmControlReceiver::sendSinkMainNotificationPayload called, sinkID=",sinkID,"type=",notificationPayload.notificationType,"value=",notificationPayload.notificationValue);
+    logInfo("CAmControlReceiver::sendSinkMainNotificationPayload called, sinkID=",sinkID,"type=",notificationPayload.type,"value=",notificationPayload.value);
     mCommandSender->cbSinkNotification(sinkID,notificationPayload);
 }
 
-void CAmControlReceiver::sendSourceMainNotificationPayload(const am_sourceID_t sourceID, const am_NotificationPayload_s notificationPayload)
+void CAmControlReceiver::sendMainSourceNotificationPayload(const am_sourceID_t sourceID, const am_NotificationPayload_s& notificationPayload)
 {
-    logInfo("CAmControlReceiver::sendSourceMainNotificationPayload called, sourceID=",sourceID,"type=",notificationPayload.notificationType,"value=",notificationPayload.notificationValue);
+    logInfo("CAmControlReceiver::sendSourceMainNotificationPayload called, sourceID=",sourceID,"type=",notificationPayload.type,"value=",notificationPayload.value);
     mCommandSender->cbSourceNotification(sourceID,notificationPayload);
 }
 
-am_Error_e CAmControlReceiver::changeMainSinkNotificationConfigurationDB(const am_sinkID_t sinkID, const am_NotificationConfiguration_s mainNotificationConfiguration)
+am_Error_e CAmControlReceiver::changeMainSinkNotificationConfigurationDB(const am_sinkID_t sinkID, const am_NotificationConfiguration_s& mainNotificationConfiguration)
 {
     logInfo("CAmControlReceiver::changeMainSinkNotificationConfigurationDB was called with sinkID", sinkID);
     return (mDatabaseHandler->changeMainSinkNotificationConfigurationDB(sinkID,mainNotificationConfiguration));
 }
 
-am_Error_e CAmControlReceiver::changeMainSourceNotificationConfigurationDB(const am_sourceID_t sourceID, const am_NotificationConfiguration_s mainNotificationConfiguration)
+am_Error_e CAmControlReceiver::changeMainSourceNotificationConfigurationDB(const am_sourceID_t sourceID, const am_NotificationConfiguration_s& mainNotificationConfiguration)
 {
     logInfo("CAmControlReceiver::changeMainSourceNotificationConfigurationDB was called with sourceID", sourceID);
     return (mDatabaseHandler->changeMainSourceNotificationConfigurationDB(sourceID,mainNotificationConfiguration));
 }
 
-am_Error_e CAmControlReceiver::nsmGetRestartReasonProperty(NsmRestartReason_e& restartReason)
+am_Error_e CAmControlReceiver::getRestartReasonPropertyNSM(NsmRestartReason_e& restartReason)
 {
     if (!mNodeStateCommunicator)
         return (E_NON_EXISTENT);
@@ -616,7 +616,7 @@ am_Error_e CAmControlReceiver::nsmGetRestartReasonProperty(NsmRestartReason_e& r
 #endif
 }
 
-am_Error_e CAmControlReceiver::nsmGetShutdownReasonProperty(NsmShutdownReason_e& ShutdownReason)
+am_Error_e CAmControlReceiver::getShutdownReasonPropertyNSM(NsmShutdownReason_e& ShutdownReason)
 {
     if (!mNodeStateCommunicator)
         return (E_NON_EXISTENT);
@@ -629,7 +629,7 @@ am_Error_e CAmControlReceiver::nsmGetShutdownReasonProperty(NsmShutdownReason_e&
 
 }
 
-am_Error_e CAmControlReceiver::nsmGetRunningReasonProperty(NsmRunningReason_e& nsmRunningReason)
+am_Error_e CAmControlReceiver::getRunningReasonPropertyNSM(NsmRunningReason_e& nsmRunningReason)
 {
     if (!mNodeStateCommunicator)
         return (E_NON_EXISTENT);
@@ -642,7 +642,7 @@ am_Error_e CAmControlReceiver::nsmGetRunningReasonProperty(NsmRunningReason_e& n
 
 }
 
-NsmErrorStatus_e CAmControlReceiver::nsmGetNodeState(NsmNodeState_e& nsmNodeState)
+NsmErrorStatus_e CAmControlReceiver::getNodeStateNSM(NsmNodeState_e& nsmNodeState)
 {
     if (!mNodeStateCommunicator)
         return (NsmErrorStatus_Error);
@@ -652,10 +652,9 @@ NsmErrorStatus_e CAmControlReceiver::nsmGetNodeState(NsmNodeState_e& nsmNodeStat
     (void) nsmNodeState;
     return (NsmErrorStatus_Error);
 #endif
-
 }
 
-NsmErrorStatus_e CAmControlReceiver::nsmGetSessionState(const std::string& sessionName, const NsmSeat_e& seatID, NsmSessionState_e& sessionState)
+NsmErrorStatus_e CAmControlReceiver::getSessionStateNSM(const std::string& sessionName, const NsmSeat_e seatID, NsmSessionState_e& sessionState)
 {
     if (!mNodeStateCommunicator)
         return (NsmErrorStatus_Error);
@@ -670,7 +669,7 @@ NsmErrorStatus_e CAmControlReceiver::nsmGetSessionState(const std::string& sessi
 
 }
 
-NsmErrorStatus_e CAmControlReceiver::nsmGetApplicationMode(NsmApplicationMode_e& applicationMode)
+NsmErrorStatus_e CAmControlReceiver::getApplicationModeNSM(NsmApplicationMode_e& applicationMode)
 {
     if (!mNodeStateCommunicator)
         return (NsmErrorStatus_Error);
@@ -683,7 +682,7 @@ NsmErrorStatus_e CAmControlReceiver::nsmGetApplicationMode(NsmApplicationMode_e&
 
 }
 
-NsmErrorStatus_e CAmControlReceiver::nsmRegisterShutdownClient(const uint32_t shutdownMode, const uint32_t timeoutMs)
+NsmErrorStatus_e CAmControlReceiver::registerShutdownClientNSM(const uint32_t shutdownMode, const uint32_t timeoutMs)
 {
     if (!mNodeStateCommunicator)
         return (NsmErrorStatus_Error);
@@ -697,7 +696,7 @@ NsmErrorStatus_e CAmControlReceiver::nsmRegisterShutdownClient(const uint32_t sh
 
 }
 
-NsmErrorStatus_e CAmControlReceiver::nsmUnRegisterShutdownClient(const uint32_t shutdownMode)
+NsmErrorStatus_e CAmControlReceiver::unRegisterShutdownClientNSM(const uint32_t shutdownMode)
 {
     if (!mNodeStateCommunicator)
         return (NsmErrorStatus_Error);
@@ -710,7 +709,7 @@ NsmErrorStatus_e CAmControlReceiver::nsmUnRegisterShutdownClient(const uint32_t 
 
 }
 
-am_Error_e CAmControlReceiver::nsmGetInterfaceVersion(uint32_t& version)
+am_Error_e CAmControlReceiver::getInterfaceVersionNSM(uint32_t& version)
 {
     if (!mNodeStateCommunicator)
         return (E_NON_EXISTENT);
@@ -723,7 +722,7 @@ am_Error_e CAmControlReceiver::nsmGetInterfaceVersion(uint32_t& version)
 
 }
 
-NsmErrorStatus_e CAmControlReceiver::nsmSendLifecycleRequestComplete(const uint32_t RequestId, const NsmErrorStatus_e status)
+NsmErrorStatus_e CAmControlReceiver::sendLifecycleRequestCompleteNSM(const uint32_t RequestId, const NsmErrorStatus_e status)
 {
     if (!mNodeStateCommunicator)
         return (NsmErrorStatus_Error);

@@ -226,25 +226,25 @@ void CAmCommandReceiver::waitOnStartup(bool startup)
     mLastErrorStartup=E_OK;
 }
 
-am_Error_e CAmCommandReceiver::getListSinkMainNotificationConfigurations(const am_sinkID_t sinkID, std::vector<am_NotificationConfiguration_s>& listMainNotificationConfigurations) const
+am_Error_e CAmCommandReceiver::getListMainSinkNotificationConfigurations(const am_sinkID_t sinkID, std::vector<am_NotificationConfiguration_s>& listMainNotificationConfigurations) const
 {
-    return (mDatabaseHandler->getListSinkMainNotificationConfigurations(sinkID,listMainNotificationConfigurations));
+    return (mDatabaseHandler->getListMainSinkNotificationConfigurations(sinkID,listMainNotificationConfigurations));
 }
 
-am_Error_e CAmCommandReceiver::getListSourceMainNotificationConfigurations(const am_sourceID_t sourceID, std::vector<am_NotificationConfiguration_s>& listMainNotificationConfigurations) const
+am_Error_e CAmCommandReceiver::getListMainSourceNotificationConfigurations(const am_sourceID_t sourceID, std::vector<am_NotificationConfiguration_s>& listMainNotificationConfigurations) const
 {
-    return (mDatabaseHandler->getListSourceMainNotificationConfigurations(sourceID,listMainNotificationConfigurations));
+    return (mDatabaseHandler->getListMainSourceNotificationConfigurations(sourceID,listMainNotificationConfigurations));
 }
 
-am_Error_e CAmCommandReceiver::setSinkMainNotificationConfiguration(const am_sinkID_t sinkID, const am_NotificationConfiguration_s mainNotificationConfiguration)
+am_Error_e CAmCommandReceiver::setMainSinkNotificationConfiguration(const am_sinkID_t sinkID, const am_NotificationConfiguration_s& mainNotificationConfiguration)
 {
-    logInfo("CommandReceiver::setSinkMainNotificationConfiguration got called, sinkID=", sinkID, " notificationType=",mainNotificationConfiguration.notificationType, " parameter=", mainNotificationConfiguration.notificationParameter, "status=",mainNotificationConfiguration.notificationStatus);
+    logInfo("CommandReceiver::setMainSinkNotificationConfiguration got called, sinkID=", sinkID, " type=",mainNotificationConfiguration.type, " parameter=", mainNotificationConfiguration.parameter, "status=",mainNotificationConfiguration.status);
     return (mControlSender->hookUserSetMainSinkNotificationConfiguration(sinkID,mainNotificationConfiguration));
 }
 
-am_Error_e CAmCommandReceiver::setSourceMainNotificationConfiguration(const am_sourceID_t sourceID, const am_NotificationConfiguration_s mainNotificationConfiguration)
+am_Error_e CAmCommandReceiver::setMainSourceNotificationConfiguration(const am_sourceID_t sourceID, const am_NotificationConfiguration_s& mainNotificationConfiguration)
 {
-    logInfo("CommandReceiver::setSourceMainNotificationConfiguration got called, sourceID=", sourceID, " notificationType=",mainNotificationConfiguration.notificationType, " parameter=", mainNotificationConfiguration.notificationParameter, "status=",mainNotificationConfiguration.notificationStatus);
+    logInfo("CommandReceiver::setMainSourceNotificationConfiguration got called, sourceID=", sourceID, " type=",mainNotificationConfiguration.type, " parameter=", mainNotificationConfiguration.parameter, "status=",mainNotificationConfiguration.status);
     return (mControlSender->hookUserSetMainSourceNotificationConfiguration(sourceID,mainNotificationConfiguration));
 }
 

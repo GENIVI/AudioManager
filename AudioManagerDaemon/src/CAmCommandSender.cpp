@@ -307,24 +307,24 @@ void CAmCommandSender::cbSourceUpdated(const am_sourceID_t sourceID, const am_so
     CALL_ALL_INTERFACES(cbSourceUpdated(sourceID,sourceClassID,listMainSoundProperties));
 }
 
-void CAmCommandSender::cbSinkNotification(const am_sinkID_t sinkID, const am_NotificationPayload_s notification)
+void CAmCommandSender::cbSinkNotification(const am_sinkID_t sinkID, const am_NotificationPayload_s& notification)
 {
     CALL_ALL_INTERFACES(cbSinkNotification(sinkID,notification));
 }
 
-void CAmCommandSender::cbSourceNotification(const am_sourceID_t sourceID, const am_NotificationPayload_s notification)
+void CAmCommandSender::cbSourceNotification(const am_sourceID_t sourceID, const am_NotificationPayload_s& notification)
 {
     CALL_ALL_INTERFACES(cbSourceNotification(sourceID,notification));
 }
 
-void CAmCommandSender::cbSinkMainNotificationConfigurationChanged(const am_sinkID_t sinkID, const am_NotificationConfiguration_s mainNotificationConfiguration)
+void CAmCommandSender::cbSinkMainNotificationConfigurationChanged(const am_sinkID_t sinkID, const am_NotificationConfiguration_s& mainNotificationConfiguration)
 {
-    CALL_ALL_INTERFACES(cbSinkMainNotificationConfigurationChanged(sinkID,mainNotificationConfiguration));
+    CALL_ALL_INTERFACES(cbMainSinkNotificationConfigurationChanged(sinkID,mainNotificationConfiguration));
 }
 
-void CAmCommandSender::cbSourceMainNotificationConfigurationChanged(const am_sourceID_t sourceID, const am_NotificationConfiguration_s mainNotificationConfiguration)
+void CAmCommandSender::cbSourceMainNotificationConfigurationChanged(const am_sourceID_t sourceID, const am_NotificationConfiguration_s& mainNotificationConfiguration)
 {
-    CALL_ALL_INTERFACES(cbSourceMainNotificationConfigurationChanged(sourceID,mainNotificationConfiguration));
+    CALL_ALL_INTERFACES(cbMainSourceNotificationConfigurationChanged(sourceID,mainNotificationConfiguration));
 }
 
 void CAmCommandSender::unloadLibraries(void)

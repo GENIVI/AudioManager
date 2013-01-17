@@ -46,7 +46,7 @@ namespace am
 #define MY_SQLITE_PREPARE_V2_BOOL(db,zSql,nByte,ppStmt,pzTail)                                                          \
         if ((eCode = sqlite3_prepare_v2(db, zSql, nByte, ppStmt, pzTail)))                                              \
         {                                                                                                               \
-            logError("CAmDatabaseHandler::my_sqlite_prepare_v2_bool on Command",zSql,"failed with errorCode:", eCode);       \
+            logError("CAmDatabaseHandler::my_sqlite_prepare_v2_bool on Command",zSql,"failed with errorCode:", eCode);  \
             return (false);                                                                                             \
         }
 
@@ -432,7 +432,7 @@ am_Error_e CAmDatabaseHandler::enterSinkDB(const am_Sink_s & sinkData, am_sinkID
     command = "CREATE TABLE SinkSoundProperty" + i2s(sinkID) + std::string("(soundPropertyType INTEGER, value INTEGER)");
     if (!this->sqQuery(command))
         return (E_DATABASE_ERROR);
-    command = "CREATE TABLE SinkNotificationConfiguration" + i2s(sinkID) + std::string("(notificationType INTEGER, notificationStatus INTEGER, notificationParameter INTEGER)");
+    command = "CREATE TABLE SinkNotificationConfiguration" + i2s(sinkID) + std::string("(type INTEGER, status INTEGER, parameter INTEGER)");
     if (!this->sqQuery(command))
         return (E_DATABASE_ERROR);
 
@@ -470,14 +470,14 @@ am_Error_e CAmDatabaseHandler::enterSinkDB(const am_Sink_s & sinkData, am_sinkID
     }
 
     //Fill NotificationConfigurations
-    command = "INSERT INTO SinkNotificationConfiguration" + i2s(sinkID) + std::string("(notificationType,notificationStatus,notificationParameter) VALUES (?,?,?)");
+    command = "INSERT INTO SinkNotificationConfiguration" + i2s(sinkID) + std::string("(type,status,parameter) VALUES (?,?,?)");
     MY_SQLITE_PREPARE_V2(mpDatabase, command.c_str(), -1, &query, NULL)
     std::vector<am_NotificationConfiguration_s>::const_iterator NotificationConfigurationIterator(sinkData.listNotificationConfigurations.begin());
     for (; NotificationConfigurationIterator < sinkData.listNotificationConfigurations.end(); ++NotificationConfigurationIterator)
     {
-        MY_SQLITE_BIND_INT(query, 1, NotificationConfigurationIterator->notificationType)
-        MY_SQLITE_BIND_INT(query, 2, NotificationConfigurationIterator->notificationStatus)
-        MY_SQLITE_BIND_INT(query, 3, NotificationConfigurationIterator->notificationParameter)
+        MY_SQLITE_BIND_INT(query, 1, NotificationConfigurationIterator->type)
+        MY_SQLITE_BIND_INT(query, 2, NotificationConfigurationIterator->status)
+        MY_SQLITE_BIND_INT(query, 3, NotificationConfigurationIterator->parameter)
         if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
         {
             logError("DatabaseHandler::enterSinkDB SQLITE Step error code:", eCode);
@@ -512,18 +512,18 @@ am_Error_e CAmDatabaseHandler::enterSinkDB(const am_Sink_s & sinkData, am_sinkID
         MY_SQLITE_FINALIZE(query)
 
         //now we got MainNotificationConfigurations as well
-        command = "CREATE TABLE SinkMainNotificationConfiguration" + i2s(sinkID) + std::string("(notificationType INTEGER, notificationStatus INTEGER, notificationParameter INTEGER)");
+        command = "CREATE TABLE SinkMainNotificationConfiguration" + i2s(sinkID) + std::string("(type INTEGER, status INTEGER, parameter INTEGER)");
         if (!this->sqQuery(command))
             return (E_DATABASE_ERROR);
 
-        command = "INSERT INTO SinkMainNotificationConfiguration" + i2s(sinkID) + std::string("(notificationType,notificationStatus,notificationParameter) VALUES (?,?,?)");
+        command = "INSERT INTO SinkMainNotificationConfiguration" + i2s(sinkID) + std::string("(type,status,parameter) VALUES (?,?,?)");
         MY_SQLITE_PREPARE_V2(mpDatabase, command.c_str(), -1, &query, NULL)
         std::vector<am_NotificationConfiguration_s>::const_iterator mainNotificationConfigurationIterator(sinkData.listMainNotificationConfigurations.begin());
         for (; mainNotificationConfigurationIterator < sinkData.listMainNotificationConfigurations.end(); ++mainNotificationConfigurationIterator)
         {
-            MY_SQLITE_BIND_INT(query, 1, mainNotificationConfigurationIterator->notificationType)
-            MY_SQLITE_BIND_INT(query, 2, mainNotificationConfigurationIterator->notificationStatus)
-            MY_SQLITE_BIND_INT(query, 3, mainNotificationConfigurationIterator->notificationParameter)
+            MY_SQLITE_BIND_INT(query, 1, mainNotificationConfigurationIterator->type)
+            MY_SQLITE_BIND_INT(query, 2, mainNotificationConfigurationIterator->status)
+            MY_SQLITE_BIND_INT(query, 3, mainNotificationConfigurationIterator->parameter)
             if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
             {
                 logError("DatabaseHandler::enterSinkDB SQLITE Step error code:", eCode);
@@ -847,7 +847,7 @@ am_Error_e CAmDatabaseHandler::enterSourceDB(const am_Source_s & sourceData, am_
     command = "CREATE TABLE SourceSoundProperty" + i2s(sourceID) + std::string("(soundPropertyType INTEGER, value INTEGER)");
     if (!this->sqQuery(command))
         return (E_DATABASE_ERROR);
-    command = "CREATE TABLE SourceNotificationConfiguration" + i2s(sourceID) + std::string("(notificationType INTEGER, notificationStatus INTEGER, notificationParameter INTEGER)");
+    command = "CREATE TABLE SourceNotificationConfiguration" + i2s(sourceID) + std::string("(type INTEGER, status INTEGER, parameter INTEGER)");
         if (!this->sqQuery(command))
             return (E_DATABASE_ERROR);
 
@@ -886,14 +886,14 @@ am_Error_e CAmDatabaseHandler::enterSourceDB(const am_Source_s & sourceData, am_
     }
 
     //Fill NotificationConfigurations
-    command = "INSERT INTO SourceNotificationConfiguration" + i2s(sourceID) + std::string("(notificationType,notificationStatus,notificationParameter) VALUES (?,?,?)");
+    command = "INSERT INTO SourceNotificationConfiguration" + i2s(sourceID) + std::string("(type,status,parameter) VALUES (?,?,?)");
     MY_SQLITE_PREPARE_V2(mpDatabase, command.c_str(), -1, &query, NULL)
     std::vector<am_NotificationConfiguration_s>::const_iterator NotificationConfigurationIterator(sourceData.listNotificationConfigurations.begin());
     for (; NotificationConfigurationIterator < sourceData.listNotificationConfigurations.end(); ++NotificationConfigurationIterator)
     {
-        MY_SQLITE_BIND_INT(query, 1, NotificationConfigurationIterator->notificationType)
-        MY_SQLITE_BIND_INT(query, 2, NotificationConfigurationIterator->notificationStatus)
-        MY_SQLITE_BIND_INT(query, 3, NotificationConfigurationIterator->notificationParameter)
+        MY_SQLITE_BIND_INT(query, 1, NotificationConfigurationIterator->type)
+        MY_SQLITE_BIND_INT(query, 2, NotificationConfigurationIterator->status)
+        MY_SQLITE_BIND_INT(query, 3, NotificationConfigurationIterator->parameter)
         if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
         {
             logError("DatabaseHandler::enterSinkDB SQLITE Step error code:", eCode);
@@ -928,18 +928,18 @@ am_Error_e CAmDatabaseHandler::enterSourceDB(const am_Source_s & sourceData, am_
         MY_SQLITE_FINALIZE(query)
 
         //now we got MainNotificationConfigurations as well
-        command = "CREATE TABLE SourceMainNotificationConfiguration" + i2s(sourceID) + std::string("(notificationType INTEGER, notificationStatus INTEGER, notificationParameter INTEGER)");
+        command = "CREATE TABLE SourceMainNotificationConfiguration" + i2s(sourceID) + std::string("(type INTEGER, status INTEGER, parameter INTEGER)");
         if (!this->sqQuery(command))
             return (E_DATABASE_ERROR);
 
-        command = "INSERT INTO SourceMainNotificationConfiguration" + i2s(sourceID) + std::string("(notificationType,notificationStatus,notificationParameter) VALUES (?,?,?)");
+        command = "INSERT INTO SourceMainNotificationConfiguration" + i2s(sourceID) + std::string("(type,status,parameter) VALUES (?,?,?)");
         MY_SQLITE_PREPARE_V2(mpDatabase, command.c_str(), -1, &query, NULL)
         std::vector<am_NotificationConfiguration_s>::const_iterator mainNotificationConfigurationIterator(sourceData.listMainNotificationConfigurations.begin());
         for (; mainNotificationConfigurationIterator != sourceData.listMainNotificationConfigurations.end(); ++mainNotificationConfigurationIterator)
         {
-            MY_SQLITE_BIND_INT(query, 1, mainNotificationConfigurationIterator->notificationType)
-            MY_SQLITE_BIND_INT(query, 2, mainNotificationConfigurationIterator->notificationStatus)
-            MY_SQLITE_BIND_INT(query, 3, mainNotificationConfigurationIterator->notificationParameter)
+            MY_SQLITE_BIND_INT(query, 1, mainNotificationConfigurationIterator->type)
+            MY_SQLITE_BIND_INT(query, 2, mainNotificationConfigurationIterator->status)
+            MY_SQLITE_BIND_INT(query, 3, mainNotificationConfigurationIterator->parameter)
             if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
             {
                 logError("DatabaseHandler::enterSinkDB SQLITE Step error code:", eCode);
@@ -1593,7 +1593,7 @@ am_Error_e CAmDatabaseHandler::getSinkInfoDB(const am_sinkID_t sinkID, am_Sink_s
         sinkData.sinkClassID = sqlite3_column_int(query, 2);
         sinkData.volume = sqlite3_column_int(query, 3);
         sinkData.visible = sqlite3_column_int(query, 4);
-        sinkData.available.availability = (am_Availablility_e) sqlite3_column_int(query, 5);
+        sinkData.available.availability = (am_Availability_e) sqlite3_column_int(query, 5);
         sinkData.available.availabilityReason = (am_AvailabilityReason_e) sqlite3_column_int(query, 6);
         sinkData.muteState = (am_MuteState_e) sqlite3_column_int(query, 7);
         sinkData.mainVolume = sqlite3_column_int(query, 8);
@@ -1622,14 +1622,14 @@ am_Error_e CAmDatabaseHandler::getSinkInfoDB(const am_sinkID_t sinkID, am_Sink_s
 
         MY_SQLITE_FINALIZE(qSoundProperty)
 
-        std::string notificationCommand = "SELECT notificationType, notificationStatus, notificationParameter FROM SinkNotificationConfiguration" + i2s(sinkID);
+        std::string notificationCommand = "SELECT type, status, parameter FROM SinkNotificationConfiguration" + i2s(sinkID);
         MY_SQLITE_PREPARE_V2(mpDatabase, notificationCommand.c_str(), -1, &qNotification, NULL)
 
         while ((eCode = sqlite3_step(qNotification)) == SQLITE_ROW)
         {
-            tempNotificationConfiguration.notificationType =  static_cast<am_NotificationType_e>(sqlite3_column_int(qNotification, 0));
-            tempNotificationConfiguration.notificationStatus = static_cast<am_NotificationStatus_e>(sqlite3_column_int(qNotification, 1));
-            tempNotificationConfiguration.notificationParameter= static_cast<int16_t>(sqlite3_column_int(qNotification, 2));
+            tempNotificationConfiguration.type =  static_cast<am_NotificationType_e>(sqlite3_column_int(qNotification, 0));
+            tempNotificationConfiguration.status = static_cast<am_NotificationStatus_e>(sqlite3_column_int(qNotification, 1));
+            tempNotificationConfiguration.parameter= static_cast<int16_t>(sqlite3_column_int(qNotification, 2));
             sinkData.listNotificationConfigurations.push_back(tempNotificationConfiguration);
         }
         MY_SQLITE_FINALIZE(qNotification)
@@ -1649,14 +1649,14 @@ am_Error_e CAmDatabaseHandler::getSinkInfoDB(const am_sinkID_t sinkID, am_Sink_s
 
             MY_SQLITE_FINALIZE(qMAinSoundProperty)
 
-            std::string mainNotificationCommand = "SELECT notificationType, notificationStatus, notificationParameter FROM SinkMainNotificationConfiguration" + i2s(sinkID);
+            std::string mainNotificationCommand = "SELECT type, status, parameter FROM SinkMainNotificationConfiguration" + i2s(sinkID);
             MY_SQLITE_PREPARE_V2(mpDatabase, mainNotificationCommand.c_str(), -1, &qMainNotification, NULL)
 
             while ((eCode = sqlite3_step(qMainNotification)) == SQLITE_ROW)
             {
-                tempMainNotification.notificationType =  static_cast<am_NotificationType_e>(sqlite3_column_int(qMainNotification, 0));
-                tempMainNotification.notificationStatus = static_cast<am_NotificationStatus_e>(sqlite3_column_int(qMainNotification, 1));
-                tempMainNotification.notificationParameter= static_cast<int16_t>(sqlite3_column_int(qMainNotification, 2));
+                tempMainNotification.type =  static_cast<am_NotificationType_e>(sqlite3_column_int(qMainNotification, 0));
+                tempMainNotification.status = static_cast<am_NotificationStatus_e>(sqlite3_column_int(qMainNotification, 1));
+                tempMainNotification.parameter= static_cast<int16_t>(sqlite3_column_int(qMainNotification, 2));
                 sinkData.listMainNotificationConfigurations.push_back(tempMainNotification);
             }
             MY_SQLITE_FINALIZE(qMainNotification)
@@ -1701,7 +1701,7 @@ am_Error_e CAmDatabaseHandler::getSourceInfoDB(const am_sourceID_t sourceID, am_
         sourceData.sourceState = (am_SourceState_e) sqlite3_column_int(query, 3);
         sourceData.volume = sqlite3_column_int(query, 4);
         sourceData.visible = sqlite3_column_int(query, 5);
-        sourceData.available.availability = (am_Availablility_e) sqlite3_column_int(query, 6);
+        sourceData.available.availability = (am_Availability_e) sqlite3_column_int(query, 6);
         sourceData.available.availabilityReason = (am_AvailabilityReason_e) sqlite3_column_int(query, 7);
         sourceData.interruptState = (am_InterruptState_e) sqlite3_column_int(query, 8);
         sourceData.sourceID = sqlite3_column_int(query, 9);
@@ -1729,14 +1729,14 @@ am_Error_e CAmDatabaseHandler::getSourceInfoDB(const am_sourceID_t sourceID, am_
 
         MY_SQLITE_FINALIZE(qSoundProperty)
 
-        std::string notificationCommand = "SELECT notificationType, notificationStatus, notificationParameter FROM SourceNotificationConfiguration" + i2s(sourceID);
+        std::string notificationCommand = "SELECT type, status, parameter FROM SourceNotificationConfiguration" + i2s(sourceID);
         MY_SQLITE_PREPARE_V2(mpDatabase, notificationCommand.c_str(), -1, &qNotification, NULL)
 
         while ((eCode = sqlite3_step(qNotification)) == SQLITE_ROW)
         {
-            tempNotificationConfiguration.notificationType =  static_cast<am_NotificationType_e>(sqlite3_column_int(qNotification, 0));
-            tempNotificationConfiguration.notificationStatus = static_cast<am_NotificationStatus_e>(sqlite3_column_int(qNotification, 1));
-            tempNotificationConfiguration.notificationParameter= static_cast<int16_t>(sqlite3_column_int(qNotification, 2));
+            tempNotificationConfiguration.type =  static_cast<am_NotificationType_e>(sqlite3_column_int(qNotification, 0));
+            tempNotificationConfiguration.status = static_cast<am_NotificationStatus_e>(sqlite3_column_int(qNotification, 1));
+            tempNotificationConfiguration.parameter= static_cast<int16_t>(sqlite3_column_int(qNotification, 2));
             sourceData.listNotificationConfigurations.push_back(tempNotificationConfiguration);
         }
         MY_SQLITE_FINALIZE(qNotification)
@@ -1756,14 +1756,14 @@ am_Error_e CAmDatabaseHandler::getSourceInfoDB(const am_sourceID_t sourceID, am_
 
             MY_SQLITE_FINALIZE(qMAinSoundProperty)
 
-            std::string mainNotificationCommand = "SELECT notificationType, notificationStatus, notificationParameter FROM SourceMainNotificationConfiguration" + i2s(sourceID);
+            std::string mainNotificationCommand = "SELECT type, status, parameter FROM SourceMainNotificationConfiguration" + i2s(sourceID);
             MY_SQLITE_PREPARE_V2(mpDatabase, mainNotificationCommand.c_str(), -1, &qMainNotification, NULL)
 
             while ((eCode = sqlite3_step(qMainNotification)) == SQLITE_ROW)
             {
-                tempMainNotification.notificationType =  static_cast<am_NotificationType_e>(sqlite3_column_int(qMainNotification, 0));
-                tempMainNotification.notificationStatus = static_cast<am_NotificationStatus_e>(sqlite3_column_int(qMainNotification, 1));
-                tempMainNotification.notificationParameter= static_cast<int16_t>(sqlite3_column_int(qMainNotification, 2));
+                tempMainNotification.type =  static_cast<am_NotificationType_e>(sqlite3_column_int(qMainNotification, 0));
+                tempMainNotification.status = static_cast<am_NotificationStatus_e>(sqlite3_column_int(qMainNotification, 1));
+                tempMainNotification.parameter= static_cast<int16_t>(sqlite3_column_int(qMainNotification, 2));
                 sourceData.listMainNotificationConfigurations.push_back(tempMainNotification);
             }
             MY_SQLITE_FINALIZE(qMainNotification)
@@ -2326,7 +2326,7 @@ am_Error_e CAmDatabaseHandler::getListSinks(std::vector<am_Sink_s> & listSinks) 
         temp.sinkClassID = sqlite3_column_int(query, 2);
         temp.volume = sqlite3_column_int(query, 3);
         temp.visible = sqlite3_column_int(query, 4);
-        temp.available.availability = (am_Availablility_e) sqlite3_column_int(query, 5);
+        temp.available.availability = (am_Availability_e) sqlite3_column_int(query, 5);
         temp.available.availabilityReason = (am_AvailabilityReason_e) sqlite3_column_int(query, 6);
         temp.muteState = (am_MuteState_e) sqlite3_column_int(query, 7);
         temp.mainVolume = sqlite3_column_int(query, 8);
@@ -2356,13 +2356,13 @@ am_Error_e CAmDatabaseHandler::getListSinks(std::vector<am_Sink_s> & listSinks) 
         MY_SQLITE_FINALIZE(qSoundProperty)
 
         //read out notifications
-        std::string commandNotificationConfiguration = "SELECT notificationType, notificationStatus, notificationParameter FROM SinkNotificationConfiguration" + i2s(temp.sinkID);
+        std::string commandNotificationConfiguration = "SELECT type, status, parameter FROM SinkNotificationConfiguration" + i2s(temp.sinkID);
         MY_SQLITE_PREPARE_V2(mpDatabase, commandNotificationConfiguration.c_str(), -1, &qNotificationConfiguration, NULL)
         while ((eCode = sqlite3_step(qNotificationConfiguration)) == SQLITE_ROW)
         {
-            tempNotificationConfiguration.notificationType = static_cast<am_NotificationType_e> (sqlite3_column_int(qNotificationConfiguration, 0));
-            tempNotificationConfiguration.notificationStatus = static_cast<am_NotificationStatus_e> (sqlite3_column_int(qNotificationConfiguration, 1));
-            tempNotificationConfiguration.notificationParameter = static_cast<int16_t> (sqlite3_column_int(qNotificationConfiguration, 2));
+            tempNotificationConfiguration.type = static_cast<am_NotificationType_e> (sqlite3_column_int(qNotificationConfiguration, 0));
+            tempNotificationConfiguration.status = static_cast<am_NotificationStatus_e> (sqlite3_column_int(qNotificationConfiguration, 1));
+            tempNotificationConfiguration.parameter = static_cast<int16_t> (sqlite3_column_int(qNotificationConfiguration, 2));
             temp.listNotificationConfigurations.push_back(tempNotificationConfiguration);
         }
 
@@ -2383,13 +2383,13 @@ am_Error_e CAmDatabaseHandler::getListSinks(std::vector<am_Sink_s> & listSinks) 
             MY_SQLITE_FINALIZE(qMAinSoundProperty)
 
             //and mainNotificationConfigurations
-            std::string commandMainNotificationConfiguration = "SELECT notificationType, notificationStatus, notificationParameter FROM SinkMainNotificationConfiguration" + i2s(temp.sinkID);
+            std::string commandMainNotificationConfiguration = "SELECT type, status, parameter FROM SinkMainNotificationConfiguration" + i2s(temp.sinkID);
             MY_SQLITE_PREPARE_V2(mpDatabase, commandMainNotificationConfiguration.c_str(), -1, &qMainNotificationConfiguration, NULL)
             while ((eCode = sqlite3_step(qMainNotificationConfiguration)) == SQLITE_ROW)
             {
-                tempMainNotificationConfiguration.notificationType = static_cast <am_NotificationType_e> (sqlite3_column_int(qMainNotificationConfiguration, 0));
-                tempMainNotificationConfiguration.notificationStatus = static_cast <am_NotificationStatus_e> (sqlite3_column_int(qMainNotificationConfiguration, 1));
-                tempMainNotificationConfiguration.notificationParameter = static_cast <uint16_t>(sqlite3_column_int(qMainNotificationConfiguration, 2));
+                tempMainNotificationConfiguration.type = static_cast <am_NotificationType_e> (sqlite3_column_int(qMainNotificationConfiguration, 0));
+                tempMainNotificationConfiguration.status = static_cast <am_NotificationStatus_e> (sqlite3_column_int(qMainNotificationConfiguration, 1));
+                tempMainNotificationConfiguration.parameter = static_cast <uint16_t>(sqlite3_column_int(qMainNotificationConfiguration, 2));
                 temp.listMainNotificationConfigurations.push_back(tempMainNotificationConfiguration);
             }
 
@@ -2435,7 +2435,7 @@ am_Error_e CAmDatabaseHandler::getListSources(std::vector<am_Source_s> & listSou
         temp.sourceState = (am_SourceState_e) sqlite3_column_int(query, 3);
         temp.volume = sqlite3_column_int(query, 4);
         temp.visible = sqlite3_column_int(query, 5);
-        temp.available.availability = (am_Availablility_e) sqlite3_column_int(query, 6);
+        temp.available.availability = (am_Availability_e) sqlite3_column_int(query, 6);
         temp.available.availabilityReason = (am_AvailabilityReason_e) sqlite3_column_int(query, 7);
         temp.interruptState = (am_InterruptState_e) sqlite3_column_int(query, 8);
         temp.sourceID = sqlite3_column_int(query, 9);
@@ -2463,14 +2463,14 @@ am_Error_e CAmDatabaseHandler::getListSources(std::vector<am_Source_s> & listSou
 
         MY_SQLITE_FINALIZE(qSoundProperty)
 
-        std::string notificationCommand = "SELECT notificationType, notificationStatus, notificationParameter FROM SourceNotificationConfiguration" + i2s(temp.sourceID);
+        std::string notificationCommand = "SELECT type, status, parameter FROM SourceNotificationConfiguration" + i2s(temp.sourceID);
         MY_SQLITE_PREPARE_V2(mpDatabase, notificationCommand.c_str(), -1, &qNotification, NULL)
 
         while ((eCode = sqlite3_step(qNotification)) == SQLITE_ROW)
         {
-            tempNotificationConfiguration.notificationType =  static_cast<am_NotificationType_e>(sqlite3_column_int(qNotification, 0));
-            tempNotificationConfiguration.notificationStatus = static_cast<am_NotificationStatus_e>(sqlite3_column_int(qNotification, 1));
-            tempNotificationConfiguration.notificationParameter= static_cast<int16_t>(sqlite3_column_int(qNotification, 2));
+            tempNotificationConfiguration.type =  static_cast<am_NotificationType_e>(sqlite3_column_int(qNotification, 0));
+            tempNotificationConfiguration.status = static_cast<am_NotificationStatus_e>(sqlite3_column_int(qNotification, 1));
+            tempNotificationConfiguration.parameter= static_cast<int16_t>(sqlite3_column_int(qNotification, 2));
             temp.listNotificationConfigurations.push_back(tempNotificationConfiguration);
         }
         MY_SQLITE_FINALIZE(qNotification)
@@ -2489,14 +2489,14 @@ am_Error_e CAmDatabaseHandler::getListSources(std::vector<am_Source_s> & listSou
 
             MY_SQLITE_FINALIZE(qMAinSoundProperty)
 
-            std::string mainNotificationCommand = "SELECT notificationType, notificationStatus, notificationParameter FROM SourceMainNotificationConfiguration" + i2s(temp.sourceID);
+            std::string mainNotificationCommand = "SELECT type, status, parameter FROM SourceMainNotificationConfiguration" + i2s(temp.sourceID);
             MY_SQLITE_PREPARE_V2(mpDatabase, mainNotificationCommand.c_str(), -1, &qMainNotification, NULL)
 
             while ((eCode = sqlite3_step(qMainNotification)) == SQLITE_ROW)
             {
-                tempNotificationConfiguration.notificationType =  static_cast<am_NotificationType_e>(sqlite3_column_int(qMainNotification, 0));
-                tempNotificationConfiguration.notificationStatus = static_cast<am_NotificationStatus_e>(sqlite3_column_int(qMainNotification, 1));
-                tempNotificationConfiguration.notificationParameter= static_cast<int16_t>(sqlite3_column_int(qMainNotification, 2));
+                tempNotificationConfiguration.type =  static_cast<am_NotificationType_e>(sqlite3_column_int(qMainNotification, 0));
+                tempNotificationConfiguration.status = static_cast<am_NotificationStatus_e>(sqlite3_column_int(qMainNotification, 1));
+                tempNotificationConfiguration.parameter= static_cast<int16_t>(sqlite3_column_int(qMainNotification, 2));
                 temp.listMainNotificationConfigurations.push_back(tempNotificationConfiguration);
             }
             MY_SQLITE_FINALIZE(qMainNotification)
@@ -2777,7 +2777,7 @@ am_Error_e CAmDatabaseHandler::getListMainSinks(std::vector<am_SinkType_s> & lis
     {
         temp.name = std::string((const char*) sqlite3_column_text(query, 0));
         temp.sinkID = sqlite3_column_int(query, 1);
-        temp.availability.availability = (am_Availablility_e) sqlite3_column_int(query, 2);
+        temp.availability.availability = (am_Availability_e) sqlite3_column_int(query, 2);
         temp.availability.availabilityReason = (am_AvailabilityReason_e) sqlite3_column_int(query, 3);
         temp.muteState = (am_MuteState_e) sqlite3_column_int(query, 4);
         temp.volume = sqlite3_column_int(query, 5);
@@ -2810,7 +2810,7 @@ am_Error_e CAmDatabaseHandler::getListMainSources(std::vector<am_SourceType_s> &
     {
         temp.name = std::string((const char*) sqlite3_column_text(query, 0));
         temp.sourceClassID = sqlite3_column_int(query, 1);
-        temp.availability.availability = (am_Availablility_e) sqlite3_column_int(query, 2);
+        temp.availability.availability = (am_Availability_e) sqlite3_column_int(query, 2);
         temp.availability.availabilityReason = (am_AvailabilityReason_e) sqlite3_column_int(query, 3);
         temp.sourceID = sqlite3_column_int(query, 4);
 
@@ -4467,7 +4467,7 @@ am_Error_e am::CAmDatabaseHandler::peekSourceClassID(const std::string & name, a
 }
 
 
-am_Error_e CAmDatabaseHandler::changeSource(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_SoundProperty_s> listSoundProperties, const std::vector<am_ConnectionFormat_e> listConnectionFormats, const std::vector<am_MainSoundProperty_s> listMainSoundProperties)
+am_Error_e CAmDatabaseHandler::changeSourceDB(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_ConnectionFormat_e>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)
 {
     assert(sourceID!=0);
 
@@ -4604,7 +4604,7 @@ am_Error_e CAmDatabaseHandler::changeSource(const am_sourceID_t sourceID, const 
 
 }
 
-am_Error_e CAmDatabaseHandler::changeSink(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s> listSoundProperties, const std::vector<am_ConnectionFormat_e> listConnectionFormats, const std::vector<am_MainSoundProperty_s> listMainSoundProperties)
+am_Error_e CAmDatabaseHandler::changeSinkDB(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_ConnectionFormat_e>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)
 {
     assert(sinkID!=0);
 
@@ -4740,7 +4740,7 @@ am_Error_e CAmDatabaseHandler::changeSink(const am_sinkID_t sinkID, const am_sin
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::getListSinkMainNotificationConfigurations(const am_sinkID_t sinkID, std::vector<am_NotificationConfiguration_s>& listMainNotificationConfigurations)
+am_Error_e CAmDatabaseHandler::getListMainSinkNotificationConfigurations(const am_sinkID_t sinkID, std::vector<am_NotificationConfiguration_s>& listMainNotificationConfigurations)
 {
     assert(sinkID!=0);
     if (!existSink(sinkID))
@@ -4750,14 +4750,14 @@ am_Error_e CAmDatabaseHandler::getListSinkMainNotificationConfigurations(const a
     sqlite3_stmt* query = NULL;
     int eCode = 0;
     am_NotificationConfiguration_s temp;
-    std::string command = "SELECT notificationType, notificationStatus, notificationParameter FROM SinkMainNotificationConfiguration" + i2s(sinkID);
+    std::string command = "SELECT type, status, parameter FROM SinkMainNotificationConfiguration" + i2s(sinkID);
     MY_SQLITE_PREPARE_V2(mpDatabase, command.c_str(), -1, &query, NULL)
 
     while ((eCode = sqlite3_step(query)) == SQLITE_ROW)
     {
-        temp.notificationType =  static_cast<am_NotificationType_e>(sqlite3_column_int(query, 0));
-        temp.notificationStatus = static_cast<am_NotificationStatus_e>(sqlite3_column_int(query, 1));
-        temp.notificationParameter= static_cast<int16_t>(sqlite3_column_int(query, 2));
+        temp.type =  static_cast<am_NotificationType_e>(sqlite3_column_int(query, 0));
+        temp.status = static_cast<am_NotificationStatus_e>(sqlite3_column_int(query, 1));
+        temp.parameter= static_cast<int16_t>(sqlite3_column_int(query, 2));
         listMainNotificationConfigurations.push_back(temp);
     }
 
@@ -4774,7 +4774,7 @@ am_Error_e CAmDatabaseHandler::getListSinkMainNotificationConfigurations(const a
 
 }
 
-am_Error_e CAmDatabaseHandler::getListSourceMainNotificationConfigurations(const am_sourceID_t sourceID, std::vector<am_NotificationConfiguration_s>& listMainNotificationConfigurations)
+am_Error_e CAmDatabaseHandler::getListMainSourceNotificationConfigurations(const am_sourceID_t sourceID, std::vector<am_NotificationConfiguration_s>& listMainNotificationConfigurations)
 {
     assert(sourceID!=0);
     if (!existSource(sourceID))
@@ -4784,14 +4784,14 @@ am_Error_e CAmDatabaseHandler::getListSourceMainNotificationConfigurations(const
     sqlite3_stmt* query = NULL;
     int eCode = 0;
     am_NotificationConfiguration_s temp;
-    std::string command = "SELECT notificationType, notificationStatus, notificationParameter FROM SourceMainNotificationConfiguration" + i2s(sourceID);
+    std::string command = "SELECT type, status, parameter FROM SourceMainNotificationConfiguration" + i2s(sourceID);
     MY_SQLITE_PREPARE_V2(mpDatabase, command.c_str(), -1, &query, NULL)
 
     while ((eCode = sqlite3_step(query)) == SQLITE_ROW)
     {
-        temp.notificationType =  static_cast<am_NotificationType_e>(sqlite3_column_int(query, 0));
-        temp.notificationStatus = static_cast<am_NotificationStatus_e>(sqlite3_column_int(query, 1));
-        temp.notificationParameter= static_cast<int16_t>(sqlite3_column_int(query, 2));
+        temp.type =  static_cast<am_NotificationType_e>(sqlite3_column_int(query, 0));
+        temp.status = static_cast<am_NotificationStatus_e>(sqlite3_column_int(query, 1));
+        temp.parameter= static_cast<int16_t>(sqlite3_column_int(query, 2));
         listMainNotificationConfigurations.push_back(temp);
     }
 
@@ -4819,10 +4819,10 @@ am_Error_e CAmDatabaseHandler::changeMainSinkNotificationConfigurationDB(const a
     {
         return (E_NON_EXISTENT);
     }
-    command = "UPDATE SinkMainNotificationConfiguration" + i2s(sinkID) + " SET notificationStatus=?, notificationParameter=? WHERE notificationType=" + i2s(mainNotificationConfiguration.notificationType);
+    command = "UPDATE SinkMainNotificationConfiguration" + i2s(sinkID) + " SET status=?, parameter=? WHERE type=" + i2s(mainNotificationConfiguration.type);
     MY_SQLITE_PREPARE_V2(mpDatabase, command.c_str(), -1, &query, NULL)
-    MY_SQLITE_BIND_INT(query, 1, mainNotificationConfiguration.notificationStatus)
-    MY_SQLITE_BIND_INT(query, 2, mainNotificationConfiguration.notificationParameter)
+    MY_SQLITE_BIND_INT(query, 1, mainNotificationConfiguration.status)
+    MY_SQLITE_BIND_INT(query, 2, mainNotificationConfiguration.parameter)
     if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
     {
         logError("DatabaseHandler::changeMainSinkNotificationConfigurationDB SQLITE Step error code:", eCode);
@@ -4831,7 +4831,7 @@ am_Error_e CAmDatabaseHandler::changeMainSinkNotificationConfigurationDB(const a
     }
     MY_SQLITE_FINALIZE(query)
 
-    logInfo("DatabaseHandler::changeMainSinkNotificationConfigurationDB changed MainNotificationConfiguration of source:", sinkID, "type:", mainNotificationConfiguration.notificationType, "to status=", mainNotificationConfiguration.notificationStatus, "and parameter=",mainNotificationConfiguration.notificationParameter);
+    logInfo("DatabaseHandler::changeMainSinkNotificationConfigurationDB changed MainNotificationConfiguration of source:", sinkID, "type:", mainNotificationConfiguration.type, "to status=", mainNotificationConfiguration.status, "and parameter=",mainNotificationConfiguration.parameter);
 
     if (mpDatabaseObserver)
         mpDatabaseObserver->sinkMainNotificationConfigurationChanged(sinkID, mainNotificationConfiguration);
@@ -4850,10 +4850,10 @@ am_Error_e CAmDatabaseHandler::changeMainSourceNotificationConfigurationDB(const
     {
         return (E_NON_EXISTENT);
     }
-    command = "UPDATE SourceMainNotificationConfiguration" + i2s(sourceID) + " SET notificationStatus=?, notificationParameter=? WHERE notificationType=" + i2s(mainNotificationConfiguration.notificationType);
+    command = "UPDATE SourceMainNotificationConfiguration" + i2s(sourceID) + " SET status=?, parameter=? WHERE type=" + i2s(mainNotificationConfiguration.type);
     MY_SQLITE_PREPARE_V2(mpDatabase, command.c_str(), -1, &query, NULL)
-    MY_SQLITE_BIND_INT(query, 1, mainNotificationConfiguration.notificationStatus)
-    MY_SQLITE_BIND_INT(query, 2, mainNotificationConfiguration.notificationParameter)
+    MY_SQLITE_BIND_INT(query, 1, mainNotificationConfiguration.status)
+    MY_SQLITE_BIND_INT(query, 2, mainNotificationConfiguration.parameter)
     if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
     {
         logError("DatabaseHandler::changeMainSourceNotificationConfigurationDB SQLITE Step error code:", eCode);
@@ -4862,14 +4862,14 @@ am_Error_e CAmDatabaseHandler::changeMainSourceNotificationConfigurationDB(const
     }
     MY_SQLITE_FINALIZE(query)
 
-    logInfo("DatabaseHandler::changeMainSourceNotificationConfigurationDB changed MainNotificationConfiguration of source:", sourceID, "type:", mainNotificationConfiguration.notificationType, "to status=", mainNotificationConfiguration.notificationStatus, "and parameter=",mainNotificationConfiguration.notificationParameter);
+    logInfo("DatabaseHandler::changeMainSourceNotificationConfigurationDB changed MainNotificationConfiguration of source:", sourceID, "type:", mainNotificationConfiguration.type, "to status=", mainNotificationConfiguration.status, "and parameter=",mainNotificationConfiguration.parameter);
 
     if (mpDatabaseObserver)
         mpDatabaseObserver->sourceMainNotificationConfigurationChanged(sourceID, mainNotificationConfiguration);
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::changeGatewayDB(const am_gatewayID_t gatewayID, const std::vector<am_ConnectionFormat_e> listSourceConnectionFormats, const std::vector<am_ConnectionFormat_e> listSinkConnectionFormats, const std::vector<bool> convertionMatrix)
+am_Error_e CAmDatabaseHandler::changeGatewayDB(const am_gatewayID_t gatewayID, const std::vector<am_ConnectionFormat_e>& listSourceConnectionFormats, const std::vector<am_ConnectionFormat_e>& listSinkConnectionFormats, const std::vector<bool>& convertionMatrix)
 {
     assert(gatewayID!=0);
 
@@ -4955,10 +4955,10 @@ am_Error_e CAmDatabaseHandler::changeSinkNotificationConfigurationDB(const am_si
     {
         return (E_NON_EXISTENT);
     }
-    command = "UPDATE SinkNotificationConfiguration" + i2s(sinkID) + " SET notificationStatus=?, notificationParameter=? WHERE notificationType=" + i2s(notificationConfiguration.notificationType);
+    command = "UPDATE SinkNotificationConfiguration" + i2s(sinkID) + " SET status=?, parameter=? WHERE type=" + i2s(notificationConfiguration.type);
     MY_SQLITE_PREPARE_V2(mpDatabase, command.c_str(), -1, &query, NULL)
-    MY_SQLITE_BIND_INT(query, 1, notificationConfiguration.notificationStatus)
-    MY_SQLITE_BIND_INT(query, 2, notificationConfiguration.notificationParameter)
+    MY_SQLITE_BIND_INT(query, 1, notificationConfiguration.status)
+    MY_SQLITE_BIND_INT(query, 2, notificationConfiguration.parameter)
     if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
     {
         logError("DatabaseHandler::changeMainSinkNotificationConfigurationDB SQLITE Step error code:", eCode);
@@ -4967,7 +4967,7 @@ am_Error_e CAmDatabaseHandler::changeSinkNotificationConfigurationDB(const am_si
     }
     MY_SQLITE_FINALIZE(query)
 
-    logInfo("DatabaseHandler::changeMainSinkNotificationConfigurationDB changed MainNotificationConfiguration of source:", sinkID, "type:", notificationConfiguration.notificationType, "to status=", notificationConfiguration.notificationStatus, "and parameter=",notificationConfiguration.notificationParameter);
+    logInfo("DatabaseHandler::changeMainSinkNotificationConfigurationDB changed MainNotificationConfiguration of source:", sinkID, "type:", notificationConfiguration.type, "to status=", notificationConfiguration.status, "and parameter=",notificationConfiguration.parameter);
 
     //todo:: inform obsever here...
     return (E_OK);
@@ -4985,10 +4985,10 @@ am_Error_e CAmDatabaseHandler::changeSourceNotificationConfigurationDB(const am_
     {
         return (E_NON_EXISTENT);
     }
-    command = "UPDATE SourceNotificationConfiguration" + i2s(sourceID) + " SET notificationStatus=?, notificationParameter=? WHERE notificationType=" + i2s(notificationConfiguration.notificationType);
+    command = "UPDATE SourceNotificationConfiguration" + i2s(sourceID) + " SET status=?, parameter=? WHERE type=" + i2s(notificationConfiguration.type);
     MY_SQLITE_PREPARE_V2(mpDatabase, command.c_str(), -1, &query, NULL)
-    MY_SQLITE_BIND_INT(query, 1, notificationConfiguration.notificationStatus)
-    MY_SQLITE_BIND_INT(query, 2, notificationConfiguration.notificationParameter)
+    MY_SQLITE_BIND_INT(query, 1, notificationConfiguration.status)
+    MY_SQLITE_BIND_INT(query, 2, notificationConfiguration.parameter)
     if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
     {
         logError("DatabaseHandler::changeMainSourceNotificationConfigurationDB SQLITE Step error code:", eCode);
@@ -4997,7 +4997,7 @@ am_Error_e CAmDatabaseHandler::changeSourceNotificationConfigurationDB(const am_
     }
     MY_SQLITE_FINALIZE(query)
 
-    logInfo("DatabaseHandler::changeSourceNotificationConfigurationDB changed MainNotificationConfiguration of source:", sourceID, "type:", notificationConfiguration.notificationType, "to status=", notificationConfiguration.notificationStatus, "and parameter=",notificationConfiguration.notificationParameter);
+    logInfo("DatabaseHandler::changeSourceNotificationConfigurationDB changed MainNotificationConfiguration of source:", sourceID, "type:", notificationConfiguration.type, "to status=", notificationConfiguration.status, "and parameter=",notificationConfiguration.parameter);
 
     //todo:: implement observer function
     return (E_OK);

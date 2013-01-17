@@ -81,14 +81,14 @@ public:
     void getInterfaceVersion(std::string& version) const;
     void confirmRoutingReady(const uint16_t handle, const am_Error_e error);
     void confirmRoutingRundown(const uint16_t handle, const am_Error_e error);
-    am_Error_e updateGateway(const am_gatewayID_t gatewayID, std::vector<am_ConnectionFormat_e> listSourceFormats, const std::vector<am_ConnectionFormat_e> listSinkFormats, std::vector<bool> convertionMatrix);
-    am_Error_e updateSink(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s> listSoundProperties, const std::vector<am_ConnectionFormat_e> listConnectionFormats, std::vector<am_MainSoundProperty_s> listMainSoundProperties);
-    am_Error_e updateSource(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, std::vector<am_SoundProperty_s> listSoundProperties, std::vector<am_ConnectionFormat_e> listConnectionFormats, const std::vector<am_MainSoundProperty_s> listMainSoundProperties);
-    void ackSetVolumes(const am_Handle_s handle, const std::vector<am_Volumes_s> listvolumes, const am_Error_e error);
-    void ackSinkNotificationConfiguration(const am_Handle_s handle, const am_Error_e error);
+    am_Error_e updateGateway(const am_gatewayID_t gatewayID, const std::vector<am_ConnectionFormat_e>& listSourceFormats, const std::vector<am_ConnectionFormat_e>& listSinkFormats, const std::vector<bool>& convertionMatrix) ;
+    am_Error_e updateSink(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_ConnectionFormat_e>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties) ;
+    am_Error_e updateSource(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_ConnectionFormat_e>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties) ;
+    void ackSetVolumes(const am_Handle_s handle, const std::vector<am_Volumes_s>& listvolumes, const am_Error_e error) ;
+    void ackSinkNotificationConfiguration(const am_Handle_s handle, const am_Error_e error) ;
     void ackSourceNotificationConfiguration(const am_Handle_s handle, const am_Error_e error) ;
-    void hookSinkNotificationDataChange(const am_sinkID_t sinkID, const am_NotificationPayload_s payload) ;
-    void hookSourceNotificationDataChange(const am_sourceID_t sourceID, const am_NotificationPayload_s payload) ;
+    void hookSinkNotificationDataChange(const am_sinkID_t sinkID, const am_NotificationPayload_s& payload) ;
+    void hookSourceNotificationDataChange(const am_sourceID_t sourceID, const am_NotificationPayload_s& payload) ;
 
     uint16_t getStartupHandle(); //!< returns a startup handle
     uint16_t getRundownHandle(); //!< returns a rundown handle

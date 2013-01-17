@@ -103,21 +103,21 @@ class MockIAmRoutingReceive : public IAmRoutingReceive {
     MOCK_METHOD2(confirmRoutingRundown,
         void(const uint16_t handle, const am_Error_e error));
     MOCK_METHOD4(updateGateway,
-        am_Error_e(const am_gatewayID_t gatewayID, std::vector<am_ConnectionFormat_e> listSourceFormats, const std::vector<am_ConnectionFormat_e> listSinkFormats, std::vector<bool> convertionMatrix));
+        am_Error_e(const am_gatewayID_t gatewayID, const std::vector<am_ConnectionFormat_e>& listSourceFormats, const std::vector<am_ConnectionFormat_e>& listSinkFormats, const std::vector<bool>& convertionMatrix));
     MOCK_METHOD5(updateSink,
-        am_Error_e(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s> listSoundProperties, const std::vector<am_ConnectionFormat_e> listConnectionFormats, std::vector<am_MainSoundProperty_s> listMainSoundProperties));
+        am_Error_e(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_ConnectionFormat_e>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties));
     MOCK_METHOD5(updateSource,
-        am_Error_e(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, std::vector<am_SoundProperty_s> listSoundProperties, std::vector<am_ConnectionFormat_e> listConnectionFormats, const std::vector<am_MainSoundProperty_s> listMainSoundProperties));
+        am_Error_e(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_ConnectionFormat_e>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties));
     MOCK_METHOD3(ackSetVolumes,
-        void(const am_Handle_s handle, const std::vector<am_Volumes_s> listvolumes, const am_Error_e error));
+        void(const am_Handle_s handle, const std::vector<am_Volumes_s>& listvolumes, const am_Error_e error));
     MOCK_METHOD2(ackSinkNotificationConfiguration,
         void(const am_Handle_s handle, const am_Error_e error));
     MOCK_METHOD2(ackSourceNotificationConfiguration,
         void(const am_Handle_s handle, const am_Error_e error));
     MOCK_METHOD2(hookSinkNotificationDataChange,
-        void(const am_sinkID_t sinkID, const am_NotificationPayload_s payload));
+        void(const am_sinkID_t sinkID, const am_NotificationPayload_s& payload));
     MOCK_METHOD2(hookSourceNotificationDataChange,
-        void(const am_sourceID_t sourceID, const am_NotificationPayload_s payload));
+        void(const am_sourceID_t sourceID, const am_NotificationPayload_s& payload));
 
 };
 

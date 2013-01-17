@@ -63,10 +63,10 @@ public:
     void confirmCommandReady(const uint16_t handle, const am_Error_e error);
     void confirmCommandRundown(const uint16_t handle, const am_Error_e error);
     void getInterfaceVersion(std::string& version) const;
-    am_Error_e getListSinkMainNotificationConfigurations(const am_sinkID_t sinkID, std::vector<am_NotificationConfiguration_s>& listMainNotificationConfigurations) const;
-    am_Error_e getListSourceMainNotificationConfigurations(const am_sourceID_t sourceID, std::vector<am_NotificationConfiguration_s>& listMainNotificationConfigurations) const;
-    am_Error_e setSinkMainNotificationConfiguration(const am_sinkID_t sinkID, const am_NotificationConfiguration_s mainNotificationConfiguration);
-    am_Error_e setSourceMainNotificationConfiguration(const am_sourceID_t sourceID, const am_NotificationConfiguration_s mainNotificationConfiguration);
+    am_Error_e getListMainSinkNotificationConfigurations(const am_sinkID_t sinkID, std::vector<am_NotificationConfiguration_s>& listMainNotificationConfigurations) const ;
+    am_Error_e getListMainSourceNotificationConfigurations(const am_sourceID_t sourceID, std::vector<am_NotificationConfiguration_s>& listMainNotificationConfigurations) const ;
+    am_Error_e setMainSinkNotificationConfiguration(const am_sinkID_t sinkID, const am_NotificationConfiguration_s& mainNotificationConfiguration) ;
+    am_Error_e setMainSourceNotificationConfiguration(const am_sourceID_t sourceID, const am_NotificationConfiguration_s& mainNotificationConfiguration) ;
 
     uint16_t getStartupHandle(); //!< returns a startup handle
     uint16_t getRundownHandle(); //!< returns a rundown handle

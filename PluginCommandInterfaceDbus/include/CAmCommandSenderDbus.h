@@ -67,10 +67,10 @@ public:
     void getInterfaceVersion(std::string& version) const;
     void cbSinkUpdated(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties);
     void cbSourceUpdated(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties);
-    void cbSinkNotification(const am_sinkID_t sinkID, const am_NotificationPayload_s notification);
-    void cbSourceNotification(const am_sourceID_t sourceID, const am_NotificationPayload_s notification);
-    void cbSinkMainNotificationConfigurationChanged(const am_sinkID_t sinkID, const am_NotificationConfiguration_s mainNotificationConfiguration);
-    void cbSourceMainNotificationConfigurationChanged(const am_sourceID_t sourceID, const am_NotificationConfiguration_s mainNotificationConfiguration);
+    void cbSinkNotification(const am_sinkID_t sinkID, const am_NotificationPayload_s& notification) ;
+    void cbSourceNotification(const am_sourceID_t sourceID, const am_NotificationPayload_s& notification) ;
+    void cbMainSinkNotificationConfigurationChanged(const am_sinkID_t sinkID, const am_NotificationConfiguration_s& mainNotificationConfiguration) ;
+    void cbMainSourceNotificationConfigurationChanged(const am_sourceID_t sourceID, const am_NotificationConfiguration_s& mainNotificationConfiguration) ;
 
 #ifdef UNIT_TEST
     friend class CAmCommandSenderDbusBackdoor;

@@ -623,7 +623,7 @@ void CAmDbusMessageHandler::append(const std::vector<am::am_SystemProperty_s> & 
     }
 }
 
-void CAmDbusMessageHandler::getNotificationConfiguration(dbus_int16_t& notificationType, dbus_int16_t& notificationStatus, dbus_int16_t& notificationParameter)
+void CAmDbusMessageHandler::getNotificationConfiguration(dbus_int16_t& type, dbus_int16_t& status, dbus_int16_t& parameter)
 {
     DBusMessageIter arrayIter;
     if (DBUS_TYPE_STRUCT != dbus_message_iter_get_arg_type(&mDBusMessageIter))
@@ -635,11 +635,11 @@ void CAmDbusMessageHandler::getNotificationConfiguration(dbus_int16_t& notificat
     else
     {
         dbus_message_iter_recurse(&mDBusMessageIter, &arrayIter);
-        dbus_message_iter_get_basic(&arrayIter, &notificationType);
+        dbus_message_iter_get_basic(&arrayIter, &type);
         dbus_message_iter_next(&arrayIter);
-        dbus_message_iter_get_basic(&arrayIter, &notificationStatus);
+        dbus_message_iter_get_basic(&arrayIter, &status);
         dbus_message_iter_next(&arrayIter);
-        dbus_message_iter_get_basic(&arrayIter, &notificationParameter);
+        dbus_message_iter_get_basic(&arrayIter, &parameter);
         dbus_message_iter_next(&mDBusMessageIter);
     }
 }
@@ -655,9 +655,9 @@ void CAmDbusMessageHandler::append(const std::vector<am::am_NotificationConfigur
     for (; listIterator < listNotifications.end(); ++listIterator)
     {
         success = success && dbus_message_iter_open_container(&arrayIter, DBUS_TYPE_STRUCT, NULL, &structIter);
-        success = success && dbus_message_iter_append_basic(&structIter, DBUS_TYPE_INT16, &listIterator->notificationType);
-        success = success && dbus_message_iter_append_basic(&structIter, DBUS_TYPE_INT16, &listIterator->notificationStatus);
-        success = success && dbus_message_iter_append_basic(&structIter, DBUS_TYPE_INT16, &listIterator->notificationParameter);
+        success = success && dbus_message_iter_append_basic(&structIter, DBUS_TYPE_INT16, &listIterator->type);
+        success = success && dbus_message_iter_append_basic(&structIter, DBUS_TYPE_INT16, &listIterator->status);
+        success = success && dbus_message_iter_append_basic(&structIter, DBUS_TYPE_INT16, &listIterator->parameter);
         success = success && dbus_message_iter_close_container(&arrayIter, &structIter);
     }
     success = success && dbus_message_iter_close_container(&mDBusMessageIter, &arrayIter);
@@ -675,8 +675,8 @@ void CAmDbusMessageHandler::append(const am::am_NotificationPayload_s& notificat
     DBusMessageIter structIter;
     dbus_bool_t success = true;
     success = success && dbus_message_iter_open_container(&mDBusMessageIter, DBUS_TYPE_STRUCT, NULL, &structIter);
-    success = success && dbus_message_iter_append_basic(&structIter, DBUS_TYPE_INT16, &notificationPayload.notificationType);
-    success = success && dbus_message_iter_append_basic(&structIter, DBUS_TYPE_INT16, &notificationPayload.notificationValue);
+    success = success && dbus_message_iter_append_basic(&structIter, DBUS_TYPE_INT16, &notificationPayload.type);
+    success = success && dbus_message_iter_append_basic(&structIter, DBUS_TYPE_INT16, &notificationPayload.value);
     success = success && dbus_message_iter_close_container(&mDBusMessageIter, &structIter);
 
     if (!success)
@@ -692,9 +692,9 @@ void CAmDbusMessageHandler::append(const am::am_NotificationConfiguration_s& not
     DBusMessageIter structIter;
     dbus_bool_t success = true;
     success = success && dbus_message_iter_open_container(&mDBusMessageIter, DBUS_TYPE_STRUCT, NULL, &structIter);
-    success = success && dbus_message_iter_append_basic(&structIter, DBUS_TYPE_INT16, &notificationConfiguration.notificationType);
-    success = success && dbus_message_iter_append_basic(&structIter, DBUS_TYPE_INT16, &notificationConfiguration.notificationStatus);
-    success = success && dbus_message_iter_append_basic(&structIter, DBUS_TYPE_INT16, &notificationConfiguration.notificationParameter);
+    success = success && dbus_message_iter_append_basic(&structIter, DBUS_TYPE_INT16, &notificationConfiguration.type);
+    success = success && dbus_message_iter_append_basic(&structIter, DBUS_TYPE_INT16, &notificationConfiguration.status);
+    success = success && dbus_message_iter_append_basic(&structIter, DBUS_TYPE_INT16, &notificationConfiguration.parameter);
     success = success && dbus_message_iter_close_container(&mDBusMessageIter, &structIter);
 
     if (!success)

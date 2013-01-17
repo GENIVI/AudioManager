@@ -111,7 +111,7 @@ bool equalMainSoundProperty(const am_MainSoundProperty_s a, const am_MainSoundPr
 
 bool equalNotificationConfiguration(const am_NotificationConfiguration_s a, const am_NotificationConfiguration_s b)
 {
-    return (a.notificationParameter == b.notificationParameter && a.notificationStatus == b.notificationStatus && a.notificationType == b.notificationType);
+    return (a.parameter == b.parameter && a.status == b.status && a.type == b.type);
 }
 
 bool equalRoutingElement(const am_RoutingElement_s a, const am_RoutingElement_s b)
@@ -320,14 +320,14 @@ std::vector<am_NotificationConfiguration_s> am::CAmCommonFunctions::getStandardN
 {
     std::vector<am_NotificationConfiguration_s> listNotificationConfigurations;
     am_NotificationConfiguration_s tempNotificationConfiguration;
-    tempNotificationConfiguration.notificationParameter=12;
-    tempNotificationConfiguration.notificationStatus=NS_PERIODIC;
-    tempNotificationConfiguration.notificationType=NT_MAX;
+    tempNotificationConfiguration.parameter=12;
+    tempNotificationConfiguration.status=NS_PERIODIC;
+    tempNotificationConfiguration.type=NT_MAX;
     listNotificationConfigurations.push_back(tempNotificationConfiguration);
 
-    tempNotificationConfiguration.notificationParameter=16;
-    tempNotificationConfiguration.notificationStatus=NS_CHANGE;
-    tempNotificationConfiguration.notificationType=NT_UNKNOWN;
+    tempNotificationConfiguration.parameter=16;
+    tempNotificationConfiguration.status=NS_CHANGE;
+    tempNotificationConfiguration.type=NT_UNKNOWN;
     listNotificationConfigurations.push_back(tempNotificationConfiguration);
 
     return (listNotificationConfigurations);

@@ -103,13 +103,13 @@
         <method name="GetListSinkMainNotificationConfigurations">
             <arg type="q" name="sinkID" direction="in"/>
             <arg type="n" name="result" direction="out"/> <!-- method return code (am_Error_e) -->
-            <arg type="a(nnn)" name="listMainNotificationConfigurations" direction="out"/> <!-- am_am_notification_e type; am_NotificationStatus_e status; int16t parameter; -->
+            <arg type="a(nnn)" name="listMainNotificationConfigurations" direction="out"/> <!-- am_am_notification_e type; am_status_e status; int16t parameter; -->
         </method>
         
         <method name="GetListSourceMainNotificationConfigurations">
             <arg type="q" name="sourceID" direction="in"/>
             <arg type="n" name="result" direction="out"/> <!-- method return code (am_Error_e) -->
-            <arg type="a(nnn)" name="listMainNotificationConfigurations" direction="out"/> <!-- am_am_notification_e type; am_NotificationStatus_e status; int16t parameter; -->
+            <arg type="a(nnn)" name="listMainNotificationConfigurations" direction="out"/> <!-- am_am_notification_e type; am_status_e status; int16t parameter; -->
         </method>
 
         <signal name="NumberOfMainConnectionsChanged"></signal>
@@ -204,12 +204,12 @@
         
         <signal name="SinkMainNotificationConfigurationChanged">
 			<arg type="q" name="sinkID" direction="out"/>
-			<arg type="(nnn)" name="mainNotificationConfiguration" direction="out"/> <!-- am_am_notification_e type; am_NotificationStatus_e status; int16t parameter; -->
+			<arg type="(nnn)" name="mainNotificationConfiguration" direction="out"/> <!-- am_am_notification_e type; am_status_e status; int16t parameter; -->
         </signal>
         
         <signal name="SourceMainNotificationConfigurationChanged">
 			<arg type="q" name="sourceID" direction="out"/>
-			<arg type="(nnn)" name="mainNotificationConfiguration" direction="out"/> <!-- am_am_notification_e type; am_NotificationStatus_e status; int16t parameter; -->
+			<arg type="(nnn)" name="mainNotificationConfiguration" direction="out"/> <!-- am_am_notification_e type; am_status_e status; int16t parameter; -->
         </signal>
        
     </interface>

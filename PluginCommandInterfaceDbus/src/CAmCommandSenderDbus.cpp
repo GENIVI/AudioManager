@@ -348,7 +348,7 @@ void am::CAmCommandSenderDbus::cbSourceUpdated(const am_sourceID_t sourceID, con
     }
 }
 
-void am::CAmCommandSenderDbus::cbSinkNotification(const am_sinkID_t sinkID, const am_NotificationPayload_s notification)
+void am::CAmCommandSenderDbus::cbSinkNotification(const am_sinkID_t sinkID, const am_NotificationPayload_s& notification)
 {
     log(&commandDbus, DLT_LOG_INFO, "cbSinkNotification called, sinkID", sinkID);
 
@@ -361,7 +361,7 @@ void am::CAmCommandSenderDbus::cbSinkNotification(const am_sinkID_t sinkID, cons
     }
 }
 
-void am::CAmCommandSenderDbus::cbSourceNotification(const am_sourceID_t sourceID, const am_NotificationPayload_s notification)
+void am::CAmCommandSenderDbus::cbSourceNotification(const am_sourceID_t sourceID, const am_NotificationPayload_s& notification)
 {
     log(&commandDbus, DLT_LOG_INFO, "cbSourceNotification called, sourceID", sourceID);
 
@@ -374,7 +374,7 @@ void am::CAmCommandSenderDbus::cbSourceNotification(const am_sourceID_t sourceID
     }
 }
 
-void am::CAmCommandSenderDbus::cbSinkMainNotificationConfigurationChanged(const am_sinkID_t sinkID, const am_NotificationConfiguration_s mainNotificationConfiguration)
+void am::CAmCommandSenderDbus::cbMainSinkNotificationConfigurationChanged(const am_sinkID_t sinkID, const am_NotificationConfiguration_s& mainNotificationConfiguration)
 {
     log(&commandDbus, DLT_LOG_INFO, "cbSinkMainNotificationConfigurationChanged called, sinkID", sinkID);
 
@@ -387,7 +387,7 @@ void am::CAmCommandSenderDbus::cbSinkMainNotificationConfigurationChanged(const 
     }
 }
 
-void am::CAmCommandSenderDbus::cbSourceMainNotificationConfigurationChanged(const am_sourceID_t sourceID, const am_NotificationConfiguration_s mainNotificationConfiguration)
+void am::CAmCommandSenderDbus::cbMainSourceNotificationConfigurationChanged(const am_sourceID_t sourceID, const am_NotificationConfiguration_s& mainNotificationConfiguration)
 {
     log(&commandDbus, DLT_LOG_INFO, "cbSourceMainNotificationConfigurationChanged called, sourceID", sourceID);
 

@@ -124,31 +124,31 @@ class MockIAmControlSend : public IAmControlSend {
     MOCK_METHOD1(confirmRoutingRundown,
         void(const am_Error_e error));
     MOCK_METHOD5(hookSystemUpdateSink,
-        am_Error_e(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s> listSoundProperties, const std::vector<am_ConnectionFormat_e> listConnectionFormats, std::vector<am_MainSoundProperty_s> listMainSoundProperties));
+        am_Error_e(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_ConnectionFormat_e>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties));
     MOCK_METHOD5(hookSystemUpdateSource,
-        am_Error_e(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_SoundProperty_s> listSoundProperties, const std::vector<am_ConnectionFormat_e> listConnectionFormats, std::vector<am_MainSoundProperty_s> listMainSoundProperties));
+        am_Error_e(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_ConnectionFormat_e>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties));
     MOCK_METHOD4(hookSystemUpdateGateway,
-        am_Error_e(const am_gatewayID_t gatewayID, const std::vector<am_ConnectionFormat_e> listSourceConnectionFormats, const std::vector<am_ConnectionFormat_e> listSinkConnectionFormats, const std::vector<bool> convertionMatrix));
-    MOCK_METHOD3(cbAckSetVolume,
-        void(const am_Handle_s handle, const std::vector<am_Volumes_s> listVolumes, const am_Error_e error));
+        am_Error_e(const am_gatewayID_t gatewayID, const std::vector<am_ConnectionFormat_e>& listSourceConnectionFormats, const std::vector<am_ConnectionFormat_e>& listSinkConnectionFormats, const std::vector<bool>& convertionMatrix));
+    MOCK_METHOD3(cbAckSetVolumes,
+        void(const am_Handle_s handle, const std::vector<am_Volumes_s>& listVolumes, const am_Error_e error));
     MOCK_METHOD2(cbAckSetSinkNotificationConfiguration,
         void(const am_Handle_s handle, const am_Error_e error));
     MOCK_METHOD2(cbAckSetSourceNotificationConfiguration,
         void(const am_Handle_s handle, const am_Error_e error));
     MOCK_METHOD2(hookSinkNotificationDataChanged,
-        void(const am_sinkID_t sinkID, const am_NotificationPayload_s payload));
+        void(const am_sinkID_t sinkID, const am_NotificationPayload_s& payload));
     MOCK_METHOD2(hookSourceNotificationDataChanged,
-        void(const am_sourceID_t sourceID, const am_NotificationPayload_s payload));
+        void(const am_sourceID_t sourceID, const am_NotificationPayload_s& payload));
     MOCK_METHOD2(hookUserSetMainSinkNotificationConfiguration,
-        am_Error_e(const am_sinkID_t sinkID, const am_NotificationConfiguration_s notificationConfiguration));
+        am_Error_e(const am_sinkID_t sinkID, const am_NotificationConfiguration_s& notificationConfiguration));
     MOCK_METHOD2(hookUserSetMainSourceNotificationConfiguration,
-        am_Error_e(const am_sourceID_t sourceID, const am_NotificationConfiguration_s notificationConfiguration));
+        am_Error_e(const am_sourceID_t sourceID, const am_NotificationConfiguration_s& notificationConfiguration));
     MOCK_METHOD1(hookSystemNodeStateChanged,
         void(const NsmNodeState_e NodeStateId));
     MOCK_METHOD1(hookSystemNodeApplicationModeChanged,
         void(const NsmApplicationMode_e ApplicationModeId));
     MOCK_METHOD3(hookSystemSessionStateChanged,
-        void(const std::string sessionName, const int32_t seatID, const NsmSessionState_e sessionStateID));
+        void(const std::string& sessionName, const NsmSeat_e seatID, const NsmSessionState_e sessionStateID));
     MOCK_METHOD2(hookSystemLifecycleRequest,
         NsmErrorStatus_e(const uint32_t Request, const uint32_t RequestId));
 

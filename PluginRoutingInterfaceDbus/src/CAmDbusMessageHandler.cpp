@@ -277,7 +277,7 @@ am::am_Availability_s CAmRoutingDbusMessageHandler::getAvailability()
     {
         DBusMessageIter structIter;
         dbus_message_iter_recurse(&mDBusMessageIter, &structIter);
-        availability.availability = static_cast<am_Availablility_e>(getInt(structIter, true));
+        availability.availability = static_cast<am_Availability_e>(getInt(structIter, true));
         availability.availabilityReason = static_cast<am_AvailabilityReason_e>(getInt(structIter, false));
         dbus_message_iter_next(&mDBusMessageIter);
     }
@@ -360,7 +360,7 @@ am_Source_s CAmRoutingDbusMessageHandler::getSourceData()
     sourceData.volume = static_cast<am_volume_t>(getInt());
     sourceData.visible = getBool();
     dbus_message_iter_recurse(&mDBusMessageIter, &availIter);
-    sourceData.available.availability = static_cast<am_Availablility_e>(getInt(availIter, true));
+    sourceData.available.availability = static_cast<am_Availability_e>(getInt(availIter, true));
     sourceData.available.availabilityReason = static_cast<am_AvailabilityReason_e>(getInt(availIter, false));
     dbus_message_iter_next(&mDBusMessageIter);
     sourceData.interruptState = static_cast<am_InterruptState_e>(getUInt());
@@ -406,7 +406,7 @@ am_Sink_s CAmRoutingDbusMessageHandler::getSinkData()
     sinkData.volume = static_cast<am_volume_t>(getInt());
     sinkData.visible = getBool();
     dbus_message_iter_recurse(&mDBusMessageIter, &availIter);
-    sinkData.available.availability = static_cast<am_Availablility_e>(getInt(availIter, true));
+    sinkData.available.availability = static_cast<am_Availability_e>(getInt(availIter, true));
     sinkData.available.availabilityReason = static_cast<am_AvailabilityReason_e>(getInt(availIter, false));
     dbus_message_iter_next(&mDBusMessageIter);
     sinkData.muteState = static_cast<am_MuteState_e>(getInt());

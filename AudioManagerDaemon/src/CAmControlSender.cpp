@@ -396,28 +396,28 @@ void CAmControlSender::hookSystemNodeApplicationModeChanged(const NsmApplication
     mController->hookSystemNodeApplicationModeChanged(ApplicationModeId);
 }
 
-am_Error_e CAmControlSender::hookSystemUpdateSink(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s> listSoundProperties, const std::vector<am_ConnectionFormat_e> listConnectionFormats, std::vector<am_MainSoundProperty_s> listMainSoundProperties)
+am_Error_e CAmControlSender::hookSystemUpdateSink(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_ConnectionFormat_e>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)
 {
     assert(mController);
     return (mController->hookSystemUpdateSink(sinkID,sinkClassID,listSoundProperties,listConnectionFormats,listMainSoundProperties));
 }
 
-am_Error_e CAmControlSender::hookSystemUpdateSource(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_SoundProperty_s> listSoundProperties, const std::vector<am_ConnectionFormat_e> listConnectionFormats, std::vector<am_MainSoundProperty_s> listMainSoundProperties)
+am_Error_e CAmControlSender::hookSystemUpdateSource(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_ConnectionFormat_e>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)
 {
     assert(mController);
     return (mController->hookSystemUpdateSource(sourceID,sourceClassID,listSoundProperties,listConnectionFormats,listMainSoundProperties));
 }
 
-am_Error_e CAmControlSender::hookSystemUpdateGateway(const am_gatewayID_t gatewayID, const std::vector<am_ConnectionFormat_e> listSourceConnectionFormats, const std::vector<am_ConnectionFormat_e> listSinkConnectionFromats, const std::vector<bool> convertionMatrix)
+am_Error_e CAmControlSender::hookSystemUpdateGateway(const am_gatewayID_t gatewayID, const std::vector<am_ConnectionFormat_e>& listSourceConnectionFormats, const std::vector<am_ConnectionFormat_e>& listSinkConnectionFromats, const std::vector<bool>& convertionMatrix)
 {
     assert(mController);
     return (mController->hookSystemUpdateGateway(gatewayID,listSourceConnectionFormats,listSinkConnectionFromats,convertionMatrix));
 }
 
-void CAmControlSender::cbAckSetVolume(const am_Handle_s handle, const std::vector<am_Volumes_s> listVolumes, const am_Error_e error)
+void CAmControlSender::cbAckSetVolume(const am_Handle_s handle, const std::vector<am_Volumes_s>& listVolumes, const am_Error_e error)
 {
     assert(mController);
-    mController->cbAckSetVolume(handle,listVolumes,error);
+    mController->cbAckSetVolumes(handle,listVolumes,error);
 }
 
 void CAmControlSender::cbAckSetSinkNotificationConfiguration(const am_Handle_s handle, const am_Error_e error)
@@ -432,25 +432,25 @@ void CAmControlSender::cbAckSetSourceNotificationConfiguration(const am_Handle_s
     mController->cbAckSetSourceNotificationConfiguration(handle,error);
 }
 
-void CAmControlSender::hookSinkNotificationDataChanged(const am_sinkID_t sinkID, const am_NotificationPayload_s payload)
+void CAmControlSender::hookSinkNotificationDataChanged(const am_sinkID_t sinkID, const am_NotificationPayload_s& payload)
 {
     assert(mController);
     mController->hookSinkNotificationDataChanged(sinkID,payload);
 }
 
-void CAmControlSender::hookSourceNotificationDataChanged(const am_sourceID_t sourceID, const am_NotificationPayload_s payload)
+void CAmControlSender::hookSourceNotificationDataChanged(const am_sourceID_t sourceID, const am_NotificationPayload_s& payload)
 {
     assert(mController);
     mController->hookSourceNotificationDataChanged(sourceID,payload);
 }
 
-am_Error_e CAmControlSender::hookUserSetMainSinkNotificationConfiguration(const am_sinkID_t sinkID, const am_NotificationConfiguration_s notificationConfiguration)
+am_Error_e CAmControlSender::hookUserSetMainSinkNotificationConfiguration(const am_sinkID_t sinkID, const am_NotificationConfiguration_s& notificationConfiguration)
 {
     assert(mController);
     return (mController->hookUserSetMainSinkNotificationConfiguration(sinkID,notificationConfiguration));
 }
 
-am_Error_e CAmControlSender::hookUserSetMainSourceNotificationConfiguration(const am_sourceID_t sourceID, const am_NotificationConfiguration_s notificationConfiguration)
+am_Error_e CAmControlSender::hookUserSetMainSourceNotificationConfiguration(const am_sourceID_t sourceID, const am_NotificationConfiguration_s& notificationConfiguration)
 {
     assert(mController);
     return (mController->hookUserSetMainSourceNotificationConfiguration(sourceID,notificationConfiguration));
@@ -471,7 +471,7 @@ bool CAmControlSender::checkerCallback(const sh_pollHandle_t handle, void* userD
    return (true);
 }
 
-void CAmControlSender::hookSystemSessionStateChanged(const std::string sessionName, const int32_t seatID, const NsmSessionState_e sessionStateID)
+void CAmControlSender::hookSystemSessionStateChanged(const std::string& sessionName, const NsmSeat_e seatID, const NsmSessionState_e sessionStateID)
 {
     assert(mController);
     mController->hookSystemSessionStateChanged(sessionName,seatID,sessionStateID);

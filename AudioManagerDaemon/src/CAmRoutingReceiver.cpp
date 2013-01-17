@@ -387,45 +387,6 @@ void am::CAmRoutingReceiver::waitOnStartup(bool startup)
     mLastStartupError=E_OK;
 }
 
-am_Error_e CAmRoutingReceiver::updateGateway(const am_gatewayID_t gatewayID, std::vector<am_ConnectionFormat_e> listSourceFormats, const std::vector<am_ConnectionFormat_e> listSinkFormats, std::vector<bool> convertionMatrix)
-{
-    return (mpControlSender->hookSystemUpdateGateway(gatewayID,listSourceFormats,listSinkFormats,convertionMatrix));
-}
-
-am_Error_e CAmRoutingReceiver::updateSink(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s> listSoundProperties, const std::vector<am_ConnectionFormat_e> listConnectionFormats, std::vector<am_MainSoundProperty_s> listMainSoundProperties)
-{
-    return (mpControlSender->hookSystemUpdateSink(sinkID,sinkClassID,listSoundProperties,listConnectionFormats,listMainSoundProperties));
-}
-
-am_Error_e CAmRoutingReceiver::updateSource(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, std::vector<am_SoundProperty_s> listSoundProperties, std::vector<am_ConnectionFormat_e> listConnectionFormats, const std::vector<am_MainSoundProperty_s> listMainSoundProperties)
-{
-    return (mpControlSender->hookSystemUpdateSource(sourceID,sourceClassID,listSoundProperties,listConnectionFormats,listMainSoundProperties));
-}
-
-void CAmRoutingReceiver::ackSetVolumes(const am_Handle_s handle, const std::vector<am_Volumes_s> listvolumes, const am_Error_e error)
-{
-    CAmRoutingSender::am_handleData_c handleData = mpRoutingSender->returnHandleData(handle);
-    if (error == E_OK && handleData.volumeID.sink != 0)
-    {
-        std::vector<am_Volumes_s>::const_iterator iterator (listvolumes.begin());
-
-        for (;iterator!=listvolumes.end();++iterator)
-        {
-            if (iterator->volumeType==VT_SINK)
-            {
-                mpDatabaseHandler->changeSinkVolume(iterator->volumeID.sink,iterator->volume);
-            }
-            else if (iterator->volumeType==VT_SOURCE)
-            {
-                mpDatabaseHandler->changeSourceVolume(iterator->volumeID.source,iterator->volume);
-            }
-        }
-
-    }
-    mpRoutingSender->removeHandle(handle);
-    mpControlSender->cbAckSetVolume(handle,listvolumes,error);
-}
-
 void CAmRoutingReceiver::ackSinkNotificationConfiguration(const am_Handle_s handle, const am_Error_e error)
 {
     CAmRoutingSender::am_handleData_c handleData = mpRoutingSender->returnHandleData(handle);
@@ -450,15 +411,54 @@ void CAmRoutingReceiver::ackSourceNotificationConfiguration(const am_Handle_s ha
     mpControlSender->cbAckSetSourceNotificationConfiguration(handle,error);
 }
 
-void CAmRoutingReceiver::hookSinkNotificationDataChange(const am_sinkID_t sinkID, const am_NotificationPayload_s payload)
+am_Error_e CAmRoutingReceiver::updateGateway(const am_gatewayID_t gatewayID, const std::vector<am_ConnectionFormat_e>& listSourceFormats, const std::vector<am_ConnectionFormat_e>& listSinkFormats, const std::vector<bool>& convertionMatrix)
 {
-    logInfo("CAmRoutingReceiver::hookSinkNotificationDataChange received, sinkID=",sinkID,"notificationType=",payload.notificationType,"notificationValue=",payload.notificationValue);
+    return (mpControlSender->hookSystemUpdateGateway(gatewayID,listSourceFormats,listSinkFormats,convertionMatrix));
+}
+
+am_Error_e CAmRoutingReceiver::updateSink(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_ConnectionFormat_e>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)
+{
+    return (mpControlSender->hookSystemUpdateSink(sinkID,sinkClassID,listSoundProperties,listConnectionFormats,listMainSoundProperties));
+}
+
+am_Error_e CAmRoutingReceiver::updateSource(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_ConnectionFormat_e>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)
+{
+    return (mpControlSender->hookSystemUpdateSource(sourceID,sourceClassID,listSoundProperties,listConnectionFormats,listMainSoundProperties));
+}
+
+void CAmRoutingReceiver::ackSetVolumes(const am_Handle_s handle, const std::vector<am_Volumes_s>& listvolumes, const am_Error_e error)
+{
+    CAmRoutingSender::am_handleData_c handleData = mpRoutingSender->returnHandleData(handle);
+    if (error == E_OK && handleData.volumeID.sink != 0)
+    {
+        std::vector<am_Volumes_s>::const_iterator iterator (listvolumes.begin());
+
+        for (;iterator!=listvolumes.end();++iterator)
+        {
+            if (iterator->volumeType==VT_SINK)
+            {
+                mpDatabaseHandler->changeSinkVolume(iterator->volumeID.sink,iterator->volume);
+            }
+            else if (iterator->volumeType==VT_SOURCE)
+            {
+                mpDatabaseHandler->changeSourceVolume(iterator->volumeID.source,iterator->volume);
+            }
+        }
+
+    }
+    mpRoutingSender->removeHandle(handle);
+    mpControlSender->cbAckSetVolume(handle,listvolumes,error);
+}
+
+void CAmRoutingReceiver::hookSinkNotificationDataChange(const am_sinkID_t sinkID, const am_NotificationPayload_s& payload)
+{
+    logInfo("CAmRoutingReceiver::hookSinkNotificationDataChange received, sinkID=",sinkID,"type=",payload.type,"notificationValue=",payload.value);
     mpControlSender->hookSinkNotificationDataChanged(sinkID,payload);
 }
 
-void CAmRoutingReceiver::hookSourceNotificationDataChange(const am_sourceID_t sourceID, const am_NotificationPayload_s payload)
+void CAmRoutingReceiver::hookSourceNotificationDataChange(const am_sourceID_t sourceID, const am_NotificationPayload_s& payload)
 {
-    logInfo("CAmRoutingReceiver::hookSourceNotificationDataChange received, sinkID=",sourceID,"notificationType=",payload.notificationType,"notificationValue=",payload.notificationValue);
+    logInfo("CAmRoutingReceiver::hookSourceNotificationDataChange received, sinkID=",sourceID,"type=",payload.type,"notificationValue=",payload.value);
     mpControlSender->hookSourceNotificationDataChanged(sourceID,payload);
 }
 

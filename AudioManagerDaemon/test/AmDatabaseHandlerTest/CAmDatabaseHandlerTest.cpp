@@ -1944,9 +1944,9 @@ TEST_F(CAmDatabaseHandlerTest,enterNotificationConfigurationCorrect)
     std::vector<am_Sink_s> listSinks;
 
     am_NotificationConfiguration_s notify;
-    notify.notificationType=NT_UNKNOWN;
-    notify.notificationStatus=NS_CHANGE;
-    notify.notificationParameter=25;
+    notify.type=NT_UNKNOWN;
+    notify.status=NS_CHANGE;
+    notify.parameter=25;
     testSinkData.listNotificationConfigurations.push_back(notify);
 
     //enter the sink in the database
@@ -1957,16 +1957,16 @@ TEST_F(CAmDatabaseHandlerTest,enterNotificationConfigurationCorrect)
     ASSERT_EQ(E_OK,pDatabaseHandler.getListSinks(listSinks))
         << "ERROR: database error";
 
-    ASSERT_EQ(listSinks.begin()->listNotificationConfigurations[2].notificationParameter,notify.notificationParameter);
-    ASSERT_EQ(listSinks.begin()->listNotificationConfigurations[2].notificationStatus,notify.notificationStatus);
-    ASSERT_EQ(listSinks.begin()->listNotificationConfigurations[2].notificationType,notify.notificationType);
+    ASSERT_EQ(listSinks.begin()->listNotificationConfigurations[2].parameter,notify.parameter);
+    ASSERT_EQ(listSinks.begin()->listNotificationConfigurations[2].status,notify.status);
+    ASSERT_EQ(listSinks.begin()->listNotificationConfigurations[2].type,notify.type);
 
     ASSERT_EQ(E_OK,pDatabaseHandler.getSinkInfoDB(testSinkData.sinkID,readoutData))
             << "ERROR: database error";
 
-    ASSERT_EQ(readoutData.listNotificationConfigurations[2].notificationParameter,notify.notificationParameter);
-    ASSERT_EQ(readoutData.listNotificationConfigurations[2].notificationStatus,notify.notificationStatus);
-    ASSERT_EQ(readoutData.listNotificationConfigurations[2].notificationType,notify.notificationType);
+    ASSERT_EQ(readoutData.listNotificationConfigurations[2].parameter,notify.parameter);
+    ASSERT_EQ(readoutData.listNotificationConfigurations[2].status,notify.status);
+    ASSERT_EQ(readoutData.listNotificationConfigurations[2].type,notify.type);
 
 }
 
@@ -1979,9 +1979,9 @@ TEST_F(CAmDatabaseHandlerTest,enterMainNotificationConfigurationCorrect)
     std::vector<am_Sink_s> listSinks;
 
     am_NotificationConfiguration_s notify;
-    notify.notificationType=NT_UNKNOWN;
-    notify.notificationStatus=NS_CHANGE;
-    notify.notificationParameter=25;
+    notify.type=NT_UNKNOWN;
+    notify.status=NS_CHANGE;
+    notify.parameter=25;
 
     testSinkData.listMainNotificationConfigurations.push_back(notify);
 
@@ -1993,9 +1993,9 @@ TEST_F(CAmDatabaseHandlerTest,enterMainNotificationConfigurationCorrect)
     ASSERT_EQ(E_OK,pDatabaseHandler.getListSinks(listSinks))
         << "ERROR: database error";
 
-    ASSERT_EQ(listSinks.begin()->listMainNotificationConfigurations[2].notificationParameter,notify.notificationParameter);
-    ASSERT_EQ(listSinks.begin()->listMainNotificationConfigurations[2].notificationStatus,notify.notificationStatus);
-    ASSERT_EQ(listSinks.begin()->listMainNotificationConfigurations[2].notificationType,notify.notificationType);
+    ASSERT_EQ(listSinks.begin()->listMainNotificationConfigurations[2].parameter,notify.parameter);
+    ASSERT_EQ(listSinks.begin()->listMainNotificationConfigurations[2].status,notify.status);
+    ASSERT_EQ(listSinks.begin()->listMainNotificationConfigurations[2].type,notify.type);
 }
 
 TEST_F(CAmDatabaseHandlerTest,removeNotificationsSink)
@@ -2007,9 +2007,9 @@ TEST_F(CAmDatabaseHandlerTest,removeNotificationsSink)
     std::vector<am_Sink_s> listSinks;
 
     am_NotificationConfiguration_s notify;
-    notify.notificationType=NT_UNKNOWN;
-    notify.notificationStatus=NS_CHANGE;
-    notify.notificationParameter=25;
+    notify.type=NT_UNKNOWN;
+    notify.status=NS_CHANGE;
+    notify.parameter=25;
 
     testSinkData.listMainNotificationConfigurations.push_back(notify);
 
@@ -2021,9 +2021,9 @@ TEST_F(CAmDatabaseHandlerTest,removeNotificationsSink)
     ASSERT_EQ(E_OK,pDatabaseHandler.getListSinks(listSinks))
         << "ERROR: database error";
 
-    ASSERT_EQ(listSinks.begin()->listMainNotificationConfigurations[2].notificationParameter,notify.notificationParameter);
-    ASSERT_EQ(listSinks.begin()->listMainNotificationConfigurations[2].notificationStatus,notify.notificationStatus);
-    ASSERT_EQ(listSinks.begin()->listMainNotificationConfigurations[2].notificationType,notify.notificationType);
+    ASSERT_EQ(listSinks.begin()->listMainNotificationConfigurations[2].parameter,notify.parameter);
+    ASSERT_EQ(listSinks.begin()->listMainNotificationConfigurations[2].status,notify.status);
+    ASSERT_EQ(listSinks.begin()->listMainNotificationConfigurations[2].type,notify.type);
 
     //now we remove the sink
     ASSERT_EQ(E_OK,pDatabaseHandler.removeSinkDB(sinkID));
@@ -2038,9 +2038,9 @@ TEST_F(CAmDatabaseHandlerTest,removeNotificationsSource)
     std::vector<am_Source_s> listSources;
 
     am_NotificationConfiguration_s notify;
-    notify.notificationType=NT_UNKNOWN;
-    notify.notificationStatus=NS_CHANGE;
-    notify.notificationParameter=25;
+    notify.type=NT_UNKNOWN;
+    notify.status=NS_CHANGE;
+    notify.parameter=25;
 
     testSourceData.listMainNotificationConfigurations.push_back(notify);
 
@@ -2052,9 +2052,9 @@ TEST_F(CAmDatabaseHandlerTest,removeNotificationsSource)
     ASSERT_EQ(E_OK,pDatabaseHandler.getListSources(listSources))
         << "ERROR: database error";
 
-    ASSERT_EQ(listSources.begin()->listMainNotificationConfigurations[2].notificationParameter,notify.notificationParameter);
-    ASSERT_EQ(listSources.begin()->listMainNotificationConfigurations[2].notificationStatus,notify.notificationStatus);
-    ASSERT_EQ(listSources.begin()->listMainNotificationConfigurations[2].notificationType,notify.notificationType);
+    ASSERT_EQ(listSources.begin()->listMainNotificationConfigurations[2].parameter,notify.parameter);
+    ASSERT_EQ(listSources.begin()->listMainNotificationConfigurations[2].status,notify.status);
+    ASSERT_EQ(listSources.begin()->listMainNotificationConfigurations[2].type,notify.type);
 
     //now we remove the sink
     ASSERT_EQ(E_OK,pDatabaseHandler.removeSourceDB(sourceID));
@@ -2070,16 +2070,16 @@ TEST_F(CAmDatabaseHandlerTest,getMainNotificationsSink)
     std::vector<am_NotificationConfiguration_s>returnList;
 
     am_NotificationConfiguration_s notify;
-    notify.notificationType=NT_UNKNOWN;
-    notify.notificationStatus=NS_CHANGE;
-    notify.notificationParameter=25;
+    notify.type=NT_UNKNOWN;
+    notify.status=NS_CHANGE;
+    notify.parameter=25;
 
     testSinkData.listMainNotificationConfigurations.push_back(notify);
 
     am_NotificationConfiguration_s notify1;
-    notify1.notificationType=NT_MAX;
-    notify1.notificationStatus=NS_PERIODIC;
-    notify1.notificationParameter=5;
+    notify1.type=NT_MAX;
+    notify1.status=NS_PERIODIC;
+    notify1.parameter=5;
 
     testSinkData.listMainNotificationConfigurations.push_back(notify1);
 
@@ -2088,7 +2088,7 @@ TEST_F(CAmDatabaseHandlerTest,getMainNotificationsSink)
         << "ERROR: database error";
 
     //read it again
-    ASSERT_EQ(E_OK,pDatabaseHandler.getListSinkMainNotificationConfigurations(sinkID,returnList))
+    ASSERT_EQ(E_OK,pDatabaseHandler.getListMainSinkNotificationConfigurations(sinkID,returnList))
         << "ERROR: database error";
 
     std::equal(testSinkData.listMainNotificationConfigurations.begin(),testSinkData.listMainNotificationConfigurations.end(),returnList.begin(),equalNotificationConfiguration);
@@ -2105,16 +2105,16 @@ TEST_F(CAmDatabaseHandlerTest,getMainNotificationsSources)
     std::vector<am_NotificationConfiguration_s>returnList;
 
     am_NotificationConfiguration_s notify;
-    notify.notificationType=NT_UNKNOWN;
-    notify.notificationStatus=NS_CHANGE;
-    notify.notificationParameter=25;
+    notify.type=NT_UNKNOWN;
+    notify.status=NS_CHANGE;
+    notify.parameter=25;
 
     testSourceData.listMainNotificationConfigurations.push_back(notify);
 
     am_NotificationConfiguration_s notify1;
-    notify1.notificationType=NT_MAX;
-    notify1.notificationStatus=NS_PERIODIC;
-    notify1.notificationParameter=5;
+    notify1.type=NT_MAX;
+    notify1.status=NS_PERIODIC;
+    notify1.parameter=5;
 
     testSourceData.listMainNotificationConfigurations.push_back(notify1);
 
@@ -2123,7 +2123,7 @@ TEST_F(CAmDatabaseHandlerTest,getMainNotificationsSources)
         << "ERROR: database error";
 
     //read it again
-    ASSERT_EQ(E_OK,pDatabaseHandler.getListSourceMainNotificationConfigurations(sourceID,returnList))
+    ASSERT_EQ(E_OK,pDatabaseHandler.getListMainSourceNotificationConfigurations(sourceID,returnList))
         << "ERROR: database error";
 
     std::equal(testSourceData.listMainNotificationConfigurations.begin(),testSourceData.listMainNotificationConfigurations.end(),returnList.begin(),equalNotificationConfiguration);
@@ -2140,21 +2140,21 @@ TEST_F(CAmDatabaseHandlerTest,changeMainNotificationsSources)
     std::vector<am_NotificationConfiguration_s>returnList,returnList1;
 
     am_NotificationConfiguration_s notify;
-    notify.notificationType=NT_UNKNOWN;
-    notify.notificationStatus=NS_CHANGE;
-    notify.notificationParameter=25;
+    notify.type=NT_UNKNOWN;
+    notify.status=NS_CHANGE;
+    notify.parameter=25;
 
     testSourceData.listMainNotificationConfigurations.push_back(notify);
 
     am_NotificationConfiguration_s notify1;
-    notify1.notificationType=NT_MAX;
-    notify1.notificationStatus=NS_PERIODIC;
-    notify1.notificationParameter=5;
+    notify1.type=NT_MAX;
+    notify1.status=NS_PERIODIC;
+    notify1.parameter=5;
 
     am_NotificationConfiguration_s notify2;
-    notify2.notificationType=NT_MAX;
-    notify2.notificationStatus=NS_CHANGE;
-    notify2.notificationParameter=10;
+    notify2.type=NT_MAX;
+    notify2.status=NS_CHANGE;
+    notify2.parameter=10;
 
     testSourceData.listMainNotificationConfigurations.push_back(notify1);
 
@@ -2163,7 +2163,7 @@ TEST_F(CAmDatabaseHandlerTest,changeMainNotificationsSources)
         << "ERROR: database error";
 
     //read it again
-    ASSERT_EQ(E_OK,pDatabaseHandler.getListSourceMainNotificationConfigurations(sourceID,returnList))
+    ASSERT_EQ(E_OK,pDatabaseHandler.getListMainSourceNotificationConfigurations(sourceID,returnList))
         << "ERROR: database error";
 
     std::equal(testSourceData.listMainNotificationConfigurations.begin(),testSourceData.listMainNotificationConfigurations.end(),returnList.begin(),equalNotificationConfiguration);
@@ -2171,12 +2171,12 @@ TEST_F(CAmDatabaseHandlerTest,changeMainNotificationsSources)
     //change a setting
     ASSERT_EQ(E_OK,pDatabaseHandler.changeMainSourceNotificationConfigurationDB(sourceID,notify2));
 
-    ASSERT_EQ(E_OK,pDatabaseHandler.getListSourceMainNotificationConfigurations(sourceID,returnList1))
+    ASSERT_EQ(E_OK,pDatabaseHandler.getListMainSourceNotificationConfigurations(sourceID,returnList1))
         << "ERROR: database error";
 
-    ASSERT_EQ(returnList1[3].notificationParameter,notify2.notificationParameter);
-    ASSERT_EQ(returnList1[3].notificationStatus,notify2.notificationStatus);
-    ASSERT_EQ(returnList1[3].notificationType,notify2.notificationType);
+    ASSERT_EQ(returnList1[3].parameter,notify2.parameter);
+    ASSERT_EQ(returnList1[3].status,notify2.status);
+    ASSERT_EQ(returnList1[3].type,notify2.type);
 
 }
 
@@ -2190,21 +2190,21 @@ TEST_F(CAmDatabaseHandlerTest,changeMainNotificationsSink)
     std::vector<am_NotificationConfiguration_s>returnList,returnList1;
 
     am_NotificationConfiguration_s notify;
-    notify.notificationType=NT_UNKNOWN;
-    notify.notificationStatus=NS_CHANGE;
-    notify.notificationParameter=25;
+    notify.type=NT_UNKNOWN;
+    notify.status=NS_CHANGE;
+    notify.parameter=25;
 
     testSinkData.listMainNotificationConfigurations.push_back(notify);
 
     am_NotificationConfiguration_s notify1;
-    notify1.notificationType=NT_MAX;
-    notify1.notificationStatus=NS_PERIODIC;
-    notify1.notificationParameter=5;
+    notify1.type=NT_MAX;
+    notify1.status=NS_PERIODIC;
+    notify1.parameter=5;
 
     am_NotificationConfiguration_s notify2;
-    notify2.notificationType=NT_MAX;
-    notify2.notificationStatus=NS_CHANGE;
-    notify2.notificationParameter=27;
+    notify2.type=NT_MAX;
+    notify2.status=NS_CHANGE;
+    notify2.parameter=27;
 
     testSinkData.listMainNotificationConfigurations.push_back(notify1);
 
@@ -2213,7 +2213,7 @@ TEST_F(CAmDatabaseHandlerTest,changeMainNotificationsSink)
         << "ERROR: database error";
 
     //read it again
-    ASSERT_EQ(E_OK,pDatabaseHandler.getListSinkMainNotificationConfigurations(sinkID,returnList))
+    ASSERT_EQ(E_OK,pDatabaseHandler.getListMainSinkNotificationConfigurations(sinkID,returnList))
         << "ERROR: database error";
 
     std::equal(testSinkData.listMainNotificationConfigurations.begin(),testSinkData.listMainNotificationConfigurations.end(),returnList.begin(),equalNotificationConfiguration);
@@ -2221,12 +2221,12 @@ TEST_F(CAmDatabaseHandlerTest,changeMainNotificationsSink)
     ASSERT_EQ(E_OK,pDatabaseHandler.changeMainSinkNotificationConfigurationDB(sinkID,notify2))
         << "ERROR: database error";
 
-    ASSERT_EQ(E_OK,pDatabaseHandler.getListSinkMainNotificationConfigurations(sinkID,returnList1))
+    ASSERT_EQ(E_OK,pDatabaseHandler.getListMainSinkNotificationConfigurations(sinkID,returnList1))
         << "ERROR: database error";
 
-    ASSERT_EQ(returnList1[3].notificationParameter,notify2.notificationParameter);
-    ASSERT_EQ(returnList1[3].notificationStatus,notify2.notificationStatus);
-    ASSERT_EQ(returnList1[3].notificationType,notify2.notificationType);
+    ASSERT_EQ(returnList1[3].parameter,notify2.parameter);
+    ASSERT_EQ(returnList1[3].status,notify2.status);
+    ASSERT_EQ(returnList1[3].type,notify2.type);
 }
 
 //Commented out - gives always a warning..

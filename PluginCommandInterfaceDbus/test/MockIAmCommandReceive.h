@@ -70,14 +70,15 @@ class MockIAmCommandReceive : public IAmCommandReceive {
         void(const uint16_t handle, const am_Error_e error));
     MOCK_METHOD2(confirmCommandRundown,
         void(const uint16_t handle, const am_Error_e error));
-    MOCK_CONST_METHOD2(getListSinkMainNotificationConfigurations,
+    MOCK_CONST_METHOD2(getListMainSinkNotificationConfigurations,
         am_Error_e(const am_sinkID_t sinkID, std::vector<am_NotificationConfiguration_s>& listMainNotificationConfigurations));
-    MOCK_CONST_METHOD2(getListSourceMainNotificationConfigurations,
+    MOCK_CONST_METHOD2(getListMainSourceNotificationConfigurations,
         am_Error_e(const am_sourceID_t sourceID, std::vector<am_NotificationConfiguration_s>& listMainNotificationConfigurations));
-    MOCK_METHOD2(setSinkMainNotificationConfiguration,
-        am_Error_e(const am_sinkID_t sinkID, const am_NotificationConfiguration_s mainNotificationConfiguration));
-    MOCK_METHOD2(setSourceMainNotificationConfiguration,
-        am_Error_e(const am_sourceID_t sourceID, const am_NotificationConfiguration_s mainNotificationConfiguration));
+    MOCK_METHOD2(setMainSinkNotificationConfiguration,
+        am_Error_e(const am_sinkID_t sinkID, const am_NotificationConfiguration_s& mainNotificationConfiguration));
+    MOCK_METHOD2(setMainSourceNotificationConfiguration,
+        am_Error_e(const am_sourceID_t sourceID, const am_NotificationConfiguration_s& mainNotificationConfiguration));
+
 
 };
 

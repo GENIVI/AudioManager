@@ -605,7 +605,7 @@ am_Error_e DbusHandler::GetListMainSinks(std::vector<am_SinkType_s> &listSinks)
                   fprintf(stderr, "*****************************************\n");
                   TempSink.sinkID=SinkID;
                   TempSink.name=Sinkname;
-                  TempSink.availability.availability=static_cast<am_Availablility_e>(availability);
+                  TempSink.availability.availability=static_cast<am_Availability_e>(availability);
                   TempSink.availability.availabilityReason=static_cast<am_AvailabilityReason_e>(availability_reason);
                   TempSink.sinkClassID=SinkClassID;
                   TempSink.volume=volume;
@@ -674,7 +674,7 @@ am_Error_e DbusHandler::GetListMainSources(std::vector<am_SourceType_s> &listSou
                 fprintf(stderr, "*****************************************\n");
                 TempSource.sourceID=sourceID;
                 TempSource.name=sourcename;
-                TempSource.availability.availability=static_cast<am_Availablility_e>(availability);
+                TempSource.availability.availability=static_cast<am_Availability_e>(availability);
                 TempSource.availability.availabilityReason=static_cast<am_AvailabilityReason_e>(availability_reason);
                 TempSource.sourceClassID=SourceClassID;
                 listSources.push_back(TempSource);

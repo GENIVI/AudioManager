@@ -139,7 +139,7 @@ namespace am {
      * @author Christian Mueller
      * @created 07-Mar-2012 6:06:14 PM
      */
-    enum am_Availablility_e
+    enum am_Availability_e
     {
         /**
          * default
@@ -427,7 +427,7 @@ namespace am {
         /**
          * the current availability state
          */
-        am_Availablility_e availability;
+        am_Availability_e availability;
         /**
          * the reason for the last change. This can be used to trigger events that deal
          * with state changes.
