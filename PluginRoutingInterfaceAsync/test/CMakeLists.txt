@@ -20,7 +20,6 @@ cmake_minimum_required(VERSION 2.6)
 PROJECT(AmRoutingReceiverAsync)
 
 set(EXECUTABLE_OUTPUT_PATH ${TEST_EXECUTABLE_OUTPUT_PATH})
-set(GOOGLE_TEST_INCLUDE_DIR "googleTest/include")
 
 FIND_PACKAGE(Threads)
 FIND_PACKAGE(PkgConfig)
