@@ -153,7 +153,10 @@ TEST_F(CAmNodeStateCommunicatorTest, RegisterShutdownClient)
 TEST_F(CAmNodeStateCommunicatorTest, receiveLifecycleRequest)
 {
     env->pControlInterfaceBackdoor.replaceController(&env->pControlSender,&pMockControlInterface);
-    uint32_t shutdownmode(1),timeoutMs(100),Request(1),RequestID(4);
+    uint32_t shutdownmode(1);
+    uint32_t timeoutMs(100);
+    uint32_t Request(1);
+    uint32_t RequestID(4);
     EXPECT_CALL(pMockControlInterface,hookSystemLifecycleRequest(Request,RequestID)).WillOnce(Return(NsmErrorStatus_e::NsmErrorStatus_Ok));
     ASSERT_EQ(NsmErrorStatus_e::NsmErrorStatus_Ok,env->nsmController.nsmRegisterShutdownClient(shutdownmode,timeoutMs));
     std::ostringstream send;
