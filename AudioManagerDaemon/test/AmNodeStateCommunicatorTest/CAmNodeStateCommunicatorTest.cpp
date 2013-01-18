@@ -155,9 +155,9 @@ TEST_F(CAmNodeStateCommunicatorTest, receiveLifecycleRequest)
     env->pControlInterfaceBackdoor.replaceController(&env->pControlSender,&pMockControlInterface);
     uint32_t shutdownmode(1);
     uint32_t timeoutMs(100);
-    int32_t Request=(1);
+    int32_t Request(1);
     int32_t RequestID(4);
-    EXPECT_CALL(pMockControlInterface,hookSystemLifecycleRequest(1,RequestID)).WillOnce(Return(NsmErrorStatus_e::NsmErrorStatus_Ok));
+    EXPECT_CALL(pMockControlInterface,hookSystemLifecycleRequest(_,RequestID)).WillOnce(Return(NsmErrorStatus_e::NsmErrorStatus_Ok));
     ASSERT_EQ(NsmErrorStatus_e::NsmErrorStatus_Ok,env->nsmController.nsmRegisterShutdownClient(shutdownmode,timeoutMs));
     std::ostringstream send;
     send << "python send2nsm.py LifecycleRequest "<<Request<<" "<<RequestID;
