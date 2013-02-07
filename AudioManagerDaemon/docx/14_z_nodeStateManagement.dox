@@ -26,10 +26,12 @@ It is the job of am::CAmNodeStateCommunicator to interact with the nodestatemana
 The ControllerPlugin can register by the NSM to be informed when a shutdown will occour. For this, the Audiomanager presents an DBus interface, defined in LifeCycleConsumer.xml that will be called from the NSM during a shutdown,
 but only after the Controller registered by the NSM via am::CAmNodeStateCommunicator::nsmRegisterShutdownClient.\n
 The controller has to answer this request during the timeout with am::CAmNodeStateCommunicator::nsmSendLifecycleRequestComplete .
-For more information, check am::CAmNodeStateCommunicator and http://projects.genivi.org
-Here is an overview of the relations between AudioManager and NSM:
+For more information, check am::CAmNodeStateCommunicator and http://projects.genivi.org\n
+\section nsm_overview Overview of the relations between AudioManager and NSM:
 \image html NodeStateManagementRelations.png
-Here is the sequence that is used to do handle the lifecyclerequests:
+\section nsm_reg Registering at startup
+\image html Registrations.png
+\section nsm_lifec Handling of Lifecyclerequests:
 \image html Lifecylerequest.png
 
  */

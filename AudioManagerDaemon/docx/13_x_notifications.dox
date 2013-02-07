@@ -1,0 +1,64 @@
+ /*
+ * Copyright (C) 2012, BMW AG
+ *
+ * This file is part of GENIVI Project AudioManager.
+ *
+ * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contribution License Agreements.
+ *
+ * \copyright
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
+ * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ * \\author Christian Linke (christian.linke@bmw.de)
+ *
+ */
+ /*!
+\page notifi Notifications
+\section notifi_ex What are notifications?
+The notification feature can be used to gather information from sources or sinks periodically or on certain thresholds.It can be used to implement a graphical spectrum for example or other information need to be passed back from sources or sinks.
+
+\section notifi_overview Overview
+\image html Notifications.png
+
+\section notifi_command CommandInterface
+all this methods have to do with MainNotifications (Information level between command and control)
+- am::IAmCommandSend::cbSinkNotification
+- am::IAmCommandSend::cbSourceNotification
+- am::IAmCommandSend::cbMainSinkNotificationConfigurationChanged
+- am::IAmCommandSend::cbMainSourceNotificationConfigurationChanged
+- am::IAmCommandReceive::getListMainSourceNotificationConfigurations
+- am::IAmCommandReceive::getListMainSinkNotificationConfigurations
+- am::IAmCommandReceive::setMainSourceNotificationConfiguration
+- am::IAmCommandReceive::setMainSinkNotificationConfiguration
+\section notifi_control ControlInterface
+all this methods have to do with MainNotifications (Information level between command and control)
+- am::IAmControlSend::hookUserSetMainSinkNotificationConfiguration
+- am::IAmControlSend::hookUserSetMainSourceNotificationConfiguration
+- am::IAmControlReceive::changeMainSinkNotificationConfigurationDB
+- am::IAmControlReceive::changeMainSourceNotificationConfigurationDB
+- am::IAmControlReceive::sendMainSinkNotificationPayload
+- am::IAmControlReceive::sendMainSourceNotificationPayload
+
+all this methods have to do with notifications (Information level between cotrol and routing)
+- am::IAmControlSend::cbAckSetSinkNotificationConfiguration
+- am::IAmControlSend::cbAckSetSourceNotificationConfiguration
+- am::IAmControlSend::hookSinkNotificationDataChanged
+- am::IAmControlSend::hookSourceNotificationDataChanged
+- am::IAmControlReceive::setSinkNotificationConfiguration
+- am::IAmControlReceive::setSourceNotificationConfiguration
+\section notifi_routing RoutingInterface
+all this methods have to do with notifications (Information level between cotrol and routing)
+- am::IAmRoutingSend::asyncSetSinkNotificationConfiguration
+- am::IAmRoutingSend::asyncSetSourceNotificationConfiguration
+- am::IAmRoutingReceive::ackSinkNotificationConfiguration
+- am::IAmRoutingReceive::ackSourceNotificationConfiguration
+- am::IAmRoutingReceive::hookSinkNotificationDataChange
+- am::IAmRoutingReceive::hookSourceNotificationDataChange
+
+\section notifi_levels Notification Levels
+For notifications it's the same as for the soundproperties: there are two levels of information. One is between the Command Interface and the Control Interface
+here it is in the duty of the controller to handle the notification data. The other one is between Control and Routing Interface. This could be used for example
+to route the information from a source to the command interface.
+*/

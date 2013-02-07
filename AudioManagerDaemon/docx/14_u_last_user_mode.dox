@@ -1,0 +1,37 @@
+ /*
+ * Copyright (C) 2012, BMW AG
+ *
+ * This file is part of GENIVI Project AudioManager.
+ *
+ * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contribution License Agreements.
+ *
+ * \copyright
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
+ * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ * \\author Christian Linke (christian.linke@bmw.de)
+ *
+ */
+
+/*!
+\page luc Last User Mode
+\section luc_concept Last User Mode concept
+In general last user modes are project specific. So it is not mandatory to do it like described here - it is just a suggestion how it could be implemented 
+together with the LUC handler (Last User Concept). The LUC handler is a part of the NSC (Node State Controller) which is a GENIVI component. More information can be
+found within GENIVI.\n
+For implementing the suggested method here, the AudioManagerController has to take care of communicating with the LUC handler. The AudioManager is the 
+component that knows the last heard source that should be started earlier than others in order to reduce the timespan until the customer can hear it's last
+source.\n
+In order to fullfull this, the controller has to keep a map that links sources to unit files. The sequence that shall be an example of how it could be realized.\n
+
+\section luc_rundown The handling in the rundown context:
+\image html LastUserModeHandlingExample.png
+
+\section luc_startup The next startup:
+\image html StartupWithLastUserMode.png
+
+
+
+ */
