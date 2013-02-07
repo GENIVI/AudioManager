@@ -1,0 +1,30 @@
+ /*
+ * Copyright (C) 2012, BMW AG
+ *
+ * This file is part of GENIVI Project AudioManager.
+ *
+ * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contribution License Agreements.
+ *
+ * \copyright
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
+ * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ * \\author Christian Linke (christian.linke@bmw.de)
+ *
+ */
+
+/*!
+\page start Startup and Rundown
+\section start_Start Startup
+This flow describes the startup of the AudioManager:
+\image html Startup.png
+\section start_Rundown Rundown
+This flow describes the rundown of the AudioManager:
+\image html Rundown.png
+\section start_Cancel Cancelled Rundown
+This flow describes the cancel rundown of the AudioManager:
+\image html CancelRundown.png
+
+ */
