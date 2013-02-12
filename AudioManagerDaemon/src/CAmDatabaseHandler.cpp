@@ -929,6 +929,9 @@ am_Error_e CAmDatabaseHandler::changeMainConnectionRouteDB(const am_mainConnecti
         MY_SQLITE_RESET(query)
     }
 
+    if (changeDelayMainConnection(delay,mainconnectionID)!=E_OK)
+        logError("DatabaseHandler::changeMainConnectionRouteDB error while changing mainConnectionDelay to ", delay);
+
     MY_SQLITE_FINALIZE(query)
     logInfo("DatabaseHandler::changeMainConnectionRouteDB entered new route:", mainconnectionID);
     return (E_OK);
