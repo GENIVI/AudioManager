@@ -3014,7 +3014,8 @@ am_Error_e CAmDatabaseHandler::enterSourceClassDB(am_sourceClass_t & sourceClass
 
     //now we need to create the additional tables:
     command = "CREATE TABLE SourceClassProperties" + i2s(sourceClassID) + std::string("(classProperty INTEGER, value INTEGER)");
-    assert(sqQuery(command));
+    if (!this->sqQuery(command))
+        return (E_DATABASE_ERROR);
 
     //fill ConnectionFormats
     command = "INSERT INTO SourceClassProperties" + i2s(sourceClassID) + std::string("(classProperty,value) VALUES (?,?)");
