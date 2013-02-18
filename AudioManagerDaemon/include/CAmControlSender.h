@@ -28,6 +28,7 @@
 
 #include "control/IAmControlSend.h"
 #include "shared/CAmSocketHandler.h"
+#include "unistd.h"
 
 namespace am
 {
