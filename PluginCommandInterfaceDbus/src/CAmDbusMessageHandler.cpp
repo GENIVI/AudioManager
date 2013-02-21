@@ -109,6 +109,7 @@ void CAmDbusMessageHandler::sendMessage()
     dbus_connection_flush(mpDBusConnection);
     dbus_message_unref(mpDBusMessage);
     mpDBusMessage = NULL;
+    mpReveiveMessage = NULL;
 }
 
 char* CAmDbusMessageHandler::getString()
