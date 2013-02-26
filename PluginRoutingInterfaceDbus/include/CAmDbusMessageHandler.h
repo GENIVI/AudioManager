@@ -93,6 +93,7 @@ public:
     am_Source_s getSourceData();
     am_Sink_s getSinkData();
     am_Gateway_s getGatewayData();
+    am_Crossfader_s getCrossfaderData();
     am_MainSoundProperty_s getMainSoundProperty();
 
     /**

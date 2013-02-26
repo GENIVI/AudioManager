@@ -146,9 +146,11 @@ void IAmRoutingReceiverShadowDbus::hookDomainRegistrationComplete(DBusConnection
     (void) ((conn));
     assert(mRoutingReceiveInterface != NULL);
     mDBUSMessageHandler.initReceive(msg);
-    am_domainID_t domainID(mDBUSMessageHandler.getInt());
+    am_domainID_t domainID(mDBUSMessageHandler.getUInt());
     log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::hookDomainRegistrationComplete called, domainID", domainID);
     mRoutingReceiveInterface->hookDomainRegistrationComplete((am_domainID_t)((domainID)));
+    mDBUSMessageHandler.initReply(msg);
+    mDBUSMessageHandler.sendMessage();
 }
 
 void IAmRoutingReceiverShadowDbus::ackConnect(DBusConnection* conn, DBusMessage* msg)
@@ -441,13 +443,7 @@ void IAmRoutingReceiverShadowDbus::registerCrossfader(DBusConnection* conn, DBus
     (void) ((conn));
     assert(mRoutingReceiveInterface != NULL);
     mDBUSMessageHandler.initReceive(msg);
-    am_Crossfader_s crossfader;
-    crossfader.crossfaderID = mDBUSMessageHandler.getInt();
-    crossfader.name = std::string(mDBUSMessageHandler.getString());
-    crossfader.sinkID_A = mDBUSMessageHandler.getInt();
-    crossfader.sinkID_B = mDBUSMessageHandler.getInt();
-    crossfader.sourceID = mDBUSMessageHandler.getInt();
-    crossfader.hotSink = (am_HotSink_e)((mDBUSMessageHandler.getInt()));
+    am_Crossfader_s crossfader (mDBUSMessageHandler.getCrossfaderData());
     log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::registerCrossfader called, name", crossfader.name);
     am_Error_e returnCode = mRoutingReceiveInterface->registerCrossfader(crossfader, crossfader.crossfaderID);
     mDBUSMessageHandler.initReply(msg);
@@ -546,7 +542,7 @@ void IAmRoutingReceiverShadowDbus::hookDomainStateChange(DBusConnection* conn, D
     (void) ((conn));
     assert(mRoutingReceiveInterface != NULL);
     mDBUSMessageHandler.initReceive(msg);
-    am_domainID_t domainID = mDBUSMessageHandler.getInt();
+    am_domainID_t domainID = mDBUSMessageHandler.getUInt();
     am_DomainState_e domainState = (am_DomainState_e)((mDBUSMessageHandler.getInt()));
     log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::hookDomainStateChange called, hookDomainStateChange", domainID);
     mRoutingReceiveInterface->hookDomainStateChange(domainID, domainState);
@@ -664,12 +660,14 @@ void IAmRoutingReceiverShadowDbus::confirmRoutingReady(DBusConnection* conn, DBu
     (void) ((conn));
     assert(mRoutingReceiveInterface != NULL);
     mDBUSMessageHandler.initReceive(msg);
-    am_domainID_t domainID(mDBUSMessageHandler.getInt());
+    am_domainID_t domainID(mDBUSMessageHandler.getUInt());
     log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadowDbus::confirmRoutingReady called, domainID", domainID);
 
-    mNumberDomains--;
-    if(mNumberDomains==0)
-        mRoutingReceiveInterface->confirmRoutingRundown(mHandle,E_OK);
+    mRoutingReceiveInterface->confirmRoutingReady(mHandle, E_OK);
+    mNumberDomains++;
+
+    mDBUSMessageHandler.initReply(msg);
+    mDBUSMessageHandler.sendMessage();
 }
 
 void IAmRoutingReceiverShadowDbus::confirmRoutingRundown(DBusConnection* conn, DBusMessage* msg)
@@ -677,7 +675,7 @@ void IAmRoutingReceiverShadowDbus::confirmRoutingRundown(DBusConnection* conn, D
     (void) ((conn));
     assert(mRoutingReceiveInterface != NULL);
     mDBUSMessageHandler.initReceive(msg);
-    am_domainID_t domainID(mDBUSMessageHandler.getInt());
+    am_domainID_t domainID(mDBUSMessageHandler.getUInt());
     log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadowDbus::confirmRoutingRundown called, domainID", domainID);
 
     mNumberDomains--;
