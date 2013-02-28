@@ -100,7 +100,7 @@ INSTALL(FILES
 
 IF(USE_BUILD_LIBS) 
         execute_process(
-	    COMMAND mkdir -p "${EXECUTABLE_OUTPUT_PATH}"
+	    COMMAND mkdir -p ${EXECUTABLE_OUTPUT_PATH}
 	    COMMAND cp "${CMAKE_CURRENT_SOURCE_DIR}/org.genivi.NodeStateManager.Consumer.xml" ${EXECUTABLE_OUTPUT_PATH}/org.genivi.NodeStateManager.Consumer.xml
 	    COMMAND cp "${CMAKE_CURRENT_SOURCE_DIR}/nsm.py" ${EXECUTABLE_OUTPUT_PATH}/nsm.py
 	    COMMAND cp "${CMAKE_CURRENT_SOURCE_DIR}/send2nsm.py" ${EXECUTABLE_OUTPUT_PATH}/send2nsm.py)
