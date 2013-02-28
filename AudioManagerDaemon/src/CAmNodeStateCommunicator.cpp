@@ -589,7 +589,11 @@ DBusHandlerResult CAmNodeStateCommunicator::signalCallback(DBusConnection* conn,
 {
     (void) conn;
     CAmNodeStateCommunicator* instance(static_cast<CAmNodeStateCommunicator*>(user_data));
-    std::string interface = dbus_message_get_interface(msg);
+
+    const char* iface = dbus_message_get_interface(msg);
+    if (iface==NULL)
+        return (DBUS_HANDLER_RESULT_NOT_YET_HANDLED);
+    std::string interface(iface);
     std::string member = dbus_message_get_member(msg);
 
     if (interface=="org.genivi.NodeStateManager.Consumer")
