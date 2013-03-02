@@ -167,6 +167,8 @@ void IAmRoutingReceiverShadowDbus::ackConnect(DBusConnection* conn, DBusMessage*
     myhandle.handle = handle;
     mRoutingReceiveInterface->ackConnect(myhandle, connectionID, error);
     mpRoutingSenderDbus->removeHandle(handle);
+    mDBUSMessageHandler.initReply(msg);
+    mDBUSMessageHandler.sendMessage();
 }
 
 void IAmRoutingReceiverShadowDbus::ackDisconnect(DBusConnection* conn, DBusMessage* msg)
@@ -183,6 +185,8 @@ void IAmRoutingReceiverShadowDbus::ackDisconnect(DBusConnection* conn, DBusMessa
     myhandle.handle = handle;
     mRoutingReceiveInterface->ackDisconnect(myhandle, connectionID, error);
     mpRoutingSenderDbus->removeHandle(handle);
+    mDBUSMessageHandler.initReply(msg);
+    mDBUSMessageHandler.sendMessage();
 }
 
 void IAmRoutingReceiverShadowDbus::ackSetSinkVolume(DBusConnection* conn, DBusMessage* msg)
@@ -199,6 +203,8 @@ void IAmRoutingReceiverShadowDbus::ackSetSinkVolume(DBusConnection* conn, DBusMe
     myhandle.handle = handle;
     mRoutingReceiveInterface->ackSetSinkVolumeChange(myhandle, volume, error);
     mpRoutingSenderDbus->removeHandle(handle);
+    mDBUSMessageHandler.initReply(msg);
+    mDBUSMessageHandler.sendMessage();
 }
 
 void IAmRoutingReceiverShadowDbus::ackSetSourceState(DBusConnection* conn, DBusMessage* msg)
@@ -214,6 +220,8 @@ void IAmRoutingReceiverShadowDbus::ackSetSourceState(DBusConnection* conn, DBusM
     myhandle.handle = handle;
     mRoutingReceiveInterface->ackSetSourceState(myhandle, error);
     mpRoutingSenderDbus->removeHandle(handle);
+    mDBUSMessageHandler.initReply(msg);
+    mDBUSMessageHandler.sendMessage();
 }
 
 void IAmRoutingReceiverShadowDbus::ackSinkVolumeTick(DBusConnection* conn, DBusMessage* msg)
@@ -229,6 +237,8 @@ void IAmRoutingReceiverShadowDbus::ackSinkVolumeTick(DBusConnection* conn, DBusM
     myhandle.handleType = H_SETSINKVOLUME;
     myhandle.handle = handle;
     mRoutingReceiveInterface->ackSinkVolumeTick(myhandle, sinkID, volume);
+    mDBUSMessageHandler.initReply(msg);
+    mDBUSMessageHandler.sendMessage();
 }
 
 void IAmRoutingReceiverShadowDbus::ackSourceVolumeTick(DBusConnection* conn, DBusMessage* msg)
@@ -244,6 +254,8 @@ void IAmRoutingReceiverShadowDbus::ackSourceVolumeTick(DBusConnection* conn, DBu
     myhandle.handleType = H_SETSINKVOLUME;
     myhandle.handle = handle;
     mRoutingReceiveInterface->ackSourceVolumeTick(myhandle, sourceID, volume);
+    mDBUSMessageHandler.initReply(msg);
+    mDBUSMessageHandler.sendMessage();
 }
 
 void IAmRoutingReceiverShadowDbus::ackSetSourceVolume(DBusConnection* conn, DBusMessage* msg)
@@ -260,6 +272,8 @@ void IAmRoutingReceiverShadowDbus::ackSetSourceVolume(DBusConnection* conn, DBus
     myhandle.handle = handle;
     mRoutingReceiveInterface->ackSetSourceVolumeChange(myhandle, volume, error);
     mpRoutingSenderDbus->removeHandle(handle);
+    mDBUSMessageHandler.initReply(msg);
+    mDBUSMessageHandler.sendMessage();
 }
 
 void IAmRoutingReceiverShadowDbus::ackSetSinkSoundProperty(DBusConnection* conn, DBusMessage* msg)
@@ -275,6 +289,8 @@ void IAmRoutingReceiverShadowDbus::ackSetSinkSoundProperty(DBusConnection* conn,
     myhandle.handle = handle;
     mRoutingReceiveInterface->ackSetSinkSoundProperty(myhandle, error);
     mpRoutingSenderDbus->removeHandle(handle);
+    mDBUSMessageHandler.initReply(msg);
+    mDBUSMessageHandler.sendMessage();
 }
 
 void IAmRoutingReceiverShadowDbus::ackSetSourceSoundProperty(DBusConnection* conn, DBusMessage* msg)
@@ -290,6 +306,8 @@ void IAmRoutingReceiverShadowDbus::ackSetSourceSoundProperty(DBusConnection* con
     myhandle.handle = handle;
     mRoutingReceiveInterface->ackSetSourceSoundProperty(myhandle, error);
     mpRoutingSenderDbus->removeHandle(handle);
+    mDBUSMessageHandler.initReply(msg);
+    mDBUSMessageHandler.sendMessage();
 }
 
 void IAmRoutingReceiverShadowDbus::ackSetSinkSoundProperties(DBusConnection* conn, DBusMessage* msg)
@@ -305,6 +323,8 @@ void IAmRoutingReceiverShadowDbus::ackSetSinkSoundProperties(DBusConnection* con
     myhandle.handle = handle;
     mRoutingReceiveInterface->ackSetSinkSoundProperties(myhandle, error);
     mpRoutingSenderDbus->removeHandle(handle);
+    mDBUSMessageHandler.initReply(msg);
+    mDBUSMessageHandler.sendMessage();
 }
 
 void IAmRoutingReceiverShadowDbus::ackSetSourceSoundProperties(DBusConnection* conn, DBusMessage* msg)
@@ -320,6 +340,8 @@ void IAmRoutingReceiverShadowDbus::ackSetSourceSoundProperties(DBusConnection* c
     myhandle.handle = handle;
     mRoutingReceiveInterface->ackSetSourceSoundProperties(myhandle, error);
     mpRoutingSenderDbus->removeHandle(handle);
+    mDBUSMessageHandler.initReply(msg);
+    mDBUSMessageHandler.sendMessage();
 }
 
 void IAmRoutingReceiverShadowDbus::ackCrossFading(DBusConnection* conn, DBusMessage* msg)
@@ -336,6 +358,8 @@ void IAmRoutingReceiverShadowDbus::ackCrossFading(DBusConnection* conn, DBusMess
     myhandle.handle = handle;
     mRoutingReceiveInterface->ackCrossFading(myhandle, hotsink, error);
     mpRoutingSenderDbus->removeHandle(handle);
+    mDBUSMessageHandler.initReply(msg);
+    mDBUSMessageHandler.sendMessage();
 }
 
 void IAmRoutingReceiverShadowDbus::peekDomain(DBusConnection* conn, DBusMessage* msg)
