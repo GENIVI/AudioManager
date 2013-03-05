@@ -533,9 +533,13 @@ am_Error_e CAmRoutingSender::getListHandles(std::vector<am_Handle_s> & listHandl
 am_Handle_s CAmRoutingSender::createHandle(const am_handleData_c& handleData, const am_Handle_e type)
 {
     am_Handle_s handle;
-    handle.handle = ++mHandleCount; //todo: handle overflows here...
+    if (++mHandleCount>=1024) //defined by 10 bit (out if structure!)
+        mHandleCount=1;
+    handle.handle = mHandleCount;
     handle.handleType = type;
     mlistActiveHandles.insert(std::make_pair(handle, handleData));
+    if ((mlistActiveHandles.size()%100) == 0)
+        logInfo("CAmRoutingSender::createHandle warning: too many open handles, number of handles: ", mlistActiveHandles.size());
     return (handle);
 }
 
