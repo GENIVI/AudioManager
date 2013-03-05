@@ -89,10 +89,6 @@ am_Error_e CAmControlReceiver::connect(am_Handle_s & handle, am_connectionID_t &
     tempConnection.connectionID = 0;
     tempConnection.delay=-1;
 
-    //todo: enter function to find out what happends if the same connection is in the course of being build up.
-    if (mDatabaseHandler->existConnection(tempConnection))
-        return (E_ALREADY_EXISTS); //todo:enter the correct connectionID here?
-
     mDatabaseHandler->enterConnectionDB(tempConnection, connectionID);
     return (mRoutingSender->asyncConnect(handle, connectionID, sourceID, sinkID, format));
 }
@@ -100,135 +96,66 @@ am_Error_e CAmControlReceiver::connect(am_Handle_s & handle, am_connectionID_t &
 am_Error_e CAmControlReceiver::disconnect(am_Handle_s & handle, const am_connectionID_t connectionID)
 {
     logInfo("CAmControlReceiver::disconnect got called, connectionID=", connectionID);
-
-    if (!mDatabaseHandler->existConnectionID(connectionID))
-        return (E_NON_EXISTENT); //todo: check with EA model and correct
     return (mRoutingSender->asyncDisconnect(handle, connectionID));
 }
 
 am_Error_e CAmControlReceiver::crossfade(am_Handle_s & handle, const am_HotSink_e hotSource, const am_crossfaderID_t crossfaderID, const am_RampType_e rampType, const am_time_t rampTime)
 {
     logInfo("CAmControlReceiver::crossfade got called, hotSource=", hotSource, "crossfaderID=", crossfaderID, "rampType=", rampType, "rampTime=", rampTime);
-
-    if (!mDatabaseHandler->existcrossFader(crossfaderID))
-        return (E_NON_EXISTENT);
     return (mRoutingSender->asyncCrossFade(handle, crossfaderID, hotSource, rampType, rampTime));
 }
 
 am_Error_e CAmControlReceiver::setSourceState(am_Handle_s & handle, const am_sourceID_t sourceID, const am_SourceState_e state)
 {
     logInfo("CAmControlReceiver::setSourceState got called, sourceID=", sourceID, "state=", state);
-
-    am_SourceState_e sourceState;
-    if (mDatabaseHandler->getSoureState(sourceID, sourceState) != E_OK)
-        return (E_UNKNOWN);
-    if (sourceState == state)
-        return (E_NO_CHANGE);
     return (mRoutingSender->asyncSetSourceState(handle, sourceID, state));
 }
 
 am_Error_e CAmControlReceiver::setSinkVolume(am_Handle_s & handle, const am_sinkID_t sinkID, const am_volume_t volume, const am_RampType_e ramp, const am_time_t time)
 {
     logInfo("CAmControlReceiver::setSinkVolume got called, sinkID=", sinkID, "volume=", volume, "ramp=", ramp, "time=", time);
-
-    am_volume_t tempVolume;
-    if (mDatabaseHandler->getSinkVolume(sinkID, tempVolume) != E_OK)
-        return (E_UNKNOWN);
-    if (tempVolume == volume)
-        return (E_NO_CHANGE);
     return (mRoutingSender->asyncSetSinkVolume(handle, sinkID, volume, ramp, time));
 }
 
 am_Error_e CAmControlReceiver::setSourceVolume(am_Handle_s & handle, const am_sourceID_t sourceID, const am_volume_t volume, const am_RampType_e rampType, const am_time_t time)
 {
     logInfo("CAmControlReceiver::setSourceVolume got called, sourceID=", sourceID, "volume=", volume, "ramp=", rampType, "time=", time);
-
-    am_volume_t tempVolume;
-    if (mDatabaseHandler->getSourceVolume(sourceID, tempVolume) != E_OK)
-        return (E_UNKNOWN);
-    if (tempVolume == volume)
-        return (E_NO_CHANGE);
     return (mRoutingSender->asyncSetSourceVolume(handle, sourceID, volume, rampType, time));
 }
 
 am_Error_e CAmControlReceiver::setSinkSoundProperty(am_Handle_s & handle, const am_sinkID_t sinkID, const am_SoundProperty_s & soundProperty)
 {
     logInfo("CAmControlReceiver::setSinkSoundProperty got called, sinkID=", sinkID, "soundProperty.Type=", soundProperty.type, "soundProperty.value=", soundProperty.value);
-
-    int16_t value;
-    if (mDatabaseHandler->getSinkSoundPropertyValue(sinkID, soundProperty.type, value) != E_OK)
-        return (E_UNKNOWN);
-    if (value == soundProperty.value)
-        return (E_NO_CHANGE);
     return (mRoutingSender->asyncSetSinkSoundProperty(handle, sinkID, soundProperty));
 }
 
 am_Error_e CAmControlReceiver::setSinkSoundProperties(am_Handle_s & handle, const am_sinkID_t sinkID, const std::vector<am_SoundProperty_s> & listSoundProperties)
 {
     logInfo("CAmControlReceiver::setSinkSoundProperties got called, sinkID=", sinkID);
-
-    int16_t value;
-    bool noChange = true;
-    std::vector<am_SoundProperty_s>::const_iterator it = listSoundProperties.begin();
-    for (; it != listSoundProperties.end(); ++it)
-    {
-        if (mDatabaseHandler->getSinkSoundPropertyValue(sinkID, it->type, value) != E_OK)
-            return (E_UNKNOWN);
-        if (value != it->value)
-            noChange = false;
-    }
-    if (noChange)
-        return (E_NO_CHANGE);
     return (mRoutingSender->asyncSetSinkSoundProperties(handle, listSoundProperties, sinkID));
 }
 
 am_Error_e CAmControlReceiver::setSourceSoundProperty(am_Handle_s & handle, const am_sourceID_t sourceID, const am_SoundProperty_s & soundProperty)
 {
     logInfo("CAmControlReceiver::setSourceSoundProperty got called, sourceID=", sourceID, "soundProperty.Type=", soundProperty.type, "soundProperty.value=", soundProperty.value);
-
-    int16_t value;
-    if (mDatabaseHandler->getSourceSoundPropertyValue(sourceID, soundProperty.type, value) != E_OK)
-        return (E_UNKNOWN);
-    if (value == soundProperty.value)
-        return (E_NO_CHANGE);
     return (mRoutingSender->asyncSetSourceSoundProperty(handle, sourceID, soundProperty));
 }
 
 am_Error_e CAmControlReceiver::setSourceSoundProperties(am_Handle_s & handle, const am_sourceID_t sourceID, const std::vector<am_SoundProperty_s> & listSoundProperties)
 {
     logInfo("CAmControlReceiver::setSourceSoundProperties got called, sourceID=", sourceID);
-
-    int16_t value;
-    bool noChange = true;
-    std::vector<am_SoundProperty_s>::const_iterator it = listSoundProperties.begin();
-    for (; it != listSoundProperties.end(); ++it)
-    {
-        if (mDatabaseHandler->getSourceSoundPropertyValue(sourceID, it->type, value) != E_OK)
-            return (E_UNKNOWN);
-        if (value != it->value)
-            noChange = false;
-    }
-    if (noChange)
-        return (E_NO_CHANGE);
     return (mRoutingSender->asyncSetSourceSoundProperties(handle, listSoundProperties, sourceID));
 }
 
 am_Error_e CAmControlReceiver::setDomainState(const am_domainID_t domainID, const am_DomainState_e domainState)
 {
     logInfo("CAmControlReceiver::setDomainState got called, domainID=", domainID, "domainState=", domainState);
-
-    am_DomainState_e tempState = DS_UNKNOWN;
-    if (mDatabaseHandler->getDomainState(domainID, tempState) != E_OK)
-        return (E_UNKNOWN);
-    if (tempState == domainState)
-        return (E_NO_CHANGE);
     return (mRoutingSender->setDomainState(domainID, domainState));
 }
 
 am_Error_e CAmControlReceiver::abortAction(const am_Handle_s handle)
 {
     logInfo("CAmControlReceiver::abortAction got called, handle.type=", handle.handle, "handle.handleType=", handle.handleType);
-
     return (mRoutingSender->asyncAbort(handle));
 }
 
