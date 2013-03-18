@@ -61,6 +61,9 @@ TARGET_LINK_LIBRARIES(AmSocketHandlerTest
     ${CMAKE_THREAD_LIBS_INIT}
     gtest
     gmock
+    ${CMAKE_DL_LIBS}
+    rt
+    pthread
 )
 
 INSTALL(TARGETS AmSocketHandlerTest 

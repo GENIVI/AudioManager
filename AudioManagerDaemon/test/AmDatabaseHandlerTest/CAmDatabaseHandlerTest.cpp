@@ -45,7 +45,7 @@ CAmDatabaseHandlerTest::CAmDatabaseHandlerTest() :
         pMockInterface(), //
         pRoutingInterfaceBackdoor(), //
         pCommandInterfaceBackdoor(), //
-        pControlSender(""), //
+        pControlSender("", &pSocketHandler), //
         pRouter(&pDatabaseHandler, &pControlSender), //
         pControlReceiver(&pDatabaseHandler, &pRoutingSender, &pCommandSender,  &pSocketHandler, &pRouter), //
         pObserver(&pCommandSender,&pRoutingSender, &pSocketHandler)

@@ -66,6 +66,8 @@ TARGET_LINK_LIBRARIES(AmRoutingInterfaceTest
     ${CMAKE_THREAD_LIBS_INIT}
     ${GTEST_LIBRARIES}
     gmock
+    ${CMAKE_DL_LIBS}
+    rt
 )
 
 INSTALL(TARGETS AmRoutingInterfaceTest 

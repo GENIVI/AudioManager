@@ -21,6 +21,7 @@
 
 #include "CAmControlReceiver.h"
 #include <cassert>
+#include <stdlib.h>
 #include "config.h"
 #include "CAmDatabaseHandler.h"
 #include "CAmRoutingSender.h"
@@ -483,6 +484,10 @@ void CAmControlReceiver::confirmControllerReady()
 void CAmControlReceiver::confirmControllerRundown()
 {
     //todo: one time implement here system interaction with NSM
+	logInfo("CAmControlReceiver::confirmControllerRundown got called");
+
+	logInfo("exit ...");
+	exit(0);
 }
 
 am_Error_e CAmControlReceiver::getSocketHandler(CAmSocketHandler *& socketHandler)

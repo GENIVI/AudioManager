@@ -27,6 +27,8 @@
 #endif
 
 #include "control/IAmControlSend.h"
+#include "shared/CAmSocketHandler.h"
+#include "unistd.h"
 
 namespace am
 {
@@ -37,7 +39,7 @@ namespace am
 class CAmControlSender
 {
 public:
-    CAmControlSender(std::string controlPluginFile);
+    CAmControlSender(std::string controlPluginFile,CAmSocketHandler* sockethandler);
     ~CAmControlSender();
     am_Error_e startupController(IAmControlReceive* controlreceiveinterface) ;
     void setControllerReady() ;
@@ -87,12 +89,46 @@ public:
     void confirmCommandRundown() ;
     void confirmRoutingRundown() ;
 
+    void receiverCallback(const pollfd pollfd, const sh_pollHandle_t handle, void* userData);
+    bool checkerCallback(const sh_pollHandle_t handle, void* userData);
+    bool dispatcherCallback(const sh_pollHandle_t handle, void* userData);
+
+    void setControllerRundownSafe()
+    {
+        int16_t dummy(0);
+        write(mPipe[1], &dummy, sizeof(dummy));
+    }
+
+    TAmShPollFired<CAmControlSender> receiverCallbackT;
+    TAmShPollCheck<CAmControlSender> checkerCallbackT;
+    TAmShPollDispatch<CAmControlSender> dispatcherCallbackT;
+
+    //we need this here to call the rundown from the signal handler. In case everything screwed up
+    static void CallsetControllerRundown()
+    {
+        if (mInstance)
+        {
+            mInstance->setControllerRundown();
+        }
+    }
+
+    //this static callback is used from the signal handler. It is used when a normal rundown is assumed and the mainloop is used to call rundown.
+    static void CallsetControllerRundownSafe()
+    {
+        if (mInstance)
+        {
+            mInstance->setControllerRundownSafe();
+        }
+    }
+
 #ifdef UNIT_TEST
     friend class IAmControlBackdoor;
 #endif
 private:
+    int mPipe[2];
     void* mlibHandle; //!< pointer to the loaded control plugin interface
     IAmControlSend* mController; //!< pointer to the ControlSend interface
+    static CAmControlSender* mInstance;
 };
 
 }

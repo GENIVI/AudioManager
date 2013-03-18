@@ -356,7 +356,7 @@ void CAmRoutingReceiver::confirmRoutingRundown(const uint16_t handle)
 {
     mListRundownHandles.erase(std::remove(mListRundownHandles.begin(), mListRundownHandles.end(), handle), mListRundownHandles.end());
     if (mWaitRundown && mListRundownHandles.empty())
-        mpControlSender->confirmCommandRundown();
+        mpControlSender->confirmRoutingRundown();
 }
 
 uint16_t am::CAmRoutingReceiver::getStartupHandle()

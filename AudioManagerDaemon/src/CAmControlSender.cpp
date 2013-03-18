@@ -23,6 +23,7 @@
 #include <cassert>
 #include <fstream>
 #include <iostream>
+#include <stdlib.h>
 #include <sstream>
 #include <stdexcept>
 #include "TAmPluginTemplate.h"
@@ -34,10 +35,16 @@ namespace am
 #define REQUIRED_INTERFACE_VERSION_MAJOR 1  //!< major interface version. All versions smaller than this will be rejected
 #define REQUIRED_INTERFACE_VERSION_MINOR 0 //!< minor interface version. All versions smaller than this will be rejected
 
-CAmControlSender::CAmControlSender(std::string controlPluginFile) :
+CAmControlSender* CAmControlSender::mInstance=NULL;
+CAmControlSender::CAmControlSender(std::string controlPluginFile,CAmSocketHandler* sockethandler) :
+        receiverCallbackT(this, &CAmControlSender::receiverCallback),//
+        checkerCallbackT(this, &CAmControlSender::checkerCallback),//
+        dispatcherCallbackT(this, &CAmControlSender::dispatcherCallback), //
+        mPipe(), //
         mlibHandle(NULL), //
         mController(NULL)
 {
+    assert(sockethandler);
     std::ifstream isfile(controlPluginFile.c_str());
     if (!isfile)
     {
@@ -45,6 +52,7 @@ CAmControlSender::CAmControlSender(std::string controlPluginFile) :
     }
     else if (!controlPluginFile.empty())
     {
+        mInstance=this;
         IAmControlSend* (*createFunc)();
         createFunc = getCreateFunction<IAmControlSend*()>(controlPluginFile, mlibHandle);
         assert(createFunc!=NULL);
@@ -67,6 +75,15 @@ CAmControlSender::CAmControlSender(std::string controlPluginFile) :
     {
         logError("ControlSender::ControlSender: No controller loaded !");
     }
+    if (pipe(mPipe) == -1)
+    {
+        logError("CAmControlSender could not create pipe!");
+    }
+
+    short event = 0;
+    sh_pollHandle_t handle;
+    event |= POLLIN;
+    sockethandler->addFDPoll(mPipe[0], event, NULL, &receiverCallbackT, &checkerCallbackT, &dispatcherCallbackT, NULL, handle);
 }
 
 CAmControlSender::~CAmControlSender()
@@ -360,4 +377,29 @@ void CAmControlSender::confirmRoutingRundown()
     assert(mController);
     mController->confirmRoutingRundown();
 }
+
+void CAmControlSender::receiverCallback(const pollfd pollfd, const sh_pollHandle_t handle, void* userData)
+{
+   (void) handle;
+   (void) userData;
+   //get the signal number from the socket
+   int16_t dummy;
+   read(pollfd.fd, &dummy, sizeof(dummy));
+}
+
+bool CAmControlSender::checkerCallback(const sh_pollHandle_t handle, void* userData)
+{
+   (void) handle;
+   (void) userData;
+   return (true);
+}
+
+bool CAmControlSender::dispatcherCallback(const sh_pollHandle_t handle, void* userData)
+{
+   (void)handle;
+   (void)userData;
+   setControllerRundown();
+   return (false);
+}
+
 }

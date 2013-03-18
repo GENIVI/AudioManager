@@ -264,10 +264,37 @@ static void signalHandler(int sig, siginfo_t *siginfo, void *context)
     (void) sig;
     (void) siginfo;
     (void) context;
-    logError("signal handler was called, exit now...");
-    gDispatchDone = 1;
-    //todo: maually fire the mainloop
-    exit(1);
+
+    switch (sig)
+    {
+        /*ctl +c lets call direct controllerRundown, because we might be blocked at the moment.
+        But there is the risk of interrupting something important */
+        case SIGINT:
+            logInfo("signal handler was called SIGINT");
+            CAmControlSender::CallsetControllerRundown();
+            break;
+
+        /* huch- we are getting killed. Better take the fast but risky way: */
+        case SIGQUIT:
+        	logInfo("signal handler was called SIGQUIT");
+            CAmControlSender::CallsetControllerRundown();
+            break;
+
+        /* more friendly here assuming systemd wants to stop us, so we can use the mainloop */
+        case SIGTERM:
+        	logInfo("signal handler was called SIGTERM");
+            CAmControlSender::CallsetControllerRundownSafe();
+            break;
+
+        /* looks friendly, too, so lets take the long run */
+        case SIGHUP:
+        	logInfo("signal handler was called SIGHUP");
+            CAmControlSender::CallsetControllerRundownSafe();
+            break;
+        default:
+        	logInfo("signal handler was called", sig);
+            break;
+    }
 }
 
 void mainProgram()
@@ -286,7 +313,7 @@ void mainProgram()
     CAmDatabaseHandler iDatabaseHandler(databasePath);
     CAmRoutingSender iRoutingSender(listRoutingPluginDirs);
     CAmCommandSender iCommandSender(listCommandPluginDirs);
-    CAmControlSender iControlSender(controllerPlugin);
+    CAmControlSender iControlSender(controllerPlugin, &iSocketHandler);
     CAmRouter iRouter(&iDatabaseHandler, &iControlSender);
 
 #ifdef WITH_DBUS_WRAPPER
@@ -354,7 +381,6 @@ int main(int argc, char *argv[], char** envp)
     sigaction(SIGQUIT, &signalAction, NULL);
     sigaction(SIGTERM, &signalAction, NULL);
     sigaction(SIGHUP, &signalAction, NULL);
-    sigaction(SIGQUIT, &signalAction, NULL);
 
     struct sigaction signalChildAction;
     memset(&signalChildAction, '\0', sizeof(signalChildAction));

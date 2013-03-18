@@ -65,6 +65,8 @@ TARGET_LINK_LIBRARIES( AmDatabaseHandlerTest
 	${CMAKE_THREAD_LIBS_INIT}
 	${GTEST_LIBRARIES}
 	gmock
+    ${CMAKE_DL_LIBS}
+    rt
 )
 
 INSTALL(TARGETS AmDatabaseHandlerTest 

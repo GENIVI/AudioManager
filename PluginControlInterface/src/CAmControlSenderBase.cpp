@@ -72,9 +72,11 @@ am_Error_e CAmControlSenderBase::startupController(IAmControlReceive *controlrec
 
 void CAmControlSenderBase::setControllerReady()
 {
+	logInfo("ControlSenderPlugin set Controller Ready");
+
     //here is a good place to insert Source and SinkClasses into the database...
+
     mControlReceiveInterface->setRoutingReady();
-    mControlReceiveInterface->setCommandReady();
 }
 
 am_Error_e CAmControlSenderBase::hookUserConnectionRequest(const am_sourceID_t sourceID, const am_sinkID_t sinkID, am_mainConnectionID_t & mainConnectionID)
@@ -558,6 +560,13 @@ void CAmControlSenderBase::cbAckSetSinkSoundProperties(const am_Handle_s handle,
 
 void CAmControlSenderBase::setControllerRundown()
 {
+	logInfo("ControlSenderPlugin set Controller Rundown");
+
+	mControlReceiveInterface->setCommandRundown();
+    mControlReceiveInterface->setRoutingRundown();
+
+    logInfo("ControlSenderPlugin confirming Controller Rundown");
+    mControlReceiveInterface->confirmControllerRundown();
 }
 
 am_Error_e CAmControlSenderBase::getConnectionFormatChoice(const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_Route_s listRoute, const std::vector<am_ConnectionFormat_e> listPossibleConnectionFormats, std::vector<am_ConnectionFormat_e> & listPrioConnectionFormats)
@@ -577,17 +586,22 @@ void CAmControlSenderBase::getInterfaceVersion(std::string & version) const
 
 void CAmControlSenderBase::confirmCommandReady()
 {
-    logInfo("ControlSenderPlugin got Routing Ready confirmed");
+    logInfo("ControlSenderPlugin got Command Ready confirmed");
+
+    logInfo("ControlSenderPlugin confirming Controller Ready");
+    mControlReceiveInterface->confirmControllerReady();
 }
 
 void CAmControlSenderBase::confirmRoutingReady()
 {
-    logInfo("ControlSenderPlugin got Command Ready confirmed");
+    logInfo("ControlSenderPlugin got Routing Ready confirmed");
+
+    mControlReceiveInterface->setCommandReady();
 }
 
 void CAmControlSenderBase::confirmRoutingRundown()
 {
-    logInfo("ControlSenderPlugin got Command Rundown confirmed");
+    logInfo("ControlSenderPlugin got Routing Rundown confirmed");
 }
 
 void CAmControlSenderBase::disconnect(am_mainConnectionID_t connectionID)
@@ -621,7 +635,7 @@ void CAmControlSenderBase::disconnect(am_mainConnectionID_t connectionID)
 
 void CAmControlSenderBase::confirmCommandRundown()
 {
-    logInfo("ControlSenderPlugin got Routing Rundown confirmed");
+    logInfo("ControlSenderPlugin got Command Rundown confirmed");
 }
 
 void CAmControlSenderBase::connect(am_sourceID_t sourceID, am_sinkID_t sinkID, am_mainConnectionID_t mainConnectionID)
