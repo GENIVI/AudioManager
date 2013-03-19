@@ -67,8 +67,8 @@ class CAmEnvironment : public ::testing::Environment
   CAmDatabaseHandler   mDatabasehandler;
   CAmRoutingSender     mRoutingSender;
   CAmCommandSender     mCommandSender;
-  CAmControlSender     mControlSender;
-  CAmRouter            mRouter;
+  CAmControlSender*    mpControlSender;
+  CAmRouter*           mpRouter;
 
   CAmCommandReceiver*  mpCommandReceiver;
   CAmRoutingReceiver*  mpRoutingReceiver;

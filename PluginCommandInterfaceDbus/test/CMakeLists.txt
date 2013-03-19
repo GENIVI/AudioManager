@@ -82,6 +82,7 @@ TARGET_LINK_LIBRARIES(AmCommandSenderDbusTest
     ${PYTHON_LIBRARY}
     ${GTEST_LIBRARIES}
     gmock
+    rt
 )
 
 
@@ -93,6 +94,7 @@ TARGET_LINK_LIBRARIES(AmCommandSenderDbusSignalTest
     ${PYTHON_LIBRARY}
     ${GTEST_LIBRARIES}
     gmock
+    rt
 )
 
 INSTALL(TARGETS AmCommandSenderDbusTest 

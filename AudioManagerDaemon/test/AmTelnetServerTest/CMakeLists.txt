@@ -75,6 +75,9 @@ TARGET_LINK_LIBRARIES(AmTelnetServerTest
     ${CMAKE_THREAD_LIBS_INIT}
     ${GTEST_LIBRARIES}
     gmock
+    ${CMAKE_DL_LIBS}
+    rt
+    pthread
 )
 
 INSTALL(TARGETS AmTelnetServerTest 

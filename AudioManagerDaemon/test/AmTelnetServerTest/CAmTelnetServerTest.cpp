@@ -58,8 +58,8 @@ CAmEnvironment::CAmEnvironment()
 , mDatabasehandler(std::string(":memory:"))
 , mRoutingSender(mlistRoutingPluginDirs)
 , mCommandSender(mlistRoutingPluginDirs)
-, mControlSender(controllerPlugin)
-, mRouter(&mDatabasehandler,&mControlSender)
+, mpControlSender(NULL)
+, mpRouter(NULL)
 , mpCommandReceiver(NULL)
 , mpRoutingReceiver(NULL)
 , mpControlReceiver(NULL)
@@ -98,20 +98,23 @@ void CAmEnvironment::setSocketHandler(CAmSocketHandler* pSocketHandler)
 
     if(NULL != pSocketHandler)
     {
-        mpCommandReceiver = new CAmCommandReceiver(&mDatabasehandler,&mControlSender,mpSocketHandler);
-        mpRoutingReceiver = new CAmRoutingReceiver(&mDatabasehandler,&mRoutingSender,&mControlSender,mpSocketHandler);
-        mpControlReceiver = new CAmControlReceiver(&mDatabasehandler,&mRoutingSender,&mCommandSender,mpSocketHandler,&mRouter);
+    	mpControlSender = new CAmControlSender(controllerPlugin,mpSocketHandler);
+    	mpRouter = new CAmRouter(&mDatabasehandler,mpControlSender);
+
+        mpCommandReceiver = new CAmCommandReceiver(&mDatabasehandler,mpControlSender,mpSocketHandler);
+        mpRoutingReceiver = new CAmRoutingReceiver(&mDatabasehandler,&mRoutingSender,mpControlSender,mpSocketHandler);
+        mpControlReceiver = new CAmControlReceiver(&mDatabasehandler,&mRoutingSender,&mCommandSender,mpSocketHandler,mpRouter);
 
         //startup all the Plugins and Interfaces
-        mControlSender.startupController(mpControlReceiver);
+        mpControlSender->startupController(mpControlReceiver);
         mCommandSender.startupInterfaces(mpCommandReceiver);
         mRoutingSender.startupInterfaces(mpRoutingReceiver);
 
         //when the routingInterface is done, all plugins are loaded:
-        mControlSender.setControllerReady();
+        mpControlSender->setControllerReady();
 
         // Starting TelnetServer
-        mpTelnetServer = new CAmTelnetServer(mpSocketHandler,&mCommandSender,mpCommandReceiver,&mRoutingSender,mpRoutingReceiver,&mControlSender,mpControlReceiver,&mDatabasehandler,&mRouter,servPort,3);
+        mpTelnetServer = new CAmTelnetServer(mpSocketHandler,&mCommandSender,mpCommandReceiver,&mRoutingSender,mpRoutingReceiver,mpControlSender,mpControlReceiver,&mDatabasehandler,mpRouter,servPort,3);
     }
 }
 
