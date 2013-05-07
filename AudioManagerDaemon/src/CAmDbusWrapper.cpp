@@ -52,6 +52,7 @@ CAmDbusWrapper::CAmDbusWrapper(CAmSocketHandler* socketHandler, DBusBusType type
         pDbusFireCallback(this, &CAmDbusWrapper::dbusFireCallback), //
         pDbusCheckCallback(this, &CAmDbusWrapper::dbusCheckCallback), //
         pDbusTimerCallback(this, &CAmDbusWrapper::dbusTimerCallback), //
+        pDbusPrepareCallback(this,&CAmDbusWrapper::dbusPrepareCallback), //
         mpDbusConnection(0), //
         mDBusError(), //
         mListNodes(), //
@@ -241,7 +242,7 @@ dbus_bool_t CAmDbusWrapper::addWatchDelegate(DBusWatch * watch, void* userData)
     }
 
     logInfo("DBusWrapper::addWatchDelegate entered new watch, fd=", dbus_watch_get_unix_fd(watch), "event flag=", event);
-    am_Error_e error = mpSocketHandler->addFDPoll(dbus_watch_get_unix_fd(watch), event, NULL, &pDbusFireCallback, &pDbusCheckCallback, &pDbusDispatchCallback, watch, handle);
+    am_Error_e error = mpSocketHandler->addFDPoll(dbus_watch_get_unix_fd(watch), event, &pDbusPrepareCallback, &pDbusFireCallback, &pDbusCheckCallback, &pDbusDispatchCallback, watch, handle);
 
     //if everything is alright, add the watch and the handle to our map so we know this relationship
     if (error == E_OK && handle != 0)
@@ -421,6 +422,19 @@ void am::CAmDbusWrapper::dbusFireCallback(const pollfd pollfd, const sh_pollHand
     dbus_watch_handle(watch, flags);
     dbus_connection_unref(mpDbusConnection);
     //logInfo("DBusWrapper::dbusFireCallback was called");
+}
+
+void CAmDbusWrapper::dbusPrepareCallback(const sh_pollHandle_t handle, void* userData)
+{
+    (void) handle;
+    (void) userData;
+    dbus_connection_ref(mpDbusConnection);
+    while (dbus_connection_get_dispatch_status(mpDbusConnection) == DBUS_DISPATCH_DATA_REMAINS)
+    {
+       dbus_connection_dispatch(mpDbusConnection);
+       logInfo("prepare was neccessary!");
+    }
+    dbus_connection_unref(mpDbusConnection);
 }
 
 void CAmDbusWrapper::toggleTimeoutDelegate(DBusTimeout *timeout, void* userData)

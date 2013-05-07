@@ -53,6 +53,9 @@ public:
     static void removeTimeout(DBusTimeout *timeout, void* userData);
     static void toggleTimeout(DBusTimeout *timeout, void* userData);
 
+    void dbusPrepareCallback(const sh_pollHandle_t handle, void* userData);
+    TAmShPollPrepare<CAmDbusWrapper> pDbusPrepareCallback;
+
     bool dbusDispatchCallback(const sh_pollHandle_t handle, void* userData);
     TAmShPollDispatch<CAmDbusWrapper> pDbusDispatchCallback;
 
