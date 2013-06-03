@@ -159,7 +159,6 @@ public:
     void start_listenting();
     void stop_listening();
     void exit_mainloop();
-    static void static_exit_mainloop();
     void receiverCallback(const pollfd pollfd, const sh_pollHandle_t handle, void* userData)
         {
             (void) pollfd;
