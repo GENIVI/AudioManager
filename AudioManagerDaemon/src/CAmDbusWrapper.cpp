@@ -162,7 +162,7 @@ void CAmDbusWrapper::registerCallback(const DBusObjectPathVTable* vtable, const 
  */
 DBusHandlerResult CAmDbusWrapper::cbRootIntrospection(DBusConnection *conn, DBusMessage *msg, void *reference)
 {
-    logInfo("DBusWrapper::~cbRootIntrospection called:");
+    //logInfo("DBusWrapper::~cbRootIntrospection called:");
 
     mpReference = (CAmDbusWrapper*) reference;
     std::vector<std::string> nodesList = mpReference->mListNodes;
@@ -432,7 +432,7 @@ void CAmDbusWrapper::dbusPrepareCallback(const sh_pollHandle_t handle, void* use
     while (dbus_connection_get_dispatch_status(mpDbusConnection) == DBUS_DISPATCH_DATA_REMAINS)
     {
        dbus_connection_dispatch(mpDbusConnection);
-       logInfo("prepare was neccessary!");
+       //logInfo("prepare was neccessary!");
     }
     dbus_connection_unref(mpDbusConnection);
 }
