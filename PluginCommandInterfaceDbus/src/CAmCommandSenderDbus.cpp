@@ -145,14 +145,14 @@ void CAmCommandSenderDbus::cbRemovedSink(const am_sinkID_t sinkID)
         mCAmDbusMessageHandler.initSignal(std::string(MY_NODE), "SinkRemoved");
         mCAmDbusMessageHandler.append(sinkID);
 
-        log(&commandDbus, DLT_LOG_INFO, "send signal SinkAdded");
+        log(&commandDbus, DLT_LOG_INFO, "send signal SinkRemoved");
         mCAmDbusMessageHandler.sendMessage();
     }
 }
 
 void CAmCommandSenderDbus::cbNewSource(const am_SourceType_s& source)
 {
-    log(&commandDbus, DLT_LOG_INFO, "cbNumberOfSourcesChanged called");
+    log(&commandDbus, DLT_LOG_INFO, "cbNewSource called");
 
     if (mReady)
     {
