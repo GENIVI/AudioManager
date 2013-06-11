@@ -1439,7 +1439,7 @@ am_Error_e CAmDatabaseHandler::removeCrossfaderDB(const am_crossfaderID_t crossf
     std::string command = "DELETE from " + std::string(CROSSFADER_TABLE) + " WHERE crossfaderID=" + i2s(crossfaderID);
     if (!sqQuery(command))
         return (E_DATABASE_ERROR);
-    logInfo("DatabaseHandler::removeDomainDB removed:", crossfaderID);
+    logInfo("DatabaseHandler::removeCrossfaderDB removed:", crossfaderID);
     if (mpDatabaseObserver)
         mpDatabaseObserver->removeCrossfader(crossfaderID);
     return (E_OK);
