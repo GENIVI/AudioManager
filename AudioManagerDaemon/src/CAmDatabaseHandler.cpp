@@ -4407,7 +4407,19 @@ am_Error_e CAmDatabaseHandler::getRoutingTree(bool onlyfree, CAmRoutingTree& tre
 
         while ((eCode = sqlite3_step(query)) == SQLITE_ROW)
         {
-            flatTree.push_back(tree.insertItem(sqlite3_column_int(query, 0), sqlite3_column_int(query, 1), parent));
+            // additional check to avoid cyclic routes
+            const am_domainID_t domainSourceID = sqlite3_column_int(query, 0);
+            bool sourceDomainAlreadyHandledAsSink = false;
+            for (std::vector<CAmRoutingTreeItem*>::const_iterator iFT = flatTree.begin(); iFT != flatTree.end(); ++iFT)
+            {
+                if (domainSourceID == (*iFT)->returnParent()->returnDomainID()) sourceDomainAlreadyHandledAsSink = true;
+            }
+
+            if (!sourceDomainAlreadyHandledAsSink)
+            {
+                // logInfo("DatabaseHandler::getRoutingTree ", rootID, ", ", domainSourceID, ", ", sqlite3_column_int(query, 1));
+                flatTree.push_back(tree.insertItem(domainSourceID, sqlite3_column_int(query, 1), parent));
+            }
         }
 
         if (eCode != SQLITE_DONE)
