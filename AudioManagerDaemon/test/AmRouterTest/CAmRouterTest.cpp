@@ -419,6 +419,140 @@ TEST_F(CAmRouterTest,simpleRoute2DomainsOnlyFreeNotFree)
     ASSERT_TRUE(pCF.compareRoute(compareRoute,listRoutes[0]));
 }
 
+//test that checks just 2 domains, with gateway for each direction (possible circular route)
+TEST_F(CAmRouterTest,simpleRoute2DomainsCircularGWOnlyFree)
+{
+
+    EXPECT_CALL(pMockControlInterface,getConnectionFormatChoice(_,_,_,_,_)).WillRepeatedly(DoAll(returnConnectionFormat(), Return(E_OK)));
+
+    //initialize 2 domains
+    am_Domain_s domain1, domain2;
+    am_domainID_t domainID1, domainID2;
+
+    domain1.domainID = 0;
+    domain1.name = "domain1";
+    domain1.busname = "domain1bus";
+    domain1.state = DS_CONTROLLED;
+    domain2.domainID = 0;
+    domain2.name = "domain2";
+    domain2.busname = "domain2bus";
+    domain2.state = DS_CONTROLLED;
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain1,domainID1));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain2,domainID2));
+
+    am_Source_s source, gwSource, gwSource2;
+    am_sourceID_t sourceID, gwSourceID, gwSourceID2;
+
+    source.domainID = domainID1;
+    source.name = "source1";
+    source.sourceState = SS_ON;
+    source.sourceID = 0;
+    source.sourceClassID = 5;
+    source.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
+
+    gwSource.domainID = domainID2;
+    gwSource.name = "gwsource1";
+    gwSource.sourceState = SS_ON;
+    gwSource.sourceID = 0;
+    gwSource.sourceClassID = 5;
+    gwSource.listConnectionFormats.push_back(CF_GENIVI_MONO);
+
+    gwSource2.domainID = domainID1;
+    gwSource2.name = "gwsource2";
+    gwSource2.sourceState = SS_ON;
+    gwSource2.sourceID = 0;
+    gwSource2.sourceClassID = 5;
+    gwSource2.listConnectionFormats.push_back(CF_GENIVI_MONO);
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(gwSource,gwSourceID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(gwSource2,gwSourceID2));
+
+    am_Sink_s sink, gwSink, gwSink2;
+    am_sinkID_t sinkID, gwSinkID, gwSinkID2;
+
+    sink.domainID = domainID2;
+    sink.name = "sink1";
+    sink.sinkID = 0;
+    sink.sinkClassID = 5;
+    sink.muteState = MS_MUTED;
+    sink.listConnectionFormats.push_back(CF_GENIVI_MONO);
+
+    gwSink.domainID = domainID1;
+    gwSink.name = "gwSink";
+    gwSink.sinkID = 0;
+    gwSink.sinkClassID = 5;
+    gwSink.muteState = MS_MUTED;
+    gwSink.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
+
+    gwSink2.domainID = domainID2;
+    gwSink2.name = "gwSink2";
+    gwSink2.sinkID = 0;
+    gwSink2.sinkClassID = 5;
+    gwSink2.muteState = MS_MUTED;
+    gwSink2.listConnectionFormats.push_back(CF_GENIVI_MONO);
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(gwSink,gwSinkID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(gwSink2,gwSinkID2));
+
+    am_Gateway_s gateway, gateway2;
+    am_gatewayID_t gatewayID, gatewayID2;
+
+    gateway.controlDomainID = domainID1;
+    gateway.gatewayID = 0;
+    gateway.sinkID = gwSinkID;
+    gateway.sourceID = gwSourceID;
+    gateway.domainSourceID = domainID2;
+    gateway.domainSinkID = domainID1;
+    gateway.listSinkFormats = gwSink.listConnectionFormats;
+    gateway.listSourceFormats = gwSource.listConnectionFormats;
+    gateway.convertionMatrix.push_back(true);
+    gateway.name = "gateway";
+
+    gateway2.controlDomainID = domainID1;
+    gateway2.gatewayID = 0;
+    gateway2.sinkID = gwSinkID2;
+    gateway2.sourceID = gwSourceID2;
+    gateway2.domainSourceID = domainID1;
+    gateway2.domainSinkID = domainID2;
+    gateway2.listSinkFormats = gwSink2.listConnectionFormats;
+    gateway2.listSourceFormats = gwSource2.listConnectionFormats;
+    gateway2.convertionMatrix.push_back(true);
+    gateway2.name = "gateway2";
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterGatewayDB(gateway,gatewayID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterGatewayDB(gateway2,gatewayID2));
+
+    std::vector<am_Route_s> listRoutes;
+    std::vector<am_RoutingElement_s> listRoutingElements;
+    am_RoutingElement_s hopp1;
+    am_RoutingElement_s hopp2;
+
+    hopp1.sinkID = gwSinkID;
+    hopp1.sourceID = sourceID;
+    hopp1.domainID = domainID1;
+    hopp1.connectionFormat = source.listConnectionFormats[0];
+
+    hopp2.sinkID = sinkID;
+    hopp2.sourceID = gwSourceID;
+    hopp2.domainID = domainID2;
+    hopp2.connectionFormat = sink.listConnectionFormats[0];
+
+    listRoutingElements.push_back(hopp1);
+    listRoutingElements.push_back(hopp2);
+
+    am_Route_s compareRoute;
+    compareRoute.route = listRoutingElements;
+    compareRoute.sinkID = sinkID;
+    compareRoute.sourceID = sourceID;
+
+    ASSERT_EQ(E_OK, pRouter.getRoute(true,sourceID,sinkID,listRoutes));
+    ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
+    ASSERT_TRUE(pCF.compareRoute(compareRoute,listRoutes[0]));
+}
+
 //test that checks 3 domains, one sink one source, longer lists of connectionformats.
 TEST_F(CAmRouterTest,simpleRoute3DomainsListConnectionFormats_2)
 {
@@ -1807,7 +1941,11 @@ TEST_F(CAmRouterTest,simpleRoute4Domains)
 
 int main(int argc, char **argv)
 {
+#ifdef WITH_DLT
     CAmDltWrapper::instance()->registerApp("routing", "CAmRouterTest");
+#else
+    CAmDltWrapper::instance(true)->registerApp("routing", "CAmRouterTest");
+#endif
     logInfo("Routing Test started ");
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
