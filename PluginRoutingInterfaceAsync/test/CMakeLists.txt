@@ -68,6 +68,7 @@ TARGET_LINK_LIBRARIES(AmRoutingReceiveAsyncTest
     ${CMAKE_THREAD_LIBS_INIT}
     ${DBUS_LIBRARY}
     ${SQLITE_LIBRARIES}
+    rt
     gtest
     gmock
 )
