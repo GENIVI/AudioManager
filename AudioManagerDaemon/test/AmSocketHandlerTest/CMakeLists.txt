@@ -63,6 +63,7 @@ TARGET_LINK_LIBRARIES(AmSocketHandlerTest
     ${CMAKE_THREAD_LIBS_INIT}
     gtest
     gmock
+    rt
 )
 
 ADD_DEPENDENCIES(AmSocketHandlerTest gtest gmock)
