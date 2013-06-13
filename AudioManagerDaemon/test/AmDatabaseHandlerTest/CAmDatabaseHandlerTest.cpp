@@ -2229,6 +2229,30 @@ TEST_F(CAmDatabaseHandlerTest,changeMainNotificationsSink)
     ASSERT_EQ(returnList1[3].type,notify2.type);
 }
 
+TEST_F(CAmDatabaseHandlerTest, peekDomain_2)
+{
+    std::vector<am_Domain_s> listDomains;
+    am_Domain_s domain;
+    am_domainID_t domainID;
+    am_domainID_t domain2ID;
+    pCF.createDomain(domain);
+    ASSERT_EQ(E_OK,pDatabaseHandler.peekDomain(std::string("newdomain"),domainID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.getListDomains(listDomains));
+    ASSERT_TRUE(listDomains.empty());
+    ASSERT_EQ(domainID, 1);
+
+    domain.name = "anotherdomain";
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domain2ID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.getListDomains(listDomains));
+    ASSERT_EQ(domain2ID, 2);
+
+    domain.name = "newdomain";
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domain2ID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.getListDomains(listDomains));
+    ASSERT_EQ(domainID, domain2ID);               // FAILS, ID is 2 instead of 1
+    ASSERT_TRUE(listDomains[0].domainID==domainID);
+}
+
 //Commented out - gives always a warning..
 //TEST_F(databaseTest,registerDomainFailonID0)
 //{
