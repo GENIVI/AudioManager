@@ -181,11 +181,13 @@ am_Error_e CAmDatabaseHandler::enterDomainDB(const am_Domain_s & domainData, am_
     //first check for a reserved domain
     sqlite3_stmt* query = NULL;
     int eCode = 0;
+    domainID = 0;
     std::string command = "SELECT domainID FROM " + std::string(DOMAIN_TABLE) + " WHERE name=?";
     MY_SQLITE_PREPARE_V2(mpDatabase, command.c_str(), -1, &query, NULL)
     MY_SQLITE_BIND_TEXT(query, 1, domainData.name.c_str(), domainData.name.size(), SQLITE_STATIC)
     if ((eCode = sqlite3_step(query)) == SQLITE_ROW)
     {
+		domainID = sqlite3_column_int(query, 0);
         command = "UPDATE " + std::string(DOMAIN_TABLE) + " SET name=?, busname=?, nodename=?, early=?, complete=?, state=?, reserved=? WHERE domainID=" + i2s(sqlite3_column_int(query, 0));
     }
     else if (eCode == SQLITE_DONE)
@@ -218,7 +220,8 @@ am_Error_e CAmDatabaseHandler::enterDomainDB(const am_Domain_s & domainData, am_
     }
     MY_SQLITE_FINALIZE(query)
 
-    domainID = sqlite3_last_insert_rowid(mpDatabase);
+    if (domainID==0)
+		domainID = sqlite3_last_insert_rowid(mpDatabase);
     logInfo("DatabaseHandler::enterDomainDB entered new domain with name=", domainData.name, "busname=", domainData.busname, "nodename=", domainData.nodename, "assigned ID:", domainID);
 
     am_Domain_s domain = domainData;
