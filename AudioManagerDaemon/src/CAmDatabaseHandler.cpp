@@ -4511,14 +4511,14 @@ am_Error_e CAmDatabaseHandler::changeSourceDB(const am_sourceID_t sourceID, cons
     }
 
     //check if sinkClass needs to be changed
-    if (sourceID!=0)
+    if (sourceClassID!=0)
     {
-        command = "UPDATE"+ std::string(SINK_TABLE)+ " SET sourceClassID=? WHERE sourceID=" + i2s(sourceID);
+        command = "UPDATE"+ std::string(SOURCE_TABLE)+ " SET sourceClassID=? WHERE sourceID=" + i2s(sourceID);
         MY_SQLITE_PREPARE_V2(mpDatabase, command.c_str(), -1, &query, NULL)
         MY_SQLITE_BIND_INT(query, 1, sourceClassID)
         if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
         {
-            logError("DatabaseHandler::changeSink SQLITE Step error code:", eCode);
+            logError("DatabaseHandler::changeSource SQLITE Step error code:", eCode);
             MY_SQLITE_FINALIZE(query)
             return (E_DATABASE_ERROR);
         }
@@ -4527,7 +4527,7 @@ am_Error_e CAmDatabaseHandler::changeSourceDB(const am_sourceID_t sourceID, cons
 
     else //we need to read out the active one
     {
-        command = "SELECT sourceClassID FROM " + std::string(SINK_TABLE) + " WHERE reserved=0 and sourceID=" + i2s(sourceID);
+        command = "SELECT sourceClassID FROM " + std::string(SOURCE_TABLE) + " WHERE reserved=0 and sourceID=" + i2s(sourceID);
         MY_SQLITE_PREPARE_V2(mpDatabase, command.c_str(), -1, &query, NULL)
 
         while ((eCode = sqlite3_step(query)) == SQLITE_ROW)
@@ -4556,7 +4556,7 @@ am_Error_e CAmDatabaseHandler::changeSourceDB(const am_sourceID_t sourceID, cons
             MY_SQLITE_BIND_INT(query, 2, SoundPropertyIterator->value)
             if ((eCode = sqlite3_step(query)) != SQLITE_DONE)
             {
-                logError("DatabaseHandler::changeSink SQLITE Step error code:", eCode);
+                logError("DatabaseHandler::changeSource SQLITE Step error code:", eCode);
                 MY_SQLITE_FINALIZE(query)
                 return (E_DATABASE_ERROR);
             }
