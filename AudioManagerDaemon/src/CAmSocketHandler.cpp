@@ -37,7 +37,8 @@ namespace am
 CAmSocketHandler::CAmSocketHandler() :
         receiverCallbackT(this, &CAmSocketHandler::receiverCallback),//
         checkerCallbackT(this, &CAmSocketHandler::checkerCallback),//
-        mPipe(),
+        mPipe(), //
+        mDispatchDone(1),//
         mListPoll(), //
         mListTimer(), //
         mListActiveTimer(), //
@@ -46,8 +47,6 @@ CAmSocketHandler::CAmSocketHandler() :
         mRecreatePollfds(true), //
         mStartTime() //
 {
-    gDispatchDone = 1;
-
     if (pipe(mPipe) == -1)
     {
         logError("CAmSerializer could not create pipe!");
@@ -70,7 +69,7 @@ CAmSocketHandler::~CAmSocketHandler()
  */
 void CAmSocketHandler::start_listenting()
 {
-    gDispatchDone = 0;
+    mDispatchDone = 0;
     int16_t pollStatus;
 
     //prepare the signalmask
@@ -83,7 +82,7 @@ void CAmSocketHandler::start_listenting()
     sigaddset(&sigmask, SIGQUIT);
 
     clock_gettime(CLOCK_MONOTONIC, &mStartTime);
-    while (!gDispatchDone)
+    while (!mDispatchDone)
     {
         //first we go through the registered filedescriptors and check if someone needs preparation:
         std::for_each(mListPoll.begin(), mListPoll.end(), CAmShCallPrep());
@@ -164,7 +163,7 @@ void CAmSocketHandler::start_listenting()
  */
 void CAmSocketHandler::stop_listening()
 {
-    gDispatchDone = 1;
+    mDispatchDone = 1;
 
     //this is for all running timers only - we need to handle the additional offset here
     if (!mListActiveTimer.empty())
@@ -265,7 +264,7 @@ am_Error_e CAmSocketHandler::addTimer(const timespec timeouts, IAmShTimerCallBac
     //we add here the time difference between startTime and currenttime, because this time will be substracted later on in timecorrection
     timespec currentTime;
     clock_gettime(CLOCK_MONOTONIC, &currentTime);
-    if (!gDispatchDone) //the mainloop is started
+    if (!mDispatchDone) //the mainloop is started
         timerItem.countdown = timespecAdd(timeouts, timespecSub(currentTime, mStartTime));
 
     mListActiveTimer.push_back(timerItem);
@@ -329,7 +328,7 @@ am_Error_e CAmSocketHandler::updateTimer(const sh_timerHandle_t handle, const ti
     currentTime.tv_nsec=timeoutsCorrected.tv_nsec=0;
     currentTime.tv_sec=timeoutsCorrected.tv_sec=0;
     clock_gettime(CLOCK_MONOTONIC, &currentTime);
-    if (!gDispatchDone) //the mainloop is started
+    if (!mDispatchDone) //the mainloop is started
         timeoutsCorrected = timespecAdd(timeouts, timespecSub(currentTime, mStartTime));
 
     for (; activeIt != mListActiveTimer.end(); ++activeIt)
@@ -378,7 +377,7 @@ am_Error_e CAmSocketHandler::restartTimer(const sh_timerHandle_t handle)
     //we add here the time difference between startTime and currenttime, because this time will be substracted later on in timecorrection
     timespec currentTime, timeoutsCorrected;
     clock_gettime(CLOCK_MONOTONIC, &currentTime);
-    if (!gDispatchDone) //the mainloop is started
+    if (!mDispatchDone) //the mainloop is started
     {
         timeoutsCorrected = timespecAdd(timerItem.countdown, timespecSub(currentTime, mStartTime));
         timerItem.countdown = timeoutsCorrected;

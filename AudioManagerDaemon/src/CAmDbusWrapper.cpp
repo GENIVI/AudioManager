@@ -51,8 +51,8 @@ CAmDbusWrapper::CAmDbusWrapper(CAmSocketHandler* socketHandler, DBusBusType type
         pDbusDispatchCallback(this, &CAmDbusWrapper::dbusDispatchCallback), //
         pDbusFireCallback(this, &CAmDbusWrapper::dbusFireCallback), //
         pDbusCheckCallback(this, &CAmDbusWrapper::dbusCheckCallback), //
-        pDbusTimerCallback(this, &CAmDbusWrapper::dbusTimerCallback), //
         pDbusPrepareCallback(this,&CAmDbusWrapper::dbusPrepareCallback), //
+        pDbusTimerCallback(this, &CAmDbusWrapper::dbusTimerCallback), //
         mpDbusConnection(0), //
         mDBusError(), //
         mListNodes(), //

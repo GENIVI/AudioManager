@@ -974,8 +974,6 @@ void CAmTelnetMenuHelper::setRoutingCommandExec(std::queue<std::string>& CmdQueu
                 std::vector<am_RoutingElement_s>::iterator reIter = rlIter->route.begin();
                 for (; reIter < rlIter->route.end(); reIter++)
                 {
-                    reIter->connectionFormat;
-                    reIter->domainID;
                     output << ">(" << reIter->sourceID << ")->--[D:" << reIter->domainID << "][F:" << reIter->connectionFormat << "]-->-(" << reIter->sinkID << ")" << std::endl;
                 }
                 rlCnt++;

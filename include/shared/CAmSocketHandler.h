@@ -33,8 +33,6 @@ namespace am
 
 #define MAX_NS 1000000000L
 
-static volatile sig_atomic_t gDispatchDone = 1; //this global is used to stop the mainloop
-
 typedef uint16_t sh_timerHandle_t; //!<this is a handle for a timer to be used with the SocketHandler
 typedef uint16_t sh_pollHandle_t; //!<this is a handle for a filedescriptor to be used with the SocketHandler
 
@@ -179,7 +177,7 @@ private:
 
     static CAmSocketHandler* mInstance;
     int mPipe[2];
-
+    int mDispatchDone; //this starts / stops the mainloop
     struct sh_timer_s //!<struct that holds information of timers
     {
         sh_timerHandle_t handle; //!<the handle of the timer
