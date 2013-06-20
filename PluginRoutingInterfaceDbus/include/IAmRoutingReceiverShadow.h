@@ -74,6 +74,14 @@ public:
     void sendChangedData(DBusConnection *conn, DBusMessage *msg);
     void confirmRoutingReady(DBusConnection *conn, DBusMessage *msg);
     void confirmRoutingRundown(DBusConnection *conn, DBusMessage *msg);
+    void updateGateway(DBusConnection *conn, DBusMessage *msg);
+    void updateSink(DBusConnection *conn, DBusMessage *msg);
+    void updateSource(DBusConnection *conn, DBusMessage *msg);
+    void ackSetVolumes(DBusConnection *conn, DBusMessage *msg);
+    void ackSinkNotificationConfiguration(DBusConnection *conn, DBusMessage *msg);
+    void ackSourceNotificationConfiguration(DBusConnection *conn, DBusMessage *msg);
+    void hookSinkNotificationDataChange(DBusConnection *conn, DBusMessage *msg);
+    void hookSourceNotificationDataChange(DBusConnection *conn, DBusMessage *msg);
 
     /**
      * sets the pointer to the CommandReceiveInterface and registers Callback

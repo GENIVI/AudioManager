@@ -262,7 +262,7 @@ double CAmRoutingDbusMessageHandler::getDouble()
     return (getDouble(mDBusMessageIter, true));
 }
 
-am::am_Availability_s CAmRoutingDbusMessageHandler::getAvailability()
+am_Availability_s CAmRoutingDbusMessageHandler::getAvailability()
 {
     am::am_Availability_s availability;
     availability.availability=A_UNKNOWN;
@@ -352,7 +352,7 @@ am_Domain_s CAmRoutingDbusMessageHandler::getDomainData()
 	domainData.nodename = getString(domainDataIter, true);
 	domainData.early = getBool(domainDataIter, true);
 	domainData.complete = getBool(domainDataIter, true);
-	domainData.state = static_cast<am_DomainState_e>(getUInt(domainDataIter, false));
+	domainData.state = static_cast<am_DomainState_e>(getInt32(domainDataIter, false));
         dbus_message_iter_next(&mDBusMessageIter);
     }
     return (domainData);
@@ -365,6 +365,8 @@ am_Source_s CAmRoutingDbusMessageHandler::getSourceData()
     am_SoundProperty_s soundProperty;
     am_ConnectionFormat_e connectionFormat;
     am_MainSoundProperty_s mainSoundProperty;
+    am_NotificationConfiguration_s notificationConfiguration;
+    am_NotificationConfiguration_s MainnotificationConfiguration;
 
     if (DBUS_TYPE_STRUCT != dbus_message_iter_get_arg_type(&mDBusMessageIter))
     {
@@ -379,19 +381,19 @@ am_Source_s CAmRoutingDbusMessageHandler::getSourceData()
 	sourceData.domainID = static_cast<am_domainID_t>(getUInt(sourceDataIter, true));
 	sourceData.name = getString(sourceDataIter, true);
 	sourceData.sourceClassID = static_cast<am_sourceClass_t>(getUInt(sourceDataIter, true));
-	sourceData.sourceState = static_cast<am_SourceState_e>(getUInt(sourceDataIter, true));
+	sourceData.sourceState = static_cast<am_SourceState_e>(getInt32(sourceDataIter, true));
 	sourceData.volume = static_cast<am_volume_t>(getInt(sourceDataIter, true));
 	sourceData.visible = getBool(sourceDataIter, true);
 	dbus_message_iter_recurse(&sourceDataIter, &availIter);
-	sourceData.available.availability = static_cast<am_Availability_e>(getInt(availIter, true));
-	sourceData.available.availabilityReason = static_cast<am_AvailabilityReason_e>(getInt(availIter, false));
+	sourceData.available.availability = static_cast<am_Availability_e>(getInt32(availIter, true));
+	sourceData.available.availabilityReason = static_cast<am_AvailabilityReason_e>(getInt32(availIter, false));
 	dbus_message_iter_next(&sourceDataIter);
-	sourceData.interruptState = static_cast<am_InterruptState_e>(getUInt(sourceDataIter, true));
+	sourceData.interruptState = static_cast<am_InterruptState_e>(getInt32(sourceDataIter, true));
 	dbus_message_iter_recurse(&sourceDataIter, &arrayIter);
 	do
 	{
 	    dbus_message_iter_recurse(&arrayIter, &structIter);
-	    soundProperty.type = static_cast<am_SoundPropertyType_e>(getInt(structIter, true));
+	    soundProperty.type = static_cast<am_SoundPropertyType_e>(getInt32(structIter, true));
 	    soundProperty.value = static_cast<int16_t>(getInt(structIter, false));
 	    sourceData.listSoundProperties.push_back(soundProperty);
 	} while (dbus_message_iter_next(&arrayIter));
@@ -399,7 +401,7 @@ am_Source_s CAmRoutingDbusMessageHandler::getSourceData()
 	dbus_message_iter_recurse(&sourceDataIter, &arrayIter);
 	do
 	{
-	    connectionFormat = static_cast<am_ConnectionFormat_e>(getInt(arrayIter, false));
+	    connectionFormat = static_cast<am_ConnectionFormat_e>(getInt32(arrayIter, false));
 	    sourceData.listConnectionFormats.push_back(connectionFormat);
 	} while (dbus_message_iter_next(&arrayIter));
 	dbus_message_iter_next(&sourceDataIter);
@@ -408,10 +410,32 @@ am_Source_s CAmRoutingDbusMessageHandler::getSourceData()
 	do
 	{
 	    dbus_message_iter_recurse(&arrayIter, &structIter);
-	    mainSoundProperty.type = static_cast<am_MainSoundPropertyType_e>(getInt(structIter, true));
+	    mainSoundProperty.type = static_cast<am_MainSoundPropertyType_e>(getInt32(structIter, true));
 	    mainSoundProperty.value = static_cast<int16_t>(getInt(structIter, false));
 	    sourceData.listMainSoundProperties.push_back(mainSoundProperty);
 	} while (dbus_message_iter_next(&arrayIter));
+        dbus_message_iter_next(&sourceDataIter);
+
+    dbus_message_iter_recurse(&sourceDataIter, &arrayIter);
+    do
+    {
+        dbus_message_iter_recurse(&arrayIter, &structIter);
+        MainnotificationConfiguration.type = static_cast<am_NotificationType_e>(getInt32(structIter, true));
+        MainnotificationConfiguration.parameter = static_cast<int16_t>(getInt(structIter, false));
+        MainnotificationConfiguration.status = static_cast<am_NotificationStatus_e>(getInt32(structIter, true));
+        sourceData.listMainNotificationConfigurations.push_back(MainnotificationConfiguration);
+    } while (dbus_message_iter_next(&arrayIter));
+        dbus_message_iter_next(&sourceDataIter);
+
+    dbus_message_iter_recurse(&sourceDataIter, &arrayIter);
+    do
+    {
+        dbus_message_iter_recurse(&arrayIter, &structIter);
+        notificationConfiguration.type = static_cast<am_NotificationType_e>(getInt32(structIter, true));
+        notificationConfiguration.parameter = static_cast<int16_t>(getInt(structIter, false));
+        notificationConfiguration.status = static_cast<am_NotificationStatus_e>(getInt32(structIter, true));
+        sourceData.listNotificationConfigurations.push_back(notificationConfiguration);
+    } while (dbus_message_iter_next(&arrayIter));
         dbus_message_iter_next(&mDBusMessageIter);
     }
     return (sourceData);
@@ -424,6 +448,8 @@ am_Sink_s CAmRoutingDbusMessageHandler::getSinkData()
     am_SoundProperty_s soundProperty;
     am_ConnectionFormat_e connectionFormat;
     am_MainSoundProperty_s mainSoundProperty;
+    am_NotificationConfiguration_s notificationConfiguration;
+    am_NotificationConfiguration_s MainnotificationConfiguration;
 
     if (DBUS_TYPE_STRUCT != dbus_message_iter_get_arg_type(&mDBusMessageIter))
     {
@@ -441,17 +467,17 @@ am_Sink_s CAmRoutingDbusMessageHandler::getSinkData()
 	sinkData.volume = static_cast<am_volume_t>(getInt(sinkDataIter, true));
 	sinkData.visible = getBool(sinkDataIter, true);
 	dbus_message_iter_recurse(&sinkDataIter, &availIter);
-	sinkData.available.availability = static_cast<am_Availability_e>(getInt(availIter, true));
-	sinkData.available.availabilityReason = static_cast<am_AvailabilityReason_e>(getInt(availIter, false));
+	sinkData.available.availability = static_cast<am_Availability_e>(getInt32(availIter, true));
+	sinkData.available.availabilityReason = static_cast<am_AvailabilityReason_e>(getInt32(availIter, false));
 	dbus_message_iter_next(&sinkDataIter);
-	sinkData.muteState = static_cast<am_MuteState_e>(getInt(sinkDataIter, true));
+	sinkData.muteState = static_cast<am_MuteState_e>(getInt32(sinkDataIter, true));
 	sinkData.mainVolume = static_cast<am_mainVolume_t>(getInt(sinkDataIter, true));
 
 	dbus_message_iter_recurse(&sinkDataIter, &arrayIter);
 	do
 	{
 	    dbus_message_iter_recurse(&arrayIter, &structIter);
-	    soundProperty.type = static_cast<am_SoundPropertyType_e>(getInt(structIter, true));
+	    soundProperty.type = static_cast<am_SoundPropertyType_e>(getInt32(structIter, true));
 	    soundProperty.value = static_cast<int16_t>(getInt(structIter, false));
 	    sinkData.listSoundProperties.push_back(soundProperty);
 	} while (dbus_message_iter_next(&arrayIter));
@@ -461,19 +487,41 @@ am_Sink_s CAmRoutingDbusMessageHandler::getSinkData()
 	dbus_message_iter_recurse(&sinkDataIter, &arrayIter);
 	do
 	{
-	    connectionFormat = static_cast<am_ConnectionFormat_e>(getInt(arrayIter, false));
+	    connectionFormat = static_cast<am_ConnectionFormat_e>(getInt32(arrayIter, false));
 	    sinkData.listConnectionFormats.push_back(connectionFormat);
 	} while (dbus_message_iter_next(&arrayIter));
 	dbus_message_iter_next(&sinkDataIter);
 
-	dbus_message_iter_recurse(&sinkDataIter, &arrayIter);
-	do
-	{
-	    dbus_message_iter_recurse(&arrayIter, &structIter);
-	    mainSoundProperty.type = static_cast<am_MainSoundPropertyType_e>(getInt(structIter, true));
-	    mainSoundProperty.value = static_cast<int16_t>(getInt(structIter, false));
-	    sinkData.listMainSoundProperties.push_back(mainSoundProperty);
-	} while (dbus_message_iter_next(&arrayIter));
+    dbus_message_iter_recurse(&sinkDataIter, &arrayIter);
+    do
+    {
+        dbus_message_iter_recurse(&arrayIter, &structIter);
+        mainSoundProperty.type = static_cast<am_MainSoundPropertyType_e>(getInt32(structIter, true));
+        mainSoundProperty.value = static_cast<int16_t>(getInt(structIter, false));
+        sinkData.listMainSoundProperties.push_back(mainSoundProperty);
+    } while (dbus_message_iter_next(&arrayIter));
+        dbus_message_iter_next(&sinkDataIter);
+
+    dbus_message_iter_recurse(&sinkDataIter, &arrayIter);
+    do
+    {
+        dbus_message_iter_recurse(&arrayIter, &structIter);
+        MainnotificationConfiguration.type = static_cast<am_NotificationType_e>(getInt32(structIter, true));
+        MainnotificationConfiguration.parameter = static_cast<int16_t>(getInt(structIter, false));
+        MainnotificationConfiguration.status = static_cast<am_NotificationStatus_e>(getInt32(structIter, true));
+        sinkData.listMainNotificationConfigurations.push_back(MainnotificationConfiguration);
+    } while (dbus_message_iter_next(&arrayIter));
+        dbus_message_iter_next(&sinkDataIter);
+
+    dbus_message_iter_recurse(&sinkDataIter, &arrayIter);
+    do
+    {
+        dbus_message_iter_recurse(&arrayIter, &structIter);
+        notificationConfiguration.type = static_cast<am_NotificationType_e>(getInt32(structIter, true));
+        notificationConfiguration.parameter = static_cast<int16_t>(getInt(structIter, false));
+        notificationConfiguration.status = static_cast<am_NotificationStatus_e>(getInt32(structIter, true));
+        sinkData.listNotificationConfigurations.push_back(notificationConfiguration);
+    } while (dbus_message_iter_next(&arrayIter));
         dbus_message_iter_next(&mDBusMessageIter);
     }
     return (sinkData);
@@ -504,14 +552,14 @@ am_Gateway_s CAmRoutingDbusMessageHandler::getGatewayData()
 	do
 	{
 	    dbus_message_iter_recurse(&gatewayDataIter, &arrayIter);
-	    connectionFormat = static_cast<am_ConnectionFormat_e>(getUInt(arrayIter, false));
+	    connectionFormat = static_cast<am_ConnectionFormat_e>(getInt32(arrayIter, false));
 	    gatewayData.listSourceFormats.push_back(connectionFormat);
 	} while (dbus_message_iter_next(&arrayIter));
 	dbus_message_iter_next(&gatewayDataIter);
 	do
 	{
 	    dbus_message_iter_recurse(&gatewayDataIter, &arrayIter);
-	    connectionFormat = static_cast<am_ConnectionFormat_e>(getUInt(arrayIter, false));
+	    connectionFormat = static_cast<am_ConnectionFormat_e>(getInt32(arrayIter, false));
 	    gatewayData.listSinkFormats.push_back(connectionFormat);
 	} while (dbus_message_iter_next(&arrayIter));
 	dbus_message_iter_next(&gatewayDataIter);
@@ -898,6 +946,160 @@ void CAmRoutingDbusMessageHandler::append(const std::vector<am::am_SinkClass_s>&
     }
 }
 
+std::vector<am_ConnectionFormat_e> CAmRoutingDbusMessageHandler::getListconnectionFormats()
+{
+    DBusMessageIter arrayIter;
+    std::vector<am_ConnectionFormat_e> listConnectionFormats;
+    if (DBUS_TYPE_ARRAY != dbus_message_iter_get_arg_type(&mDBusMessageIter))
+       {
+           log(&routingDbus, DLT_LOG_ERROR, "CAmRoutingDbusMessageHandler::getListconnectionFormats DBUS handler argument is no array!");
+           mErrorName = std::string(DBUS_ERROR_INVALID_ARGS);
+           mErrorMsg = "DBus argument is no array";
+       }
+   else
+   {
+       do
+       {
+           dbus_message_iter_recurse(&mDBusMessageIter, &arrayIter);
+           am_ConnectionFormat_e connectionformat(static_cast<am_ConnectionFormat_e>(getUInt(arrayIter, false)));
+           listConnectionFormats.push_back(connectionformat);
+       } while (dbus_message_iter_next(&arrayIter));
+       dbus_message_iter_next(&mDBusMessageIter);
+   }
+   return (listConnectionFormats);
+
+}
+
+std::vector<bool> CAmRoutingDbusMessageHandler::getListBool()
+{
+    DBusMessageIter arrayIter;
+    std::vector<bool> listBools;
+    if (DBUS_TYPE_ARRAY != dbus_message_iter_get_arg_type(&mDBusMessageIter))
+       {
+           log(&routingDbus, DLT_LOG_ERROR, "CAmRoutingDbusMessageHandler::getListBool DBUS handler argument is no array!");
+           mErrorName = std::string(DBUS_ERROR_INVALID_ARGS);
+           mErrorMsg = "DBus argument is no array";
+       }
+   else
+   {
+       do
+       {
+           dbus_message_iter_recurse(&mDBusMessageIter, &arrayIter);
+           bool myBool(static_cast<bool>(getBool(arrayIter, false)));
+           listBools.push_back(myBool);
+       } while (dbus_message_iter_next(&arrayIter));
+       dbus_message_iter_next(&mDBusMessageIter);
+   }
+   return (listBools);
+}
+
+am_SoundProperty_s CAmRoutingDbusMessageHandler::getSoundProperty()
+{
+    am_SoundProperty_s soundProperty;
+    DBusMessageIter structIter;
+
+    dbus_message_iter_recurse(&mDBusMessageIter, &structIter);
+    soundProperty.type = static_cast<am_SoundPropertyType_e>(getInt(structIter, true));
+    soundProperty.value = static_cast<int16_t>(getInt(structIter, false));
+    dbus_message_iter_next(&mDBusMessageIter);
+
+    return(soundProperty);
+}
+
+std::vector<am_SoundProperty_s> CAmRoutingDbusMessageHandler::getListSoundProperties()
+{
+    DBusMessageIter arrayIter;
+    DBusMessageIter structIter;
+    am_SoundProperty_s soundProperty;
+    std::vector<am_SoundProperty_s> listSoundProperties;
+    if (DBUS_TYPE_ARRAY != dbus_message_iter_get_arg_type(&mDBusMessageIter))
+       {
+           log(&routingDbus, DLT_LOG_ERROR, "CAmRoutingDbusMessageHandler::getListSoundProperties DBUS handler argument is no array!");
+           mErrorName = std::string(DBUS_ERROR_INVALID_ARGS);
+           mErrorMsg = "DBus argument is no array";
+       }
+   else
+   {
+       do
+       {
+           dbus_message_iter_recurse(&mDBusMessageIter, &arrayIter);
+           dbus_message_iter_recurse(&arrayIter, &structIter);
+           soundProperty.type = static_cast<am_SoundPropertyType_e>(getInt(structIter, true));
+           soundProperty.value = static_cast<int16_t>(getInt(structIter, false));
+           listSoundProperties.push_back(soundProperty);
+       } while (dbus_message_iter_next(&arrayIter));
+       dbus_message_iter_next(&structIter);
+   }
+   return (listSoundProperties);
+}
+
+std::vector<am_MainSoundProperty_s> CAmRoutingDbusMessageHandler::getListMainSoundProperties()
+{
+    DBusMessageIter arrayIter;
+    DBusMessageIter structIter;
+    am_MainSoundProperty_s soundProperty;
+    std::vector<am_MainSoundProperty_s> listSoundProperties;
+    if (DBUS_TYPE_ARRAY != dbus_message_iter_get_arg_type(&mDBusMessageIter))
+       {
+           log(&routingDbus, DLT_LOG_ERROR, "CAmRoutingDbusMessageHandler::getListSoundProperties DBUS handler argument is no array!");
+           mErrorName = std::string(DBUS_ERROR_INVALID_ARGS);
+           mErrorMsg = "DBus argument is no array";
+       }
+   else
+   {
+       do
+       {
+           dbus_message_iter_recurse(&mDBusMessageIter, &arrayIter);
+           dbus_message_iter_recurse(&arrayIter, &structIter);
+           soundProperty.type = static_cast<am_MainSoundPropertyType_e>(getInt(structIter, true));
+           soundProperty.value = static_cast<int16_t>(getInt(structIter, false));
+           listSoundProperties.push_back(soundProperty);
+       } while (dbus_message_iter_next(&arrayIter));
+       dbus_message_iter_next(&structIter);
+   }
+   return (listSoundProperties);
+}
+
+am_NotificationPayload_s CAmRoutingDbusMessageHandler::getNotificationPayload()
+{
+    am_NotificationPayload_s notificationPayload;
+    DBusMessageIter structIter;
+
+    dbus_message_iter_recurse(&mDBusMessageIter, &structIter);
+    notificationPayload.type = static_cast<am_NotificationType_e>(getInt(structIter, true));
+    notificationPayload.value = static_cast<int16_t>(getInt(structIter, false));
+    dbus_message_iter_next(&mDBusMessageIter);
+
+    return (notificationPayload);
+}
+
+dbus_int32_t CAmRoutingDbusMessageHandler::getInt32()
+{
+    return (getInt32(mDBusMessageIter, true));
+}
+
+dbus_int32_t CAmRoutingDbusMessageHandler::getInt32(DBusMessageIter& iter, bool next)
+{
+    dbus_int32_t param(0);
+  #ifdef GLIB_DBUS_TYPES_TOLERANT
+      if (DBUS_TYPE_INT32 != dbus_message_iter_get_arg_type(&iter) && DBUS_TYPE_INT32 != dbus_message_iter_get_arg_type(&iter))
+  #else
+      if (DBUS_TYPE_INT32 != dbus_message_iter_get_arg_type(&iter))
+  #endif
+      {
+          log(&routingDbus, DLT_LOG_ERROR, "DBusMessageHandler::getInt DBUS handler argument is no int32_t!");
+          mErrorName = std::string(DBUS_ERROR_INVALID_ARGS);
+          mErrorMsg = "DBus argument is no int32_t";
+      }
+      else
+      {
+          dbus_message_iter_get_basic(&iter, &param);
+          if (next)
+              dbus_message_iter_next(&iter);
+      }
+      return (param);
+}
+
 void CAmRoutingDbusMessageHandler::append(const std::vector<am::am_SystemProperty_s>& listSystemProperties)
 {
     DBusMessageIter arrayIter;
@@ -923,7 +1125,7 @@ void CAmRoutingDbusMessageHandler::append(const std::vector<am::am_SystemPropert
 
 void CAmRoutingDbusMessageHandler::append(const am::am_Error_e error)
 {
-    if (!dbus_message_iter_append_basic(&mDBusMessageIter, DBUS_TYPE_UINT16, &error))
+    if (!dbus_message_iter_append_basic(&mDBusMessageIter, DBUS_TYPE_INT32, &error))
     {
         log(&routingDbus, DLT_LOG_ERROR, "DBusMessageHandler::append Cannot allocate DBus message!");
         mErrorName = std::string(DBUS_ERROR_NO_MEMORY);

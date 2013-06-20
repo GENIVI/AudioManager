@@ -37,15 +37,18 @@ public:
     void append(std::string string);
     void append(uint16_t integer);
     void append(int16_t integer);
+    void append(int integer);
     void append(std::vector<am_SoundProperty_s> listSoundProperties);
     void append(am_SoundProperty_s soundProperty);
     am_Error_e send();
+    am_Error_e sendAsync();
 
 private:
     DBusMessage* mpDbusMessage;
     DBusConnection* mpDbusConnection;
     DBusMessageIter mDbusMessageIter;
     DBusError mDBusError;
+    dbus_uint32_t mSerial;
 };
 }
 

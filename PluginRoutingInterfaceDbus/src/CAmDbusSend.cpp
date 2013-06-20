@@ -29,7 +29,8 @@ CAmRoutingDbusSend::CAmRoutingDbusSend(DBusConnection* conn, std::string bus_nam
         mpDbusMessage(NULL), //
         mpDbusConnection(conn), //
         mDbusMessageIter(), //
-        mDBusError()
+        mDBusError(), //
+        mSerial(1)
 {
     dbus_error_init(&mDBusError);
     mpDbusMessage = dbus_message_new_method_call(bus_name.c_str(), path.c_str(), interface.c_str(), method.c_str());
@@ -113,10 +114,20 @@ void CAmRoutingDbusSend::append(am_SoundProperty_s soundProperty)
     }
 }
 
+void CAmRoutingDbusSend::append(int integer)
+{
+    dbus_message_iter_init_append(mpDbusMessage, &mDbusMessageIter);
+    if (!dbus_message_iter_append_basic(&mDbusMessageIter, DBUS_TYPE_INT32, &integer))
+    {
+        log(&routingDbus, DLT_LOG_ERROR, "CAmRoutingDbusSend::append no more memory");
+        this->~CAmRoutingDbusSend();
+    }
+}
+
 am_Error_e CAmRoutingDbusSend::send()
 {
 
-    int16_t error;
+    int32_t error;
     DBusMessage* reply(dbus_connection_send_with_reply_and_block(mpDbusConnection, mpDbusMessage, -1, &mDBusError));
     if (!reply)
     {
@@ -124,10 +135,20 @@ am_Error_e CAmRoutingDbusSend::send()
         return (E_UNKNOWN);
     }
     if(!dbus_message_get_args(reply, &mDBusError, //
-            DBUS_TYPE_INT16, &error, //
+            DBUS_TYPE_INT32, &error, //
             DBUS_TYPE_INVALID))
         return (E_UNKNOWN);
     dbus_message_unref(reply);
     return (static_cast<am_Error_e>(error));
 }
+
+am_Error_e CAmRoutingDbusSend::sendAsync()
+{
+
+    dbus_connection_send(mpDbusConnection, mpDbusMessage, &mSerial);
+    mSerial++;
+    return (E_OK);
+
+}
+
 }

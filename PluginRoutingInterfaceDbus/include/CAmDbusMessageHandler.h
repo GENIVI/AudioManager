@@ -79,6 +79,8 @@ public:
     dbus_uint16_t getUInt(DBusMessageIter& iter, bool next);
     dbus_int16_t getInt();
     dbus_int16_t getInt(DBusMessageIter& iter, bool next);
+    dbus_int32_t getInt32();
+    dbus_int32_t getInt32(DBusMessageIter& iter, bool next);
     dbus_bool_t getBool();
     dbus_bool_t getBool(DBusMessageIter& iter, bool next);
     char getByte();
@@ -87,14 +89,22 @@ public:
     double getDouble(DBusMessageIter& iter, bool next);
     char* getString();
     char* getString(DBusMessageIter& iter, bool next);
-    am::am_Availability_s getAvailability();
+    am_Availability_s getAvailability();
     std::vector<am::am_EarlyData_s> getEarlyData();
     am_Domain_s getDomainData();
     am_Source_s getSourceData();
     am_Sink_s getSinkData();
     am_Gateway_s getGatewayData();
     am_Crossfader_s getCrossfaderData();
+    am_SoundProperty_s getSoundProperty();
     am_MainSoundProperty_s getMainSoundProperty();
+    std::vector<am_ConnectionFormat_e> getListconnectionFormats();
+    std::vector<bool> getListBool();
+    std::vector<am_SoundProperty_s> getListSoundProperties();
+    std::vector<am_MainSoundProperty_s> getListMainSoundProperties();
+    am_NotificationPayload_s getNotificationPayload();
+
+
 
     /**
      * the overloaded append function appends different datatypes to the dbusmessage

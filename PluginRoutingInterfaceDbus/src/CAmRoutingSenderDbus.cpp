@@ -116,10 +116,10 @@ am_Error_e CAmRoutingSenderDbus::asyncConnect(const am_Handle_s handle, const am
         send.append(connectionID);
         send.append(sourceID);
         send.append(sinkID);
-        send.append(static_cast<int16_t>(connectionFormat));
+        send.append(static_cast<int32_t>(connectionFormat));
         mMapConnections.insert(std::make_pair(connectionID, (iter->second)));
         mMapHandles.insert(std::make_pair(+handle.handle, iter->second));
-        return (send.send());
+        return (send.sendAsync());
     }
     log(&routingDbus, DLT_LOG_ERROR, "CAmRoutingSenderDbus::asyncConnect could not find interface");
     return (E_UNKNOWN);
@@ -136,7 +136,7 @@ am_Error_e CAmRoutingSenderDbus::asyncDisconnect(const am_Handle_s handle, const
         send.append(handle.handle);
         send.append(connectionID);
         mMapHandles.insert(std::make_pair(+handle.handle, iter->second));
-        return (send.send());
+        return (send.sendAsync());
     }
     log(&routingDbus, DLT_LOG_ERROR, "CAmRoutingSenderDbus::asyncDisconnect could not find interface");
     return (E_UNKNOWN);
@@ -153,7 +153,7 @@ am_Error_e CAmRoutingSenderDbus::asyncSetSinkVolume(const am_Handle_s handle, co
         send.append(handle.handle);
         send.append(sinkID);
         send.append(volume);
-        send.append(static_cast<int16_t>(ramp));
+        send.append(static_cast<int32_t>(ramp));
         send.append(time);
         mMapHandles.insert(std::make_pair(+handle.handle, iter->second));
         return (send.send());
@@ -192,9 +192,9 @@ am_Error_e CAmRoutingSenderDbus::asyncSetSourceState(const am_Handle_s handle, c
         CAmRoutingDbusSend send(mpDBusConnection, iter->second.busname, iter->second.path, iter->second.interface, "asyncSetSourceState");
         send.append(handle.handle);
         send.append(sourceID);
-        send.append(static_cast<int16_t>(state));
+        send.append(static_cast<int32_t>(state));
         mMapHandles.insert(std::make_pair(+handle.handle, iter->second));
-        return (send.send());
+        return (send.sendAsync());
     }
     log(&routingDbus, DLT_LOG_ERROR, "CAmRoutingSenderDbus::asyncSetSourceState could not find interface");
     return (E_UNKNOWN);
@@ -292,7 +292,7 @@ am_Error_e CAmRoutingSenderDbus::setDomainState(const am_domainID_t domainID, co
     {
         CAmRoutingDbusSend send(mpDBusConnection, iter->second.busname, iter->second.path, iter->second.interface, "setDomainState");
         send.append(domainID);
-        send.append(static_cast<int16_t>(domainState));
+        send.append(static_cast<int>(domainState));
         return (send.send());
     }
     log(&routingDbus, DLT_LOG_ERROR, "CAmRoutingSenderDbus::setDomainState could not find interface");
