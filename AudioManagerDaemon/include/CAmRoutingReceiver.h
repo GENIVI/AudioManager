@@ -29,7 +29,7 @@ namespace am
 
 class CAmSocketHandler;
 class CAmDbusWrapper;
-class CAmDatabaseHandler;
+class CAmDatabaseHandlerInterface;
 class CAmRoutingSender;
 class CAmControlSender;
 
@@ -39,8 +39,8 @@ class CAmControlSender;
 class CAmRoutingReceiver: public IAmRoutingReceive
 {
 public:
-    CAmRoutingReceiver(CAmDatabaseHandler *iDatabaseHandler, CAmRoutingSender *iRoutingSender, CAmControlSender *iControlSender, CAmSocketHandler *iSocketHandler);
-    CAmRoutingReceiver(CAmDatabaseHandler *iDatabaseHandler, CAmRoutingSender *iRoutingSender, CAmControlSender *iControlSender, CAmSocketHandler *iSocketHandler, CAmDbusWrapper *iDBusWrapper);
+    CAmRoutingReceiver(CAmDatabaseHandlerInterface *iDatabaseHandler, CAmRoutingSender *iRoutingSender, CAmControlSender *iControlSender, CAmSocketHandler *iSocketHandler);
+    CAmRoutingReceiver(CAmDatabaseHandlerInterface *iDatabaseHandler, CAmRoutingSender *iRoutingSender, CAmControlSender *iControlSender, CAmSocketHandler *iSocketHandler, CAmDbusWrapper *iDBusWrapper);
     ~CAmRoutingReceiver();
     void ackConnect(const am_Handle_s handle, const am_connectionID_t connectionID, const am_Error_e error);
     void ackDisconnect(const am_Handle_s handle, const am_connectionID_t connectionID, const am_Error_e error);
@@ -97,7 +97,7 @@ public:
     void waitOnRundown(bool rundown); //!< tells the RoutingReceiver to start waiting for all handles to be confirmed
 
 private:
-    CAmDatabaseHandler *mpDatabaseHandler; //!< pointer to the databaseHandler
+    CAmDatabaseHandlerInterface *mpDatabaseHandler; //!< pointer to the databaseHandler
     CAmRoutingSender *mpRoutingSender; //!< pointer to the routingSender
     CAmControlSender *mpControlSender; //!< pointer to the controlSender
     CAmSocketHandler *mpSocketHandler; //!< pointer to sockethandler

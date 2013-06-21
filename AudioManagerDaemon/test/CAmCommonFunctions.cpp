@@ -133,8 +133,17 @@ std::string int2string(int i)
 
 bool CAmCommonFunctions::compareSource(std::vector<am_Source_s>::iterator listIterator, const am_Source_s& sourceData)
 {
-    return (listIterator->available.availability == sourceData.available.availability) && (listIterator->available.availabilityReason == sourceData.available.availabilityReason) && (listIterator->sourceClassID == sourceData.sourceClassID) && (listIterator->domainID == sourceData.domainID) && (listIterator->interruptState == sourceData.interruptState) && (listIterator->visible == sourceData.visible) && (listIterator->name.compare(sourceData.name) == 0) && (listIterator->volume == sourceData.volume) && std::equal(listIterator->listConnectionFormats.begin(), listIterator->listConnectionFormats.end(), sourceData.listConnectionFormats.begin())
-            && std::equal(listIterator->listMainSoundProperties.begin(), listIterator->listMainSoundProperties.end(), sourceData.listMainSoundProperties.begin(), equalMainSoundProperty) && std::equal(listIterator->listSoundProperties.begin(), listIterator->listSoundProperties.end(), sourceData.listSoundProperties.begin(), equalSoundProperty);
+    return (listIterator->available.availability == sourceData.available.availability) && \
+    		(listIterator->available.availabilityReason == sourceData.available.availabilityReason) &&
+    		(listIterator->sourceClassID == sourceData.sourceClassID) &&
+    		(listIterator->domainID == sourceData.domainID) &&
+    		(listIterator->interruptState == sourceData.interruptState) &&
+    		(listIterator->visible == sourceData.visible) &&
+    		(listIterator->name.compare(sourceData.name) == 0) &&
+    		(listIterator->volume == sourceData.volume) &&
+    		std::equal(listIterator->listConnectionFormats.begin(), listIterator->listConnectionFormats.end(), sourceData.listConnectionFormats.begin()) &&
+            std::equal(listIterator->listMainSoundProperties.begin(), listIterator->listMainSoundProperties.end(), sourceData.listMainSoundProperties.begin(), equalMainSoundProperty) &&
+            std::equal(listIterator->listSoundProperties.begin(), listIterator->listSoundProperties.end(), sourceData.listSoundProperties.begin(), equalSoundProperty);
 }
 
 bool CAmCommonFunctions::compareSink(std::vector<am_Sink_s>::iterator listIterator, const am_Sink_s& sinkData)

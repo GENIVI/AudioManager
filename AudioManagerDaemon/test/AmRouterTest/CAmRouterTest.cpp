@@ -12,7 +12,7 @@
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *
- * \author Christian Mueller, christian.ei.mueller@bmw.de BMW 2011,2012
+ * \author Aleksandar Donchev, aleksander.donchev@partner.bmw.de BMW 2013
  *
  * For further information see http://www.genivi.org/.
  *
@@ -29,8 +29,12 @@ CAmRouterTest::CAmRouterTest() :
         plistRoutingPluginDirs(), //
         plistCommandPluginDirs(), //
         pSocketHandler(), //
-        pDatabaseHandler(std::string(":memory:")), //
         pControlSender(), //
+#ifdef WITH_DATABASE_STORAGE
+		pDatabaseHandler(std::string(":memory:")),
+#else
+		pDatabaseHandler(),
+#endif
         pRouter(&pDatabaseHandler, &pControlSender), //
         pRoutingSender(plistRoutingPluginDirs), //
         pCommandSender(plistCommandPluginDirs), //
@@ -49,11 +53,17 @@ CAmRouterTest::CAmRouterTest() :
 
 CAmRouterTest::~CAmRouterTest()
 {
+
 }
 
 void CAmRouterTest::SetUp()
 {
     logInfo("Routing Test started ");
+#ifdef WITH_DATABASE_STORAGE
+    printf("\n  WITH_DATABASE_STORAGE = 1 \n");
+#else
+    printf("\n  WITH_DATABASE_STORAGE = 0 \n");
+#endif
 }
 
 void CAmRouterTest::TearDown()

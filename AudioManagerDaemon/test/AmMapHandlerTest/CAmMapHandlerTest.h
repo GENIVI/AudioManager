@@ -12,67 +12,53 @@
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *
-* \author Aleksandar Donchev, aleksander.donchev@partner.bmw.de BMW 2013
+ * \author Christian Mueller, christian.ei.mueller@bmw.de BMW 2011,2012
  *
  * For further information see http://www.genivi.org/.
  *
  */
 
-#ifndef DATABASETEST_H_
-#define DATABASETEST_H_
+#ifndef MAPHANDLERTEST_H_
+#define MAPHANDLERTEST_H_
 
 #define UNIT_TEST 1
 
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
-#include <algorithm>
-#include <string>
-#include <vector>
-#include <set>
-#ifdef WITH_DATABASE_STORAGE
-   #include "CAmDatabaseHandler.h"
-#else
-    #include "CAmMapHandler.h"
-#endif
+#include "CAmMapHandler.h"
 #include "CAmControlReceiver.h"
 #include "CAmControlSender.h"
 #include "CAmDatabaseObserver.h"
 #include "CAmRoutingSender.h"
 #include "CAmRouter.h"
-#include "shared/CAmSocketHandler.h"
+#include "CAmControlSender.h"
 #include "../IAmControlBackdoor.h"
 #include "../IAmCommandBackdoor.h"
 #include "../CAmCommonFunctions.h"
 #include "../MockIAmControlSend.h"
 #include "../MockIAmCommandSend.h"
-
+#include "shared/CAmSocketHandler.h"
 
 namespace am
 {
 
-class CAmRouterTest: public ::testing::Test
+class CAmMapHandlerTest: public ::testing::Test
 {
 public:
-    CAmRouterTest();
-    ~CAmRouterTest();
+	CAmMapHandlerTest();
+    ~CAmMapHandlerTest();
     std::vector<std::string> plistRoutingPluginDirs;
     std::vector<std::string> plistCommandPluginDirs;
     CAmSocketHandler pSocketHandler;
-    CAmControlSender pControlSender;
-#ifdef WITH_DATABASE_STORAGE
-    CAmDatabaseHandler pDatabaseHandler;
-#else
     CAmMapHandler pDatabaseHandler;
-#endif
-    CAmRouter pRouter;
     CAmRoutingSender pRoutingSender;
     CAmCommandSender pCommandSender;
     MockIAmCommandSend pMockInterface;
-    MockIAmControlSend pMockControlInterface;
     IAmRoutingBackdoor pRoutingInterfaceBackdoor;
     IAmCommandBackdoor pCommandInterfaceBackdoor;
-    IAmControlBackdoor pControlInterfaceBackdoor;
+    CAmControlSender pControlSender;
+    CAmRouter pRouter;
     CAmControlReceiver pControlReceiver;
     CAmDatabaseObserver pObserver;
     CAmCommonFunctions pCF;
@@ -84,4 +70,4 @@ public:
 
 }
 
-#endif /* DATABASETEST_H_ */
+#endif /* MAPHANDLERTEST_H_ */

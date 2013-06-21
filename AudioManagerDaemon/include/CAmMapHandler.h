@@ -12,27 +12,25 @@
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *
- * \author Christian Mueller, christian.ei.mueller@bmw.de BMW 2011,2012
+* \author Aleksandar Donchev, aleksander.donchev@partner.bmw.de BMW 2013
  *
  * \file CAmDatabaseHandler.h
  * For further information see http://www.genivi.org/.
  *
  */
 
-#ifndef DATABASEHANDLER_H_
-#define DATABASEHANDLER_H_
+#ifndef MAPHANDLER_H_
+#define MAPHANDLER_H_
 
 #include "CAmDatabaseHandlerInterface.h"
+#include <unordered_map>
 #include <map>
-#include <sqlite3.h>
+#include <stdint.h>
+#include <limits.h>
+
 
 namespace am
 {
-
-class CAmDatabaseObserver;
-class CAmRoutingTree;
-class CAmRoutingTreeItem;
-
 //todo: check the enum values before entering & changing in the database.
 //todo: change asserts for dynamic boundary checks into failure answers.#
 //todo: check autoincrement boundary and set to 16bit limits
@@ -42,22 +40,159 @@ class CAmRoutingTreeItem;
 //todo: enforce the uniqueness of names
 
 /**
+ * The following structures extend the base structures with the field 'reserved'.
+ */
+
+struct am_Sink_Database_s : public am_Sink_s
+{
+	bool reserved;
+	am_Sink_Database_s():am_Sink_s(), reserved(false)
+	{};
+	void getSinkType(am_SinkType_s & sinkType) const
+	{
+		sinkType.name = name;
+		sinkType.sinkID = sinkID;
+		sinkType.availability = available;
+		sinkType.muteState = muteState;
+		sinkType.volume = mainVolume;
+		sinkType.sinkClassID = sinkClassID;
+	};
+	am_Sink_Database_s & operator=(const am_Sink_Database_s & anObject)
+	{
+		if (this != &anObject)
+		{
+			am_Sink_s::operator=(anObject);
+			reserved = anObject.reserved;
+		}
+		return *this;
+	};
+	am_Sink_Database_s & operator=(const am_Sink_s & anObject)
+	{
+		if (this != &anObject)
+			am_Sink_s::operator=(anObject);
+		return *this;
+	};
+	void print() const
+	{
+		printf("\n Sink(%s) id(%d)\n", name.c_str() ,sinkID);
+	    printf("\t availability(%d) availabilityReason(%d) sinkClassID(%d) domainID(%d) visible(%d) volume(%d) mainVolume(%d) muteState(%d) reserved(%d)\n",
+	    				available.availability, available.availabilityReason, sinkClassID, domainID, visible, volume, mainVolume, muteState,reserved);
+	};
+};
+
+struct am_Source_Database_s : public am_Source_s
+{
+	bool reserved;
+	am_Source_Database_s():am_Source_s(), reserved(false)
+	{};
+	void getSourceType(am_SourceType_s & sourceType) const
+	{
+		sourceType.name = name;
+		sourceType.sourceClassID = sourceClassID;
+		sourceType.availability = available;
+		sourceType.sourceID = sourceID;
+	};
+	am_Source_Database_s & operator=(const am_Source_Database_s & anObject)
+	{
+		if (this != &anObject)
+		{
+			am_Source_s::operator=(anObject);
+			reserved = anObject.reserved;
+		}
+		return *this;
+	};
+	am_Source_Database_s & operator=(const am_Source_s & anObject)
+	{
+		if (this != &anObject)
+		{
+			am_Source_s::operator=(anObject);
+		}
+		return *this;
+	};
+	void print() const
+	{
+		printf("\n Source(%s) id(%d)\n", name.c_str() ,sourceID);
+	    printf("\t availability(%d) availabilityReason(%d) sourceClassID(%d) domainID(%d) visible(%d) volume(%d) interruptState(%d) sourceState(%d) reserved(%d)\n",
+	    				available.availability, available.availabilityReason, sourceClassID, domainID, visible, volume, interruptState, sourceState,reserved);
+	};
+};
+
+struct am_Connection_Database_s : public am_Connection_s
+{
+	bool reserved;
+	am_Connection_Database_s():am_Connection_s(), reserved(true)
+	{};
+	am_Connection_Database_s & operator=(const am_Connection_Database_s & anObject)
+	{
+		if (this != &anObject)
+		{
+			am_Connection_s::operator=(anObject);
+			reserved = anObject.reserved;
+		}
+		return *this;
+	};
+	am_Connection_Database_s & operator=(const am_Connection_s & anObject)
+	{
+		if (this != &anObject)
+			am_Connection_s::operator=(anObject);
+		return *this;
+	};
+};
+
+struct am_Domain_Database_s : public am_Domain_s
+{
+	bool reserved;
+	am_Domain_Database_s():am_Domain_s(), reserved(false)
+	{};
+	am_Domain_Database_s & operator=(const am_Domain_Database_s & anObject)
+	{
+		if (this != &anObject)
+		{
+			am_Domain_s::operator=(anObject);
+			reserved = anObject.reserved;
+		}
+		return *this;
+	};
+	am_Domain_Database_s & operator=(const am_Domain_s & anObject)
+	{
+		if (this != &anObject)
+			am_Domain_s::operator=(anObject);
+		return *this;
+	};
+};
+
+struct am_MainConnection_Database_s : public am_MainConnection_s
+{
+	am_MainConnection_Database_s():am_MainConnection_s()
+	{};
+	void getMainConnectionType(am_MainConnectionType_s & connectionType) const
+	{
+		connectionType.mainConnectionID = mainConnectionID;
+		connectionType.sourceID = sourceID;
+		connectionType.sinkID = sinkID;
+		connectionType.connectionState = connectionState;
+		connectionType.delay = delay;
+	};
+	am_MainConnection_Database_s & operator=(const am_MainConnection_Database_s & anObject)
+	{
+		am_MainConnection_s::operator=(anObject);
+		return *this;
+	};
+	am_MainConnection_Database_s & operator=(const am_MainConnection_s & anObject)
+	{
+		am_MainConnection_s::operator=(anObject);
+		return *this;
+	};
+};
+
+/**
  * This class handles and abstracts the database
  */
-class CAmDatabaseHandler : public CAmDatabaseHandlerInterface
+class CAmMapHandler : public CAmDatabaseHandlerInterface
 {
-private:
-    am_timeSync_t calculateMainConnectionDelay(const am_mainConnectionID_t mainConnectionID) const; //!< calculates a new main connection delay
-    bool sqQuery(const std::string& query); //!< queries the database
-    bool openDatabase(); //!< opens the database
-    void createTables(); //!< creates all tables from the static table
-    sqlite3 *mpDatabase; //!< pointer to the database
-    std::string mPath; //!< path to the database
-
 public:
-	CAmDatabaseHandler();
-    CAmDatabaseHandler(std::string databasePath);
-    ~CAmDatabaseHandler();
+	CAmMapHandler();
+    ~CAmMapHandler();
     am_Error_e enterDomainDB(const am_Domain_s& domainData, am_domainID_t& domainID);
     am_Error_e enterMainConnectionDB(const am_MainConnection_s& mainConnectionData, am_mainConnectionID_t& connectionID);
     am_Error_e enterSinkDB(const am_Sink_s& sinkData, am_sinkID_t& sinkID);
@@ -169,8 +304,91 @@ public:
     void registerObserver(CAmDatabaseObserver *iObserver);
     bool sourceVisible(const am_sourceID_t sourceID) const;
     bool sinkVisible(const am_sinkID_t sinkID) const;
+
+    void printSources();
+    void printSinks();
+    void printSinkClasses();
+    void printSourceClasses();
+private:
+
+    typedef std::map<am_domainID_t, am_Domain_Database_s>  		  			 CAmMapDomain;
+    typedef std::map<am_sourceClass_t, am_SourceClass_s> 		   			 CAmMapSourceClass;
+    typedef std::map<am_sinkClass_t, am_SinkClass_s> 		  	       		 CAmMapSinkClass;
+    typedef std::map<am_sinkID_t, am_Sink_Database_s> 			   			 CAmMapSink;
+    typedef std::map<am_sourceID_t, am_Source_Database_s> 		 			 CAmMapSource;
+    typedef std::map<am_gatewayID_t, am_Gateway_s> 			 	 			 CAmMapGateway;
+    typedef std::map<am_crossfaderID_t, am_Crossfader_s> 		   			 CAmMapCrossfader;
+    typedef std::map<am_connectionID_t, am_Connection_Database_s>			 CAmMapConnection;
+    typedef std::map<am_mainConnectionID_t, am_MainConnection_Database_s> 	 CAmMapMainConnection;
+    typedef std::vector<am_SystemProperty_s> 	   				 			 CAmVectorSystemProperties;
+    typedef struct CAmMappedData
+    {
+    	int16_t mCurrentDomainID;
+    	int16_t mCurrentSourceClassesID;
+    	int16_t mCurrentSinkClassesID;
+    	int16_t mCurrentSinkID;
+    	int16_t mCurrentSourceID;
+    	int16_t mCurrentGatewayID;
+    	int16_t mCurrentCrossfaderID;
+    	int16_t mCurrentConnectionID;
+    	int16_t mCurrentMainConnectionID;
+    	int16_t mDefaultIDLimit;
+
+    	CAmVectorSystemProperties mSystemProperties;
+    	CAmMapDomain mDomainMap;
+    	CAmMapSourceClass mSourceClassesMap;
+    	CAmMapSinkClass mSinkClassesMap;
+    	CAmMapSink mSinkMap;
+    	CAmMapSource mSourceMap;
+    	CAmMapGateway mGatewayMap;
+    	CAmMapCrossfader mCrossfaderMap;
+    	CAmMapConnection mConnectionMap;
+    	CAmMapMainConnection mMainConnectionMap;
+
+    	CAmMappedData(): //For Domain, MainConnections, Connections we don't have static IDs.
+    		mCurrentDomainID(1), mCurrentSourceClassesID(DYNAMIC_ID_BOUNDARY), mCurrentSinkClassesID(DYNAMIC_ID_BOUNDARY),
+    		mCurrentSinkID(DYNAMIC_ID_BOUNDARY), mCurrentSourceID(DYNAMIC_ID_BOUNDARY), mCurrentGatewayID(DYNAMIC_ID_BOUNDARY),
+    		mCurrentCrossfaderID(DYNAMIC_ID_BOUNDARY), mCurrentConnectionID(1), mCurrentMainConnectionID(1),
+    		mDefaultIDLimit(SHRT_MAX),
+
+    		mSystemProperties(),
+			mDomainMap(),mSourceClassesMap(), mSinkClassesMap(), mSinkMap(), mSourceMap(),
+			mGatewayMap(), mCrossfaderMap(), mConnectionMap(), mMainConnectionMap()
+    	{};
+
+    	bool increaseID(int16_t * resultID, int16_t * sourceID, int16_t const desiredStaticID = 0, int16_t const preferedStaticIDBoundary = DYNAMIC_ID_BOUNDARY)
+    	{
+    		if( desiredStaticID > 0 && desiredStaticID < preferedStaticIDBoundary )
+    		{
+				*resultID = desiredStaticID;
+				return true;
+    		}
+    		else if( *sourceID < mDefaultIDLimit-1 ) //SHRT_MAX or the max limit is reserved and not used!!!
+    		{
+    			*resultID = (*sourceID)++;
+    			return true;
+    		}
+    		else
+    		{
+    			*resultID = -1;
+    			return false;
+    		}
+    	 };
+    } CAmMappedData;
+
+
+    CAmMappedData mMappedData;
+
+    am_timeSync_t calculateMainConnectionDelay(const am_mainConnectionID_t mainConnectionID) const; //!< calculates a new main connection delay
+    int16_t calculateDelayForRoute(const std::vector<am_connectionID_t>& listConnectionID);
+    bool insertSinkDB(const am_Sink_s & sinkData, am_sinkID_t & sinkID);
+    bool insertCrossfaderDB(const am_Crossfader_s & crossfaderData, am_crossfaderID_t & crossfaderID);
+    bool insertGatewayDB(const am_Gateway_s & gatewayData, am_gatewayID_t & gatewayID);
+    bool insertSourceDB(const am_Source_s & sourceData, am_sourceID_t & sourceID);
+    bool insertSinkClassDB(const am_SinkClass_s & sinkClass, am_sinkClass_t & sinkClassID);
+    bool insertSourceClassDB(am_sourceClass_t & sourceClassID, const am_SourceClass_s & sourceClass);
 };
 
 }
 
-#endif /* DATABASEHANDLER_H_ */
+#endif /* MAPHANDLER_H_ */

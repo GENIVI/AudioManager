@@ -28,7 +28,7 @@ namespace am
 {
 
 class CAmSocketHandler;
-class CAmDatabaseHandler;
+class CAmDatabaseHandlerInterface;
 class CAmRoutingSender;
 class CAmCommandSender;
 class CAmRouter;
@@ -40,8 +40,8 @@ class CAmNodeStateCommunicator;
 class CAmControlReceiver: public IAmControlReceive
 {
 public:
-    CAmControlReceiver(CAmDatabaseHandler *iDatabaseHandler, CAmRoutingSender *iRoutingSender, CAmCommandSender *iCommandSender, CAmSocketHandler *iSocketHandler, CAmRouter* iRouter, CAmNodeStateCommunicator* iNodeStateCommunicator);
-    CAmControlReceiver(CAmDatabaseHandler *iDatabaseHandler, CAmRoutingSender *iRoutingSender, CAmCommandSender *iCommandSender, CAmSocketHandler *iSocketHandler, CAmRouter* iRouter);
+    CAmControlReceiver(CAmDatabaseHandlerInterface *iDatabaseHandler, CAmRoutingSender *iRoutingSender, CAmCommandSender *iCommandSender, CAmSocketHandler *iSocketHandler, CAmRouter* iRouter, CAmNodeStateCommunicator* iNodeStateCommunicator);
+    CAmControlReceiver(CAmDatabaseHandlerInterface *iDatabaseHandler, CAmRoutingSender *iRoutingSender, CAmCommandSender *iCommandSender, CAmSocketHandler *iSocketHandler, CAmRouter* iRouter);
     ~CAmControlReceiver();
     am_Error_e getRoute(const bool onlyfree, const am_sourceID_t sourceID, const am_sinkID_t sinkID, std::vector<am_Route_s>& returnList);
     am_Error_e connect(am_Handle_s& handle, am_connectionID_t& connectionID, const am_ConnectionFormat_e format, const am_sourceID_t sourceID, const am_sinkID_t sinkID);
@@ -137,7 +137,7 @@ public:
     NsmErrorStatus_e sendLifecycleRequestCompleteNSM(const uint32_t RequestId, const NsmErrorStatus_e status) ;
 
 private:
-    CAmDatabaseHandler* mDatabaseHandler; //!< pointer tto the databasehandler
+    CAmDatabaseHandlerInterface* mDatabaseHandler; //!< pointer tto the databasehandler
     CAmRoutingSender* mRoutingSender; //!< pointer to the routing send interface.
     CAmCommandSender* mCommandSender; //!< pointer to the command send interface
     CAmSocketHandler* mSocketHandler; //!< pointer to the socketHandler

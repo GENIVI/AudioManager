@@ -79,6 +79,9 @@ OPTION ( GLIB_DBUS_TYPES_TOLERANT
 OPTION ( WITH_NSM
     "build with NSM support" ON)
     
+ OPTION ( WITH_DATABASE_STORAGE
+    "build with sqlite as in memory storage" OFF)
+    
 IF (NOT WITH_DBUS_WRAPPER)
     SET (WITH_NSM OFF)
 ENDIF (NOT WITH_DBUS_WRAPPER)

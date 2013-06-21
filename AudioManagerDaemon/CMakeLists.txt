@@ -25,7 +25,9 @@ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 set(DOC_OUTPUT_PATH ${DOC_OUTPUT_PATH}/AudioManager)
 set(INCLUDE_FOLDER "include")
 
-pkg_check_modules(SQLITE REQUIRED sqlite3)
+IF (WITH_DATABASE_STORAGE)
+    pkg_check_modules(SQLITE REQUIRED sqlite3)
+ENDIF (WITH_DATABASE_STORAGE)
 
 IF (WITH_SYSTEMD_WATCHDOG)
 	pkg_check_modules(SYSTEMD libsystemd-daemon>=44)
@@ -49,6 +51,7 @@ SET(AUDIOMAN_SRCS_CXX
     src/CAmControlReceiver.cpp
     src/CAmControlSender.cpp
     src/CAmDatabaseHandler.cpp
+    src/CAmMapHandler.cpp
     src/CAmDatabaseObserver.cpp
     src/CAmRoutingReceiver.cpp
     src/CAmRoutingSender.cpp
@@ -87,6 +90,18 @@ IF(WITH_SOCKETHANDLER_LOOP)
         src/CAmSocketHandler.cpp
      )
 ENDIF(WITH_SOCKETHANDLER_LOOP)
+
+IF(WITH_DATABASE_STORAGE)
+    SET (AUDIOMAN_SRCS_CXX
+        ${AUDIOMAN_SRCS_CXX}
+        src/CAmDatabaseHandler.cpp
+    )
+ELSE(WITH_DATABASE_STORAGE)
+    SET (AUDIOMAN_SRCS_CXX
+        ${AUDIOMAN_SRCS_CXX}
+        src/CAmMapHandler.cpp
+    )
+ENDIF(WITH_DATABASE_STORAGE)
 
 INCLUDE_DIRECTORIES(	
 	${CMAKE_SOURCE_DIR} 
@@ -182,7 +197,9 @@ IF(WITH_TESTS)
 ENDIF(WITH_TESTS)
 
 # General packet dependency
-SET(ADD_DEPEND_BIN_PROP "sqlite3(>=3.6.22)")
+IF(WITH_DATABASE_STORAGE)
+    SET(ADD_DEPEND_BIN_PROP "sqlite3(>=3.6.22)")
+ENDIF(WITH_DATABASE_STORAGE)
 
 # Optional packet dependency
 IF(WITH_DLT)

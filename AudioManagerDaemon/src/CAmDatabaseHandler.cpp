@@ -135,17 +135,15 @@ inline std::string i2s(T const& x)
     return (o.str());
 }
 
-CAmDatabaseHandler::CAmDatabaseHandler(std::string databasePath) :
+CAmDatabaseHandler::CAmDatabaseHandler():CAmDatabaseHandlerInterface()
+{
+	mpDatabase = NULL;
+	mPath = std::string("");
+}
+
+CAmDatabaseHandler::CAmDatabaseHandler(std::string databasePath):CAmDatabaseHandlerInterface(),
         mpDatabase(NULL), //
-        mPath(databasePath), //
-        mpDatabaseObserver(NULL), //
-        mFirstStaticSink(true), //
-        mFirstStaticSource(true), //
-        mFirstStaticGateway(true), //
-        mFirstStaticSinkClass(true), //
-        mFirstStaticSourceClass(true), //
-        mFirstStaticCrossfader(true), //
-        mListConnectionFormat()
+        mPath(databasePath)
 {
 
     std::ifstream infile(mPath.c_str());
@@ -3844,7 +3842,7 @@ bool CAmDatabaseHandler::sinkVisible(const am_sinkID_t sinkID) const
  * @param connection the connection to be checked
  * @return true if connections exists
  */
-bool CAmDatabaseHandler::existConnection(const am_Connection_s connection)
+bool CAmDatabaseHandler::existConnection(const am_Connection_s & connection) const
 {
     sqlite3_stmt* query = NULL;
     std::string command = "SELECT connectionID FROM " + std::string(CONNECTION_TABLE) + " WHERE sinkID=? AND sourceID=? AND connectionFormat=? AND reserved=0";
@@ -3887,7 +3885,7 @@ bool CAmDatabaseHandler::existConnection(const am_Connection_s connection)
  * @param connectionID
  * @return true if connection exits
  */
-bool CAmDatabaseHandler::existConnectionID(const am_connectionID_t connectionID)
+bool CAmDatabaseHandler::existConnectionID(const am_connectionID_t connectionID) const
 {
     sqlite3_stmt* query = NULL;
     std::string command = "SELECT connectionID FROM " + std::string(CONNECTION_TABLE) + " WHERE connectionID=? AND reserved=0";

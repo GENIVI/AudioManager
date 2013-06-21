@@ -22,6 +22,7 @@ set(EXECUTABLE_OUTPUT_PATH ${TEST_EXECUTABLE_OUTPUT_PATH})
 
 add_subdirectory (AmControlInterfaceTest)
 add_subdirectory (AmDatabaseHandlerTest)
+add_subdirectory (AmMapHandlerTest)
 add_subdirectory (AmRouterTest)
 add_subdirectory (AmRoutingInterfaceTest)
 add_subdirectory (AmSocketHandlerTest)

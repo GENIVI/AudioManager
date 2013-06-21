@@ -17,13 +17,13 @@
 
 cmake_minimum_required(VERSION 2.6)
 
-PROJECT(AmRouterTest)
+PROJECT(AmMapHandlerTest)
 
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -DUNIT_TEST=1 -DDLT_CONTEXT=AudioManager")
 
 
 FIND_PACKAGE(PkgConfig)
-pkg_check_modules(SQLITE REQUIRED sqlite3)
+#pkg_check_modules(SQLITE REQUIRED sqlite3)
 
 IF(WITH_DLT)    
     pkg_check_modules(DLT REQUIRED automotive-dlt>=2.2.0)   
@@ -43,7 +43,7 @@ INCLUDE_DIRECTORIES(
     ${GMOCK_INCLUDE_DIR}
 )
 
-file(GLOB ROUTING_SRCS_CXX 
+file(GLOB DATABASE_SRCS_CXX 
     "../../src/CAmMapHandler.cpp"
     "../../src/CAmDatabaseHandler.cpp"
     "../../src/CAmDatabaseObserver.cpp"
@@ -62,14 +62,14 @@ file(GLOB ROUTING_SRCS_CXX
     )
     
 IF(WITH_NSM)
-    SET (ROUTING_SRCS_CXX
-        ${ROUTING_SRCS_CXX}
+    SET (DATABASE_SRCS_CXX
+        ${DATABASE_SRCS_CXX}
     "../../src/CAmNodeStateCommunicator.cpp")
 ENDIF(WITH_NSM)
 
-ADD_EXECUTABLE( AmRouterTest ${ROUTING_SRCS_CXX})
+ADD_EXECUTABLE( AmMapHandlerTest ${DATABASE_SRCS_CXX})
 
-TARGET_LINK_LIBRARIES( AmRouterTest 
+TARGET_LINK_LIBRARIES( AmMapHandlerTest 
 	${SQLITE_LIBRARIES}
 	${DLT_LIBRARIES}
 	${DBUS_LIBRARY}
@@ -79,14 +79,14 @@ TARGET_LINK_LIBRARIES( AmRouterTest
     gmock
 )
 
-ADD_DEPENDENCIES(AmRouterTest gtest gmock)
+ADD_DEPENDENCIES(AmMapHandlerTest gtest gmock)
 
-INSTALL(TARGETS AmRouterTest 
+INSTALL(TARGETS AmMapHandlerTest 
         DESTINATION "~/AudioManagerTest/"
         PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
         COMPONENT tests
 )
 
-SET(ADD_DEPEND "audiomanager-bin" "sqlite3(>=3.6.22)" "dlt" "libdbus-1-3(>=1.2.16)"  "libpthread-stubs0")
+SET(ADD_DEPEND "audiomanager-bin" "dlt" "libdbus-1-3(>=1.2.16)"  "libpthread-stubs0")
 set_property(GLOBAL APPEND PROPERTY tests_prop "${ADD_DEPEND}")
 

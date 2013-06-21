@@ -22,7 +22,7 @@
 #include "CAmCommandReceiver.h"
 #include <cassert>
 #include <algorithm>
-#include "CAmDatabaseHandler.h"
+#include "CAmDatabaseHandlerInterface.h"
 #include "CAmControlSender.h"
 #include "shared/CAmDltWrapper.h"
 #include "shared/CAmSocketHandler.h"
@@ -30,7 +30,7 @@
 namespace am
 {
 
-CAmCommandReceiver::CAmCommandReceiver(CAmDatabaseHandler *iDatabaseHandler, CAmControlSender *iControlSender, CAmSocketHandler *iSocketHandler) :
+CAmCommandReceiver::CAmCommandReceiver(CAmDatabaseHandlerInterface *iDatabaseHandler, CAmControlSender *iControlSender, CAmSocketHandler *iSocketHandler) :
         mDatabaseHandler(iDatabaseHandler), //
         mControlSender(iControlSender), //
         mDBusWrapper(NULL), //
@@ -49,7 +49,7 @@ CAmCommandReceiver::CAmCommandReceiver(CAmDatabaseHandler *iDatabaseHandler, CAm
     assert(mControlSender!=NULL);
 }
 
-CAmCommandReceiver::CAmCommandReceiver(CAmDatabaseHandler *iDatabaseHandler, CAmControlSender *iControlSender, CAmSocketHandler *iSocketHandler, CAmDbusWrapper *iDBusWrapper) :
+CAmCommandReceiver::CAmCommandReceiver(CAmDatabaseHandlerInterface *iDatabaseHandler, CAmControlSender *iControlSender, CAmSocketHandler *iSocketHandler, CAmDbusWrapper *iDBusWrapper) :
         mDatabaseHandler(iDatabaseHandler), //
         mControlSender(iControlSender), //
         mDBusWrapper(iDBusWrapper), //

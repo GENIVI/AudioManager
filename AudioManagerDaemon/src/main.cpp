@@ -52,6 +52,7 @@
 #include <new>
 #include "CAmRouter.h"
 #include "CAmDatabaseHandler.h"
+#include "CAmMapHandler.h"
 #include "CAmControlSender.h"
 #include "CAmCommandSender.h"
 #include "CAmRoutingSender.h"
@@ -313,30 +314,36 @@ void mainProgram()
     CAmWatchdog iWatchdog(&iSocketHandler);
 #endif /*WITH_SYSTEMD_WATCHDOG*/
 
-    CAmDatabaseHandler iDatabaseHandler(databasePath);
+#ifdef WITH_DATABASE_STORAGE
+    CAmDatabaseHandler * ptr_iDatabaseHandler = new CAmMapHandler(databasePath);
+#else
+    CAmMapHandler * ptr_iDatabaseHandler = new CAmMapHandler();
+#endif /*WITH_DATABASE_STORAGE*/
+    CAmDatabaseHandlerInterface & iDatabaseHandler = *ptr_iDatabaseHandler;
+
     CAmRoutingSender iRoutingSender(listRoutingPluginDirs);
     CAmCommandSender iCommandSender(listCommandPluginDirs);
     CAmControlSender iControlSender(controllerPlugin,&iSocketHandler);
-    CAmRouter iRouter(&iDatabaseHandler, &iControlSender);
+    CAmRouter iRouter(ptr_iDatabaseHandler, &iControlSender);
 
 #ifdef WITH_DBUS_WRAPPER
-    CAmCommandReceiver iCommandReceiver(&iDatabaseHandler, &iControlSender, &iSocketHandler, &iDBusWrapper);
-    CAmRoutingReceiver iRoutingReceiver(&iDatabaseHandler, &iRoutingSender, &iControlSender, &iSocketHandler, &iDBusWrapper);
+    CAmCommandReceiver iCommandReceiver(ptr_iDatabaseHandler, &iControlSender, &iSocketHandler, &iDBusWrapper);
+    CAmRoutingReceiver iRoutingReceiver(ptr_iDatabaseHandler, &iRoutingSender, &iControlSender, &iSocketHandler, &iDBusWrapper);
 #ifdef WITH_NSM
-    CAmControlReceiver iControlReceiver(&iDatabaseHandler,&iRoutingSender,&iCommandSender,&iSocketHandler, &iRouter, &iNodeStateCommunicator);
+    CAmControlReceiver iControlReceiver(ptr_iDatabaseHandler,&iRoutingSender,&iCommandSender,&iSocketHandler, &iRouter, &iNodeStateCommunicator);
     iNodeStateCommunicator.registerControlSender(&iControlSender);
 #else /*WITH_NSM*/
-    CAmControlReceiver iControlReceiver(&iDatabaseHandler,&iRoutingSender,&iCommandSender,&iSocketHandler, &iRouter);
+    CAmControlReceiver iControlReceiver(ptr_iDatabaseHandler,&iRoutingSender,&iCommandSender,&iSocketHandler, &iRouter);
 #endif /*WITH_NSM*/
 #else /*WITH_DBUS_WRAPPER*/
-    CAmCommandReceiver iCommandReceiver(&iDatabaseHandler,&iControlSender,&iSocketHandler);
-    CAmRoutingReceiver iRoutingReceiver(&iDatabaseHandler,&iRoutingSender,&iControlSender,&iSocketHandler);
-    CAmControlReceiver iControlReceiver(&iDatabaseHandler,&iRoutingSender,&iCommandSender,&iSocketHandler, &iRouter);
+    CAmCommandReceiver iCommandReceiver(ptr_iDatabaseHandler,&iControlSender,&iSocketHandler);
+    CAmRoutingReceiver iRoutingReceiver(ptr_iDatabaseHandler,&iRoutingSender,&iControlSender,&iSocketHandler);
+    CAmControlReceiver iControlReceiver(ptr_iDatabaseHandler,&iRoutingSender,&iCommandSender,&iSocketHandler, &iRouter);
 #endif /*WITH_DBUS_WRAPPER*/
 
 
 #ifdef WITH_TELNET
-    CAmTelnetServer iTelnetServer(&iSocketHandler, &iCommandSender, &iCommandReceiver, &iRoutingSender, &iRoutingReceiver, &iControlSender, &iControlReceiver, &iDatabaseHandler, &iRouter, telnetport, maxConnections);
+    CAmTelnetServer iTelnetServer(&iSocketHandler, &iCommandSender, &iCommandReceiver, &iRoutingSender, &iRoutingReceiver, &iControlSender, &iControlReceiver, ptr_iDatabaseHandler, &iRouter, telnetport, maxConnections);
     CAmDatabaseObserver iObserver(&iCommandSender, &iRoutingSender, &iSocketHandler, &iTelnetServer);
 #else /*WITH_TELNET*/
     CAmDatabaseObserver iObserver(&iCommandSender,&iRoutingSender, &iSocketHandler);
@@ -358,7 +365,11 @@ void mainProgram()
 
     //start the mainloop here....
     iSocketHandler.start_listenting();
-
+    if(ptr_iDatabaseHandler)
+    {
+		delete ptr_iDatabaseHandler;
+		ptr_iDatabaseHandler = NULL;
+    }
 }
 
 /**
