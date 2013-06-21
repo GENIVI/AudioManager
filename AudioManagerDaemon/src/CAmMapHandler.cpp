@@ -189,7 +189,7 @@ am_Error_e CAmMapHandler::enterDomainDB(const am_Domain_s & domainData, am_domai
     }
     else
     {
-		if(mMappedData.increaseID(&nextID, &mMappedData.mCurrentDomainID, domainData.domainID))
+		if(mMappedData.increaseID(&nextID, &mMappedData.mCurrentDomainID))
 		{
 			domainID = nextID;
 			mMappedData.mDomainMap[nextID] = domainData;
@@ -239,7 +239,7 @@ am_Error_e CAmMapHandler::enterMainConnectionDB(const am_MainConnection_s & main
 
     int16_t delay = 0;
     int16_t nextID = 0;
-	if(mMappedData.increaseID(&nextID, &mMappedData.mCurrentMainConnectionID, mainConnectionData.mainConnectionID))
+	if(mMappedData.increaseID(&nextID, &mMappedData.mCurrentMainConnectionID))
 	{
 		connectionID = nextID;
 		mMappedData.mMainConnectionMap[nextID] = mainConnectionData;
@@ -602,7 +602,7 @@ am_Error_e CAmMapHandler::enterConnectionDB(const am_Connection_s& connection, a
     assert(connection.sourceID!=0);
     //connection format is not checked, because it's project specific
     int16_t nextID = 0;
-    if(mMappedData.increaseID(&nextID, &mMappedData.mCurrentConnectionID, connection.connectionID))
+    if(mMappedData.increaseID(&nextID, &mMappedData.mCurrentConnectionID))
 	{
 		connectionID = nextID;
 		mMappedData.mConnectionMap[nextID] = connection;
