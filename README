@@ -57,27 +57,32 @@ make
 === Compile Options
 These are the compile options with default values:
 
- BUILD_SHARED_LIBS                OFF                                                                                                            
- CMAKE_BUILD_TYPE                                                                                                                                
- CMAKE_INSTALL_PREFIX             /usr/local                                                                                                     
- GLIB_DBUS_TYPES_TOLERANT         ON                                                                                                             
- USE_BUILD_LIBS                   ON                                                                                                             
- WITH_DBUS_WRAPPER                ON                                                                                                             
- WITH_DLT                         ON                                                                                                             
- WITH_DOCUMENTATION               OFF                                                                                                                                                                                                                      
- WITH_PLUGIN_COMMAND              ON                                                                                                             
- WITH_PLUGIN_CONTROL              ON                                                                                                             
- WITH_PLUGIN_ROUTING              ON                                                                                                             
- WITH_SYSTEMD_WATCHDOG            OFF                                                                                                            
- WITH_TELNET                      ON                                                                                                             
- WITH_TESTS                       ON 
- WITH_NSM						  ON                                                                                                            
- gmock_build_tests                OFF                                                                                                            
- gtest_build_samples              OFF                                                                                                            
- gtest_build_tests                OFF                                                                                                            
- gtest_disable_pthreads           OFF                                                                                                            
- gtest_force_shared_crt           OFF     
-
+ BUILD_SHARED_LIBS                OFF                                                                                                                                                                             
+ CMAKE_BUILD_TYPE                                                                                                                                                                                                 
+ CMAKE_INSTALL_PREFIX             /usr/local                                                                                                                                                                      
+ GLIB_DBUS_TYPES_TOLERANT         ON                                                                                                                                                                              
+ USE_BUILD_LIBS                   ON                                                                                                                                                                              
+ WITH_COMMAND_INTERFACE_DBUS      ON                                                                                                                                                                              
+ WITH_DATABASE_STORAGE            ON                                                                                                                                                                              
+ WITH_DBUS_WRAPPER                ON                                                                                                                                                                              
+ WITH_DLT                         OFF                                                                                                                                                                             
+ WITH_DOCUMENTATION               ON                                                                                                                                                                                                                                                                                                                                                         
+ WITH_NSM                         OFF                                                                                                                                                                                                                                                                                                                                                       
+ WITH_PLUGIN_COMMAND              ON                                                                                                                                                                              
+ WITH_PLUGIN_CONTROL              ON                                                                                                                                                                              
+ WITH_PLUGIN_ROUTING              ON                                                                                                                                                                              
+ WITH_ROUTING_INTERFACE_ASYNC     OFF                                                                                                                                                                             
+ WITH_ROUTING_INTERFACE_DBUS      ON                                                                                                                                                                              
+ WITH_SYSTEMD_WATCHDOG            OFF                                                                                                                                                                             
+ WITH_TELNET                      OFF                                                                                                                                                                             
+ WITH_TESTS                       OFF                                                                                                                                                                             
+ WITH_TEST_CONTROLLER             OFF                                                                                                                                                                             
+ gmock_build_tests                OFF                                                                                                                                                                             
+ gtest_build_samples              OFF                                                                                                                                                                             
+ gtest_build_tests                OFF                                                                                                                                                                             
+ gtest_disable_pthreads           OFF                                                                                                                                                                             
+ gtest_force_shared_crt           OFF
+    
 === Passing options to cmake:
 
 .-DVERSION="XXX"
@@ -105,11 +110,14 @@ In order to change these options, you can modify this values with ccmake, do the
 CmakeList.txt or via the commandline for cmake or (when installed via ccmake)
 
 === Build dependencies
-You will need to fullfill some dependencies in order to comile the GENIVI AudioManager Daemon, these are:
+Basically, all build dependencies are optional- but you might need to use some if you want to have support for Dbus,
+for example...
+
+You will need optionally fullfill some dependencies in order to comile the GENIVI AudioManager Daemon, these are:
 
 * dbus (only when DBUS_WRAPPER==ON) [tested on version 1.2.16]
-* sqlite3 [tested on version 3.6.22]
-* automotive-dlt [greater 2.5.0]                
+* sqlite3 [tested on version 3.6.22] (only when WITH_DATABASE_STORAGE==ON)
+* automotive-dlt [greater 2.5.0] (only when WITH_DLT==ON)        
 * doxygen (only when WITH_DOCUMENTATION==ON) [tested on version 1.6.3]
 
 To install them in a build environment like Ubuntu you can use:

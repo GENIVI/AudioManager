@@ -807,15 +807,21 @@ CMAKE_BUILD_TYPE
 CMAKE_INSTALL_PREFIX             /usr/local
 GLIB_DBUS_TYPES_TOLERANT         ON
 USE_BUILD_LIBS                   ON
+WITH_COMMAND_INTERFACE_DBUS      ON
+WITH_DATABASE_STORAGE            ON
 WITH_DBUS_WRAPPER                ON
-WITH_DLT                         ON
-WITH_DOCUMENTATION               OFF
+WITH_DLT                         OFF
+WITH_DOCUMENTATION               ON
+WITH_NSM                         OFF
 WITH_PLUGIN_COMMAND              ON
 WITH_PLUGIN_CONTROL              ON
 WITH_PLUGIN_ROUTING              ON
+WITH_ROUTING_INTERFACE_ASYNC     OFF
+WITH_ROUTING_INTERFACE_DBUS      ON
 WITH_SYSTEMD_WATCHDOG            OFF
-WITH_TELNET                      ON
-WITH_TESTS                       ON
+WITH_TELNET                      OFF
+WITH_TESTS                       OFF
+WITH_TEST_CONTROLLER             OFF
 gmock_build_tests                OFF
 gtest_build_samples              OFF
 gtest_build_tests                OFF
@@ -837,7 +843,9 @@ CmakeList.txt or via the commandline for cmake or (when installed via ccmake)</p
 </div>
 <div class="sect2">
 <h3 id="_build_dependencies">Build dependencies</h3>
-<div class="paragraph"><p>You will need to fullfill some dependencies in order to comile the GENIVI AudioManager Daemon, these are:</p></div>
+<div class="paragraph"><p>Basically, all build dependencies are optional- but you might need to use some if you want to have support for Dbus,
+for example&#8230;</p></div>
+<div class="paragraph"><p>You will need optionally fullfill some dependencies in order to comile the GENIVI AudioManager Daemon, these are:</p></div>
 <div class="ulist"><ul>
 <li>
 <p>
@@ -846,12 +854,12 @@ dbus (only when DBUS_WRAPPER==ON) [tested on version 1.2.16]
 </li>
 <li>
 <p>
-sqlite3 [tested on version 3.6.22]
+sqlite3 [tested on version 3.6.22] (only when WITH_DATABASE_STORAGE==ON)
 </p>
 </li>
 <li>
 <p>
-automotive-dlt [greater 2.5.0]
+automotive-dlt [greater 2.5.0] (only when WITH_DLT==ON)
 </p>
 </li>
 <li>
@@ -1202,7 +1210,7 @@ handle later on.</p></div>
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2013-01-07 13:31:14 CET
+Last updated 2013-06-26 17:30:25 CEST
 </div>
 </div>
 </body>
