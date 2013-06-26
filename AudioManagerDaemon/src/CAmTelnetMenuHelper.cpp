@@ -25,7 +25,7 @@
 #include "config.h"
 #include "CAmRouter.h"
 #include "CAmTelnetServer.h"
-#include "CAmDatabaseHandler.h"
+#include "CAmDatabaseHandlerInterface.h"
 #include "CAmControlSender.h"
 #include "CAmCommandSender.h"
 #include "CAmRoutingSender.h"
@@ -44,7 +44,7 @@ namespace am {
 CAmTelnetMenuHelper* CAmTelnetMenuHelper::instance = NULL;
 
 /****************************************************************************/
-CAmTelnetMenuHelper::CAmTelnetMenuHelper(CAmSocketHandler *iSocketHandler, CAmCommandSender *iCommandSender, CAmCommandReceiver *iCommandReceiver, CAmRoutingSender *iRoutingSender, CAmRoutingReceiver *iRoutingReceiver, CAmControlSender *iControlSender, CAmControlReceiver *iControlReceiver, CAmDatabaseHandler *iDatabasehandler, CAmRouter *iRouter, CAmTelnetServer *iTelnetServer)
+CAmTelnetMenuHelper::CAmTelnetMenuHelper(CAmSocketHandler *iSocketHandler, CAmCommandSender *iCommandSender, CAmCommandReceiver *iCommandReceiver, CAmRoutingSender *iRoutingSender, CAmRoutingReceiver *iRoutingReceiver, CAmControlSender *iControlSender, CAmControlReceiver *iControlReceiver, CAmDatabaseHandlerInterface *iDatabasehandler, CAmRouter *iRouter, CAmTelnetServer *iTelnetServer)
 /****************************************************************************/
 :mpTelenetServer(iTelnetServer), mpSocketHandler(iSocketHandler), mpCommandSender(iCommandSender), mpCommandReceiver(iCommandReceiver), mpRoutingSender(iRoutingSender), mpRoutingReceiver(iRoutingReceiver), mpControlSender(iControlSender), mpControlReceiver(iControlReceiver), mpDatabasehandler(iDatabasehandler), mpRouter(iRouter)
 {

@@ -28,7 +28,6 @@
 #include <stdint.h>
 #include <limits.h>
 
-
 namespace am
 {
 //todo: check the enum values before entering & changing in the database.
@@ -38,152 +37,6 @@ namespace am
 //todo: exchange last_insert_row id to be more safe
 //todo: create test to ensure uniqueness of names throughout the database
 //todo: enforce the uniqueness of names
-
-/**
- * The following structures extend the base structures with the field 'reserved'.
- */
-
-struct am_Sink_Database_s : public am_Sink_s
-{
-	bool reserved;
-	am_Sink_Database_s():am_Sink_s(), reserved(false)
-	{};
-	void getSinkType(am_SinkType_s & sinkType) const
-	{
-		sinkType.name = name;
-		sinkType.sinkID = sinkID;
-		sinkType.availability = available;
-		sinkType.muteState = muteState;
-		sinkType.volume = mainVolume;
-		sinkType.sinkClassID = sinkClassID;
-	};
-	am_Sink_Database_s & operator=(const am_Sink_Database_s & anObject)
-	{
-		if (this != &anObject)
-		{
-			am_Sink_s::operator=(anObject);
-			reserved = anObject.reserved;
-		}
-		return *this;
-	};
-	am_Sink_Database_s & operator=(const am_Sink_s & anObject)
-	{
-		if (this != &anObject)
-			am_Sink_s::operator=(anObject);
-		return *this;
-	};
-	void print() const
-	{
-		printf("\n Sink(%s) id(%d)\n", name.c_str() ,sinkID);
-	    printf("\t availability(%d) availabilityReason(%d) sinkClassID(%d) domainID(%d) visible(%d) volume(%d) mainVolume(%d) muteState(%d) reserved(%d)\n",
-	    				available.availability, available.availabilityReason, sinkClassID, domainID, visible, volume, mainVolume, muteState,reserved);
-	};
-};
-
-struct am_Source_Database_s : public am_Source_s
-{
-	bool reserved;
-	am_Source_Database_s():am_Source_s(), reserved(false)
-	{};
-	void getSourceType(am_SourceType_s & sourceType) const
-	{
-		sourceType.name = name;
-		sourceType.sourceClassID = sourceClassID;
-		sourceType.availability = available;
-		sourceType.sourceID = sourceID;
-	};
-	am_Source_Database_s & operator=(const am_Source_Database_s & anObject)
-	{
-		if (this != &anObject)
-		{
-			am_Source_s::operator=(anObject);
-			reserved = anObject.reserved;
-		}
-		return *this;
-	};
-	am_Source_Database_s & operator=(const am_Source_s & anObject)
-	{
-		if (this != &anObject)
-		{
-			am_Source_s::operator=(anObject);
-		}
-		return *this;
-	};
-	void print() const
-	{
-		printf("\n Source(%s) id(%d)\n", name.c_str() ,sourceID);
-	    printf("\t availability(%d) availabilityReason(%d) sourceClassID(%d) domainID(%d) visible(%d) volume(%d) interruptState(%d) sourceState(%d) reserved(%d)\n",
-	    				available.availability, available.availabilityReason, sourceClassID, domainID, visible, volume, interruptState, sourceState,reserved);
-	};
-};
-
-struct am_Connection_Database_s : public am_Connection_s
-{
-	bool reserved;
-	am_Connection_Database_s():am_Connection_s(), reserved(true)
-	{};
-	am_Connection_Database_s & operator=(const am_Connection_Database_s & anObject)
-	{
-		if (this != &anObject)
-		{
-			am_Connection_s::operator=(anObject);
-			reserved = anObject.reserved;
-		}
-		return *this;
-	};
-	am_Connection_Database_s & operator=(const am_Connection_s & anObject)
-	{
-		if (this != &anObject)
-			am_Connection_s::operator=(anObject);
-		return *this;
-	};
-};
-
-struct am_Domain_Database_s : public am_Domain_s
-{
-	bool reserved;
-	am_Domain_Database_s():am_Domain_s(), reserved(false)
-	{};
-	am_Domain_Database_s & operator=(const am_Domain_Database_s & anObject)
-	{
-		if (this != &anObject)
-		{
-			am_Domain_s::operator=(anObject);
-			reserved = anObject.reserved;
-		}
-		return *this;
-	};
-	am_Domain_Database_s & operator=(const am_Domain_s & anObject)
-	{
-		if (this != &anObject)
-			am_Domain_s::operator=(anObject);
-		return *this;
-	};
-};
-
-struct am_MainConnection_Database_s : public am_MainConnection_s
-{
-	am_MainConnection_Database_s():am_MainConnection_s()
-	{};
-	void getMainConnectionType(am_MainConnectionType_s & connectionType) const
-	{
-		connectionType.mainConnectionID = mainConnectionID;
-		connectionType.sourceID = sourceID;
-		connectionType.sinkID = sinkID;
-		connectionType.connectionState = connectionState;
-		connectionType.delay = delay;
-	};
-	am_MainConnection_Database_s & operator=(const am_MainConnection_Database_s & anObject)
-	{
-		am_MainConnection_s::operator=(anObject);
-		return *this;
-	};
-	am_MainConnection_Database_s & operator=(const am_MainConnection_s & anObject)
-	{
-		am_MainConnection_s::operator=(anObject);
-		return *this;
-	};
-};
 
 /**
  * This class handles and abstracts the database
@@ -310,6 +163,152 @@ public:
     void printSinkClasses();
     void printSourceClasses();
 private:
+
+    /**
+     * The following structures extend the base structures with the field 'reserved'.
+     */
+
+    struct am_Sink_Database_s : public am_Sink_s
+    {
+        bool reserved;
+        am_Sink_Database_s():am_Sink_s(), reserved(false)
+        {};
+        void getSinkType(am_SinkType_s & sinkType) const
+        {
+            sinkType.name = name;
+            sinkType.sinkID = sinkID;
+            sinkType.availability = available;
+            sinkType.muteState = muteState;
+            sinkType.volume = mainVolume;
+            sinkType.sinkClassID = sinkClassID;
+        };
+        am_Sink_Database_s & operator=(const am_Sink_Database_s & anObject)
+        {
+            if (this != &anObject)
+            {
+                am_Sink_s::operator=(anObject);
+                reserved = anObject.reserved;
+            }
+            return *this;
+        };
+        am_Sink_Database_s & operator=(const am_Sink_s & anObject)
+        {
+            if (this != &anObject)
+                am_Sink_s::operator=(anObject);
+            return *this;
+        };
+        void print() const
+        {
+            printf("\n Sink(%s) id(%d)\n", name.c_str() ,sinkID);
+            printf("\t availability(%d) availabilityReason(%d) sinkClassID(%d) domainID(%d) visible(%d) volume(%d) mainVolume(%d) muteState(%d) reserved(%d)\n",
+                            available.availability, available.availabilityReason, sinkClassID, domainID, visible, volume, mainVolume, muteState,reserved);
+        };
+    };
+
+    struct am_Source_Database_s : public am_Source_s
+    {
+        bool reserved;
+        am_Source_Database_s():am_Source_s(), reserved(false)
+        {};
+        void getSourceType(am_SourceType_s & sourceType) const
+        {
+            sourceType.name = name;
+            sourceType.sourceClassID = sourceClassID;
+            sourceType.availability = available;
+            sourceType.sourceID = sourceID;
+        };
+        am_Source_Database_s & operator=(const am_Source_Database_s & anObject)
+        {
+            if (this != &anObject)
+            {
+                am_Source_s::operator=(anObject);
+                reserved = anObject.reserved;
+            }
+            return *this;
+        };
+        am_Source_Database_s & operator=(const am_Source_s & anObject)
+        {
+            if (this != &anObject)
+            {
+                am_Source_s::operator=(anObject);
+            }
+            return *this;
+        };
+        void print() const
+        {
+            printf("\n Source(%s) id(%d)\n", name.c_str() ,sourceID);
+            printf("\t availability(%d) availabilityReason(%d) sourceClassID(%d) domainID(%d) visible(%d) volume(%d) interruptState(%d) sourceState(%d) reserved(%d)\n",
+                            available.availability, available.availabilityReason, sourceClassID, domainID, visible, volume, interruptState, sourceState,reserved);
+        };
+    };
+
+    struct am_Connection_Database_s : public am_Connection_s
+    {
+        bool reserved;
+        am_Connection_Database_s():am_Connection_s(), reserved(true)
+        {};
+        am_Connection_Database_s & operator=(const am_Connection_Database_s & anObject)
+        {
+            if (this != &anObject)
+            {
+                am_Connection_s::operator=(anObject);
+                reserved = anObject.reserved;
+            }
+            return *this;
+        };
+        am_Connection_Database_s & operator=(const am_Connection_s & anObject)
+        {
+            if (this != &anObject)
+                am_Connection_s::operator=(anObject);
+            return *this;
+        };
+    };
+
+    struct am_Domain_Database_s : public am_Domain_s
+    {
+        bool reserved;
+        am_Domain_Database_s():am_Domain_s(), reserved(false)
+        {};
+        am_Domain_Database_s & operator=(const am_Domain_Database_s & anObject)
+        {
+            if (this != &anObject)
+            {
+                am_Domain_s::operator=(anObject);
+                reserved = anObject.reserved;
+            }
+            return *this;
+        };
+        am_Domain_Database_s & operator=(const am_Domain_s & anObject)
+        {
+            if (this != &anObject)
+                am_Domain_s::operator=(anObject);
+            return *this;
+        };
+    };
+
+    struct am_MainConnection_Database_s : public am_MainConnection_s
+    {
+        am_MainConnection_Database_s():am_MainConnection_s()
+        {};
+        void getMainConnectionType(am_MainConnectionType_s & connectionType) const
+        {
+            connectionType.mainConnectionID = mainConnectionID;
+            connectionType.sourceID = sourceID;
+            connectionType.sinkID = sinkID;
+            connectionType.connectionState = connectionState;
+            connectionType.delay = delay;
+        };
+        am_MainConnection_Database_s & operator=(const am_MainConnection_Database_s & anObject)
+        {
+            am_MainConnection_s::operator=(anObject);
+            return *this;
+        };
+        am_MainConnection_Database_s & operator=(const am_MainConnection_s & anObject)
+        {
+            am_MainConnection_s::operator=(anObject);
+            return *this;
+        };
+    };
 
     typedef std::map<am_domainID_t, am_Domain_Database_s>  		  			 CAmMapDomain;
     typedef std::map<am_sourceClass_t, am_SourceClass_s> 		   			 CAmMapSourceClass;

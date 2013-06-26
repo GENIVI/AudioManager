@@ -39,6 +39,16 @@
     #include "CAmNodeStateCommunicator.h"
 #endif
 
+#ifdef WITH_DATABASE_STORAGE
+    #include "CAmDatabaseHandler.h"
+#else
+    #include "CAmMapHandler.h"
+#endif
+
+#ifdef WITH_SYSTEMD_WATCHDOG
+    #include "CAmWatchdog.h"
+#endif
+
 #include <sys/resource.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -50,9 +60,8 @@
 #include <cstring>
 #include <cstdio>
 #include <new>
+
 #include "CAmRouter.h"
-#include "CAmDatabaseHandler.h"
-#include "CAmMapHandler.h"
 #include "CAmControlSender.h"
 #include "CAmCommandSender.h"
 #include "CAmRoutingSender.h"
@@ -60,11 +69,9 @@
 #include "CAmCommandReceiver.h"
 #include "CAmControlReceiver.h"
 #include "CAmDatabaseObserver.h"
-#include "CAmWatchdog.h"
 #include "shared/CAmDltWrapper.h"
 #include "shared/CAmSocketHandler.h"
-
-
+#include "CAmDatabaseHandlerInterface.h"
 
 using namespace am;
 DLT_DECLARE_CONTEXT(AudioManager)
@@ -315,7 +322,7 @@ void mainProgram()
 #endif /*WITH_SYSTEMD_WATCHDOG*/
 
 #ifdef WITH_DATABASE_STORAGE
-    CAmDatabaseHandler * ptr_iDatabaseHandler = new CAmMapHandler(databasePath);
+    CAmDatabaseHandler * ptr_iDatabaseHandler = new CAmDatabaseHandler(databasePath);
 #else
     CAmMapHandler * ptr_iDatabaseHandler = new CAmMapHandler();
 #endif /*WITH_DATABASE_STORAGE*/

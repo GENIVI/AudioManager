@@ -50,18 +50,29 @@ SET(AUDIOMAN_SRCS_CXX
     src/CAmCommandSender.cpp
     src/CAmControlReceiver.cpp
     src/CAmControlSender.cpp
-    src/CAmDatabaseHandler.cpp
-    src/CAmMapHandler.cpp
     src/CAmDatabaseObserver.cpp
     src/CAmRoutingReceiver.cpp
     src/CAmRoutingSender.cpp
-    src/CAmSocketHandler.cpp
-    src/CAmTelnetServer.cpp
     src/CAmRouter.cpp
+    src/CAmSocketHandler.cpp
     src/CAmDltWrapper.cpp
-    src/CAmTelnetMenuHelper.cpp
-    src/CAmWatchdog.cpp
 )
+ 
+
+IF(WITH_TELNET)
+	SET (AUDIOMAN_SRCS_CXX
+		${AUDIOMAN_SRCS_CXX}
+		src/CAmTelnetServer.cpp
+		src/CAmTelnetMenuHelper.cpp
+     )		
+ENDIF(WITH_TELNET)		
+
+IF(WITH_SYSTEMD_WATCHDOG)
+	SET (AUDIOMAN_SRCS_CXX
+		${AUDIOMAN_SRCS_CXX}
+		src/CAmWatchdog.cpp
+     )		
+ENDIF(WITH_SYSTEMD_WATCHDOG)
 
 IF (NOT SYSTEMD_FOUND)
 	SET (AUDIOMAN_SRCS_CXX
@@ -83,13 +94,6 @@ IF(WITH_NSM)
         src/CAmNodeStateCommunicator.cpp
     )
 ENDIF(WITH_NSM)
-
-IF(WITH_SOCKETHANDLER_LOOP)
-    SET (AUDIOMAN_SRCS_CXX
-        ${AUDIOMAN_SRCS_CXX}
-        src/CAmSocketHandler.cpp
-     )
-ENDIF(WITH_SOCKETHANDLER_LOOP)
 
 IF(WITH_DATABASE_STORAGE)
     SET (AUDIOMAN_SRCS_CXX

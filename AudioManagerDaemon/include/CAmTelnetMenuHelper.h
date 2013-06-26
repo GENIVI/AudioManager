@@ -38,7 +38,7 @@ namespace am
 {
 
 class CAmTelnetServer;
-class CAmDatabaseHandler;
+class CAmDatabaseHandlerInterface;
 class CAmCommandSender;
 class CAmRoutingSender;
 class CAmControlSender;
@@ -61,7 +61,7 @@ public:
         eRootState = 0, eListState, eInfoState, eGetState, eSetState
     };
 
-    CAmTelnetMenuHelper(CAmSocketHandler *iSocketHandler, CAmCommandSender *iCommandSender, CAmCommandReceiver *iCommandReceiver, CAmRoutingSender *iRoutingSender, CAmRoutingReceiver *iRoutingReceiver, CAmControlSender *iControlSender, CAmControlReceiver *iControlReceiver, CAmDatabaseHandler *iDatabasehandler, CAmRouter *iRouter, CAmTelnetServer *iTelnetServer);
+    CAmTelnetMenuHelper(CAmSocketHandler *iSocketHandler, CAmCommandSender *iCommandSender, CAmCommandReceiver *iCommandReceiver, CAmRoutingSender *iRoutingSender, CAmRoutingReceiver *iRoutingReceiver, CAmControlSender *iControlSender, CAmControlReceiver *iControlReceiver, CAmDatabaseHandlerInterface *iDatabasehandler, CAmRouter *iRouter, CAmTelnetServer *iTelnetServer);
 
     ~CAmTelnetMenuHelper();
 
@@ -184,7 +184,7 @@ private:
     CAmRoutingReceiver *mpRoutingReceiver;
     CAmControlSender *mpControlSender;
     CAmControlReceiver *mpControlReceiver;
-    CAmDatabaseHandler *mpDatabasehandler;
+    CAmDatabaseHandlerInterface *mpDatabasehandler;
     CAmRouter *mpRouter;
 
     tCommandMap mRootCommands;
