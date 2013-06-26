@@ -74,12 +74,12 @@ TMapObjectType const * findFirstObjectMatchingCriteria(const std::map<TMapKeyTyp
 
 bool compareSinkObjectByName(const void *anObject, const void *aValue, void *)
 {
-	return (anObject && aValue)?((const std::string *)aValue)->compare(((const am_Sink_Database_s *)anObject)->name)==0:false;
+	return (anObject && aValue)?((const std::string *)aValue)->compare(((const CAmMapHandler::am_Sink_Database_s *)anObject)->name)==0:false;
 }
 
 bool compareSourceObjectByName(const void *anObject, const void *aValue, void *)
 {
-	return (anObject && aValue)?((const std::string *)aValue)->compare(((const am_Source_Database_s *)anObject)->name)==0:false;
+	return (anObject && aValue)?((const std::string *)aValue)->compare(((const CAmMapHandler::am_Source_Database_s *)anObject)->name)==0:false;
 }
 
 bool compareSinkClassObjectByName(const void *anObject, const void *aValue, void *)
@@ -102,7 +102,7 @@ bool compareSinkObjectByNameAndFlag(const void *anObject, const void *aValue, vo
 	if(anObject && aValue)
 	{
 		bool flag = (contextOrNull!=NULL)?*((bool*)contextOrNull):true;
-		return flag==((const am_Sink_Database_s *)anObject)->reserved &&
+		return flag==((const CAmMapHandler::am_Sink_Database_s *)anObject)->reserved &&
 				((const std::string *)aValue)->compare(((const am_Sink_s *)anObject)->name)==0;
 	}
 	return false;
@@ -112,10 +112,10 @@ bool compareConnectionObjectsWithObject(const void *anObject, const void *aValue
 {
 	if(anObject && aValue)
 	{
-		return 0==((const am_Connection_Database_s *)anObject)->reserved &&
-				((const am_Connection_Database_s *)aValue)->sinkID == ((const am_Connection_Database_s *)anObject)->sinkID &&
-				((const am_Connection_Database_s *)aValue)->sourceID == ((const am_Connection_Database_s *)anObject)->sourceID &&
-				((const am_Connection_Database_s *)aValue)->connectionFormat == ((const am_Connection_Database_s *)anObject)->connectionFormat;
+		return 0==((const CAmMapHandler::am_Connection_Database_s *)anObject)->reserved &&
+				((const CAmMapHandler::am_Connection_Database_s *)aValue)->sinkID == ((const CAmMapHandler::am_Connection_Database_s *)anObject)->sinkID &&
+				((const CAmMapHandler::am_Connection_Database_s *)aValue)->sourceID == ((const CAmMapHandler::am_Connection_Database_s *)anObject)->sourceID &&
+				((const CAmMapHandler::am_Connection_Database_s *)aValue)->connectionFormat == ((const CAmMapHandler::am_Connection_Database_s *)anObject)->connectionFormat;
 	}
 	return false;
 }
@@ -125,8 +125,8 @@ bool compareSourceObjectsByNameAndFlag(const void *anObject, const void *aValue,
 	if(anObject && aValue)
 	{
 		bool flag = (contextOrNull!=NULL)?*((bool*)contextOrNull):true;
-		return flag==((const am_Source_Database_s *)anObject)->reserved &&
-				((const std::string *)aValue)->compare(((const am_Source_Database_s *)anObject)->name)==0;
+		return flag==((const CAmMapHandler::am_Source_Database_s *)anObject)->reserved &&
+				((const std::string *)aValue)->compare(((const CAmMapHandler::am_Source_Database_s *)anObject)->name)==0;
 	}
 	return false;
 }

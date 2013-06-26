@@ -162,7 +162,6 @@ public:
     void printSinks();
     void printSinkClasses();
     void printSourceClasses();
-private:
 
     /**
      * The following structures extend the base structures with the field 'reserved'.
@@ -309,6 +308,8 @@ private:
             return *this;
         };
     };
+
+    private:
 
     typedef std::map<am_domainID_t, am_Domain_Database_s>  		  			 CAmMapDomain;
     typedef std::map<am_sourceClass_t, am_SourceClass_s> 		   			 CAmMapSourceClass;
