@@ -34,7 +34,7 @@
 namespace am
 {
 
-const char MY_NODE[] = "CommandInterface";
+const char MY_NODE[] = "commandinterface";
 
 /**
  * Dbus Implementation of CommandSendInterface

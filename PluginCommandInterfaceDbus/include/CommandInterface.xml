@@ -4,7 +4,7 @@
   "http://standards.freedesktop.org/dbus/1.0/introspect.dtd">
 
 <node>
-     <interface name="org.genivi.audiomanager.CommandInterface">
+     <interface name="org.genivi.audiomanager.commandinterface">
         <method name="Connect">
             <arg type="q" name="sourceID" direction="in"/>
             <arg type="q" name="sinkID" direction="in"/>

@@ -25,7 +25,7 @@
 namespace am
 {
 
-#define ROUTING_NODE "RoutingInterface"
+#define ROUTING_NODE "routinginterface"
 
 class CAmRoutingSenderDbus: public IAmRoutingSend
 {

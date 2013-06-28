@@ -4,7 +4,7 @@
   "http://standards.freedesktop.org/dbus/1.0/introspect.dtd">
 
 <node>  
-	<interface name='org.pulseaudio.genivi.RoutingSend'>	
+	<interface name='org.pulseaudio.genivi.routingsend'>	
 	<method name='asyncAbort'>										
 		<arg name='handle' type='q' direction='in' />  
 		<arg name='error' type='n' direction='out' />
