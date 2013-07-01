@@ -70,6 +70,7 @@
 		<arg name='domainID' type='q' direction='in' />				
 		<arg name='domainState' type='q' direction='in' />			
 		<arg name='error' type='i' direction='out' />				
-	</method>		                                                                                
+	</method>	
+		                                                                                
 	</interface>																							
 </node>

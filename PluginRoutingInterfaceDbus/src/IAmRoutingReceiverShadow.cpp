@@ -45,7 +45,8 @@ IAmRoutingReceiverShadowDbus::IAmRoutingReceiverShadowDbus(CAmRoutingSenderDbus*
         mFunctionMap(createMap()), //
         mDBUSMessageHandler(), //
         mNumberDomains(0), //
-        mHandle(0)
+        mHandle(0), //
+        mRoutingReady(false)
 {
     log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow constructed");
 }
@@ -602,6 +603,16 @@ DBusHandlerResult IAmRoutingReceiverShadowDbus::receiveCallback(DBusConnection* 
     return (reference->receiveCallbackDelegate(conn, msg));
 }
 
+void IAmRoutingReceiverShadowDbus::getRoutingReadyStatus(DBusConnection* conn, DBusMessage* msg)
+{
+    (void) ((conn));
+    assert(mRoutingReceiveInterface != NULL);
+    mDBUSMessageHandler.initReply(msg);
+    mDBUSMessageHandler.append(mRoutingReady);
+    mDBUSMessageHandler.sendMessage();
+}
+
+
 void IAmRoutingReceiverShadowDbus::sendIntrospection(DBusConnection* conn, DBusMessage* msg)
 {
     assert(conn != NULL);
@@ -714,11 +725,13 @@ void IAmRoutingReceiverShadowDbus::confirmRoutingRundown(DBusConnection* conn, D
 
 void IAmRoutingReceiverShadowDbus::gotReady(int16_t numberDomains, uint16_t handle)
 {
+    mRoutingReady=true;
     mNumberDomains=numberDomains;
     mHandle=handle;
 }
 void IAmRoutingReceiverShadowDbus::gotRundown(int16_t numberDomains, uint16_t handle)
 {
+    mRoutingReady=false;
     mNumberDomains=numberDomains;
     mHandle=handle;
 }
@@ -903,6 +916,7 @@ IAmRoutingReceiverShadowDbus::functionMap_t IAmRoutingReceiverShadowDbus::create
     m["ackSourceNotificationConfiguration"] = &IAmRoutingReceiverShadowDbus::ackSourceNotificationConfiguration;
     m["hookSinkNotificationDataChange"] = &IAmRoutingReceiverShadowDbus::hookSinkNotificationDataChange;
     m["hookSourceNotificationDataChange"] = &IAmRoutingReceiverShadowDbus::hookSourceNotificationDataChange;
+    m["getRoutingReadyState"] = &IAmRoutingReceiverShadowDbus::getRoutingReadyStatus;
     return (m);
 }
 }

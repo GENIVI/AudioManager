@@ -82,6 +82,7 @@ public:
     void ackSourceNotificationConfiguration(DBusConnection *conn, DBusMessage *msg);
     void hookSinkNotificationDataChange(DBusConnection *conn, DBusMessage *msg);
     void hookSourceNotificationDataChange(DBusConnection *conn, DBusMessage *msg);
+    void getRoutingReadyStatus(DBusConnection* conn, DBusMessage* msg);
 
     /**
      * sets the pointer to the CommandReceiveInterface and registers Callback
@@ -103,6 +104,7 @@ private:
     CAmRoutingDbusMessageHandler mDBUSMessageHandler;
     int16_t mNumberDomains;
     uint16_t mHandle;
+    bool mRoutingReady;
 
     /**
      * receives a callback whenever the path of the plugin is called

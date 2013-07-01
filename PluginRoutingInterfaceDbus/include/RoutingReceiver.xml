@@ -208,7 +208,10 @@
 	<method name="hookSourceNotificationDataChange"> 
 		<arg name="sourceID" type="q" direction="in" />  
 		<arg name="payload" type="(nn)" direction="in" />
-	</method>		  
+	</method>	
+	<method name='getRoutingReadyState'>	
+		<arg name='state' type='b' direction='out' />
+	</method>	  
 
 	<signal name="setRoutingReady">
 	</signal>	
