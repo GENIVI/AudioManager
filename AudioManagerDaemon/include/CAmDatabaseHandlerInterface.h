@@ -26,6 +26,7 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <iostream>
 
 namespace am
 {
@@ -185,6 +186,8 @@ public:
     virtual void registerObserver(CAmDatabaseObserver *iObserver) = 0;
     virtual bool sourceVisible(const am_sourceID_t sourceID) const = 0;
     virtual bool sinkVisible(const am_sinkID_t sinkID) const = 0;
+
+    virtual void dump( std::ostream & output) { output << __FUNCTION__ << " not implemented!"; };
 };
 
 }

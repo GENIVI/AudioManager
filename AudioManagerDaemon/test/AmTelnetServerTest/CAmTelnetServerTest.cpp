@@ -54,7 +54,11 @@ CAmEnvironment::CAmEnvironment()
 : mlistRoutingPluginDirs()
 , mlistCommandPluginDirs()
 , mSocketHandler()
+#ifdef WITH_DATABASE_STORAGE
 , mDatabasehandler(std::string(":memory:"))
+#else
+, mDatabasehandler()
+#endif
 , mRoutingSender(mlistRoutingPluginDirs)
 , mCommandSender(mlistRoutingPluginDirs)
 , mControlSender(controllerPlugin,&mSocketHandler)
@@ -139,6 +143,17 @@ void CAmTelnetServerTest::TearDown()
 
 }
 
+void CAmTelnetServerTest::sendCmd(std::string & command )
+{
+    ssize_t sizesent = send(staticSocket, command.c_str(), command.size(), 0);
+    ASSERT_EQ(static_cast<uint>(sizesent),command.size());
+
+    char buffer[1000];
+    memset(buffer,0,sizeof(buffer));
+    int read=recv(staticSocket,buffer,sizeof(buffer),0);
+    ASSERT_GT(read,1);
+}
+
 TEST_F(CAmTelnetServerTest,connectTelnetServer)
 {
     struct sockaddr_in servAddr;
@@ -168,31 +183,23 @@ TEST_F(CAmTelnetServerTest,connectTelnetServer)
 
 TEST_F(CAmTelnetServerTest,sendCmdTelnetServer)
 {
-    std::string string("help");
+    std::string cmd("help");
+    sendCmd(cmd);
+}
 
-    ssize_t sizesent = send(staticSocket, string.c_str(), string.size(), 0);
-    ASSERT_EQ(static_cast<uint>(sizesent),string.size());
-
-    char buffer[1000];
-    memset(buffer,0,sizeof(buffer));
-    int read=recv(staticSocket,buffer,sizeof(buffer),0);
-    ASSERT_GT(read,1);
+TEST_F(CAmTelnetServerTest,sendDumpCmdTelnetServer)
+{
+    std::string cmd1("info");
+    std::string cmd3("dump");
+    sendCmd(cmd1);
+    sendCmd(cmd3);
 }
 
 TEST_F(CAmTelnetServerTest,closeTelnetServerConnection)
 {
-    std::string string ("exit");
-
+    std::string cmd("exit");
     mpSocketHandler->stop_listening();
-
-    ssize_t sizesent = send(staticSocket, string.c_str(), string.size(), 0);
-    ASSERT_EQ(static_cast<uint>(sizesent),string.size());
-
-    char buffer[1000];
-    memset(buffer,0,sizeof(buffer));
-    int read=recv(staticSocket,buffer,sizeof(buffer),0);
-    ASSERT_GT(read,1);
-
+    sendCmd(cmd);
     close(staticSocket);
     staticSocket = -1;
 }

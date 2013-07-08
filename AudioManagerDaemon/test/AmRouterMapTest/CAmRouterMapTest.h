@@ -18,8 +18,8 @@
  *
  */
 
-#ifndef DATABASETEST_H_
-#define DATABASETEST_H_
+#ifndef MAPTEST_H_
+#define MAPTEST_H_
 
 #define UNIT_TEST 1
 
@@ -30,7 +30,7 @@
 #include <string>
 #include <vector>
 #include <set>
-#include "CAmDatabaseHandler.h"
+#include "CAmMapHandler.h"
 #include "CAmControlReceiver.h"
 #include "CAmControlSender.h"
 #include "CAmDatabaseObserver.h"
@@ -47,16 +47,16 @@
 namespace am
 {
 
-class CAmRouterTest: public ::testing::Test
+class CAmRouterMapTest: public ::testing::Test
 {
 public:
-    CAmRouterTest();
-    ~CAmRouterTest();
+	CAmRouterMapTest();
+    ~CAmRouterMapTest();
     std::vector<std::string> plistRoutingPluginDirs;
     std::vector<std::string> plistCommandPluginDirs;
     CAmSocketHandler pSocketHandler;
     CAmControlSender pControlSender;
-    CAmDatabaseHandler pDatabaseHandler;
+    CAmMapHandler pDatabaseHandler;
     CAmRouter pRouter;
     CAmRoutingSender pRoutingSender;
     CAmCommandSender pCommandSender;
@@ -76,4 +76,4 @@ public:
 
 }
 
-#endif /* DATABASETEST_H_ */
+#endif /* MAPTEST_H_ */

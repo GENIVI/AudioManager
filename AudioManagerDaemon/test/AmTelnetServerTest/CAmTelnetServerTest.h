@@ -25,6 +25,7 @@
 #include "gtest/gtest.h"
 #include "CAmTelnetServer.h"
 #include "CAmDatabaseHandler.h"
+#include "CAmMapHandler.h"
 #include "CAmRoutingSender.h"
 #include "CAmCommandSender.h"
 #include "CAmControlSender.h"
@@ -35,6 +36,7 @@ namespace am
 
 class CAmSocketHandler;
 class CAmDatabaseHandler;
+class CAmMapHandler;
 class CAmRoutingSender;
 class CAmCommandSender;
 class CAmControlSender;
@@ -64,7 +66,11 @@ class CAmEnvironment : public ::testing::Environment
   std::vector<std::string> mlistCommandPluginDirs;
 
   CAmSocketHandler     mSocketHandler;
+#ifdef WITH_DATABASE_STORAGE
   CAmDatabaseHandler   mDatabasehandler;
+#else
+  CAmMapHandler		   mDatabasehandler;
+#endif
   CAmRoutingSender     mRoutingSender;
   CAmCommandSender     mCommandSender;
   CAmControlSender     mControlSender;
@@ -89,7 +95,7 @@ class CAmTelnetServerTest : public ::testing::Test
    void SetUp() ;
 
    void TearDown() ;
-
+   void sendCmd(std::string & command );
    //int              mSocket;
 };
 

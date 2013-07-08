@@ -14,12 +14,13 @@
  *
  * \author Aleksandar Donchev, aleksander.donchev@partner.bmw.de BMW 2013
  *
- * \file CAmDatabaseHandler.cpp
+ * \file CAmMapHandler.cpp
  * For further information see http://www.genivi.org/.
  *
  */
 
 #include "CAmMapHandler.h"
+#include <iostream>
 #include <cassert>
 #include <stdexcept>
 #include <vector>
@@ -31,20 +32,23 @@
 #include "CAmDatabaseObserver.h"
 #include "CAmRouter.h"
 #include "shared/CAmDltWrapper.h"
+#include "CAmLog.h"
 
 
 namespace am
 {
 
-template <typename TMapKeyType, class TMapObjectType> TMapObjectType const * objectWithKeyIfExistsInMap(const TMapKeyType & key, const std::map<TMapKeyType,TMapObjectType> & map)
+/* Helper functions */
+
+template <typename TMapKeyType, class TMapObjectType> TMapObjectType const * objectWithKeyIfExistsInMap(const TMapKeyType & key, const AM_MAP<TMapKeyType,TMapObjectType> & map)
 {
-	typename std::map<TMapKeyType,TMapObjectType>::const_iterator iter = map.find(key);
+	typename AM_MAP<TMapKeyType,TMapObjectType>::const_iterator iter = map.find(key);
 	if( iter!=map.end() )
 		return (TMapObjectType const *)&iter->second;
 	return NULL;
 }
 
-template <typename TMapKeyType, class TMapObjectType> bool existsObjectWithKeyInMap(const TMapKeyType & key, const std::map<TMapKeyType,TMapObjectType> & map)
+template <typename TMapKeyType, class TMapObjectType> bool existsObjectWithKeyInMap(const TMapKeyType & key, const AM_MAP<TMapKeyType,TMapObjectType> & map)
 {
 	return objectWithKeyIfExistsInMap(key, map)!=NULL;
 }
@@ -52,12 +56,12 @@ template <typename TMapKeyType, class TMapObjectType> bool existsObjectWithKeyIn
 typedef bool (*CAmCompareObjectWithValue)(const void *, const void *, void *);
 
 template <typename TMapKeyType, class TMapObjectType, class TSearchObjectType>
-TMapObjectType const * findFirstObjectMatchingCriteria(const std::map<TMapKeyType, TMapObjectType> & aMap,
+TMapObjectType const * findFirstObjectMatchingCriteria(const AM_MAP<TMapKeyType, TMapObjectType> & aMap,
 															  const TSearchObjectType & aComparison,
 															  CAmCompareObjectWithValue comparator,
 															  void *context = NULL)
 {
-	typename std::map<TMapKeyType, TMapObjectType>::const_iterator it = aMap.begin();
+	typename AM_MAP<TMapKeyType, TMapObjectType>::const_iterator it = aMap.begin();
 	TMapObjectType * result = NULL;
 	for (; it != aMap.end(); ++it)
 	{
@@ -131,17 +135,260 @@ bool compareSourceObjectsByNameAndFlag(const void *anObject, const void *aValue,
 	return false;
 }
 
-template <typename TMapKeyType, class TMapObjectType>
-void makeFirstStaticEntry(uint16_t & index, uint16_t & identifier, std::map <TMapKeyType, TMapObjectType> & storageMap)
+/* Domain */
+
+void CAmMapHandler::CAmDomain::getDescription (std::string & outString) const
 {
-	identifier = DYNAMIC_ID_BOUNDARY;
-	if(index!=identifier)
-	{
-		storageMap[identifier] = storageMap[index];
-		storageMap.erase(index);
-		index = identifier;
-	}
+	std::ostringstream fmt;
+	fmt << "Domain(" << name.c_str() << ") id(" << domainID << ")" << std::endl <<
+			"bus name(" << busname.c_str() <<
+			") node name(" << nodename.c_str() <<
+			") early(" << early <<
+			") domainID(" << domainID <<
+			") complete(" << complete <<
+			") state(" << state <<
+			") reserved(" << reserved << ")" << std::endl;
+	outString = fmt.str();
 }
+
+/* Source */
+
+void CAmMapHandler::CAmSource::getSourceType(am_SourceType_s & sourceType) const
+{
+	sourceType.name = name;
+	sourceType.sourceClassID = sourceClassID;
+	sourceType.availability = available;
+	sourceType.sourceID = sourceID;
+}
+
+void CAmMapHandler::CAmSource::getDescription (std::string & outString) const
+{
+	std::ostringstream fmt;
+	fmt << "Source(" << name.c_str() << ") id(" << sourceID << ")" << std::endl <<
+			"sourceClassID(" << sourceClassID <<
+			") domainID(" << domainID <<
+			") visible(" << visible <<
+			") volume(" << volume <<
+			") interruptState(" << interruptState <<
+			") sourceState(" << sourceState <<
+			") reserved(" << reserved << ")" <<
+			") available([availability:" << available.availability << " availabilityReason:" << available.availabilityReason << "]"
+			") listSoundProperties (";
+			std::for_each(listSoundProperties.begin(), listSoundProperties.end(), [&](const am_SoundProperty_s & ref) {
+				fmt << "[type:" << ref.type << " value:" << ref.value <<"]";
+			});
+			fmt << ") listConnectionFormats (";
+			std::for_each(listConnectionFormats.begin(), listConnectionFormats.end(), [&](const am_ConnectionFormat_e & ref) {
+				fmt << "[" << ref << "]";
+			});
+			fmt << ") listMainSoundProperties (";
+			std::for_each(listMainSoundProperties.begin(), listMainSoundProperties.end(), [&](const am_MainSoundProperty_s & ref) {
+				fmt << "[type:" << ref.type << " value:" << ref.value <<"]";
+			});
+			fmt << ") listMainNotificationConfigurations (";
+			std::for_each(listMainNotificationConfigurations.begin(), listMainNotificationConfigurations.end(), [&](const am_NotificationConfiguration_s & ref) {
+				fmt << "[type:" << ref.type << " status:" << ref.status << " parameter:" << ref.parameter <<"]";
+			});
+			fmt << ") listNotificationConfigurations (";
+			std::for_each(listNotificationConfigurations.begin(), listNotificationConfigurations.end(), [&](const am_NotificationConfiguration_s & ref) {
+				fmt << "[type:" << ref.type << " status:" << ref.status << " parameter:" << ref.parameter <<"]";
+			});
+			fmt <<  ")" << std::endl;
+	outString = fmt.str();
+}
+
+/* Sink */
+
+void CAmMapHandler::CAmSink::getDescription (std::string & outString) const
+{
+	std::ostringstream fmt;
+	fmt << "Sink(" << name.c_str() << ") id(" << sinkID << ")" << std::endl <<
+			"sinkClassID(" << sinkClassID <<
+			") domainID(" << domainID <<
+			") visible(" << visible <<
+			") volume(" << volume <<
+			") muteState(" << muteState <<
+			") mainVolume(" << mainVolume <<
+			") reserved(" << reserved << ")" <<
+			") available([availability:" << available.availability << " availabilityReason:" << available.availabilityReason << "]"
+			") listSoundProperties (";
+			std::for_each(listSoundProperties.begin(), listSoundProperties.end(), [&](const am_SoundProperty_s & ref) {
+				fmt << "[type:" << ref.type << " value:" << ref.value <<"]";
+			});
+			fmt << ") listConnectionFormats (";
+			std::for_each(listConnectionFormats.begin(), listConnectionFormats.end(), [&](const am_ConnectionFormat_e & ref) {
+				fmt << "[" << ref << "]";
+			});
+			fmt << ") listMainSoundProperties (";
+			std::for_each(listMainSoundProperties.begin(), listMainSoundProperties.end(), [&](const am_MainSoundProperty_s & ref) {
+				fmt << "[type:" << ref.type << " value:" << ref.value <<"]";
+			});
+			fmt << ") listMainNotificationConfigurations (";
+			std::for_each(listMainNotificationConfigurations.begin(), listMainNotificationConfigurations.end(), [&](const am_NotificationConfiguration_s & ref) {
+				fmt << "[type:" << ref.type << " status:" << ref.status << " parameter:" << ref.parameter <<"]";
+			});
+			fmt << ") listNotificationConfigurations (";
+			std::for_each(listNotificationConfigurations.begin(), listNotificationConfigurations.end(), [&](const am_NotificationConfiguration_s & ref) {
+				fmt << "[type:" << ref.type << " status:" << ref.status << " parameter:" << ref.parameter <<"]";
+			});
+			fmt <<  ")" << std::endl;
+	outString = fmt.str();
+}
+
+void CAmMapHandler::CAmSink::getSinkType(am_SinkType_s & sinkType) const
+{
+	sinkType.name = name;
+	sinkType.sinkID = sinkID;
+	sinkType.availability = available;
+	sinkType.muteState = muteState;
+	sinkType.volume = mainVolume;
+	sinkType.sinkClassID = sinkClassID;
+}
+
+/* Connection */
+
+void CAmMapHandler::CAmConnection::getDescription (std::string & outString) const
+{
+	std::ostringstream fmt;
+	fmt << "Connection id(" << connectionID << ") " << std::endl <<
+			"sourceID(" << sourceID <<
+			") sinkID(" << sinkID <<
+			") delay(" << delay <<
+			") connectionFormat(" << connectionFormat <<
+			") reserved(" << reserved << ")" << std::endl;
+	outString = fmt.str();
+}
+
+/* Main Connection */
+
+void CAmMapHandler::CAmMainConnection::getDescription (std::string & outString) const
+{
+	std::ostringstream fmt;
+	fmt << "MainConnection id(" << mainConnectionID << ") " << std::endl <<
+			"connectionState(" << connectionState <<
+			") sinkID(" << sinkID <<
+			") sourceID(" << sourceID <<
+			") delay(" << delay <<
+			") listConnectionID (";
+			std::for_each(listConnectionID.begin(), listConnectionID.end(), [&](const am_connectionID_t & connID) {
+				fmt << "["<< connID << "]";
+			});
+			fmt << ")" << std::endl;
+	outString = fmt.str();
+}
+
+void CAmMapHandler::am_MainConnection_Database_s::getMainConnectionType(am_MainConnectionType_s & connectionType) const
+{
+	connectionType.mainConnectionID = mainConnectionID;
+	connectionType.sourceID = sourceID;
+	connectionType.sinkID = sinkID;
+	connectionType.connectionState = connectionState;
+	connectionType.delay = delay;
+}
+
+/* Source Class */
+
+void CAmMapHandler::CAmSourceClass::getDescription (std::string & outString) const
+{
+	std::ostringstream fmt;
+	fmt << "Source class(" << name.c_str() << ") id(" << sourceClassID << ")\n" <<
+			") listClassProperties (";
+			std::for_each(listClassProperties.begin(), listClassProperties.end(), [&](const am_ClassProperty_s & ref) {
+				fmt << "[classProperty:" << ref.classProperty << " value:" << ref.value << "]";
+			});
+			fmt << ")" << std::endl;
+	outString = fmt.str();
+}
+
+/* Sink Class */
+
+void CAmMapHandler::CAmSinkClass::getDescription (std::string & outString) const
+{
+	std::ostringstream fmt;
+	fmt << "Sink class(" << name.c_str() << ") id(" << sinkClassID << ")\n" <<
+			") listClassProperties (";
+			std::for_each(listClassProperties.begin(), listClassProperties.end(), [&](const am_ClassProperty_s & ref) {
+				fmt << "[classProperty:" << ref.classProperty << " value:" << ref.value << "]";
+			});
+			fmt << ")" << std::endl;
+	outString = fmt.str();
+}
+
+
+/* Gateway */
+
+void CAmMapHandler::CAmGateway::getDescription (std::string & outString) const
+{
+	std::ostringstream fmt;
+	fmt << "Gateway(" << name.c_str() << ") id(" << gatewayID << ")\n" <<
+			"sinkID(" << sinkID <<
+			") sourceID(" << sourceID <<
+			") domainSinkID(" << domainSinkID <<
+			") domainSourceID(" << domainSourceID <<
+			") controlDomainID(" << controlDomainID <<
+			") listSourceFormats (";
+			std::for_each(listSourceFormats.begin(), listSourceFormats.end(), [&](const am_ConnectionFormat_e & ref) {
+				fmt << "[" << ref << "]";
+			});
+			fmt << ") listSinkFormats (";
+			std::for_each(listSinkFormats.begin(), listSinkFormats.end(), [&](const am_ConnectionFormat_e & ref) {
+				fmt << "[" << ref << "]";
+			});
+			fmt << ") convertionMatrix (";
+			std::for_each(convertionMatrix.begin(), convertionMatrix.end(), [&](const bool & ref) {
+				fmt << "[" << ref << "]";
+			});
+			fmt << ")" << std::endl;
+	outString = fmt.str();
+}
+
+/* Crossfader */
+
+void CAmMapHandler::CAmCrossfader::getDescription (std::string & outString) const
+{
+	std::ostringstream fmt;
+	fmt << "Crossfader(" << name.c_str() << ") id(" << crossfaderID << ")\n" <<
+			"sinkID_A(" << sinkID_A <<
+			") sinkID_B(" << sinkID_B <<
+			") sourceID(" << sourceID <<
+			") hotSink(" << hotSink <<
+			")" << std::endl;
+	outString = fmt.str();
+}
+
+template <typename TPrintMapKey,class TPrintMapObject> void CAmMapHandler::printMap (const AM_MAP<TPrintMapKey, TPrintMapObject> & t, std::ostream & output) const
+{
+	typename AM_MAP<TPrintMapKey, TPrintMapObject>::const_iterator iter = t.begin();
+	for(; iter!=t.end(); iter++)
+		print(iter->second, output);
+}
+
+template <class TPrintObject> void CAmMapHandler::print (const TPrintObject & t, std::ostream & output) const
+{
+	std::string description("");
+	t.getDescription( description );
+	output << description;
+}
+
+bool CAmMapHandler::CAmMappedData::increaseID(int16_t * resultID, int16_t * sourceID,
+													int16_t const desiredStaticID = 0, int16_t const preferedStaticIDBoundary = DYNAMIC_ID_BOUNDARY)
+{
+	if( desiredStaticID > 0 && desiredStaticID < preferedStaticIDBoundary )
+	{
+		*resultID = desiredStaticID;
+		return true;
+	}
+	else if( *sourceID < mDefaultIDLimit-1 ) //SHRT_MAX or the max limit is reserved and not used!!!
+	{
+		*resultID = (*sourceID)++;
+		return true;
+	}
+	else
+	{
+		*resultID = -1;
+		return false;
+	}
+ }
 
 /**
  * template to converts T to std::string
@@ -217,7 +464,7 @@ int16_t CAmMapHandler::calculateDelayForRoute(const std::vector<am_connectionID_
 	for (; elementIterator < listConnectionID.end(); ++elementIterator)
 	{
 		am_connectionID_t key = *elementIterator;
-		std::map<am_connectionID_t, am_Connection_Database_s>::const_iterator it = mMappedData.mConnectionMap.find(key);
+		AM_MAP<am_connectionID_t, am_Connection_Database_s>::const_iterator it = mMappedData.mConnectionMap.find(key);
 		if (it!=mMappedData.mConnectionMap.end())
 		{
 			int16_t temp_delay = it->second.delay;
@@ -477,48 +724,23 @@ am_Error_e CAmMapHandler::enterGatewayDB(const am_Gateway_s & gatewayData, am_ga
     return (E_OK);
 }
 
-void CAmMapHandler::printSinks()
+void CAmMapHandler::dump( std::ostream & output )
 {
-	CAmMapSink::const_iterator iter = mMappedData.mSinkMap.begin();
-	for(; iter!=mMappedData.mSinkMap.end(); iter++)
-	{
-		am_Sink_Database_s theItem = iter->second;
-		theItem.print();
-	}
-}
-
-void CAmMapHandler::printSinkClasses()
-{
-	CAmMapSinkClass::const_iterator iter = mMappedData.mSinkClassesMap.begin();
-	for(; iter!=mMappedData.mSinkClassesMap.end(); iter++)
-	{
-		am_SinkClass_s theItem = iter->second;
-		printf("\n CHECK SOURCE %d" , theItem.sinkClassID);
-		printf("\n %s ", theItem.name.c_str() );
-		printf("\n\n");
-	}
-}
-
-void CAmMapHandler::printSources()
-{
-	CAmMapSource::const_iterator iter = mMappedData.mSourceMap.begin();
-	for(; iter!=mMappedData.mSourceMap.end(); iter++)
-	{
-		am_Source_Database_s theItem = iter->second;
-		theItem.print();
-	}
-}
-
-void CAmMapHandler::printSourceClasses()
-{
-	CAmMapSourceClass::const_iterator iter = mMappedData.mSourceClassesMap.begin();
-	for(; iter!=mMappedData.mSourceClassesMap.end(); iter++)
-	{
-		am_SourceClass_s theItem = iter->second;
-		printf("\n CHECK SOURCE %d" , theItem.sourceClassID);
-		printf("\n %s ", theItem.name.c_str() );
-		printf("\n\n");
-	}
+	output << std::endl << "****************** DUMP START ******************" << std::endl;
+	printMap(mMappedData.mDomainMap, output);
+	printMap(mMappedData.mSourceMap, output);
+	printMap(mMappedData.mSinkMap, output);
+	printMap(mMappedData.mSourceClassesMap, output);
+	printMap(mMappedData.mSinkClassesMap, output);
+	printMap(mMappedData.mConnectionMap, output);
+	printMap(mMappedData.mMainConnectionMap, output);
+	printMap(mMappedData.mCrossfaderMap, output);
+	printMap(mMappedData.mGatewayMap, output);
+	CAmVectorSystemProperties::const_iterator iter = mMappedData.mSystemProperties.begin();
+	output << "System properties" << "\n";
+	for(; iter!=mMappedData.mSystemProperties.end(); iter++)
+		output << "[type:" << iter->type << " value:" << iter->value << "]";
+	output << std::endl << "****************** DUMP END ******************" << std::endl;
 }
 
 bool CAmMapHandler::insertSourceDB(const am_Source_s & sourceData, am_sourceID_t & sourceID)
@@ -580,7 +802,6 @@ am_Error_e CAmMapHandler::enterSourceDB(const am_Source_s & sourceData, am_sourc
     if ( isFirstStatic )
     {
       //if the first static sink is entered, we need to set it onto the boundary if needed
-//    	makeFirstStaticEntry(temp_SourceIndex, temp_SourceID, mMappedData.mSinkMap); //Not necessary anymore
         mFirstStaticSource = false;
     }
     mMappedData.mSourceMap[temp_SourceIndex].sourceID = temp_SourceID;
@@ -660,7 +881,6 @@ am_Error_e CAmMapHandler::enterSinkClassDB(const am_SinkClass_s & sinkClass, am_
 	//if the ID is not created, we add it to the query
 	if (sinkClass.sinkClassID == 0 && mFirstStaticSinkClass)
 	{
-//		makeFirstStaticEntry(temp_SinkClassIndex, temp_SinkClassID, mMappedData.mSinkClassesMap);
 		mFirstStaticSinkClass = false;
 	}
 	mMappedData.mSinkClassesMap[temp_SinkClassIndex].sinkClassID = temp_SinkClassID;
@@ -714,7 +934,6 @@ am_Error_e CAmMapHandler::enterSourceClassDB(am_sourceClass_t & sourceClassID, c
 	//if the ID is not created, we add it to the query
 	if (sourceClass.sourceClassID == 0 && mFirstStaticSourceClass)
 	{
-//		makeFirstStaticEntry(temp_SourceClassIndex, temp_SourceClassID, mMappedData.mSourceClassesMap);
 		mFirstStaticSinkClass = false;
 	}
 	mMappedData.mSourceClassesMap[temp_SourceClassIndex].sourceClassID = temp_SourceClassID;
@@ -1246,7 +1465,7 @@ am_Error_e CAmMapHandler::getListSinksOfDomain(const am_domainID_t domainID, std
         return (E_NON_EXISTENT);
     }
 
-    std::map<am_sinkID_t, am_Sink_Database_s>::const_iterator elementIterator = mMappedData.mSinkMap.begin();
+    AM_MAP<am_sinkID_t, am_Sink_Database_s>::const_iterator elementIterator = mMappedData.mSinkMap.begin();
 	for (;elementIterator != mMappedData.mSinkMap.end(); ++elementIterator)
 	{
 		if (0==elementIterator->second.reserved && domainID==elementIterator->second.domainID)
@@ -2256,7 +2475,7 @@ am_Error_e CAmMapHandler::changeSourceDB(const am_sourceID_t sourceID, const am_
     std::vector<am_MainSoundProperty_s> listMainSoundPropertiesOut(listMainSoundProperties);
     //check if sinkClass needs to be changed
 
-	std::map<am_sourceID_t, am_Source_Database_s>::iterator iter = mMappedData.mSourceMap.begin();
+	AM_MAP<am_sourceID_t, am_Source_Database_s>::iterator iter = mMappedData.mSourceMap.begin();
 	for(; iter!=mMappedData.mSourceMap.end(); ++iter)
 	{
 		if( iter->second.sourceID == sourceID )
@@ -2314,7 +2533,7 @@ am_Error_e CAmMapHandler::changeSinkDB(const am_sinkID_t sinkID, const am_sinkCl
         return (E_NON_EXISTENT);
     }
 
-	std::map<am_sinkID_t, am_Sink_Database_s>::iterator iter = mMappedData.mSinkMap.begin();
+	AM_MAP<am_sinkID_t, am_Sink_Database_s>::iterator iter = mMappedData.mSinkMap.begin();
 	for(; iter!=mMappedData.mSinkMap.end(); ++iter)
 	{
 		if( iter->second.sinkID == sinkID )

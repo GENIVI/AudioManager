@@ -143,7 +143,7 @@ void CAmTelnetServer::connectSocket(const pollfd pfd, const sh_pollHandle_t hand
     short event = 0;
     event |= POLLIN;
 
-    //aded the filedescriptor to the sockethandler and register the callbacks for receiving the data
+    //add the filedescriptor to the sockethandler and register the callbacks for receiving the data
     mpSocketHandler->addFDPoll(connection.filedescriptor, event, NULL, &telnetReceiveFiredCB, &telnetCheckCB, &telnetDispatchCB, NULL, connection.handle);
     mListConnections.push_back(connection);
 }

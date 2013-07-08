@@ -17,16 +17,9 @@
 
 cmake_minimum_required(VERSION 2.6)
 
-PROJECT(AmTelnetServerTest)
+PROJECT(AmRouterMapTest)
 
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -DUNIT_TEST=1 -DDLT_CONTEXT=AudioManager")
-
-set(STD_INCLUDE_DIRS "/usr/include")
-set(DBUS_FOLDER ${CMAKE_SOURCE_DIR}/../../../dbusInterfaces)
-set(AUDIO_INCLUDE_FOLDER ${CMAKE_SOURCE_DIR}/../../../include)
-set(DBUS_INCLUDE_FOLDER ${CMAKE_SOURCE_DIR}/../../../../dbusinclude)
-set(INCLUDE_FOLDER ${CMAKE_SOURCE_DIR}/../../include)
 
 
 FIND_PACKAGE(PkgConfig)
@@ -48,53 +41,49 @@ INCLUDE_DIRECTORIES(
     ${GOOGLE_TEST_INCLUDE_DIR}
     ${GMOCK_INCLUDE_DIR}
 )
- 
-file(GLOB TELNET_SRCS_CXX 
-    "../../src/CAmCommandReceiver.cpp"
+
+file(GLOB ROUTINGMAP_SRCS_CXX 
+    "../../src/CAmMapHandler.cpp"
+    "../../src/CAmDatabaseObserver.cpp"
     "../../src/CAmCommandSender.cpp"
+    "../../src/CAmRoutingSender.cpp"
     "../../src/CAmControlReceiver.cpp"
     "../../src/CAmControlSender.cpp"
-    "../../src/CAmMapHandler.cpp"
-    "../../src/CAmDatabaseHandler.cpp"
-    "../../src/CAmDatabaseObserver.cpp"
-    "../../src/CAmRoutingReceiver.cpp"
-    "../../src/CAmRoutingSender.cpp"
-    "../../src/CAmSocketHandler.cpp"
-    "../../src/CAmTelnetServer.cpp"
     "../../src/CAmRouter.cpp"
     "../../src/CAmDltWrapper.cpp"
-    "../../src/CAmTelnetMenuHelper.cpp"
+    "../../src/CAmSocketHandler.cpp"
+    "../../src/CAmCommandReceiver.cpp"
+    "../../src/CAmRoutingReceiver.cpp"
     "../../src/CAmDbusWrapper.cpp"
-    "*.cpp"    
-)
-
+    "../CAmCommonFunctions.cpp" 
+    "*.cpp"
+    )
+    
 IF(WITH_NSM)
-    SET (TELNET_SRCS_CXX
-        ${TELNET_SRCS_CXX}
+    SET (ROUTINGMAP_SRCS_CXX
+        ${ROUTINGMAP_SRCS_CXX}
     "../../src/CAmNodeStateCommunicator.cpp")
 ENDIF(WITH_NSM)
 
-ADD_EXECUTABLE(AmTelnetServerTest ${TELNET_SRCS_CXX})
+ADD_EXECUTABLE( AmRouterMapTest ${ROUTINGMAP_SRCS_CXX})
 
-TARGET_LINK_LIBRARIES(AmTelnetServerTest 
-    ${SQLITE_LIBRARIES}
-    ${DLT_LIBRARIES}
-    ${DBUS_LIBRARY}    
-    ${CMAKE_THREAD_LIBS_INIT}
-    ${CMAKE_DL_LIBS}
+TARGET_LINK_LIBRARIES( AmRouterMapTest 
+	${DLT_LIBRARIES}
+	${DBUS_LIBRARY}
+	${CMAKE_THREAD_LIBS_INIT}
+	${CMAKE_DL_LIBS}
     gtest
     gmock
 )
 
-ADD_DEPENDENCIES(AmTelnetServerTest gtest gmock)
+ADD_DEPENDENCIES(AmRouterMapTest gtest gmock)
 
-INSTALL(TARGETS AmTelnetServerTest 
+INSTALL(TARGETS AmRouterMapTest 
         DESTINATION "~/AudioManagerTest/"
         PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
         COMPONENT tests
 )
 
-SET(ADD_DEPEND "sqlite3(>=3.6.22)" "dlt" "libdbus-1-3(>=1.2.16)"  "libpthread-stubs0")
+SET(ADD_DEPEND "audiomanager-bin" "dlt" "libdbus-1-3(>=1.2.16)"  "libpthread-stubs0")
 set_property(GLOBAL APPEND PROPERTY tests_prop "${ADD_DEPEND}")
-
 

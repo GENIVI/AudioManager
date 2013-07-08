@@ -42,7 +42,7 @@ class CAmRouter;
 class CAmTelnetMenuHelper;
 
 /**
- * Implements a telnetserver that can be used to connect to the audiomanager, retrieve some information and use it. For debugginp purposes.
+ * Implements a telnetserver that can be used to connect to the audiomanager, retrieve some information and use it. For debugging purposes.
  * For example, launch a telnet session on port 6060:
  * \code telnet localhost 6060 \endcode
  *  more details can be found at the README

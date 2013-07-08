@@ -149,6 +149,8 @@ private:
     // INFO commands
     static void infoSystempropertiesCommand(std::queue<std::string> & CmdQueue, int & filedescriptor);
     void infoSystempropertiesCommandExec(std::queue<std::string> & CmdQueue, int & filedescriptor);
+    static void infoDumpCommand(std::queue<std::string>& CmdQueue, int& filedescriptor);
+    void infoDumpCommandExec(std::queue<std::string>& CmdQueue, int& filedescriptor);
 
 private:
 

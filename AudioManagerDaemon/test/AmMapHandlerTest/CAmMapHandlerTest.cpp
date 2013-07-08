@@ -129,6 +129,8 @@ void CAmMapHandlerTest::createMainConnectionSetup()
             equal = equal && (listIterator->connectionState == mainConnection.connectionState) && (listIterator->sinkID == mainConnection.sinkID) && (listIterator->sourceID == mainConnection.sourceID) && (listIterator->delay == mainConnection.delay) && (std::equal(listIterator->listConnectionID.begin(), listIterator->listConnectionID.end(), connectionList.begin()));
         }
     }
+//    pDatabaseHandler.dump();
+
     ASSERT_EQ(true, equal);
 }
 

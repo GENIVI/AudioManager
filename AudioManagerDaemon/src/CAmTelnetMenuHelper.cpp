@@ -105,6 +105,7 @@ void CAmTelnetMenuHelper::createCommandMaps()
     // Info comands
     mInfoCommands.insert(std::make_pair("help", sCommandPrototypeInfo(std::string("show all possible commands"), &CAmTelnetMenuHelper::helpCommand)));
     mInfoCommands.insert(std::make_pair("sysprop", sCommandPrototypeInfo("show all systemproperties", &CAmTelnetMenuHelper::infoSystempropertiesCommand)));
+    mInfoCommands.insert(std::make_pair("dump", sCommandPrototypeInfo("create a database dump of currently used data", &CAmTelnetMenuHelper::infoDumpCommand)));
     mInfoCommands.insert(std::make_pair("..", sCommandPrototypeInfo("one step back in menu tree (back to root folder)", &CAmTelnetMenuHelper::oneStepBackCommand)));
     mInfoCommands.insert(std::make_pair("exit", sCommandPrototypeInfo("close telnet session", &CAmTelnetMenuHelper::exitCommand)));
 }
@@ -741,6 +742,14 @@ void CAmTelnetMenuHelper::infoSystempropertiesCommand(std::queue<std::string>& C
 }
 
 /****************************************************************************/
+void CAmTelnetMenuHelper::infoDumpCommand(std::queue<std::string>& CmdQueue, int& filedescriptor)
+/****************************************************************************/
+{
+    instance->infoDumpCommandExec(CmdQueue, filedescriptor);
+}
+
+
+/****************************************************************************/
 void CAmTelnetMenuHelper::setVolumeStep(std::queue<std::string>& CmdQueue, int& filedescriptor)
 /****************************************************************************/
 {
@@ -930,6 +939,21 @@ void CAmTelnetMenuHelper::infoSystempropertiesCommandExec(std::queue<std::string
     {
         sendError(filedescriptor, "ERROR: mDatabasehandler->getListSystemProperties");
     }
+}
+
+/****************************************************************************/
+void CAmTelnetMenuHelper::infoDumpCommandExec(std::queue<std::string>& CmdQueue, int& filedescriptor)
+/****************************************************************************/
+{
+    (void) (CmdQueue);
+
+    std::stringstream *pOutput = new std::stringstream();
+
+    mpDatabasehandler->dump(*pOutput);
+
+    sendTelnetLine(filedescriptor, *pOutput);
+
+    delete pOutput;
 }
 
 /****************************************************************************/

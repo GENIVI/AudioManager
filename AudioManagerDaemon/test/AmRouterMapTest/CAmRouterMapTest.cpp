@@ -18,19 +18,19 @@
  *
  */
 
-#include "CAmRouterTest.h"
+#include "CAmRouterMapTest.h"
 #include <string.h>
 #include "shared/CAmDltWrapper.h"
 
 using namespace am;
 using namespace testing;
 
-CAmRouterTest::CAmRouterTest() :
+CAmRouterMapTest::CAmRouterMapTest() :
         plistRoutingPluginDirs(), //
         plistCommandPluginDirs(), //
         pSocketHandler(), //
         pControlSender(), //
-		pDatabaseHandler(std::string(":memory:")),
+		pDatabaseHandler(),
         pRouter(&pDatabaseHandler, &pControlSender), //
         pRoutingSender(plistRoutingPluginDirs), //
         pCommandSender(plistCommandPluginDirs), //
@@ -47,17 +47,17 @@ CAmRouterTest::CAmRouterTest() :
     pControlInterfaceBackdoor.replaceController(&pControlSender, &pMockControlInterface);
 }
 
-CAmRouterTest::~CAmRouterTest()
+CAmRouterMapTest::~CAmRouterMapTest()
 {
 
 }
 
-void CAmRouterTest::SetUp()
+void CAmRouterMapTest::SetUp()
 {
     logInfo("Routing Test started ");
 }
 
-void CAmRouterTest::TearDown()
+void CAmRouterMapTest::TearDown()
 {
 }
 
@@ -66,7 +66,7 @@ arg4=arg3;
 }
 
 //test that checks just sinks and source in a domain but connectionformats do not match
-TEST_F(CAmRouterTest,simpleRoute2withDomainNoMatchFormats)
+TEST_F(CAmRouterMapTest,simpleRoute2withDomainNoMatchFormats)
 {
     EXPECT_CALL(pMockControlInterface,getConnectionFormatChoice(_,_,_,_,_)).WillRepeatedly(DoAll(returnConnectionFormat(), Return(E_OK)));
 
@@ -127,7 +127,7 @@ TEST_F(CAmRouterTest,simpleRoute2withDomainNoMatchFormats)
 }
 
 //test that checks just sinks and source in a domain
-TEST_F(CAmRouterTest,simpleRoute2withDomain)
+TEST_F(CAmRouterMapTest,simpleRoute2withDomain)
 {
     EXPECT_CALL(pMockControlInterface,getConnectionFormatChoice(_,_,_,_,_)).WillRepeatedly(DoAll(returnConnectionFormat(), Return(E_OK)));
 
@@ -189,7 +189,7 @@ TEST_F(CAmRouterTest,simpleRoute2withDomain)
 }
 
 //test that checks just 2 domains, one sink one source with only one connection format each
-TEST_F(CAmRouterTest,simpleRoute2DomainsOnlyFree)
+TEST_F(CAmRouterMapTest,simpleRoute2DomainsOnlyFree)
 {
 
 
@@ -297,7 +297,7 @@ TEST_F(CAmRouterTest,simpleRoute2DomainsOnlyFree)
 }
 
 //test that checks just 2 domains, one sink one source with only one connection format each
-TEST_F(CAmRouterTest,simpleRoute2DomainsOnlyFreeNotFree)
+TEST_F(CAmRouterMapTest,simpleRoute2DomainsOnlyFreeNotFree)
 {
 
 
@@ -421,7 +421,7 @@ TEST_F(CAmRouterTest,simpleRoute2DomainsOnlyFreeNotFree)
 }
 
 //test that checks just 2 domains, with gateway for each direction (possible circular route)
-TEST_F(CAmRouterTest,simpleRoute2DomainsCircularGWOnlyFree)
+TEST_F(CAmRouterMapTest,simpleRoute2DomainsCircularGWOnlyFree)
 {
 
     EXPECT_CALL(pMockControlInterface,getConnectionFormatChoice(_,_,_,_,_)).WillRepeatedly(DoAll(returnConnectionFormat(), Return(E_OK)));
@@ -555,7 +555,7 @@ TEST_F(CAmRouterTest,simpleRoute2DomainsCircularGWOnlyFree)
 }
 
 //test that checks 3 domains, one sink one source, longer lists of connectionformats.
-TEST_F(CAmRouterTest,simpleRoute3DomainsListConnectionFormats_2)
+TEST_F(CAmRouterMapTest,simpleRoute3DomainsListConnectionFormats_2)
 {
 
     EXPECT_CALL(pMockControlInterface,getConnectionFormatChoice(_,_,_,_,_)).WillRepeatedly(DoAll(returnConnectionFormat(), Return(E_OK)));
@@ -715,7 +715,7 @@ TEST_F(CAmRouterTest,simpleRoute3DomainsListConnectionFormats_2)
 }
 
 //test that checks 3 domains, one sink one source, longer lists of connectionformats.
-TEST_F(CAmRouterTest,simpleRoute3DomainsListConnectionFormats_1)
+TEST_F(CAmRouterMapTest,simpleRoute3DomainsListConnectionFormats_1)
 {
     EXPECT_CALL(pMockControlInterface,getConnectionFormatChoice(_,_,_,_,_)).WillRepeatedly(DoAll(returnConnectionFormat(), Return(E_OK)));
 
@@ -870,7 +870,7 @@ TEST_F(CAmRouterTest,simpleRoute3DomainsListConnectionFormats_1)
 
 
 //test that checks 3 domains, one sink one source, longer lists of connectionformats.
-TEST_F(CAmRouterTest,simpleRoute3DomainsListConnectionFormats)
+TEST_F(CAmRouterMapTest,simpleRoute3DomainsListConnectionFormats)
 {
     EXPECT_CALL(pMockControlInterface,getConnectionFormatChoice(_,_,_,_,_)).WillRepeatedly(DoAll(returnConnectionFormat(), Return(E_OK)));
 
@@ -1019,7 +1019,7 @@ TEST_F(CAmRouterTest,simpleRoute3DomainsListConnectionFormats)
 
 
 //test that checks 4 domains, one sink and one source but there are 2 routes because there are 2 gateways
-TEST_F(CAmRouterTest,simpleRoute4Domains2Routes)
+TEST_F(CAmRouterMapTest,simpleRoute4Domains2Routes)
 {
     EXPECT_CALL(pMockControlInterface,getConnectionFormatChoice(_,_,_,_,_)).WillRepeatedly(DoAll(returnConnectionFormat(), Return(E_OK)));
 
@@ -1253,7 +1253,7 @@ TEST_F(CAmRouterTest,simpleRoute4Domains2Routes)
 }
 
 //test that checks 3 domains, one sink one source but the connectionformat of third domains do not fit.
-TEST_F(CAmRouterTest,simpleRoute3DomainsNoConnection)
+TEST_F(CAmRouterMapTest,simpleRoute3DomainsNoConnection)
 {
 
     EXPECT_CALL(pMockControlInterface,getConnectionFormatChoice(_,_,_,_,_)).WillRepeatedly(DoAll(returnConnectionFormat(), Return(E_OK)));
@@ -1397,7 +1397,7 @@ TEST_F(CAmRouterTest,simpleRoute3DomainsNoConnection)
     ASSERT_EQ(static_cast<uint>(0), listRoutes.size());
 }
 //test that checks just 2 domains, one sink one source with only one connection format each
-TEST_F(CAmRouterTest,simpleRoute2Domains)
+TEST_F(CAmRouterMapTest,simpleRoute2Domains)
 {
 
 
@@ -1505,7 +1505,7 @@ TEST_F(CAmRouterTest,simpleRoute2Domains)
 }
 
 //test that checks just 2 domains, one sink one source but the connectionformat of source
-TEST_F(CAmRouterTest,simpleRoute2DomainsNoMatchConnectionFormats)
+TEST_F(CAmRouterMapTest,simpleRoute2DomainsNoMatchConnectionFormats)
 {
 
 
@@ -1611,7 +1611,7 @@ TEST_F(CAmRouterTest,simpleRoute2DomainsNoMatchConnectionFormats)
 }
 
 //test that checks 3 domains, one sink one source.
-TEST_F(CAmRouterTest,simpleRoute3Domains)
+TEST_F(CAmRouterMapTest,simpleRoute3Domains)
 {
     EXPECT_CALL(pMockControlInterface,getConnectionFormatChoice(_,_,_,_,_)).WillRepeatedly(DoAll(returnConnectionFormat(), Return(E_OK)));
 
@@ -1756,7 +1756,7 @@ TEST_F(CAmRouterTest,simpleRoute3Domains)
 }
 
 //test that checks 4 domains, one sink and one source.
-TEST_F(CAmRouterTest,simpleRoute4Domains)
+TEST_F(CAmRouterMapTest,simpleRoute4Domains)
 {
     EXPECT_CALL(pMockControlInterface,getConnectionFormatChoice(_,_,_,_,_)).WillRepeatedly(DoAll(returnConnectionFormat(), Return(E_OK)));
 
@@ -1944,9 +1944,9 @@ TEST_F(CAmRouterTest,simpleRoute4Domains)
 int main(int argc, char **argv)
 {
 #ifdef WITH_DLT
-    CAmDltWrapper::instance()->registerApp("routing", "CAmRouterTest");
+    CAmDltWrapper::instance()->registerApp("routing", "CAmRouterMapTest");
 #else
-    CAmDltWrapper::instance(true)->registerApp("routing", "CAmRouterTest");
+    CAmDltWrapper::instance(true)->registerApp("routing", "CAmRouterMapTest");
 #endif
     logInfo("Routing Test started ");
     ::testing::InitGoogleTest(&argc, argv);

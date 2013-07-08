@@ -14,7 +14,7 @@
  *
 * \author Aleksandar Donchev, aleksander.donchev@partner.bmw.de BMW 2013
  *
- * \file CAmDatabaseHandler.h
+ * \file CAmMapHandler.h
  * For further information see http://www.genivi.org/.
  *
  */
@@ -23,13 +23,19 @@
 #define MAPHANDLER_H_
 
 #include "CAmDatabaseHandlerInterface.h"
-#include <unordered_map>
-#include <map>
 #include <stdint.h>
 #include <limits.h>
+#include <sstream>
+#include <iostream>
+#include <unordered_map>
+
+
 
 namespace am
 {
+
+#define AM_MAP std::unordered_map
+
 //todo: check the enum values before entering & changing in the database.
 //todo: change asserts for dynamic boundary checks into failure answers.#
 //todo: check autoincrement boundary and set to 16bit limits
@@ -158,169 +164,102 @@ public:
     bool sourceVisible(const am_sourceID_t sourceID) const;
     bool sinkVisible(const am_sinkID_t sinkID) const;
 
-    void printSources();
-    void printSinks();
-    void printSinkClasses();
-    void printSourceClasses();
-
+    void dump( std::ostream & output );
+    template <class TPrintObject> void print (const TPrintObject & t, std::ostream & output) const;
+    template <typename TPrintMapKey,class TPrintMapObject> void printMap (const AM_MAP<TPrintMapKey, TPrintMapObject> & t, std::ostream & output) const;
     /**
      * The following structures extend the base structures with the field 'reserved'.
      */
 
-    struct am_Sink_Database_s : public am_Sink_s
-    {
-        bool reserved;
-        am_Sink_Database_s():am_Sink_s(), reserved(false)
-        {};
-        void getSinkType(am_SinkType_s & sinkType) const
-        {
-            sinkType.name = name;
-            sinkType.sinkID = sinkID;
-            sinkType.availability = available;
-            sinkType.muteState = muteState;
-            sinkType.volume = mainVolume;
-            sinkType.sinkClassID = sinkClassID;
-        };
-        am_Sink_Database_s & operator=(const am_Sink_Database_s & anObject)
-        {
-            if (this != &anObject)
-            {
-                am_Sink_s::operator=(anObject);
-                reserved = anObject.reserved;
-            }
-            return *this;
-        };
-        am_Sink_Database_s & operator=(const am_Sink_s & anObject)
-        {
-            if (this != &anObject)
-                am_Sink_s::operator=(anObject);
-            return *this;
-        };
-        void print() const
-        {
-            printf("\n Sink(%s) id(%d)\n", name.c_str() ,sinkID);
-            printf("\t availability(%d) availabilityReason(%d) sinkClassID(%d) domainID(%d) visible(%d) volume(%d) mainVolume(%d) muteState(%d) reserved(%d)\n",
-                            available.availability, available.availabilityReason, sinkClassID, domainID, visible, volume, mainVolume, muteState,reserved);
-        };
-    };
+#define AM_TYPEDEF_SUBCLASS_BEGIN(Subclass, Class) \
+        typedef struct Subclass : public Class\
+        {\
+	        Subclass & operator=(const Subclass & anObject) \
+			{\
+				if (this != &anObject)\
+	            {\
+					Class::operator=(anObject);\
+	            }\
+	            return *this;\
+	        };\
+	        Subclass & operator=(const Class & anObject)\
+	        {\
+	            if (this != &anObject)\
+	            	Class::operator=(anObject);\
+	            return *this;\
+	        };\
+           	void getDescription (std::string & outString) const;\
 
-    struct am_Source_Database_s : public am_Source_s
-    {
-        bool reserved;
-        am_Source_Database_s():am_Source_s(), reserved(false)
-        {};
-        void getSourceType(am_SourceType_s & sourceType) const
-        {
-            sourceType.name = name;
-            sourceType.sourceClassID = sourceClassID;
-            sourceType.availability = available;
-            sourceType.sourceID = sourceID;
-        };
-        am_Source_Database_s & operator=(const am_Source_Database_s & anObject)
-        {
-            if (this != &anObject)
-            {
-                am_Source_s::operator=(anObject);
-                reserved = anObject.reserved;
-            }
-            return *this;
-        };
-        am_Source_Database_s & operator=(const am_Source_s & anObject)
-        {
-            if (this != &anObject)
-            {
-                am_Source_s::operator=(anObject);
-            }
-            return *this;
-        };
-        void print() const
-        {
-            printf("\n Source(%s) id(%d)\n", name.c_str() ,sourceID);
-            printf("\t availability(%d) availabilityReason(%d) sourceClassID(%d) domainID(%d) visible(%d) volume(%d) interruptState(%d) sourceState(%d) reserved(%d)\n",
-                            available.availability, available.availabilityReason, sourceClassID, domainID, visible, volume, interruptState, sourceState,reserved);
-        };
-    };
+#define AM_TYPEDEF_SUBCLASS_RESERVED_FLAG_BEGIN(Subclass, Class) \
+	    typedef struct Subclass : public Class\
+	    {\
+	        bool reserved;\
+	        Subclass():Class(), reserved(false)\
+	        {};\
+	        Subclass & operator=(const Subclass & anObject)\
+	        {\
+	            if (this != &anObject)\
+	            {\
+	            	Class::operator=(anObject);\
+	                reserved = anObject.reserved;\
+	            }\
+	            return *this;\
+	        };\
+	        Subclass & operator=(const Class & anObject)\
+	        {\
+	            if (this != &anObject)\
+	            Class::operator=(anObject);\
+	            return *this;\
+	        };\
+	        void getDescription (std::string & outString) const;\
 
-    struct am_Connection_Database_s : public am_Connection_s
-    {
-        bool reserved;
-        am_Connection_Database_s():am_Connection_s(), reserved(true)
-        {};
-        am_Connection_Database_s & operator=(const am_Connection_Database_s & anObject)
-        {
-            if (this != &anObject)
-            {
-                am_Connection_s::operator=(anObject);
-                reserved = anObject.reserved;
-            }
-            return *this;
-        };
-        am_Connection_Database_s & operator=(const am_Connection_s & anObject)
-        {
-            if (this != &anObject)
-                am_Connection_s::operator=(anObject);
-            return *this;
-        };
-    };
+#define AM_TYPEDEF_SUBCLASS_END(Typedef) } Typedef; \
 
-    struct am_Domain_Database_s : public am_Domain_s
-    {
-        bool reserved;
-        am_Domain_Database_s():am_Domain_s(), reserved(false)
-        {};
-        am_Domain_Database_s & operator=(const am_Domain_Database_s & anObject)
-        {
-            if (this != &anObject)
-            {
-                am_Domain_s::operator=(anObject);
-                reserved = anObject.reserved;
-            }
-            return *this;
-        };
-        am_Domain_Database_s & operator=(const am_Domain_s & anObject)
-        {
-            if (this != &anObject)
-                am_Domain_s::operator=(anObject);
-            return *this;
-        };
-    };
+    AM_TYPEDEF_SUBCLASS_RESERVED_FLAG_BEGIN(am_Domain_Database_s,am_Domain_s)
+    AM_TYPEDEF_SUBCLASS_END(CAmDomain)
 
-    struct am_MainConnection_Database_s : public am_MainConnection_s
-    {
-        am_MainConnection_Database_s():am_MainConnection_s()
-        {};
-        void getMainConnectionType(am_MainConnectionType_s & connectionType) const
-        {
-            connectionType.mainConnectionID = mainConnectionID;
-            connectionType.sourceID = sourceID;
-            connectionType.sinkID = sinkID;
-            connectionType.connectionState = connectionState;
-            connectionType.delay = delay;
-        };
-        am_MainConnection_Database_s & operator=(const am_MainConnection_Database_s & anObject)
-        {
-            am_MainConnection_s::operator=(anObject);
-            return *this;
-        };
-        am_MainConnection_Database_s & operator=(const am_MainConnection_s & anObject)
-        {
-            am_MainConnection_s::operator=(anObject);
-            return *this;
-        };
-    };
+    AM_TYPEDEF_SUBCLASS_RESERVED_FLAG_BEGIN(am_Sink_Database_s,am_Sink_s)
+    	void getSinkType(am_SinkType_s & sinkType) const;\
+    AM_TYPEDEF_SUBCLASS_END(CAmSink)
+
+    AM_TYPEDEF_SUBCLASS_RESERVED_FLAG_BEGIN(am_Source_Database_s,am_Source_s)
+    	void getSourceType(am_SourceType_s & sourceType) const;\
+    AM_TYPEDEF_SUBCLASS_END(CAmSource)
+
+    AM_TYPEDEF_SUBCLASS_RESERVED_FLAG_BEGIN(am_Connection_Database_s,am_Connection_s)
+    AM_TYPEDEF_SUBCLASS_END(CAmConnection)
+
+    /**
+      * The following structures extend the base structures with print capabilities.
+    */
+    AM_TYPEDEF_SUBCLASS_BEGIN(am_MainConnection_Database_s, am_MainConnection_s)
+    	void getMainConnectionType(am_MainConnectionType_s & connectionType) const;\
+    AM_TYPEDEF_SUBCLASS_END(CAmMainConnection)
+
+	AM_TYPEDEF_SUBCLASS_BEGIN(am_SourceClass_Database_s, am_SourceClass_s)
+	AM_TYPEDEF_SUBCLASS_END(CAmSourceClass)
+
+	AM_TYPEDEF_SUBCLASS_BEGIN(am_SinkClass_Database_s, am_SinkClass_s)
+	AM_TYPEDEF_SUBCLASS_END(CAmSinkClass)
+
+	AM_TYPEDEF_SUBCLASS_BEGIN(am_Gateway_Database_s, am_Gateway_s)
+	AM_TYPEDEF_SUBCLASS_END(CAmGateway)
+
+	AM_TYPEDEF_SUBCLASS_BEGIN(am_Crossfader_Database_s, am_Crossfader_s)
+	AM_TYPEDEF_SUBCLASS_END(CAmCrossfader)
 
     private:
 
-    typedef std::map<am_domainID_t, am_Domain_Database_s>  		  			 CAmMapDomain;
-    typedef std::map<am_sourceClass_t, am_SourceClass_s> 		   			 CAmMapSourceClass;
-    typedef std::map<am_sinkClass_t, am_SinkClass_s> 		  	       		 CAmMapSinkClass;
-    typedef std::map<am_sinkID_t, am_Sink_Database_s> 			   			 CAmMapSink;
-    typedef std::map<am_sourceID_t, am_Source_Database_s> 		 			 CAmMapSource;
-    typedef std::map<am_gatewayID_t, am_Gateway_s> 			 	 			 CAmMapGateway;
-    typedef std::map<am_crossfaderID_t, am_Crossfader_s> 		   			 CAmMapCrossfader;
-    typedef std::map<am_connectionID_t, am_Connection_Database_s>			 CAmMapConnection;
-    typedef std::map<am_mainConnectionID_t, am_MainConnection_Database_s> 	 CAmMapMainConnection;
-    typedef std::vector<am_SystemProperty_s> 	   				 			 CAmVectorSystemProperties;
+    typedef AM_MAP<am_domainID_t, CAmDomain>  		  			 CAmMapDomain;
+    typedef AM_MAP<am_sourceClass_t, CAmSourceClass> 				 CAmMapSourceClass;
+    typedef AM_MAP<am_sinkClass_t, CAmSinkClass> 		  	  	     CAmMapSinkClass;
+    typedef AM_MAP<am_sinkID_t, CAmSink> 			   				 CAmMapSink;
+    typedef AM_MAP<am_sourceID_t, CAmSource> 		 			 	 CAmMapSource;
+    typedef AM_MAP<am_gatewayID_t, CAmGateway> 			 	 	 CAmMapGateway;
+    typedef AM_MAP<am_crossfaderID_t, CAmCrossfader> 		    	 CAmMapCrossfader;
+    typedef AM_MAP<am_connectionID_t, CAmConnection>				 CAmMapConnection;
+    typedef AM_MAP<am_mainConnectionID_t, CAmMainConnection> 	 	 CAmMapMainConnection;
+    typedef std::vector<am_SystemProperty_s> 	   				     CAmVectorSystemProperties;
     typedef struct CAmMappedData
     {
     	int16_t mCurrentDomainID;
@@ -356,26 +295,9 @@ public:
 			mGatewayMap(), mCrossfaderMap(), mConnectionMap(), mMainConnectionMap()
     	{};
 
-    	bool increaseID(int16_t * resultID, int16_t * sourceID, int16_t const desiredStaticID = 0, int16_t const preferedStaticIDBoundary = DYNAMIC_ID_BOUNDARY)
-    	{
-    		if( desiredStaticID > 0 && desiredStaticID < preferedStaticIDBoundary )
-    		{
-				*resultID = desiredStaticID;
-				return true;
-    		}
-    		else if( *sourceID < mDefaultIDLimit-1 ) //SHRT_MAX or the max limit is reserved and not used!!!
-    		{
-    			*resultID = (*sourceID)++;
-    			return true;
-    		}
-    		else
-    		{
-    			*resultID = -1;
-    			return false;
-    		}
-    	 };
+    	bool increaseID(int16_t * resultID, int16_t * sourceID,
+						int16_t const desiredStaticID, int16_t const preferedStaticIDBoundary );
     } CAmMappedData;
-
 
     CAmMappedData mMappedData;
 

@@ -29,6 +29,7 @@
 #include "CAmDatabaseObserver.h"
 #include "CAmRouter.h"
 #include "shared/CAmDltWrapper.h"
+#include <sqlite3.h>
 
 namespace am
 {
@@ -5037,4 +5038,5 @@ void CAmDatabaseHandler::createTables()
             throw std::runtime_error("CAmDatabaseHandler Could not create tables!");
     }
 }
+
 }
