@@ -44,7 +44,7 @@ INCLUDE_DIRECTORIES(
 )
 
 file(GLOB DATABASE_SRCS_CXX 
-    "../../src/CAmDatabaseHandler.cpp"
+    "../../src/CAmDatabaseHandlerSQLite.cpp"
     "../../src/CAmDatabaseObserver.cpp"
     "../../src/CAmCommandSender.cpp"
     "../../src/CAmRoutingSender.cpp"

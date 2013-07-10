@@ -22,7 +22,7 @@
 #include "CAmRoutingReceiver.h"
 #include <cassert>
 #include <algorithm>
-#include "CAmDatabaseHandlerInterface.h"
+#include "IAmDatabaseHandler.h"
 #include "CAmRoutingSender.h"
 #include "CAmControlSender.h"
 #include "shared/CAmDltWrapper.h"
@@ -31,7 +31,7 @@
 namespace am
 {
 
-CAmRoutingReceiver::CAmRoutingReceiver(CAmDatabaseHandlerInterface *iDatabaseHandler, CAmRoutingSender *iRoutingSender, CAmControlSender *iControlSender, CAmSocketHandler *iSocketHandler) :
+CAmRoutingReceiver::CAmRoutingReceiver(IAmDatabaseHandler *iDatabaseHandler, CAmRoutingSender *iRoutingSender, CAmControlSender *iControlSender, CAmSocketHandler *iSocketHandler) :
         mpDatabaseHandler(iDatabaseHandler), //
         mpRoutingSender(iRoutingSender), //
         mpControlSender(iControlSender), //
@@ -51,7 +51,7 @@ CAmRoutingReceiver::CAmRoutingReceiver(CAmDatabaseHandlerInterface *iDatabaseHan
     assert(mpSocketHandler!=NULL);
 }
 
-CAmRoutingReceiver::CAmRoutingReceiver(CAmDatabaseHandlerInterface *iDatabaseHandler, CAmRoutingSender *iRoutingSender, CAmControlSender *iControlSender, CAmSocketHandler *iSocketHandler, CAmDbusWrapper *iDBusWrapper) :
+CAmRoutingReceiver::CAmRoutingReceiver(IAmDatabaseHandler *iDatabaseHandler, CAmRoutingSender *iRoutingSender, CAmControlSender *iControlSender, CAmSocketHandler *iSocketHandler, CAmDbusWrapper *iDBusWrapper) :
         mpDatabaseHandler(iDatabaseHandler), //
         mpRoutingSender(iRoutingSender), //
         mpControlSender(iControlSender), //

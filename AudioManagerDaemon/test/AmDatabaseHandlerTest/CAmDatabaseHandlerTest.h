@@ -26,7 +26,7 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
-#include "CAmDatabaseHandler.h"
+#include "CAmDatabaseHandlerSQLite.h"
 #include "CAmControlReceiver.h"
 #include "CAmControlSender.h"
 #include "CAmDatabaseObserver.h"
@@ -51,7 +51,7 @@ public:
     std::vector<std::string> plistRoutingPluginDirs;
     std::vector<std::string> plistCommandPluginDirs;
     CAmSocketHandler pSocketHandler;
-    CAmDatabaseHandler pDatabaseHandler;
+    CAmDatabaseHandlerSQLite pDatabaseHandler;
     CAmRoutingSender pRoutingSender;
     CAmCommandSender pCommandSender;
     MockIAmCommandSend pMockInterface;

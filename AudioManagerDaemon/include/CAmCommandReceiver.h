@@ -27,7 +27,7 @@
 namespace am
 {
 
-class CAmDatabaseHandlerInterface;
+class IAmDatabaseHandler;
 class CAmControlSender;
 class CAmDbusWrapper;
 class CAmSocketHandler;
@@ -38,8 +38,8 @@ class CAmSocketHandler;
 class CAmCommandReceiver: public IAmCommandReceive
 {
 public:
-    CAmCommandReceiver(CAmDatabaseHandlerInterface* iDatabaseHandler, CAmControlSender* iControlSender, CAmSocketHandler* iSocketHandler);
-    CAmCommandReceiver(CAmDatabaseHandlerInterface* iDatabaseHandler, CAmControlSender* iControlSender, CAmSocketHandler* iSocketHandler, CAmDbusWrapper* iDBusWrapper);
+    CAmCommandReceiver(IAmDatabaseHandler* iDatabaseHandler, CAmControlSender* iControlSender, CAmSocketHandler* iSocketHandler);
+    CAmCommandReceiver(IAmDatabaseHandler* iDatabaseHandler, CAmControlSender* iControlSender, CAmSocketHandler* iSocketHandler, CAmDbusWrapper* iDBusWrapper);
     ~CAmCommandReceiver();
     am_Error_e connect(const am_sourceID_t sourceID, const am_sinkID_t sinkID, am_mainConnectionID_t& mainConnectionID);
     am_Error_e disconnect(const am_mainConnectionID_t mainConnectionID);
@@ -75,7 +75,7 @@ public:
     void waitOnRundown(bool rundown); //!< tells the ComandReceiver to start waiting for all handles to be confirmed
 
 private:
-    CAmDatabaseHandlerInterface* mDatabaseHandler; //!< pointer to the databasehandler
+    IAmDatabaseHandler* mDatabaseHandler; //!< pointer to the databasehandler
     CAmControlSender* mControlSender; //!< pointer to the control sender
     CAmDbusWrapper* mDBusWrapper; //!< pointer to the dbuswrapper
     CAmSocketHandler* mSocketHandler; //!< pointer to the SocketHandler

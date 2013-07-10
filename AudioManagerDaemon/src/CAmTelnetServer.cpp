@@ -36,7 +36,6 @@
 #include <unistd.h>
 #include <stdexcept>
 #include <cstdlib>
-#include "CAmDatabaseHandlerInterface.h"
 #include "CAmRoutingSender.h"
 #include "CAmTelnetMenuHelper.h"
 #include "shared/CAmDltWrapper.h"
@@ -48,7 +47,7 @@ CAmTelnetServer* CAmTelnetServer::mpInstance = NULL;
 
 #define PRINT_BOOL(var) var ? output+="true\t\t" : output+="false\t\t";
 
-CAmTelnetServer::CAmTelnetServer(CAmSocketHandler *iSocketHandler, CAmCommandSender *iCommandSender, CAmCommandReceiver *iCommandReceiver, CAmRoutingSender *iRoutingSender, CAmRoutingReceiver *iRoutingReceiver, CAmControlSender *iControlSender, CAmControlReceiver *iControlReceiver, CAmDatabaseHandlerInterface *iDatabasehandler, CAmRouter *iRouter, unsigned int servPort, unsigned int maxConnections) :
+CAmTelnetServer::CAmTelnetServer(CAmSocketHandler *iSocketHandler, CAmCommandSender *iCommandSender, CAmCommandReceiver *iCommandReceiver, CAmRoutingSender *iRoutingSender, CAmRoutingReceiver *iRoutingReceiver, CAmControlSender *iControlSender, CAmControlReceiver *iControlReceiver, IAmDatabaseHandler *iDatabasehandler, CAmRouter *iRouter, unsigned int servPort, unsigned int maxConnections) :
         telnetConnectFiredCB(this, &CAmTelnetServer::connectSocket), //
         telnetReceiveFiredCB(this, &CAmTelnetServer::receiveData), //
         telnetDispatchCB(this, &CAmTelnetServer::dispatchData), //

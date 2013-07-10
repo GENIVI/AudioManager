@@ -50,30 +50,13 @@ typedef std::map<am_gatewayID_t, std::vector<bool> > ListConnectionFormat; //!< 
  * This class handles and abstracts the database
  */
 
-class CAmDatabaseHandlerInterface
+class IAmDatabaseHandler
 {
 protected:
     virtual am_timeSync_t calculateMainConnectionDelay(const am_mainConnectionID_t mainConnectionID) const = 0; //!< calculates a new main connection delay
-    CAmDatabaseObserver *mpDatabaseObserver; //!< pointer to the Observer
-    bool mFirstStaticSink; //!< bool for dynamic range handling
-    bool mFirstStaticSource; //!< bool for dynamic range handling
-    bool mFirstStaticGateway; //!< bool for dynamic range handling
-    bool mFirstStaticSinkClass; //!< bool for dynamic range handling
-    bool mFirstStaticSourceClass; //!< bool for dynamic range handling
-    bool mFirstStaticCrossfader; //!< bool for dynamic range handling
-    ListConnectionFormat mListConnectionFormat; //!< list of connection formats
-
 public:
-    CAmDatabaseHandlerInterface(): 	mpDatabaseObserver(NULL), //
-										mFirstStaticSink(true), //
-										mFirstStaticSource(true), //
-										mFirstStaticGateway(true), //
-										mFirstStaticSinkClass(true), //
-										mFirstStaticSourceClass(true), //
-										mFirstStaticCrossfader(true), //
-										mListConnectionFormat()
-	{};
-    virtual ~CAmDatabaseHandlerInterface() {};
+//    IAmDatabaseHandler();
+//    virtual ~IAmDatabaseHandler();
 
     virtual am_Error_e enterDomainDB(const am_Domain_s& domainData, am_domainID_t& domainID) = 0;
     virtual am_Error_e enterMainConnectionDB(const am_MainConnection_s& mainConnectionData, am_mainConnectionID_t& connectionID) = 0;
@@ -187,7 +170,7 @@ public:
     virtual bool sourceVisible(const am_sourceID_t sourceID) const = 0;
     virtual bool sinkVisible(const am_sinkID_t sinkID) const = 0;
 
-    virtual void dump( std::ostream & output) { output << __FUNCTION__ << " not implemented!"; };
+    virtual void dump( std::ostream & output) = 0 ;
 };
 
 }

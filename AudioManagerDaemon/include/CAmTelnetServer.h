@@ -31,7 +31,7 @@
 namespace am
 {
 
-class CAmDatabaseHandlerInterface;
+class IAmDatabaseHandler;
 class CAmCommandSender;
 class CAmRoutingSender;
 class CAmControlSender;
@@ -50,7 +50,7 @@ class CAmTelnetMenuHelper;
 class CAmTelnetServer
 {
 public:
-    CAmTelnetServer(CAmSocketHandler *iSocketHandler, CAmCommandSender *iCommandSender, CAmCommandReceiver *iCommandReceiver, CAmRoutingSender *iRoutingSender, CAmRoutingReceiver *iRoutingReceiver, CAmControlSender *iControlSender, CAmControlReceiver *iControlReceiver, CAmDatabaseHandlerInterface *iDatabasehandler, CAmRouter *iRouter, unsigned int servPort, unsigned int maxConnections);
+    CAmTelnetServer(CAmSocketHandler *iSocketHandler, CAmCommandSender *iCommandSender, CAmCommandReceiver *iCommandReceiver, CAmRoutingSender *iRoutingSender, CAmRoutingReceiver *iRoutingReceiver, CAmControlSender *iControlSender, CAmControlReceiver *iControlReceiver, IAmDatabaseHandler *iDatabasehandler, CAmRouter *iRouter, unsigned int servPort, unsigned int maxConnections);
     ~CAmTelnetServer();
     void connectSocket(const pollfd pfd, const sh_pollHandle_t handle, void* userData);
     void disconnectClient(int filedescriptor);
@@ -82,7 +82,7 @@ private:
     CAmRoutingReceiver *mpRoutingReceiver;
     CAmControlSender *mpControlSender;
     CAmControlReceiver *mpControlReceiver;
-    CAmDatabaseHandlerInterface *mpDatabasehandler;
+    IAmDatabaseHandler *mpDatabasehandler;
     CAmRouter *mpRouter;
     sh_pollHandle_t mConnecthandle;
     std::queue<std::string> mListMessages;

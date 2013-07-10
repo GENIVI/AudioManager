@@ -46,7 +46,7 @@ INCLUDE_DIRECTORIES(
    
 file(GLOB ROUTING_INTERFACE_SRCS_CXX 
     "../../src/CAmControlReceiver.cpp" 
-    "../../src/CAmDatabaseHandler.cpp"
+    "../../src/CAmDatabaseHandlerSQLite.cpp"
     "../../src/CAmDatabaseObserver.cpp"
     "../../src/CAmCommandSender.cpp"
     "../../src/CAmRoutingSender.cpp"

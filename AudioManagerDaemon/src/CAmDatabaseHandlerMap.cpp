@@ -14,12 +14,12 @@
  *
  * \author Aleksandar Donchev, aleksander.donchev@partner.bmw.de BMW 2013
  *
- * \file CAmMapHandler.cpp
+ * \file CAmDatabaseHandlerMap.cpp
  * For further information see http://www.genivi.org/.
  *
  */
 
-#include "CAmMapHandler.h"
+#include "CAmDatabaseHandlerMap.h"
 #include <iostream>
 #include <cassert>
 #include <stdexcept>
@@ -78,12 +78,12 @@ TMapObjectType const * findFirstObjectMatchingCriteria(const AM_MAP<TMapKeyType,
 
 bool compareSinkObjectByName(const void *anObject, const void *aValue, void *)
 {
-	return (anObject && aValue)?((const std::string *)aValue)->compare(((const CAmMapHandler::am_Sink_Database_s *)anObject)->name)==0:false;
+	return (anObject && aValue)?((const std::string *)aValue)->compare(((const CAmDatabaseHandlerMap::am_Sink_Database_s *)anObject)->name)==0:false;
 }
 
 bool compareSourceObjectByName(const void *anObject, const void *aValue, void *)
 {
-	return (anObject && aValue)?((const std::string *)aValue)->compare(((const CAmMapHandler::am_Source_Database_s *)anObject)->name)==0:false;
+	return (anObject && aValue)?((const std::string *)aValue)->compare(((const CAmDatabaseHandlerMap::am_Source_Database_s *)anObject)->name)==0:false;
 }
 
 bool compareSinkClassObjectByName(const void *anObject, const void *aValue, void *)
@@ -106,7 +106,7 @@ bool compareSinkObjectByNameAndFlag(const void *anObject, const void *aValue, vo
 	if(anObject && aValue)
 	{
 		bool flag = (contextOrNull!=NULL)?*((bool*)contextOrNull):true;
-		return flag==((const CAmMapHandler::am_Sink_Database_s *)anObject)->reserved &&
+		return flag==((const CAmDatabaseHandlerMap::am_Sink_Database_s *)anObject)->reserved &&
 				((const std::string *)aValue)->compare(((const am_Sink_s *)anObject)->name)==0;
 	}
 	return false;
@@ -116,10 +116,10 @@ bool compareConnectionObjectsWithObject(const void *anObject, const void *aValue
 {
 	if(anObject && aValue)
 	{
-		return 0==((const CAmMapHandler::am_Connection_Database_s *)anObject)->reserved &&
-				((const CAmMapHandler::am_Connection_Database_s *)aValue)->sinkID == ((const CAmMapHandler::am_Connection_Database_s *)anObject)->sinkID &&
-				((const CAmMapHandler::am_Connection_Database_s *)aValue)->sourceID == ((const CAmMapHandler::am_Connection_Database_s *)anObject)->sourceID &&
-				((const CAmMapHandler::am_Connection_Database_s *)aValue)->connectionFormat == ((const CAmMapHandler::am_Connection_Database_s *)anObject)->connectionFormat;
+		return 0==((const CAmDatabaseHandlerMap::am_Connection_Database_s *)anObject)->reserved &&
+				((const CAmDatabaseHandlerMap::am_Connection_Database_s *)aValue)->sinkID == ((const CAmDatabaseHandlerMap::am_Connection_Database_s *)anObject)->sinkID &&
+				((const CAmDatabaseHandlerMap::am_Connection_Database_s *)aValue)->sourceID == ((const CAmDatabaseHandlerMap::am_Connection_Database_s *)anObject)->sourceID &&
+				((const CAmDatabaseHandlerMap::am_Connection_Database_s *)aValue)->connectionFormat == ((const CAmDatabaseHandlerMap::am_Connection_Database_s *)anObject)->connectionFormat;
 	}
 	return false;
 }
@@ -129,15 +129,15 @@ bool compareSourceObjectsByNameAndFlag(const void *anObject, const void *aValue,
 	if(anObject && aValue)
 	{
 		bool flag = (contextOrNull!=NULL)?*((bool*)contextOrNull):true;
-		return flag==((const CAmMapHandler::am_Source_Database_s *)anObject)->reserved &&
-				((const std::string *)aValue)->compare(((const CAmMapHandler::am_Source_Database_s *)anObject)->name)==0;
+		return flag==((const CAmDatabaseHandlerMap::am_Source_Database_s *)anObject)->reserved &&
+				((const std::string *)aValue)->compare(((const CAmDatabaseHandlerMap::am_Source_Database_s *)anObject)->name)==0;
 	}
 	return false;
 }
 
 /* Domain */
 
-void CAmMapHandler::CAmDomain::getDescription (std::string & outString) const
+void CAmDatabaseHandlerMap::CAmDomain::getDescription (std::string & outString) const
 {
 	std::ostringstream fmt;
 	fmt << "Domain(" << name.c_str() << ") id(" << domainID << ")" << std::endl <<
@@ -153,7 +153,7 @@ void CAmMapHandler::CAmDomain::getDescription (std::string & outString) const
 
 /* Source */
 
-void CAmMapHandler::CAmSource::getSourceType(am_SourceType_s & sourceType) const
+void CAmDatabaseHandlerMap::CAmSource::getSourceType(am_SourceType_s & sourceType) const
 {
 	sourceType.name = name;
 	sourceType.sourceClassID = sourceClassID;
@@ -161,7 +161,7 @@ void CAmMapHandler::CAmSource::getSourceType(am_SourceType_s & sourceType) const
 	sourceType.sourceID = sourceID;
 }
 
-void CAmMapHandler::CAmSource::getDescription (std::string & outString) const
+void CAmDatabaseHandlerMap::CAmSource::getDescription (std::string & outString) const
 {
 	std::ostringstream fmt;
 	fmt << "Source(" << name.c_str() << ") id(" << sourceID << ")" << std::endl <<
@@ -199,7 +199,7 @@ void CAmMapHandler::CAmSource::getDescription (std::string & outString) const
 
 /* Sink */
 
-void CAmMapHandler::CAmSink::getDescription (std::string & outString) const
+void CAmDatabaseHandlerMap::CAmSink::getDescription (std::string & outString) const
 {
 	std::ostringstream fmt;
 	fmt << "Sink(" << name.c_str() << ") id(" << sinkID << ")" << std::endl <<
@@ -235,7 +235,7 @@ void CAmMapHandler::CAmSink::getDescription (std::string & outString) const
 	outString = fmt.str();
 }
 
-void CAmMapHandler::CAmSink::getSinkType(am_SinkType_s & sinkType) const
+void CAmDatabaseHandlerMap::CAmSink::getSinkType(am_SinkType_s & sinkType) const
 {
 	sinkType.name = name;
 	sinkType.sinkID = sinkID;
@@ -247,7 +247,7 @@ void CAmMapHandler::CAmSink::getSinkType(am_SinkType_s & sinkType) const
 
 /* Connection */
 
-void CAmMapHandler::CAmConnection::getDescription (std::string & outString) const
+void CAmDatabaseHandlerMap::CAmConnection::getDescription (std::string & outString) const
 {
 	std::ostringstream fmt;
 	fmt << "Connection id(" << connectionID << ") " << std::endl <<
@@ -261,7 +261,7 @@ void CAmMapHandler::CAmConnection::getDescription (std::string & outString) cons
 
 /* Main Connection */
 
-void CAmMapHandler::CAmMainConnection::getDescription (std::string & outString) const
+void CAmDatabaseHandlerMap::CAmMainConnection::getDescription (std::string & outString) const
 {
 	std::ostringstream fmt;
 	fmt << "MainConnection id(" << mainConnectionID << ") " << std::endl <<
@@ -277,7 +277,7 @@ void CAmMapHandler::CAmMainConnection::getDescription (std::string & outString) 
 	outString = fmt.str();
 }
 
-void CAmMapHandler::am_MainConnection_Database_s::getMainConnectionType(am_MainConnectionType_s & connectionType) const
+void CAmDatabaseHandlerMap::am_MainConnection_Database_s::getMainConnectionType(am_MainConnectionType_s & connectionType) const
 {
 	connectionType.mainConnectionID = mainConnectionID;
 	connectionType.sourceID = sourceID;
@@ -288,7 +288,7 @@ void CAmMapHandler::am_MainConnection_Database_s::getMainConnectionType(am_MainC
 
 /* Source Class */
 
-void CAmMapHandler::CAmSourceClass::getDescription (std::string & outString) const
+void CAmDatabaseHandlerMap::CAmSourceClass::getDescription (std::string & outString) const
 {
 	std::ostringstream fmt;
 	fmt << "Source class(" << name.c_str() << ") id(" << sourceClassID << ")\n" <<
@@ -302,7 +302,7 @@ void CAmMapHandler::CAmSourceClass::getDescription (std::string & outString) con
 
 /* Sink Class */
 
-void CAmMapHandler::CAmSinkClass::getDescription (std::string & outString) const
+void CAmDatabaseHandlerMap::CAmSinkClass::getDescription (std::string & outString) const
 {
 	std::ostringstream fmt;
 	fmt << "Sink class(" << name.c_str() << ") id(" << sinkClassID << ")\n" <<
@@ -317,7 +317,7 @@ void CAmMapHandler::CAmSinkClass::getDescription (std::string & outString) const
 
 /* Gateway */
 
-void CAmMapHandler::CAmGateway::getDescription (std::string & outString) const
+void CAmDatabaseHandlerMap::CAmGateway::getDescription (std::string & outString) const
 {
 	std::ostringstream fmt;
 	fmt << "Gateway(" << name.c_str() << ") id(" << gatewayID << ")\n" <<
@@ -344,7 +344,7 @@ void CAmMapHandler::CAmGateway::getDescription (std::string & outString) const
 
 /* Crossfader */
 
-void CAmMapHandler::CAmCrossfader::getDescription (std::string & outString) const
+void CAmDatabaseHandlerMap::CAmCrossfader::getDescription (std::string & outString) const
 {
 	std::ostringstream fmt;
 	fmt << "Crossfader(" << name.c_str() << ") id(" << crossfaderID << ")\n" <<
@@ -356,21 +356,7 @@ void CAmMapHandler::CAmCrossfader::getDescription (std::string & outString) cons
 	outString = fmt.str();
 }
 
-template <typename TPrintMapKey,class TPrintMapObject> void CAmMapHandler::printMap (const AM_MAP<TPrintMapKey, TPrintMapObject> & t, std::ostream & output) const
-{
-	typename AM_MAP<TPrintMapKey, TPrintMapObject>::const_iterator iter = t.begin();
-	for(; iter!=t.end(); iter++)
-		print(iter->second, output);
-}
-
-template <class TPrintObject> void CAmMapHandler::print (const TPrintObject & t, std::ostream & output) const
-{
-	std::string description("");
-	t.getDescription( description );
-	output << description;
-}
-
-bool CAmMapHandler::CAmMappedData::increaseID(int16_t * resultID, int16_t * sourceID,
+bool CAmDatabaseHandlerMap::CAmMappedData::increaseID(int16_t * resultID, int16_t * sourceID,
 													int16_t const desiredStaticID = 0, int16_t const preferedStaticIDBoundary = DYNAMIC_ID_BOUNDARY)
 {
 	if( desiredStaticID > 0 && desiredStaticID < preferedStaticIDBoundary )
@@ -378,7 +364,7 @@ bool CAmMapHandler::CAmMappedData::increaseID(int16_t * resultID, int16_t * sour
 		*resultID = desiredStaticID;
 		return true;
 	}
-	else if( *sourceID < mDefaultIDLimit-1 ) //SHRT_MAX or the max limit is reserved and not used!!!
+	else if( *sourceID < mDefaultIDLimit-1 ) //The last used value is the 'limit' - 1. e.g. SHRT_MAX - 1, SHRT_MAX is reserved.
 	{
 		*resultID = (*sourceID)++;
 		return true;
@@ -403,17 +389,26 @@ inline std::string i2s(T const& x)
     return (o.str());
 }
 
-CAmMapHandler::CAmMapHandler():CAmDatabaseHandlerInterface(), mMappedData()
+CAmDatabaseHandlerMap::CAmDatabaseHandlerMap():mpDatabaseObserver(NULL), //
+														mFirstStaticSink(true), //
+														mFirstStaticSource(true), //
+														mFirstStaticGateway(true), //
+														mFirstStaticSinkClass(true), //
+														mFirstStaticSourceClass(true), //
+														mFirstStaticCrossfader(true), //
+														mListConnectionFormat(), //
+														mMappedData()
 {
 	logInfo(__PRETTY_FUNCTION__,"Init");
 }
 
-CAmMapHandler::~CAmMapHandler()
+CAmDatabaseHandlerMap::~CAmDatabaseHandlerMap()
 {
     logInfo(__PRETTY_FUNCTION__,"Destroy");
+    mpDatabaseObserver = NULL;
 }
 
-am_Error_e CAmMapHandler::enterDomainDB(const am_Domain_s & domainData, am_domainID_t & domainID)
+am_Error_e CAmDatabaseHandlerMap::enterDomainDB(const am_Domain_s & domainData, am_domainID_t & domainID)
 {
     assert(domainData.domainID==0);
     assert(!domainData.name.empty());
@@ -457,7 +452,7 @@ am_Error_e CAmMapHandler::enterDomainDB(const am_Domain_s & domainData, am_domai
     }
 }
 
-int16_t CAmMapHandler::calculateDelayForRoute(const std::vector<am_connectionID_t>& listConnectionID)
+int16_t CAmDatabaseHandlerMap::calculateDelayForRoute(const std::vector<am_connectionID_t>& listConnectionID)
 {
 	int16_t delay = 0;
 	std::vector<am_connectionID_t>::const_iterator elementIterator = listConnectionID.begin();
@@ -477,7 +472,7 @@ int16_t CAmMapHandler::calculateDelayForRoute(const std::vector<am_connectionID_
 	return delay;
 }
 
-am_Error_e CAmMapHandler::enterMainConnectionDB(const am_MainConnection_s & mainConnectionData, am_mainConnectionID_t & connectionID)
+am_Error_e CAmDatabaseHandlerMap::enterMainConnectionDB(const am_MainConnection_s & mainConnectionData, am_mainConnectionID_t & connectionID)
 {
     assert(mainConnectionData.mainConnectionID==0);
     assert(mainConnectionData.connectionState>=CS_UNKNOWN && mainConnectionData.connectionState<=CS_MAX);
@@ -526,7 +521,7 @@ am_Error_e CAmMapHandler::enterMainConnectionDB(const am_MainConnection_s & main
  * Helper method, that inserts a new struct in the map and copies the given into it.
  * This method uses the increaseID function to secure the global id is properly increased.
  **/
-bool CAmMapHandler::insertSinkDB(const am_Sink_s & sinkData, am_sinkID_t & sinkID)
+bool CAmDatabaseHandlerMap::insertSinkDB(const am_Sink_s & sinkData, am_sinkID_t & sinkID)
 {
     int16_t nextID = 0;
 	if(  mMappedData.increaseID(&nextID, &mMappedData.mCurrentSinkID, sinkData.sinkID) )
@@ -544,7 +539,7 @@ bool CAmMapHandler::insertSinkDB(const am_Sink_s & sinkData, am_sinkID_t & sinkI
 	}
 }
 
-am_Error_e CAmMapHandler::enterSinkDB(const am_Sink_s & sinkData, am_sinkID_t & sinkID)
+am_Error_e CAmDatabaseHandlerMap::enterSinkDB(const am_Sink_s & sinkData, am_sinkID_t & sinkID)
 {
     assert(sinkData.sinkID<DYNAMIC_ID_BOUNDARY);
     assert(sinkData.domainID!=0);
@@ -598,7 +593,7 @@ am_Error_e CAmMapHandler::enterSinkDB(const am_Sink_s & sinkData, am_sinkID_t & 
     return (E_OK);
 }
 
-bool CAmMapHandler::insertCrossfaderDB(const am_Crossfader_s & crossfaderData, am_crossfaderID_t & crossfaderID)
+bool CAmDatabaseHandlerMap::insertCrossfaderDB(const am_Crossfader_s & crossfaderData, am_crossfaderID_t & crossfaderID)
 {
     int16_t nextID = 0;
 	if(mMappedData.increaseID(&nextID, &mMappedData.mCurrentCrossfaderID, crossfaderData.crossfaderID))
@@ -616,7 +611,7 @@ bool CAmMapHandler::insertCrossfaderDB(const am_Crossfader_s & crossfaderData, a
 	}
 }
 
-am_Error_e CAmMapHandler::enterCrossfaderDB(const am_Crossfader_s & crossfaderData, am_crossfaderID_t & crossfaderID)
+am_Error_e CAmDatabaseHandlerMap::enterCrossfaderDB(const am_Crossfader_s & crossfaderData, am_crossfaderID_t & crossfaderID)
 {
     assert(crossfaderData.crossfaderID<DYNAMIC_ID_BOUNDARY);
     assert(crossfaderData.hotSink>=HS_UNKNOWN && crossfaderData.hotSink<=HS_MAX);
@@ -658,7 +653,7 @@ am_Error_e CAmMapHandler::enterCrossfaderDB(const am_Crossfader_s & crossfaderDa
     return (E_OK);
 }
 
-bool CAmMapHandler::insertGatewayDB(const am_Gateway_s & gatewayData, am_gatewayID_t & gatewayID)
+bool CAmDatabaseHandlerMap::insertGatewayDB(const am_Gateway_s & gatewayData, am_gatewayID_t & gatewayID)
 {
     int16_t nextID = 0;
 	if(mMappedData.increaseID(&nextID, &mMappedData.mCurrentGatewayID, gatewayData.gatewayID))
@@ -676,7 +671,7 @@ bool CAmMapHandler::insertGatewayDB(const am_Gateway_s & gatewayData, am_gateway
 	}
 }
 
-am_Error_e CAmMapHandler::enterGatewayDB(const am_Gateway_s & gatewayData, am_gatewayID_t & gatewayID)
+am_Error_e CAmDatabaseHandlerMap::enterGatewayDB(const am_Gateway_s & gatewayData, am_gatewayID_t & gatewayID)
 {
     assert(gatewayData.gatewayID<DYNAMIC_ID_BOUNDARY);
     assert(gatewayData.sinkID!=0);
@@ -724,18 +719,18 @@ am_Error_e CAmMapHandler::enterGatewayDB(const am_Gateway_s & gatewayData, am_ga
     return (E_OK);
 }
 
-void CAmMapHandler::dump( std::ostream & output )
+void CAmDatabaseHandlerMap::dump( std::ostream & output )
 {
 	output << std::endl << "****************** DUMP START ******************" << std::endl;
-	printMap(mMappedData.mDomainMap, output);
-	printMap(mMappedData.mSourceMap, output);
-	printMap(mMappedData.mSinkMap, output);
-	printMap(mMappedData.mSourceClassesMap, output);
-	printMap(mMappedData.mSinkClassesMap, output);
-	printMap(mMappedData.mConnectionMap, output);
-	printMap(mMappedData.mMainConnectionMap, output);
-	printMap(mMappedData.mCrossfaderMap, output);
-	printMap(mMappedData.mGatewayMap, output);
+	mMappedData.printMap(mMappedData.mDomainMap, output);
+	mMappedData.printMap(mMappedData.mSourceMap, output);
+	mMappedData.printMap(mMappedData.mSinkMap, output);
+	mMappedData.printMap(mMappedData.mSourceClassesMap, output);
+	mMappedData.printMap(mMappedData.mSinkClassesMap, output);
+	mMappedData.printMap(mMappedData.mConnectionMap, output);
+	mMappedData.printMap(mMappedData.mMainConnectionMap, output);
+	mMappedData.printMap(mMappedData.mCrossfaderMap, output);
+	mMappedData.printMap(mMappedData.mGatewayMap, output);
 	CAmVectorSystemProperties::const_iterator iter = mMappedData.mSystemProperties.begin();
 	output << "System properties" << "\n";
 	for(; iter!=mMappedData.mSystemProperties.end(); iter++)
@@ -743,7 +738,7 @@ void CAmMapHandler::dump( std::ostream & output )
 	output << std::endl << "****************** DUMP END ******************" << std::endl;
 }
 
-bool CAmMapHandler::insertSourceDB(const am_Source_s & sourceData, am_sourceID_t & sourceID)
+bool CAmDatabaseHandlerMap::insertSourceDB(const am_Source_s & sourceData, am_sourceID_t & sourceID)
 {
     int16_t nextID = 0;
 	if(mMappedData.increaseID(&nextID, &mMappedData.mCurrentSourceID, sourceData.sourceID))
@@ -761,7 +756,7 @@ bool CAmMapHandler::insertSourceDB(const am_Source_s & sourceData, am_sourceID_t
 	}
 }
 
-am_Error_e CAmMapHandler::enterSourceDB(const am_Source_s & sourceData, am_sourceID_t & sourceID)
+am_Error_e CAmDatabaseHandlerMap::enterSourceDB(const am_Source_s & sourceData, am_sourceID_t & sourceID)
 {
     assert(sourceData.sourceID<DYNAMIC_ID_BOUNDARY);
     assert(sourceData.domainID!=0);
@@ -816,7 +811,7 @@ am_Error_e CAmMapHandler::enterSourceDB(const am_Source_s & sourceData, am_sourc
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::enterConnectionDB(const am_Connection_s& connection, am_connectionID_t& connectionID)
+am_Error_e CAmDatabaseHandlerMap::enterConnectionDB(const am_Connection_s& connection, am_connectionID_t& connectionID)
 {
     assert(connection.connectionID==0);
     assert(connection.sinkID!=0);
@@ -840,7 +835,7 @@ am_Error_e CAmMapHandler::enterConnectionDB(const am_Connection_s& connection, a
     return (E_OK);
 }
 
-bool CAmMapHandler::insertSinkClassDB(const am_SinkClass_s & sinkClass, am_sinkClass_t & sinkClassID)
+bool CAmDatabaseHandlerMap::insertSinkClassDB(const am_SinkClass_s & sinkClass, am_sinkClass_t & sinkClassID)
 {
     int16_t nextID = 0;
 	if(mMappedData.increaseID(&nextID, &mMappedData.mCurrentSinkClassesID, sinkClass.sinkClassID))
@@ -858,7 +853,7 @@ bool CAmMapHandler::insertSinkClassDB(const am_SinkClass_s & sinkClass, am_sinkC
 	}
 }
 
-am_Error_e CAmMapHandler::enterSinkClassDB(const am_SinkClass_s & sinkClass, am_sinkClass_t & sinkClassID)
+am_Error_e CAmDatabaseHandlerMap::enterSinkClassDB(const am_SinkClass_s & sinkClass, am_sinkClass_t & sinkClassID)
 {
     assert(sinkClass.sinkClassID<DYNAMIC_ID_BOUNDARY);
     assert(!sinkClass.name.empty());
@@ -893,7 +888,7 @@ am_Error_e CAmMapHandler::enterSinkClassDB(const am_SinkClass_s & sinkClass, am_
     return (E_OK);
 }
 
-bool CAmMapHandler::insertSourceClassDB(am_sourceClass_t & sourceClassID, const am_SourceClass_s & sourceClass)
+bool CAmDatabaseHandlerMap::insertSourceClassDB(am_sourceClass_t & sourceClassID, const am_SourceClass_s & sourceClass)
 {
     int16_t nextID = 0;
 	if(mMappedData.increaseID(&nextID, &mMappedData.mCurrentSourceClassesID, sourceClass.sourceClassID))
@@ -911,7 +906,7 @@ bool CAmMapHandler::insertSourceClassDB(am_sourceClass_t & sourceClassID, const 
 	}
 }
 
-am_Error_e CAmMapHandler::enterSourceClassDB(am_sourceClass_t & sourceClassID, const am_SourceClass_s & sourceClass)
+am_Error_e CAmDatabaseHandlerMap::enterSourceClassDB(am_sourceClass_t & sourceClassID, const am_SourceClass_s & sourceClass)
 {
     assert(sourceClass.sourceClassID<DYNAMIC_ID_BOUNDARY);
     assert(!sourceClass.name.empty());
@@ -948,7 +943,7 @@ am_Error_e CAmMapHandler::enterSourceClassDB(am_sourceClass_t & sourceClassID, c
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::enterSystemProperties(const std::vector<am_SystemProperty_s> & listSystemProperties)
+am_Error_e CAmDatabaseHandlerMap::enterSystemProperties(const std::vector<am_SystemProperty_s> & listSystemProperties)
 {
     assert(!listSystemProperties.empty());
 
@@ -958,7 +953,7 @@ am_Error_e CAmMapHandler::enterSystemProperties(const std::vector<am_SystemPrope
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::changeMainConnectionRouteDB(const am_mainConnectionID_t mainconnectionID, const std::vector<am_connectionID_t>& listConnectionID)
+am_Error_e CAmDatabaseHandlerMap::changeMainConnectionRouteDB(const am_mainConnectionID_t mainconnectionID, const std::vector<am_connectionID_t>& listConnectionID)
 {
     assert(mainconnectionID!=0);
     if (!existMainConnection(mainconnectionID))
@@ -978,7 +973,7 @@ am_Error_e CAmMapHandler::changeMainConnectionRouteDB(const am_mainConnectionID_
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::changeMainConnectionStateDB(const am_mainConnectionID_t mainconnectionID, const am_ConnectionState_e connectionState)
+am_Error_e CAmDatabaseHandlerMap::changeMainConnectionStateDB(const am_mainConnectionID_t mainconnectionID, const am_ConnectionState_e connectionState)
 {
     assert(mainconnectionID!=0);
     assert(connectionState>=CS_UNKNOWN && connectionState<=CS_MAX);
@@ -995,7 +990,7 @@ am_Error_e CAmMapHandler::changeMainConnectionStateDB(const am_mainConnectionID_
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::changeSinkMainVolumeDB(const am_mainVolume_t mainVolume, const am_sinkID_t sinkID)
+am_Error_e CAmDatabaseHandlerMap::changeSinkMainVolumeDB(const am_mainVolume_t mainVolume, const am_sinkID_t sinkID)
 {
     assert(sinkID!=0);
 
@@ -1014,7 +1009,7 @@ am_Error_e CAmMapHandler::changeSinkMainVolumeDB(const am_mainVolume_t mainVolum
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::changeSinkAvailabilityDB(const am_Availability_s & availability, const am_sinkID_t sinkID)
+am_Error_e CAmDatabaseHandlerMap::changeSinkAvailabilityDB(const am_Availability_s & availability, const am_sinkID_t sinkID)
 {
     assert(sinkID!=0);
     assert(availability.availability>=A_UNKNOWN && availability.availability<=A_MAX);
@@ -1034,7 +1029,7 @@ am_Error_e CAmMapHandler::changeSinkAvailabilityDB(const am_Availability_s & ava
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::changDomainStateDB(const am_DomainState_e domainState, const am_domainID_t domainID)
+am_Error_e CAmDatabaseHandlerMap::changDomainStateDB(const am_DomainState_e domainState, const am_domainID_t domainID)
 {
     assert(domainID!=0);
     assert(domainState>=DS_UNKNOWN && domainState<=DS_MAX);
@@ -1050,7 +1045,7 @@ am_Error_e CAmMapHandler::changDomainStateDB(const am_DomainState_e domainState,
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::changeSinkMuteStateDB(const am_MuteState_e muteState, const am_sinkID_t sinkID)
+am_Error_e CAmDatabaseHandlerMap::changeSinkMuteStateDB(const am_MuteState_e muteState, const am_sinkID_t sinkID)
 {
     assert(sinkID!=0);
     assert(muteState>=MS_UNKNOWN && muteState<=MS_MAX);
@@ -1070,7 +1065,7 @@ am_Error_e CAmMapHandler::changeSinkMuteStateDB(const am_MuteState_e muteState, 
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::changeMainSinkSoundPropertyDB(const am_MainSoundProperty_s & soundProperty, const am_sinkID_t sinkID)
+am_Error_e CAmDatabaseHandlerMap::changeMainSinkSoundPropertyDB(const am_MainSoundProperty_s & soundProperty, const am_sinkID_t sinkID)
 {
     assert(soundProperty.type>=MSP_UNKNOWN && soundProperty.type<=MSP_MAX);
     assert(sinkID!=0);
@@ -1093,7 +1088,7 @@ am_Error_e CAmMapHandler::changeMainSinkSoundPropertyDB(const am_MainSoundProper
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::changeMainSourceSoundPropertyDB(const am_MainSoundProperty_s & soundProperty, const am_sourceID_t sourceID)
+am_Error_e CAmDatabaseHandlerMap::changeMainSourceSoundPropertyDB(const am_MainSoundProperty_s & soundProperty, const am_sourceID_t sourceID)
 {
     assert(soundProperty.type>=MSP_UNKNOWN && soundProperty.type<=MSP_MAX);
     assert(sourceID!=0);
@@ -1117,7 +1112,7 @@ am_Error_e CAmMapHandler::changeMainSourceSoundPropertyDB(const am_MainSoundProp
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::changeSourceAvailabilityDB(const am_Availability_s & availability, const am_sourceID_t sourceID)
+am_Error_e CAmDatabaseHandlerMap::changeSourceAvailabilityDB(const am_Availability_s & availability, const am_sourceID_t sourceID)
 {
     assert(sourceID!=0);
     assert(availability.availability>=A_UNKNOWN && availability.availability<=A_MAX);
@@ -1137,7 +1132,7 @@ am_Error_e CAmMapHandler::changeSourceAvailabilityDB(const am_Availability_s & a
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::changeSystemPropertyDB(const am_SystemProperty_s & property)
+am_Error_e CAmDatabaseHandlerMap::changeSystemPropertyDB(const am_SystemProperty_s & property)
 {
     assert(property.type>=SYP_UNKNOWN && property.type<=SYP_MAX);
 
@@ -1156,7 +1151,7 @@ am_Error_e CAmMapHandler::changeSystemPropertyDB(const am_SystemProperty_s & pro
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::removeMainConnectionDB(const am_mainConnectionID_t mainConnectionID)
+am_Error_e CAmDatabaseHandlerMap::removeMainConnectionDB(const am_mainConnectionID_t mainConnectionID)
 {
     assert(mainConnectionID!=0);
 
@@ -1176,7 +1171,7 @@ am_Error_e CAmMapHandler::removeMainConnectionDB(const am_mainConnectionID_t mai
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::removeSinkDB(const am_sinkID_t sinkID)
+am_Error_e CAmDatabaseHandlerMap::removeSinkDB(const am_sinkID_t sinkID)
 {
     assert(sinkID!=0);
 
@@ -1198,7 +1193,7 @@ am_Error_e CAmMapHandler::removeSinkDB(const am_sinkID_t sinkID)
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::removeSourceDB(const am_sourceID_t sourceID)
+am_Error_e CAmDatabaseHandlerMap::removeSourceDB(const am_sourceID_t sourceID)
 {
     assert(sourceID!=0);
 
@@ -1220,7 +1215,7 @@ am_Error_e CAmMapHandler::removeSourceDB(const am_sourceID_t sourceID)
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::removeGatewayDB(const am_gatewayID_t gatewayID)
+am_Error_e CAmDatabaseHandlerMap::removeGatewayDB(const am_gatewayID_t gatewayID)
 {
     assert(gatewayID!=0);
 
@@ -1237,7 +1232,7 @@ am_Error_e CAmMapHandler::removeGatewayDB(const am_gatewayID_t gatewayID)
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::removeCrossfaderDB(const am_crossfaderID_t crossfaderID)
+am_Error_e CAmDatabaseHandlerMap::removeCrossfaderDB(const am_crossfaderID_t crossfaderID)
 {
     assert(crossfaderID!=0);
 
@@ -1253,7 +1248,7 @@ am_Error_e CAmMapHandler::removeCrossfaderDB(const am_crossfaderID_t crossfaderI
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::removeDomainDB(const am_domainID_t domainID)
+am_Error_e CAmDatabaseHandlerMap::removeDomainDB(const am_domainID_t domainID)
 {
     assert(domainID!=0);
 
@@ -1269,7 +1264,7 @@ am_Error_e CAmMapHandler::removeDomainDB(const am_domainID_t domainID)
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::removeSinkClassDB(const am_sinkClass_t sinkClassID)
+am_Error_e CAmDatabaseHandlerMap::removeSinkClassDB(const am_sinkClass_t sinkClassID)
 {
     assert(sinkClassID!=0);
 
@@ -1287,7 +1282,7 @@ am_Error_e CAmMapHandler::removeSinkClassDB(const am_sinkClass_t sinkClassID)
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::removeSourceClassDB(const am_sourceClass_t sourceClassID)
+am_Error_e CAmDatabaseHandlerMap::removeSourceClassDB(const am_sourceClass_t sourceClassID)
 {
     assert(sourceClassID!=0);
 
@@ -1303,7 +1298,7 @@ am_Error_e CAmMapHandler::removeSourceClassDB(const am_sourceClass_t sourceClass
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::removeConnection(const am_connectionID_t connectionID)
+am_Error_e CAmDatabaseHandlerMap::removeConnection(const am_connectionID_t connectionID)
 {
     assert(connectionID!=0);
 
@@ -1313,7 +1308,7 @@ am_Error_e CAmMapHandler::removeConnection(const am_connectionID_t connectionID)
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::getSourceClassInfoDB(const am_sourceID_t sourceID, am_SourceClass_s & classInfo) const
+am_Error_e CAmDatabaseHandlerMap::getSourceClassInfoDB(const am_sourceID_t sourceID, am_SourceClass_s & classInfo) const
 {
     assert(sourceID!=0);
 
@@ -1334,7 +1329,7 @@ am_Error_e CAmMapHandler::getSourceClassInfoDB(const am_sourceID_t sourceID, am_
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::getSinkInfoDB(const am_sinkID_t sinkID, am_Sink_s & sinkData) const
+am_Error_e CAmDatabaseHandlerMap::getSinkInfoDB(const am_sinkID_t sinkID, am_Sink_s & sinkData) const
 {
     assert(sinkID!=0);
 
@@ -1349,7 +1344,7 @@ am_Error_e CAmMapHandler::getSinkInfoDB(const am_sinkID_t sinkID, am_Sink_s & si
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::getSourceInfoDB(const am_sourceID_t sourceID, am_Source_s & sourceData) const
+am_Error_e CAmDatabaseHandlerMap::getSourceInfoDB(const am_sourceID_t sourceID, am_Source_s & sourceData) const
 {
     assert(sourceID!=0);
 
@@ -1365,7 +1360,7 @@ am_Error_e CAmMapHandler::getSourceInfoDB(const am_sourceID_t sourceID, am_Sourc
     return (E_OK);
 }
 
-am_Error_e am::CAmMapHandler::getMainConnectionInfoDB(const am_mainConnectionID_t mainConnectionID, am_MainConnection_s & mainConnectionData) const
+am_Error_e am::CAmDatabaseHandlerMap::getMainConnectionInfoDB(const am_mainConnectionID_t mainConnectionID, am_MainConnection_s & mainConnectionData) const
 {
     assert(mainConnectionID!=0);
     if (!existMainConnection(mainConnectionID))
@@ -1378,7 +1373,7 @@ am_Error_e am::CAmMapHandler::getMainConnectionInfoDB(const am_mainConnectionID_
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::changeSinkClassInfoDB(const am_SinkClass_s& sinkClass)
+am_Error_e CAmDatabaseHandlerMap::changeSinkClassInfoDB(const am_SinkClass_s& sinkClass)
 {
     assert(sinkClass.sinkClassID!=0);
     assert(!sinkClass.listClassProperties.empty());
@@ -1393,7 +1388,7 @@ am_Error_e CAmMapHandler::changeSinkClassInfoDB(const am_SinkClass_s& sinkClass)
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::changeSourceClassInfoDB(const am_SourceClass_s& sourceClass)
+am_Error_e CAmDatabaseHandlerMap::changeSourceClassInfoDB(const am_SourceClass_s& sourceClass)
 {
     assert(sourceClass.sourceClassID!=0);
     assert(!sourceClass.listClassProperties.empty());
@@ -1408,7 +1403,7 @@ am_Error_e CAmMapHandler::changeSourceClassInfoDB(const am_SourceClass_s& source
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::getSinkClassInfoDB(const am_sinkID_t sinkID, am_SinkClass_s & sinkClass) const
+am_Error_e CAmDatabaseHandlerMap::getSinkClassInfoDB(const am_sinkID_t sinkID, am_SinkClass_s & sinkClass) const
 {
     assert(sinkID!=0);
 
@@ -1429,7 +1424,7 @@ am_Error_e CAmMapHandler::getSinkClassInfoDB(const am_sinkID_t sinkID, am_SinkCl
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::getGatewayInfoDB(const am_gatewayID_t gatewayID, am_Gateway_s & gatewayData) const
+am_Error_e CAmDatabaseHandlerMap::getGatewayInfoDB(const am_gatewayID_t gatewayID, am_Gateway_s & gatewayData) const
 {
     assert(gatewayID!=0);
     if (!existGateway(gatewayID))
@@ -1443,7 +1438,7 @@ am_Error_e CAmMapHandler::getGatewayInfoDB(const am_gatewayID_t gatewayID, am_Ga
 
 }
 
-am_Error_e CAmMapHandler::getCrossfaderInfoDB(const am_crossfaderID_t crossfaderID, am_Crossfader_s & crossfaderData) const
+am_Error_e CAmDatabaseHandlerMap::getCrossfaderInfoDB(const am_crossfaderID_t crossfaderID, am_Crossfader_s & crossfaderData) const
 {
     assert(crossfaderID!=0);
     if (!existcrossFader(crossfaderID))
@@ -1456,7 +1451,7 @@ am_Error_e CAmMapHandler::getCrossfaderInfoDB(const am_crossfaderID_t crossfader
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::getListSinksOfDomain(const am_domainID_t domainID, std::vector<am_sinkID_t> & listSinkID) const
+am_Error_e CAmDatabaseHandlerMap::getListSinksOfDomain(const am_domainID_t domainID, std::vector<am_sinkID_t> & listSinkID) const
 {
     assert(domainID!=0);
     listSinkID.clear();
@@ -1474,7 +1469,7 @@ am_Error_e CAmMapHandler::getListSinksOfDomain(const am_domainID_t domainID, std
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::getListSourcesOfDomain(const am_domainID_t domainID, std::vector<am_sourceID_t> & listSourceID) const
+am_Error_e CAmDatabaseHandlerMap::getListSourcesOfDomain(const am_domainID_t domainID, std::vector<am_sourceID_t> & listSourceID) const
 {
     assert(domainID!=0);
     listSourceID.clear();
@@ -1492,7 +1487,7 @@ am_Error_e CAmMapHandler::getListSourcesOfDomain(const am_domainID_t domainID, s
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::getListCrossfadersOfDomain(const am_domainID_t domainID, std::vector<am_crossfaderID_t> & listCrossfader) const
+am_Error_e CAmDatabaseHandlerMap::getListCrossfadersOfDomain(const am_domainID_t domainID, std::vector<am_crossfaderID_t> & listCrossfader) const
 {
     assert(domainID!=0);
     listCrossfader.clear();
@@ -1519,7 +1514,7 @@ am_Error_e CAmMapHandler::getListCrossfadersOfDomain(const am_domainID_t domainI
 
 }
 
-am_Error_e CAmMapHandler::getListGatewaysOfDomain(const am_domainID_t domainID, std::vector<am_gatewayID_t> & listGatewaysID) const
+am_Error_e CAmDatabaseHandlerMap::getListGatewaysOfDomain(const am_domainID_t domainID, std::vector<am_gatewayID_t> & listGatewaysID) const
 {
     assert(domainID!=0);
     listGatewaysID.clear();
@@ -1537,7 +1532,7 @@ am_Error_e CAmMapHandler::getListGatewaysOfDomain(const am_domainID_t domainID, 
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::getListMainConnections(std::vector<am_MainConnection_s> & listMainConnections) const
+am_Error_e CAmDatabaseHandlerMap::getListMainConnections(std::vector<am_MainConnection_s> & listMainConnections) const
 {
     listMainConnections.clear();
 
@@ -1550,7 +1545,7 @@ am_Error_e CAmMapHandler::getListMainConnections(std::vector<am_MainConnection_s
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::getListDomains(std::vector<am_Domain_s> & listDomains) const
+am_Error_e CAmDatabaseHandlerMap::getListDomains(std::vector<am_Domain_s> & listDomains) const
 {
     listDomains.clear();
 
@@ -1564,7 +1559,7 @@ am_Error_e CAmMapHandler::getListDomains(std::vector<am_Domain_s> & listDomains)
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::getListConnections(std::vector<am_Connection_s> & listConnections) const
+am_Error_e CAmDatabaseHandlerMap::getListConnections(std::vector<am_Connection_s> & listConnections) const
 {
     listConnections.clear();
 
@@ -1578,7 +1573,7 @@ am_Error_e CAmMapHandler::getListConnections(std::vector<am_Connection_s> & list
       return (E_OK);
 }
 
-am_Error_e CAmMapHandler::getListSinks(std::vector<am_Sink_s> & listSinks) const
+am_Error_e CAmDatabaseHandlerMap::getListSinks(std::vector<am_Sink_s> & listSinks) const
 {
     listSinks.clear();
 
@@ -1590,7 +1585,7 @@ am_Error_e CAmMapHandler::getListSinks(std::vector<am_Sink_s> & listSinks) const
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::getListSources(std::vector<am_Source_s> & listSources) const
+am_Error_e CAmDatabaseHandlerMap::getListSources(std::vector<am_Source_s> & listSources) const
 {
     listSources.clear();
 
@@ -1603,7 +1598,7 @@ am_Error_e CAmMapHandler::getListSources(std::vector<am_Source_s> & listSources)
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::getListSourceClasses(std::vector<am_SourceClass_s> & listSourceClasses) const
+am_Error_e CAmDatabaseHandlerMap::getListSourceClasses(std::vector<am_SourceClass_s> & listSourceClasses) const
 {
     listSourceClasses.clear();
 
@@ -1614,7 +1609,7 @@ am_Error_e CAmMapHandler::getListSourceClasses(std::vector<am_SourceClass_s> & l
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::getListCrossfaders(std::vector<am_Crossfader_s> & listCrossfaders) const
+am_Error_e CAmDatabaseHandlerMap::getListCrossfaders(std::vector<am_Crossfader_s> & listCrossfaders) const
 {
     listCrossfaders.clear();
 
@@ -1625,7 +1620,7 @@ am_Error_e CAmMapHandler::getListCrossfaders(std::vector<am_Crossfader_s> & list
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::getListGateways(std::vector<am_Gateway_s> & listGateways) const
+am_Error_e CAmDatabaseHandlerMap::getListGateways(std::vector<am_Gateway_s> & listGateways) const
 {
     listGateways.clear();
 
@@ -1636,7 +1631,7 @@ am_Error_e CAmMapHandler::getListGateways(std::vector<am_Gateway_s> & listGatewa
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::getListSinkClasses(std::vector<am_SinkClass_s> & listSinkClasses) const
+am_Error_e CAmDatabaseHandlerMap::getListSinkClasses(std::vector<am_SinkClass_s> & listSinkClasses) const
 {
     listSinkClasses.clear();
 
@@ -1647,7 +1642,7 @@ am_Error_e CAmMapHandler::getListSinkClasses(std::vector<am_SinkClass_s> & listS
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::getListVisibleMainConnections(std::vector<am_MainConnectionType_s> & listConnections) const
+am_Error_e CAmDatabaseHandlerMap::getListVisibleMainConnections(std::vector<am_MainConnectionType_s> & listConnections) const
 {
     listConnections.clear();
     am_MainConnectionType_s temp;
@@ -1659,7 +1654,7 @@ am_Error_e CAmMapHandler::getListVisibleMainConnections(std::vector<am_MainConne
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::getListMainSinks(std::vector<am_SinkType_s> & listMainSinks) const
+am_Error_e CAmDatabaseHandlerMap::getListMainSinks(std::vector<am_SinkType_s> & listMainSinks) const
 {
     listMainSinks.clear();
     am_SinkType_s sinkType;
@@ -1674,7 +1669,7 @@ am_Error_e CAmMapHandler::getListMainSinks(std::vector<am_SinkType_s> & listMain
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::getListMainSources(std::vector<am_SourceType_s> & listMainSources) const
+am_Error_e CAmDatabaseHandlerMap::getListMainSources(std::vector<am_SourceType_s> & listMainSources) const
 {
     listMainSources.clear();
     am_SourceType_s temp;
@@ -1689,7 +1684,7 @@ am_Error_e CAmMapHandler::getListMainSources(std::vector<am_SourceType_s> & list
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::getListMainSinkSoundProperties(const am_sinkID_t sinkID, std::vector<am_MainSoundProperty_s> & listSoundProperties) const
+am_Error_e CAmDatabaseHandlerMap::getListMainSinkSoundProperties(const am_sinkID_t sinkID, std::vector<am_MainSoundProperty_s> & listSoundProperties) const
 {
     assert(sinkID!=0);
     if (!existSink(sinkID))
@@ -1701,7 +1696,7 @@ am_Error_e CAmMapHandler::getListMainSinkSoundProperties(const am_sinkID_t sinkI
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::getListMainSourceSoundProperties(const am_sourceID_t sourceID, std::vector<am_MainSoundProperty_s> & listSourceProperties) const
+am_Error_e CAmDatabaseHandlerMap::getListMainSourceSoundProperties(const am_sourceID_t sourceID, std::vector<am_MainSoundProperty_s> & listSourceProperties) const
 {
     assert(sourceID!=0);
     if (!existSource(sourceID))
@@ -1713,13 +1708,13 @@ am_Error_e CAmMapHandler::getListMainSourceSoundProperties(const am_sourceID_t s
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::getListSystemProperties(std::vector<am_SystemProperty_s> & listSystemProperties) const
+am_Error_e CAmDatabaseHandlerMap::getListSystemProperties(std::vector<am_SystemProperty_s> & listSystemProperties) const
 {
      listSystemProperties = mMappedData.mSystemProperties;
     return (E_OK);
 }
 
-am_Error_e am::CAmMapHandler::getListSinkConnectionFormats(const am_sinkID_t sinkID, std::vector<am_ConnectionFormat_e> & listConnectionFormats) const
+am_Error_e am::CAmDatabaseHandlerMap::getListSinkConnectionFormats(const am_sinkID_t sinkID, std::vector<am_ConnectionFormat_e> & listConnectionFormats) const
 {
    if (!existSink(sinkID))
 	   return E_NON_EXISTENT;
@@ -1729,7 +1724,7 @@ am_Error_e am::CAmMapHandler::getListSinkConnectionFormats(const am_sinkID_t sin
     return (E_OK);
 }
 
-am_Error_e am::CAmMapHandler::getListSourceConnectionFormats(const am_sourceID_t sourceID, std::vector<am_ConnectionFormat_e> & listConnectionFormats) const
+am_Error_e am::CAmDatabaseHandlerMap::getListSourceConnectionFormats(const am_sourceID_t sourceID, std::vector<am_ConnectionFormat_e> & listConnectionFormats) const
 {
    if (!existSource(sourceID))
 	   return E_NON_EXISTENT;
@@ -1739,7 +1734,7 @@ am_Error_e am::CAmMapHandler::getListSourceConnectionFormats(const am_sourceID_t
     return (E_OK);
 }
 
-am_Error_e am::CAmMapHandler::getListGatewayConnectionFormats(const am_gatewayID_t gatewayID, std::vector<bool> & listConnectionFormat) const
+am_Error_e am::CAmDatabaseHandlerMap::getListGatewayConnectionFormats(const am_gatewayID_t gatewayID, std::vector<bool> & listConnectionFormat) const
 {
     ListConnectionFormat::const_iterator iter = mListConnectionFormat.begin();
     iter = mListConnectionFormat.find(gatewayID);
@@ -1754,7 +1749,7 @@ am_Error_e am::CAmMapHandler::getListGatewayConnectionFormats(const am_gatewayID
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::getTimingInformation(const am_mainConnectionID_t mainConnectionID, am_timeSync_t & delay) const
+am_Error_e CAmDatabaseHandlerMap::getTimingInformation(const am_mainConnectionID_t mainConnectionID, am_timeSync_t & delay) const
 {
     assert(mainConnectionID!=0);
     if (!existMainConnection(mainConnectionID))
@@ -1770,7 +1765,7 @@ am_Error_e CAmMapHandler::getTimingInformation(const am_mainConnectionID_t mainC
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::changeDelayMainConnection(const am_timeSync_t & delay, const am_mainConnectionID_t & connectionID)
+am_Error_e CAmDatabaseHandlerMap::changeDelayMainConnection(const am_timeSync_t & delay, const am_mainConnectionID_t & connectionID)
 {
     assert(connectionID!=0);
     if (!existMainConnection(connectionID))
@@ -1785,7 +1780,7 @@ am_Error_e CAmMapHandler::changeDelayMainConnection(const am_timeSync_t & delay,
  * @param mainConnectionID to be checked for
  * @return true if it exists
  */
-bool CAmMapHandler::existMainConnection(const am_mainConnectionID_t mainConnectionID) const
+bool CAmDatabaseHandlerMap::existMainConnection(const am_mainConnectionID_t mainConnectionID) const
 {
 	return existsObjectWithKeyInMap(mainConnectionID, mMappedData.mMainConnectionMap);
 }
@@ -1795,7 +1790,7 @@ bool CAmMapHandler::existMainConnection(const am_mainConnectionID_t mainConnecti
  * @param sourceID to be checked for
  * @return true if it exists
  */
-bool CAmMapHandler::existSource(const am_sourceID_t sourceID) const
+bool CAmDatabaseHandlerMap::existSource(const am_sourceID_t sourceID) const
 {
 	am_Source_Database_s const * source = objectWithKeyIfExistsInMap(sourceID, mMappedData.mSourceMap);
 	if( NULL!=source )
@@ -1810,7 +1805,7 @@ bool CAmMapHandler::existSource(const am_sourceID_t sourceID) const
  * @param name the name
  * @return true if it exits
  */
-bool CAmMapHandler::existSourceNameOrID(const am_sourceID_t sourceID, const std::string & name) const
+bool CAmDatabaseHandlerMap::existSourceNameOrID(const am_sourceID_t sourceID, const std::string & name) const
 {
 	bool returnVal = false;
 	CAmMapSource::const_iterator elementIterator = mMappedData.mSourceMap.begin();
@@ -1831,7 +1826,7 @@ bool CAmMapHandler::existSourceNameOrID(const am_sourceID_t sourceID, const std:
  * @param name the name
  * @return true if it exits
  */
-bool CAmMapHandler::existSourceName(const std::string & name) const
+bool CAmDatabaseHandlerMap::existSourceName(const std::string & name) const
 {
     return existSourceNameOrID(SHRT_MAX, name);
 }
@@ -1841,7 +1836,7 @@ bool CAmMapHandler::existSourceName(const std::string & name) const
  * @param sinkID to be checked for
  * @return true if it exists
  */
-bool CAmMapHandler::existSink(const am_sinkID_t sinkID) const
+bool CAmDatabaseHandlerMap::existSink(const am_sinkID_t sinkID) const
 {
 	bool returnVal = false;
 	CAmMapSink::const_iterator elementIterator = mMappedData.mSinkMap.begin();
@@ -1863,7 +1858,7 @@ bool CAmMapHandler::existSink(const am_sinkID_t sinkID) const
  * @param name the name
  * @return true if it exists.
  */
-bool CAmMapHandler::existSinkNameOrID(const am_sinkID_t sinkID, const std::string & name) const
+bool CAmDatabaseHandlerMap::existSinkNameOrID(const am_sinkID_t sinkID, const std::string & name) const
 {
 	bool returnVal = false;
 	CAmMapSink::const_iterator elementIterator = mMappedData.mSinkMap.begin();
@@ -1885,7 +1880,7 @@ bool CAmMapHandler::existSinkNameOrID(const am_sinkID_t sinkID, const std::strin
  * @param name the name
  * @return true if it exists
  */
-bool CAmMapHandler::existSinkName(const std::string & name) const
+bool CAmDatabaseHandlerMap::existSinkName(const std::string & name) const
 {
     return existSinkNameOrID(SHRT_MAX, name);
 }
@@ -1895,7 +1890,7 @@ bool CAmMapHandler::existSinkName(const std::string & name) const
  * @param domainID to be checked for
  * @return true if it exists
  */
-bool CAmMapHandler::existDomain(const am_domainID_t domainID) const
+bool CAmDatabaseHandlerMap::existDomain(const am_domainID_t domainID) const
 {
 	am_Domain_Database_s const * source = objectWithKeyIfExistsInMap(domainID, mMappedData.mDomainMap);
 	if( NULL!=source )
@@ -1909,12 +1904,12 @@ bool CAmMapHandler::existDomain(const am_domainID_t domainID) const
  * @param gatewayID to be checked for
  * @return true if it exists
  */
-bool CAmMapHandler::existGateway(const am_gatewayID_t gatewayID) const
+bool CAmDatabaseHandlerMap::existGateway(const am_gatewayID_t gatewayID) const
 {
 	return existsObjectWithKeyInMap(gatewayID, mMappedData.mGatewayMap);
 }
 
-am_Error_e CAmMapHandler::getDomainOfSource(const am_sourceID_t sourceID, am_domainID_t & domainID) const
+am_Error_e CAmDatabaseHandlerMap::getDomainOfSource(const am_sourceID_t sourceID, am_domainID_t & domainID) const
 {
     assert(sourceID!=0);
 
@@ -1927,7 +1922,7 @@ am_Error_e CAmMapHandler::getDomainOfSource(const am_sourceID_t sourceID, am_dom
     return E_NON_EXISTENT;
 }
 
-am_Error_e am::CAmMapHandler::getDomainOfSink(const am_sinkID_t sinkID, am_domainID_t & domainID) const
+am_Error_e am::CAmDatabaseHandlerMap::getDomainOfSink(const am_sinkID_t sinkID, am_domainID_t & domainID) const
 {
     assert(sinkID!=0);
 
@@ -1945,7 +1940,7 @@ am_Error_e am::CAmMapHandler::getDomainOfSink(const am_sinkID_t sinkID, am_domai
  * @param sinkClassID
  * @return true if it exists
  */
-bool CAmMapHandler::existSinkClass(const am_sinkClass_t sinkClassID) const
+bool CAmDatabaseHandlerMap::existSinkClass(const am_sinkClass_t sinkClassID) const
 {
 	return existsObjectWithKeyInMap(sinkClassID, mMappedData.mSinkClassesMap);
 }
@@ -1955,12 +1950,12 @@ bool CAmMapHandler::existSinkClass(const am_sinkClass_t sinkClassID) const
  * @param sourceClassID
  * @return true if it exists
  */
-bool CAmMapHandler::existSourceClass(const am_sourceClass_t sourceClassID) const
+bool CAmDatabaseHandlerMap::existSourceClass(const am_sourceClass_t sourceClassID) const
 {
 	return existsObjectWithKeyInMap(sourceClassID, mMappedData.mSourceClassesMap);
 }
 
-am_Error_e CAmMapHandler::changeConnectionTimingInformation(const am_connectionID_t connectionID, const am_timeSync_t delay)
+am_Error_e CAmDatabaseHandlerMap::changeConnectionTimingInformation(const am_connectionID_t connectionID, const am_timeSync_t delay)
 {
     assert(connectionID!=0);
     if(!existConnectionID(connectionID))
@@ -1987,7 +1982,7 @@ am_Error_e CAmMapHandler::changeConnectionTimingInformation(const am_connectionI
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::changeConnectionFinal(const am_connectionID_t connectionID)
+am_Error_e CAmDatabaseHandlerMap::changeConnectionFinal(const am_connectionID_t connectionID)
 {
     assert(connectionID!=0);
     am_Connection_Database_s const * connection = objectWithKeyIfExistsInMap(connectionID, mMappedData.mConnectionMap);
@@ -1999,7 +1994,7 @@ am_Error_e CAmMapHandler::changeConnectionFinal(const am_connectionID_t connecti
     return (E_NON_EXISTENT);
 }
 
-am_timeSync_t CAmMapHandler::calculateMainConnectionDelay(const am_mainConnectionID_t mainConnectionID) const
+am_timeSync_t CAmDatabaseHandlerMap::calculateMainConnectionDelay(const am_mainConnectionID_t mainConnectionID) const
 {
     assert(mainConnectionID!=0);
     if (!existMainConnection(mainConnectionID))
@@ -2027,7 +2022,7 @@ am_timeSync_t CAmMapHandler::calculateMainConnectionDelay(const am_mainConnectio
  * registers the Observer at the Database
  * @param iObserver pointer to the observer
  */
-void CAmMapHandler::registerObserver(CAmDatabaseObserver *iObserver)
+void CAmDatabaseHandlerMap::registerObserver(CAmDatabaseObserver *iObserver)
 {
     assert(iObserver!=NULL);
     mpDatabaseObserver = iObserver;
@@ -2038,7 +2033,7 @@ void CAmMapHandler::registerObserver(CAmDatabaseObserver *iObserver)
  * @param sourceID the sourceID
  * @return true if source is visible
  */
-bool CAmMapHandler::sourceVisible(const am_sourceID_t sourceID) const
+bool CAmDatabaseHandlerMap::sourceVisible(const am_sourceID_t sourceID) const
 {
     assert(sourceID!=0);
     if (!existSource(sourceID))
@@ -2052,7 +2047,7 @@ bool CAmMapHandler::sourceVisible(const am_sourceID_t sourceID) const
  * @param sinkID the sinkID
  * @return true if source is visible
  */
-bool CAmMapHandler::sinkVisible(const am_sinkID_t sinkID) const
+bool CAmDatabaseHandlerMap::sinkVisible(const am_sinkID_t sinkID) const
 {
 	am_Sink_Database_s const * source = objectWithKeyIfExistsInMap(sinkID, mMappedData.mSinkMap);
 	if( NULL!=source )
@@ -2069,7 +2064,7 @@ bool CAmMapHandler::sinkVisible(const am_sinkID_t sinkID) const
  * @param connection the connection to be checked
  * @return true if connections exists
  */
-bool CAmMapHandler::existConnection(const am_Connection_s & connection) const
+bool CAmDatabaseHandlerMap::existConnection(const am_Connection_s & connection) const
 {
 	am_Connection_Database_s const * connectionObject = findFirstObjectMatchingCriteria(mMappedData.mConnectionMap, connection, compareConnectionObjectsWithObject);
 	return ( NULL!=connectionObject );
@@ -2080,7 +2075,7 @@ bool CAmMapHandler::existConnection(const am_Connection_s & connection) const
  * @param connectionID
  * @return true if connection exits
  */
-bool CAmMapHandler::existConnectionID(const am_connectionID_t connectionID) const
+bool CAmDatabaseHandlerMap::existConnectionID(const am_connectionID_t connectionID) const
 {
 	am_Connection_Database_s const * connection = objectWithKeyIfExistsInMap(connectionID, mMappedData.mConnectionMap);
 	if( NULL!=connection )
@@ -2095,12 +2090,12 @@ bool CAmMapHandler::existConnectionID(const am_connectionID_t connectionID) cons
  * @param crossfaderID the ID of the crossfader to be checked
  * @return true if exists
  */
-bool CAmMapHandler::existcrossFader(const am_crossfaderID_t crossfaderID) const
+bool CAmDatabaseHandlerMap::existcrossFader(const am_crossfaderID_t crossfaderID) const
 {
      return existsObjectWithKeyInMap(crossfaderID, mMappedData.mCrossfaderMap);
 }
 
-am_Error_e CAmMapHandler::getSoureState(const am_sourceID_t sourceID, am_SourceState_e & sourceState) const
+am_Error_e CAmDatabaseHandlerMap::getSoureState(const am_sourceID_t sourceID, am_SourceState_e & sourceState) const
 {
 	am_Source_Database_s const * source = objectWithKeyIfExistsInMap(sourceID, mMappedData.mSourceMap);
 	if( NULL!=source )
@@ -2115,7 +2110,7 @@ am_Error_e CAmMapHandler::getSoureState(const am_sourceID_t sourceID, am_SourceS
 	}
 }
 
-am_Error_e CAmMapHandler::changeSourceState(const am_sourceID_t sourceID, const am_SourceState_e sourceState)
+am_Error_e CAmDatabaseHandlerMap::changeSourceState(const am_sourceID_t sourceID, const am_SourceState_e sourceState)
 {
     assert(sourceID!=0);
     assert(sourceState>=SS_UNKNNOWN && sourceState<=SS_MAX);
@@ -2127,7 +2122,7 @@ am_Error_e CAmMapHandler::changeSourceState(const am_sourceID_t sourceID, const 
 	return (E_NON_EXISTENT);
 }
 
-am_Error_e CAmMapHandler::getSinkVolume(const am_sinkID_t sinkID, am_volume_t & volume) const
+am_Error_e CAmDatabaseHandlerMap::getSinkVolume(const am_sinkID_t sinkID, am_volume_t & volume) const
 {
     assert(sinkID!=0);
 
@@ -2141,7 +2136,7 @@ am_Error_e CAmMapHandler::getSinkVolume(const am_sinkID_t sinkID, am_volume_t & 
 	return (E_NON_EXISTENT);
 }
 
-am_Error_e CAmMapHandler::getSourceVolume(const am_sourceID_t sourceID, am_volume_t & volume) const
+am_Error_e CAmDatabaseHandlerMap::getSourceVolume(const am_sourceID_t sourceID, am_volume_t & volume) const
 {
     assert(sourceID!=0);
 	am_Source_Database_s const * source = objectWithKeyIfExistsInMap(sourceID, mMappedData.mSourceMap);
@@ -2154,7 +2149,7 @@ am_Error_e CAmMapHandler::getSourceVolume(const am_sourceID_t sourceID, am_volum
 	return (E_NON_EXISTENT);
 }
 
-am_Error_e CAmMapHandler::getSinkSoundPropertyValue(const am_sinkID_t sinkID, const am_SoundPropertyType_e propertyType, int16_t & value) const
+am_Error_e CAmDatabaseHandlerMap::getSinkSoundPropertyValue(const am_sinkID_t sinkID, const am_SoundPropertyType_e propertyType, int16_t & value) const
 {
     assert(sinkID!=0);
 
@@ -2175,7 +2170,7 @@ am_Error_e CAmMapHandler::getSinkSoundPropertyValue(const am_sinkID_t sinkID, co
 	return (E_NON_EXISTENT);
 }
 
-am_Error_e CAmMapHandler::getSourceSoundPropertyValue(const am_sourceID_t sourceID, const am_SoundPropertyType_e propertyType, int16_t & value) const
+am_Error_e CAmDatabaseHandlerMap::getSourceSoundPropertyValue(const am_sourceID_t sourceID, const am_SoundPropertyType_e propertyType, int16_t & value) const
 {
     assert(sourceID!=0);
 
@@ -2196,7 +2191,7 @@ am_Error_e CAmMapHandler::getSourceSoundPropertyValue(const am_sourceID_t source
 	return (E_NON_EXISTENT);
 }
 
-am_Error_e CAmMapHandler::getDomainState(const am_domainID_t domainID, am_DomainState_e& state) const
+am_Error_e CAmDatabaseHandlerMap::getDomainState(const am_domainID_t domainID, am_DomainState_e& state) const
 {
     assert(domainID!=0);
 
@@ -2210,7 +2205,7 @@ am_Error_e CAmMapHandler::getDomainState(const am_domainID_t domainID, am_Domain
 	return (E_NON_EXISTENT);
 }
 
-am_Error_e CAmMapHandler::peekDomain(const std::string & name, am_domainID_t & domainID)
+am_Error_e CAmDatabaseHandlerMap::peekDomain(const std::string & name, am_domainID_t & domainID)
 {
     domainID=0;
 
@@ -2240,7 +2235,7 @@ am_Error_e CAmMapHandler::peekDomain(const std::string & name, am_domainID_t & d
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::peekSink(const std::string & name, am_sinkID_t & sinkID)
+am_Error_e CAmDatabaseHandlerMap::peekSink(const std::string & name, am_sinkID_t & sinkID)
 {
 	am_Sink_Database_s const *reservedSink = findFirstObjectMatchingCriteria(mMappedData.mSinkMap, name, compareSinkObjectByName);
 	if( NULL!=reservedSink )
@@ -2270,7 +2265,7 @@ am_Error_e CAmMapHandler::peekSink(const std::string & name, am_sinkID_t & sinkI
     }
 }
 
-am_Error_e CAmMapHandler::peekSource(const std::string & name, am_sourceID_t & sourceID)
+am_Error_e CAmDatabaseHandlerMap::peekSource(const std::string & name, am_sourceID_t & sourceID)
 {
 	am_Source_Database_s const *reservedDomain = findFirstObjectMatchingCriteria(mMappedData.mSourceMap, name, compareSourceObjectByName);
 	if( NULL!=reservedDomain )
@@ -2301,7 +2296,7 @@ am_Error_e CAmMapHandler::peekSource(const std::string & name, am_sourceID_t & s
     }
 }
 
-am_Error_e CAmMapHandler::changeSinkVolume(const am_sinkID_t sinkID, const am_volume_t volume)
+am_Error_e CAmDatabaseHandlerMap::changeSinkVolume(const am_sinkID_t sinkID, const am_volume_t volume)
 {
     assert(sinkID!=0);
 
@@ -2314,7 +2309,7 @@ am_Error_e CAmMapHandler::changeSinkVolume(const am_sinkID_t sinkID, const am_vo
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::changeSourceVolume(const am_sourceID_t sourceID, const am_volume_t volume)
+am_Error_e CAmDatabaseHandlerMap::changeSourceVolume(const am_sourceID_t sourceID, const am_volume_t volume)
 {
     assert(sourceID!=0);
     if (!existSource(sourceID))
@@ -2326,7 +2321,7 @@ am_Error_e CAmMapHandler::changeSourceVolume(const am_sourceID_t sourceID, const
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::changeSourceSoundPropertyDB(const am_SoundProperty_s & soundProperty, const am_sourceID_t sourceID)
+am_Error_e CAmDatabaseHandlerMap::changeSourceSoundPropertyDB(const am_SoundProperty_s & soundProperty, const am_sourceID_t sourceID)
 {
     assert(soundProperty.type>=SP_UNKNOWN && soundProperty.type<=SP_MAX);
     assert(sourceID!=0);
@@ -2348,7 +2343,7 @@ am_Error_e CAmMapHandler::changeSourceSoundPropertyDB(const am_SoundProperty_s &
 	return (E_NON_EXISTENT);
 }
 
-am_Error_e CAmMapHandler::changeSinkSoundPropertyDB(const am_SoundProperty_s & soundProperty, const am_sinkID_t sinkID)
+am_Error_e CAmDatabaseHandlerMap::changeSinkSoundPropertyDB(const am_SoundProperty_s & soundProperty, const am_sinkID_t sinkID)
 {
     assert(soundProperty.type>=SP_UNKNOWN && soundProperty.type<=SP_MAX);
     assert(sinkID!=0);
@@ -2370,7 +2365,7 @@ am_Error_e CAmMapHandler::changeSinkSoundPropertyDB(const am_SoundProperty_s & s
  	return (E_NON_EXISTENT);
 }
 
-am_Error_e CAmMapHandler::changeCrossFaderHotSink(const am_crossfaderID_t crossfaderID, const am_HotSink_e hotsink)
+am_Error_e CAmDatabaseHandlerMap::changeCrossFaderHotSink(const am_crossfaderID_t crossfaderID, const am_HotSink_e hotsink)
 {
     assert(crossfaderID!=0);
     assert(hotsink>=HS_UNKNOWN && hotsink>=HS_MAX);
@@ -2384,7 +2379,7 @@ am_Error_e CAmMapHandler::changeCrossFaderHotSink(const am_crossfaderID_t crossf
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::getRoutingTree(bool onlyfree, CAmRoutingTree& tree, std::vector<CAmRoutingTreeItem*>& flatTree)
+am_Error_e CAmDatabaseHandlerMap::getRoutingTree(bool onlyfree, CAmRoutingTree& tree, std::vector<CAmRoutingTreeItem*>& flatTree)
 {
     am_domainID_t rootID = tree.returnRootDomainID();
     CAmRoutingTreeItem *parent = tree.returnRootItem();
@@ -2434,7 +2429,7 @@ am_Error_e CAmMapHandler::getRoutingTree(bool onlyfree, CAmRoutingTree& tree, st
     return (E_OK);
 }
 
-am_Error_e am::CAmMapHandler::peekSinkClassID(const std::string & name, am_sinkClass_t & sinkClassID)
+am_Error_e am::CAmDatabaseHandlerMap::peekSinkClassID(const std::string & name, am_sinkClass_t & sinkClassID)
 {
     if (name.empty())
         return (E_NON_EXISTENT);
@@ -2448,7 +2443,7 @@ am_Error_e am::CAmMapHandler::peekSinkClassID(const std::string & name, am_sinkC
 	return (E_NON_EXISTENT);
 }
 
-am_Error_e am::CAmMapHandler::peekSourceClassID(const std::string & name, am_sourceClass_t & sourceClassID)
+am_Error_e am::CAmDatabaseHandlerMap::peekSourceClassID(const std::string & name, am_sourceClass_t & sourceClassID)
 {
     if (name.empty())
         return (E_NON_EXISTENT);
@@ -2463,7 +2458,7 @@ am_Error_e am::CAmMapHandler::peekSourceClassID(const std::string & name, am_sou
 }
 
 
-am_Error_e CAmMapHandler::changeSourceDB(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_ConnectionFormat_e>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)
+am_Error_e CAmDatabaseHandlerMap::changeSourceDB(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_ConnectionFormat_e>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)
 {
     assert(sourceID!=0);
 
@@ -2521,7 +2516,7 @@ am_Error_e CAmMapHandler::changeSourceDB(const am_sourceID_t sourceID, const am_
 
 }
 
-am_Error_e CAmMapHandler::changeSinkDB(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_ConnectionFormat_e>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)
+am_Error_e CAmDatabaseHandlerMap::changeSinkDB(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_ConnectionFormat_e>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)
 {
     assert(sinkID!=0);
 
@@ -2577,7 +2572,7 @@ am_Error_e CAmMapHandler::changeSinkDB(const am_sinkID_t sinkID, const am_sinkCl
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::getListMainSinkNotificationConfigurations(const am_sinkID_t sinkID, std::vector<am_NotificationConfiguration_s>& listMainNotificationConfigurations)
+am_Error_e CAmDatabaseHandlerMap::getListMainSinkNotificationConfigurations(const am_sinkID_t sinkID, std::vector<am_NotificationConfiguration_s>& listMainNotificationConfigurations)
 {
     assert(sinkID!=0);
     if (!existSink(sinkID))
@@ -2589,7 +2584,7 @@ am_Error_e CAmMapHandler::getListMainSinkNotificationConfigurations(const am_sin
      return (E_OK);
 }
 
-am_Error_e CAmMapHandler::getListMainSourceNotificationConfigurations(const am_sourceID_t sourceID, std::vector<am_NotificationConfiguration_s>& listMainNotificationConfigurations)
+am_Error_e CAmDatabaseHandlerMap::getListMainSourceNotificationConfigurations(const am_sourceID_t sourceID, std::vector<am_NotificationConfiguration_s>& listMainNotificationConfigurations)
 {
     assert(sourceID!=0);
     if (!existSource(sourceID))
@@ -2617,7 +2612,7 @@ bool changeMainNotificationConfiguration(std::vector<am_NotificationConfiguratio
  	return changed;
 }
 
-am_Error_e CAmMapHandler::changeMainSinkNotificationConfigurationDB(const am_sinkID_t sinkID, const am_NotificationConfiguration_s mainNotificationConfiguration)
+am_Error_e CAmDatabaseHandlerMap::changeMainSinkNotificationConfigurationDB(const am_sinkID_t sinkID, const am_NotificationConfiguration_s mainNotificationConfiguration)
 {
     assert(sinkID!=0);
 
@@ -2635,7 +2630,7 @@ am_Error_e CAmMapHandler::changeMainSinkNotificationConfigurationDB(const am_sin
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::changeMainSourceNotificationConfigurationDB(const am_sourceID_t sourceID, const am_NotificationConfiguration_s mainNotificationConfiguration)
+am_Error_e CAmDatabaseHandlerMap::changeMainSourceNotificationConfigurationDB(const am_sourceID_t sourceID, const am_NotificationConfiguration_s mainNotificationConfiguration)
 {
     assert(sourceID!=0);
 
@@ -2654,7 +2649,7 @@ am_Error_e CAmMapHandler::changeMainSourceNotificationConfigurationDB(const am_s
     return (E_OK);
 }
 
-am_Error_e CAmMapHandler::changeGatewayDB(const am_gatewayID_t gatewayID, const std::vector<am_ConnectionFormat_e>& listSourceConnectionFormats, const std::vector<am_ConnectionFormat_e>& listSinkConnectionFormats, const std::vector<bool>& convertionMatrix)
+am_Error_e CAmDatabaseHandlerMap::changeGatewayDB(const am_gatewayID_t gatewayID, const std::vector<am_ConnectionFormat_e>& listSourceConnectionFormats, const std::vector<am_ConnectionFormat_e>& listSinkConnectionFormats, const std::vector<bool>& convertionMatrix)
 {
     assert(gatewayID!=0);
 
@@ -2701,7 +2696,7 @@ bool changeNotificationConfiguration(std::vector<am_NotificationConfiguration_s>
  	return changed;
 }
 
-am_Error_e CAmMapHandler::changeSinkNotificationConfigurationDB(const am_sinkID_t sinkID, const am_NotificationConfiguration_s notificationConfiguration)
+am_Error_e CAmDatabaseHandlerMap::changeSinkNotificationConfigurationDB(const am_sinkID_t sinkID, const am_NotificationConfiguration_s notificationConfiguration)
 {
     assert(sinkID!=0);
 
@@ -2718,7 +2713,7 @@ am_Error_e CAmMapHandler::changeSinkNotificationConfigurationDB(const am_sinkID_
     return (E_NON_EXISTENT);
 }
 
-am_Error_e CAmMapHandler::changeSourceNotificationConfigurationDB(const am_sourceID_t sourceID, const am_NotificationConfiguration_s notificationConfiguration)
+am_Error_e CAmDatabaseHandlerMap::changeSourceNotificationConfigurationDB(const am_sourceID_t sourceID, const am_NotificationConfiguration_s notificationConfiguration)
 {
     assert(sourceID!=0);
 

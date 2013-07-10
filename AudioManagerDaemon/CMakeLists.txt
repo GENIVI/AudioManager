@@ -57,7 +57,12 @@ SET(AUDIOMAN_SRCS_CXX
     src/CAmSocketHandler.cpp
     src/CAmDltWrapper.cpp
 )
- 
+
+# Preallocation variable for the map.
+IF(NOT WITH_DATABASE_STORAGE )
+    set (AM_MAP_CAPACITY 10)
+    add_definitions( -DAM_MAP_CAPACITY=${AM_MAP_CAPACITY} )
+ENDIF(NOT WITH_DATABASE_STORAGE)	
 
 IF(WITH_TELNET)
 	SET (AUDIOMAN_SRCS_CXX
@@ -98,12 +103,12 @@ ENDIF(WITH_NSM)
 IF(WITH_DATABASE_STORAGE)
     SET (AUDIOMAN_SRCS_CXX
         ${AUDIOMAN_SRCS_CXX}
-        src/CAmDatabaseHandler.cpp
+        src/CAmDatabaseHandlerSQLite.cpp
     )
 ELSE(WITH_DATABASE_STORAGE)
     SET (AUDIOMAN_SRCS_CXX
         ${AUDIOMAN_SRCS_CXX}
-        src/CAmMapHandler.cpp
+        src/CAmDatabaseHandlerMap.cpp
     )
 ENDIF(WITH_DATABASE_STORAGE)
 

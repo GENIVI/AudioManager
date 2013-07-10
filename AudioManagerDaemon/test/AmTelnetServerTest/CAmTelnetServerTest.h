@@ -24,19 +24,21 @@
 
 #include "gtest/gtest.h"
 #include "CAmTelnetServer.h"
-#include "CAmDatabaseHandler.h"
-#include "CAmMapHandler.h"
 #include "CAmRoutingSender.h"
 #include "CAmCommandSender.h"
 #include "CAmControlSender.h"
 #include "CAmRouter.h"
+#include "IAmDatabaseHandler.h"
+#ifdef WITH_DATABASE_STORAGE
+  #include "CAmDatabaseHandlerSQLite.h"
+#else
+	#include "CAmDatabaseHandlerMap.h"
+#endif
 
 namespace am
 {
 
 class CAmSocketHandler;
-class CAmDatabaseHandler;
-class CAmMapHandler;
 class CAmRoutingSender;
 class CAmCommandSender;
 class CAmControlSender;
@@ -67,9 +69,9 @@ class CAmEnvironment : public ::testing::Environment
 
   CAmSocketHandler     mSocketHandler;
 #ifdef WITH_DATABASE_STORAGE
-  CAmDatabaseHandler   mDatabasehandler;
+  CAmDatabaseHandlerSQLite   mDatabasehandler;
 #else
-  CAmMapHandler		   mDatabasehandler;
+  CAmDatabaseHandlerMap		 mDatabasehandler;
 #endif
   CAmRoutingSender     mRoutingSender;
   CAmCommandSender     mCommandSender;

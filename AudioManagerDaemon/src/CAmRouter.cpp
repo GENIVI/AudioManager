@@ -24,12 +24,12 @@
 #include <algorithm>
 #include <vector>
 #include <iterator>
-#include "CAmDatabaseHandlerInterface.h"
+#include "IAmDatabaseHandler.h"
 #include "CAmControlSender.h"
 
 namespace am {
 
-CAmRouter::CAmRouter(CAmDatabaseHandlerInterface* iDatabaseHandler, CAmControlSender* iSender) :
+CAmRouter::CAmRouter(IAmDatabaseHandler* iDatabaseHandler, CAmControlSender* iSender) :
         mpDatabaseHandler(iDatabaseHandler), //
         mpControlSender(iSender)
 {

@@ -14,12 +14,12 @@
  *
  * \author Christian Mueller, christian.ei.mueller@bmw.de BMW 2011,2012
  *
- * \file CAmDatabaseHandler.cpp
+ * \file CAmDatabaseHandlerSQLite.cpp
  * For further information see http://www.genivi.org/.
  *
  */
 
-#include "CAmDatabaseHandler.h"
+#include "CAmDatabaseHandlerSQLite.h"
 #include <cassert>
 #include <stdexcept>
 #include <vector>
@@ -136,17 +136,31 @@ inline std::string i2s(T const& x)
     return (o.str());
 }
 
-CAmDatabaseHandler::CAmDatabaseHandler():CAmDatabaseHandlerInterface()
+CAmDatabaseHandlerSQLite::CAmDatabaseHandlerSQLite():mpDatabaseObserver(NULL), //
+													mFirstStaticSink(true), //
+													mFirstStaticSource(true), //
+													mFirstStaticGateway(true), //
+													mFirstStaticSinkClass(true), //
+													mFirstStaticSourceClass(true), //
+													mFirstStaticCrossfader(true), //
+													mListConnectionFormat(),
+													mpDatabase(NULL), //
+													mPath(std::string(""))
 {
-	mpDatabase = NULL;
-	mPath = std::string("");
+
 }
 
-CAmDatabaseHandler::CAmDatabaseHandler(std::string databasePath):CAmDatabaseHandlerInterface(),
-        mpDatabase(NULL), //
-        mPath(databasePath)
+CAmDatabaseHandlerSQLite::CAmDatabaseHandlerSQLite(std::string databasePath):mpDatabaseObserver(NULL), //
+																			mFirstStaticSink(true), //
+																			mFirstStaticSource(true), //
+																			mFirstStaticGateway(true), //
+																			mFirstStaticSinkClass(true), //
+																			mFirstStaticSourceClass(true), //
+																			mFirstStaticCrossfader(true), //
+																			mListConnectionFormat(),
+																			mpDatabase(NULL), //
+																			mPath(databasePath)
 {
-
     std::ifstream infile(mPath.c_str());
 
     if (infile)
@@ -167,13 +181,15 @@ CAmDatabaseHandler::CAmDatabaseHandler(std::string databasePath):CAmDatabaseHand
     createTables();
 }
 
-CAmDatabaseHandler::~CAmDatabaseHandler()
+CAmDatabaseHandlerSQLite::~CAmDatabaseHandlerSQLite()
 {
     logInfo("Closed Database");
-    sqlite3_close(mpDatabase);
+    mpDatabaseObserver = NULL;
+    if(mpDatabase)
+    	sqlite3_close(mpDatabase);
 }
 
-am_Error_e CAmDatabaseHandler::enterDomainDB(const am_Domain_s & domainData, am_domainID_t & domainID)
+am_Error_e CAmDatabaseHandlerSQLite::enterDomainDB(const am_Domain_s & domainData, am_domainID_t & domainID)
 {
     assert(domainData.domainID==0);
     assert(!domainData.name.empty());
@@ -234,7 +250,7 @@ am_Error_e CAmDatabaseHandler::enterDomainDB(const am_Domain_s & domainData, am_
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::enterMainConnectionDB(const am_MainConnection_s & mainConnectionData, am_mainConnectionID_t & connectionID)
+am_Error_e CAmDatabaseHandlerSQLite::enterMainConnectionDB(const am_MainConnection_s & mainConnectionData, am_mainConnectionID_t & connectionID)
 {
     assert(mainConnectionData.mainConnectionID==0);
     assert(mainConnectionData.connectionState>=CS_UNKNOWN && mainConnectionData.connectionState<=CS_MAX);
@@ -328,7 +344,7 @@ am_Error_e CAmDatabaseHandler::enterMainConnectionDB(const am_MainConnection_s &
     return (changeDelayMainConnection(delay, connectionID));
 }
 
-am_Error_e CAmDatabaseHandler::enterSinkDB(const am_Sink_s & sinkData, am_sinkID_t & sinkID)
+am_Error_e CAmDatabaseHandlerSQLite::enterSinkDB(const am_Sink_s & sinkData, am_sinkID_t & sinkID)
 {
     assert(sinkData.sinkID<DYNAMIC_ID_BOUNDARY);
     assert(sinkData.domainID!=0);
@@ -545,7 +561,7 @@ am_Error_e CAmDatabaseHandler::enterSinkDB(const am_Sink_s & sinkData, am_sinkID
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::enterCrossfaderDB(const am_Crossfader_s & crossfaderData, am_crossfaderID_t & crossfaderID)
+am_Error_e CAmDatabaseHandlerSQLite::enterCrossfaderDB(const am_Crossfader_s & crossfaderData, am_crossfaderID_t & crossfaderID)
 {
     assert(crossfaderData.crossfaderID<DYNAMIC_ID_BOUNDARY);
     assert(crossfaderData.hotSink>=HS_UNKNOWN && crossfaderData.hotSink<=HS_MAX);
@@ -627,7 +643,7 @@ am_Error_e CAmDatabaseHandler::enterCrossfaderDB(const am_Crossfader_s & crossfa
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::enterGatewayDB(const am_Gateway_s & gatewayData, am_gatewayID_t & gatewayID)
+am_Error_e CAmDatabaseHandlerSQLite::enterGatewayDB(const am_Gateway_s & gatewayData, am_gatewayID_t & gatewayID)
 {
     assert(gatewayData.gatewayID<DYNAMIC_ID_BOUNDARY);
     assert(gatewayData.sinkID!=0);
@@ -744,7 +760,7 @@ am_Error_e CAmDatabaseHandler::enterGatewayDB(const am_Gateway_s & gatewayData, 
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::enterSourceDB(const am_Source_s & sourceData, am_sourceID_t & sourceID)
+am_Error_e CAmDatabaseHandlerSQLite::enterSourceDB(const am_Source_s & sourceData, am_sourceID_t & sourceID)
 {
     assert(sourceData.sourceID<DYNAMIC_ID_BOUNDARY);
     assert(sourceData.domainID!=0);
@@ -964,7 +980,7 @@ am_Error_e CAmDatabaseHandler::enterSourceDB(const am_Source_s & sourceData, am_
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::changeMainConnectionRouteDB(const am_mainConnectionID_t mainconnectionID, const std::vector<am_connectionID_t>& listConnectionID)
+am_Error_e CAmDatabaseHandlerSQLite::changeMainConnectionRouteDB(const am_mainConnectionID_t mainconnectionID, const std::vector<am_connectionID_t>& listConnectionID)
 {
     assert(mainconnectionID!=0);
     if (!existMainConnection(mainconnectionID))
@@ -1030,7 +1046,7 @@ am_Error_e CAmDatabaseHandler::changeMainConnectionRouteDB(const am_mainConnecti
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::changeMainConnectionStateDB(const am_mainConnectionID_t mainconnectionID, const am_ConnectionState_e connectionState)
+am_Error_e CAmDatabaseHandlerSQLite::changeMainConnectionStateDB(const am_mainConnectionID_t mainconnectionID, const am_ConnectionState_e connectionState)
 {
     assert(mainconnectionID!=0);
     assert(connectionState>=CS_UNKNOWN && connectionState<=CS_MAX);
@@ -1060,7 +1076,7 @@ am_Error_e CAmDatabaseHandler::changeMainConnectionStateDB(const am_mainConnecti
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::changeSinkMainVolumeDB(const am_mainVolume_t mainVolume, const am_sinkID_t sinkID)
+am_Error_e CAmDatabaseHandlerSQLite::changeSinkMainVolumeDB(const am_mainVolume_t mainVolume, const am_sinkID_t sinkID)
 {
     assert(sinkID!=0);
 
@@ -1091,7 +1107,7 @@ am_Error_e CAmDatabaseHandler::changeSinkMainVolumeDB(const am_mainVolume_t main
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::changeSinkAvailabilityDB(const am_Availability_s & availability, const am_sinkID_t sinkID)
+am_Error_e CAmDatabaseHandlerSQLite::changeSinkAvailabilityDB(const am_Availability_s & availability, const am_sinkID_t sinkID)
 {
     assert(sinkID!=0);
     assert(availability.availability>=A_UNKNOWN && availability.availability<=A_MAX);
@@ -1124,7 +1140,7 @@ am_Error_e CAmDatabaseHandler::changeSinkAvailabilityDB(const am_Availability_s 
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::changDomainStateDB(const am_DomainState_e domainState, const am_domainID_t domainID)
+am_Error_e CAmDatabaseHandlerSQLite::changDomainStateDB(const am_DomainState_e domainState, const am_domainID_t domainID)
 {
     assert(domainID!=0);
     assert(domainState>=DS_UNKNOWN && domainState<=DS_MAX);
@@ -1153,7 +1169,7 @@ am_Error_e CAmDatabaseHandler::changDomainStateDB(const am_DomainState_e domainS
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::changeSinkMuteStateDB(const am_MuteState_e muteState, const am_sinkID_t sinkID)
+am_Error_e CAmDatabaseHandlerSQLite::changeSinkMuteStateDB(const am_MuteState_e muteState, const am_sinkID_t sinkID)
 {
     assert(sinkID!=0);
     assert(muteState>=MS_UNKNOWN && muteState<=MS_MAX);
@@ -1185,7 +1201,7 @@ am_Error_e CAmDatabaseHandler::changeSinkMuteStateDB(const am_MuteState_e muteSt
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::changeMainSinkSoundPropertyDB(const am_MainSoundProperty_s & soundProperty, const am_sinkID_t sinkID)
+am_Error_e CAmDatabaseHandlerSQLite::changeMainSinkSoundPropertyDB(const am_MainSoundProperty_s & soundProperty, const am_sinkID_t sinkID)
 {
     assert(soundProperty.type>=MSP_UNKNOWN && soundProperty.type<=MSP_MAX);
     assert(sinkID!=0);
@@ -1215,7 +1231,7 @@ am_Error_e CAmDatabaseHandler::changeMainSinkSoundPropertyDB(const am_MainSoundP
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::changeMainSourceSoundPropertyDB(const am_MainSoundProperty_s & soundProperty, const am_sourceID_t sourceID)
+am_Error_e CAmDatabaseHandlerSQLite::changeMainSourceSoundPropertyDB(const am_MainSoundProperty_s & soundProperty, const am_sourceID_t sourceID)
 {
     assert(soundProperty.type>=MSP_UNKNOWN && soundProperty.type<=MSP_MAX);
     assert(sourceID!=0);
@@ -1246,7 +1262,7 @@ am_Error_e CAmDatabaseHandler::changeMainSourceSoundPropertyDB(const am_MainSoun
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::changeSourceAvailabilityDB(const am_Availability_s & availability, const am_sourceID_t sourceID)
+am_Error_e CAmDatabaseHandlerSQLite::changeSourceAvailabilityDB(const am_Availability_s & availability, const am_sourceID_t sourceID)
 {
     assert(sourceID!=0);
     assert(availability.availability>=A_UNKNOWN && availability.availability<=A_MAX);
@@ -1280,7 +1296,7 @@ am_Error_e CAmDatabaseHandler::changeSourceAvailabilityDB(const am_Availability_
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::changeSystemPropertyDB(const am_SystemProperty_s & property)
+am_Error_e CAmDatabaseHandlerSQLite::changeSystemPropertyDB(const am_SystemProperty_s & property)
 {
     assert(property.type>=SYP_UNKNOWN && property.type<=SYP_MAX);
     sqlite3_stmt* query = NULL;
@@ -1308,7 +1324,7 @@ am_Error_e CAmDatabaseHandler::changeSystemPropertyDB(const am_SystemProperty_s 
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::removeMainConnectionDB(const am_mainConnectionID_t mainConnectionID)
+am_Error_e CAmDatabaseHandlerSQLite::removeMainConnectionDB(const am_mainConnectionID_t mainConnectionID)
 {
     assert(mainConnectionID!=0);
 
@@ -1331,7 +1347,7 @@ am_Error_e CAmDatabaseHandler::removeMainConnectionDB(const am_mainConnectionID_
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::removeSinkDB(const am_sinkID_t sinkID)
+am_Error_e CAmDatabaseHandlerSQLite::removeSinkDB(const am_sinkID_t sinkID)
 {
     assert(sinkID!=0);
 
@@ -1371,7 +1387,7 @@ am_Error_e CAmDatabaseHandler::removeSinkDB(const am_sinkID_t sinkID)
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::removeSourceDB(const am_sourceID_t sourceID)
+am_Error_e CAmDatabaseHandlerSQLite::removeSourceDB(const am_sourceID_t sourceID)
 {
     assert(sourceID!=0);
 
@@ -1410,7 +1426,7 @@ am_Error_e CAmDatabaseHandler::removeSourceDB(const am_sourceID_t sourceID)
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::removeGatewayDB(const am_gatewayID_t gatewayID)
+am_Error_e CAmDatabaseHandlerSQLite::removeGatewayDB(const am_gatewayID_t gatewayID)
 {
     assert(gatewayID!=0);
 
@@ -1427,7 +1443,7 @@ am_Error_e CAmDatabaseHandler::removeGatewayDB(const am_gatewayID_t gatewayID)
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::removeCrossfaderDB(const am_crossfaderID_t crossfaderID)
+am_Error_e CAmDatabaseHandlerSQLite::removeCrossfaderDB(const am_crossfaderID_t crossfaderID)
 {
     assert(crossfaderID!=0);
 
@@ -1444,7 +1460,7 @@ am_Error_e CAmDatabaseHandler::removeCrossfaderDB(const am_crossfaderID_t crossf
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::removeDomainDB(const am_domainID_t domainID)
+am_Error_e CAmDatabaseHandlerSQLite::removeDomainDB(const am_domainID_t domainID)
 {
     assert(domainID!=0);
 
@@ -1461,7 +1477,7 @@ am_Error_e CAmDatabaseHandler::removeDomainDB(const am_domainID_t domainID)
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::removeSinkClassDB(const am_sinkClass_t sinkClassID)
+am_Error_e CAmDatabaseHandlerSQLite::removeSinkClassDB(const am_sinkClass_t sinkClassID)
 {
     assert(sinkClassID!=0);
 
@@ -1483,7 +1499,7 @@ am_Error_e CAmDatabaseHandler::removeSinkClassDB(const am_sinkClass_t sinkClassI
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::removeSourceClassDB(const am_sourceClass_t sourceClassID)
+am_Error_e CAmDatabaseHandlerSQLite::removeSourceClassDB(const am_sourceClass_t sourceClassID)
 {
     assert(sourceClassID!=0);
 
@@ -1503,7 +1519,7 @@ am_Error_e CAmDatabaseHandler::removeSourceClassDB(const am_sourceClass_t source
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::removeConnection(const am_connectionID_t connectionID)
+am_Error_e CAmDatabaseHandlerSQLite::removeConnection(const am_connectionID_t connectionID)
 {
     assert(connectionID!=0);
 
@@ -1514,7 +1530,7 @@ am_Error_e CAmDatabaseHandler::removeConnection(const am_connectionID_t connecti
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::getSourceClassInfoDB(const am_sourceID_t sourceID, am_SourceClass_s & classInfo) const
+am_Error_e CAmDatabaseHandlerSQLite::getSourceClassInfoDB(const am_sourceID_t sourceID, am_SourceClass_s & classInfo) const
 {
     assert(sourceID!=0);
 
@@ -1580,7 +1596,7 @@ am_Error_e CAmDatabaseHandler::getSourceClassInfoDB(const am_sourceID_t sourceID
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::getSinkInfoDB(const am_sinkID_t sinkID, am_Sink_s & sinkData) const
+am_Error_e CAmDatabaseHandlerSQLite::getSinkInfoDB(const am_sinkID_t sinkID, am_Sink_s & sinkData) const
 {
 
     assert(sinkID!=0);
@@ -1688,7 +1704,7 @@ am_Error_e CAmDatabaseHandler::getSinkInfoDB(const am_sinkID_t sinkID, am_Sink_s
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::getSourceInfoDB(const am_sourceID_t sourceID, am_Source_s & sourceData) const
+am_Error_e CAmDatabaseHandlerSQLite::getSourceInfoDB(const am_sourceID_t sourceID, am_Source_s & sourceData) const
 {
     assert(sourceID!=0);
 
@@ -1795,7 +1811,7 @@ am_Error_e CAmDatabaseHandler::getSourceInfoDB(const am_sourceID_t sourceID, am_
     return (E_OK);
 }
 
-am_Error_e am::CAmDatabaseHandler::getMainConnectionInfoDB(const am_mainConnectionID_t mainConnectionID, am_MainConnection_s & mainConnectionData) const
+am_Error_e am::CAmDatabaseHandlerSQLite::getMainConnectionInfoDB(const am_mainConnectionID_t mainConnectionID, am_MainConnection_s & mainConnectionData) const
 {
     assert(mainConnectionID!=0);
     if (!existMainConnection(mainConnectionID))
@@ -1837,7 +1853,7 @@ am_Error_e am::CAmDatabaseHandler::getMainConnectionInfoDB(const am_mainConnecti
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::changeSinkClassInfoDB(const am_SinkClass_s& sinkClass)
+am_Error_e CAmDatabaseHandlerSQLite::changeSinkClassInfoDB(const am_SinkClass_s& sinkClass)
 {
     assert(sinkClass.sinkClassID!=0);
     assert(!sinkClass.listClassProperties.empty());
@@ -1878,7 +1894,7 @@ am_Error_e CAmDatabaseHandler::changeSinkClassInfoDB(const am_SinkClass_s& sinkC
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::changeSourceClassInfoDB(const am_SourceClass_s& sourceClass)
+am_Error_e CAmDatabaseHandlerSQLite::changeSourceClassInfoDB(const am_SourceClass_s& sourceClass)
 {
     assert(sourceClass.sourceClassID!=0);
     assert(!sourceClass.listClassProperties.empty());
@@ -1913,7 +1929,7 @@ am_Error_e CAmDatabaseHandler::changeSourceClassInfoDB(const am_SourceClass_s& s
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::getSinkClassInfoDB(const am_sinkID_t sinkID, am_SinkClass_s & sinkClass) const
+am_Error_e CAmDatabaseHandlerSQLite::getSinkClassInfoDB(const am_sinkID_t sinkID, am_SinkClass_s & sinkClass) const
 {
     assert(sinkID!=0);
 
@@ -1979,7 +1995,7 @@ am_Error_e CAmDatabaseHandler::getSinkClassInfoDB(const am_sinkID_t sinkID, am_S
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::getGatewayInfoDB(const am_gatewayID_t gatewayID, am_Gateway_s & gatewayData) const
+am_Error_e CAmDatabaseHandlerSQLite::getGatewayInfoDB(const am_gatewayID_t gatewayID, am_Gateway_s & gatewayData) const
 {
     assert(gatewayID!=0);
     if (!existGateway(gatewayID))
@@ -2050,7 +2066,7 @@ am_Error_e CAmDatabaseHandler::getGatewayInfoDB(const am_gatewayID_t gatewayID, 
 
 }
 
-am_Error_e CAmDatabaseHandler::getCrossfaderInfoDB(const am_crossfaderID_t crossfaderID, am_Crossfader_s & crossfaderData) const
+am_Error_e CAmDatabaseHandlerSQLite::getCrossfaderInfoDB(const am_crossfaderID_t crossfaderID, am_Crossfader_s & crossfaderData) const
 {
     assert(crossfaderID!=0);
     if (!existcrossFader(crossfaderID))
@@ -2084,7 +2100,7 @@ am_Error_e CAmDatabaseHandler::getCrossfaderInfoDB(const am_crossfaderID_t cross
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::getListSinksOfDomain(const am_domainID_t domainID, std::vector<am_sinkID_t> & listSinkID) const
+am_Error_e CAmDatabaseHandlerSQLite::getListSinksOfDomain(const am_domainID_t domainID, std::vector<am_sinkID_t> & listSinkID) const
 {
     assert(domainID!=0);
     listSinkID.clear();
@@ -2115,7 +2131,7 @@ am_Error_e CAmDatabaseHandler::getListSinksOfDomain(const am_domainID_t domainID
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::getListSourcesOfDomain(const am_domainID_t domainID, std::vector<am_sourceID_t> & listSourceID) const
+am_Error_e CAmDatabaseHandlerSQLite::getListSourcesOfDomain(const am_domainID_t domainID, std::vector<am_sourceID_t> & listSourceID) const
 {
     assert(domainID!=0);
     listSourceID.clear();
@@ -2148,7 +2164,7 @@ am_Error_e CAmDatabaseHandler::getListSourcesOfDomain(const am_domainID_t domain
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::getListCrossfadersOfDomain(const am_domainID_t domainID, std::vector<am_crossfaderID_t> & listCrossfader) const
+am_Error_e CAmDatabaseHandlerSQLite::getListCrossfadersOfDomain(const am_domainID_t domainID, std::vector<am_crossfaderID_t> & listCrossfader) const
 {
     assert(domainID!=0);
     listCrossfader.clear();
@@ -2182,7 +2198,7 @@ am_Error_e CAmDatabaseHandler::getListCrossfadersOfDomain(const am_domainID_t do
 
 }
 
-am_Error_e CAmDatabaseHandler::getListGatewaysOfDomain(const am_domainID_t domainID, std::vector<am_gatewayID_t> & listGatewaysID) const
+am_Error_e CAmDatabaseHandlerSQLite::getListGatewaysOfDomain(const am_domainID_t domainID, std::vector<am_gatewayID_t> & listGatewaysID) const
 {
     assert(domainID!=0);
     listGatewaysID.clear();
@@ -2215,7 +2231,7 @@ am_Error_e CAmDatabaseHandler::getListGatewaysOfDomain(const am_domainID_t domai
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::getListMainConnections(std::vector<am_MainConnection_s> & listMainConnections) const
+am_Error_e CAmDatabaseHandlerSQLite::getListMainConnections(std::vector<am_MainConnection_s> & listMainConnections) const
 {
     listMainConnections.clear();
     sqlite3_stmt *query = NULL, *query1 = NULL;
@@ -2254,7 +2270,7 @@ am_Error_e CAmDatabaseHandler::getListMainConnections(std::vector<am_MainConnect
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::getListDomains(std::vector<am_Domain_s> & listDomains) const
+am_Error_e CAmDatabaseHandlerSQLite::getListDomains(std::vector<am_Domain_s> & listDomains) const
 {
     listDomains.clear();
     sqlite3_stmt* query = NULL;
@@ -2287,7 +2303,7 @@ am_Error_e CAmDatabaseHandler::getListDomains(std::vector<am_Domain_s> & listDom
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::getListConnections(std::vector<am_Connection_s> & listConnections) const
+am_Error_e CAmDatabaseHandlerSQLite::getListConnections(std::vector<am_Connection_s> & listConnections) const
 {
     listConnections.clear();
     sqlite3_stmt* query = NULL;
@@ -2318,7 +2334,7 @@ am_Error_e CAmDatabaseHandler::getListConnections(std::vector<am_Connection_s> &
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::getListSinks(std::vector<am_Sink_s> & listSinks) const
+am_Error_e CAmDatabaseHandlerSQLite::getListSinks(std::vector<am_Sink_s> & listSinks) const
 {
     listSinks.clear();
     sqlite3_stmt* query = NULL, *qConnectionFormat = NULL, *qSoundProperty = NULL, *qNotificationConfiguration= NULL, *qMAinSoundProperty = NULL, *qMainNotificationConfiguration= NULL;
@@ -2427,7 +2443,7 @@ am_Error_e CAmDatabaseHandler::getListSinks(std::vector<am_Sink_s> & listSinks) 
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::getListSources(std::vector<am_Source_s> & listSources) const
+am_Error_e CAmDatabaseHandlerSQLite::getListSources(std::vector<am_Source_s> & listSources) const
 {
     listSources.clear();
     sqlite3_stmt* query = NULL, *qConnectionFormat = NULL, *qSoundProperty = NULL, *qMAinSoundProperty = NULL, *qNotification(NULL), *qMainNotification(NULL);
@@ -2534,7 +2550,7 @@ am_Error_e CAmDatabaseHandler::getListSources(std::vector<am_Source_s> & listSou
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::getListSourceClasses(std::vector<am_SourceClass_s> & listSourceClasses) const
+am_Error_e CAmDatabaseHandlerSQLite::getListSourceClasses(std::vector<am_SourceClass_s> & listSourceClasses) const
 {
     listSourceClasses.clear();
 
@@ -2588,7 +2604,7 @@ am_Error_e CAmDatabaseHandler::getListSourceClasses(std::vector<am_SourceClass_s
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::getListCrossfaders(std::vector<am_Crossfader_s> & listCrossfaders) const
+am_Error_e CAmDatabaseHandlerSQLite::getListCrossfaders(std::vector<am_Crossfader_s> & listCrossfaders) const
 {
     listCrossfaders.clear();
     sqlite3_stmt* query = NULL;
@@ -2620,7 +2636,7 @@ am_Error_e CAmDatabaseHandler::getListCrossfaders(std::vector<am_Crossfader_s> &
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::getListGateways(std::vector<am_Gateway_s> & listGateways) const
+am_Error_e CAmDatabaseHandlerSQLite::getListGateways(std::vector<am_Gateway_s> & listGateways) const
 {
     listGateways.clear();
     sqlite3_stmt* query = NULL, *qSinkConnectionFormat = NULL, *qSourceConnectionFormat = NULL;
@@ -2691,7 +2707,7 @@ am_Error_e CAmDatabaseHandler::getListGateways(std::vector<am_Gateway_s> & listG
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::getListSinkClasses(std::vector<am_SinkClass_s> & listSinkClasses) const
+am_Error_e CAmDatabaseHandlerSQLite::getListSinkClasses(std::vector<am_SinkClass_s> & listSinkClasses) const
 {
     listSinkClasses.clear();
 
@@ -2744,7 +2760,7 @@ am_Error_e CAmDatabaseHandler::getListSinkClasses(std::vector<am_SinkClass_s> & 
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::getListVisibleMainConnections(std::vector<am_MainConnectionType_s> & listConnections) const
+am_Error_e CAmDatabaseHandlerSQLite::getListVisibleMainConnections(std::vector<am_MainConnectionType_s> & listConnections) const
 {
     listConnections.clear();
     sqlite3_stmt *query = NULL;
@@ -2776,7 +2792,7 @@ am_Error_e CAmDatabaseHandler::getListVisibleMainConnections(std::vector<am_Main
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::getListMainSinks(std::vector<am_SinkType_s> & listMainSinks) const
+am_Error_e CAmDatabaseHandlerSQLite::getListMainSinks(std::vector<am_SinkType_s> & listMainSinks) const
 {
     listMainSinks.clear();
     sqlite3_stmt* query = NULL;
@@ -2810,7 +2826,7 @@ am_Error_e CAmDatabaseHandler::getListMainSinks(std::vector<am_SinkType_s> & lis
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::getListMainSources(std::vector<am_SourceType_s> & listMainSources) const
+am_Error_e CAmDatabaseHandlerSQLite::getListMainSources(std::vector<am_SourceType_s> & listMainSources) const
 {
     listMainSources.clear();
     sqlite3_stmt* query = NULL;
@@ -2842,7 +2858,7 @@ am_Error_e CAmDatabaseHandler::getListMainSources(std::vector<am_SourceType_s> &
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::getListMainSinkSoundProperties(const am_sinkID_t sinkID, std::vector<am_MainSoundProperty_s> & listSoundProperties) const
+am_Error_e CAmDatabaseHandlerSQLite::getListMainSinkSoundProperties(const am_sinkID_t sinkID, std::vector<am_MainSoundProperty_s> & listSoundProperties) const
 {
     assert(sinkID!=0);
     if (!existSink(sinkID))
@@ -2874,7 +2890,7 @@ am_Error_e CAmDatabaseHandler::getListMainSinkSoundProperties(const am_sinkID_t 
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::getListMainSourceSoundProperties(const am_sourceID_t sourceID, std::vector<am_MainSoundProperty_s> & listSourceProperties) const
+am_Error_e CAmDatabaseHandlerSQLite::getListMainSourceSoundProperties(const am_sourceID_t sourceID, std::vector<am_MainSoundProperty_s> & listSourceProperties) const
 {
     assert(sourceID!=0);
     if (!existSource(sourceID))
@@ -2906,7 +2922,7 @@ am_Error_e CAmDatabaseHandler::getListMainSourceSoundProperties(const am_sourceI
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::getListSystemProperties(std::vector<am_SystemProperty_s> & listSystemProperties) const
+am_Error_e CAmDatabaseHandlerSQLite::getListSystemProperties(std::vector<am_SystemProperty_s> & listSystemProperties) const
 {
     listSystemProperties.clear();
 
@@ -2935,7 +2951,7 @@ am_Error_e CAmDatabaseHandler::getListSystemProperties(std::vector<am_SystemProp
     return (E_OK);
 }
 
-am_Error_e am::CAmDatabaseHandler::getListSinkConnectionFormats(const am_sinkID_t sinkID, std::vector<am_ConnectionFormat_e> & listConnectionFormats) const
+am_Error_e am::CAmDatabaseHandlerSQLite::getListSinkConnectionFormats(const am_sinkID_t sinkID, std::vector<am_ConnectionFormat_e> & listConnectionFormats) const
 {
     listConnectionFormats.clear();
     sqlite3_stmt *qConnectionFormat = NULL;
@@ -2954,7 +2970,7 @@ am_Error_e am::CAmDatabaseHandler::getListSinkConnectionFormats(const am_sinkID_
     return (E_OK);
 }
 
-am_Error_e am::CAmDatabaseHandler::getListSourceConnectionFormats(const am_sourceID_t sourceID, std::vector<am_ConnectionFormat_e> & listConnectionFormats) const
+am_Error_e am::CAmDatabaseHandlerSQLite::getListSourceConnectionFormats(const am_sourceID_t sourceID, std::vector<am_ConnectionFormat_e> & listConnectionFormats) const
 {
     listConnectionFormats.clear();
     sqlite3_stmt* qConnectionFormat = NULL;
@@ -2975,7 +2991,7 @@ am_Error_e am::CAmDatabaseHandler::getListSourceConnectionFormats(const am_sourc
     return (E_OK);
 }
 
-am_Error_e am::CAmDatabaseHandler::getListGatewayConnectionFormats(const am_gatewayID_t gatewayID, std::vector<bool> & listConnectionFormat) const
+am_Error_e am::CAmDatabaseHandlerSQLite::getListGatewayConnectionFormats(const am_gatewayID_t gatewayID, std::vector<bool> & listConnectionFormat) const
 {
     ListConnectionFormat::const_iterator iter = mListConnectionFormat.begin();
     iter = mListConnectionFormat.find(gatewayID);
@@ -2990,7 +3006,7 @@ am_Error_e am::CAmDatabaseHandler::getListGatewayConnectionFormats(const am_gate
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::getTimingInformation(const am_mainConnectionID_t mainConnectionID, am_timeSync_t & delay) const
+am_Error_e CAmDatabaseHandlerSQLite::getTimingInformation(const am_mainConnectionID_t mainConnectionID, am_timeSync_t & delay) const
 {
     assert(mainConnectionID!=0);
     delay = -1;
@@ -3020,7 +3036,7 @@ am_Error_e CAmDatabaseHandler::getTimingInformation(const am_mainConnectionID_t 
     return (E_OK);
 }
 
-bool CAmDatabaseHandler::sqQuery(const std::string& query)
+bool CAmDatabaseHandlerSQLite::sqQuery(const std::string& query)
 {
     sqlite3_stmt* statement;
     int eCode = 0;
@@ -3032,7 +3048,7 @@ bool CAmDatabaseHandler::sqQuery(const std::string& query)
     return (true);
 }
 
-bool CAmDatabaseHandler::openDatabase()
+bool CAmDatabaseHandlerSQLite::openDatabase()
 {
     if (sqlite3_open_v2(mPath.c_str(), &mpDatabase, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX, NULL) == SQLITE_OK)
     {
@@ -3043,7 +3059,7 @@ bool CAmDatabaseHandler::openDatabase()
     return (false);
 }
 
-am_Error_e CAmDatabaseHandler::changeDelayMainConnection(const am_timeSync_t & delay, const am_mainConnectionID_t & connectionID)
+am_Error_e CAmDatabaseHandlerSQLite::changeDelayMainConnection(const am_timeSync_t & delay, const am_mainConnectionID_t & connectionID)
 {
     assert(connectionID!=0);
 
@@ -3078,7 +3094,7 @@ am_Error_e CAmDatabaseHandler::changeDelayMainConnection(const am_timeSync_t & d
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::enterConnectionDB(const am_Connection_s& connection, am_connectionID_t& connectionID)
+am_Error_e CAmDatabaseHandlerSQLite::enterConnectionDB(const am_Connection_s& connection, am_connectionID_t& connectionID)
 {
     assert(connection.connectionID==0);
     assert(connection.sinkID!=0);
@@ -3111,7 +3127,7 @@ am_Error_e CAmDatabaseHandler::enterConnectionDB(const am_Connection_s& connecti
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::enterSinkClassDB(const am_SinkClass_s & sinkClass, am_sinkClass_t & sinkClassID)
+am_Error_e CAmDatabaseHandlerSQLite::enterSinkClassDB(const am_SinkClass_s & sinkClass, am_sinkClass_t & sinkClassID)
 {
     assert(sinkClass.sinkClassID<DYNAMIC_ID_BOUNDARY);
     assert(!sinkClass.name.empty());
@@ -3190,7 +3206,7 @@ am_Error_e CAmDatabaseHandler::enterSinkClassDB(const am_SinkClass_s & sinkClass
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::enterSourceClassDB(am_sourceClass_t & sourceClassID, const am_SourceClass_s & sourceClass)
+am_Error_e CAmDatabaseHandlerSQLite::enterSourceClassDB(am_sourceClass_t & sourceClassID, const am_SourceClass_s & sourceClass)
 {
     assert(sourceClass.sourceClassID<DYNAMIC_ID_BOUNDARY);
     assert(!sourceClass.name.empty());
@@ -3270,7 +3286,7 @@ am_Error_e CAmDatabaseHandler::enterSourceClassDB(am_sourceClass_t & sourceClass
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::enterSystemProperties(const std::vector<am_SystemProperty_s> & listSystemProperties)
+am_Error_e CAmDatabaseHandlerSQLite::enterSystemProperties(const std::vector<am_SystemProperty_s> & listSystemProperties)
 {
     assert(!listSystemProperties.empty());
     sqlite3_stmt* query = NULL;
@@ -3309,7 +3325,7 @@ am_Error_e CAmDatabaseHandler::enterSystemProperties(const std::vector<am_System
  * @param mainConnectionID to be checked for
  * @return true if it exists
  */
-bool CAmDatabaseHandler::existMainConnection(const am_mainConnectionID_t mainConnectionID) const
+bool CAmDatabaseHandlerSQLite::existMainConnection(const am_mainConnectionID_t mainConnectionID) const
 {
     sqlite3_stmt* query = NULL;
     std::string command = "SELECT mainConnectionID FROM " + std::string(MAINCONNECTION_TABLE) + " WHERE mainConnectionID=" + i2s(mainConnectionID);
@@ -3333,7 +3349,7 @@ bool CAmDatabaseHandler::existMainConnection(const am_mainConnectionID_t mainCon
  * @param sourceID to be checked for
  * @return true if it exists
  */
-bool CAmDatabaseHandler::existSource(const am_sourceID_t sourceID) const
+bool CAmDatabaseHandlerSQLite::existSource(const am_sourceID_t sourceID) const
 {
     sqlite3_stmt* query = NULL;
     std::string command = "SELECT sourceID FROM " + std::string(SOURCE_TABLE) + " WHERE reserved=0 AND sourceID=" + i2s(sourceID);
@@ -3357,7 +3373,7 @@ bool CAmDatabaseHandler::existSource(const am_sourceID_t sourceID) const
  * @param name the name
  * @return true if it exits
  */
-bool CAmDatabaseHandler::existSourceNameOrID(const am_sourceID_t sourceID, const std::string & name) const
+bool CAmDatabaseHandlerSQLite::existSourceNameOrID(const am_sourceID_t sourceID, const std::string & name) const
 {
     sqlite3_stmt* query = NULL;
     std::string command = "SELECT sourceID FROM " + std::string(SOURCE_TABLE) + " WHERE reserved=0 AND (name=? OR sourceID=?)";
@@ -3393,7 +3409,7 @@ bool CAmDatabaseHandler::existSourceNameOrID(const am_sourceID_t sourceID, const
  * @param name the name
  * @return true if it exits
  */
-bool CAmDatabaseHandler::existSourceName(const std::string & name) const
+bool CAmDatabaseHandlerSQLite::existSourceName(const std::string & name) const
 {
     sqlite3_stmt* query = NULL;
     std::string command = "SELECT sourceID FROM " + std::string(SOURCE_TABLE) + " WHERE reserved=0 AND name=?";
@@ -3424,7 +3440,7 @@ bool CAmDatabaseHandler::existSourceName(const std::string & name) const
  * @param sinkID to be checked for
  * @return true if it exists
  */
-bool CAmDatabaseHandler::existSink(const am_sinkID_t sinkID) const
+bool CAmDatabaseHandlerSQLite::existSink(const am_sinkID_t sinkID) const
 {
     sqlite3_stmt* query = NULL;
     std::string command = "SELECT sinkID FROM " + std::string(SINK_TABLE) + " WHERE reserved=0 AND sinkID=" + i2s(sinkID);
@@ -3449,7 +3465,7 @@ bool CAmDatabaseHandler::existSink(const am_sinkID_t sinkID) const
  * @param name the name
  * @return true if it exists.
  */
-bool CAmDatabaseHandler::existSinkNameOrID(const am_sinkID_t sinkID, const std::string & name) const
+bool CAmDatabaseHandlerSQLite::existSinkNameOrID(const am_sinkID_t sinkID, const std::string & name) const
 {
     sqlite3_stmt* query = NULL;
     std::string command = "SELECT sinkID FROM " + std::string(SINK_TABLE) + " WHERE reserved=0 AND (name=? OR sinkID=?)";
@@ -3486,7 +3502,7 @@ bool CAmDatabaseHandler::existSinkNameOrID(const am_sinkID_t sinkID, const std::
  * @param name the name
  * @return true if it exists
  */
-bool CAmDatabaseHandler::existSinkName(const std::string & name) const
+bool CAmDatabaseHandlerSQLite::existSinkName(const std::string & name) const
 {
     sqlite3_stmt* query = NULL;
     std::string command = "SELECT sinkID FROM " + std::string(SINK_TABLE) + " WHERE reserved=0 AND name=?";
@@ -3517,7 +3533,7 @@ bool CAmDatabaseHandler::existSinkName(const std::string & name) const
  * @param domainID to be checked for
  * @return true if it exists
  */
-bool CAmDatabaseHandler::existDomain(const am_domainID_t domainID) const
+bool CAmDatabaseHandlerSQLite::existDomain(const am_domainID_t domainID) const
 {
     sqlite3_stmt* query = NULL;
     std::string command = "SELECT domainID FROM " + std::string(DOMAIN_TABLE) + " WHERE reserved=0 AND domainID=" + i2s(domainID);
@@ -3542,7 +3558,7 @@ bool CAmDatabaseHandler::existDomain(const am_domainID_t domainID) const
  * @param gatewayID to be checked for
  * @return true if it exists
  */
-bool CAmDatabaseHandler::existGateway(const am_gatewayID_t gatewayID) const
+bool CAmDatabaseHandlerSQLite::existGateway(const am_gatewayID_t gatewayID) const
 {
     sqlite3_stmt* query = NULL;
     std::string command = "SELECT gatewayID FROM " + std::string(GATEWAY_TABLE) + " WHERE gatewayID=" + i2s(gatewayID);
@@ -3562,7 +3578,7 @@ bool CAmDatabaseHandler::existGateway(const am_gatewayID_t gatewayID) const
     return (returnVal);
 }
 
-am_Error_e CAmDatabaseHandler::getDomainOfSource(const am_sourceID_t sourceID, am_domainID_t & domainID) const
+am_Error_e CAmDatabaseHandlerSQLite::getDomainOfSource(const am_sourceID_t sourceID, am_domainID_t & domainID) const
 {
     assert(sourceID!=0);
 
@@ -3585,7 +3601,7 @@ am_Error_e CAmDatabaseHandler::getDomainOfSource(const am_sourceID_t sourceID, a
     return (returnVal);
 }
 
-am_Error_e am::CAmDatabaseHandler::getDomainOfSink(const am_sinkID_t sinkID, am_domainID_t & domainID) const
+am_Error_e am::CAmDatabaseHandlerSQLite::getDomainOfSink(const am_sinkID_t sinkID, am_domainID_t & domainID) const
 {
     assert(sinkID!=0);
 
@@ -3614,7 +3630,7 @@ am_Error_e am::CAmDatabaseHandler::getDomainOfSink(const am_sinkID_t sinkID, am_
  * @param sinkClassID
  * @return true if it exists
  */
-bool CAmDatabaseHandler::existSinkClass(const am_sinkClass_t sinkClassID) const
+bool CAmDatabaseHandlerSQLite::existSinkClass(const am_sinkClass_t sinkClassID) const
 {
     sqlite3_stmt* query = NULL;
     std::string command = "SELECT sinkClassID FROM " + std::string(SINK_CLASS_TABLE) + " WHERE sinkClassID=" + i2s(sinkClassID);
@@ -3638,7 +3654,7 @@ bool CAmDatabaseHandler::existSinkClass(const am_sinkClass_t sinkClassID) const
  * @param sourceClassID
  * @return true if it exists
  */
-bool CAmDatabaseHandler::existSourceClass(const am_sourceClass_t sourceClassID) const
+bool CAmDatabaseHandlerSQLite::existSourceClass(const am_sourceClass_t sourceClassID) const
 {
     sqlite3_stmt* query = NULL;
     std::string command = "SELECT sourceClassID FROM " + std::string(SOURCE_CLASS_TABLE) + " WHERE sourceClassID=" + i2s(sourceClassID);
@@ -3658,7 +3674,7 @@ bool CAmDatabaseHandler::existSourceClass(const am_sourceClass_t sourceClassID) 
     return (returnVal);
 }
 
-am_Error_e CAmDatabaseHandler::changeConnectionTimingInformation(const am_connectionID_t connectionID, const am_timeSync_t delay)
+am_Error_e CAmDatabaseHandlerSQLite::changeConnectionTimingInformation(const am_connectionID_t connectionID, const am_timeSync_t delay)
 {
     assert(connectionID!=0);
 
@@ -3719,7 +3735,7 @@ am_Error_e CAmDatabaseHandler::changeConnectionTimingInformation(const am_connec
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::changeConnectionFinal(const am_connectionID_t connectionID)
+am_Error_e CAmDatabaseHandlerSQLite::changeConnectionFinal(const am_connectionID_t connectionID)
 {
     assert(connectionID!=0);
 
@@ -3741,7 +3757,7 @@ am_Error_e CAmDatabaseHandler::changeConnectionFinal(const am_connectionID_t con
     return (E_OK);
 }
 
-am_timeSync_t CAmDatabaseHandler::calculateMainConnectionDelay(const am_mainConnectionID_t mainConnectionID) const
+am_timeSync_t CAmDatabaseHandlerSQLite::calculateMainConnectionDelay(const am_mainConnectionID_t mainConnectionID) const
 {
     assert(mainConnectionID!=0);
     sqlite3_stmt* query = NULL;
@@ -3777,7 +3793,7 @@ am_timeSync_t CAmDatabaseHandler::calculateMainConnectionDelay(const am_mainConn
  * registers the Observer at the Database
  * @param iObserver pointer to the observer
  */
-void CAmDatabaseHandler::registerObserver(CAmDatabaseObserver *iObserver)
+void CAmDatabaseHandlerSQLite::registerObserver(CAmDatabaseObserver *iObserver)
 {
     assert(iObserver!=NULL);
     mpDatabaseObserver = iObserver;
@@ -3788,7 +3804,7 @@ void CAmDatabaseHandler::registerObserver(CAmDatabaseObserver *iObserver)
  * @param sourceID the sourceID
  * @return true if source is visible
  */
-bool CAmDatabaseHandler::sourceVisible(const am_sourceID_t sourceID) const
+bool CAmDatabaseHandlerSQLite::sourceVisible(const am_sourceID_t sourceID) const
 {
     assert(sourceID!=0);
     sqlite3_stmt* query = NULL;
@@ -3816,7 +3832,7 @@ bool CAmDatabaseHandler::sourceVisible(const am_sourceID_t sourceID) const
  * @param sinkID the sinkID
  * @return true if source is visible
  */
-bool CAmDatabaseHandler::sinkVisible(const am_sinkID_t sinkID) const
+bool CAmDatabaseHandlerSQLite::sinkVisible(const am_sinkID_t sinkID) const
 {
     sqlite3_stmt* query = NULL;
     std::string command = "SELECT visible FROM " + std::string(SINK_TABLE) + " WHERE reserved=0 AND sinkID=" + i2s(sinkID);
@@ -3843,7 +3859,7 @@ bool CAmDatabaseHandler::sinkVisible(const am_sinkID_t sinkID) const
  * @param connection the connection to be checked
  * @return true if connections exists
  */
-bool CAmDatabaseHandler::existConnection(const am_Connection_s & connection) const
+bool CAmDatabaseHandlerSQLite::existConnection(const am_Connection_s & connection) const
 {
     sqlite3_stmt* query = NULL;
     std::string command = "SELECT connectionID FROM " + std::string(CONNECTION_TABLE) + " WHERE sinkID=? AND sourceID=? AND connectionFormat=? AND reserved=0";
@@ -3886,7 +3902,7 @@ bool CAmDatabaseHandler::existConnection(const am_Connection_s & connection) con
  * @param connectionID
  * @return true if connection exits
  */
-bool CAmDatabaseHandler::existConnectionID(const am_connectionID_t connectionID) const
+bool CAmDatabaseHandlerSQLite::existConnectionID(const am_connectionID_t connectionID) const
 {
     sqlite3_stmt* query = NULL;
     std::string command = "SELECT connectionID FROM " + std::string(CONNECTION_TABLE) + " WHERE connectionID=? AND reserved=0";
@@ -3917,7 +3933,7 @@ bool CAmDatabaseHandler::existConnectionID(const am_connectionID_t connectionID)
  * @param crossfaderID the ID of the crossfader to be checked
  * @return true if exists
  */
-bool CAmDatabaseHandler::existcrossFader(const am_crossfaderID_t crossfaderID) const
+bool CAmDatabaseHandlerSQLite::existcrossFader(const am_crossfaderID_t crossfaderID) const
 {
     sqlite3_stmt* query = NULL;
     std::string command = "SELECT crossfaderID FROM " + std::string(CROSSFADER_TABLE) + " WHERE crossfaderID=?";
@@ -3943,7 +3959,7 @@ bool CAmDatabaseHandler::existcrossFader(const am_crossfaderID_t crossfaderID) c
     return (returnVal);
 }
 
-am_Error_e CAmDatabaseHandler::getSoureState(const am_sourceID_t sourceID, am_SourceState_e & sourceState) const
+am_Error_e CAmDatabaseHandlerSQLite::getSoureState(const am_sourceID_t sourceID, am_SourceState_e & sourceState) const
 {
     assert(sourceID!=0);
     sqlite3_stmt* query = NULL;
@@ -3963,7 +3979,7 @@ am_Error_e CAmDatabaseHandler::getSoureState(const am_sourceID_t sourceID, am_So
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::changeSourceState(const am_sourceID_t sourceID, const am_SourceState_e sourceState)
+am_Error_e CAmDatabaseHandlerSQLite::changeSourceState(const am_sourceID_t sourceID, const am_SourceState_e sourceState)
 {
     assert(sourceID!=0);
     assert(sourceState>=SS_UNKNNOWN && sourceState<=SS_MAX);
@@ -3983,7 +3999,7 @@ am_Error_e CAmDatabaseHandler::changeSourceState(const am_sourceID_t sourceID, c
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::getSinkVolume(const am_sinkID_t sinkID, am_volume_t & volume) const
+am_Error_e CAmDatabaseHandlerSQLite::getSinkVolume(const am_sinkID_t sinkID, am_volume_t & volume) const
 {
     assert(sinkID!=0);
     sqlite3_stmt* query = NULL;
@@ -4003,7 +4019,7 @@ am_Error_e CAmDatabaseHandler::getSinkVolume(const am_sinkID_t sinkID, am_volume
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::getSourceVolume(const am_sourceID_t sourceID, am_volume_t & volume) const
+am_Error_e CAmDatabaseHandlerSQLite::getSourceVolume(const am_sourceID_t sourceID, am_volume_t & volume) const
 {
     assert(sourceID!=0);
     sqlite3_stmt* query = NULL;
@@ -4023,7 +4039,7 @@ am_Error_e CAmDatabaseHandler::getSourceVolume(const am_sourceID_t sourceID, am_
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::getSinkSoundPropertyValue(const am_sinkID_t sinkID, const am_SoundPropertyType_e propertyType, int16_t & value) const
+am_Error_e CAmDatabaseHandlerSQLite::getSinkSoundPropertyValue(const am_sinkID_t sinkID, const am_SoundPropertyType_e propertyType, int16_t & value) const
 {
     assert(sinkID!=0);
     if (!existSink(sinkID))
@@ -4050,7 +4066,7 @@ am_Error_e CAmDatabaseHandler::getSinkSoundPropertyValue(const am_sinkID_t sinkI
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::getSourceSoundPropertyValue(const am_sourceID_t sourceID, const am_SoundPropertyType_e propertyType, int16_t & value) const
+am_Error_e CAmDatabaseHandlerSQLite::getSourceSoundPropertyValue(const am_sourceID_t sourceID, const am_SoundPropertyType_e propertyType, int16_t & value) const
 {
     assert(sourceID!=0);
     if (!existSource(sourceID))
@@ -4078,7 +4094,7 @@ am_Error_e CAmDatabaseHandler::getSourceSoundPropertyValue(const am_sourceID_t s
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::getDomainState(const am_domainID_t domainID, am_DomainState_e& state) const
+am_Error_e CAmDatabaseHandlerSQLite::getDomainState(const am_domainID_t domainID, am_DomainState_e& state) const
 {
     assert(domainID!=0);
     sqlite3_stmt* query = NULL;
@@ -4099,7 +4115,7 @@ am_Error_e CAmDatabaseHandler::getDomainState(const am_domainID_t domainID, am_D
 
 }
 
-am_Error_e CAmDatabaseHandler::peekDomain(const std::string & name, am_domainID_t & domainID)
+am_Error_e CAmDatabaseHandlerSQLite::peekDomain(const std::string & name, am_domainID_t & domainID)
 {
     domainID=0;
     sqlite3_stmt* query = NULL, *queryInsert = NULL;
@@ -4141,7 +4157,7 @@ am_Error_e CAmDatabaseHandler::peekDomain(const std::string & name, am_domainID_
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::peekSink(const std::string & name, am_sinkID_t & sinkID)
+am_Error_e CAmDatabaseHandlerSQLite::peekSink(const std::string & name, am_sinkID_t & sinkID)
 {
     sqlite3_stmt* query = NULL, *queryInsert = NULL;
     std::string command = "SELECT sinkID FROM " + std::string(SINK_TABLE) + " WHERE name=?";
@@ -4189,7 +4205,7 @@ am_Error_e CAmDatabaseHandler::peekSink(const std::string & name, am_sinkID_t & 
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::peekSource(const std::string & name, am_sourceID_t & sourceID)
+am_Error_e CAmDatabaseHandlerSQLite::peekSource(const std::string & name, am_sourceID_t & sourceID)
 {
     sqlite3_stmt* query = NULL, *queryInsert = NULL;
     std::string command = "SELECT sourceID FROM " + std::string(SOURCE_TABLE) + " WHERE name=?";
@@ -4237,7 +4253,7 @@ am_Error_e CAmDatabaseHandler::peekSource(const std::string & name, am_sourceID_
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::changeSinkVolume(const am_sinkID_t sinkID, const am_volume_t volume)
+am_Error_e CAmDatabaseHandlerSQLite::changeSinkVolume(const am_sinkID_t sinkID, const am_volume_t volume)
 {
     assert(sinkID!=0);
 
@@ -4264,7 +4280,7 @@ am_Error_e CAmDatabaseHandler::changeSinkVolume(const am_sinkID_t sinkID, const 
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::changeSourceVolume(const am_sourceID_t sourceID, const am_volume_t volume)
+am_Error_e CAmDatabaseHandlerSQLite::changeSourceVolume(const am_sourceID_t sourceID, const am_volume_t volume)
 {
     assert(sourceID!=0);
 
@@ -4292,7 +4308,7 @@ am_Error_e CAmDatabaseHandler::changeSourceVolume(const am_sourceID_t sourceID, 
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::changeSourceSoundPropertyDB(const am_SoundProperty_s & soundProperty, const am_sourceID_t sourceID)
+am_Error_e CAmDatabaseHandlerSQLite::changeSourceSoundPropertyDB(const am_SoundProperty_s & soundProperty, const am_sourceID_t sourceID)
 {
     assert(soundProperty.type>=SP_UNKNOWN && soundProperty.type<=SP_MAX);
     assert(sourceID!=0);
@@ -4320,7 +4336,7 @@ am_Error_e CAmDatabaseHandler::changeSourceSoundPropertyDB(const am_SoundPropert
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::changeSinkSoundPropertyDB(const am_SoundProperty_s & soundProperty, const am_sinkID_t sinkID)
+am_Error_e CAmDatabaseHandlerSQLite::changeSinkSoundPropertyDB(const am_SoundProperty_s & soundProperty, const am_sinkID_t sinkID)
 {
     assert(soundProperty.type>=SP_UNKNOWN && soundProperty.type<=SP_MAX);
     assert(sinkID!=0);
@@ -4349,7 +4365,7 @@ am_Error_e CAmDatabaseHandler::changeSinkSoundPropertyDB(const am_SoundProperty_
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::changeCrossFaderHotSink(const am_crossfaderID_t crossfaderID, const am_HotSink_e hotsink)
+am_Error_e CAmDatabaseHandlerSQLite::changeCrossFaderHotSink(const am_crossfaderID_t crossfaderID, const am_HotSink_e hotsink)
 {
     assert(crossfaderID!=0);
     assert(hotsink>=HS_UNKNOWN && hotsink>=HS_MAX);
@@ -4376,7 +4392,7 @@ am_Error_e CAmDatabaseHandler::changeCrossFaderHotSink(const am_crossfaderID_t c
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::getRoutingTree(bool onlyfree, CAmRoutingTree& tree, std::vector<CAmRoutingTreeItem*>& flatTree)
+am_Error_e CAmDatabaseHandlerSQLite::getRoutingTree(bool onlyfree, CAmRoutingTree& tree, std::vector<CAmRoutingTreeItem*>& flatTree)
 {
     sqlite3_stmt* query = NULL;
     int eCode = 0;
@@ -4435,7 +4451,7 @@ am_Error_e CAmDatabaseHandler::getRoutingTree(bool onlyfree, CAmRoutingTree& tre
     return (E_OK);
 }
 
-am_Error_e am::CAmDatabaseHandler::peekSinkClassID(const std::string & name, am_sinkClass_t & sinkClassID)
+am_Error_e am::CAmDatabaseHandlerSQLite::peekSinkClassID(const std::string & name, am_sinkClass_t & sinkClassID)
 {
     if (name.empty())
         return (E_NON_EXISTENT);
@@ -4464,7 +4480,7 @@ am_Error_e am::CAmDatabaseHandler::peekSinkClassID(const std::string & name, am_
     return (returnVal);
 }
 
-am_Error_e am::CAmDatabaseHandler::peekSourceClassID(const std::string & name, am_sourceClass_t & sourceClassID)
+am_Error_e am::CAmDatabaseHandlerSQLite::peekSourceClassID(const std::string & name, am_sourceClass_t & sourceClassID)
 {
     if (name.empty())
         return (E_NON_EXISTENT);
@@ -4494,7 +4510,7 @@ am_Error_e am::CAmDatabaseHandler::peekSourceClassID(const std::string & name, a
 }
 
 
-am_Error_e CAmDatabaseHandler::changeSourceDB(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_ConnectionFormat_e>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)
+am_Error_e CAmDatabaseHandlerSQLite::changeSourceDB(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_ConnectionFormat_e>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)
 {
     assert(sourceID!=0);
 
@@ -4631,7 +4647,7 @@ am_Error_e CAmDatabaseHandler::changeSourceDB(const am_sourceID_t sourceID, cons
 
 }
 
-am_Error_e CAmDatabaseHandler::changeSinkDB(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_ConnectionFormat_e>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)
+am_Error_e CAmDatabaseHandlerSQLite::changeSinkDB(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_ConnectionFormat_e>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)
 {
     assert(sinkID!=0);
 
@@ -4767,7 +4783,7 @@ am_Error_e CAmDatabaseHandler::changeSinkDB(const am_sinkID_t sinkID, const am_s
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::getListMainSinkNotificationConfigurations(const am_sinkID_t sinkID, std::vector<am_NotificationConfiguration_s>& listMainNotificationConfigurations)
+am_Error_e CAmDatabaseHandlerSQLite::getListMainSinkNotificationConfigurations(const am_sinkID_t sinkID, std::vector<am_NotificationConfiguration_s>& listMainNotificationConfigurations)
 {
     assert(sinkID!=0);
     if (!existSink(sinkID))
@@ -4801,7 +4817,7 @@ am_Error_e CAmDatabaseHandler::getListMainSinkNotificationConfigurations(const a
 
 }
 
-am_Error_e CAmDatabaseHandler::getListMainSourceNotificationConfigurations(const am_sourceID_t sourceID, std::vector<am_NotificationConfiguration_s>& listMainNotificationConfigurations)
+am_Error_e CAmDatabaseHandlerSQLite::getListMainSourceNotificationConfigurations(const am_sourceID_t sourceID, std::vector<am_NotificationConfiguration_s>& listMainNotificationConfigurations)
 {
     assert(sourceID!=0);
     if (!existSource(sourceID))
@@ -4834,7 +4850,7 @@ am_Error_e CAmDatabaseHandler::getListMainSourceNotificationConfigurations(const
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::changeMainSinkNotificationConfigurationDB(const am_sinkID_t sinkID, const am_NotificationConfiguration_s mainNotificationConfiguration)
+am_Error_e CAmDatabaseHandlerSQLite::changeMainSinkNotificationConfigurationDB(const am_sinkID_t sinkID, const am_NotificationConfiguration_s mainNotificationConfiguration)
 {
     assert(sinkID!=0);
 
@@ -4865,7 +4881,7 @@ am_Error_e CAmDatabaseHandler::changeMainSinkNotificationConfigurationDB(const a
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::changeMainSourceNotificationConfigurationDB(const am_sourceID_t sourceID, const am_NotificationConfiguration_s mainNotificationConfiguration)
+am_Error_e CAmDatabaseHandlerSQLite::changeMainSourceNotificationConfigurationDB(const am_sourceID_t sourceID, const am_NotificationConfiguration_s mainNotificationConfiguration)
 {
     assert(sourceID!=0);
 
@@ -4896,7 +4912,7 @@ am_Error_e CAmDatabaseHandler::changeMainSourceNotificationConfigurationDB(const
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::changeGatewayDB(const am_gatewayID_t gatewayID, const std::vector<am_ConnectionFormat_e>& listSourceConnectionFormats, const std::vector<am_ConnectionFormat_e>& listSinkConnectionFormats, const std::vector<bool>& convertionMatrix)
+am_Error_e CAmDatabaseHandlerSQLite::changeGatewayDB(const am_gatewayID_t gatewayID, const std::vector<am_ConnectionFormat_e>& listSourceConnectionFormats, const std::vector<am_ConnectionFormat_e>& listSinkConnectionFormats, const std::vector<bool>& convertionMatrix)
 {
     assert(gatewayID!=0);
 
@@ -4970,7 +4986,7 @@ am_Error_e CAmDatabaseHandler::changeGatewayDB(const am_gatewayID_t gatewayID, c
    return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::changeSinkNotificationConfigurationDB(const am_sinkID_t sinkID, const am_NotificationConfiguration_s notificationConfiguration)
+am_Error_e CAmDatabaseHandlerSQLite::changeSinkNotificationConfigurationDB(const am_sinkID_t sinkID, const am_NotificationConfiguration_s notificationConfiguration)
 {
     assert(sinkID!=0);
 
@@ -5000,7 +5016,7 @@ am_Error_e CAmDatabaseHandler::changeSinkNotificationConfigurationDB(const am_si
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandler::changeSourceNotificationConfigurationDB(const am_sourceID_t sourceID, const am_NotificationConfiguration_s notificationConfiguration)
+am_Error_e CAmDatabaseHandlerSQLite::changeSourceNotificationConfigurationDB(const am_sourceID_t sourceID, const am_NotificationConfiguration_s notificationConfiguration)
 {
     assert(sourceID!=0);
 
@@ -5030,7 +5046,7 @@ am_Error_e CAmDatabaseHandler::changeSourceNotificationConfigurationDB(const am_
     return (E_OK);
 }
 
-void CAmDatabaseHandler::createTables()
+void CAmDatabaseHandlerSQLite::createTables()
 {
     for (uint16_t i = 0; i < sizeof(databaseTables) / sizeof(databaseTables[0]); i++)
     {

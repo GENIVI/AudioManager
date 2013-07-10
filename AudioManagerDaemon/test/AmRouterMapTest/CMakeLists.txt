@@ -43,7 +43,7 @@ INCLUDE_DIRECTORIES(
 )
 
 file(GLOB ROUTINGMAP_SRCS_CXX 
-    "../../src/CAmMapHandler.cpp"
+    "../../src/CAmDatabaseHandlerMap.cpp"
     "../../src/CAmDatabaseObserver.cpp"
     "../../src/CAmCommandSender.cpp"
     "../../src/CAmRoutingSender.cpp"

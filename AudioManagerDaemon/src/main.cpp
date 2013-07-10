@@ -40,9 +40,9 @@
 #endif
 
 #ifdef WITH_DATABASE_STORAGE
-    #include "CAmDatabaseHandler.h"
+    #include "CAmDatabaseHandlerSQLite.h"
 #else
-    #include "CAmMapHandler.h"
+    #include "CAmDatabaseHandlerMap.h"
 #endif
 
 #ifdef WITH_SYSTEMD_WATCHDOG
@@ -71,7 +71,6 @@
 #include "CAmDatabaseObserver.h"
 #include "shared/CAmDltWrapper.h"
 #include "shared/CAmSocketHandler.h"
-#include "CAmDatabaseHandlerInterface.h"
 
 using namespace am;
 DLT_DECLARE_CONTEXT(AudioManager)
@@ -322,35 +321,35 @@ void mainProgram()
 #endif /*WITH_SYSTEMD_WATCHDOG*/
 
 #ifdef WITH_DATABASE_STORAGE
-    CAmDatabaseHandler * ptr_iDatabaseHandler = new CAmDatabaseHandler(databasePath);
+    CAmDatabaseHandler * pDatabaseHandler = new CAmDatabaseHandler(databasePath);
 #else
-    CAmMapHandler * ptr_iDatabaseHandler = new CAmMapHandler();
+    CAmDatabaseHandlerMap * pDatabaseHandler = new CAmDatabaseHandlerMap();
 #endif /*WITH_DATABASE_STORAGE*/
-    CAmDatabaseHandlerInterface & iDatabaseHandler = *ptr_iDatabaseHandler;
+    IAmDatabaseHandler & iDatabaseHandler = *pDatabaseHandler;
 
     CAmRoutingSender iRoutingSender(listRoutingPluginDirs);
     CAmCommandSender iCommandSender(listCommandPluginDirs);
     CAmControlSender iControlSender(controllerPlugin,&iSocketHandler);
-    CAmRouter iRouter(ptr_iDatabaseHandler, &iControlSender);
+    CAmRouter iRouter(pDatabaseHandler, &iControlSender);
 
 #ifdef WITH_DBUS_WRAPPER
-    CAmCommandReceiver iCommandReceiver(ptr_iDatabaseHandler, &iControlSender, &iSocketHandler, &iDBusWrapper);
-    CAmRoutingReceiver iRoutingReceiver(ptr_iDatabaseHandler, &iRoutingSender, &iControlSender, &iSocketHandler, &iDBusWrapper);
+    CAmCommandReceiver iCommandReceiver(pDatabaseHandler, &iControlSender, &iSocketHandler, &iDBusWrapper);
+    CAmRoutingReceiver iRoutingReceiver(pDatabaseHandler, &iRoutingSender, &iControlSender, &iSocketHandler, &iDBusWrapper);
 #ifdef WITH_NSM
-    CAmControlReceiver iControlReceiver(ptr_iDatabaseHandler,&iRoutingSender,&iCommandSender,&iSocketHandler, &iRouter, &iNodeStateCommunicator);
+    CAmControlReceiver iControlReceiver(pDatabaseHandler,&iRoutingSender,&iCommandSender,&iSocketHandler, &iRouter, &iNodeStateCommunicator);
     iNodeStateCommunicator.registerControlSender(&iControlSender);
 #else /*WITH_NSM*/
-    CAmControlReceiver iControlReceiver(ptr_iDatabaseHandler,&iRoutingSender,&iCommandSender,&iSocketHandler, &iRouter);
+    CAmControlReceiver iControlReceiver(pDatabaseHandler,&iRoutingSender,&iCommandSender,&iSocketHandler, &iRouter);
 #endif /*WITH_NSM*/
 #else /*WITH_DBUS_WRAPPER*/
-    CAmCommandReceiver iCommandReceiver(ptr_iDatabaseHandler,&iControlSender,&iSocketHandler);
-    CAmRoutingReceiver iRoutingReceiver(ptr_iDatabaseHandler,&iRoutingSender,&iControlSender,&iSocketHandler);
-    CAmControlReceiver iControlReceiver(ptr_iDatabaseHandler,&iRoutingSender,&iCommandSender,&iSocketHandler, &iRouter);
+    CAmCommandReceiver iCommandReceiver(pDatabaseHandler,&iControlSender,&iSocketHandler);
+    CAmRoutingReceiver iRoutingReceiver(pDatabaseHandler,&iRoutingSender,&iControlSender,&iSocketHandler);
+    CAmControlReceiver iControlReceiver(pDatabaseHandler,&iRoutingSender,&iCommandSender,&iSocketHandler, &iRouter);
 #endif /*WITH_DBUS_WRAPPER*/
 
 
 #ifdef WITH_TELNET
-    CAmTelnetServer iTelnetServer(&iSocketHandler, &iCommandSender, &iCommandReceiver, &iRoutingSender, &iRoutingReceiver, &iControlSender, &iControlReceiver, ptr_iDatabaseHandler, &iRouter, telnetport, maxConnections);
+    CAmTelnetServer iTelnetServer(&iSocketHandler, &iCommandSender, &iCommandReceiver, &iRoutingSender, &iRoutingReceiver, &iControlSender, &iControlReceiver, pDatabaseHandler, &iRouter, telnetport, maxConnections);
     CAmDatabaseObserver iObserver(&iCommandSender, &iRoutingSender, &iSocketHandler, &iTelnetServer);
 #else /*WITH_TELNET*/
     CAmDatabaseObserver iObserver(&iCommandSender,&iRoutingSender, &iSocketHandler);
@@ -372,10 +371,10 @@ void mainProgram()
 
     //start the mainloop here....
     iSocketHandler.start_listenting();
-    if(ptr_iDatabaseHandler)
+    if(pDatabaseHandler)
     {
-		delete ptr_iDatabaseHandler;
-		ptr_iDatabaseHandler = NULL;
+		delete pDatabaseHandler;
+		pDatabaseHandler = NULL;
     }
 }
 
