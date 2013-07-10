@@ -53,7 +53,8 @@ typedef std::map<am_gatewayID_t, std::vector<bool> > ListConnectionFormat; //!< 
 class IAmDatabaseHandler
 {
 public:
-
+	IAmDatabaseHandler () {};
+	virtual ~IAmDatabaseHandler () {};
     virtual am_Error_e enterDomainDB(const am_Domain_s& domainData, am_domainID_t& domainID) = 0;
     virtual am_Error_e enterMainConnectionDB(const am_MainConnection_s& mainConnectionData, am_mainConnectionID_t& connectionID) = 0;
     virtual am_Error_e enterSinkDB(const am_Sink_s& sinkData, am_sinkID_t& sinkID) = 0;

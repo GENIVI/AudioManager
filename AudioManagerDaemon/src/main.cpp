@@ -321,11 +321,11 @@ void mainProgram()
 #endif /*WITH_SYSTEMD_WATCHDOG*/
 
 #ifdef WITH_DATABASE_STORAGE
-    CAmDatabaseHandler * pDatabaseHandler = new CAmDatabaseHandler(databasePath);
+    CAmDatabaseHandlerSQLite iDatabaseHandler(databasePath);
 #else
-    CAmDatabaseHandlerMap * pDatabaseHandler = new CAmDatabaseHandlerMap();
+    CAmDatabaseHandlerMap iDatabaseHandler;
 #endif /*WITH_DATABASE_STORAGE*/
-    IAmDatabaseHandler & iDatabaseHandler = *pDatabaseHandler;
+    IAmDatabaseHandler *pDatabaseHandler = dynamic_cast<IAmDatabaseHandler*>( &iDatabaseHandler );
 
     CAmRoutingSender iRoutingSender(listRoutingPluginDirs);
     CAmCommandSender iCommandSender(listCommandPluginDirs);
@@ -371,11 +371,6 @@ void mainProgram()
 
     //start the mainloop here....
     iSocketHandler.start_listenting();
-    if(pDatabaseHandler)
-    {
-		delete pDatabaseHandler;
-		pDatabaseHandler = NULL;
-    }
 }
 
 /**
