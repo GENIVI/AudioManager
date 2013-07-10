@@ -14,7 +14,7 @@
  *
 * \author Aleksandar Donchev, aleksander.donchev@partner.bmw.de BMW 2013
  *
- * \file CAmDatabaseHandlerInterface.h
+ * \file IAmDatabaseHandler.h
  * For further information see http://www.genivi.org/.
  *
  */
@@ -52,11 +52,7 @@ typedef std::map<am_gatewayID_t, std::vector<bool> > ListConnectionFormat; //!< 
 
 class IAmDatabaseHandler
 {
-protected:
-    virtual am_timeSync_t calculateMainConnectionDelay(const am_mainConnectionID_t mainConnectionID) const = 0; //!< calculates a new main connection delay
 public:
-//    IAmDatabaseHandler();
-//    virtual ~IAmDatabaseHandler();
 
     virtual am_Error_e enterDomainDB(const am_Domain_s& domainData, am_domainID_t& domainID) = 0;
     virtual am_Error_e enterMainConnectionDB(const am_MainConnection_s& mainConnectionData, am_mainConnectionID_t& connectionID) = 0;
@@ -170,6 +166,7 @@ public:
     virtual bool sourceVisible(const am_sourceID_t sourceID) const = 0;
     virtual bool sinkVisible(const am_sinkID_t sinkID) const = 0;
 
+    virtual am_timeSync_t calculateMainConnectionDelay(const am_mainConnectionID_t mainConnectionID) const = 0; //!< calculates a new main connection delay
     virtual void dump( std::ostream & output) = 0 ;
 };
 
