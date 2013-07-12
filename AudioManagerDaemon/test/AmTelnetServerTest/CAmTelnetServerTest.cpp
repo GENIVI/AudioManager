@@ -55,7 +55,7 @@ CAmEnvironment::CAmEnvironment()
 , mlistCommandPluginDirs()
 , mSocketHandler()
 #ifdef WITH_DATABASE_STORAGE
-, mpDatabasehandler(std::string(":memory:"))
+, mDatabasehandler(std::string(":memory:"))
 #else
 , mDatabasehandler()
 #endif

@@ -34,12 +34,10 @@
 namespace am
 {
 #ifndef AM_MAP_CAPACITY
-	#ifdef WITH_DATABASE_STORAGE
-		#define AM_MAP_CAPACITY @AM_MAP_CAPACITY@
-	#else
-		#define AM_MAP_CAPACITY 0
-	#endif
+	#define AM_MAP_CAPACITY 0
 #endif
+
+
 #define AM_MAP std::unordered_map
 
 //todo: check the enum values before entering & changing in the database.

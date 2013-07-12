@@ -28,11 +28,12 @@
 #include "CAmCommandSender.h"
 #include "CAmControlSender.h"
 #include "CAmRouter.h"
-#include "IAmDatabaseHandler.h"
+#include "config.h"
+
 #ifdef WITH_DATABASE_STORAGE
   #include "CAmDatabaseHandlerSQLite.h"
 #else
-	#include "CAmDatabaseHandlerMap.h"
+  #include "CAmDatabaseHandlerMap.h"
 #endif
 
 namespace am
