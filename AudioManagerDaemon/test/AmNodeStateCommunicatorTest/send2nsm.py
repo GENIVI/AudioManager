@@ -53,7 +53,7 @@ def LifecycleRequest(Request,RequestID):
 	bus = dbus.SessionBus()
 	remote_object = bus.get_object('org.genivi.NodeStateManager','/org/genivi/NodeStateManager')
 	iface = dbus.Interface(remote_object, 'org.genivi.NodeStateManager.Control')
-	iface.sendLifeCycleRequest(Request,RequestID)
+	iface.sendLifeCycleRequest(dbus.UInt32(Request),dbus.UInt32(RequestID))
 
 command=sys.argv[1]
 if command=="nodeState":

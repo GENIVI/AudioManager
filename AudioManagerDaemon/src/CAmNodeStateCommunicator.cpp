@@ -27,6 +27,7 @@
 #include "CAmControlSender.h"
 #include "shared/CAmDltWrapper.h"
 #include "config.h"
+#include <sstream>
 
 namespace am
 {
@@ -167,13 +168,13 @@ NsmErrorStatus_e CAmNodeStateCommunicator::nsmGetSessionState(const std::string&
 
     if (!dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &sessionName))
     {
-        logError( "CAmNodeStateCommunicator::nsmRegisterShutdownClient no more memory");
+        logError( "CAmNodeStateCommunicator::nsmGetSessionState no more memory");
         return (NsmErrorStatus_Dbus);
     }
 
     if (!dbus_message_iter_append_basic(&iter, DBUS_TYPE_INT32, &seatID))
     {
-        logError( "CAmNodeStateCommunicator::nsmRegisterShutdownClient no more memory");
+        logError( "CAmNodeStateCommunicator::nsmGetSessionState no more memory");
         return (NsmErrorStatus_Dbus);
     }
 
@@ -242,7 +243,7 @@ NsmErrorStatus_e CAmNodeStateCommunicator::nsmRegisterShutdownClient(const uint3
     DBusError error;
     DBusMessageIter iter;
     dbus_error_init(&error);
-    int16_t returnError(0);
+    int32_t returnError(0);
     std::string path = std::string(DBUS_SERVICE_OBJECT_PATH) + "/LifeCycleConsumer";
     const char* charPath = path.c_str();
     const char* service =DBUS_SERVICE_PREFIX;
@@ -309,7 +310,7 @@ NsmErrorStatus_e CAmNodeStateCommunicator::nsmUnRegisterShutdownClient(const uin
     DBusError error;
     DBusMessageIter iter;
     dbus_error_init(&error);
-    int16_t returnError(0);
+    int32_t returnError(0);
     std::string path = std::string(DBUS_SERVICE_OBJECT_PATH) + "/LifeCycleConsumer";
     const char* charPath = path.c_str();
     const char* service =DBUS_SERVICE_PREFIX;
@@ -317,26 +318,26 @@ NsmErrorStatus_e CAmNodeStateCommunicator::nsmUnRegisterShutdownClient(const uin
 
     if (!message)
     {
-        logError( "CAmNodeStateCommunicator::nsmRegisterShutdownClient dbus error:", error.message);
+        logError( "CAmNodeStateCommunicator::nsmUnRegisterShutdownClient dbus error:", error.message);
         return (NsmErrorStatus_Dbus);
     }
     dbus_message_iter_init_append(message, &iter);
 
     if (!dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &service))
     {
-        logError( "CAmNodeStateCommunicator::nsmRegisterShutdownClient no more memory");
+        logError( "CAmNodeStateCommunicator::nsmUnRegisterShutdownClient no more memory");
         return (NsmErrorStatus_Dbus);
     }
 
     if (!dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &charPath))
     {
-        logError( "CAmNodeStateCommunicator::nsmRegisterShutdownClient no more memory");
+        logError( "CAmNodeStateCommunicator::nsmUnRegisterShutdownClient no more memory");
         return (NsmErrorStatus_Dbus);
     }
 
     if (!dbus_message_iter_append_basic(&iter, DBUS_TYPE_UINT32, &shutdownMode))
     {
-        logError( "CAmNodeStateCommunicator::nsmRegisterShutdownClient no more memory");
+        logError( "CAmNodeStateCommunicator::nsmUnRegisterShutdownClient no more memory");
         return (NsmErrorStatus_Dbus);
     }
 
@@ -345,13 +346,13 @@ NsmErrorStatus_e CAmNodeStateCommunicator::nsmUnRegisterShutdownClient(const uin
 
     if (!reply)
     {
-        logError( "CAmNodeStateCommunicator::nsmRegisterShutdownClient failed, dbus error", error.message);
+        logError( "CAmNodeStateCommunicator::nsmUnRegisterShutdownClient failed, dbus error", error.message);
         return (NsmErrorStatus_Dbus);
     }
 
     if(!dbus_message_get_args(reply, &error, DBUS_TYPE_INT32, &returnError, DBUS_TYPE_INVALID))
     {
-        logError( "CAmNodeStateCommunicator::nsmRegisterShutdownClient failed, dbus error", error.message);
+        logError( "CAmNodeStateCommunicator::nsmUnRegisterShutdownClient failed, dbus error", error.message);
         return (NsmErrorStatus_Dbus);
     }
     dbus_message_unref(reply);
@@ -409,7 +410,7 @@ NsmErrorStatus_e CAmNodeStateCommunicator::nsmSendLifecycleRequestComplete(const
     DBusError error;
     DBusMessageIter iter;
     dbus_error_init(&error);
-    int16_t returnError(0);
+    int32_t returnError(0);
     DBusMessage * message = dbus_message_new_method_call(NSM_BUS_INTERFACE, NSM_PATH, NSM_INTERFACE, "LifecycleRequestComplete");
 
     if (!message)
@@ -473,7 +474,7 @@ DBusHandlerResult CAmNodeStateCommunicator::receiveCallbackDelegate(DBusConnecti
     else
     {
         DBusMessage * returnMessage;
-        dbus_uint16_t Request(0),RequestId(0);
+        dbus_uint32_t Request(0),RequestId(0);
         //no introspection - ok. So we are only interested in out LifecycleRequest message...
         std::string method(dbus_message_get_member(msg));
         if (method=="LifecycleRequest")
@@ -490,7 +491,7 @@ DBusHandlerResult CAmNodeStateCommunicator::receiveCallbackDelegate(DBusConnecti
             if (dbus_message_iter_get_arg_type(&iter)!=DBUS_TYPE_UINT32)
             {
                 logError("CAmNodeStateCommunicator::receiveCallbackDelegate DBus Message has invalid arguments!");
-                returnMessage = dbus_message_new_error(msg,DBUS_ERROR_INVALID_ARGS,"DBus argument is no uint16_t!");
+                returnMessage = dbus_message_new_error(msg,DBUS_ERROR_INVALID_ARGS,"DBus argument is not uint32_t!");
                 sendMessage(returnMessage,msg);
                 return (DBUS_HANDLER_RESULT_HANDLED);
             }
@@ -501,7 +502,7 @@ DBusHandlerResult CAmNodeStateCommunicator::receiveCallbackDelegate(DBusConnecti
             if (dbus_message_iter_get_arg_type(&iter)!=DBUS_TYPE_UINT32)
             {
                 logError("CAmNodeStateCommunicator::receiveCallbackDelegate DBus Message has invalid arguments!");
-                returnMessage = dbus_message_new_error(msg,DBUS_ERROR_INVALID_ARGS,"DBus argument is no uint16_t!");
+                returnMessage = dbus_message_new_error(msg,DBUS_ERROR_INVALID_ARGS,"DBus argument is not uint32_t!");
                 sendMessage(returnMessage,msg);
                 return (DBUS_HANDLER_RESULT_HANDLED);
             }
@@ -552,7 +553,9 @@ void CAmNodeStateCommunicator::sendIntrospection(DBusConnection* conn, DBusMessa
        logError("IAmCommandReceiverShadow::sendIntrospection could not load xml file ",fullpath);
        throw std::runtime_error("IAmCommandReceiverShadow::sendIntrospection Could not load introspecton XML");
     }
-    std::string introspect((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+    std::stringstream buffer;
+    buffer << in.rdbuf();
+    std::string introspect = buffer.str();
     const char* string = introspect.c_str();
 
     // add the arguments to the reply
