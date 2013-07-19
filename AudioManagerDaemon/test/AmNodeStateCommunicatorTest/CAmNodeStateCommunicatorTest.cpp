@@ -228,7 +228,8 @@ void CAmEnvironment::SetUp()
     nsmController.registerControlSender(&pControlSender);
     //create the mainloop thread
     pthread_create(&pMainLoopThread, NULL, mainLoop, (void*)&iSocketHandler);
-    sleep(1);
+    printf("[----------] Waiting for interface to be ready....\r\n");
+    sleep(2);
 }
 
 void CAmEnvironment::TearDown()
