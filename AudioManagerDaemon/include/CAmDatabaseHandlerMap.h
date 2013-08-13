@@ -269,7 +269,7 @@ public:
      * The following structure groups the map objects needed for the implementation.
      * Every map object is coupled with an identifier, which hold the current value.
      * DYNAMIC_ID_BOUNDARY is used as initial value everywhere a dynamic id is considered .
-     * The ID's can be increased through the method increaseID(...), which follows the AudioManager logic.
+     * The IDs can be increased through the method increaseID(...), which follows the AudioManager logic.
      * For more information about the static and dynamic IDs, please see the documentation.
      */
     typedef struct CAmMappedData
@@ -310,7 +310,7 @@ public:
     	/**
     	 * \brief Increases a given map ID.
     	 *
-    	 * A common method implementing the logic for static and dynamic IDs.
+    	 * A common method implementing the logic for static and dynamic IDs except main connection ID.
     	 *
     	 * @param resultID Pointer to an output variable.
     	 * @param sourceID Pointer to ID, which will be manipulated.
@@ -321,6 +321,13 @@ public:
     	 */
     	bool increaseID(int16_t * resultID, int16_t * sourceID,
 						int16_t const desiredStaticID, int16_t const preferedStaticIDBoundary );
+      	/**
+		 * \brief Increases the main connection ID.
+		 *
+		 * @param resultID Pointer to an output variable.
+		 * @return TRUE on successfully changed ID.
+		 */
+    	bool increaseMainConnectionID(int16_t * resultID);
 
         template <class TPrintObject> static void print (const TPrintObject & t, std::ostream & output)
         {

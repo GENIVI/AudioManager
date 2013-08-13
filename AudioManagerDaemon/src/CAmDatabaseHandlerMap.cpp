@@ -345,15 +345,17 @@ void CAmDatabaseHandlerMap::CAmCrossfader::getDescription (std::string & outStri
 	outString = fmt.str();
 }
 
-bool CAmDatabaseHandlerMap::CAmMappedData::increaseID(int16_t * resultID, int16_t * sourceID,
-													int16_t const desiredStaticID = 0, int16_t const preferedStaticIDBoundary = DYNAMIC_ID_BOUNDARY)
+bool CAmDatabaseHandlerMap::CAmMappedData::increaseID(int16_t * resultID,
+															 int16_t * sourceID,
+															 int16_t const desiredStaticID = 0,
+															 int16_t const preferedStaticIDBoundary = DYNAMIC_ID_BOUNDARY)
 {
 	if( desiredStaticID > 0 && desiredStaticID < preferedStaticIDBoundary )
 	{
 		*resultID = desiredStaticID;
 		return true;
 	}
-	else if( *sourceID < mDefaultIDLimit-1 ) //The last used value is 'limit' - 1. e.g. SHRT_MAX - 1, SHRT_MAX is reserved.
+	else if( *sourceID < mDefaultIDLimit ) //The last used value is 'limit' - 1. e.g. SHRT_MAX - 1, SHRT_MAX is reserved.
 	{
 		*resultID = (*sourceID)++;
 		return true;
@@ -365,18 +367,38 @@ bool CAmDatabaseHandlerMap::CAmMappedData::increaseID(int16_t * resultID, int16_
 	}
  }
 
-/**
- * template to converts T to std::string
- * @param x T
- * @return string
- */
-template<typename T>
-inline std::string i2s(T const& x)
+bool CAmDatabaseHandlerMap::CAmMappedData::increaseMainConnectionID(int16_t * resultID)
 {
-    std::ostringstream o;
-    o << x;
-    return (o.str());
+	am_mainConnectionID_t nextID;
+	am_mainConnectionID_t const lastID = mCurrentMainConnectionID;
+	if( mCurrentMainConnectionID < mDefaultIDLimit )
+		nextID = mCurrentMainConnectionID++;
+	else
+		nextID = mCurrentMainConnectionID = 1;
+
+	bool notFreeIDs = false;
+	while( existsObjectWithKeyInMap(nextID, mMainConnectionMap) )
+	{
+		if( mCurrentMainConnectionID < mDefaultIDLimit )
+			nextID = mCurrentMainConnectionID++;
+		else
+			nextID = mCurrentMainConnectionID = 1;
+
+		if( mCurrentMainConnectionID == lastID )
+		{
+			notFreeIDs = true;
+			break;
+		}
+	}
+	if(notFreeIDs)
+	{
+		*resultID = -1;
+		return false;
+	}
+	*resultID = nextID;
+	return true;
 }
+
 
 CAmDatabaseHandlerMap::CAmDatabaseHandlerMap():	mFirstStaticSink(true), //
 														mFirstStaticSource(true), //
@@ -470,7 +492,7 @@ am_Error_e CAmDatabaseHandlerMap::enterMainConnectionDB(const am_MainConnection_
 
     int16_t delay = 0;
     int16_t nextID = 0;
-	if(mMappedData.increaseID(&nextID, &mMappedData.mCurrentMainConnectionID))
+	if(mMappedData.increaseMainConnectionID(&nextID))
 	{
 		connectionID = nextID;
 		mMappedData.mMainConnectionMap[nextID] = mainConnectionData;
