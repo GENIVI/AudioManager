@@ -177,7 +177,8 @@ public:
     void registerObserver(CAmDatabaseObserver *iObserver);
     bool sourceVisible(const am_sourceID_t sourceID) const;
     bool sinkVisible(const am_sinkID_t sinkID) const;
-    void dump( std::ostream & output) { output << __FUNCTION__ << " not implemented!"; };
+    //todo: Implement dump for SQLite database handler
+    void dump( std::ostream & output) const { output << __FUNCTION__ << " not implemented!"; };
 };
 
 }

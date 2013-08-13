@@ -1,10 +1,3 @@
-/*
- * CAmLog.h
- *
- *  Created on: Jul 2, 2013
- *      Author: genius
- */
-
 /**
  * Copyright (C) 2012, BMW AG
  *

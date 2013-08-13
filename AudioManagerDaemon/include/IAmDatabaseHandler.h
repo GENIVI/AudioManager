@@ -35,7 +35,9 @@ class CAmDatabaseObserver;
 class CAmRoutingTree;
 class CAmRoutingTreeItem;
 
-#define DYNAMIC_ID_BOUNDARY 100 //!< the value below is reserved for staticIDs, the value above will be assigned to dynamically registered items
+
+enum { DYNAMIC_ID_BOUNDARY = 100 }; //!< the value below is reserved for staticIDs, the value above will be assigned to dynamically registered items
+
 //todo: check the enum values before entering & changing in the database.
 //todo: change asserts for dynamic boundary checks into failure answers.#
 //todo: check autoincrement boundary and set to 16bit limits
@@ -168,8 +170,10 @@ public:
     virtual bool sinkVisible(const am_sinkID_t sinkID) const = 0;
 
     virtual am_timeSync_t calculateMainConnectionDelay(const am_mainConnectionID_t mainConnectionID) const = 0; //!< calculates a new main connection delay
-    virtual void dump( std::ostream & output) = 0 ;
+    virtual void dump( std::ostream & output) const = 0 ;
+
 };
+
 
 }
 
