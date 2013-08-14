@@ -29,6 +29,7 @@
 #include <algorithm>
 #include <features.h>
 #include <csignal>
+#include <unistd.h>
 #include "shared/CAmDltWrapper.h"
 
 namespace am
