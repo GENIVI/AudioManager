@@ -299,9 +299,9 @@ std::vector<am_EarlyData_s> CAmRoutingDbusMessageHandler::getEarlyData()
         am_EarlyData_s earlyData;
 
         //first the volume array
+        dbus_message_iter_recurse(&mDBusMessageIter, &arrayIter);
         do
         {
-            dbus_message_iter_recurse(&mDBusMessageIter, &arrayIter);
             dbus_message_iter_recurse(&arrayIter, &structIter);
             earlyData.type = static_cast<am_EarlyDataType_e>(getUInt(structIter, true));
             if (earlyData.type==ED_SINK_VOLUME)
@@ -314,9 +314,9 @@ std::vector<am_EarlyData_s> CAmRoutingDbusMessageHandler::getEarlyData()
         dbus_message_iter_next(&mDBusMessageIter);
 
         //then the soundproperty array
+        dbus_message_iter_recurse(&mDBusMessageIter, &arrayIter);
         do
         {
-            dbus_message_iter_recurse(&mDBusMessageIter, &arrayIter);
             dbus_message_iter_recurse(&arrayIter, &structIter);
             earlyData.type = static_cast<am_EarlyDataType_e>(getUInt(structIter, true));
             if (earlyData.type==ED_SINK_PROPERTY)
@@ -549,23 +549,23 @@ am_Gateway_s CAmRoutingDbusMessageHandler::getGatewayData()
 	gatewayData.domainSinkID = static_cast<am_domainID_t>(getUInt(gatewayDataIter, true));
 	gatewayData.domainSourceID = static_cast<am_domainID_t>(getUInt(gatewayDataIter, true));
 	gatewayData.controlDomainID = static_cast<am_domainID_t>(getUInt(gatewayDataIter, true));
+    dbus_message_iter_recurse(&gatewayDataIter, &arrayIter);
 	do
 	{
-	    dbus_message_iter_recurse(&gatewayDataIter, &arrayIter);
 	    connectionFormat = static_cast<am_ConnectionFormat_e>(getInt32(arrayIter, false));
 	    gatewayData.listSourceFormats.push_back(connectionFormat);
 	} while (dbus_message_iter_next(&arrayIter));
 	dbus_message_iter_next(&gatewayDataIter);
+    dbus_message_iter_recurse(&gatewayDataIter, &arrayIter);
 	do
 	{
-	    dbus_message_iter_recurse(&gatewayDataIter, &arrayIter);
 	    connectionFormat = static_cast<am_ConnectionFormat_e>(getInt32(arrayIter, false));
 	    gatewayData.listSinkFormats.push_back(connectionFormat);
 	} while (dbus_message_iter_next(&arrayIter));
 	dbus_message_iter_next(&gatewayDataIter);
+    dbus_message_iter_recurse(&gatewayDataIter, &arrayIter);
 	do
 	{
-	    dbus_message_iter_recurse(&gatewayDataIter, &arrayIter);
 	    convertion = getBool(arrayIter, false);
 	    gatewayData.convertionMatrix.push_back(convertion);
 	} while (dbus_message_iter_next(&arrayIter));
@@ -958,9 +958,9 @@ std::vector<am_ConnectionFormat_e> CAmRoutingDbusMessageHandler::getListconnecti
        }
    else
    {
+       dbus_message_iter_recurse(&mDBusMessageIter, &arrayIter);
        do
        {
-           dbus_message_iter_recurse(&mDBusMessageIter, &arrayIter);
            am_ConnectionFormat_e connectionformat(static_cast<am_ConnectionFormat_e>(getUInt(arrayIter, false)));
            listConnectionFormats.push_back(connectionformat);
        } while (dbus_message_iter_next(&arrayIter));
@@ -982,9 +982,9 @@ std::vector<bool> CAmRoutingDbusMessageHandler::getListBool()
        }
    else
    {
+       dbus_message_iter_recurse(&mDBusMessageIter, &arrayIter);
        do
        {
-           dbus_message_iter_recurse(&mDBusMessageIter, &arrayIter);
            bool myBool(static_cast<bool>(getBool(arrayIter, false)));
            listBools.push_back(myBool);
        } while (dbus_message_iter_next(&arrayIter));
@@ -1020,9 +1020,9 @@ std::vector<am_SoundProperty_s> CAmRoutingDbusMessageHandler::getListSoundProper
        }
    else
    {
+       dbus_message_iter_recurse(&mDBusMessageIter, &arrayIter);
        do
        {
-           dbus_message_iter_recurse(&mDBusMessageIter, &arrayIter);
            dbus_message_iter_recurse(&arrayIter, &structIter);
            soundProperty.type = static_cast<am_SoundPropertyType_e>(getInt(structIter, true));
            soundProperty.value = static_cast<int16_t>(getInt(structIter, false));
@@ -1047,9 +1047,9 @@ std::vector<am_MainSoundProperty_s> CAmRoutingDbusMessageHandler::getListMainSou
        }
    else
    {
+       dbus_message_iter_recurse(&mDBusMessageIter, &arrayIter);
        do
        {
-           dbus_message_iter_recurse(&mDBusMessageIter, &arrayIter);
            dbus_message_iter_recurse(&arrayIter, &structIter);
            soundProperty.type = static_cast<am_MainSoundPropertyType_e>(getInt(structIter, true));
            soundProperty.value = static_cast<int16_t>(getInt(structIter, false));
