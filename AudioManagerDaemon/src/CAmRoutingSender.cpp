@@ -375,7 +375,7 @@ am_Error_e CAmRoutingSender::addDomainLookup(const am_Domain_s& domainData)
             return (E_OK);
         }
     }
-
+    logError(__PRETTY_FUNCTION__," Could not find busname for bus",domainData.busname);
     return (E_UNKNOWN);
 }
 
@@ -393,7 +393,7 @@ am_Error_e CAmRoutingSender::addSourceLookup(const am_Source_s& sourceData)
         mMapSourceInterface.insert(std::make_pair(sourceData.sourceID, iter->second));
         return (E_OK);
     }
-
+    logError(__PRETTY_FUNCTION__," Could not find domainInterface for domainID",sourceData.domainID);
     return (E_UNKNOWN);
 }
 
@@ -411,7 +411,7 @@ am_Error_e CAmRoutingSender::addSinkLookup(const am_Sink_s& sinkData)
         mMapSinkInterface.insert(std::make_pair(sinkData.sinkID, iter->second));
         return (E_OK);
     }
-
+    logError(__PRETTY_FUNCTION__,"Could not find domainInterface for domainID",sinkData.domainID);
     return (E_UNKNOWN);
 }
 
@@ -429,7 +429,7 @@ am_Error_e CAmRoutingSender::addCrossfaderLookup(const am_Crossfader_s& crossfad
         mMapSourceInterface.insert(std::make_pair(crossfaderData.crossfaderID, iter->second));
         return (E_OK);
     }
-
+    logError(__PRETTY_FUNCTION__," Could not find sourceInterface for source",crossfaderData.sourceID);
     return (E_UNKNOWN);
 }
 

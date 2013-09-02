@@ -438,6 +438,11 @@ am_Error_e CAmDatabaseHandlerMap::enterDomainDB(const am_Domain_s & domainData, 
     	mMappedData.mDomainMap[nextID] = domainData;
     	mMappedData.mDomainMap[nextID].domainID = nextID;
     	mMappedData.mDomainMap[nextID].reserved = 0;
+
+    	logInfo("DatabaseHandler::enterDomainDB entered reserved domain with name=", domainData.name, "busname=", domainData.busname, "nodename=", domainData.nodename, "reserved ID:", domainID);
+
+        if (mpDatabaseObserver)
+            mpDatabaseObserver->newDomain(mMappedData.mDomainMap[nextID]);
     	return (E_OK);
     }
     else
@@ -597,9 +602,10 @@ am_Error_e CAmDatabaseHandlerMap::enterSinkDB(const am_Sink_s & sinkData, am_sin
     sinkID = temp_SinkID;
 
     am_Sink_s sink = mMappedData.mSinkMap[temp_SinkID];
-    logInfo("DatabaseHandler::enterSinkDB entered new sink with name", sink.name, "domainID:", sink.domainID, "classID:", sink.sinkClassID, "volume:", sink.volume, "assigned ID:", sinkID);
+    logInfo("DatabaseHandler::enterSinkDB entered new sink with name", sink.name, "domainID:", sink.domainID, "classID:", sink.sinkClassID, "volume:", sink.volume, "assigned ID:", sink.sinkID);
 
     if (mpDatabaseObserver != NULL)
+        sink.sinkID=sinkID;
         mpDatabaseObserver->newSink(sink);
     return (E_OK);
 }
