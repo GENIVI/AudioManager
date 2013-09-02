@@ -21,8 +21,12 @@
 
 #include "CAmCommandSender.h"
 #include <dirent.h>
+#include <errno.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <sstream>
 #include <string>
+#include <cstring>
 #include "CAmCommandReceiver.h"
 #include "TAmPluginTemplate.h"
 #include "shared/CAmDltWrapper.h"
@@ -72,9 +76,22 @@ CAmCommandSender::CAmCommandSender(const std::vector<std::string>& listOfPluginD
         {
             unsigned char entryType = itemInDirectory->d_type;
             std::string entryName = itemInDirectory->d_name;
+            std::string fullName = *dirIter + "/" + entryName;
 
             bool regularFile = (entryType == DT_REG || entryType == DT_LNK);
             bool sharedLibExtension = ("so" == entryName.substr(entryName.find_last_of(".") + 1));
+
+            // Handle cases where readdir() could not determine the file type
+	        if (entryType == DT_UNKNOWN) {
+	            struct stat buf;
+
+	            if (stat(fullName.c_str(), &buf)) {
+	                logInfo(__PRETTY_FUNCTION__,"Failed to stat file: ", entryName, errno);
+	                continue;
+	            }
+
+	            regularFile = S_ISREG(buf.st_mode);
+	        }
 
             if (regularFile && sharedLibExtension)
             {
