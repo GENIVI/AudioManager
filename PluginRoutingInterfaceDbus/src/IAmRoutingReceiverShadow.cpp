@@ -186,6 +186,7 @@ void IAmRoutingReceiverShadowDbus::ackDisconnect(DBusConnection* conn, DBusMessa
     myhandle.handle = handle;
     mRoutingReceiveInterface->ackDisconnect(myhandle, connectionID, error);
     mpRoutingSenderDbus->removeHandle(handle);
+    //todo: Connection removal ???
     mDBUSMessageHandler.initReply(msg);
     mDBUSMessageHandler.sendMessage();
 }
@@ -252,7 +253,7 @@ void IAmRoutingReceiverShadowDbus::ackSourceVolumeTick(DBusConnection* conn, DBu
     am_volume_t volume(mDBUSMessageHandler.getInt());
     log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::ackSourceVolumeTick called, handle", handle, "sourceID", sourceID, "volume", volume);
     am_Handle_s myhandle;
-    myhandle.handleType = H_SETSINKVOLUME;
+    myhandle.handleType = H_SETSOURCEVOLUME;
     myhandle.handle = handle;
     mRoutingReceiveInterface->ackSourceVolumeTick(myhandle, sourceID, volume);
     mDBUSMessageHandler.initReply(msg);

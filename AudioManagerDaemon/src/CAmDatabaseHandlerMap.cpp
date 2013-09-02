@@ -2418,7 +2418,7 @@ am_Error_e CAmDatabaseHandlerMap::getRoutingTree(bool onlyfree, CAmRoutingTree& 
 			{
 				if(!onlyfree || std::find_if(mMappedData.mConnectionMap.begin(),
 											 mMappedData.mConnectionMap.end(),
-											 [refGateway](const std::pair<am_connectionID_t, am_Connection_Database_s>& refConnection)
+											 [&](const std::pair<am_connectionID_t, am_Connection_Database_s>& refConnection)
 											 {
 												return (refConnection.second.sinkID == refGateway.second.sinkID ||
 														refConnection.second.sourceID ==refGateway.second.sourceID);

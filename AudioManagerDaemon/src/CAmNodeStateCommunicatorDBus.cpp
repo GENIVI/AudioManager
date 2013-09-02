@@ -14,29 +14,28 @@
  *
  * \author Christian Linke, christian.linke@bmw.de BMW 2012
  *
- * \file CAmNodeStateCommunicator.cpp
+ * \file CAmNodeStateCommunicatorDBus.cpp
  * For further information see http://www.genivi.org/.
  *
  */
 
-#include "CAmNodeStateCommunicator.h"
+#include "CAmNodeStateCommunicatorDBus.h"
 #include <assert.h>
 #include <string>
 #include <fstream>
+#include <sstream>
 #include <stdexcept>
 #include "CAmControlSender.h"
 #include "shared/CAmDltWrapper.h"
 #include "config.h"
-#include <sstream>
 
 namespace am
 {
 
 static DBusObjectPathVTable gObjectPathVTable;
 
-CAmNodeStateCommunicator::CAmNodeStateCommunicator(CAmDbusWrapper* iDbusWrapper) :
+CAmNodeStateCommunicatorDBus::CAmNodeStateCommunicatorDBus(CAmDbusWrapper* iDbusWrapper) : CAmNodeStateCommunicator(),
         mpDbusWrapper(iDbusWrapper), //
-        mpControlSender(NULL), //
         mpDBusConnection(NULL)
 {
     assert(mpDbusWrapper);
@@ -48,12 +47,12 @@ CAmNodeStateCommunicator::CAmNodeStateCommunicator(CAmDbusWrapper* iDbusWrapper)
 
     //register the path and the callback for receiving messages
     std::string path("LifeCycleConsumer");
-    gObjectPathVTable.message_function=CAmNodeStateCommunicator::receiveCallback;
+    gObjectPathVTable.message_function=CAmNodeStateCommunicatorDBus::receiveCallback;
     mpDbusWrapper->registerCallback(&gObjectPathVTable, path, this);
 
     //now we need to make sure we catch the signals from the NSM:
     dbus_bus_add_match(mpDBusConnection, "type=\'signal\',path=\'/org/genivi/NodeStateManager\'", NULL);
-    if (!dbus_connection_add_filter(mpDBusConnection, CAmNodeStateCommunicator::signalCallback, this, NULL))
+    if (!dbus_connection_add_filter(mpDBusConnection, CAmNodeStateCommunicatorDBus::signalCallback, this, NULL))
     {
         logError("CAmNodeStateCommunicator::CAmNodeStateCommunicator not enought memory!");
         throw std::runtime_error("CAmNodeStateCommunicator::CAmNodeStateCommunicator not enought memory!");
@@ -61,7 +60,7 @@ CAmNodeStateCommunicator::CAmNodeStateCommunicator(CAmDbusWrapper* iDbusWrapper)
     dbus_connection_flush(mpDBusConnection);
 }
 
-CAmNodeStateCommunicator::~CAmNodeStateCommunicator()
+CAmNodeStateCommunicatorDBus::~CAmNodeStateCommunicatorDBus()
 {}
 
 /** retrieves the actual restartReason
@@ -69,7 +68,7 @@ CAmNodeStateCommunicator::~CAmNodeStateCommunicator()
  * @param restartReason
  * @return E_OK on success
  */
-am_Error_e CAmNodeStateCommunicator::nsmGetRestartReasonProperty(NsmRestartReason_e& restartReason)
+am_Error_e CAmNodeStateCommunicatorDBus::nsmGetRestartReasonProperty(NsmRestartReason_e& restartReason)
 {
     int32_t answer(0);
     am_Error_e error=readIntegerProperty("RestartReason",answer);
@@ -82,7 +81,7 @@ am_Error_e CAmNodeStateCommunicator::nsmGetRestartReasonProperty(NsmRestartReaso
  * @param ShutdownReason
  * @return E_OK on success
  */
-am_Error_e CAmNodeStateCommunicator::nsmGetShutdownReasonProperty(NsmShutdownReason_e& ShutdownReason)
+am_Error_e CAmNodeStateCommunicatorDBus::nsmGetShutdownReasonProperty(NsmShutdownReason_e& ShutdownReason)
 {
     int32_t answer(0);
     am_Error_e error=readIntegerProperty("ShutdownReason",answer);
@@ -95,7 +94,7 @@ am_Error_e CAmNodeStateCommunicator::nsmGetShutdownReasonProperty(NsmShutdownRea
  * @param nsmRunningReason
  * @return E_OK on success
  */
-am_Error_e CAmNodeStateCommunicator::nsmGetRunningReasonProperty(NsmRunningReason_e& nsmRunningReason)
+am_Error_e CAmNodeStateCommunicatorDBus::nsmGetRunningReasonProperty(NsmRunningReason_e& nsmRunningReason)
 {
     int32_t answer(0);
     am_Error_e error=readIntegerProperty("WakeUpReason",answer);
@@ -108,7 +107,7 @@ am_Error_e CAmNodeStateCommunicator::nsmGetRunningReasonProperty(NsmRunningReaso
  * @param nsmNodeState
  * @return NsmErrorStatus_Ok on success
  */
-NsmErrorStatus_e CAmNodeStateCommunicator::nsmGetNodeState(NsmNodeState_e& nsmNodeState)
+NsmErrorStatus_e CAmNodeStateCommunicatorDBus::nsmGetNodeState(NsmNodeState_e& nsmNodeState)
 {
     DBusError error;
     dbus_error_init(&error);
@@ -120,14 +119,14 @@ NsmErrorStatus_e CAmNodeStateCommunicator::nsmGetNodeState(NsmNodeState_e& nsmNo
 
     if (!message)
     {
-        logError("CAmNodeStateCommunicator::nsmGetNodeState dbus error:", error.message);
+        logError("CAmNodeStateCommunicatorDBus::nsmGetNodeState dbus error:", error.message);
         return (NsmErrorStatus_Dbus);
     }
 
     DBusMessage* reply(dbus_connection_send_with_reply_and_block(mpDBusConnection, message, -1, &error));
     if (!reply)
     {
-        logError("CAmNodeStateCommunicator::nsmGetNodeState failed, dbus error", error.message);
+        logError("CAmNodeStateCommunicatorDBus::nsmGetNodeState failed, dbus error", error.message);
         return (NsmErrorStatus_Dbus);
     }
 
@@ -147,7 +146,7 @@ NsmErrorStatus_e CAmNodeStateCommunicator::nsmGetNodeState(NsmNodeState_e& nsmNo
  * @param sessionState
  * @return NsmErrorStatus_Ok on success
  */
-NsmErrorStatus_e CAmNodeStateCommunicator::nsmGetSessionState(const std::string& sessionName, const NsmSeat_e& seatID, NsmSessionState_e& sessionState)
+NsmErrorStatus_e CAmNodeStateCommunicatorDBus::nsmGetSessionState(const std::string& sessionName, const NsmSeat_e& seatID, NsmSessionState_e& sessionState)
 {
     DBusError error;
     dbus_error_init(&error);
@@ -160,7 +159,7 @@ NsmErrorStatus_e CAmNodeStateCommunicator::nsmGetSessionState(const std::string&
 
     if (!message)
     {
-        logError("CAmNodeStateCommunicator::nsmGetSessionState dbus error:", error.message);
+        logError("CAmNodeStateCommunicatorDBus::nsmGetSessionState dbus error:", error.message);
         return (NsmErrorStatus_Dbus);
     }
 
@@ -168,20 +167,20 @@ NsmErrorStatus_e CAmNodeStateCommunicator::nsmGetSessionState(const std::string&
 
     if (!dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &sessionName))
     {
-        logError( "CAmNodeStateCommunicator::nsmGetSessionState no more memory");
+        logError( "CAmNodeStateCommunicatorDBus::nsmGetSessionState no more memory");
         return (NsmErrorStatus_Dbus);
     }
 
     if (!dbus_message_iter_append_basic(&iter, DBUS_TYPE_INT32, &seatID))
     {
-        logError( "CAmNodeStateCommunicator::nsmGetSessionState no more memory");
+        logError( "CAmNodeStateCommunicatorDBus::nsmGetSessionState no more memory");
         return (NsmErrorStatus_Dbus);
     }
 
     DBusMessage* reply(dbus_connection_send_with_reply_and_block(mpDBusConnection, message, -1, &error));
     if (!reply)
     {
-        logError("CAmNodeStateCommunicator::nsmGetSessionState failed, dbus error", error.message);
+        logError("CAmNodeStateCommunicatorDBus::nsmGetSessionState failed, dbus error", error.message);
         return (NsmErrorStatus_Dbus);
     }
 
@@ -201,7 +200,7 @@ NsmErrorStatus_e CAmNodeStateCommunicator::nsmGetSessionState(const std::string&
  * @param applicationMode
  * @return NsmErrorStatus_Ok on success
  */
-NsmErrorStatus_e CAmNodeStateCommunicator::nsmGetApplicationMode(NsmApplicationMode_e& applicationMode)
+NsmErrorStatus_e CAmNodeStateCommunicatorDBus::nsmGetApplicationMode(NsmApplicationMode_e& applicationMode)
 {
     DBusError error;
     dbus_error_init(&error);
@@ -212,14 +211,14 @@ NsmErrorStatus_e CAmNodeStateCommunicator::nsmGetApplicationMode(NsmApplicationM
 
     if (!message)
     {
-        logError("CAmNodeStateCommunicator::nsmGetApplicationMode dbus error:", error.message);
+        logError("CAmNodeStateCommunicatorDBus::nsmGetApplicationMode dbus error:", error.message);
         return (NsmErrorStatus_Dbus);
     }
 
     DBusMessage* reply(dbus_connection_send_with_reply_and_block(mpDBusConnection, message, -1, &error));
     if (!reply)
     {
-        logError("CAmNodeStateCommunicator::nsmGetApplicationMode failed, dbus error", error.message);
+        logError("CAmNodeStateCommunicatorDBus::nsmGetApplicationMode failed, dbus error", error.message);
         return (NsmErrorStatus_Dbus);
     }
 
@@ -238,7 +237,7 @@ NsmErrorStatus_e CAmNodeStateCommunicator::nsmGetApplicationMode(NsmApplicationM
  * @param timeoutMs the timeout you need to have
  * @return NsmErrorStatus_Ok on success
  */
-NsmErrorStatus_e CAmNodeStateCommunicator::nsmRegisterShutdownClient(const uint32_t shutdownMode, const uint32_t timeoutMs)
+NsmErrorStatus_e CAmNodeStateCommunicatorDBus::nsmRegisterShutdownClient(const uint32_t shutdownMode, const uint32_t timeoutMs)
 {
     DBusError error;
     DBusMessageIter iter;
@@ -251,32 +250,32 @@ NsmErrorStatus_e CAmNodeStateCommunicator::nsmRegisterShutdownClient(const uint3
 
     if (!message)
     {
-        logError( "CAmNodeStateCommunicator::nsmRegisterShutdownClient dbus error:", error.message);
+        logError( "CAmNodeStateCommunicatorDBus::nsmRegisterShutdownClient dbus error:", error.message);
         return (NsmErrorStatus_Dbus);
     }
     dbus_message_iter_init_append(message, &iter);
 
     if (!dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &service))
     {
-        logError( "CAmNodeStateCommunicator::nsmRegisterShutdownClient no more memory");
+        logError( "CAmNodeStateCommunicatorDBus::nsmRegisterShutdownClient no more memory");
         return (NsmErrorStatus_Dbus);
     }
 
     if (!dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &charPath))
     {
-        logError( "CAmNodeStateCommunicator::nsmRegisterShutdownClient no more memory");
+        logError( "CAmNodeStateCommunicatorDBus::nsmRegisterShutdownClient no more memory");
         return (NsmErrorStatus_Dbus);
     }
 
     if (!dbus_message_iter_append_basic(&iter, DBUS_TYPE_UINT32, &shutdownMode))
     {
-        logError( "CAmNodeStateCommunicator::nsmRegisterShutdownClient no more memory");
+        logError( "CAmNodeStateCommunicatorDBus::nsmRegisterShutdownClient no more memory");
         return (NsmErrorStatus_Dbus);
     }
 
     if (!dbus_message_iter_append_basic(&iter, DBUS_TYPE_UINT32, &timeoutMs))
     {
-        logError( "CAmNodeStateCommunicator::nsmRegisterShutdownClient no more memory");
+        logError( "CAmNodeStateCommunicatorDBus::nsmRegisterShutdownClient no more memory");
         return (NsmErrorStatus_Dbus);
     }
 
@@ -305,7 +304,7 @@ NsmErrorStatus_e CAmNodeStateCommunicator::nsmRegisterShutdownClient(const uint3
  * @param shutdownMode
  * @return NsmErrorStatus_Ok on success
  */
-NsmErrorStatus_e CAmNodeStateCommunicator::nsmUnRegisterShutdownClient(const uint32_t shutdownMode)
+NsmErrorStatus_e CAmNodeStateCommunicatorDBus::nsmUnRegisterShutdownClient(const uint32_t shutdownMode)
 {
     DBusError error;
     DBusMessageIter iter;
@@ -318,26 +317,26 @@ NsmErrorStatus_e CAmNodeStateCommunicator::nsmUnRegisterShutdownClient(const uin
 
     if (!message)
     {
-        logError( "CAmNodeStateCommunicator::nsmUnRegisterShutdownClient dbus error:", error.message);
+        logError( "CAmNodeStateCommunicatorDBus::nsmUnRegisterShutdownClient dbus error:", error.message);
         return (NsmErrorStatus_Dbus);
     }
     dbus_message_iter_init_append(message, &iter);
 
     if (!dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &service))
     {
-        logError( "CAmNodeStateCommunicator::nsmUnRegisterShutdownClient no more memory");
+        logError( "CAmNodeStateCommunicatorDBus::nsmUnRegisterShutdownClient no more memory");
         return (NsmErrorStatus_Dbus);
     }
 
     if (!dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &charPath))
     {
-        logError( "CAmNodeStateCommunicator::nsmUnRegisterShutdownClient no more memory");
+        logError( "CAmNodeStateCommunicatorDBus::nsmUnRegisterShutdownClient no more memory");
         return (NsmErrorStatus_Dbus);
     }
 
     if (!dbus_message_iter_append_basic(&iter, DBUS_TYPE_UINT32, &shutdownMode))
     {
-        logError( "CAmNodeStateCommunicator::nsmUnRegisterShutdownClient no more memory");
+        logError( "CAmNodeStateCommunicatorDBus::nsmUnRegisterShutdownClient no more memory");
         return (NsmErrorStatus_Dbus);
     }
 
@@ -346,13 +345,13 @@ NsmErrorStatus_e CAmNodeStateCommunicator::nsmUnRegisterShutdownClient(const uin
 
     if (!reply)
     {
-        logError( "CAmNodeStateCommunicator::nsmUnRegisterShutdownClient failed, dbus error", error.message);
+        logError( "CAmNodeStateCommunicatorDBus::nsmUnRegisterShutdownClient failed, dbus error", error.message);
         return (NsmErrorStatus_Dbus);
     }
 
     if(!dbus_message_get_args(reply, &error, DBUS_TYPE_INT32, &returnError, DBUS_TYPE_INVALID))
     {
-        logError( "CAmNodeStateCommunicator::nsmUnRegisterShutdownClient failed, dbus error", error.message);
+        logError( "CAmNodeStateCommunicatorDBus::nsmUnRegisterShutdownClient failed, dbus error", error.message);
         return (NsmErrorStatus_Dbus);
     }
     dbus_message_unref(reply);
@@ -365,7 +364,7 @@ NsmErrorStatus_e CAmNodeStateCommunicator::nsmUnRegisterShutdownClient(const uin
  * @param version
  * @return E_OK on success
  */
-am_Error_e CAmNodeStateCommunicator::nsmGetInterfaceVersion(uint32_t& version)
+am_Error_e CAmNodeStateCommunicatorDBus::nsmGetInterfaceVersion(uint32_t& version)
 {
     DBusError error;
     dbus_error_init(&error);
@@ -374,7 +373,7 @@ am_Error_e CAmNodeStateCommunicator::nsmGetInterfaceVersion(uint32_t& version)
 
     if (!message)
     {
-        logError("CAmNodeStateCommunicator::nsmGetInterfaceVersion dbus error:", error.message);
+        logError("CAmNodeStateCommunicatorDBus::nsmGetInterfaceVersion dbus error:", error.message);
         return (E_UNKNOWN);
     }
 
@@ -384,13 +383,13 @@ am_Error_e CAmNodeStateCommunicator::nsmGetInterfaceVersion(uint32_t& version)
 
     if (!reply)
     {
-        logError("CAmNodeStateCommunicator::nsmGetInterfaceVersion failed, dbus error", error.message);
+        logError("CAmNodeStateCommunicatorDBus::nsmGetInterfaceVersion failed, dbus error", error.message);
         return (E_UNKNOWN);
     }
 
     if(!dbus_message_get_args(reply, &error, DBUS_TYPE_UINT32, &version, DBUS_TYPE_INVALID))
     {
-        logError("CAmNodeStateCommunicator::nsmGetInterfaceVersion failed, dbus error", error.message);
+        logError("CAmNodeStateCommunicatorDBus::nsmGetInterfaceVersion failed, dbus error", error.message);
         return (E_UNKNOWN);
     }
 
@@ -405,7 +404,7 @@ am_Error_e CAmNodeStateCommunicator::nsmGetInterfaceVersion(uint32_t& version)
  * @param status
  * @return NsmErrorStatus_Ok on success
  */
-NsmErrorStatus_e CAmNodeStateCommunicator::nsmSendLifecycleRequestComplete(const uint32_t RequestId, const NsmErrorStatus_e status)
+NsmErrorStatus_e CAmNodeStateCommunicatorDBus::nsmSendLifecycleRequestComplete(const uint32_t RequestId, const NsmErrorStatus_e status)
 {
     DBusError error;
     DBusMessageIter iter;
@@ -415,20 +414,20 @@ NsmErrorStatus_e CAmNodeStateCommunicator::nsmSendLifecycleRequestComplete(const
 
     if (!message)
     {
-        logError( "CAmNodeStateCommunicator::nsmSendLifecycleRequestComplete dbus error:", error.message);
+        logError( "CAmNodeStateCommunicatorDBus::nsmSendLifecycleRequestComplete dbus error:", error.message);
         return (NsmErrorStatus_Dbus);
     }
     dbus_message_iter_init_append(message, &iter);
 
     if (!dbus_message_iter_append_basic(&iter, DBUS_TYPE_UINT32, &RequestId))
     {
-        logError( "CAmNodeStateCommunicator::nsmSendLifecycleRequestComplete no more memory");
+        logError( "CAmNodeStateCommunicatorDBus::nsmSendLifecycleRequestComplete no more memory");
         return (NsmErrorStatus_Dbus);
     }
 
     if (!dbus_message_iter_append_basic(&iter, DBUS_TYPE_INT32,&status))
     {
-        logError( "CAmNodeStateCommunicator::nsmSendLifecycleRequestComplete no more memory");
+        logError( "CAmNodeStateCommunicatorDBus::nsmSendLifecycleRequestComplete no more memory");
         return (NsmErrorStatus_Dbus);
     }
 
@@ -437,13 +436,13 @@ NsmErrorStatus_e CAmNodeStateCommunicator::nsmSendLifecycleRequestComplete(const
 
     if (!reply)
     {
-        logError( "CAmNodeStateCommunicator::nsmSendLifecycleRequestComplete failed, dbus error", error.message);
+        logError( "CAmNodeStateCommunicatorDBus::nsmSendLifecycleRequestComplete failed, dbus error", error.message);
         return (NsmErrorStatus_Dbus);
     }
 
     if(!dbus_message_get_args(reply, &error,DBUS_TYPE_INT32, &returnError, DBUS_TYPE_INVALID))
     {
-        logError( "CAmNodeStateCommunicator::nsmSendLifecycleRequestComplete failed, dbus error", error.message);
+        logError( "CAmNodeStateCommunicatorDBus::nsmSendLifecycleRequestComplete failed, dbus error", error.message);
         return (NsmErrorStatus_Dbus);
     }
     dbus_message_unref(reply);
@@ -451,20 +450,14 @@ NsmErrorStatus_e CAmNodeStateCommunicator::nsmSendLifecycleRequestComplete(const
     return (static_cast<NsmErrorStatus_e>(returnError));
 }
 
-void CAmNodeStateCommunicator::registerControlSender(CAmControlSender* iControlSender)
+DBusHandlerResult CAmNodeStateCommunicatorDBus::receiveCallback(DBusConnection* conn, DBusMessage* msg, void* user_data)
 {
-    assert(iControlSender);
-    mpControlSender=iControlSender;
-}
-
-DBusHandlerResult CAmNodeStateCommunicator::receiveCallback(DBusConnection* conn, DBusMessage* msg, void* user_data)
-{
-    CAmNodeStateCommunicator* instance = static_cast<CAmNodeStateCommunicator*>(user_data);
+    CAmNodeStateCommunicatorDBus* instance = static_cast<CAmNodeStateCommunicatorDBus*>(user_data);
     assert(instance);
     return (instance->receiveCallbackDelegate(conn,msg));
 }
 
-DBusHandlerResult CAmNodeStateCommunicator::receiveCallbackDelegate(DBusConnection* conn, DBusMessage* msg)
+DBusHandlerResult CAmNodeStateCommunicatorDBus::receiveCallbackDelegate(DBusConnection* conn, DBusMessage* msg)
 {
     if (dbus_message_is_method_call(msg, DBUS_INTERFACE_INTROSPECTABLE, "Introspect"))
     {
@@ -482,7 +475,7 @@ DBusHandlerResult CAmNodeStateCommunicator::receiveCallbackDelegate(DBusConnecti
             DBusMessageIter iter,replyIter;
             if (!dbus_message_iter_init(msg, &iter))
             {
-                logError("CAmNodeStateCommunicator::receiveCallbackDelegate DBus Message has no arguments!");
+                logError("CAmNodeStateCommunicatorDBus::receiveCallbackDelegate DBus Message has no arguments!");
                 returnMessage = dbus_message_new_error(msg,DBUS_ERROR_INVALID_ARGS, "DBUS Message has no arguments!");
                 sendMessage(returnMessage,msg);
                 return (DBUS_HANDLER_RESULT_HANDLED);
@@ -490,7 +483,7 @@ DBusHandlerResult CAmNodeStateCommunicator::receiveCallbackDelegate(DBusConnecti
 
             if (dbus_message_iter_get_arg_type(&iter)!=DBUS_TYPE_UINT32)
             {
-                logError("CAmNodeStateCommunicator::receiveCallbackDelegate DBus Message has invalid arguments!");
+                logError("CAmNodeStateCommunicatorDBus::receiveCallbackDelegate DBus Message has invalid arguments!");
                 returnMessage = dbus_message_new_error(msg,DBUS_ERROR_INVALID_ARGS,"DBus argument is not uint32_t!");
                 sendMessage(returnMessage,msg);
                 return (DBUS_HANDLER_RESULT_HANDLED);
@@ -501,7 +494,7 @@ DBusHandlerResult CAmNodeStateCommunicator::receiveCallbackDelegate(DBusConnecti
 
             if (dbus_message_iter_get_arg_type(&iter)!=DBUS_TYPE_UINT32)
             {
-                logError("CAmNodeStateCommunicator::receiveCallbackDelegate DBus Message has invalid arguments!");
+                logError("CAmNodeStateCommunicatorDBus::receiveCallbackDelegate DBus Message has invalid arguments!");
                 returnMessage = dbus_message_new_error(msg,DBUS_ERROR_INVALID_ARGS,"DBus argument is not uint32_t!");
                 sendMessage(returnMessage,msg);
                 return (DBUS_HANDLER_RESULT_HANDLED);
@@ -516,7 +509,7 @@ DBusHandlerResult CAmNodeStateCommunicator::receiveCallbackDelegate(DBusConnecti
 
             if (returnMessage == NULL)
             {
-                logError("CAmNodeStateCommunicator::receiveCallbackDelegate Cannot allocate DBus message!");
+                logError("CAmNodeStateCommunicatorDBus::receiveCallbackDelegate Cannot allocate DBus message!");
                 returnMessage = dbus_message_new_error(msg,DBUS_ERROR_NO_MEMORY,"Cannot create reply!");
                 sendMessage(returnMessage,msg);
                 return (DBUS_HANDLER_RESULT_HANDLED);
@@ -526,7 +519,7 @@ DBusHandlerResult CAmNodeStateCommunicator::receiveCallbackDelegate(DBusConnecti
 
             if (!dbus_message_iter_append_basic(&replyIter, DBUS_TYPE_INT32, &returnError))
             {
-                logError("CAmNodeStateCommunicator::receiveCallbackDelegate Cannot allocate DBus message!");
+                logError("CAmNodeStateCommunicatorDBus::receiveCallbackDelegate Cannot allocate DBus message!");
                 returnMessage = dbus_message_new_error(msg,DBUS_ERROR_NO_MEMORY,"Cannot create reply!");
             }
             sendMessage(returnMessage,msg);
@@ -536,7 +529,7 @@ DBusHandlerResult CAmNodeStateCommunicator::receiveCallbackDelegate(DBusConnecti
     return (DBUS_HANDLER_RESULT_NOT_YET_HANDLED);
 }
 
-void CAmNodeStateCommunicator::sendIntrospection(DBusConnection* conn, DBusMessage* msg)
+void CAmNodeStateCommunicatorDBus::sendIntrospection(DBusConnection* conn, DBusMessage* msg)
 {
     assert(conn != NULL);
     assert(msg != NULL);
@@ -562,13 +555,13 @@ void CAmNodeStateCommunicator::sendIntrospection(DBusConnection* conn, DBusMessa
     dbus_message_iter_init_append(reply, &args);
     if (!dbus_message_iter_append_basic(&args, DBUS_TYPE_STRING, &string))
     {
-       logError( "CAmNodeStateCommunicator::sendIntrospection DBUS handler Out Of Memory!");
+       logError( "CAmNodeStateCommunicatorDBus::sendIntrospection DBUS handler Out Of Memory!");
     }
 
     // send the reply && flush the connection
     if (!dbus_connection_send(conn, reply, &serial))
     {
-        logError( "CAmNodeStateCommunicator::sendIntrospection DBUS handler Out Of Memory!");
+        logError( "CAmNodeStateCommunicatorDBus::sendIntrospection DBUS handler Out Of Memory!");
     }
     dbus_connection_flush(conn);
 
@@ -576,22 +569,22 @@ void CAmNodeStateCommunicator::sendIntrospection(DBusConnection* conn, DBusMessa
     dbus_message_unref(reply);
 }
 
-void CAmNodeStateCommunicator::sendMessage(DBusMessage* message, DBusMessage* origMessage)
+void CAmNodeStateCommunicatorDBus::sendMessage(DBusMessage* message, DBusMessage* origMessage)
 {
     dbus_uint32_t serial = dbus_message_get_serial(origMessage);
 
     if(!dbus_connection_send(mpDBusConnection, message, &serial))
     {
-    	logError( "CAmNodeStateCommunicator::sendMessage DBUS handler Out Of Memory!");
+    	logError( "CAmNodeStateCommunicatorDBus::sendMessage DBUS handler Out Of Memory!");
     }
     dbus_connection_flush(mpDBusConnection);
     dbus_message_unref(message);
 }
 
-DBusHandlerResult CAmNodeStateCommunicator::signalCallback(DBusConnection* conn, DBusMessage* msg, void* user_data)
+DBusHandlerResult CAmNodeStateCommunicatorDBus::signalCallback(DBusConnection* conn, DBusMessage* msg, void* user_data)
 {
     (void) conn;
-    CAmNodeStateCommunicator* instance(static_cast<CAmNodeStateCommunicator*>(user_data));
+    CAmNodeStateCommunicatorDBus* instance(static_cast<CAmNodeStateCommunicatorDBus*>(user_data));
 
     const char* iface = dbus_message_get_interface(msg);
     if (iface==NULL)
@@ -607,19 +600,19 @@ DBusHandlerResult CAmNodeStateCommunicator::signalCallback(DBusConnection* conn,
             DBusMessageIter iter;
             if (!dbus_message_iter_init(msg, &iter))
             {
-                logError("CAmNodeStateCommunicator::signalCallback NodeState DBus Message has no arguments!");
+                logError("CAmNodeStateCommunicatorDBus::signalCallback NodeState DBus Message has no arguments!");
                 return (DBUS_HANDLER_RESULT_HANDLED);
             }
 
             if (dbus_message_iter_get_arg_type(&iter)!=DBUS_TYPE_INT32)
             {
-                logError("CAmNodeStateCommunicator::signalCallback NodeState DBus Message has invalid arguments!");
+                logError("CAmNodeStateCommunicatorDBus::signalCallback NodeState DBus Message has invalid arguments!");
                 return (DBUS_HANDLER_RESULT_HANDLED);
             }
 
             dbus_message_iter_get_basic(&iter, &nodeState);
 
-            logInfo("CAmNodeStateCommunicator::signalCallback got signal NodeState, with nodeState",nodeState);
+            logInfo("CAmNodeStateCommunicatorDBus::signalCallback got signal NodeState, with nodeState",nodeState);
 
             assert(instance->mpControlSender);
             instance->mpControlSender->hookSystemNodeStateChanged(static_cast<NsmNodeState_e>(nodeState));
@@ -632,19 +625,19 @@ DBusHandlerResult CAmNodeStateCommunicator::signalCallback(DBusConnection* conn,
             DBusMessageIter iter;
             if (!dbus_message_iter_init(msg, &iter))
             {
-                logError("CAmNodeStateCommunicator::signalCallback nodeApplicationMode DBus Message has no arguments!");
+                logError("CAmNodeStateCommunicatorDBus::signalCallback nodeApplicationMode DBus Message has no arguments!");
                 return (DBUS_HANDLER_RESULT_HANDLED);
             }
 
             if (dbus_message_iter_get_arg_type(&iter)!=DBUS_TYPE_INT32)
             {
-                logError("CAmNodeStateCommunicator::signalCallback nodeApplicationMode DBus Message has invalid arguments!");
+                logError("CAmNodeStateCommunicatorDBus::signalCallback nodeApplicationMode DBus Message has invalid arguments!");
                 return (DBUS_HANDLER_RESULT_HANDLED);
             }
 
             dbus_message_iter_get_basic(&iter, &nodeApplicationMode);
 
-            logInfo("CAmNodeStateCommunicator::signalCallback got signal nodeApplicationMode, with applicationMode",nodeApplicationMode);
+            logInfo("CAmNodeStateCommunicatorDBus::signalCallback got signal nodeApplicationMode, with applicationMode",nodeApplicationMode);
 
             assert(instance->mpControlSender);
             instance->mpControlSender->hookSystemNodeApplicationModeChanged(static_cast<NsmApplicationMode_e>(nodeApplicationMode));
@@ -659,13 +652,13 @@ DBusHandlerResult CAmNodeStateCommunicator::signalCallback(DBusConnection* conn,
             DBusMessageIter iter;
             if (!dbus_message_iter_init(msg, &iter))
             {
-                logError("CAmNodeStateCommunicator::signalCallback nodeApplicationMode DBus Message has no arguments!");
+                logError("CAmNodeStateCommunicatorDBus::signalCallback nodeApplicationMode DBus Message has no arguments!");
                 return (DBUS_HANDLER_RESULT_HANDLED);
             }
 
             if (dbus_message_iter_get_arg_type(&iter)!=DBUS_TYPE_STRING)
             {
-                logError("CAmNodeStateCommunicator::signalCallback nodeApplicationMode DBus Message has invalid arguments!");
+                logError("CAmNodeStateCommunicatorDBus::signalCallback nodeApplicationMode DBus Message has invalid arguments!");
                 return (DBUS_HANDLER_RESULT_HANDLED);
             }
 
@@ -676,7 +669,7 @@ DBusHandlerResult CAmNodeStateCommunicator::signalCallback(DBusConnection* conn,
 
             if (dbus_message_iter_get_arg_type(&iter)!=DBUS_TYPE_INT32)
             {
-                logError("CAmNodeStateCommunicator::signalCallback nodeApplicationMode DBus Message has invalid arguments!");
+                logError("CAmNodeStateCommunicatorDBus::signalCallback nodeApplicationMode DBus Message has invalid arguments!");
                 return (DBUS_HANDLER_RESULT_HANDLED);
             }
 
@@ -685,14 +678,14 @@ DBusHandlerResult CAmNodeStateCommunicator::signalCallback(DBusConnection* conn,
 
             if (dbus_message_iter_get_arg_type(&iter)!=DBUS_TYPE_INT32)
             {
-                logError("CAmNodeStateCommunicator::signalCallback nodeApplicationMode DBus Message has invalid arguments!");
+                logError("CAmNodeStateCommunicatorDBus::signalCallback nodeApplicationMode DBus Message has invalid arguments!");
                 return (DBUS_HANDLER_RESULT_HANDLED);
             }
 
             dbus_message_iter_get_basic(&iter, &sessionState);
 
 
-            logInfo("CAmNodeStateCommunicator::signalCallback got signal sessionStateChanged, with session",sessionName,"seatID=",seatID,"sessionState",sessionState);
+            logInfo("CAmNodeStateCommunicatorDBus::signalCallback got signal sessionStateChanged, with session",sessionName,"seatID=",seatID,"sessionState",sessionState);
 
             assert(instance->mpControlSender);
             instance->mpControlSender->hookSystemSessionStateChanged(sessionName,seatID,sessionState);
@@ -708,7 +701,7 @@ DBusHandlerResult CAmNodeStateCommunicator::signalCallback(DBusConnection* conn,
     return (DBUS_HANDLER_RESULT_NOT_YET_HANDLED);
 }
 
-am_Error_e CAmNodeStateCommunicator::readIntegerProperty(const std::string property, int32_t& value)
+am_Error_e CAmNodeStateCommunicatorDBus::readIntegerProperty(const std::string property, int32_t& value)
 {
     DBusError error;
     dbus_error_init(&error);
@@ -718,7 +711,7 @@ am_Error_e CAmNodeStateCommunicator::readIntegerProperty(const std::string prope
 
     if (!message)
     {
-        logError("CAmNodeStateCommunicator::readIntegerProperty dbus error:", error.message);
+        logError("CAmNodeStateCommunicatorDBus::readIntegerProperty dbus error:", error.message);
         dbus_message_unref(message);
         return (E_UNKNOWN);
     }
@@ -729,14 +722,14 @@ am_Error_e CAmNodeStateCommunicator::readIntegerProperty(const std::string prope
     const char *propertyChar=property.c_str();
     if (!dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &interface))
     {
-        logError("CAmNodeStateCommunicator::readIntegerProperty append error");
+        logError("CAmNodeStateCommunicatorDBus::readIntegerProperty append error");
         dbus_message_unref(message);
         return (E_UNKNOWN);
     }
 
     if (!dbus_message_iter_append_basic(&iter, DBUS_TYPE_STRING, &propertyChar))
     {
-        logError("CAmNodeStateCommunicator::readIntegerProperty append error");
+        logError("CAmNodeStateCommunicatorDBus::readIntegerProperty append error");
         dbus_message_unref(message);
         return (E_UNKNOWN);
     }
@@ -744,21 +737,21 @@ am_Error_e CAmNodeStateCommunicator::readIntegerProperty(const std::string prope
     DBusMessage* reply(dbus_connection_send_with_reply_and_block(mpDBusConnection, message, -1, &error));
     if (!reply)
     {
-        logError("CAmNodeStateCommunicator::readIntegerProperty failed, dbus error", error.message);
+        logError("CAmNodeStateCommunicatorDBus::readIntegerProperty failed, dbus error", error.message);
         dbus_message_unref(message);
         return (E_UNKNOWN);
     }
 
     if(!dbus_message_iter_init(reply,&iterVariant))
     {
-    	logError("CAmNodeStateCommunicator::readIntegerProperty failed, dbus error", error.message);
+    	logError("CAmNodeStateCommunicatorDBus::readIntegerProperty failed, dbus error", error.message);
 		dbus_message_unref(message);
 		dbus_message_unref(reply);
 		return (E_UNKNOWN);
     }
     if (dbus_message_iter_get_arg_type (&iterVariant)!= DBUS_TYPE_VARIANT)
     {
-        logError("CAmNodeStateCommunicator::readIntegerProperty failed, dbus return type wrong");
+        logError("CAmNodeStateCommunicatorDBus::readIntegerProperty failed, dbus return type wrong");
         dbus_message_unref(reply);
         dbus_message_unref(message);
         return (E_UNKNOWN);
@@ -767,7 +760,7 @@ am_Error_e CAmNodeStateCommunicator::readIntegerProperty(const std::string prope
     dbus_message_iter_recurse (&iterVariant, &subiter);
     if (dbus_message_iter_get_arg_type (&subiter)!= DBUS_TYPE_INT32)
     {
-        logError("CAmNodeStateCommunicator::readIntegerProperty failed, dbus return type wrong");
+        logError("CAmNodeStateCommunicatorDBus::readIntegerProperty failed, dbus return type wrong");
         dbus_message_unref(reply);
         dbus_message_unref(message);
         return (E_UNKNOWN);

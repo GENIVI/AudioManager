@@ -17,6 +17,7 @@
 
 
 cmake_minimum_required(VERSION 2.6)
+include(CMakeDependentOption)
 
 execute_process(COMMAND git describe --tags WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} 
                 OUTPUT_VARIABLE DAEMONVERSION 
@@ -43,9 +44,10 @@ PROJECT(AudioManagerDeamon)
 
 FIND_PACKAGE(PkgConfig)
 
-OPTION( WITH_DBUS_WRAPPER 
-	"Enable Dbus Wrapper Support" ON )
-	
+SET(WITH_ENABLED_IPC "CAPI" CACHE STRING "Disable 'NONE' / Enable Common-API 'CAPI' or Dbus 'DBUS' Support")
+
+SET_PROPERTY(CACHE WITH_ENABLED_IPC PROPERTY STRINGS "NONE" "CAPI" "DBUS") 
+
 OPTION( WITH_DLT 
     "Enable automotive-DLT Support" ON )
 
@@ -76,15 +78,54 @@ OPTION ( USE_BUILD_LIBS
 OPTION ( GLIB_DBUS_TYPES_TOLERANT
     "build dbus with tolerance towards glib 16bit/32bit handling" ON)
 
+IF (WITH_ENABLED_IPC STREQUAL "NONE")
+   SET (ENABLE_NSM OFF)
+ELSE  ()
+   SET (ENABLE_NSM ON)
+ENDIF ()
+
+CMAKE_DEPENDENT_OPTION(WITH_NSM "build with NSM support" ON
+                        "ENABLE_NSM" OFF)
+
 OPTION ( WITH_NSM
     "build with NSM support" ON)
-    
+  
  OPTION ( WITH_DATABASE_STORAGE
     "build with sqlite as in memory storage" OFF)
+ 
+IF (WITH_ENABLED_IPC STREQUAL "DBUS")
+    SET (WITH_DBUS_WRAPPER ON CACHE INTERNAL "hide this!" FORCE)
+    SET (WITH_CAPI_WRAPPER OFF CACHE INTERNAL "hide this!" FORCE)
+ELSEIF(WITH_ENABLED_IPC STREQUAL "CAPI")
+    SET (WITH_CAPI_WRAPPER ON CACHE INTERNAL "hide this!" FORCE)
+    SET (WITH_DBUS_WRAPPER OFF CACHE INTERNAL "hide this!" FORCE)
     
-IF (NOT WITH_DBUS_WRAPPER)
+    MACRO(INSERT_DBUS_CONF_IF_NEEDED IN_PLACEHOLDER IN_SRC_DBUS_CONF OUT_DST_DBUS_CONF)
+        # Checks the variable in the template
+        if(NOT EXISTS ${CMAKE_SOURCE_DIR}/AudioManagerDaemon/fidls/AudioManager_dbus.conf.in )
+            FILE(WRITE ${CMAKE_SOURCE_DIR}/AudioManagerDaemon/fidls/AudioManager_dbus.conf.in 
+                       "################################################ CMAKE GENERATED #################################################")
+        endif( )
+        
+        FILE(READ ${CMAKE_SOURCE_DIR}/AudioManagerDaemon/fidls/AudioManager_dbus.conf.in DBUS_CONF_IN)
+        if( NOT DBUS_CONF_IN MATCHES ${IN_PLACEHOLDER} )
+            if( NOT DBUS_CONF_IN STREQUAL "" )
+                FILE(APPEND ${CMAKE_SOURCE_DIR}/AudioManagerDaemon/fidls/AudioManager_dbus.conf.in "\r\n\r\n")
+            endif( )   
+            FILE(APPEND ${CMAKE_SOURCE_DIR}/AudioManagerDaemon/fidls/AudioManager_dbus.conf.in ${IN_PLACEHOLDER})
+        endif( )
+        # Reads out the common-api dbus configuration for the node state manager.
+        FILE(READ ${IN_SRC_DBUS_CONF} ${OUT_DST_DBUS_CONF})
+    ENDMACRO(INSERT_DBUS_CONF_IF_NEEDED) 
+    
+ ELSEIF(WITH_ENABLED_IPC STREQUAL "NONE")   
+    SET (WITH_CAPI_WRAPPER OFF CACHE INTERNAL "hide this!" FORCE)
+    SET (WITH_DBUS_WRAPPER OFF CACHE INTERNAL "hide this!" FORCE)
+ENDIF ()
+    
+IF (NOT WITH_DBUS_WRAPPER AND NOT WITH_CAPI_WRAPPER)
     SET (WITH_NSM OFF)
-ENDIF (NOT WITH_DBUS_WRAPPER)
+ENDIF (NOT WITH_DBUS_WRAPPER AND NOT WITH_CAPI_WRAPPER)
  
 #Can be changed via passing -DDBUS_SERVICE_PREFIX="XXX" to cmake
 IF(NOT DEFINED DBUS_SERVICE_PREFIX)
@@ -184,12 +225,20 @@ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Wextra -std=gnu++0x -D_GNU_SO
 #set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Wextra -std=c++98 -D_GNU_SOURCE")
 
 if(WITH_PLUGIN_COMMAND)
-	add_subdirectory (PluginCommandInterfaceDbus)
+    if(WITH_DBUS_WRAPPER)
+      	    add_subdirectory (PluginCommandInterfaceDbus)
+    elseif(WITH_CAPI_WRAPPER)  	    
+    	    add_subdirectory (PluginCommandInterfaceCAPI)
+    endif()    
 endif(WITH_PLUGIN_COMMAND)
 
 if(WITH_PLUGIN_ROUTING)
-	add_subdirectory (PluginRoutingInterfaceDbus)
 	add_subdirectory (PluginRoutingInterfaceAsync)
+    if(WITH_DBUS_WRAPPER)
+	    add_subdirectory (PluginRoutingInterfaceDbus)
+	elseif(WITH_CAPI_WRAPPER)  	    
+    	add_subdirectory (PluginRoutingInterfaceCAPI)    
+	endif()    
 endif(WITH_PLUGIN_ROUTING)
 
 if(WITH_PLUGIN_CONTROL)

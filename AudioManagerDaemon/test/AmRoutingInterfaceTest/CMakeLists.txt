@@ -62,9 +62,9 @@ file(GLOB ROUTING_INTERFACE_SRCS_CXX
 )
 
 IF(WITH_NSM)
-    SET (ROUTING_INTERFACE_SRCS_CXX
-        ${ROUTING_INTERFACE_SRCS_CXX}
-    "../../src/CAmNodeStateCommunicator.cpp")
+    SET (DATABASE_SRCS_CXX
+        ${DATABASE_SRCS_CXX}
+    "../../src/CAmNodeStateCommunicatorDBus.cpp")
 ENDIF(WITH_NSM)
 
 ADD_EXECUTABLE(AmRoutingInterfaceTest ${ROUTING_INTERFACE_SRCS_CXX})

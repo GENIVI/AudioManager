@@ -328,12 +328,14 @@ am_Error_e CAmRoutingReceiver::peekSourceClassID(const std::string& name, am_sou
     return (mpDatabaseHandler->peekSourceClassID(name, sourceClassID));
 }
 
+#ifdef WITH_DBUS_WRAPPER
 am_Error_e CAmRoutingReceiver::getDBusConnectionWrapper(CAmDbusWrapper *& dbusConnectionWrapper) const
 {
-#ifdef WITH_DBUS_WRAPPER
     dbusConnectionWrapper = mpDBusWrapper;
     return (E_OK);
 #else
+am_Error_e CAmRoutingReceiver::getDBusConnectionWrapper(CAmDbusWrapper *& ) const
+{
     return (E_UNKNOWN);
 #endif
 }

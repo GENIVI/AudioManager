@@ -60,7 +60,7 @@ INCLUDE_DIRECTORIES(
 # all source files go here
 file(GLOB PLUGINDBUS_SRCS_CXX "src/*.cpp")
 
-add_library(PluginCommandInterfaceDbus SHARED ${PLUGINDBUS_SRCS_CXX})
+add_library(PluginCommandInterfaceDbus MODULE ${PLUGINDBUS_SRCS_CXX})
 
 SET_TARGET_PROPERTIES(PluginCommandInterfaceDbus PROPERTIES 
                                             SOVERSION "${LIB_INTERFACE_VERSION}"

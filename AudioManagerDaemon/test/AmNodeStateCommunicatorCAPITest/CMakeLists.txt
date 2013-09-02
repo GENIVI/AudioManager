@@ -1,7 +1,7 @@
 # Copyright (c) 2012 GENIVI Alliance
 # Copyright (c) 2012 BMW
 #
-# author Christian Linke, christian.linke@bmw.de BMW 2011,2012
+# author Aleksandar Donchev, aleksander.donchev@partner.bmw.de BMW 2013
 #
 # copyright
 # Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -17,18 +17,20 @@
 
 cmake_minimum_required(VERSION 2.6)
 
-PROJECT(AmNodeStateCommunicatorTest)
+PROJECT(AmNodeStateCommunicatorCAPITest)
 
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -DUNIT_TEST=1")
 
 set(STD_INCLUDE_DIRS "/usr/include")
+SET(COMMON_API_SRC_GEN "../../src-gen/")
 set(EXECUTABLE_OUTPUT_PATH ${TEST_EXECUTABLE_OUTPUT_PATH})
 
 FIND_PACKAGE(Threads)
-FIND_PACKAGE(DBUS REQUIRED)
 FIND_PACKAGE(PkgConfig)
 pkg_check_modules(SQLITE REQUIRED sqlite3)
 
+FIND_PACKAGE(CommonAPI REQUIRED)
+FIND_PACKAGE(CommonAPI_DBus REQUIRED) 
 
 IF(WITH_DLT)    
     pkg_check_modules(DLT REQUIRED automotive-dlt>=2.2.0)   
@@ -39,51 +41,56 @@ INCLUDE_DIRECTORIES(
     ${CMAKE_SOURCE_DIR} 
     ${CMAKE_CURRENT_BINARY_DIR}
     ${AUDIO_INCLUDE_FOLDER}
-    ${DBUS_ARCH_INCLUDE_DIR}
-    ${DBUS_INCLUDE_FOLDER} 
     ${CMAKE_SOURCE_DIR} 
     ${DLT_INCLUDE_DIRS}
-    ${DBUS_INCLUDE_DIR}
     ${INCLUDE_FOLDER}
     ${PYTHON_INCLUDE_DIRS}
     ${GOOGLE_TEST_INCLUDE_DIR}
     ${GMOCK_INCLUDE_DIR}
     "../../include"
+    ${COMMON_API_INCLUDE_DIRS}
+	${COMMON_API_DBUS_INCLUDE_DIRS}
+	${COMMON_API_GEN_INCLUDE_DIR}
 )
-   
-file(GLOB NODESTATECOMMUNICATOR 
+
+  
+file(GLOB NODESTATECOMMUNICATORCAPI 
     "../../src/CAmDatabaseHandler.cpp"
     "../../src/CAmDatabaseObserver.cpp"
     "../../src/CAmRoutingSender.cpp"
     "../../src/CAmRoutingReceiver.cpp"    
-     "../../src/CAmDbusWrapper.cpp"
+     "../../src/CAmCommonAPIWrapper.cpp"
      "../../src/CAmDltWrapper.cpp"
      "../../src/CAmSocketHandler.cpp"
-     "../../src/CAmNodeStateCommunicator.cpp"
+     "../../src/CAmNodeStateCommunicatorCAPI.cpp"
      "../../src/CAmControlSender.cpp"
      "../../src/CAmCommandSender.cpp"  
      "../../src/CAmCommandReceiver.cpp"
      "../CAmCommonFunctions.cpp" 
     "../../src/CAmRouter.cpp"     
      "*.cpp"  
+     ${COMMON_API_GEN_SOURCES}
      )
 
-ADD_EXECUTABLE(AmNodeStateCommunicatorTest ${NODESTATECOMMUNICATOR})
+CONFIGURE_FILE( ${CMAKE_SOURCE_DIR}/AudioManagerDaemon/fidls/AudioManager_dbus.conf.in ${CMAKE_BINARY_DIR}/AmNodeStateCommunicatorCAPITest_dbus.conf)
 
-TARGET_LINK_LIBRARIES(AmNodeStateCommunicatorTest 
+ADD_EXECUTABLE(AmNodeStateCommunicatorCAPITest ${NODESTATECOMMUNICATORCAPI} ${COMMON_API_GEN_SOURCES})
+
+TARGET_LINK_LIBRARIES(AmNodeStateCommunicatorCAPITest 
     ${SQLITE_LIBRARIES}
     ${DLT_LIBRARIES}
-    ${DBUS_LIBRARY}
     ${CMAKE_DL_LIBS}
     ${CMAKE_THREAD_LIBS_INIT}
     ${PYTHON_LIBRARY}
+    ${COMMON_API_LIBRARIES}
+    ${COMMON_API_DBUS_LIBRARIES}
     gtest
     gmock
 )
 
-ADD_DEPENDENCIES(AmNodeStateCommunicatorTest gtest gmock)
+ADD_DEPENDENCIES(AmNodeStateCommunicatorCAPITest gtest gmock)
 
-INSTALL(TARGETS AmNodeStateCommunicatorTest 
+INSTALL(TARGETS AmNodeStateCommunicatorCAPITest 
         DESTINATION "~/AudioManagerTest/"
         PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
         COMPONENT tests
@@ -103,9 +110,10 @@ IF(USE_BUILD_LIBS)
 	    COMMAND mkdir -p ${EXECUTABLE_OUTPUT_PATH}
 	    COMMAND cp "${CMAKE_CURRENT_SOURCE_DIR}/org.genivi.NodeStateManager.Consumer.xml" ${EXECUTABLE_OUTPUT_PATH}/org.genivi.NodeStateManager.Consumer.xml
 	    COMMAND cp "${CMAKE_CURRENT_SOURCE_DIR}/nsm.py" ${EXECUTABLE_OUTPUT_PATH}/nsm.py
-	    COMMAND cp "${CMAKE_CURRENT_SOURCE_DIR}/send2nsm.py" ${EXECUTABLE_OUTPUT_PATH}/send2nsm.py)
+	    COMMAND cp "${CMAKE_CURRENT_SOURCE_DIR}/send2nsm.py" ${EXECUTABLE_OUTPUT_PATH}/send2nsm.py
+	    COMMAND cp "${CMAKE_BINARY_DIR}/AmNodeStateCommunicatorCAPITest_dbus.conf" ${EXECUTABLE_OUTPUT_PATH})
 ENDIF(USE_BUILD_LIBS) 
 
-SET(ADD_DEPEND "audiomanager-bin" "sqlite3(>=3.6.22)" "dlt" "libdbus-1-3(>=1.2.16)" "gtest"  "libpthread-stubs0")
+SET(ADD_DEPEND "audiomanager-bin" "sqlite3(>=3.6.22)" "dlt" "gtest"  "libpthread-stubs0")
 set_property(GLOBAL APPEND PROPERTY tests_prop "${ADD_DEPEND}")
 

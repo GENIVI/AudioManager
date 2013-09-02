@@ -47,7 +47,7 @@ INCLUDE_DIRECTORIES(
 # all source files go here
 file(GLOB PLUGIN_CONTROL_SRCS_CXX "src/*.cpp")
 
-add_library(PluginControlInterface SHARED ${PLUGIN_CONTROL_SRCS_CXX})
+add_library(PluginControlInterface MODULE ${PLUGIN_CONTROL_SRCS_CXX})
 
 SET_TARGET_PROPERTIES(PluginControlInterface PROPERTIES 
                                             SOVERSION "${LIB_INTERFACE_VERSION}"

@@ -60,7 +60,7 @@ INCLUDE_DIRECTORIES(
 file(GLOB PLUGINDBUS_SRCS_CXX "src/*.cpp")
 
 
-add_library(PluginRoutingInterfaceDbus SHARED ${PLUGINDBUS_SRCS_CXX})
+add_library(PluginRoutingInterfaceDbus MODULE ${PLUGINDBUS_SRCS_CXX})
 
 SET_TARGET_PROPERTIES(PluginRoutingInterfaceDbus PROPERTIES 
                                             SOVERSION "${LIB_INTERFACE_VERSION}"
@@ -109,4 +109,4 @@ INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/RoutingReceiver.xml
 SET(ADD_DEPEND "audiomanager-bin" "dlt" "libdbus-1-3(>=1.2.16)")
 set_property(GLOBAL APPEND PROPERTY sampleplugins_prop "${ADD_DEPEND}")
 
-ENDIF(WITH_ROUTING_INTERFACE_DBUS)
+ENDIF()

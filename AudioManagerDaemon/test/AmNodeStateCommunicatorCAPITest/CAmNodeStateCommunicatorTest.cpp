@@ -12,7 +12,7 @@
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *
- * \author Christian Linke, christian.linke@bmw.de BMW 2012
+* \author Aleksandar Donchev, aleksander.donchev@partner.bmw.de BMW 2013
  *
  * \file CAmNodeStateCommunicatorTest.cpp
  * For further information see http://www.genivi.org/.
@@ -22,15 +22,18 @@
 #include "CAmNodeStateCommunicatorTest.h"
 #include "shared/CAmDltWrapper.h"
 #include "shared/CAmSocketHandler.h"
-#include "shared/CAmDbusWrapper.h"
+
+#include <unistd.h>
 
 using namespace testing;
 using namespace am;
 
 static CAmEnvironment* env;
 
+
 CAmNodeStateCommunicatorTest::CAmNodeStateCommunicatorTest()
 {
+	std::cout<<"Exec path : " << EXECUTABLE_OUTPUT_PATH <<std::endl;
 }
 
 CAmNodeStateCommunicatorTest::~CAmNodeStateCommunicatorTest()
@@ -60,10 +63,9 @@ void* mainLoop(void* importHandler)
 }
 
 
-
 TEST_F(CAmNodeStateCommunicatorTest, nsmChangeNodeState)
 {
-    env->pControlInterfaceBackdoor.replaceController(&env->pControlSender,&pMockControlInterface);
+    assert(true == env->pControlInterfaceBackdoor.replaceController(&env->pControlSender,&pMockControlInterface));
     NsmNodeState_e newstate(NsmNodeState_BaseRunning) ;
     EXPECT_CALL(pMockControlInterface,hookSystemNodeStateChanged(newstate));
     std::ostringstream send;
@@ -211,14 +213,31 @@ CAmEnvironment::CAmEnvironment() :
     pControlInterfaceBackdoor(),
     pControlSender(),
     iSocketHandler(),
-    wrapper(&iSocketHandler,DBusBusType::DBUS_BUS_SESSION),
-    nsmController(&wrapper)
+    wrapper(CAmCommonAPIWrapper::instantiateOnce(&iSocketHandler)),
+    nsmController(wrapper),
+    pNsmThread(0),
+    pMainLoopThread(0)
 {
     env=this;
 }
 
 CAmEnvironment::~CAmEnvironment()
 {
+}
+
+void CAmEnvironment::waitUntilAvailable(unsigned short seconds = 10)
+{
+	int countTries = 0;
+	printf("\nWaiting for service");
+	while( countTries++<seconds )
+	{
+		printf(".");
+		if(nsmController.isServiceAvailable())
+			break;
+		else
+			sleep(1);
+	}
+	printf("\n");
 }
 
 void CAmEnvironment::SetUp()
@@ -229,7 +248,7 @@ void CAmEnvironment::SetUp()
     //create the mainloop thread
     pthread_create(&pMainLoopThread, NULL, mainLoop, (void*)&iSocketHandler);
     printf("[----------] Waiting for interface to be ready....\r\n");
-    sleep(2);
+    waitUntilAvailable(10);
 }
 
 void CAmEnvironment::TearDown()

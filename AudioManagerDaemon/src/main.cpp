@@ -32,11 +32,21 @@
 #ifdef  WITH_TELNET
     #include "CAmTelnetServer.h"
 #endif
-#ifdef WITH_DBUS_WRAPPER
-    #include "shared/CAmDbusWrapper.h"
+
+#ifdef WITH_CAPI_WRAPPER
+    #include "shared/CAmCommonAPIWrapper.h"
+#else
+	#ifdef WITH_DBUS_WRAPPER
+		#include "shared/CAmDbusWrapper.h"
+	#endif
 #endif
+
 #ifdef WITH_NSM
-    #include "CAmNodeStateCommunicator.h"
+	#ifdef WITH_DBUS_WRAPPER
+		#include "CAmNodeStateCommunicatorDBus.h"
+	#else
+		#include "CAmNodeStateCommunicatorCAPI.h"
+	#endif
 #endif
 
 #ifdef WITH_DATABASE_STORAGE
@@ -71,6 +81,7 @@
 #include "CAmDatabaseObserver.h"
 #include "shared/CAmDltWrapper.h"
 #include "shared/CAmSocketHandler.h"
+
 
 using namespace am;
 DLT_DECLARE_CONTEXT(AudioManager)
@@ -309,10 +320,19 @@ void mainProgram()
     //Instantiate all classes. Keep in same order !
     CAmSocketHandler iSocketHandler;
 
+#ifdef WITH_CAPI_WRAPPER
+    //We instantiate a singleton with the current socket handler, which loads the common-api runtime.
+    CAmCommonAPIWrapper *pCAPIWrapper = CAmCommonAPIWrapper::instantiateOnce(&iSocketHandler);
+    CAmCommonAPIWrapper iDBusWrapper = *pCAPIWrapper;
+#ifdef WITH_NSM
+    CAmNodeStateCommunicatorCAPI iNodeStateCommunicator(&iDBusWrapper);
+#endif /*WITH_NSM*/
+#endif /*WITH_CAPI_WRAPPER */
+
 #ifdef WITH_DBUS_WRAPPER
     CAmDbusWrapper iDBusWrapper(&iSocketHandler,dbusWrapperType);
 #ifdef WITH_NSM
-    CAmNodeStateCommunicator iNodeStateCommunicator(&iDBusWrapper);
+    CAmNodeStateCommunicatorDBus iNodeStateCommunicator(&iDBusWrapper);
 #endif /*WITH_NSM*/
 #endif /*WITH_DBUS_WRAPPER */
 
@@ -335,18 +355,17 @@ void mainProgram()
 #ifdef WITH_DBUS_WRAPPER
     CAmCommandReceiver iCommandReceiver(pDatabaseHandler, &iControlSender, &iSocketHandler, &iDBusWrapper);
     CAmRoutingReceiver iRoutingReceiver(pDatabaseHandler, &iRoutingSender, &iControlSender, &iSocketHandler, &iDBusWrapper);
-#ifdef WITH_NSM
-    CAmControlReceiver iControlReceiver(pDatabaseHandler,&iRoutingSender,&iCommandSender,&iSocketHandler, &iRouter, &iNodeStateCommunicator);
-    iNodeStateCommunicator.registerControlSender(&iControlSender);
-#else /*WITH_NSM*/
-    CAmControlReceiver iControlReceiver(pDatabaseHandler,&iRoutingSender,&iCommandSender,&iSocketHandler, &iRouter);
-#endif /*WITH_NSM*/
 #else /*WITH_DBUS_WRAPPER*/
-    CAmCommandReceiver iCommandReceiver(pDatabaseHandler,&iControlSender,&iSocketHandler);
-    CAmRoutingReceiver iRoutingReceiver(pDatabaseHandler,&iRoutingSender,&iControlSender,&iSocketHandler);
-    CAmControlReceiver iControlReceiver(pDatabaseHandler,&iRoutingSender,&iCommandSender,&iSocketHandler, &iRouter);
+	    CAmCommandReceiver iCommandReceiver(pDatabaseHandler,&iControlSender,&iSocketHandler);
+	    CAmRoutingReceiver iRoutingReceiver(pDatabaseHandler,&iRoutingSender,&iControlSender,&iSocketHandler);
 #endif /*WITH_DBUS_WRAPPER*/
 
+#ifdef WITH_NSM
+	CAmControlReceiver iControlReceiver(pDatabaseHandler,&iRoutingSender,&iCommandSender,&iSocketHandler, &iRouter, &iNodeStateCommunicator);
+	iNodeStateCommunicator.registerControlSender(&iControlSender);
+#else /*WITH_NSM*/
+	CAmControlReceiver iControlReceiver(pDatabaseHandler,&iRoutingSender,&iCommandSender,&iSocketHandler, &iRouter);
+#endif /*WITH_NSM*/
 
 #ifdef WITH_TELNET
     CAmTelnetServer iTelnetServer(&iSocketHandler, &iCommandSender, &iCommandReceiver, &iRoutingSender, &iRoutingReceiver, &iControlSender, &iControlReceiver, pDatabaseHandler, &iRouter, telnetport, maxConnections);

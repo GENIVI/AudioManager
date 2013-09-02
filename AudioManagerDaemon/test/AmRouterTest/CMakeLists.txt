@@ -61,9 +61,9 @@ file(GLOB ROUTING_SRCS_CXX
     )
     
 IF(WITH_NSM)
-    SET (ROUTING_SRCS_CXX
-        ${ROUTING_SRCS_CXX}
-    "../../src/CAmNodeStateCommunicator.cpp")
+    SET (DATABASE_SRCS_CXX
+        ${DATABASE_SRCS_CXX}
+    "../../src/CAmNodeStateCommunicatorDBus.cpp")
 ENDIF(WITH_NSM)
 
 ADD_EXECUTABLE( AmRouterTest ${ROUTING_SRCS_CXX})

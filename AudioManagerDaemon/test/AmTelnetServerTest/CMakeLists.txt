@@ -69,9 +69,9 @@ file(GLOB TELNET_SRCS_CXX
 )
 
 IF(WITH_NSM)
-    SET (TELNET_SRCS_CXX
-        ${TELNET_SRCS_CXX}
-    "../../src/CAmNodeStateCommunicator.cpp")
+    SET (DATABASE_SRCS_CXX
+        ${DATABASE_SRCS_CXX}
+    "../../src/CAmNodeStateCommunicatorDBus.cpp")
 ENDIF(WITH_NSM)
 
 ADD_EXECUTABLE(AmTelnetServerTest ${TELNET_SRCS_CXX})

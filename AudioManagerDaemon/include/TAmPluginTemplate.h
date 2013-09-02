@@ -46,10 +46,9 @@ template<class T> T* getCreateFunction(const std::string& libname, void*& librar
 
     // cut off "lib" in front and cut off .so end"
     std::string createFunctionName = libFileName.substr(3, libFileName.length() - 6) + "Factory";
-
     // open library
     dlerror(); // Clear any existing error
-    libraryHandle = dlopen(libname.c_str(), RTLD_LAZY);
+    libraryHandle = dlopen(libname.c_str(), RTLD_LAZY );
     const char* dlopen_error = dlerror();
     if (!libraryHandle || dlopen_error)
     {

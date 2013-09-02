@@ -48,10 +48,10 @@ DBUS_INTROSPECT_1_0_XML_DOCTYPE_DECL_NODE								\
 CAmDbusWrapper* CAmDbusWrapper::mpReference = NULL;
 
 CAmDbusWrapper::CAmDbusWrapper(CAmSocketHandler* socketHandler, DBusBusType type) :
+        pDbusPrepareCallback(this,&CAmDbusWrapper::dbusPrepareCallback), //
         pDbusDispatchCallback(this, &CAmDbusWrapper::dbusDispatchCallback), //
         pDbusFireCallback(this, &CAmDbusWrapper::dbusFireCallback), //
         pDbusCheckCallback(this, &CAmDbusWrapper::dbusCheckCallback), //
-        pDbusPrepareCallback(this,&CAmDbusWrapper::dbusPrepareCallback), //
         pDbusTimerCallback(this, &CAmDbusWrapper::dbusTimerCallback), //
         mpDbusConnection(0), //
         mDBusError(), //

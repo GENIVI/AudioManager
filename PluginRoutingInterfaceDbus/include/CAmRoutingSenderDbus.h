@@ -2,6 +2,7 @@
  *  Copyright (c) 2012 BMW
  *
  *  \author Christian Mueller, christian.ei.mueller@bmw.de BMW 2011,2012
+ *  \author Aleksandar Donchev, aleksander.donchev@partner.bmw.de BMW 2013
  *
  *  \copyright
  *  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -80,6 +81,8 @@ private:
     typedef std::map<am_sourceID_t,rs_lookupData_s> mapSources_t;
     typedef std::map<am_connectionID_t,rs_lookupData_s> mapConnections_t;
     typedef std::map<uint16_t,rs_lookupData_s> mapHandles_t;
+
+    template <typename TKey> static void  removeEntriesForValue(const rs_lookupData_s & value, std::map<TKey,rs_lookupData_s> & map);
 
     mapDomain_t mMapDomains;
     mapSinks_t mMapSinks;

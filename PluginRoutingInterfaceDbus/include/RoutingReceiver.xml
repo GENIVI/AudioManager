@@ -73,6 +73,7 @@
 		<arg name="domainid" type="q" direction="out" />
 		<arg name="error" type="q" direction="out" />
 	</method>
+<!--check the parameters-->	
 	<method name="deregisterDomain">		
 		<arg name="handle" type="q" direction="in" />
 		<arg name="error" type="q" direction="in" />
@@ -144,19 +145,19 @@
 	</method>
 	<method name="hookSinkAvailablityStatusChange">
 		<arg name="sinkID" type="q" direction="in" />
-        <arg name="availability" type="(nn)" direction="out"/>		
+        <arg name="availability" type="(nn)" direction="in"/>		
 	</method>	
 	<method name="hookSourceAvailablityStatusChange">
 		<arg name="sourceID" type="q" direction="in" />
-        <arg name="availability" type="(nn)"  direction="out"/>		
+        <arg name="availability" type="(nn)"  direction="in"/>		
 	</method>		
 	<method name="hookDomainStateChange">
 		<arg name="domainID" type="q" direction="in" />
-        <arg name="domainState" type="q" direction="out"/>		
+        <arg name="domainState" type="q" direction="in"/>		
 	</method>			
 	<method name="hookTimingInformationChanged">
 		<arg name="connectionID" type="q" direction="in" />
-        <arg name="delay" type="n" direction="out"/>		
+        <arg name="delay" type="n" direction="in"/>		
 	</method>		
 	<method name="sendChangedData"> <!--am_EarlyDataType_e type; am_DataType_u sinksource; am_EarlyData_u data; -->
 		<arg name="earlyData_volumes" type="a(qqn)" direction="in" /> <!-- only the volumes as array -->

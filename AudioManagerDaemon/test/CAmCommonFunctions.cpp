@@ -92,7 +92,7 @@ IAmControlBackdoor::~IAmControlBackdoor()
 bool IAmControlBackdoor::replaceController(CAmControlSender *controlSender, IAmControlSend *newController)
 {
     controlSender->mController = newController;
-    return true;
+    return controlSender->mController == newController;
 }
 
 //int GetRandomNumber(int nLow, int nHigh) {

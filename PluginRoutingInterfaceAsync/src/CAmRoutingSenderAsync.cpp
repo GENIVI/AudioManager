@@ -694,20 +694,21 @@ std::vector<am_Source_s> CAmRoutingSenderAsync::createSourceTable()
     //create a bunch full of sources
     std::vector<am_Source_s> table;
     am_Source_s item;
+    item.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
+    item.sourceClassID = 1;
+    item.volume = 0;
+    item.visible = true;
+    item.available.availability = A_AVAILABLE;
+    item.available.availabilityReason = AR_UNKNOWN;
+    item.sourceState = SS_OFF;
+    item.interruptState = am_InterruptState_e::IS_OFF;
+    item.domainID = 0; //we cannot know this when the table is created !
     for (int16_t i = 0; i <= 10; i++)
     {
         std::stringstream temp;
         temp << i;
-        item.domainID = 0; //we cannot know this when the table is created !
         item.name = "mySource" + temp.str();
-        item.sourceState = SS_OFF;
         item.sourceID = i; //take fixed ids to make thins easy
-        item.sourceClassID = 1;
-        item.volume = 0;
-        item.visible = true;
-        item.available.availability = A_AVAILABLE;
-        item.available.availabilityReason = AR_UNKNOWN;
-        item.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
         table.push_back(item);
     }
     return (table);

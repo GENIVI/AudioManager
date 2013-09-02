@@ -4,6 +4,7 @@
  *
  *  \author Christian Mueller, christian.ei.mueller@bmw.de BMW 2011,2012
  *  \author Sampreeth Ramavana
+ *  \author Aleksandar Donchev, aleksander.donchev@partner.bmw.de BMW 2013
  *
  *  \copyright
  *  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -335,14 +336,46 @@ void CAmRoutingSenderDbus::addSinkLookup(am_sinkID_t sinkID, am_domainID_t domai
     }
 }
 
+template <typename TKey> void  CAmRoutingSenderDbus::removeEntriesForValue(const rs_lookupData_s & value, std::map<TKey,rs_lookupData_s> & map)
+{
+	typename std::map<TKey,rs_lookupData_s>::iterator it = map.begin();
+	while ( it != map.end() )
+	{
+		if (it->second.busname == value.busname &&
+			it->second.interface == value.interface &&
+			it->second.path == value.path)
+		{
+			typename std::map<TKey,rs_lookupData_s>::iterator it_tmp = it;
+			it++;
+			map.erase(it_tmp);
+		}
+		else
+			++it;
+	}
+}
+
 void CAmRoutingSenderDbus::removeDomainLookup(am_domainID_t domainID)
 {
-    mMapHandles.erase(domainID);
+    mapDomain_t::iterator iter(mMapDomains.begin());
+    iter = mMapDomains.find(domainID);
+    if (iter != mMapDomains.end())
+    {
+    	CAmRoutingSenderDbus::removeEntriesForValue(iter->second, mMapSources);
+    	CAmRoutingSenderDbus::removeEntriesForValue(iter->second, mMapSinks);
+    	CAmRoutingSenderDbus::removeEntriesForValue(iter->second, mMapHandles);
+    	CAmRoutingSenderDbus::removeEntriesForValue(iter->second, mMapConnections);
+		mMapDomains.erase(domainID);
+    }
 }
 
 void CAmRoutingSenderDbus::removeSourceLookup(am_sourceID_t sourceID)
 {
-    mMapHandles.erase(sourceID);
+	mMapSources.erase(sourceID);
+}
+
+void CAmRoutingSenderDbus::removeSinkLookup(am_sinkID_t sinkID)
+{
+    mMapSinks.erase(sinkID);
 }
 
 am_Error_e CAmRoutingSenderDbus::asyncSetVolumes(const am_Handle_s handle, const std::vector<am_Volumes_s>& listVolumes)
@@ -369,11 +402,6 @@ am_Error_e CAmRoutingSenderDbus::asyncSetSourceNotificationConfiguration(const a
     (void) notificationConfiguration;
     //todo: implement asyncSetSourceNotificationConfiguration;
     return (E_NOT_USED);
-}
-
-void CAmRoutingSenderDbus::removeSinkLookup(am_sinkID_t sinkID)
-{
-    mMapHandles.erase(sinkID);
 }
 
 }

@@ -12,21 +12,24 @@
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *
- * \author Christian Linke, christian.linke@bmw.de BMW 2012
+* \author Aleksandar Donchev, aleksander.donchev@partner.bmw.de BMW 2013
  *
  * \file CAmNodeStateCommunicatorTest.h
  * For further information see http://www.genivi.org/.
  *
  */
+
+
 #ifndef CAMNODESTATECOMMUNICATORTEST_H_
 #define CAMNODESTATECOMMUNICATORTEST_H_
 
-#include "CAmNodeStateCommunicator.h"
+#include "CAmNodeStateCommunicatorCAPI.h"
 #include "CAmControlSender.h"
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 #include "../IAmControlBackdoor.h"
 #include "../MockIAmControlSend.h"
+#include "shared/CAmCommonAPIWrapper.h"
 
 using namespace testing;
 using namespace am;
@@ -37,14 +40,15 @@ public:
     IAmControlBackdoor pControlInterfaceBackdoor;
     CAmControlSender pControlSender;
     CAmSocketHandler iSocketHandler;
-    CAmDbusWrapper wrapper;
-    CAmNodeStateCommunicator nsmController;
+    CAmCommonAPIWrapper *wrapper;
+    CAmNodeStateCommunicatorCAPI nsmController;
     pthread_t pNsmThread, pMainLoopThread;
     CAmEnvironment();
     ~CAmEnvironment();
     void SetUp();
     // Override this to define how to tear down the environment.
     void TearDown();
+    void waitUntilAvailable(unsigned short seconds);
 };
 
 class CAmNodeStateCommunicatorTest:public ::testing::Test

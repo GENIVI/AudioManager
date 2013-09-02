@@ -3,6 +3,8 @@
 
 #cmakedefine DAEMONVERSION "@DAEMONVERSION@"
 
+#cmakedefine WITH_ENABLED_IPC
+#cmakedefine WITH_CAPI_WRAPPER
 #cmakedefine WITH_DBUS_WRAPPER
 #cmakedefine WITH_DATABASE_STORAGE
 #cmakedefine WITH_DLT

@@ -63,7 +63,7 @@ file(GLOB DATABASE_SRCS_CXX
 IF(WITH_NSM)
     SET (DATABASE_SRCS_CXX
         ${DATABASE_SRCS_CXX}
-    "../../src/CAmNodeStateCommunicator.cpp")
+    "../../src/CAmNodeStateCommunicatorDBus.cpp")
 ENDIF(WITH_NSM)
 
 ADD_EXECUTABLE( AmDatabaseHandlerTest ${DATABASE_SRCS_CXX})

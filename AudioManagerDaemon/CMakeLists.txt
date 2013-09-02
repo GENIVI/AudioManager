@@ -44,6 +44,11 @@ ENDIF(WITH_DBUS_WRAPPER)
 
 FIND_PACKAGE(NSM REQUIRED)
 
+IF(WITH_CAPI_WRAPPER)
+    FIND_PACKAGE(CommonAPI REQUIRED)
+    FIND_PACKAGE(CommonAPI_DBus REQUIRED) 
+ENDIF(WITH_CAPI_WRAPPER)
+
 SET(AUDIOMAN_SRCS_CXX
     src/main.cpp
     src/CAmCommandReceiver.cpp
@@ -56,6 +61,7 @@ SET(AUDIOMAN_SRCS_CXX
     src/CAmRouter.cpp
     src/CAmSocketHandler.cpp
     src/CAmDltWrapper.cpp
+    src/CAmLog.cpp
 )
 
 # Preallocation variable for the map.
@@ -95,11 +101,25 @@ IF(WITH_DBUS_WRAPPER)
     )
 ENDIF(WITH_DBUS_WRAPPER)
 
-IF(WITH_NSM)
+IF(WITH_CAPI_WRAPPER)
     SET (AUDIOMAN_SRCS_CXX
         ${AUDIOMAN_SRCS_CXX}
-        src/CAmNodeStateCommunicator.cpp
+        src/CAmCommonAPIWrapper.cpp
     )
+ENDIF(WITH_CAPI_WRAPPER)
+
+IF(WITH_NSM)
+    IF(WITH_DBUS_WRAPPER)
+        SET (AUDIOMAN_SRCS_CXX
+            ${AUDIOMAN_SRCS_CXX}
+            src/CAmNodeStateCommunicatorDBus.cpp
+        )
+    ELSE(WITH_DBUS_WRAPPER)
+            SET (AUDIOMAN_SRCS_CXX
+            ${AUDIOMAN_SRCS_CXX}
+            src/CAmNodeStateCommunicatorCAPI.cpp
+        )
+    ENDIF(WITH_DBUS_WRAPPER)
 ENDIF(WITH_NSM)
 
 IF(WITH_DATABASE_STORAGE)
@@ -123,6 +143,14 @@ INCLUDE_DIRECTORIES(
 	${NSM_INCLUDE_DIR}
 )
 
+IF(WITH_CAPI_WRAPPER)
+INCLUDE_DIRECTORIES(${INCLUDE_DIRECTORIES}
+    ${COMMON_API_INCLUDE_DIRS}
+	${COMMON_API_DBUS_INCLUDE_DIRS}
+	${COMMON_API_GEN_INCLUDE_DIR}
+)
+ENDIF(WITH_CAPI_WRAPPER)
+
 IF(WITH_DLT)
 INCLUDE_DIRECTORIES(${INCLUDE_DIRECTORIES}
     ${DLT_INCLUDE_DIRS}
@@ -136,22 +164,27 @@ INCLUDE_DIRECTORIES(${INCLUDE_DIRECTORIES}
 )
 ENDIF(WITH_DBUS_WRAPPER)
 
-ADD_EXECUTABLE(AudioManager ${AUDIOMAN_SRCS_CXX})
+file(GLOB ${AUDIOMAN_SRCS_CXX} ${COMMON_API_GEN_SOURCES})
 
-IF(WITH_DBUS_WRAPPER)
+ADD_EXECUTABLE(AudioManager ${AUDIOMAN_SRCS_CXX} ${COMMON_API_GEN_SOURCES})
+
+TARGET_LINK_LIBRARIES(AudioManager 
+	${SQLITE_LIBRARIES}
+	${CMAKE_DL_LIBS}
+ )
+ 
+ IF(WITH_DBUS_WRAPPER)
     TARGET_LINK_LIBRARIES(AudioManager 
-    	${SQLITE_LIBRARIES}
-    	${CMAKE_DL_LIBS}
     	${DBUS_LIBRARY}
     	rt
     )
-ELSE(WITH_DBUS_WRAPPER)
+ELSEIF(WITH_CAPI_WRAPPER)
     TARGET_LINK_LIBRARIES(AudioManager 
-        ${SQLITE_LIBRARIES}
-        ${CMAKE_DL_LIBS}
+        ${COMMON_API_LIBRARIES}
+        ${COMMON_API_DBUS_LIBRARIES}
         rt
     )
-ENDIF(WITH_DBUS_WRAPPER)
+ENDIF()
 
 IF(WITH_DLT)
     TARGET_LINK_LIBRARIES(AudioManager
@@ -165,14 +198,18 @@ IF (SYSTEMD_FOUND)
 	)
 ENDIF (SYSTEMD_FOUND)
 
-#IF(WITH_DOCUMENTATION)
-#	file(MAKE_DIRECTORY ${DOC_OUTPUT_PATH})
-#	configure_file(${DOXY_FILE}  ${DOC_OUTPUT_PATH}/Doxyfile  @ONLY IMMEDIATE)
-#  	add_custom_target (Docs ALL 
-#  		COMMAND ${DOXYGEN_EXECUTABLE} ${DOC_OUTPUT_PATH}/Doxyfile WORKING_DIRECTORY ${DOC_OUTPUT_PATH}
-#  		SOURCES ${PROJECT_BINARY_DIR} ${DOC_OUTPUT_PATH}/Doxyfile
-#	)
-#ENDIF(WITH_DOCUMENTATION)
+IF(WITH_CAPI_WRAPPER)
+    IF(WITH_NSM)
+        INSERT_DBUS_CONF_IF_NEEDED("@NSM_DBUS_CONF@" 
+                                  "${CMAKE_SOURCE_DIR}/AudioManagerDaemon/fidls/NodeStateManager_dbus.conf" 
+                                  NSM_DBUS_CONF)
+    ENDIF(WITH_NSM)
+# Generates the dbus configuration file. Every component is responsible to append it dbus configuration part.
+CONFIGURE_FILE( ${CMAKE_SOURCE_DIR}/AudioManagerDaemon/fidls/AudioManager_dbus.conf.in ${CMAKE_SOURCE_DIR}/AudioManagerDaemon/fidls/AudioManager_dbus.conf)
+CONFIGURE_FILE( ${CMAKE_SOURCE_DIR}/AudioManagerDaemon/fidls/AudioManager_dbus.conf.in ${CMAKE_BINARY_DIR}/AudioManager_dbus.conf)
+
+ENDIF(WITH_CAPI_WRAPPER)
+
 
 INSTALL(TARGETS AudioManager 
         RUNTIME 
@@ -191,11 +228,12 @@ IF(WITH_NSM)
         SET(NSM_INTROSPECTION_FILE ${EXECUTABLE_OUTPUT_PATH}/LifeCycleConsumer.xml)
             execute_process(
     	    COMMAND mkdir -p "${CMAKE_SOURCE_DIR}/bin"
-    	    COMMAND cp "${CMAKE_SOURCE_DIR}/cmake/LifecycleConsumer.xml" ${NSM_INTROSPECTION_FILE})
+    	    COMMAND cp "${CMAKE_SOURCE_DIR}/cmake/LifecycleConsumer.xml" ${NSM_INTROSPECTION_FILE}
+    	    COMMAND cp "${CMAKE_BINARY_DIR}/AudioManager_dbus.conf" ${EXECUTABLE_OUTPUT_PATH})
     ELSE(USE_BUILD_LIBS) 
-        SET(NSM_INTROSPECTION_FILE ${CMAKE_INSTALL_PREFIX}/share/audiomanager/LifeCycleConsumer.xml)
+        SET(NSM_INTROSPECTION_FILE ${CMAKE_INSTALL_PREFIX}/share/audiomanager/LifecycleConsumer.xml)
         INSTALL(
-            FILES ${CMAKE_SOURCE_DIR}/cmake/LifecycleConsumer.xml
+            FILES ${CMAKE_SOURCE_DIR}/cmake/LifecycleConsumer.xml #${CMAKE_BINARY_DIR}/AudioManager_dbus.conf
             DESTINATION "${NSM_INTROSPECTION_FILE}"
             COMPONENT bin)
     ENDIF(USE_BUILD_LIBS)
@@ -219,10 +257,12 @@ ENDIF(WITH_DLT)
 
 IF(WITH_DBUS_WRAPPER)
     SET(ADD_DEPEND_BIN_PROP ${ADD_DEPEND_BIN_PROP} "libdbus-1-3(>=1.2.16)")
-ENDIF()
+ENDIF(WITH_DBUS_WRAPPER)
 
 # Additional Dev packet dependency
 SET(ADD_DEPEND_DEV_PROP "audiomanager-bin" ${ADD_DEPEND_BIN_PROP})
+
+set(CMAKE_CXX_FLAGS_RELEASE "-O2 -fno-common -fno-strict-aliasing -DNDEBUG")
 
 MESSAGE(STATUS "bin packet dependency: ${ADD_DEPEND_BIN_PROP}")
 MESSAGE(STATUS "dev dependency: ${ADD_DEPEND_DEV_PROP}")

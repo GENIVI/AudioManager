@@ -62,7 +62,7 @@ file(GLOB CONTROL_INTERFACE_SRCS_CXX
 IF(WITH_NSM)
     SET (CONTROL_INTERFACE_SRCS_CXX
         ${CONTROL_INTERFACE_SRCS_CXX}
-    "../../src/CAmNodeStateCommunicator.cpp")
+    "../../src/CAmNodeStateCommunicatorDBus.cpp")
 ENDIF(WITH_NSM)
 
 ADD_EXECUTABLE(AmControlInterfaceTest ${CONTROL_INTERFACE_SRCS_CXX})

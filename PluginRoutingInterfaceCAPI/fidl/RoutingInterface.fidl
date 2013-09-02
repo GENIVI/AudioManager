@@ -1,0 +1,462 @@
+package org.genivi.audiomanager
+
+import org.genivi.audiomanager.am_gen.* from "amTypes.fidl"
+
+
+interface RoutingInterface
+{
+	version { major 0 minor 1 }
+	
+	method ackConnect
+	{
+		in
+		{
+			UInt16 handle
+			am_connectionID_t connectionID
+			UInt16 ^error		
+		}
+	}
+	method ackDisconnect
+	{
+		in
+		{
+			UInt16 handle
+			am_connectionID_t connectionID
+			UInt16 ^error		
+		}
+	}
+	method ackSetSinkVolume
+	{
+		in
+		{
+			UInt16 handle
+			am_volume_t volume
+			UInt16 ^error
+		}
+	}
+	method ackSetSourceVolume
+	{
+		in
+		{
+			UInt16 handle
+			am_volume_t volume
+			UInt16 ^error
+		}
+	}
+	method ackSetSourceState
+	{
+		in
+		{
+			UInt16 handle
+			UInt16 ^error		
+		}
+	}	
+	method ackSetSinkSoundProperties
+	{
+		in
+		{
+			UInt16 handle
+			UInt16 ^error		
+		}
+	}	
+	method ackSetSinkSoundProperty
+	{
+		in
+		{
+			UInt16 handle
+			UInt16 ^error		
+		}
+	}
+	method ackSetSourceSoundProperties
+	{
+		in
+		{
+			UInt16 handle
+			UInt16 ^error		
+		}
+	}
+	method ackSetSourceSoundProperty
+	{
+		in
+		{
+			UInt16 handle
+			UInt16 ^error		
+		}
+	}
+	method ackSourceVolumeTick
+	{
+		in 
+		{
+			UInt16 handle
+			am_sourceID_t source
+			am_volume_t volume		
+		}
+	}	
+	method ackSinkVolumeTick
+	{
+		in 
+		{
+			UInt16 handle
+			am_sinkID_t sink
+			am_volume_t volume		
+		}
+	}	
+	method ackCrossFading
+	{
+		in 
+		{
+			UInt16 handle
+			am_HotSink_e hotSink
+			am_Error_e returnError		
+		}
+	}		
+	method peekDomain
+	{
+		in
+		{
+			String name
+		}
+		
+		out
+		{
+			am_domainID_t domainID
+			am_Error_e ^error	
+		}
+	}
+	method registerDomain
+	{
+		in
+		{
+			am_Domain_s domainData
+			String returnBusname
+			String returnPath
+			String returnInterface
+		}
+		out
+		{
+			am_domainID_t domainID
+			am_Error_e ^error	
+		}
+	}
+	method deregisterDomain
+	{
+		in
+		{
+			am_domainID_t domainID
+		}
+		out
+		{
+			am_Error_e ^returnError	
+		}
+	}
+	method registerGateway
+	{
+		in
+		{
+			am_Gateway_s gatewayData
+		}
+		out
+		{
+			am_gatewayID_t gatewayID
+			am_Error_e ^error
+		}
+	}
+	method deregisterGateway
+	{
+		in
+		{
+			am_gatewayID_t gatewayID
+		}
+		out
+		{
+			am_Error_e ^returnError	
+		}
+	}
+	method peekSink
+	{
+		in
+		{
+			String name
+		}
+		
+		out
+		{
+			am_sinkID_t sinkID
+			am_Error_e ^error	
+		}
+	}
+	method registerSink
+	{
+		in
+		{
+			sinkData_s sinkData
+		}
+		out
+		{
+			am_sinkID_t sinkID
+			am_Error_e ^error
+		}
+	}
+	method deregisterSink
+	{
+		in
+		{
+			am_sinkID_t sinkID
+		}
+		out
+		{
+			am_Error_e ^returnError	
+		}
+	}	
+	method peekSource
+	{
+		in
+		{
+			String name
+		}
+		
+		out
+		{
+			am_sourceID_t sourceID
+			am_Error_e ^error	
+		}
+	}
+	method registerSource
+	{
+		in
+		{
+			sourceData_s sourceData
+		}
+		out
+		{
+			am_sourceID_t sourceID
+			am_Error_e ^error
+		}
+	}	
+	method deregisterSource
+	{
+		in
+		{
+			am_sourceID_t sourceID
+		}
+		out
+		{
+			am_Error_e ^returnError	
+		}
+	}	
+	method registerCrossfader
+	{
+		in
+		{
+			crossfaderData_s crossfaderData
+		}
+		out
+		{
+			am_crossfaderID_t crossfaderID
+			am_Error_e ^error
+		}
+	}	
+	method deregisterCrossfader
+	{
+		in
+		{
+			am_crossfaderID_t crossfaderID
+		}
+		out
+		{
+			am_Error_e ^returnError	
+		}
+	}		
+	method peekSourceClassID
+	{
+		in
+		{
+			String name
+		}
+		
+		out
+		{
+			am_sourceClass_t sourceClassID
+			am_Error_e ^error	
+		}
+	}
+	method peekSinkClassID
+	{
+		in
+		{
+			String name
+		}
+		
+		out
+		{
+			am_sinkClass_t sinkClassID
+			am_Error_e ^error	
+		}
+	}	
+	
+	method hookInterruptStatusChange
+	{
+		in 
+		{
+			am_sourceID_t sourceID
+			UInt16 interruptState	
+		}
+	}
+	method hookDomainRegistrationComplete
+	{
+		in 
+		{
+			am_domainID_t domainID
+		}
+	}	
+	method hookSinkAvailablityStatusChange
+	{
+		in 
+		{
+			am_sinkID_t sinkID
+			am_Availability_s availability
+		}
+	}	
+	method hookSourceAvailablityStatusChange
+	{
+		in 
+		{
+			am_sourceID_t sourceID
+			am_Availability_s availability
+		}
+	}	
+	method hookDomainStateChange
+	{
+		in 
+		{
+			am_domainID_t domainID
+			am_DomainState_e domainState
+		}
+	}	
+	method hookTimingInformationChanged
+	{
+		in 
+		{
+			am_connectionID_t connectionID
+			Int16 delay
+		}
+	}		
+	method sendChangedData
+	{
+		in 
+		{
+			am_EarlyData_l earlyData_volumes
+			am_EarlyData_l earlyData_soundproperties
+		}
+	}	
+	method confirmRoutingReady
+	{
+		in
+		{
+			am_domainID_t domainID
+		}
+	}
+	
+	method confirmRoutingRundown
+	{
+		in
+		{
+			am_domainID_t domainID
+		}
+	}	
+
+	method updateGateway
+	{
+		in
+		{
+			am_gatewayID_t gatewayID
+			am_ConnectionFormat_L listSourceFormats
+			am_ConnectionFormat_L listSinkFormats
+			bool_L convertionMatrix
+		}
+	}		
+
+	method updateSink
+	{
+		in
+		{
+			am_sinkID_t sinkID
+			am_sinkClass_t sinkClassID
+			am_SoundProperty_L listSoundProperties
+			am_ConnectionFormat_L listConnectionFormats
+			am_MainSoundProperty_L listMainSoundProperties
+		}
+	}		
+	method updateSource
+	{
+		in
+		{
+			am_sourceID_t sourceID
+			am_sourceClass_t sourceClassID
+			am_SoundProperty_L listSoundProperties
+			am_ConnectionFormat_L listConnectionFormats
+			am_MainSoundProperty_L listMainSoundProperties
+		}
+	}	
+	method ackSetVolumes
+	{
+		in
+		{
+			UInt16 handle
+			am_Volumes_l listVolumes
+			UInt16 ^error		
+		}
+	}		
+	method ackSinkNotificationConfiguration
+	{
+		in
+		{
+			UInt16 handle
+			UInt16 ^error		
+		}
+	}	
+	method ackSourceNotificationConfiguration
+	{
+		in
+		{
+			UInt16 handle
+			UInt16 ^error		
+		}
+	}	
+	method hookSinkNotificationDataChange
+	{
+		in
+		{
+			am_sinkID_t sinkID
+			notificationPayload_s payload
+		}
+	}
+	
+	method hookSourceNotificationDataChange
+	{
+		in
+		{
+			am_sourceID_t sourceID
+			notificationPayload_s payload
+		}
+	}
+
+	method getRoutingReadyState
+	{
+		out
+		{
+			Boolean readyState
+		}
+	}
+
+	broadcast setRoutingReady
+	{
+		
+	}
+	
+	broadcast setRoutingRundown
+	{
+		
+	}
+		
+}

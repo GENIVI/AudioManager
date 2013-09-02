@@ -1,0 +1,399 @@
+package org.genivi.audiomanager
+
+typeCollection am_gen
+{
+	typedef am_sourceID_t is UInt16
+	typedef am_sinkID_t is UInt16
+	typedef am_gatewayID_t is UInt16
+	typedef gongHandle is Int16
+	typedef am_sourceClass_t is UInt16
+	typedef am_sinkClass_t is UInt16
+	typedef am_volume_t is Int16
+	typedef am_mainVolume_t is Int16
+	typedef am_handle_t is UInt16
+	typedef am_time_t is UInt16
+	typedef am_connectionID_t is UInt16
+	typedef am_crossfaderID_t is UInt16
+	
+	
+	enumeration gp_indicatorDirection_e
+	{
+		INDICATOR_RIGHT ="0x00"
+		INDICATOR_LEFT="0x01"
+		INDICATOR_WARNING="0x02"
+	}
+	
+	enumeration	am_RampType_e
+	{
+		RAMP_UNKNOWN = "0x00"
+		RAMP_GENIVI_DIRECT = "0x01"
+		RAMP_GENIVI_NO_PLOP = "0x02"
+		RAMP_GENIVI_EXP_INV = "0x03"
+		RAMP_GENIVI_LINEAR = "0x04"
+		RAMP_GENIVI_EXP = "0x05"
+		RAMP_MAX = "0x06"
+	}
+	
+	enumeration am_MuteState_e
+	{
+		MS_UNKNOWN = "0x00"
+		MS_MUTED = "0x01"
+		MS_UNMUTED = "0x02"
+		MS_MAX = "0x03"
+	}
+	
+	enumeration am_SourceState_e 
+	{
+		SS_UNKNNOWN = "0x00"
+		SS_ON = "0x01"
+		SS_OFF = "0x02"
+		SS_PAUSED = "0x03"
+		SS_MAX = "0x04"
+    }   
+    enumeration am_Error_e
+	{
+		E_OK = "0x00"
+		E_UNKNOWN = "0x01"
+		E_OUT_OF_RANGE = "0x02"
+		E_NOT_USED = "0x03"
+		E_DATABASE_ERROR = "0x04"
+		E_ALREADY_EXISTS = "0x05"
+		E_NO_CHANGE = "0x06"
+		E_NOT_POSSIBLE = "0x07"
+		E_NON_EXISTENT = "0x08"
+		E_ABORTED = "0x09"
+		E_WRONG_FORMAT = "0xA"
+		E_MAX = "0xB"
+	}
+	
+	enumeration am_DomainState_e
+	{
+
+		DS_UNKNOWN = "0"
+		DS_CONTROLLED = "1"
+		DS_INDEPENDENT_STARTUP = "2"
+		DS_INDEPENDENT_RUNDOWN = "3"
+		DS_MAX = "4"
+	}
+	
+	enumeration gongType_e
+	{
+		AT_NUN = "0x01" 
+		AT_POC = "0x02" 
+		AT_QUE = "0x03"
+		AT_IWA = "0x04" 
+		AT_WA = "0x05" 
+		AT_ETC_F = "0x06"
+		AT_ETC_F2 = "0x07"
+		AT_ETC_ST = "0x08"
+		AT_ETC_S = "0x09"
+		AT_REV = "0x0A"
+		AT_ESU = "0x0B"
+		AT_ESD = "0x0C"
+		AT_DG = "0x0D"
+		AT_SG = "0x0E"
+		AT_IDG = "0x0F"
+		AT_ION = "0x10"
+		AT_IOFF = "0x11"	
+		AT_FBS = "0x12"
+		AT_VFS = "0x13"
+		AT_GES = "0x14"
+		AT_UEE = "0x15"
+	}	
+	
+	enumeration am_EarlyDataType_e
+	{
+		ED_UNKNOWN = "0x00" 
+		ED_SOURCE_VOLUME = "0x01" 
+		ED_SINK_VOLUME = "0x02" 
+		ED_SOURCE_PROPERTY = "0x03"
+		ED_SINK_PROPERTY = "0x04" 
+		ED_MAX = "0x05"
+	}
+	
+	enumeration gp_indicatorStatus_e
+	{
+		IS_ON = "0x00"
+		IS_OFF = "0x01"
+ 	}
+	
+	enumeration gongStatus_e
+	{
+		NOT_PLAYING = "0x00"
+		PLAYING = "0x01"
+		INTERRUPTED = "0x02"
+	}
+	
+	enumeration gongError_e
+	{
+		SUCCESS = "0x00"
+		ERROR = "0x01"
+		LOW_PRIORITY = "0x02"
+	}
+	
+	enumeration gongClass_e
+	{
+		GONGCLASS_1 = "0x01" 
+		GONGCLASS_2 = "0x02" 
+		GONGCLASS_PDC = "0x03" 
+		GONGCLASS_TURN = "0x04" 
+		GONGCLASS_OBSTACLE = "0x05"
+	}
+	
+	enumeration sampleSet_e
+	{
+		setBMW = "0x00"
+		setMini = "0x01"
+		setRR = "0x02"
+	}
+	
+	enumeration am_Availability_e
+	{
+		A_UNKNOWN = "0x00"
+		A_AVAILABLE = "0x01"
+		A_UNAVAILABLE = "0x02"
+		A_MAX = "0x03"
+	}
+	enumeration am_AvailabilityReason_e
+	{
+		AR_UNKNOWN = "0x00"
+		AR_GENIVI_NEWMEDIA = "0x01"
+		AR_GENIVI_SAMEMEDIA = "0x02"
+		AR_GENIVI_NOMEDIA = "0x03"
+		AR_GENIVI_TEMPERATURE = "0x04"
+		AR_GENIVI_VOLTAGE = "0x05"
+		AR_GENIVI_ERRORMEDIA = "0x06"
+		AR_MAX = "0x07"	
+	}
+	
+	enumeration am_InterruptState_e
+	{
+		IS_UNKNOWN = "0x00"
+		IS_OFF = "0x01"
+		IS_INTERRUPTED = "0x02"
+		IS_MAX = "0x03"
+	}
+	
+	enumeration am_SoundPropertyType_e
+	{
+		SP_UNKNOWN = "0x00"
+		SP_EXAMPLE_TREBLE = "0x01"
+		SP_EXAMPLE_MID = "0x02"
+		SP_EXAMPLE_BASS = "0x03"
+		SP_ENTER_SINKID = "0x04"
+		SP_INTERR_SUPERSEEDINGID = "0x05"
+		SP_INTERR_OVERLAYID = "0x06"
+		SP_PRIORITY = "0x07"
+		SP_MAX = "0x08"
+	}
+	
+	enumeration am_ConnectionFormat_e
+	{
+		CF_UNKNOWN = "0x00"
+		CF_GENIVI_MONO = "0x01"
+		CF_GENIVI_STEREO = "0x02"
+		CF_GENIVI_ANALOG = "0x03"
+		CF_GENIVI_AUTO = "0x04"
+		CF_MAX = "0x05"
+	}
+	array am_ConnectionFormat_L of am_ConnectionFormat_e
+	
+	enumeration am_MainSoundPropertyType_e
+	{
+		MSP_UNKNOWN = "0x00"
+		MSP_EXAMPLE_TREBLE = "0x01"
+		MSP_EXAMPLE_MID = "0x02"
+		MSP_EXAMPLE_BASS = "0x03"
+		MSP_SOURCE_TYPE = "0x04"
+		MSP_MAX = "0x05"
+	}
+	
+	enumeration am_NotificationType_e
+	{
+		NT_UNKNOWN = "0x00"
+		NT_LOUDNESS = "0x01"
+		NT_MAX = "0x02"
+	}
+	
+	enumeration am_NotificationStatus_e
+	{
+		NS_UNKNOWN = "0x00"
+		NS_OFF = "0x01"
+		NS_PERIODIC = "0x02"
+		NS_MINIMUM = "0x03"
+		NS_MAXIMUM = "0x04"
+		NS_CHANGE  = "0x05"
+		NS_MAX = "0x06"
+	}
+	
+	enumeration am_HotSink_e
+    {
+        HS_UNKNOWN = "0x00"
+        HS_SINKA = "0x01"
+        HS_SINKB = "0x02"
+        HS_INTERMEDIATE = "0x03"
+        HS_MAX = "0x04"
+    }
+    
+    enumeration am_VolumeType_e
+	{
+		VT_UNKNOWN = "0x00"
+		VT_SINK = "0x01"
+		VT_SOURCE = "0x02"
+		VT_MAX = "0x03"
+	}
+	
+	struct distanceInformation_s
+	{
+		Int32 FrontLeft
+		Int32 FrontRight
+		Int32 RearLeft
+		Int32 RearRight
+	}
+	
+	struct sampleNames_s
+	{
+		sampleSet_e sample
+		String sampleName
+	} array listSampleNamesL of sampleNames_s
+	
+	typedef am_domainID_t is UInt16
+
+	struct am_Domain_s
+	{
+		am_domainID_t domainID
+		String name
+		String busname
+		String nodename
+		Boolean early
+		Boolean complete
+		am_DomainState_e ^state
+	}
+	
+	struct am_Volumes_s
+	{
+		am_VolumeType_e volumeType
+		am_DataType_u volumeID
+		am_volume_t volume
+		am_RampType_e ramp
+		am_time_t time
+	}
+	array am_Volumes_l of am_Volumes_s
+	
+	struct notificationPayload_s
+	{
+		Int16 type
+		Int16 payload
+	}
+	
+	struct am_Availability_s
+	{
+		am_Availability_e availability
+		am_AvailabilityReason_e availabilityReason
+	}
+
+	struct am_SoundProperty_s
+	{
+		am_SoundPropertyType_e type
+		Int16 value
+	}
+	array am_SoundProperty_L of am_SoundProperty_s
+	
+	struct am_MainSoundProperty_s
+	{
+		am_MainSoundPropertyType_e type
+		Int16 value
+	}
+	array am_MainSoundProperty_L of am_MainSoundProperty_s
+	
+	struct am_NotificationConfiguration_s
+	{
+		am_NotificationType_e type
+		am_NotificationStatus_e status
+		Int16 parameter
+	}
+	array am_NotificationConfiguration_L of am_NotificationConfiguration_s
+	
+	
+	array bool_L of Boolean	
+
+	struct sourceData_s
+	{
+		am_sourceID_t sourceID
+		am_domainID_t domainID
+		String name
+		am_sourceClass_t sourceClassID
+		am_SourceState_e sourceState
+		am_volume_t volume
+		Boolean visible
+		am_Availability_s available
+		am_InterruptState_e interruptState
+		am_SoundProperty_L listSoundProperties
+		am_ConnectionFormat_L listConnectionFormats
+		am_MainSoundProperty_L listMainSoundProperties
+		am_NotificationConfiguration_L listMainNotificationConfigurations
+		am_NotificationConfiguration_L listNotificationConfigurations
+	}
+	
+	struct sinkData_s
+	{
+		am_sinkID_t sinkID
+		String name
+		am_domainID_t domainID
+		am_sinkClass_t sinkClassID
+		am_volume_t volume
+		Boolean visible
+		am_Availability_s available
+		am_MuteState_e muteState
+		am_mainVolume_t mainVolume
+		am_SoundProperty_L listSoundProperties
+		am_ConnectionFormat_L listConnectionFormats
+		am_MainSoundProperty_L listMainSoundProperties
+		am_NotificationConfiguration_L listMainNotificationConfigurations
+		am_NotificationConfiguration_L listNotificationConfigurations
+	}
+	
+	struct crossfaderData_s
+	{
+		am_crossfaderID_t crossfaderID
+		String name
+		am_sinkID_t sinkID_A
+		am_sinkID_t sinkID_B
+		am_sourceID_t sourceID
+		am_HotSink_e hotSink
+	}
+	
+	struct am_Gateway_s
+	{
+		am_gatewayID_t gatewayID
+		String name
+		am_sinkID_t sinkID
+		am_sourceID_t sourceID
+		am_domainID_t domainSinkID
+		am_domainID_t domainSourceID
+		am_domainID_t controlDomainID
+		am_ConnectionFormat_L listSourceFormats
+		am_ConnectionFormat_L listSinkFormats
+		bool_L convertionMatrix
+	}	
+	
+	struct am_EarlyData_s
+	{
+		am_EarlyDataType_e type
+		am_DataType_u sinksource
+		am_EarlyData_u data
+
+	}
+	array am_EarlyData_l of am_EarlyData_s
+	union am_EarlyData_u
+	{
+		am_volume_t volume
+		am_SoundProperty_s soundProperty
+
+	}
+	union am_DataType_u
+	{
+		am_sinkID_t sink
+		am_sourceID_t source
+	}
+}

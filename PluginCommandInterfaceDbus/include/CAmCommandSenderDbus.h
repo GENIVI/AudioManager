@@ -42,7 +42,7 @@ const char MY_NODE[] = "commandinterface";
 class CAmCommandSenderDbus: public IAmCommandSend
 {
 public:
-    CAmCommandSenderDbus();
+	CAmCommandSenderDbus();
     virtual ~CAmCommandSenderDbus();
     am_Error_e startupInterface(IAmCommandReceive* commandreceiveinterface);
     void setCommandReady(const uint16_t handle);
