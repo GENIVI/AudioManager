@@ -353,6 +353,8 @@ public:
     bool insertSourceDB(const am_Source_s & sourceData, am_sourceID_t & sourceID);
     bool insertSinkClassDB(const am_SinkClass_s & sinkClass, am_sinkClass_t & sinkClassID);
     bool insertSourceClassDB(am_sourceClass_t & sourceClassID, const am_SourceClass_s & sourceClass);
+    const am_Sink_Database_s * sinkWithNameOrID(const am_sinkID_t sinkID, const std::string & name) const;
+    const am_Source_Database_s * sourceWithNameOrID(const am_sourceID_t sourceID, const std::string & name) const;
 
     CAmDatabaseObserver *mpDatabaseObserver; //!< pointer to the Observer
     ListConnectionFormat mListConnectionFormat; //!< list of connection formats

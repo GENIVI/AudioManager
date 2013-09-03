@@ -13,6 +13,7 @@
  *
  *
  * \author Christian Mueller, christian.ei.mueller@bmw.de BMW 2011,2012
+ * \author Aleksandar Donchev, aleksander.donchev@partner.bmw.de BMW 2013
  *
  * For further information see http://www.genivi.org/.
  *
@@ -39,6 +40,7 @@
 #include "../MockIAmControlSend.h"
 #include "../MockIAmCommandSend.h"
 #include "shared/CAmSocketHandler.h"
+#include "MockDatabaseObserver.h"
 
 namespace am
 {
@@ -66,6 +68,25 @@ public:
     void TearDown();
 
     void createMainConnectionSetup();
+};
+
+class CAmMapHandlerObserverCallbacksTest: public ::testing::Test
+{
+public:
+    std::vector<std::string> plistRoutingPluginDirs;
+    std::vector<std::string> plistCommandPluginDirs;
+	CAmSocketHandler pSocketHandler;
+    CAmRoutingSender pRoutingSender;
+    CAmCommandSender pCommandSender;
+    CAmControlSender pControlSender;
+	CAmDatabaseObserver mMockObserver;
+    CAmDatabaseHandlerMap pDatabaseHandler;
+    CAmRouter pRouter;
+    CAmCommonFunctions pCF;
+    CAmMapHandlerObserverCallbacksTest();
+    ~CAmMapHandlerObserverCallbacksTest();
+    void SetUp();
+    void TearDown();
 };
 
 }

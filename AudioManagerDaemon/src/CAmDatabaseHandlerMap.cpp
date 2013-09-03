@@ -95,6 +95,27 @@ struct CAmComparatorFlag
 };
 
 /**
+ * \brief Returns an object matching predicate.
+ *
+ * Convenient method for searching in a given map.
+ *
+ * @param map Map reference.
+ * @param comparator Search predicate.
+ * @return NULL or pointer to the found object.
+ */
+template <class TReturn, typename TIdentifier> const TReturn *  objectMatchingPredicate(const std::unordered_map<TIdentifier, TReturn> & map,
+																								  std::function<bool(const TReturn & refObject)> & comparator)
+{
+	typename std::unordered_map<TIdentifier, TReturn>::const_iterator elementIterator = map.begin();
+	for (;elementIterator != map.end(); ++elementIterator)
+	{
+		if( comparator(elementIterator->second) )
+			return &elementIterator->second;
+	}
+    return NULL;
+}
+
+/**
  * \brief Returns the first object matching criteria.
  *
  * A common method for searching in a given map.
@@ -111,17 +132,10 @@ TMapObjectType const * findFirstObjectMatchingCriteria(const std::unordered_map<
 															  TComparator & aComparator,
 															  void *context = NULL)
 {
-	typename std::unordered_map<TMapKeyType, TMapObjectType>::const_iterator it = aMap.begin();
-	TMapObjectType const * result = NULL;
-	for (; it != aMap.end(); ++it)
-	{
-		if (aComparator(it->second, aComparisonArgument, context))
-		{
-			result = &it->second;
-			break;
-		}
-	}
-	return result;
+	std::function<bool(const TMapObjectType & refObject)> comparator = [&](const TMapObjectType & object)->bool{
+		return aComparator(object, aComparisonArgument, context);
+	};
+	return objectMatchingPredicate(aMap, comparator);
 }
 
 /* Domain */
@@ -425,12 +439,12 @@ am_Error_e CAmDatabaseHandlerMap::enterDomainDB(const am_Domain_s & domainData, 
     assert(!domainData.name.empty());
     assert(!domainData.busname.empty());
     assert(domainData.state>=DS_UNKNOWN && domainData.state<=DS_MAX);
-
     //first check for a reserved domain
     CAmComparator<am_Domain_s> comparator;
     am_Domain_s const *reservedDomain = findFirstObjectMatchingCriteria(mMappedData.mDomainMap, domainData.name, comparator);
 
     int16_t nextID = 0;
+
     if( NULL != reservedDomain )
     {
     	nextID = reservedDomain->domainID;
@@ -438,9 +452,7 @@ am_Error_e CAmDatabaseHandlerMap::enterDomainDB(const am_Domain_s & domainData, 
     	mMappedData.mDomainMap[nextID] = domainData;
     	mMappedData.mDomainMap[nextID].domainID = nextID;
     	mMappedData.mDomainMap[nextID].reserved = 0;
-
     	logInfo("DatabaseHandler::enterDomainDB entered reserved domain with name=", domainData.name, "busname=", domainData.busname, "nodename=", domainData.nodename, "reserved ID:", domainID);
-
         if (mpDatabaseObserver)
             mpDatabaseObserver->newDomain(mMappedData.mDomainMap[nextID]);
     	return (E_OK);
@@ -452,9 +464,7 @@ am_Error_e CAmDatabaseHandlerMap::enterDomainDB(const am_Domain_s & domainData, 
 			domainID = nextID;
 			mMappedData.mDomainMap[nextID] = domainData;
 			mMappedData.mDomainMap[nextID].domainID = nextID;
-
 			logInfo("DatabaseHandler::enterDomainDB entered new domain with name=", domainData.name, "busname=", domainData.busname, "nodename=", domainData.nodename, "assigned ID:", domainID);
-
 			if (mpDatabaseObserver)
 				mpDatabaseObserver->newDomain(mMappedData.mDomainMap[nextID]);
 			return (E_OK);
@@ -512,21 +522,17 @@ am_Error_e CAmDatabaseHandlerMap::enterMainConnectionDB(const am_MainConnection_
 
     //now check the connectionTable for all connections in the route. IF connectionID exist
      delay = calculateDelayForRoute(mainConnectionData.listConnectionID);
-
+     mMappedData.mMainConnectionMap[nextID].delay = delay;
     logInfo("DatabaseHandler::enterMainConnectionDB entered new mainConnection with sourceID", mainConnectionData.sourceID, "sinkID:", mainConnectionData.sinkID, "delay:", delay, "assigned ID:", connectionID);
 
     if (mpDatabaseObserver)
     {
         am_MainConnectionType_s mainConnection;
-        mainConnection.mainConnectionID = connectionID;
-        mainConnection.connectionState = mainConnectionData.connectionState;
-        mainConnection.delay = delay;
-        mainConnection.sinkID = mainConnectionData.sinkID;
-        mainConnection.sourceID = mainConnectionData.sourceID;
+        mMappedData.mMainConnectionMap[nextID].getMainConnectionType(mainConnection);
         mpDatabaseObserver->newMainConnection(mainConnection);
-        mpDatabaseObserver->mainConnectionStateChanged(connectionID, mainConnectionData.connectionState);
+        mpDatabaseObserver->mainConnectionStateChanged(connectionID, mMappedData.mMainConnectionMap[nextID].connectionState);
     }
-    mMappedData.mMainConnectionMap[nextID].delay = delay;
+
     //finally, we update the delay value for the maintable
     if (delay == 0)
         delay = -1;
@@ -586,7 +592,10 @@ am_Error_e CAmDatabaseHandlerMap::enterSinkDB(const am_Sink_s & sinkData, am_sin
 		{
 			//check if the ID already exists
 			if (existSinkNameOrID(sinkData.sinkID, sinkData.name))
+			{
+				sinkID = sinkData.sinkID;
 				return (E_ALREADY_EXISTS);
+			}
 		}
 		result = insertSinkDB(sinkData, temp_SinkID);
 		if( false == result )
@@ -601,7 +610,7 @@ am_Error_e CAmDatabaseHandlerMap::enterSinkDB(const am_Sink_s & sinkData, am_sin
     mMappedData.mSinkMap[temp_SinkIndex].sinkID = temp_SinkID;
     sinkID = temp_SinkID;
 
-    am_Sink_s sink = mMappedData.mSinkMap[temp_SinkID];
+    am_Sink_s & sink = mMappedData.mSinkMap[temp_SinkID];
     logInfo("DatabaseHandler::enterSinkDB entered new sink with name", sink.name, "domainID:", sink.domainID, "classID:", sink.sinkClassID, "volume:", sink.volume, "assigned ID:", sink.sinkID);
 
     if (mpDatabaseObserver != NULL)
@@ -646,7 +655,10 @@ am_Error_e CAmDatabaseHandlerMap::enterCrossfaderDB(const am_Crossfader_s & cros
     {
         //check if the ID already exists
         if (existcrossFader(crossfaderData.crossfaderID))
+        {
+        	crossfaderID = crossfaderData.crossfaderID;
             return (E_ALREADY_EXISTS);
+        }
     }
     result = insertCrossfaderDB(crossfaderData, temp_CrossfaderID);
 	if( false == result )
@@ -659,14 +671,12 @@ am_Error_e CAmDatabaseHandlerMap::enterCrossfaderDB(const am_Crossfader_s & cros
         mFirstStaticCrossfader = false;
     }
 
-    mMappedData.mCrossfaderMap[temp_CrossfaderIndex].crossfaderID = temp_CrossfaderID;
+   mMappedData.mCrossfaderMap[temp_CrossfaderIndex].crossfaderID = temp_CrossfaderID;
    crossfaderID = temp_CrossfaderID;
    logInfo("DatabaseHandler::enterCrossfaderDB entered new crossfader with name=", crossfaderData.name, "sinkA= ", crossfaderData.sinkID_A, "sinkB=", crossfaderData.sinkID_B, "source=", crossfaderData.sourceID, "assigned ID:", crossfaderID);
 
-    am_Crossfader_s crossfader(crossfaderData);
-    crossfader.crossfaderID = crossfaderID;
     if (mpDatabaseObserver)
-        mpDatabaseObserver->newCrossfader(crossfader);
+        mpDatabaseObserver->newCrossfader(mMappedData.mCrossfaderMap[temp_CrossfaderIndex]);
     return (E_OK);
 }
 
@@ -713,7 +723,10 @@ am_Error_e CAmDatabaseHandlerMap::enterGatewayDB(const am_Gateway_s & gatewayDat
     {
         //check if the ID already exists
         if (existGateway(gatewayData.gatewayID))
+        {
+        	gatewayID = gatewayData.gatewayID;
             return (E_ALREADY_EXISTS);
+        }
     }
     result = insertGatewayDB(gatewayData, temp_GatewayID);
 	if( false == result )
@@ -729,10 +742,8 @@ am_Error_e CAmDatabaseHandlerMap::enterGatewayDB(const am_Gateway_s & gatewayDat
     gatewayID = temp_GatewayID;
 
     logInfo("DatabaseHandler::enterGatewayDB entered new gateway with name", gatewayData.name, "sourceID:", gatewayData.sourceID, "sinkID:", gatewayData.sinkID, "assigned ID:", gatewayID);
-    am_Gateway_s gateway = gatewayData;
-    gateway.gatewayID = gatewayID;
     if (mpDatabaseObserver)
-        mpDatabaseObserver->newGateway(gateway);
+        mpDatabaseObserver->newGateway(mMappedData.mGatewayMap[temp_GatewayIndex]);
     return (E_OK);
 }
 
@@ -804,7 +815,10 @@ am_Error_e CAmDatabaseHandlerMap::enterSourceDB(const am_Source_s & sourceData, 
 	    {
 	        //check if the ID already exists
 	    	 if (existSourceNameOrID(sourceData.sourceID, sourceData.name))
+	    	 {
+	    		sourceID = sourceData.sourceID;
 	            return (E_ALREADY_EXISTS);
+	    	 }
 	    }
 	    result = insertSourceDB(sourceData, temp_SourceID);
 		if( false == result )
@@ -822,10 +836,8 @@ am_Error_e CAmDatabaseHandlerMap::enterSourceDB(const am_Source_s & sourceData, 
 
     logInfo("DatabaseHandler::enterSourceDB entered new source with name", sourceData.name, "domainID:", sourceData.domainID, "classID:", sourceData.sourceClassID, "visible:", sourceData.visible, "assigned ID:", sourceID);
 
-    am_Source_s source = sourceData;
-    source.sourceID = sourceID;
     if (mpDatabaseObserver)
-        mpDatabaseObserver->newSource(source);
+        mpDatabaseObserver->newSource(mMappedData.mSourceMap[temp_SourceIndex]);
     return (E_OK);
 }
 
@@ -884,7 +896,10 @@ am_Error_e CAmDatabaseHandlerMap::enterSinkClassDB(const am_SinkClass_s & sinkCl
 	{
 		//check if the ID already exists
 		 if (existSinkClass(sinkClass.sinkClassID))
+		 {
+			 sinkClassID = sinkClass.sinkClassID;
 			return (E_ALREADY_EXISTS);
+		 }
 	}
 	result = insertSinkClassDB(sinkClass, temp_SinkClassID);
 	if( false == result )
@@ -937,7 +952,10 @@ am_Error_e CAmDatabaseHandlerMap::enterSourceClassDB(am_sourceClass_t & sourceCl
 	{
 		//check if the ID already exists
 		if (existSourceClass(sourceClass.sourceClassID))
+		{
+			sourceClassID = sourceClass.sourceClassID;
 			return (E_ALREADY_EXISTS);
+		}
 	}
 	result = insertSourceClassDB(temp_SourceClassID, sourceClass);
 	if( false == result )
@@ -1042,7 +1060,7 @@ am_Error_e CAmDatabaseHandlerMap::changeSinkAvailabilityDB(const am_Availability
 
     logInfo("DatabaseHandler::changeSinkAvailabilityDB changed sinkAvailability of sink:", sinkID, "to:", availability.availability, "Reason:", availability.availabilityReason);
 
-    if (mpDatabaseObserver && sourceVisible(sinkID))
+    if (mpDatabaseObserver && sinkVisible(sinkID))
         mpDatabaseObserver->sinkAvailabilityChanged(sinkID, availability);
     return (E_OK);
 }
@@ -1789,7 +1807,8 @@ am_Error_e CAmDatabaseHandlerMap::changeDelayMainConnection(const am_timeSync_t 
     if (!existMainConnection(connectionID))
  		return (E_NON_EXISTENT);
     mMappedData.mMainConnectionMap[connectionID].delay = delay;
-
+    if (mpDatabaseObserver)
+        mpDatabaseObserver->timingInformationChanged(connectionID, delay);
     return (E_OK);
 }
 
@@ -1825,18 +1844,7 @@ bool CAmDatabaseHandlerMap::existSource(const am_sourceID_t sourceID) const
  */
 bool CAmDatabaseHandlerMap::existSourceNameOrID(const am_sourceID_t sourceID, const std::string & name) const
 {
-	bool returnVal = false;
-	CAmMapSource::const_iterator elementIterator = mMappedData.mSourceMap.begin();
-	for (;elementIterator != mMappedData.mSourceMap.end(); ++elementIterator)
-	{
-		if( 0==elementIterator->second.reserved &&
-			(sourceID==elementIterator->second.sourceID || name.compare(elementIterator->second.name)==0))
-		{
-			returnVal = true;
-			break;
-		}
-	}
-    return (returnVal);
+    return sourceWithNameOrID(sourceID, name);
 }
 
 /**
@@ -1871,6 +1879,36 @@ bool CAmDatabaseHandlerMap::existSink(const am_sinkID_t sinkID) const
 }
 
 /**
+ * returns source with given ID or the name if exists
+ * @param sourceID the ID
+ * @param name the name
+ * @return source structure if exists.
+ */
+const CAmDatabaseHandlerMap::am_Source_Database_s *  CAmDatabaseHandlerMap::sourceWithNameOrID(const am_sourceID_t sourceID, const std::string & name) const
+{
+	std::function<bool(const CAmDatabaseHandlerMap::am_Source_Database_s & refObject)> comparator = [&](const CAmDatabaseHandlerMap::am_Source_Database_s & source)->bool{
+			return ( 0==source.reserved &&
+					(sourceID==source.sourceID || name.compare(source.name)==0));
+	};
+	return objectMatchingPredicate(mMappedData.mSourceMap, comparator);
+}
+
+/**
+ * returns sink with given ID or the name if exists
+ * @param sinkID the ID
+ * @param name the name
+ * @return sink structure if exists.
+ */
+const CAmDatabaseHandlerMap::am_Sink_Database_s * CAmDatabaseHandlerMap::sinkWithNameOrID(const am_sinkID_t sinkID, const std::string & name) const
+{
+	std::function<bool(const CAmDatabaseHandlerMap::am_Sink_Database_s & refObject)> comparator = [&](const CAmDatabaseHandlerMap::am_Sink_Database_s & sink)->bool{
+			return ( 0==sink.reserved &&
+					(sinkID==sink.sinkID || name.compare(sink.name)==0));
+	};
+	return objectMatchingPredicate(mMappedData.mSinkMap, comparator);
+}
+
+/**
  * checks if a sink with the ID or the name exists
  * @param sinkID the ID
  * @param name the name
@@ -1878,19 +1916,7 @@ bool CAmDatabaseHandlerMap::existSink(const am_sinkID_t sinkID) const
  */
 bool CAmDatabaseHandlerMap::existSinkNameOrID(const am_sinkID_t sinkID, const std::string & name) const
 {
-	bool returnVal = false;
-	CAmMapSink::const_iterator elementIterator = mMappedData.mSinkMap.begin();
-	for (;elementIterator != mMappedData.mSinkMap.end(); ++elementIterator)
-	{
-		if( 0==elementIterator->second.reserved &&
-			(sinkID==elementIterator->second.sinkID || name.compare(elementIterator->second.name)==0))
-		{
-			returnVal = true;
-			break;
-		}
-	}
-
-    return (returnVal);
+    return sinkWithNameOrID( sinkID,  name)!=NULL;
 }
 
 /**

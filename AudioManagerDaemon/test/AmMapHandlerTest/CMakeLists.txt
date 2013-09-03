@@ -45,8 +45,7 @@ INCLUDE_DIRECTORIES(
 
 file(GLOB DATABASE_SRCS_CXX 
     "../../src/CAmDatabaseHandlerMap.cpp"
-    "../../src/CAmDatabaseObserver.cpp"
-    "../../src/CAmCommandSender.cpp"
+     "../../src/CAmCommandSender.cpp"
     "../../src/CAmRoutingSender.cpp"
     "../../src/CAmControlReceiver.cpp"
     "../../src/CAmControlSender.cpp"
@@ -57,13 +56,16 @@ file(GLOB DATABASE_SRCS_CXX
     "../../src/CAmRoutingReceiver.cpp"
     "../../src/CAmDbusWrapper.cpp"
     "../CAmCommonFunctions.cpp" 
+    "CAmTestDatabaseObserver.cpp"
     "*.cpp"
     )
     
 IF(WITH_NSM)
-    SET (DATABASE_SRCS_CXX
-        ${DATABASE_SRCS_CXX}
-    "../../src/CAmNodeStateCommunicatorDBus.cpp")
+    IF(WITH_DBUS_WRAPPER)
+        SET (DATABASE_SRCS_CXX
+            ${DATABASE_SRCS_CXX}
+            "../../src/CAmNodeStateCommunicatorDBus.cpp")
+    ENDIF()
 ENDIF(WITH_NSM)
 
 ADD_EXECUTABLE( AmMapHandlerTest ${DATABASE_SRCS_CXX})
