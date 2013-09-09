@@ -21,15 +21,14 @@
 #ifndef CAMNODESTATECOMMUNICATORCAPI_H_
 #define CAMNODESTATECOMMUNICATORCAPI_H_
 
-#include <org/genivi/NodeStateManager/Consumer/ConsumerProxy.h>
+#include <org/genivi/NodeStateManager/ConsumerProxy.h>
 #include "CAmNodeStateCommunicator.h"
-#include "LifeCycleConsumerStubDefault.h"
+#include <org/genivi/NodeStateManager/LifeCycleConsumerStubDefault.h>
 
 namespace am
 {
 using namespace CommonAPI;
-using namespace org::genivi::NodeStateManager::Consumer;
-using namespace org::genivi::NodeStateManager::LifeCycleConsumer;
+using namespace org::genivi::NodeStateManager;
 
 
 class CAmCommonAPIWrapper;

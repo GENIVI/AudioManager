@@ -27,6 +27,7 @@
 #include "MockIAmCommandReceive.h"
 #include "shared/CAmDltWrapper.h"
 #include "../include/CAmCommandSenderCAPI.h"
+#include "../include/CAmCommandSenderCommon.h"
 #include "MockNotificationsClient.h"
 #include <CommonAPI/CommonAPI.h>
 #include <sys/time.h>
@@ -35,7 +36,6 @@
 
 using namespace am;
 using namespace testing;
-using namespace org::genivi::audiomanager;
 using namespace CommonAPI;
 
 static CAmTestsEnvironment* env;
@@ -53,7 +53,7 @@ void* run_client(void*)
 	CAmTestCAPIWrapper wrapper(&socketHandler);
 	env->mSocketHandlerClient = &socketHandler;
 	std::shared_ptr<CommonAPI::Factory> factory = wrapper.factory();
-	env->mProxy = factory->buildProxy<CommandInterfaceProxy>(CAmCommandSenderCAPI::COMMAND_SENDER_SERVICE);
+	env->mProxy = factory->buildProxy<org::genivi::am::CommandControlProxy>(CAmCommandSenderCAPI::COMMAND_SENDER_SERVICE);
 	env->mProxy->getProxyStatusEvent().subscribe(std::bind(&CAmTestsEnvironment::onServiceStatusEvent,env,std::placeholders::_1));
 
 	pthread_mutex_lock(&mutexSer);
@@ -85,9 +85,11 @@ void* run_service(void*)
 	}
     else
     {
+    	EXPECT_CALL(*env->mpCommandReceive,confirmCommandReady(10,_));
     	plugin.setCommandReady(10);
     	socketHandler.start_listenting();
 
+    	EXPECT_CALL(*env->mpCommandReceive,confirmCommandRundown(10,_));
     	plugin.setCommandRundown(10);
     	plugin.tearDownInterface(env->mpCommandReceive);
     }
@@ -214,7 +216,8 @@ TEST_F(CAmCommandSenderCAPITest, ClientStartupTest)
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpCommandReceive));
 }
 
-ACTION(returnClientConnect){
+ACTION(returnClientConnect)
+{
 arg2=101;
 }
 
@@ -223,18 +226,19 @@ TEST_F(CAmCommandSenderCAPITest, ConnectTest)
 	ASSERT_TRUE(env->mIsServiceAvailable);
 	if(env->mIsServiceAvailable)
 	{
-		CommandInterface::am_sourceID_t sourceID = 500;
-		CommandInterface::am_sinkID_t sinkID = 400;
+		org::genivi::am::am_sourceID_t sourceID = 500;
+		org::genivi::am::am_sinkID_t sinkID = 400;
 		CommonAPI::CallStatus callStatus = CommonAPI::CallStatus::NOT_AVAILABLE;
-		CommandInterface::am_Error_e result = CommandInterface::am_Error_e::E_OK;
-		CommandInterface::am_mainConnectionID_t mainConnectionID = 0;
+		org::genivi::am::am_Error_e result = org::genivi::am::am_Error_e::E_OK;
+		org::genivi::am::am_mainConnectionID_t mainConnectionID = 0;
 
 		EXPECT_CALL(*env->mpCommandReceive, connect(_, _, _)).WillOnce(DoAll(returnClientConnect(), Return(E_OK)));
-		env->mProxy->Connect(sourceID, sinkID, callStatus,result, mainConnectionID);
+		env->mProxy->connect(sourceID, sinkID, callStatus, mainConnectionID, result);
 		ASSERT_EQ(mainConnectionID, 101);
-		ASSERT_EQ(result, CommandInterface::am_Error_e::E_OK);
+		ASSERT_EQ(result, org::genivi::am::am_Error_e::E_OK);
 		EXPECT_CALL(*env->mpCommandReceive, disconnect(mainConnectionID)).WillOnce(Return(am_Error_e::E_OK));
-		env->mProxy->Disconnect(mainConnectionID, callStatus, result);
+		ASSERT_EQ(result, org::genivi::am::am_Error_e::E_OK);
+		env->mProxy->disconnect(mainConnectionID, callStatus, result);
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpCommandReceive));
 }
@@ -244,14 +248,14 @@ TEST_F(CAmCommandSenderCAPITest, SetVolumeTest)
 	ASSERT_TRUE(env->mIsServiceAvailable);
 	if(env->mIsServiceAvailable)
 	{
-		CommandInterface::am_mainVolume_t volume = 100;
-		CommandInterface::am_sinkID_t sinkID = 400;
+		org::genivi::am::am_mainVolume_t volume = 100;
+		org::genivi::am::am_sinkID_t sinkID = 400;
 		CommonAPI::CallStatus callStatus = CommonAPI::CallStatus::NOT_AVAILABLE;
-		CommandInterface::am_Error_e result = CommandInterface::am_Error_e::E_OK;
+		org::genivi::am::am_Error_e result = org::genivi::am::am_Error_e::E_OK;
 
 		EXPECT_CALL(*env->mpCommandReceive, setVolume(sinkID,volume)).WillOnce(Return(E_OK));
-		env->mProxy->SetVolume(sinkID, volume, callStatus, result);
-		ASSERT_EQ(result, CommandInterface::am_Error_e::E_OK);
+		env->mProxy->setVolume(sinkID, volume, callStatus, result);
+		ASSERT_EQ(result, org::genivi::am::am_Error_e::E_OK);
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpCommandReceive));
 }
@@ -262,14 +266,14 @@ TEST_F(CAmCommandSenderCAPITest, VolumeStepTest)
 	ASSERT_TRUE(env->mIsServiceAvailable);
 	if(env->mIsServiceAvailable)
 	{
-		CommandInterface::am_mainVolume_t volume = 100;
-		CommandInterface::am_sinkID_t sinkID = 400;
+		org::genivi::am::am_mainVolume_t volume = 100;
+		org::genivi::am::am_sinkID_t sinkID = 400;
 		CommonAPI::CallStatus callStatus = CommonAPI::CallStatus::NOT_AVAILABLE;
-		CommandInterface::am_Error_e result = CommandInterface::am_Error_e::E_OK;
+		org::genivi::am::am_Error_e result = org::genivi::am::am_Error_e::E_OK;
 
 		EXPECT_CALL(*env->mpCommandReceive, volumeStep(sinkID,volume)).WillOnce(Return(E_OK));
-		env->mProxy->VolumeStep(sinkID, volume, callStatus, result);
-		ASSERT_EQ(result, CommandInterface::am_Error_e::E_OK);
+		env->mProxy->volumeStep(sinkID, volume, callStatus, result);
+		ASSERT_EQ(result, org::genivi::am::am_Error_e::E_OK);
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpCommandReceive));
 }
@@ -279,14 +283,14 @@ TEST_F(CAmCommandSenderCAPITest, SetSinkMuteStateTest)
 	ASSERT_TRUE(env->mIsServiceAvailable);
 	if(env->mIsServiceAvailable)
 	{
-		CommandInterface::am_MuteState_e value = CommandInterface::am_MuteState_e::MS_UNKNOWN;
-		CommandInterface::am_sinkID_t sinkID = 400;
+		org::genivi::am::am_MuteState_e value = org::genivi::am::am_MuteState_e::MS_UNKNOWN;
+		org::genivi::am::am_sinkID_t sinkID = 400;
 		CommonAPI::CallStatus callStatus = CommonAPI::CallStatus::NOT_AVAILABLE;
-		CommandInterface::am_Error_e result = CommandInterface::am_Error_e::E_OK;
+		org::genivi::am::am_Error_e result = org::genivi::am::am_Error_e::E_OK;
 
 		EXPECT_CALL(*env->mpCommandReceive, setSinkMuteState(sinkID, am_MuteState_e::MS_UNKNOWN)).WillOnce(Return(E_OK));
-		env->mProxy->SetSinkMuteState(sinkID, value, callStatus, result);
-		ASSERT_EQ(result, CommandInterface::am_Error_e::E_OK);
+		env->mProxy->setSinkMuteState(sinkID, value, callStatus, result);
+		ASSERT_EQ(result, org::genivi::am::am_Error_e::E_OK);
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpCommandReceive));
 }
@@ -296,16 +300,16 @@ TEST_F(CAmCommandSenderCAPITest, SetMainSinkSoundPropertyTest)
 	ASSERT_TRUE(env->mIsServiceAvailable);
 	if(env->mIsServiceAvailable)
 	{
-		CommandInterface::am_sinkID_t sinkID = 400;
+		org::genivi::am::am_sinkID_t sinkID = 400;
 		CommonAPI::CallStatus callStatus = CommonAPI::CallStatus::NOT_AVAILABLE;
-		CommandInterface::am_Error_e result = CommandInterface::am_Error_e::E_OK;
+		org::genivi::am::am_Error_e result = org::genivi::am::am_Error_e::E_OK;
 
 		EXPECT_CALL(*env->mpCommandReceive, setMainSinkSoundProperty(AllOf(
 				Field(&am_MainSoundProperty_s::value, 3),
 				Field(&am_MainSoundProperty_s::type, MSP_UNKNOWN)), sinkID)).WillOnce(Return(E_OK));
-		CommandInterface::am_MainSoundProperty_s value(CommandInterface::am_MainSoundPropertyType_e::MSP_UNKNOWN, (const int16_t)3);
-		env->mProxy->SetMainSinkSoundProperty(sinkID, value, callStatus, result);
-		ASSERT_EQ(result, CommandInterface::am_Error_e::E_OK);
+		org::genivi::am::am_MainSoundProperty_s value(static_cast<org::genivi::am::am_MainSoundPropertyType_pe>(am_MainSoundPropertyType_e::MSP_UNKNOWN), (const int16_t)3);
+		env->mProxy->setMainSinkSoundProperty(sinkID, value, callStatus, result);
+		ASSERT_EQ(result, org::genivi::am::am_Error_e::E_OK);
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpCommandReceive));
 }
@@ -315,16 +319,16 @@ TEST_F(CAmCommandSenderCAPITest, SetMainSourceSoundPropertyTest)
 	ASSERT_TRUE(env->mIsServiceAvailable);
 	if(env->mIsServiceAvailable)
 	{
-		CommandInterface::am_sourceID_t sID = 400;
+		org::genivi::am::am_sourceID_t sID = 400;
 		CommonAPI::CallStatus callStatus = CommonAPI::CallStatus::NOT_AVAILABLE;
-		CommandInterface::am_Error_e result = CommandInterface::am_Error_e::E_OK;
+		org::genivi::am::am_Error_e result = org::genivi::am::am_Error_e::E_OK;
 
 		EXPECT_CALL(*env->mpCommandReceive, setMainSourceSoundProperty(AllOf(
 				Field(&am_MainSoundProperty_s::value, 3),
 				Field(&am_MainSoundProperty_s::type, MSP_UNKNOWN)), sID)).WillOnce(Return(E_OK));
-		CommandInterface::am_MainSoundProperty_s value(CommandInterface::am_MainSoundPropertyType_e::MSP_UNKNOWN, (const int16_t)3);
-		env->mProxy->SetMainSourceSoundProperty(sID, value, callStatus, result);
-		ASSERT_EQ(result, CommandInterface::am_Error_e::E_OK);
+		org::genivi::am::am_MainSoundProperty_s value(static_cast<org::genivi::am::am_MainSoundPropertyType_pe>(am_MainSoundPropertyType_e::MSP_UNKNOWN), (const int16_t)3);
+		env->mProxy->setMainSourceSoundProperty(sID, value, callStatus, result);
+		ASSERT_EQ(result, org::genivi::am::am_Error_e::E_OK);
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpCommandReceive));
 }
@@ -335,13 +339,13 @@ TEST_F(CAmCommandSenderCAPITest, SetSystemPropertyTest)
 	if(env->mIsServiceAvailable)
 	{
 		CommonAPI::CallStatus callStatus = CommonAPI::CallStatus::NOT_AVAILABLE;
-		CommandInterface::am_Error_e result = CommandInterface::am_Error_e::E_OK;
+		org::genivi::am::am_Error_e result = org::genivi::am::am_Error_e::E_OK;
 
 		EXPECT_CALL(*env->mpCommandReceive, setSystemProperty(Field(&am_SystemProperty_s::value, 2))).WillOnce(Return(E_OK));
 
-		CommandInterface::am_SystemProperty_s value(CommandInterface::am_SystemPropertyType_e::SYP_UNKNOWN, (const int16_t)2);
-		env->mProxy->SetSystemProperty(value, callStatus, result);
-		ASSERT_EQ(result, CommandInterface::am_Error_e::E_OK);
+		org::genivi::am::am_SystemProperty_s value(static_cast<org::genivi::am::am_SystemPropertyType_pe>(am_SystemPropertyType_e::SYP_UNKNOWN), (const int16_t)2);
+		env->mProxy->setSystemProperty(value, callStatus, result);
+		ASSERT_EQ(result, org::genivi::am::am_Error_e::E_OK);
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpCommandReceive));
 }
@@ -364,12 +368,12 @@ TEST_F(CAmCommandSenderCAPITest, GetListMainConnectionsTest)
 	if(env->mIsServiceAvailable)
 	{
 		CommonAPI::CallStatus callStatus = CommonAPI::CallStatus::NOT_AVAILABLE;
-		CommandInterface::am_Error_e result = CommandInterface::am_Error_e::E_OK;
+		org::genivi::am::am_Error_e result = org::genivi::am::am_Error_e::E_OK;
 
 		EXPECT_CALL(*env->mpCommandReceive, getListMainConnections(_)).WillOnce(DoAll(returnListConnections(), Return(E_OK)));
-		CommandInterface::am_MainConnectionType_l listConnections;
-		env->mProxy->GetListMainConnections(callStatus, result, listConnections);
-		ASSERT_EQ(result, CommandInterface::am_Error_e::E_OK);
+		org::genivi::am::am_MainConnection_L listConnections;
+		env->mProxy->getListMainConnections(callStatus, result, listConnections);
+		ASSERT_EQ(result, org::genivi::am::am_Error_e::E_OK);
 		ASSERT_EQ(1, listConnections.size());
 		ASSERT_EQ(15, listConnections.at(0).mainConnectionID);
 		ASSERT_EQ(4, listConnections.at(0).sinkID);
@@ -397,17 +401,17 @@ TEST_F(CAmCommandSenderCAPITest, GetListMainSinksTest)
 	if(env->mIsServiceAvailable)
 	{
 		CommonAPI::CallStatus callStatus = CommonAPI::CallStatus::NOT_AVAILABLE;
-		CommandInterface::am_Error_e result = CommandInterface::am_Error_e::E_OK;
+		org::genivi::am::am_Error_e result = org::genivi::am::am_Error_e::E_OK;
 
 		EXPECT_CALL(*env->mpCommandReceive, getListMainSinks(_)).WillOnce(DoAll(returnListSinks(), Return(E_OK)));
-		CommandInterface::am_SinkType_l listMainSinks;
-		env->mProxy->GetListMainSinks(callStatus, result, listMainSinks);
-		ASSERT_EQ(result, CommandInterface::am_Error_e::E_OK);
+		org::genivi::am::am_SinkType_L listMainSinks;
+		env->mProxy->getListMainSinks(callStatus, listMainSinks,result);
+		ASSERT_EQ(result, org::genivi::am::am_Error_e::E_OK);
 		ASSERT_EQ(1, listMainSinks.size());
 		ASSERT_EQ(34, listMainSinks.at(0).sinkClassID);
 		ASSERT_EQ(24, listMainSinks.at(0).sinkID);
-		ASSERT_EQ(CommandInterface::am_Availablility_e::A_UNAVAILABLE, listMainSinks.at(0).availability.availability);
-		ASSERT_EQ(CommandInterface::am_AvailabilityReason_e::AR_GENIVI_NOMEDIA, listMainSinks.at(0).availability.availabilityReason);
+		ASSERT_EQ(org::genivi::am::am_Availability_e::A_UNAVAILABLE, listMainSinks.at(0).availability.availability);
+		ASSERT_EQ(static_cast<org::genivi::am::am_AvailabilityReason_pe>(am_AvailabilityReason_e::AR_GENIVI_NOMEDIA), listMainSinks.at(0).availability.availabilityReason);
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpCommandReceive));
 }
@@ -432,17 +436,17 @@ TEST_F(CAmCommandSenderCAPITest, GetListMainSourcesTest)
 	if(env->mIsServiceAvailable)
 	{
 		CommonAPI::CallStatus callStatus = CommonAPI::CallStatus::NOT_AVAILABLE;
-		CommandInterface::am_Error_e result = CommandInterface::am_Error_e::E_OK;
+		org::genivi::am::am_Error_e result = org::genivi::am::am_Error_e::E_OK;
 
 		EXPECT_CALL(*env->mpCommandReceive, getListMainSources(_)).WillOnce(DoAll(returnListSources(), Return(E_OK)));
-		CommandInterface::am_SourceType_l list;
-		env->mProxy->GetListMainSources(callStatus, result, list);
-		ASSERT_EQ(result, CommandInterface::am_Error_e::E_OK);
+		org::genivi::am::am_SourceType_L list;
+		env->mProxy->getListMainSources(callStatus, list, result);
+		ASSERT_EQ(result, org::genivi::am::am_Error_e::E_OK);
 		ASSERT_EQ(2, list.size());
 		ASSERT_EQ(12, list.at(0).sourceClassID);
 		ASSERT_EQ(224, list.at(0).sourceID);
-		ASSERT_EQ(CommandInterface::am_Availablility_e::A_MAX, list.at(0).availability.availability);
-		ASSERT_EQ(CommandInterface::am_AvailabilityReason_e::AR_GENIVI_SAMEMEDIA, list.at(0).availability.availabilityReason);
+		ASSERT_EQ(org::genivi::am::am_Availability_e::A_MAX, list.at(0).availability.availability);
+		ASSERT_EQ(static_cast<org::genivi::am::am_AvailabilityReason_pe>(am_AvailabilityReason_e::AR_GENIVI_SAMEMEDIA), list.at(0).availability.availabilityReason);
 		ASSERT_EQ(22, list.at(1).sourceID);
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpCommandReceive));
@@ -465,19 +469,19 @@ TEST_F(CAmCommandSenderCAPITest, GetListMainSinkSoundPropertiesTest)
 	ASSERT_TRUE(env->mIsServiceAvailable);
 	if(env->mIsServiceAvailable)
 	{
-		CommandInterface::am_sinkID_t sID = 400;
+		org::genivi::am::am_sinkID_t sID = 400;
 		CommonAPI::CallStatus callStatus = CommonAPI::CallStatus::NOT_AVAILABLE;
-		CommandInterface::am_Error_e result = CommandInterface::am_Error_e::E_OK;
+		org::genivi::am::am_Error_e result = org::genivi::am::am_Error_e::E_OK;
 
 		EXPECT_CALL(*env->mpCommandReceive, getListMainSinkSoundProperties(sID,_)).WillOnce(DoAll(returnListMainSinkSoundProperties(), Return(E_OK)));
-		CommandInterface::am_MainSoundProperty_l list;
-		env->mProxy->GetListMainSinkSoundProperties(sID, callStatus, result, list);
-		ASSERT_EQ(result, CommandInterface::am_Error_e::E_OK);
+		org::genivi::am::am_MainSoundProperty_L list;
+		env->mProxy->getListMainSinkSoundProperties(sID, callStatus, list, result);
+		ASSERT_EQ(result, org::genivi::am::am_Error_e::E_OK);
 		ASSERT_EQ(2, list.size());
 		ASSERT_EQ(223, list.at(0).value);
-		ASSERT_EQ(CommandInterface::am_MainSoundPropertyType_e::MSP_MAX, list.at(0).type);
+		ASSERT_EQ(static_cast<org::genivi::am::am_MainSoundPropertyType_pe>(am_MainSoundPropertyType_e::MSP_MAX), list.at(0).type);
 		ASSERT_EQ(2, list.at(1).value);
-		ASSERT_EQ(CommandInterface::am_MainSoundPropertyType_e::MSP_MAX, list.at(1).type);
+		ASSERT_EQ(static_cast<org::genivi::am::am_MainSoundPropertyType_pe>(am_MainSoundPropertyType_e::MSP_MAX), list.at(1).type);
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpCommandReceive));
 }
@@ -499,19 +503,19 @@ TEST_F(CAmCommandSenderCAPITest, GetListMainSourceSoundPropertiesTest)
 	ASSERT_TRUE(env->mIsServiceAvailable);
 	if(env->mIsServiceAvailable)
 	{
-		CommandInterface::am_sourceID_t sID = 400;
+		org::genivi::am::am_sourceID_t sID = 400;
 		CommonAPI::CallStatus callStatus = CommonAPI::CallStatus::NOT_AVAILABLE;
-		CommandInterface::am_Error_e result = CommandInterface::am_Error_e::E_OK;
+		org::genivi::am::am_Error_e result = org::genivi::am::am_Error_e::E_OK;
 
 		EXPECT_CALL(*env->mpCommandReceive, getListMainSourceSoundProperties(sID,_)).WillOnce(DoAll(returnListMainSourceSoundProperties(), Return(E_OK)));
-		CommandInterface::am_MainSoundProperty_l list;
-		env->mProxy->GetListMainSourceSoundProperties(sID, callStatus, result, list);
-		ASSERT_EQ(result, CommandInterface::am_Error_e::E_OK);
+		org::genivi::am::am_MainSoundProperty_L list;
+		env->mProxy->getListMainSourceSoundProperties(sID, callStatus, list, result);
+		ASSERT_EQ(result, org::genivi::am::am_Error_e::E_OK);
 		ASSERT_EQ(2, list.size());
 		ASSERT_EQ(223, list.at(0).value);
-		ASSERT_EQ(CommandInterface::am_MainSoundPropertyType_e::MSP_EXAMPLE_MID, list.at(0).type);
+		ASSERT_EQ(static_cast<org::genivi::am::am_MainSoundPropertyType_pe>(am_MainSoundPropertyType_e::MSP_EXAMPLE_MID), list.at(0).type);
 		ASSERT_EQ(2, list.at(1).value);
-		ASSERT_EQ(CommandInterface::am_MainSoundPropertyType_e::MSP_MAX, list.at(1).type);
+		ASSERT_EQ(static_cast<org::genivi::am::am_MainSoundPropertyType_pe>(am_MainSoundPropertyType_e::MSP_MAX), list.at(1).type);
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpCommandReceive));
 }
@@ -539,21 +543,21 @@ TEST_F(CAmCommandSenderCAPITest, GetListSourceClassesTest)
 	if(env->mIsServiceAvailable)
 	{
 		CommonAPI::CallStatus callStatus = CommonAPI::CallStatus::NOT_AVAILABLE;
-		CommandInterface::am_Error_e result = CommandInterface::am_Error_e::E_OK;
+		org::genivi::am::am_Error_e result = org::genivi::am::am_Error_e::E_OK;
 
 		EXPECT_CALL(*env->mpCommandReceive, getListSourceClasses(_)).WillOnce(DoAll(returnListSourceClasses(), Return(E_OK)));
-		CommandInterface::am_SourceClass_l list;
-		env->mProxy->GetListSourceClasses(callStatus, result, list);
-		ASSERT_EQ(result, CommandInterface::am_Error_e::E_OK);
+		org::genivi::am::am_SourceClass_L list;
+		env->mProxy->getListSourceClasses(callStatus, list, result);
+		ASSERT_EQ(result, org::genivi::am::am_Error_e::E_OK);
 		ASSERT_EQ(2, list.size());
 
 		ASSERT_EQ(23, list.at(0).sourceClassID);
 		ASSERT_EQ(1, list.at(0).listClassProperties.size());
-		ASSERT_EQ(CommandInterface::am_ClassProperty_e::CP_MAX, list.at(0).listClassProperties.at(0).classProperty);
+		ASSERT_EQ(static_cast<org::genivi::am::am_ClassProperty_pe>(am_ClassProperty_e::CP_MAX), list.at(0).listClassProperties.at(0).classProperty);
 
 		ASSERT_EQ(2, list.at(1).sourceClassID);
 		ASSERT_EQ(2, list.at(1).listClassProperties.size());
-		ASSERT_EQ(CommandInterface::am_ClassProperty_e::CP_MAX, list.at(1).listClassProperties.at(0).classProperty);
+		ASSERT_EQ(static_cast<org::genivi::am::am_ClassProperty_pe>(am_ClassProperty_e::CP_MAX), list.at(1).listClassProperties.at(0).classProperty);
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpCommandReceive));
 }
@@ -581,23 +585,23 @@ TEST_F(CAmCommandSenderCAPITest, GetListSinkClassesTest)
 	if(env->mIsServiceAvailable)
 	{
 		CommonAPI::CallStatus callStatus = CommonAPI::CallStatus::NOT_AVAILABLE;
-		CommandInterface::am_Error_e result = CommandInterface::am_Error_e::E_OK;
+		org::genivi::am::am_Error_e result = org::genivi::am::am_Error_e::E_OK;
 
 		EXPECT_CALL(*env->mpCommandReceive, getListSinkClasses(_)).WillOnce(DoAll(returnListSinkClasses(), Return(E_OK)));
-		CommandInterface::am_SinkClass_l list;
-		env->mProxy->GetListSinkClasses(callStatus, result, list);
-		ASSERT_EQ(result, CommandInterface::am_Error_e::E_OK);
+		org::genivi::am::am_SinkClass_L list;
+		env->mProxy->getListSinkClasses(callStatus, list,result);
+		ASSERT_EQ(result, org::genivi::am::am_Error_e::E_OK);
 		ASSERT_EQ(2, list.size());
 
 		ASSERT_EQ(0, list.at(0).name.compare("FirstCLass"));
 		ASSERT_EQ(23, list.at(0).sinkClassID);
 		ASSERT_EQ(1, list.at(0).listClassProperties.size());
-		ASSERT_EQ(CommandInterface::am_ClassProperty_e::CP_MAX, list.at(0).listClassProperties.at(0).classProperty);
+		ASSERT_EQ(static_cast<org::genivi::am::am_ClassProperty_pe>(am_ClassProperty_e::CP_MAX), list.at(0).listClassProperties.at(0).classProperty);
 
 		ASSERT_EQ(0, list.at(1).name.compare("SecondCLass"));
 		ASSERT_EQ(2, list.at(1).sinkClassID);
 		ASSERT_EQ(2, list.at(1).listClassProperties.size());
-		ASSERT_EQ(CommandInterface::am_ClassProperty_e::CP_MAX, list.at(1).listClassProperties.at(0).classProperty);
+		ASSERT_EQ(static_cast<org::genivi::am::am_ClassProperty_pe>(am_ClassProperty_e::CP_MAX), list.at(1).listClassProperties.at(0).classProperty);
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpCommandReceive));
 }
@@ -617,16 +621,16 @@ TEST_F(CAmCommandSenderCAPITest, GetListSystemPropertiesTest)
 	if(env->mIsServiceAvailable)
 	{
 		CommonAPI::CallStatus callStatus = CommonAPI::CallStatus::NOT_AVAILABLE;
-		CommandInterface::am_Error_e result = CommandInterface::am_Error_e::E_OK;
+		org::genivi::am::am_Error_e result = org::genivi::am::am_Error_e::E_OK;
 
 		EXPECT_CALL(*env->mpCommandReceive, getListSystemProperties(_)).WillOnce(DoAll(returnListSystemProperties(), Return(E_OK)));
-		CommandInterface::am_SystemProperty_l list;
-		env->mProxy->GetListSystemProperties(callStatus, result, list);
-		ASSERT_EQ(result, CommandInterface::am_Error_e::E_OK);
+		org::genivi::am::am_SystemProperty_L list;
+		env->mProxy->getListSystemProperties(callStatus, list,result);
+		ASSERT_EQ(result, org::genivi::am::am_Error_e::E_OK);
 		ASSERT_EQ(1, list.size());
 
 		ASSERT_EQ(-2245, list.at(0).value);
-		ASSERT_EQ(CommandInterface::am_SystemPropertyType_e::SYP_MAX, list.at(0).type);
+		ASSERT_EQ(static_cast<org::genivi::am::am_ClassProperty_pe>(am_SystemPropertyType_e::SYP_MAX), list.at(0).type);
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpCommandReceive));
 }
@@ -638,18 +642,46 @@ TEST_F(CAmCommandSenderCAPITest, GetListSystemPropertiesTest)
 
 #define SIMPLE_THREADS_SYNC_MICROSEC() usleep(50000)
 
-TEST_F(CAmCommandSenderCAPITest, onNumberOfMainConnectionsChangedEventTest)
+TEST_F(CAmCommandSenderCAPITest, onNewMainConnection)
 {
 	ASSERT_TRUE(env->mIsServiceAvailable);
 	if(env->mIsServiceAvailable)
 	{
 		MockNotificationsClient mock;
-		auto subscription = env->mProxy->getNumberOfMainConnectionsChangedEvent().subscribe(std::bind(&MockNotificationsClient::onNumberOfMainConnectionsChangedEvent, std::ref(mock)));
-		EXPECT_CALL(mock, onNumberOfMainConnectionsChangedEvent());
+		auto subscription = env->mProxy->getNewMainConnectionEvent().subscribe(std::bind(&MockNotificationsClient::onNewMainConnection, std::ref(mock), std::placeholders::_1));
 		am_MainConnectionType_s mainConnection;
+		mainConnection.connectionState=am_ConnectionState_e::CS_CONNECTING;
+		mainConnection.delay=400;
+		mainConnection.mainConnectionID=3;
+		mainConnection.sinkID=4;
+		mainConnection.sourceID=5;
+		org::genivi::am::am_MainConnectionType_s mainConnectionCAPI;
+		mainConnectionCAPI.connectionState=CAmConvert2CAPIType(mainConnection.connectionState);
+		mainConnectionCAPI.delay=mainConnection.delay;
+		mainConnectionCAPI.mainConnectionID=mainConnection.mainConnectionID;
+		mainConnectionCAPI.sinkID=mainConnection.sinkID;
+		mainConnectionCAPI.sourceID=mainConnection.sourceID;
+		EXPECT_CALL(mock, onNewMainConnection(mainConnectionCAPI));
 		env->mpPlugin->cbNewMainConnection(mainConnection);
 		SIMPLE_THREADS_SYNC_MICROSEC();
-		env->mProxy->getNumberOfMainConnectionsChangedEvent().unsubscribe(subscription);
+		env->mProxy->getNewMainConnectionEvent().unsubscribe(subscription);
+	}
+	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpCommandReceive));
+}
+
+TEST_F(CAmCommandSenderCAPITest, removedMainConnection)
+{
+	ASSERT_TRUE(env->mIsServiceAvailable);
+	if(env->mIsServiceAvailable)
+	{
+		MockNotificationsClient mock;
+		auto subscription = env->mProxy->getRemovedMainConnectionEvent().subscribe(std::bind(&MockNotificationsClient::removedMainConnection, std::ref(mock), std::placeholders::_1));
+		am_mainConnectionID_t mainConnectionID(3);
+		org::genivi::am::am_mainConnectionID_t mainConnectionIDCAPI(mainConnectionID);
+		EXPECT_CALL(mock, removedMainConnection(mainConnectionIDCAPI));
+		env->mpPlugin->cbRemovedMainConnection(mainConnectionID);
+		SIMPLE_THREADS_SYNC_MICROSEC();
+		env->mProxy->getRemovedMainConnectionEvent().unsubscribe(subscription);
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpCommandReceive));
 }
@@ -665,7 +697,7 @@ TEST_F(CAmCommandSenderCAPITest, onNumberOfSourceClassesChangedEventTest)
 		EXPECT_CALL(mock, onNumberOfSourceClassesChangedEvent());
 		env->mpPlugin->cbNumberOfSourceClassesChanged();
 		SIMPLE_THREADS_SYNC_MICROSEC();
-		env->mProxy->getNumberOfMainConnectionsChangedEvent().unsubscribe(subscription);
+		env->mProxy->getNumberOfSourceClassesChangedEvent().unsubscribe(subscription);
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpCommandReceive));
 }
@@ -678,7 +710,7 @@ TEST_F(CAmCommandSenderCAPITest, onMainConnectionStateChangedEventTest)
 		MockNotificationsClient mock;
 		auto subscription = env->mProxy->getMainConnectionStateChangedEvent().subscribe(std::bind(&MockNotificationsClient::onMainConnectionStateChangedEvent, std::ref(mock),
 													   std::placeholders::_1, std::placeholders::_2));
-		EXPECT_CALL(mock, onMainConnectionStateChangedEvent(101, CommandInterface::am_ConnectionState_e::CS_SUSPENDED));
+		EXPECT_CALL(mock, onMainConnectionStateChangedEvent(101, org::genivi::am::am_ConnectionState_e::CS_SUSPENDED));
 		env->mpPlugin->cbMainConnectionStateChanged(101, CS_SUSPENDED);
 		SIMPLE_THREADS_SYNC_MICROSEC();
 		env->mProxy->getMainConnectionStateChangedEvent().unsubscribe(subscription);
@@ -692,13 +724,12 @@ TEST_F(CAmCommandSenderCAPITest, onSourceAddedEventTest)
 	if(env->mIsServiceAvailable)
 	{
 		MockNotificationsClient mock;
-		auto subscription = env->mProxy->getSourceAddedEvent().subscribe(std::bind(&MockNotificationsClient::onSourceAddedEvent, std::ref(mock),
-													   std::placeholders::_1));
-		CommandInterface::am_SourceType_s destination;
+		auto subscription = env->mProxy->getNewSourceEvent().subscribe(std::bind(&MockNotificationsClient::onSourceAddedEvent, std::ref(mock),std::placeholders::_1));
+		org::genivi::am::am_SourceType_s destination;
 		destination.sourceID = 100;
 		destination.name = "Name";
-		destination.availability.availability = CommandInterface::am_Availablility_e::A_MAX;
-		destination.availability.availabilityReason = CommandInterface::am_AvailabilityReason_e::AR_MAX;
+		destination.availability.availability = org::genivi::am::am_Availability_e::A_MAX;
+		destination.availability.availabilityReason = static_cast<org::genivi::am::am_AvailabilityReason_pe>(AR_MAX);
 		destination.sourceClassID = 200;
 
 		am_SourceType_s origin;
@@ -710,7 +741,7 @@ TEST_F(CAmCommandSenderCAPITest, onSourceAddedEventTest)
 		EXPECT_CALL(mock, onSourceAddedEvent(destination));
 		env->mpPlugin->cbNewSource(origin);
 		SIMPLE_THREADS_SYNC_MICROSEC();
-		env->mProxy->getSourceAddedEvent().unsubscribe(subscription);
+		env->mProxy->getNewSourceEvent().unsubscribe(subscription);
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpCommandReceive));
 }
@@ -721,13 +752,13 @@ TEST_F(CAmCommandSenderCAPITest, onSourceRemovedEventTest)
 	if(env->mIsServiceAvailable)
 	{
 		MockNotificationsClient mock;
-		auto subscription = env->mProxy->getSourceRemovedEvent().subscribe(std::bind(&MockNotificationsClient::onSourceRemovedEvent, std::ref(mock),
+		auto subscription = env->mProxy->getRemovedSourceEvent().subscribe(std::bind(&MockNotificationsClient::onSourceRemovedEvent, std::ref(mock),
 													   std::placeholders::_1));
 		am_sourceID_t source = 101;
 		EXPECT_CALL(mock, onSourceRemovedEvent(source));
 		env->mpPlugin->cbRemovedSource(source);
 		SIMPLE_THREADS_SYNC_MICROSEC();
-		env->mProxy->getSourceRemovedEvent().unsubscribe(subscription);
+		env->mProxy->getRemovedSourceEvent().unsubscribe(subscription);
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpCommandReceive));
 }
@@ -745,7 +776,7 @@ TEST_F(CAmCommandSenderCAPITest, onMainSourceSoundPropertyChangedEventTest)
 		soundProperty.value = 10;
 		soundProperty.type = am_MainSoundPropertyType_e::MSP_MAX;
 
-		CommandInterface::am_MainSoundProperty_s destination(CommandInterface::am_MainSoundPropertyType_e::MSP_MAX, 10);
+		org::genivi::am::am_MainSoundProperty_s destination(static_cast<org::genivi::am::am_MainSoundPropertyType_pe>(MSP_MAX), 10);
 
 		EXPECT_CALL(mock, onMainSourceSoundPropertyChangedEvent(101, destination));
 		env->mpPlugin->cbMainSourceSoundPropertyChanged(101, soundProperty);
@@ -768,7 +799,7 @@ TEST_F(CAmCommandSenderCAPITest, onSourceAvailabilityChangedEventTest)
 		availability.availability = A_MAX;
 		availability.availabilityReason = AR_MAX;
 
-		CommandInterface::am_Availability_s destination(CommandInterface::am_Availablility_e::A_MAX, CommandInterface::am_AvailabilityReason_e::AR_MAX);
+		org::genivi::am::am_Availability_s destination(org::genivi::am::am_Availability_e::A_MAX, static_cast<org::genivi::am::am_AvailabilityReason_pe>(AR_MAX));
 
 		EXPECT_CALL(mock, onSourceAvailabilityChangedEvent(101, destination));
 		env->mpPlugin->cbSourceAvailabilityChanged(101, availability);
@@ -799,14 +830,14 @@ TEST_F(CAmCommandSenderCAPITest, onSinkAddedEventTest)
 	if(env->mIsServiceAvailable)
 	{
 		MockNotificationsClient mock;
-		auto subscription = env->mProxy->getSinkAddedEvent().subscribe(std::bind(&MockNotificationsClient::onSinkAddedEvent, std::ref(mock),
+		auto subscription = env->mProxy->getNewSinkEvent().subscribe(std::bind(&MockNotificationsClient::onSinkAddedEvent, std::ref(mock),
 													   std::placeholders::_1));
-		CommandInterface::am_SinkType_s destination;
+		org::genivi::am::am_SinkType_s destination;
 		destination.sinkID = 100;
 		destination.name = "Name";
-		destination.availability.availability = CommandInterface::am_Availablility_e::A_MAX;
-		destination.availability.availabilityReason = CommandInterface::am_AvailabilityReason_e::AR_MAX;
-		destination.muteState = CommandInterface::am_MuteState_e::MS_MAX;
+		destination.availability.availability = org::genivi::am::am_Availability_e::A_MAX;
+		destination.availability.availabilityReason = static_cast<org::genivi::am::am_AvailabilityReason_pe>(AR_MAX);
+		destination.muteState = org::genivi::am::am_MuteState_e::MS_MAX;
 		destination.volume = 1;
 		destination.sinkClassID = 100;
 
@@ -822,7 +853,7 @@ TEST_F(CAmCommandSenderCAPITest, onSinkAddedEventTest)
 		EXPECT_CALL(mock, onSinkAddedEvent(destination));
 		env->mpPlugin->cbNewSink(origin);
 		SIMPLE_THREADS_SYNC_MICROSEC();
-		env->mProxy->getSinkAddedEvent().unsubscribe(subscription);
+		env->mProxy->getNewSinkEvent().unsubscribe(subscription);
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpCommandReceive));
 }
@@ -833,12 +864,12 @@ TEST_F(CAmCommandSenderCAPITest, onSinkRemovedEventTest)
 	if(env->mIsServiceAvailable)
 	{
 		MockNotificationsClient mock;
-		auto subscription = env->mProxy->getSinkRemovedEvent().subscribe(std::bind(&MockNotificationsClient::onSinkRemovedEvent, std::ref(mock),
+		auto subscription = env->mProxy->getRemovedSinkEvent().subscribe(std::bind(&MockNotificationsClient::onSinkRemovedEvent, std::ref(mock),
 													   std::placeholders::_1));
 		EXPECT_CALL(mock, onSinkRemovedEvent(101));
 		env->mpPlugin->cbRemovedSink(101);
 		SIMPLE_THREADS_SYNC_MICROSEC();
-		env->mProxy->getSinkRemovedEvent().unsubscribe(subscription);
+		env->mProxy->getRemovedSinkEvent().unsubscribe(subscription);
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpCommandReceive));
 }
@@ -856,7 +887,7 @@ TEST_F(CAmCommandSenderCAPITest, onMainSinkSoundPropertyChangedEventTest)
 		soundProperty.value = 10;
 		soundProperty.type = am_MainSoundPropertyType_e::MSP_MAX;
 
-		CommandInterface::am_MainSoundProperty_s destination(CommandInterface::am_MainSoundPropertyType_e::MSP_MAX, 10);
+		org::genivi::am::am_MainSoundProperty_s destination(static_cast<org::genivi::am::am_MainSoundPropertyType_pe>(MSP_MAX), 10);
 
 		EXPECT_CALL(mock, onMainSinkSoundPropertyChangedEvent(101, destination));
 		env->mpPlugin->cbMainSinkSoundPropertyChanged(101, soundProperty);
@@ -879,7 +910,7 @@ TEST_F(CAmCommandSenderCAPITest, onSinkAvailabilityChangedEventTest)
 		availability.availability = A_MAX;
 		availability.availabilityReason = AR_MAX;
 
-		CommandInterface::am_Availability_s destination(CommandInterface::am_Availablility_e::A_MAX, CommandInterface::am_AvailabilityReason_e::AR_MAX);
+		org::genivi::am::am_Availability_s destination(org::genivi::am::am_Availability_e::A_MAX, static_cast<org::genivi::am::am_AvailabilityReason_pe>(AR_MAX));
 
 		EXPECT_CALL(mock, onSinkAvailabilityChangedEvent(101, destination));
 		env->mpPlugin->cbSinkAvailabilityChanged(101, availability);
@@ -913,7 +944,7 @@ TEST_F(CAmCommandSenderCAPITest, onSinkMuteStateChangedEventTest)
 		MockNotificationsClient mock;
 		auto subscription = env->mProxy->getSinkMuteStateChangedEvent().subscribe(std::bind(&MockNotificationsClient::onSinkMuteStateChangedEvent, std::ref(mock),
 													   std::placeholders::_1, std::placeholders::_2));
-		EXPECT_CALL(mock, onSinkMuteStateChangedEvent(101, CommandInterface::am_MuteState_e::MS_MAX));
+		EXPECT_CALL(mock, onSinkMuteStateChangedEvent(101, org::genivi::am::am_MuteState_e::MS_MAX));
 		env->mpPlugin->cbSinkMuteStateChanged(101, am_MuteState_e::MS_MAX);
 		SIMPLE_THREADS_SYNC_MICROSEC();
 		env->mProxy->getSinkMuteStateChangedEvent().unsubscribe(subscription);
@@ -930,7 +961,7 @@ TEST_F(CAmCommandSenderCAPITest, onSystemPropertyChangedEventTest)
 		auto subscription = env->mProxy->getSystemPropertyChangedEvent().subscribe(std::bind(&MockNotificationsClient::onSystemPropertyChangedEvent, std::ref(mock),
 													   std::placeholders::_1));
 
-		CommandInterface::am_SystemProperty_s value(CommandInterface::am_SystemPropertyType_e::SYP_UNKNOWN, (const int16_t)2);
+		org::genivi::am::am_SystemProperty_s value(static_cast<org::genivi::am::am_SystemPropertyType_pe>(SYP_UNKNOWN), (const int16_t)2);
 		am_SystemProperty_s systemProperty;
 		systemProperty.value = 2;
 		systemProperty.type = am_SystemPropertyType_e::SYP_UNKNOWN;
@@ -1013,8 +1044,8 @@ TEST_F(CAmCommandSenderCAPITest, onSinkNotificationEventTest)
 		am_NotificationPayload_s orig;
 		orig.type = am_NotificationType_e::NT_MAX;
 		orig.value = 1;
-		CommandInterface::am_NotificationPayload_s dest;
-		dest.type = org::genivi::audiomanager::am::am_NotificationType_e::NT_MAX;
+		org::genivi::am::am_NotificationPayload_s dest;
+		dest.type = static_cast<org::genivi::am::am_NotificationType_pe>(NT_MAX);
 		dest.value = 1;
 
 		EXPECT_CALL(mock, onSinkNotificationEvent(1, dest));
@@ -1037,8 +1068,8 @@ TEST_F(CAmCommandSenderCAPITest, onSourceNotificationEventTest)
 		am_NotificationPayload_s orig;
 		orig.type = am_NotificationType_e::NT_MAX;
 		orig.value = 1;
-		CommandInterface::am_NotificationPayload_s dest;
-		dest.type = org::genivi::audiomanager::am::am_NotificationType_e::NT_MAX;
+		org::genivi::am::am_NotificationPayload_s dest;
+		dest.type = static_cast<org::genivi::am::am_NotificationType_pe>(NT_MAX);
 		dest.value = 1;
 
 		EXPECT_CALL(mock, onSourceNotificationEvent(1, dest));
@@ -1061,10 +1092,10 @@ TEST_F(CAmCommandSenderCAPITest, onMainSinkNotificationConfigurationChangedEvent
 		orig.type = am_NotificationType_e::NT_MAX;
 		orig.parameter = 1;
 		orig.status = am_NotificationStatus_e::NS_MAX;
-		org::genivi::audiomanager::am::am_NotificationConfiguration_s dest;
-		dest.type = org::genivi::audiomanager::am::am_NotificationType_e::NT_MAX;
+		org::genivi::am::am_NotificationConfiguration_s dest;
+		dest.type = static_cast<org::genivi::am::am_NotificationType_pe>(NT_MAX);
 		dest.parameter = 1;
-		dest.status = org::genivi::audiomanager::am::am_NotificationStatus_e::NS_MAX;
+		dest.status = org::genivi::am::am_NotificationStatus_e::NS_MAX;
 
 		EXPECT_CALL(mock, onMainSinkNotificationConfigurationChangedEvent(1, dest));
 		env->mpPlugin->cbMainSinkNotificationConfigurationChanged(1, orig);
@@ -1086,10 +1117,10 @@ TEST_F(CAmCommandSenderCAPITest, onMainSourceNotificationConfigurationChangedEve
 		orig.type = am_NotificationType_e::NT_MAX;
 		orig.parameter = 1;
 		orig.status = am_NotificationStatus_e::NS_MAX;
-		org::genivi::audiomanager::am::am_NotificationConfiguration_s dest;
-		dest.type = org::genivi::audiomanager::am::am_NotificationType_e::NT_MAX;
+		org::genivi::am::am_NotificationConfiguration_s dest;
+		dest.type =static_cast<org::genivi::am::am_NotificationType_pe>(NT_MAX);
 		dest.parameter = 1;
-		dest.status = org::genivi::audiomanager::am::am_NotificationStatus_e::NS_MAX;
+		dest.status = org::genivi::am::am_NotificationStatus_e::NS_MAX;
 
 		EXPECT_CALL(mock, onMainSourceNotificationConfigurationChangedEvent(1, dest));
 		env->mpPlugin->cbMainSourceNotificationConfigurationChanged(1, orig);

@@ -21,139 +21,110 @@
 /**
  * Utility functions
  */
-void CAmConvertAvailablility(const am_Availability_s & amAavailability, CommandInterface::am_Availability_s & result)
+void CAmConvertAvailablility(const am_Availability_s & amAavailability, org::genivi::am::am_Availability_s & result)
 {
 	result.availability = CAmConvert2CAPIType(amAavailability.availability);
 	result.availabilityReason = CAmConvert2CAPIType(amAavailability.availabilityReason);
 }
 
-void CAmConvertMainSoundProperty(const am_MainSoundProperty_s & amMainSoundProperty, CommandInterface::am_MainSoundProperty_s & result)
+void CAmConvertMainSoundProperty(const am_MainSoundProperty_s & amMainSoundProperty, org::genivi::am::am_MainSoundProperty_s & result)
 {
 	result.type = CAmConvert2CAPIType(amMainSoundProperty.type);
 	result.value = amMainSoundProperty.value;
 }
 
-void CAmConvertSystemProperty(const am_SystemProperty_s & amSystemProperty, CommandInterface::am_SystemProperty_s & result)
+void CAmConvertSystemProperty(const am_SystemProperty_s & amSystemProperty, org::genivi::am::am_SystemProperty_s & result)
 {
 	result.type = CAmConvert2CAPIType(amSystemProperty.type);
 	result.value = amSystemProperty.value;
 }
 
-CommandInterface::am_ClassProperty_e CAmConvert2CAPIType(const am_ClassProperty_e & property)
+org::genivi::am::am_ClassProperty_pe CAmConvert2CAPIType(const am_ClassProperty_e & property)
 {
-	return CP_MAX==property?
-			CommandInterface::am_ClassProperty_e::CP_MAX
-			:
-			static_cast<CommandInterface::am_ClassProperty_e>(property);
+	return static_cast<org::genivi::am::am_ClassProperty_pe>(property);
 }
 
-CommandInterface::am_SystemPropertyType_e CAmConvert2CAPIType(const am_SystemPropertyType_e & property)
+org::genivi::am::am_SystemPropertyType_pe CAmConvert2CAPIType(const am_SystemPropertyType_e & property)
 {
-	return SYP_MAX==property?
-			CommandInterface::am_SystemPropertyType_e::SYP_MAX
-			:
-			static_cast<CommandInterface::am_SystemPropertyType_e>(property);
+	return 	static_cast<org::genivi::am::am_SystemPropertyType_pe>(property);
 }
 
-CommandInterface::am_Availablility_e CAmConvert2CAPIType(const am_Availability_e & availability)
+org::genivi::am::am_Availability_e CAmConvert2CAPIType(const am_Availability_e & availability)
 {
-	return (A_MAX==availability)?CommandInterface::am_Availablility_e::A_MAX
+	return (A_MAX==availability)?org::genivi::am::am_Availability_e::A_MAX
 								 :
-								 static_cast<CommandInterface::am_Availablility_e>(availability);
+								 static_cast<org::genivi::am::am_Availability_e>(availability);
 }
 
-CommandInterface::am_AvailabilityReason_e CAmConvert2CAPIType(const am_AvailabilityReason_e & availabilityReason)
+org::genivi::am::am_AvailabilityReason_pe CAmConvert2CAPIType(const am_AvailabilityReason_e & availabilityReason)
 {
-	return (AR_MAX==availabilityReason)?CommandInterface::am_AvailabilityReason_e::AR_MAX
-										:
-										static_cast<CommandInterface::am_AvailabilityReason_e>(availabilityReason);
+	return static_cast<org::genivi::am::am_AvailabilityReason_pe>(availabilityReason);
 }
 
-CommandInterface::am_MuteState_e CAmConvert2CAPIType(const am_MuteState_e & muteState)
+org::genivi::am::am_MuteState_e CAmConvert2CAPIType(const am_MuteState_e & muteState)
 {
 	return MS_MAX==muteState?
-							CommandInterface::am_MuteState_e::MS_MAX
+							org::genivi::am::am_MuteState_e::MS_MAX
 							:
-							static_cast<CommandInterface::am_MuteState_e>(muteState);
+							static_cast<org::genivi::am::am_MuteState_e>(muteState);
 }
 
-am_MuteState_e CAmConvertFromCAPIType(const CommandInterface::am_MuteState_e & muteState)
+am_MuteState_e CAmConvertFromCAPIType(const org::genivi::am::am_MuteState_e & muteState)
 {
-	return CommandInterface::am_MuteState_e::MS_MAX==muteState?
+	return org::genivi::am::am_MuteState_e::MS_MAX==muteState?
 							MS_MAX:static_cast<am_MuteState_e>(muteState);
 }
 
-CommandInterface::am_MainSoundPropertyType_e CAmConvert2CAPIType(const am_MainSoundPropertyType_e & type)
+org::genivi::am::am_MainSoundPropertyType_pe CAmConvert2CAPIType(const am_MainSoundPropertyType_e & type)
 {
-	return MSP_MAX==type?
-							CommandInterface::am_MainSoundPropertyType_e::MSP_MAX
-							:
-							static_cast<CommandInterface::am_MainSoundPropertyType_e>(type);
+	return static_cast<org::genivi::am::am_MainSoundPropertyType_pe>(type);
 }
-am_MainSoundPropertyType_e CAmConvertFromCAPIType(const CommandInterface::am_MainSoundPropertyType_e & type)
+am_MainSoundPropertyType_e CAmConvertFromCAPIType(const org::genivi::am::am_MainSoundPropertyType_pe & type)
 {
-	return CommandInterface::am_MainSoundPropertyType_e::MSP_MAX==type?
-			MSP_MAX:static_cast<am_MainSoundPropertyType_e>(type);
+	return static_cast<am_MainSoundPropertyType_e>(type);
 }
 
-
-
-CommandInterface::am_ConnectionState_e CAmConvert2CAPIType(const am_ConnectionState_e & connectionState)
+org::genivi::am::am_ConnectionState_e CAmConvert2CAPIType(const am_ConnectionState_e & connectionState)
 {
 	return CS_MAX==connectionState?
-							CommandInterface::am_ConnectionState_e::CS_MAX
+							org::genivi::am::am_ConnectionState_e::CS_MAX
 							:
-							static_cast<CommandInterface::am_ConnectionState_e>(connectionState);
+							static_cast<org::genivi::am::am_ConnectionState_e>(connectionState);
 }
-am_ConnectionState_e CAmConvertFromCAPIType(const CommandInterface::am_ConnectionState_e & connectionState)
+am_ConnectionState_e CAmConvertFromCAPIType(const org::genivi::am::am_ConnectionState_e & connectionState)
 {
-	return CommandInterface::am_ConnectionState_e::CS_MAX==connectionState?
+	return org::genivi::am::am_ConnectionState_e::CS_MAX==connectionState?
 			CS_MAX:static_cast<am_ConnectionState_e>(connectionState);
 }
 
-org::genivi::audiomanager::am::am_NotificationType_e CAmConvert2CAPIType(const am_NotificationType_e & notificationType)
+org::genivi::am::am_NotificationType_pe CAmConvert2CAPIType(const am_NotificationType_e & notificationType)
 {
-	return NT_MAX==notificationType?
-							org::genivi::audiomanager::am::am_NotificationType_e::NT_MAX
-							:
-							static_cast<org::genivi::audiomanager::am::am_NotificationType_e>(notificationType);
-}
-am_NotificationType_e CAmConvertFromCAPIType(const org::genivi::audiomanager::am::am_NotificationType_e & notificationType)
-{
-	return org::genivi::audiomanager::am::am_NotificationType_e::NT_MAX==notificationType?
-			NT_MAX:static_cast<am_NotificationType_e>(notificationType);
+	return 	static_cast<org::genivi::am::am_NotificationType_pe>(notificationType);
 }
 
-org::genivi::audiomanager::am::am_NotificationStatus_e CAmConvert2CAPIType(const am_NotificationStatus_e & notificationStatus)
+org::genivi::am::am_NotificationStatus_e CAmConvert2CAPIType(const am_NotificationStatus_e & notificationStatus)
 {
 	return NS_MAX==notificationStatus?
-							org::genivi::audiomanager::am::am_NotificationStatus_e::NS_MAX
+							org::genivi::am::am_NotificationStatus_e::NS_MAX
 							:
-							static_cast<org::genivi::audiomanager::am::am_NotificationStatus_e>(notificationStatus);
+							static_cast<org::genivi::am::am_NotificationStatus_e>(notificationStatus);
 }
-am_NotificationStatus_e CAmConvertFromCAPIType(const org::genivi::audiomanager::am::am_NotificationStatus_e & notificationStatus)
+am_NotificationStatus_e CAmConvertFromCAPIType(const org::genivi::am::am_NotificationStatus_e & notificationStatus)
 {
-	return org::genivi::audiomanager::am::am_NotificationStatus_e::NS_MAX==notificationStatus?
+	return org::genivi::am::am_NotificationStatus_e::NS_MAX==notificationStatus?
 			NS_MAX:static_cast<am_NotificationStatus_e>(notificationStatus);
 }
 
-CommandInterface::am_Error_e CAmConvert2CAPIType(const am_Error_e & error)
+org::genivi::am::am_Error_e CAmConvert2CAPIType(const am_Error_e & error)
 {
 	return E_MAX==error?
-							CommandInterface::am_Error_e::E_MAX
+							org::genivi::am::am_Error_e::E_MAX
 							:
-							static_cast<CommandInterface::am_Error_e>(error);
+							static_cast<org::genivi::am::am_Error_e>(error);
 }
-am_Error_e CAmConvertFromCAPIType(const CommandInterface::am_Error_e & error)
+am_Error_e CAmConvertFromCAPIType(const org::genivi::am::am_Error_e & error)
 {
-	return CommandInterface::am_Error_e::E_MAX==error?
+	return org::genivi::am::am_Error_e::E_MAX==error?
 			E_MAX:static_cast<am_Error_e>(error);
-}
-
-
-am_SystemPropertyType_e CAmConvertFromCAPIType(const CommandInterface::am_SystemPropertyType_e & propType)
-{
-	return CommandInterface::am_SystemPropertyType_e::SYP_MAX==propType?
-			SYP_MAX:static_cast<am_SystemPropertyType_e>(propType);
 }
 

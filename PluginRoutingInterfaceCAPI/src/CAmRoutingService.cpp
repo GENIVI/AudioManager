@@ -39,131 +39,118 @@ CAmRoutingService::~CAmRoutingService() {
 	// TODO Auto-generated destructor stub
 }
 
-void CAmRoutingService::ackConnect(uint16_t handle, am_gen::am_connectionID_t connectionID, uint16_t error) {
+void CAmRoutingService::ackConnect(org::genivi::am::am_Handle_s handle, org::genivi::am::am_connectionID_t connectionID, org::genivi::am::am_Error_e error) {
 	assert(mpIAmRoutingReceive);
 	assert(mpLookpData);
 	am_Handle_s handle_s;
-	handle_s.handle = handle;
-	handle_s.handleType = H_CONNECT;
+	CAmConvertCAPI2AM(handle,handle_s);
 	mpIAmRoutingReceive->ackConnect(handle_s, static_cast<am_connectionID_t>(connectionID), static_cast<am_Error_e>(error));
-	mpLookpData->removeHandle(handle);
+	mpLookpData->removeHandle(handle_s);
 }
 
-void CAmRoutingService::ackDisconnect(uint16_t handle, am_gen::am_connectionID_t connectionID, uint16_t error) {
+void CAmRoutingService::ackDisconnect(org::genivi::am::am_Handle_s handle , org::genivi::am::am_connectionID_t connectionID, org::genivi::am::am_Error_e error) {
 	assert(mpIAmRoutingReceive);
 	assert(mpLookpData);
 	am_Handle_s handle_s;
-	handle_s.handle = handle;
-	handle_s.handleType = H_DISCONNECT;
+	CAmConvertCAPI2AM(handle,handle_s);
 	mpIAmRoutingReceive->ackDisconnect(handle_s, static_cast<am_connectionID_t>(connectionID), static_cast<am_Error_e>(error));
-	mpLookpData->removeHandle(handle);
-	//todo: Check whether the connection should be removed here!
+	mpLookpData->removeHandle(handle_s);
 	mpLookpData->removeConnectionLookup(connectionID);
 }
 
-void CAmRoutingService::ackSetSinkVolume(uint16_t handle, am_gen::am_volume_t volume, uint16_t error) {
+void CAmRoutingService::ackSetSinkVolumeChange(org::genivi::am::am_Handle_s handle , org::genivi::am::am_volume_t volume, org::genivi::am::am_Error_e error) {
 	assert(mpIAmRoutingReceive);
 	assert(mpLookpData);
 	am_Handle_s handle_s;
-	handle_s.handle = handle;
-	handle_s.handleType = H_SETSINKVOLUME;
+	CAmConvertCAPI2AM(handle,handle_s);
 	mpIAmRoutingReceive->ackSetSinkVolumeChange(handle_s, volume, static_cast<am_Error_e>(error));
-	mpLookpData->removeHandle(handle);
+	mpLookpData->removeHandle(handle_s);
 }
 
-void CAmRoutingService::ackSetSourceVolume(uint16_t handle, am_gen::am_volume_t volume, uint16_t error) {
+void CAmRoutingService::ackSetSourceVolumeChange(org::genivi::am::am_Handle_s handle, org::genivi::am::am_volume_t volume, org::genivi::am::am_Error_e error){
 	assert(mpIAmRoutingReceive);
 	assert(mpLookpData);
 	am_Handle_s handle_s;
-	handle_s.handle = handle;
-	handle_s.handleType = H_SETSOURCEVOLUME;
+	CAmConvertCAPI2AM(handle,handle_s);
 	mpIAmRoutingReceive->ackSetSourceVolumeChange(handle_s, volume, static_cast<am_Error_e>(error));
-	mpLookpData->removeHandle(handle);
+	mpLookpData->removeHandle(handle_s);
 }
 
-void CAmRoutingService::ackSetSourceState(uint16_t handle, uint16_t error) {
+void CAmRoutingService::ackSetSourceState(org::genivi::am::am_Handle_s handle, org::genivi::am::am_Error_e error) {
 	assert(mpIAmRoutingReceive);
 	assert(mpLookpData);
 	am_Handle_s handle_s;
-	handle_s.handle = handle;
-	handle_s.handleType = H_SETSOURCESTATE;
+	CAmConvertCAPI2AM(handle,handle_s);
 	mpIAmRoutingReceive->ackSetSourceState(handle_s,static_cast<am_Error_e>(error));
-	mpLookpData->removeHandle(handle);
+	mpLookpData->removeHandle(handle_s);
 }
 
-void CAmRoutingService::ackSetSinkSoundProperties(uint16_t handle, uint16_t error) {
+void CAmRoutingService::ackSetSinkSoundProperties(org::genivi::am::am_Handle_s handle, org::genivi::am::am_Error_e error){
 	assert(mpIAmRoutingReceive);
 	assert(mpLookpData);
 	am_Handle_s handle_s;
-	handle_s.handle = handle;
-	handle_s.handleType = H_SETSINKSOUNDPROPERTIES;
+	CAmConvertCAPI2AM(handle,handle_s);
 	mpIAmRoutingReceive->ackSetSinkSoundProperties(handle_s, static_cast<am_Error_e>(error));
-	mpLookpData->removeHandle(handle);
+	mpLookpData->removeHandle(handle_s);
 }
 
-void CAmRoutingService::ackSetSinkSoundProperty(uint16_t handle, uint16_t error) {
+void CAmRoutingService::ackSetSinkSoundProperty(org::genivi::am::am_Handle_s handle, org::genivi::am::am_Error_e error) {
 	assert(mpIAmRoutingReceive);
 	assert(mpLookpData);
 	am_Handle_s handle_s;
-	handle_s.handle = handle;
-	handle_s.handleType = H_SETSINKSOUNDPROPERTY;
+	CAmConvertCAPI2AM(handle,handle_s);
 	mpIAmRoutingReceive->ackSetSinkSoundProperty(handle_s, static_cast<am_Error_e>(error));
-	mpLookpData->removeHandle(handle);
+	mpLookpData->removeHandle(handle_s);
 }
 
-void CAmRoutingService::ackSetSourceSoundProperties(uint16_t handle, uint16_t error) {
+void CAmRoutingService::ackSetSourceSoundProperties(org::genivi::am::am_Handle_s handle, org::genivi::am::am_Error_e error) {
 	assert(mpIAmRoutingReceive);
 	assert(mpLookpData);
 	am_Handle_s handle_s;
-	handle_s.handle = handle;
-	handle_s.handleType = H_SETSOURCESOUNDPROPERTIES;
+	CAmConvertCAPI2AM(handle,handle_s);
 	mpIAmRoutingReceive->ackSetSourceSoundProperties(handle_s, static_cast<am_Error_e>(error));
-	mpLookpData->removeHandle(handle);
+	mpLookpData->removeHandle(handle_s);
 }
 
-void CAmRoutingService::ackSetSourceSoundProperty(uint16_t handle, uint16_t error) {
+void CAmRoutingService::ackSetSourceSoundProperty(org::genivi::am::am_Handle_s handle, org::genivi::am::am_Error_e error) {
 	assert(mpIAmRoutingReceive);
 	assert(mpLookpData);
 	am_Handle_s handle_s;
-	handle_s.handle = handle;
-	handle_s.handleType = H_SETSOURCESOUNDPROPERTY;
+	CAmConvertCAPI2AM(handle,handle_s);
 	mpIAmRoutingReceive->ackSetSourceSoundProperty(handle_s, static_cast<am_Error_e>(error));
-	mpLookpData->removeHandle(handle);
+	mpLookpData->removeHandle(handle_s);
 }
 
-void CAmRoutingService::ackCrossFading(uint16_t handle, am_gen::am_HotSink_e hotSink, am_gen::am_Error_e returnError) {
+void CAmRoutingService::ackCrossFading(org::genivi::am::am_Handle_s handle, org::genivi::am::am_HotSink_e hotSink, org::genivi::am::am_Error_e error) {
 	assert(mpIAmRoutingReceive);
 	assert(mpLookpData);
 	am_Handle_s handle_s;
-	handle_s.handle = handle;
-	handle_s.handleType = H_CROSSFADE;
-	mpIAmRoutingReceive->ackCrossFading(handle_s, static_cast<am_HotSink_e>(hotSink), static_cast<am_Error_e>(returnError));
-	mpLookpData->removeHandle(handle);
+	CAmConvertCAPI2AM(handle,handle_s);
+	mpIAmRoutingReceive->ackCrossFading(handle_s, static_cast<am_HotSink_e>(hotSink), static_cast<am_Error_e>(error));
+	mpLookpData->removeHandle(handle_s);
 }
 
-void CAmRoutingService::ackSourceVolumeTick(uint16_t handle, am_gen::am_sourceID_t source, am_gen::am_volume_t volume) {
+void CAmRoutingService::ackSourceVolumeTick(org::genivi::am::am_Handle_s handle, org::genivi::am::am_sourceID_t source, org::genivi::am::am_volume_t volume) {
 	assert(mpIAmRoutingReceive);
 	assert(mpLookpData);
 	am_Handle_s handle_s;
-	handle_s.handle = handle;
-	handle_s.handleType = H_SETSOURCEVOLUME;
+	CAmConvertCAPI2AM(handle,handle_s);
 	mpIAmRoutingReceive->ackSourceVolumeTick(handle_s, source, volume);
 }
 
-void CAmRoutingService::ackSinkVolumeTick(uint16_t handle, am_gen::am_sinkID_t sink, am_gen::am_volume_t volume) {
+void CAmRoutingService::ackSinkVolumeTick(org::genivi::am::am_Handle_s handle, org::genivi::am::am_sinkID_t sink, org::genivi::am::am_volume_t volume) {
 	assert(mpIAmRoutingReceive);
 	am_Handle_s handle_s;
-	handle_s.handle = handle;
-	handle_s.handleType = H_SETSINKVOLUME;
+	CAmConvertCAPI2AM(handle,handle_s);
 	mpIAmRoutingReceive->ackSinkVolumeTick(handle_s, sink, volume);
 }
 
-void CAmRoutingService::peekDomain(std::string name, am_gen::am_domainID_t& domainID, am_gen::am_Error_e& error) {
+void CAmRoutingService::peekDomain(std::string name, org::genivi::am::am_domainID_t& domainID, org::genivi::am::am_Error_e& error) {
 	assert(mpIAmRoutingReceive);
-	error = static_cast<am_gen::am_Error_e>(mpIAmRoutingReceive->peekDomain(name, domainID));
+	error = static_cast<org::genivi::am::am_Error_e>(mpIAmRoutingReceive->peekDomain(name, domainID));
 }
 
-void CAmRoutingService::registerDomain(am_gen::am_Domain_s domainData, std::string returnBusname, std::string, std::string returnInterface, am_gen::am_domainID_t& domainID, am_gen::am_Error_e& error) {
+void CAmRoutingService::registerDomain(org::genivi::am::am_Domain_s domainData, std::string returnBusname, std::string, std::string returnInterface, org::genivi::am::am_domainID_t& domainID, org::genivi::am::am_Error_e& error) {
 	assert(mpIAmRoutingReceive);
 	assert(mpLookpData);
 	assert(mpCAmCAPIWrapper);
@@ -171,182 +158,150 @@ void CAmRoutingService::registerDomain(am_gen::am_Domain_s domainData, std::stri
 	CAmConvertCAPI2AM(domainData, converted);
 	converted.busname = CAmLookupData::BUS_NAME;
 	am_Error_e resultCode = mpIAmRoutingReceive->registerDomain(converted, domainID);
-	error = static_cast<am_gen::am_Error_e>(resultCode);
+	error = static_cast<org::genivi::am::am_Error_e>(resultCode);
 	if(E_OK==resultCode)
 	{
 		std::shared_ptr<CommonAPI::Factory> factory = mpCAmCAPIWrapper->factory();
-		std::shared_ptr<RoutingSenderProxy<>> shpSenderProxy = factory->buildProxy<RoutingSenderProxy>(returnBusname, returnInterface , "local");
+		std::shared_ptr<org::genivi::am::RoutingControlProxy<>> shpSenderProxy = factory->buildProxy<org::genivi::am::RoutingControlProxy>(returnBusname, returnInterface , "local");
 		mpLookpData->addDomainLookup(domainID, shpSenderProxy);
 	}
 }
 
-void CAmRoutingService::deregisterDomain(am_gen::am_domainID_t domainID, am_gen::am_Error_e& returnError) {
+void CAmRoutingService::deregisterDomain(org::genivi::am::am_domainID_t domainID, org::genivi::am::am_Error_e& returnError) {
 	assert(mpIAmRoutingReceive);
 	assert(mpLookpData);
-	returnError = static_cast<am_gen::am_Error_e>(mpIAmRoutingReceive->deregisterDomain(domainID));
-	if(am_gen::am_Error_e::E_OK==returnError)
+	returnError = static_cast<org::genivi::am::am_Error_e>(mpIAmRoutingReceive->deregisterDomain(domainID));
+	if(org::genivi::am::am_Error_e::E_OK==returnError)
 		mpLookpData->removeDomainLookup(domainID);
 }
 
-void CAmRoutingService::registerGateway(am_gen::am_Gateway_s gatewayData, am_gen::am_gatewayID_t& gatewayID, am_gen::am_Error_e& error) {
+void CAmRoutingService::registerGateway(org::genivi::am::am_Gateway_s gatewayData, org::genivi::am::am_gatewayID_t& gatewayID, org::genivi::am::am_Error_e& error) {
 	assert(mpIAmRoutingReceive);
 	am_Gateway_s converted;
 	CAmConvertCAPI2AM(gatewayData, converted);
-	error = static_cast<am_gen::am_Error_e>(mpIAmRoutingReceive->registerGateway(converted, gatewayID));
+	error = static_cast<org::genivi::am::am_Error_e>(mpIAmRoutingReceive->registerGateway(converted, gatewayID));
 }
 
-void CAmRoutingService::deregisterGateway(am_gen::am_gatewayID_t gatewayID, am_gen::am_Error_e& returnError) {
-	returnError = static_cast<am_gen::am_Error_e>(mpIAmRoutingReceive->deregisterGateway(gatewayID));
+void CAmRoutingService::deregisterGateway(org::genivi::am::am_gatewayID_t gatewayID, org::genivi::am::am_Error_e& returnError) {
+	returnError = static_cast<org::genivi::am::am_Error_e>(mpIAmRoutingReceive->deregisterGateway(gatewayID));
 }
 
-void CAmRoutingService::peekSink(std::string name, am_gen::am_sinkID_t& sinkID, am_gen::am_Error_e& error) {
+void CAmRoutingService::peekSink(std::string name, org::genivi::am::am_sinkID_t& sinkID, org::genivi::am::am_Error_e& error) {
 	assert(mpIAmRoutingReceive);
-	error = static_cast<am_gen::am_Error_e>(mpIAmRoutingReceive->peekSink(name, sinkID));
+	error = static_cast<org::genivi::am::am_Error_e>(mpIAmRoutingReceive->peekSink(name, sinkID));
 }
 
-void CAmRoutingService::registerSink(am_gen::sinkData_s sinkData, am_gen::am_sinkID_t& sinkID, am_gen::am_Error_e& error) {
+void CAmRoutingService::registerSink(org::genivi::am::am_Sink_s sinkData, org::genivi::am::am_sinkID_t& sinkID, org::genivi::am::am_Error_e& error) {
 	assert(mpIAmRoutingReceive);
 	assert(mpLookpData);
 	am_Sink_s converted;
 	CAmConvertCAPI2AM(sinkData, converted);
 	am_Error_e result = mpIAmRoutingReceive->registerSink(converted, sinkID);
-	error = static_cast<am_gen::am_Error_e>(result);
+	error = static_cast<org::genivi::am::am_Error_e>(result);
 	if(E_OK==result)
 		mpLookpData->addSinkLookup(sinkID, converted.domainID);
 }
 
-void CAmRoutingService::deregisterSink(am_gen::am_sinkID_t sinkID, am_gen::am_Error_e& returnError) {
+void CAmRoutingService::deregisterSink(org::genivi::am::am_sinkID_t sinkID, org::genivi::am::am_Error_e& returnError) {
 	assert(mpIAmRoutingReceive);
 	assert(mpLookpData);
-	returnError = static_cast<am_gen::am_Error_e>(mpIAmRoutingReceive->deregisterSink(sinkID));
-	if(returnError==am_gen::am_Error_e::E_OK)
+	returnError = static_cast<org::genivi::am::am_Error_e>(mpIAmRoutingReceive->deregisterSink(sinkID));
+	if(returnError==org::genivi::am::am_Error_e::E_OK)
 		mpLookpData->removeSinkLookup(sinkID);
 }
 
-void CAmRoutingService::peekSource(std::string name, am_gen::am_sourceID_t& sourceID, am_gen::am_Error_e& error) {
+void CAmRoutingService::peekSource(std::string name, org::genivi::am::am_sourceID_t& sourceID, org::genivi::am::am_Error_e& error) {
 	assert(mpIAmRoutingReceive);
-	error = static_cast<am_gen::am_Error_e>(mpIAmRoutingReceive->peekSource(name, sourceID));
+	error = static_cast<org::genivi::am::am_Error_e>(mpIAmRoutingReceive->peekSource(name, sourceID));
 }
 
-void CAmRoutingService::registerSource(am_gen::sourceData_s sourceData, am_gen::am_sourceID_t& sourceID, am_gen::am_Error_e& error) {
+void CAmRoutingService::registerSource(org::genivi::am::am_Source_s sourceData, org::genivi::am::am_sourceID_t& sourceID, org::genivi::am::am_Error_e& error) {
 	assert(mpIAmRoutingReceive);
 	assert(mpLookpData);
 	am_Source_s converted;
 	CAmConvertCAPI2AM(sourceData, converted);
-	error = static_cast<am_gen::am_Error_e>(mpIAmRoutingReceive->registerSource(converted, sourceID));
-	if(error==am_gen::am_Error_e::E_OK)
+	error = static_cast<org::genivi::am::am_Error_e>(mpIAmRoutingReceive->registerSource(converted, sourceID));
+	if(error==org::genivi::am::am_Error_e::E_OK)
 		mpLookpData->addSourceLookup(sourceID, sourceData.domainID);
 }
 
-void CAmRoutingService::deregisterSource(am_gen::am_sourceID_t sourceID, am_gen::am_Error_e& returnError) {
+void CAmRoutingService::deregisterSource(org::genivi::am::am_sourceID_t sourceID, org::genivi::am::am_Error_e& returnError) {
 	assert(mpIAmRoutingReceive);
 	assert(mpLookpData);
-	returnError = static_cast<am_gen::am_Error_e>(mpIAmRoutingReceive->deregisterSource(sourceID));
-	if(returnError==am_gen::am_Error_e::E_OK)
+	returnError = static_cast<org::genivi::am::am_Error_e>(mpIAmRoutingReceive->deregisterSource(sourceID));
+	if(returnError==org::genivi::am::am_Error_e::E_OK)
 		mpLookpData->removeSourceLookup(sourceID);
 }
 
-void CAmRoutingService::registerCrossfader(am_gen::crossfaderData_s crossfaderData, am_gen::am_crossfaderID_t& crossfaderID, am_gen::am_Error_e& error) {
+void CAmRoutingService::registerCrossfader(org::genivi::am::am_Crossfader_s crossfaderData, org::genivi::am::am_crossfaderID_t& crossfaderID, org::genivi::am::am_Error_e& error) {
 	assert(mpIAmRoutingReceive);
 	am_Crossfader_s converted;
 	CAmConvertCAPI2AM(crossfaderData, converted);
-	error = static_cast<am_gen::am_Error_e>(mpIAmRoutingReceive->registerCrossfader(converted, crossfaderID));
-	if(error==am_gen::am_Error_e::E_OK)
+	error = static_cast<org::genivi::am::am_Error_e>(mpIAmRoutingReceive->registerCrossfader(converted, crossfaderID));
+	if(error==org::genivi::am::am_Error_e::E_OK)
 		mpLookpData->addCrossfaderLookup(crossfaderID, crossfaderData.sourceID);
 }
 
-void CAmRoutingService::deregisterCrossfader(am_gen::am_crossfaderID_t crossfaderID, am_gen::am_Error_e& returnError) {
+void CAmRoutingService::deregisterCrossfader(org::genivi::am::am_crossfaderID_t crossfaderID, org::genivi::am::am_Error_e& returnError) {
 	assert(mpIAmRoutingReceive);
-	returnError = static_cast<am_gen::am_Error_e>(mpIAmRoutingReceive->deregisterCrossfader(crossfaderID));
-	if(returnError==am_gen::am_Error_e::E_OK)
+	returnError = static_cast<org::genivi::am::am_Error_e>(mpIAmRoutingReceive->deregisterCrossfader(crossfaderID));
+	if(returnError==org::genivi::am::am_Error_e::E_OK)
 		mpLookpData->removeCrossfaderLookup(crossfaderID);
 }
 
-void CAmRoutingService::peekSourceClassID(std::string name, am_gen::am_sourceClass_t& sourceClassID, am_gen::am_Error_e& error) {
-	error = static_cast<am_gen::am_Error_e>(mpIAmRoutingReceive->peekSourceClassID(name, sourceClassID));
+void CAmRoutingService::peekSourceClassID(std::string name, org::genivi::am::am_sourceClass_t& sourceClassID, org::genivi::am::am_Error_e& error) {
+	error = static_cast<org::genivi::am::am_Error_e>(mpIAmRoutingReceive->peekSourceClassID(name, sourceClassID));
 }
 
-void CAmRoutingService::peekSinkClassID(std::string name, am_gen::am_sinkClass_t& sinkClassID, am_gen::am_Error_e& error) {
+void CAmRoutingService::peekSinkClassID(std::string name, org::genivi::am::am_sinkClass_t& sinkClassID, org::genivi::am::am_Error_e& error) {
 	assert(mpIAmRoutingReceive);
-	error = static_cast<am_gen::am_Error_e>(mpIAmRoutingReceive->peekSinkClassID(name, sinkClassID));
+	error = static_cast<org::genivi::am::am_Error_e>(mpIAmRoutingReceive->peekSinkClassID(name, sinkClassID));
 }
 
-void CAmRoutingService::hookInterruptStatusChange(am_gen::am_sourceID_t sourceID, uint16_t interruptState) {
+void CAmRoutingService::hookInterruptStatusChange(org::genivi::am::am_sourceID_t sourceID, org::genivi::am::am_InterruptState_e InterruptState) {
 	assert(mpIAmRoutingReceive);
-	mpIAmRoutingReceive->hookInterruptStatusChange(sourceID, static_cast<am_InterruptState_e>(interruptState));
+	mpIAmRoutingReceive->hookInterruptStatusChange(sourceID, static_cast<am_InterruptState_e>(InterruptState));
 }
 
-void CAmRoutingService::hookDomainRegistrationComplete(am_gen::am_domainID_t domainID) {
+void CAmRoutingService::hookDomainRegistrationComplete(org::genivi::am::am_domainID_t domainID) {
 	assert(mpIAmRoutingReceive != NULL);
 	mpIAmRoutingReceive->hookDomainRegistrationComplete(domainID);
 }
 
-void CAmRoutingService::hookSinkAvailablityStatusChange(am_gen::am_sinkID_t sinkID, am_gen::am_Availability_s availability) {
+void CAmRoutingService::hookSinkAvailablityStatusChange(org::genivi::am::am_sinkID_t sinkID, org::genivi::am::am_Availability_s availability) {
 	assert(mpIAmRoutingReceive);
 	am_Availability_s am_avialabilty;
 	CAmConvertCAPI2AM(availability, am_avialabilty);
 	mpIAmRoutingReceive->hookSinkAvailablityStatusChange(sinkID, am_avialabilty);
 }
 
-void CAmRoutingService::hookSourceAvailablityStatusChange(am_gen::am_sourceID_t sourceID, am_gen::am_Availability_s availability) {
+void CAmRoutingService::hookSourceAvailablityStatusChange(org::genivi::am::am_sourceID_t sourceID, org::genivi::am::am_Availability_s availability) {
 	assert(mpIAmRoutingReceive);
 	am_Availability_s am_availabilty;
 	CAmConvertCAPI2AM(availability, am_availabilty);
 	mpIAmRoutingReceive->hookSourceAvailablityStatusChange(sourceID, am_availabilty);
 }
 
-void CAmRoutingService::hookDomainStateChange(am_gen::am_domainID_t domainID, am_gen::am_DomainState_e domainState) {
+void CAmRoutingService::hookDomainStateChange(org::genivi::am::am_domainID_t domainID, org::genivi::am::am_DomainState_e domainState) {
 	assert(mpIAmRoutingReceive);
 	am_DomainState_e am_domainState = static_cast<am_DomainState_e>(domainState);
 	mpIAmRoutingReceive->hookDomainStateChange(domainID, am_domainState);
 }
 
-void CAmRoutingService::hookTimingInformationChanged(am_gen::am_connectionID_t connectionID, int16_t delay) {
+void CAmRoutingService::hookTimingInformationChanged(org::genivi::am::am_connectionID_t connectionID, int16_t delay) {
 	assert(mpIAmRoutingReceive);
 	mpIAmRoutingReceive->hookTimingInformationChanged(connectionID, delay);
 }
 
-void CAmRoutingService::sendChangedData(am_gen::am_EarlyData_l earlyData_volumes, am_gen::am_EarlyData_l earlyData_soundproperties) {
+void CAmRoutingService::sendChangedData(org::genivi::am::am_EarlyData_L earlyData) {
 
 	assert(mpIAmRoutingReceive);
-	std::vector<am_EarlyData_s> earlyData;
-	auto func = [&](const am_gen::am_EarlyData_s &refObject)
-	{
-			am_EarlyData_s object;
-			CAmConvertCAPI2AM(refObject, object);
-			earlyData.push_back(object);
-	};
-	std::for_each(earlyData_volumes.begin(), earlyData_volumes.end(), func);
-	std::for_each(earlyData_soundproperties.begin(), earlyData_soundproperties.end(), func);
-	mpIAmRoutingReceive->sendChangedData(earlyData);
+	std::vector<am_EarlyData_s> dest;
+	CAmConvertCAPIVector2AM(earlyData,dest);
+	mpIAmRoutingReceive->sendChangedData(dest);
 }
 
-void CAmRoutingService::gotReady(int16_t numberDomains, uint16_t handle)
-{
-	mReady=true;
-    mNumberDomains=numberDomains;
-    mHandle=handle;
-}
-
-void CAmRoutingService::gotRundown(int16_t numberDomains, uint16_t handle)
-{
-	mReady=false;
-    mNumberDomains=numberDomains;
-    mHandle=handle;
-}
-
-void CAmRoutingService::confirmRoutingReady(am_gen::am_domainID_t) {
-	mpIAmRoutingReceive->confirmRoutingReady(mHandle, E_OK);
-    mNumberDomains++;
-}
-
-void CAmRoutingService::confirmRoutingRundown(am_gen::am_domainID_t) {
-	assert(mpIAmRoutingReceive);
-	mpIAmRoutingReceive->confirmRoutingRundown(mHandle, E_OK);
-    mNumberDomains--;
-}
-
-void CAmRoutingService::updateGateway(am_gen::am_gatewayID_t gatewayID, am_gen::am_ConnectionFormat_L listSourceFormats, am_gen::am_ConnectionFormat_L listSinkFormats, am_gen::bool_L convertionMatrix) {
+void CAmRoutingService::updateGateway(org::genivi::am::am_gatewayID_t gatewayID, org::genivi::am::am_ConnectionFormat_L listSourceFormats, org::genivi::am::am_ConnectionFormat_L listSinkFormats, org::genivi::am::am_Convertion_L convertionMatrix, org::genivi::am::am_Error_e& error) {
 
 	assert(mpIAmRoutingReceive);
 	std::vector<am_ConnectionFormat_e> destinationSourceConnectionFormats;
@@ -358,7 +313,7 @@ void CAmRoutingService::updateGateway(am_gen::am_gatewayID_t gatewayID, am_gen::
 	mpIAmRoutingReceive->updateGateway(gatewayID, destinationSourceConnectionFormats, destinationSinkConnectionFormats, convertionMatrix);
 }
 
-void CAmRoutingService::updateSink(am_gen::am_sinkID_t sinkID, am_gen::am_sinkClass_t sinkClassID, am_gen::am_SoundProperty_L listSoundProperties, am_gen::am_ConnectionFormat_L listConnectionFormats, am_gen::am_MainSoundProperty_L listMainSoundProperties) {
+void CAmRoutingService::updateSink(org::genivi::am::am_sinkID_t sinkID, org::genivi::am::am_sinkClass_t sinkClassID, org::genivi::am::am_SoundProperty_L listSoundProperties, org::genivi::am::am_ConnectionFormat_L listConnectionFormats, org::genivi::am::am_MainSoundProperty_L listMainSoundProperties, org::genivi::am::am_Error_e& error) {
 	assert(mpIAmRoutingReceive);
 	std::vector<am_SoundProperty_s> dstListSoundProperties;
     CAmConvertCAPIVector2AM(listSoundProperties, dstListSoundProperties);
@@ -369,7 +324,7 @@ void CAmRoutingService::updateSink(am_gen::am_sinkID_t sinkID, am_gen::am_sinkCl
     mpIAmRoutingReceive->updateSink( sinkID, sinkClassID, dstListSoundProperties,dstListSinkConnectionFormats,dstListMainSoundProperties);
 }
 
-void CAmRoutingService::updateSource(am_gen::am_sourceID_t sourceID, am_gen::am_sourceClass_t sourceClassID, am_gen::am_SoundProperty_L listSoundProperties, am_gen::am_ConnectionFormat_L listConnectionFormats, am_gen::am_MainSoundProperty_L listMainSoundProperties) {
+void CAmRoutingService::updateSource(org::genivi::am::am_sourceID_t sourceID, org::genivi::am::am_sourceClass_t sourceClassID, org::genivi::am::am_SoundProperty_L listSoundProperties, org::genivi::am::am_ConnectionFormat_L listConnectionFormats, org::genivi::am::am_MainSoundProperty_L listMainSoundProperties, org::genivi::am::am_Error_e& error) {
 	assert(mpIAmRoutingReceive);
 	std::vector<am_SoundProperty_s> dstListSoundProperties;
     CAmConvertCAPIVector2AM(listSoundProperties, dstListSoundProperties);
@@ -380,56 +335,63 @@ void CAmRoutingService::updateSource(am_gen::am_sourceID_t sourceID, am_gen::am_
     mpIAmRoutingReceive->updateSource( sourceID, sourceClassID, dstListSoundProperties,dstListSinkConnectionFormats,dstListMainSoundProperties);
 }
 
-void CAmRoutingService::ackSetVolumes(uint16_t handle, am_gen::am_Volumes_l listVolumes, uint16_t error) {
+void CAmRoutingService::ackSetVolumes(org::genivi::am::am_Handle_s handle , org::genivi::am::am_Volumes_L listVolumes, org::genivi::am::am_Error_e error) {
 	assert(mpIAmRoutingReceive);
 	am_Handle_s handle_s;
-	handle_s.handle = handle;
-	handle_s.handleType = H_SETVOLUMES;
+	CAmConvertCAPI2AM(handle,handle_s);
 	std::vector<am_Volumes_s> list;
 	CAmConvertCAPIVector2AM(listVolumes, list);
 	am_Error_e amError = static_cast<am_Error_e>(error);
 	mpIAmRoutingReceive->ackSetVolumes(handle_s, list, amError);
-	mpLookpData->removeHandle(handle);
+	mpLookpData->removeHandle(handle_s);
 }
 
-void CAmRoutingService::ackSinkNotificationConfiguration(uint16_t handle, uint16_t error) {
+void CAmRoutingService::ackSinkNotificationConfiguration (org::genivi::am::am_Handle_s handle, org::genivi::am::am_Error_e error) {
 	assert(mpIAmRoutingReceive);
 	assert(mpLookpData);
-	am_Handle_s myhandle;
-    myhandle.handleType = H_CONNECT;
-    myhandle.handle = handle;
+	am_Handle_s handle_s;
+	CAmConvertCAPI2AM(handle,handle_s);
     am_Error_e amError = static_cast<am_Error_e>(error);
-    mpIAmRoutingReceive->ackSinkNotificationConfiguration(myhandle, amError);
-    mpLookpData->removeHandle(handle);
+    mpIAmRoutingReceive->ackSinkNotificationConfiguration(handle_s, amError);
+    mpLookpData->removeHandle(handle_s);
 }
 
-void CAmRoutingService::ackSourceNotificationConfiguration(uint16_t handle, uint16_t error) {
+void CAmRoutingService::ackSourceNotificationConfiguration(org::genivi::am::am_Handle_s handle, org::genivi::am::am_Error_e error) {
 	assert(mpIAmRoutingReceive);
 	assert(mpLookpData);
-	am_Handle_s myhandle;
-    myhandle.handleType = H_CONNECT;
-    myhandle.handle = handle;
+	am_Handle_s handle_s;
+	CAmConvertCAPI2AM(handle,handle_s);
     am_Error_e amError = static_cast<am_Error_e>(error);
-    mpIAmRoutingReceive->ackSourceNotificationConfiguration(myhandle, amError);
-    mpLookpData->removeHandle(handle);
+    mpIAmRoutingReceive->ackSourceNotificationConfiguration(handle_s, amError);
+    mpLookpData->removeHandle(handle_s);
 }
 
-void CAmRoutingService::hookSinkNotificationDataChange(am_gen::am_sinkID_t sinkID, am_gen::notificationPayload_s payload) {
+void CAmRoutingService::hookSinkNotificationDataChange(org::genivi::am::am_sinkID_t sinkID, org::genivi::am::am_NotificationPayload_s payload) {
 	assert(mpIAmRoutingReceive);
 	am_NotificationPayload_s converted;
 	CAmConvertCAPI2AM(payload, converted);
 	mpIAmRoutingReceive->hookSinkNotificationDataChange(sinkID, converted);
 }
 
-void CAmRoutingService::hookSourceNotificationDataChange(am_gen::am_sourceID_t sourceID, am_gen::notificationPayload_s payload) {
+void CAmRoutingService::hookSourceNotificationDataChange(org::genivi::am::am_sourceID_t sourceID, org::genivi::am::am_NotificationPayload_s payload) {
 	assert(mpIAmRoutingReceive);
 	am_NotificationPayload_s converted;
 	CAmConvertCAPI2AM(payload, converted);
 	mpIAmRoutingReceive->hookSourceNotificationDataChange(sourceID, converted);
 }
 
-void CAmRoutingService::getRoutingReadyState(bool& readyState) {
-	readyState = mReady;
+void CAmRoutingService::confirmRoutingRundown(std::string domainName)
+{
+	mNumberDomains--;
+	if (mNumberDomains==0)
+		mpIAmRoutingReceive->confirmRoutingRundown(mHandle,E_OK);
+}
+
+void CAmRoutingService::gotRundown(int16_t numberDomains, uint16_t handle)
+{
+	mReady=false;
+    mNumberDomains=numberDomains;
+    mHandle=handle;
 }
 
 } /* namespace am */

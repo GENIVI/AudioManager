@@ -25,15 +25,13 @@
 #include "CAmTestCAPIWrapper.h"
 #include "../include/CAmRoutingSenderCAPI.h"
 #include "MockIAmRoutingReceive.h"
-#include <../src-gen/org/genivi/audiomanager/RoutingInterfaceProxy.h>
+#include <../src-gen/org/genivi/am/RoutingControlObserverProxy.h>
 
 #define UNIT_TEST 1
 
 using namespace testing;
 using namespace CommonAPI;
 namespace am {
-
-using namespace org::genivi::audiomanager;
 
 class CAmCommandSenderDbusBackdoor;
 class IAmCommandSend;
@@ -58,7 +56,7 @@ public:
 	MockIAmRoutingReceive *mpRoutingReceive;
 	CAmRoutingSenderCAPI *mpPlugin;
 
-	std::shared_ptr<RoutingInterfaceProxy<>>  mProxy; ///< pointer to routing interface proxy
+	std::shared_ptr<org::genivi::am::RoutingControlObserverProxy<> >  mProxy; ///< pointer to routing interface proxy
 	std::shared_ptr<CAmRoutingSenderService>  mDomainService; ///< pointer to the test domain service
 
 	CAmTestsEnvironment();

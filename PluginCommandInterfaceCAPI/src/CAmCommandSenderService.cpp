@@ -37,57 +37,57 @@ CAmCommandSenderService::~CAmCommandSenderService() {
 	// TODO Auto-generated destructor stub
 }
 
-void CAmCommandSenderService::Connect(CommandInterface::am_sourceID_t sourceID, CommandInterface::am_sinkID_t sinkID, CommandInterface::am_Error_e& result, CommandInterface::am_mainConnectionID_t& mainConnectionID) {
+void CAmCommandSenderService::connect(org::genivi::am::am_sourceID_t sourceID, org::genivi::am::am_sinkID_t sinkID, org::genivi::am::am_mainConnectionID_t& mainConnectionID,org::genivi::am::am_Error_e& result) {
 	assert(mpIAmCommandReceive);
 	result = CAmConvert2CAPIType(mpIAmCommandReceive->connect(sourceID, sinkID, mainConnectionID));
 }
 
-void CAmCommandSenderService::Disconnect(CommandInterface::am_mainConnectionID_t mainConnectionID, CommandInterface::am_Error_e& result) {
+void CAmCommandSenderService::disconnect(org::genivi::am::am_mainConnectionID_t mainConnectionID, org::genivi::am::am_Error_e& result) {
 	assert(mpIAmCommandReceive);
 	result = CAmConvert2CAPIType(mpIAmCommandReceive->disconnect(mainConnectionID));
 }
 
-void CAmCommandSenderService::SetVolume(CommandInterface::am_sinkID_t sinkID, CommandInterface::am_mainVolume_t volume, CommandInterface::am_Error_e& result) {
+void CAmCommandSenderService::setVolume(org::genivi::am::am_sinkID_t sinkID, org::genivi::am::am_mainVolume_t volume, org::genivi::am::am_Error_e& result) {
 
 	assert(mpIAmCommandReceive);
 	result = CAmConvert2CAPIType(mpIAmCommandReceive->setVolume(sinkID, volume));
 }
 
-void CAmCommandSenderService::VolumeStep(CommandInterface::am_sinkID_t sinkID, CommandInterface::am_mainVolume_t volumeStep, CommandInterface::am_Error_e& result) {
+void CAmCommandSenderService::volumeStep(org::genivi::am::am_sinkID_t sinkID, org::genivi::am::am_mainVolume_t volumeStep, org::genivi::am::am_Error_e& result) {
 	assert(mpIAmCommandReceive);
 	result = CAmConvert2CAPIType(mpIAmCommandReceive->volumeStep(sinkID, volumeStep));
 }
 
-void CAmCommandSenderService::SetSinkMuteState(CommandInterface::am_sinkID_t sinkID, CommandInterface::am_MuteState_e muteState, CommandInterface::am_Error_e& result) {
+void CAmCommandSenderService::setSinkMuteState(org::genivi::am::am_sinkID_t sinkID, org::genivi::am::am_MuteState_e muteState, org::genivi::am::am_Error_e& result) {
 	assert(mpIAmCommandReceive);
 	result = CAmConvert2CAPIType(mpIAmCommandReceive->setSinkMuteState(sinkID, CAmConvertFromCAPIType(muteState)));
 }
 
-void CAmCommandSenderService::SetMainSinkSoundProperty(CommandInterface::am_sinkID_t sinkID, CommandInterface::am_MainSoundProperty_s soundProperty, CommandInterface::am_Error_e& result) {
+void CAmCommandSenderService::setMainSinkSoundProperty(org::genivi::am::am_sinkID_t sinkID, org::genivi::am::am_MainSoundProperty_s soundProperty, org::genivi::am::am_Error_e& result) {
 	assert(mpIAmCommandReceive);
-	am_MainSoundProperty_s property = {CAmConvertFromCAPIType(soundProperty.type), soundProperty.value};
+	am_MainSoundProperty_s property = {static_cast<am_MainSoundPropertyType_e>(soundProperty.type), soundProperty.value};
 	result = CAmConvert2CAPIType(mpIAmCommandReceive->setMainSinkSoundProperty(property, sinkID));
 }
 
-void CAmCommandSenderService::SetMainSourceSoundProperty(CommandInterface::am_sourceID_t sourceID, CommandInterface::am_MainSoundProperty_s soundProperty, CommandInterface::am_Error_e& result) {
+void CAmCommandSenderService::setMainSourceSoundProperty(org::genivi::am::am_sourceID_t sourceID, org::genivi::am::am_MainSoundProperty_s soundProperty, org::genivi::am::am_Error_e& result) {
     assert(mpIAmCommandReceive);
-    am_MainSoundProperty_s property = {CAmConvertFromCAPIType(soundProperty.type), soundProperty.value};
+    am_MainSoundProperty_s property = {static_cast<am_MainSoundPropertyType_e>(soundProperty.type), soundProperty.value};
     result = CAmConvert2CAPIType(mpIAmCommandReceive->setMainSourceSoundProperty(property, sourceID));
 }
 
-void CAmCommandSenderService::SetSystemProperty(CommandInterface::am_SystemProperty_s soundProperty, CommandInterface::am_Error_e& result) {
+void CAmCommandSenderService::setSystemProperty(org::genivi::am::am_SystemProperty_s soundProperty, org::genivi::am::am_Error_e& result) {
     assert(mpIAmCommandReceive);
-    am_SystemProperty_s property = {CAmConvertFromCAPIType(soundProperty.type), soundProperty.value};
+    am_SystemProperty_s property = {static_cast<am_SystemPropertyType_e>(soundProperty.type), soundProperty.value};
     result = CAmConvert2CAPIType(mpIAmCommandReceive->setSystemProperty(property));
 }
 
-void CAmCommandSenderService::GetListMainConnections(CommandInterface::am_Error_e& result, CommandInterface::am_MainConnectionType_l& listConnections) {
+void CAmCommandSenderService::getListMainConnections(org::genivi::am::am_Error_e& result, org::genivi::am::am_MainConnection_L& listConnections) {
     assert(mpIAmCommandReceive);
     std::vector<am_MainConnectionType_s> list;
     result = CAmConvert2CAPIType(mpIAmCommandReceive->getListMainConnections(list));
-    if(result==CommandInterface::am_Error_e::E_OK)
+    if(result==org::genivi::am::am_Error_e::E_OK)
     {
-    	CommandInterface::am_MainConnectionType_s item;
+    	org::genivi::am::am_MainConnectionType_s item;
 		for(std::vector<am_MainConnectionType_s>::const_iterator iter = list.begin(); iter!=list.end(); iter++)
 		{
 			item.mainConnectionID = iter->mainConnectionID;
@@ -100,13 +100,13 @@ void CAmCommandSenderService::GetListMainConnections(CommandInterface::am_Error_
     }
 }
 
-void CAmCommandSenderService::GetListMainSinks(CommandInterface::am_Error_e& result, CommandInterface::am_SinkType_l& listMainSinks) {
+void CAmCommandSenderService::getListMainSinks(org::genivi::am::am_SinkType_L& listMainSinks,org::genivi::am::am_Error_e& result) {
     assert(mpIAmCommandReceive);
     std::vector<am_SinkType_s> list;
     result = CAmConvert2CAPIType(mpIAmCommandReceive->getListMainSinks(list));
-    if(result==CommandInterface::am_Error_e::E_OK)
+    if(result==org::genivi::am::am_Error_e::E_OK)
     {
-    	CommandInterface::am_SinkType_s item;
+    	org::genivi::am::am_SinkType_s item;
 		for(std::vector<am_SinkType_s>::const_iterator iter = list.begin(); iter!=list.end(); iter++)
 		{
 			item.sinkID = iter->sinkID;
@@ -120,13 +120,13 @@ void CAmCommandSenderService::GetListMainSinks(CommandInterface::am_Error_e& res
     }
 }
 
-void CAmCommandSenderService::GetListMainSources(CommandInterface::am_Error_e& result, CommandInterface::am_SourceType_l& listMainSources) {
+void CAmCommandSenderService::getListMainSources(org::genivi::am::am_SourceType_L& listMainSources,org::genivi::am::am_Error_e& result) {
     assert(mpIAmCommandReceive);
     std::vector<am_SourceType_s> list;
 	result = CAmConvert2CAPIType(mpIAmCommandReceive->getListMainSources(list));
-	if(result==CommandInterface::am_Error_e::E_OK)
+	if(result==org::genivi::am::am_Error_e::E_OK)
 	{
-		CommandInterface::am_SourceType_s item;
+		org::genivi::am::am_SourceType_s item;
 		for(std::vector<am_SourceType_s>::const_iterator iter = list.begin(); iter!=list.end(); iter++)
 		{
 			item.sourceID = iter->sourceID;
@@ -138,13 +138,13 @@ void CAmCommandSenderService::GetListMainSources(CommandInterface::am_Error_e& r
 	}
 }
 
-void CAmCommandSenderService::GetListMainSinkSoundProperties(CommandInterface::am_sinkID_t sinkID, CommandInterface::am_Error_e& result, CommandInterface::am_MainSoundProperty_l& listSoundProperties) {
+void CAmCommandSenderService::getListMainSinkSoundProperties(org::genivi::am::am_sinkID_t sinkID, org::genivi::am::am_MainSoundProperty_L& listSoundProperties,org::genivi::am::am_Error_e& result) {
     assert(mpIAmCommandReceive);
     std::vector<am_MainSoundProperty_s> list;
     result = CAmConvert2CAPIType(mpIAmCommandReceive->getListMainSinkSoundProperties(sinkID, list));
-	if(result==CommandInterface::am_Error_e::E_OK)
+	if(result==org::genivi::am::am_Error_e::E_OK)
 	{
-		CommandInterface::am_MainSoundProperty_s item;
+		org::genivi::am::am_MainSoundProperty_s item;
 		for(std::vector<am_MainSoundProperty_s>::const_iterator iter = list.begin(); iter!=list.end(); iter++)
 		{
 			item.type = CAmConvert2CAPIType(iter->type);
@@ -154,13 +154,13 @@ void CAmCommandSenderService::GetListMainSinkSoundProperties(CommandInterface::a
 	}
 }
 
-void CAmCommandSenderService::GetListMainSourceSoundProperties(CommandInterface::am_sourceID_t sourceID, CommandInterface::am_Error_e& result, CommandInterface::am_MainSoundProperty_l& listSourceProperties) {
+void CAmCommandSenderService::getListMainSourceSoundProperties(org::genivi::am::am_sourceID_t sourceID, org::genivi::am::am_MainSoundProperty_L& listSourceProperties,org::genivi::am::am_Error_e& result) {
     assert(mpIAmCommandReceive);
     std::vector<am_MainSoundProperty_s> list;
     result = CAmConvert2CAPIType(mpIAmCommandReceive->getListMainSourceSoundProperties(sourceID, list));
-	if(result==CommandInterface::am_Error_e::E_OK)
+	if(result==org::genivi::am::am_Error_e::E_OK)
 	{
-		CommandInterface::am_MainSoundProperty_s item;
+		org::genivi::am::am_MainSoundProperty_s item;
 		for(std::vector<am_MainSoundProperty_s>::const_iterator iter = list.begin(); iter!=list.end(); iter++)
 		{
 			item.type = CAmConvert2CAPIType(iter->type);
@@ -170,20 +170,20 @@ void CAmCommandSenderService::GetListMainSourceSoundProperties(CommandInterface:
 	}
 }
 
-void CAmCommandSenderService::GetListSourceClasses(CommandInterface::am_Error_e& result, CommandInterface::am_SourceClass_l& listSourceClasses) {
+void CAmCommandSenderService::getListSourceClasses(org::genivi::am::am_SourceClass_L& listSourceClasses,org::genivi::am::am_Error_e& result) {
     assert(mpIAmCommandReceive);
     std::vector<am_SourceClass_s> list;
     result = CAmConvert2CAPIType(mpIAmCommandReceive->getListSourceClasses(list));
-	if(result==CommandInterface::am_Error_e::E_OK)
+	if(result==org::genivi::am::am_Error_e::E_OK)
 	{
-		CommandInterface::am_SourceClass_s item;
+		org::genivi::am::am_SourceClass_s item;
 		for(std::vector<am_SourceClass_s>::const_iterator iter = list.begin(); iter!=list.end(); iter++)
 		{
 			item.sourceClassID = iter->sourceClassID;
 			item.name = iter->name;
 			item.listClassProperties.clear();
 			std::for_each(iter->listClassProperties.begin(), iter->listClassProperties.end(), [&](const am_ClassProperty_s & ref) {
-				CommandInterface::am_ClassProperty_s classProp(CAmConvert2CAPIType(ref.classProperty), ref.value);
+				org::genivi::am::am_ClassProperty_s classProp(CAmConvert2CAPIType(ref.classProperty), ref.value);
 				item.listClassProperties.push_back(classProp);
 			});
 			listSourceClasses.push_back (item);
@@ -191,20 +191,20 @@ void CAmCommandSenderService::GetListSourceClasses(CommandInterface::am_Error_e&
 	}
 }
 
-void CAmCommandSenderService::GetListSinkClasses(CommandInterface::am_Error_e& result, CommandInterface::am_SinkClass_l& listSinkClasses) {
+void CAmCommandSenderService::getListSinkClasses(org::genivi::am::am_SinkClass_L& listSinkClasses,org::genivi::am::am_Error_e& result) {
     assert(mpIAmCommandReceive);
     std::vector<am_SinkClass_s> list;
     result = CAmConvert2CAPIType(mpIAmCommandReceive->getListSinkClasses(list));
-	if(result==CommandInterface::am_Error_e::E_OK)
+	if(result==org::genivi::am::am_Error_e::E_OK)
 	{
-		CommandInterface::am_SinkClass_s item;
+		org::genivi::am::am_SinkClass_s item;
 		for(std::vector<am_SinkClass_s>::const_iterator iter = list.begin(); iter!=list.end(); iter++)
 		{
 			item.sinkClassID = iter->sinkClassID;
 			item.name = iter->name;
 			item.listClassProperties.clear();
 			std::for_each(iter->listClassProperties.begin(), iter->listClassProperties.end(), [&](const am_ClassProperty_s & ref) {
-				CommandInterface::am_ClassProperty_s classProp(CAmConvert2CAPIType(ref.classProperty), ref.value);
+				org::genivi::am::am_ClassProperty_s classProp(CAmConvert2CAPIType(ref.classProperty), ref.value);
 				item.listClassProperties.push_back(classProp);
 			});
 			listSinkClasses.push_back (item);
@@ -212,13 +212,13 @@ void CAmCommandSenderService::GetListSinkClasses(CommandInterface::am_Error_e& r
 	}
 }
 
-void CAmCommandSenderService::GetListSystemProperties(CommandInterface::am_Error_e& result, CommandInterface::am_SystemProperty_l& listSystemProperties) {
+void CAmCommandSenderService::getListSystemProperties(org::genivi::am::am_SystemProperty_L& listSystemProperties,org::genivi::am::am_Error_e& result) {
     assert(mpIAmCommandReceive);
     std::vector<am_SystemProperty_s> list;
     result = CAmConvert2CAPIType(mpIAmCommandReceive->getListSystemProperties(list));
-    if(result==CommandInterface::am_Error_e::E_OK)
+    if(result==org::genivi::am::am_Error_e::E_OK)
     	{
-    		CommandInterface::am_SystemProperty_s item;
+    		org::genivi::am::am_SystemProperty_s item;
     		for(std::vector<am_SystemProperty_s>::const_iterator iter = list.begin(); iter!=list.end(); iter++)
     		{
     			item.type = CAmConvert2CAPIType(iter->type);
@@ -228,7 +228,7 @@ void CAmCommandSenderService::GetListSystemProperties(CommandInterface::am_Error
     	}
 }
 
-void CAmCommandSenderService::GetTimingInformation(CommandInterface::am_mainConnectionID_t mainConnectionID, CommandInterface::am_Error_e& result, CommandInterface::am_timeSync_t& delay) {
+void CAmCommandSenderService::getTimingInformation(org::genivi::am::am_mainConnectionID_t mainConnectionID, org::genivi::am::am_timeSync_t& delay,org::genivi::am::am_Error_e& result) {
     assert(mpIAmCommandReceive);
     result = CAmConvert2CAPIType(mpIAmCommandReceive->getTimingInformation(mainConnectionID, delay));
 }

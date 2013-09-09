@@ -30,14 +30,12 @@
 namespace am
 {
 using namespace CommonAPI;
-using namespace org::genivi::audiomanager;
 
 #define ROUTING_NODE "routinginterface"
 
 class CAmRoutingSenderCAPI: public IAmRoutingSend
 {
     bool mIsServiceStarted;
-    bool mReady;	///<  bool indicating whether the plugin have got
     CAmLookupData mLookupData; ///<  an object which implements the lookup mechanism
     CAmCommonAPIWrapper *mpCAmCAPIWrapper; ///<  pointer to the common-api wrapper
     IAmRoutingReceive *mpIAmRoutingReceive; ///<  pointer to the routing receive interface

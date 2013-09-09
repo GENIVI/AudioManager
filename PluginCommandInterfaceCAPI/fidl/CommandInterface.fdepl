@@ -1,6 +1,0 @@
-import "CommandInterface.fidl"
-import "platform:/plugin/org.genivi.commonapi.dbus/deployment/deployment.fdepl"
-
-define org.genivi.commonapi.dbus.deployment.deployment for interface org.genivi.am.CommandInterface {
-	DefaultEnumBackingType=Int16
-}

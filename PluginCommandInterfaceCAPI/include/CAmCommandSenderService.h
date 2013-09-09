@@ -18,56 +18,54 @@
 #ifndef CAMCOMMANDSENDERSERVICE_H_
 #define CAMCOMMANDSENDERSERVICE_H_
 
-#include <org/genivi/audiomanager/CommandInterfaceStubDefault.h>
+#include <org/genivi/am/CommandControlStubDefault.h>
 #include "../../include/command/IAmCommandReceive.h"
 
 namespace am {
 
-using namespace org::genivi::audiomanager;
-
 /**
  * A concrete stub implementation used by the command sender plug-in.
  */
-class CAmCommandSenderService: public CommandInterfaceStubDefault {
+class CAmCommandSenderService: public org::genivi::am::CommandControlStubDefault {
 	IAmCommandReceive* mpIAmCommandReceive;
 public:
 	CAmCommandSenderService();
 	CAmCommandSenderService(IAmCommandReceive *aReceiver);
 	virtual ~CAmCommandSenderService();
 
-		virtual void Connect(CommandInterface::am_sourceID_t sourceID, CommandInterface::am_sinkID_t sinkID, CommandInterface::am_Error_e& result, CommandInterface::am_mainConnectionID_t& mainConnectionID);
+		virtual void connect(org::genivi::am::am_sourceID_t sourceID, org::genivi::am::am_sinkID_t sinkID, org::genivi::am::am_mainConnectionID_t& mainConnectionID, org::genivi::am::am_Error_e& result);
 
-	    virtual void Disconnect(CommandInterface::am_mainConnectionID_t mainConnectionID, CommandInterface::am_Error_e& result);
+	    virtual void disconnect(org::genivi::am::am_mainConnectionID_t mainConnectionID, org::genivi::am::am_Error_e& result);
 
-	    virtual void SetVolume(CommandInterface::am_sinkID_t sinkID, CommandInterface::am_mainVolume_t volume, CommandInterface::am_Error_e& result);
+	    virtual void setVolume(org::genivi::am::am_sinkID_t sinkID, org::genivi::am::am_mainVolume_t volume, org::genivi::am::am_Error_e& result);
 
-	    virtual void VolumeStep(CommandInterface::am_sinkID_t sinkID, CommandInterface::am_mainVolume_t volumeStep, CommandInterface::am_Error_e& result);
+	    virtual void volumeStep(org::genivi::am::am_sinkID_t sinkID, org::genivi::am::am_mainVolume_t volumeStep, org::genivi::am::am_Error_e& result);
 
-	    virtual void SetSinkMuteState(CommandInterface::am_sinkID_t sinkID, CommandInterface::am_MuteState_e muteState, CommandInterface::am_Error_e& result);
+	    virtual void setSinkMuteState(org::genivi::am::am_sinkID_t sinkID, org::genivi::am::am_MuteState_e muteState, org::genivi::am::am_Error_e& result);
 
-	    virtual void SetMainSinkSoundProperty(CommandInterface::am_sinkID_t sinkID, CommandInterface::am_MainSoundProperty_s soundProperty, CommandInterface::am_Error_e& result);
+	    virtual void setMainSinkSoundProperty(org::genivi::am::am_sinkID_t sinkID, org::genivi::am::am_MainSoundProperty_s soundProperty, org::genivi::am::am_Error_e& result);
 
-	    virtual void SetMainSourceSoundProperty(CommandInterface::am_sourceID_t sourceID, CommandInterface::am_MainSoundProperty_s soundProperty, CommandInterface::am_Error_e& result);
+	    virtual void setMainSourceSoundProperty(org::genivi::am::am_sourceID_t sourceID, org::genivi::am::am_MainSoundProperty_s soundProperty, org::genivi::am::am_Error_e& result);
 
-	    virtual void SetSystemProperty(CommandInterface::am_SystemProperty_s soundProperty, CommandInterface::am_Error_e& result);
+	    virtual void setSystemProperty(org::genivi::am::am_SystemProperty_s soundProperty, org::genivi::am::am_Error_e& result);
 
-	    virtual void GetListMainConnections(CommandInterface::am_Error_e& result, CommandInterface::am_MainConnectionType_l& listConnections);
+	    virtual void getListMainConnections(org::genivi::am::am_Error_e& result, org::genivi::am::am_MainConnection_L& listConnections);
 
-	    virtual void GetListMainSinks(CommandInterface::am_Error_e& result, CommandInterface::am_SinkType_l& listMainSinks);
+	    virtual void getListMainSinks(org::genivi::am::am_SinkType_L& listMainSinks, org::genivi::am::am_Error_e& result);
 
-	    virtual void GetListMainSources(CommandInterface::am_Error_e& result, CommandInterface::am_SourceType_l& listMainSources);
+	    virtual void getListMainSources(org::genivi::am::am_SourceType_L& listMainSources, org::genivi::am::am_Error_e& result);
 
-	    virtual void GetListMainSinkSoundProperties(CommandInterface::am_sinkID_t sinkID, CommandInterface::am_Error_e& result, CommandInterface::am_MainSoundProperty_l& listSoundProperties);
+	    virtual void getListMainSinkSoundProperties(org::genivi::am::am_sinkID_t sinkID, org::genivi::am::am_MainSoundProperty_L& listSoundProperties, org::genivi::am::am_Error_e& result);
 
-	    virtual void GetListMainSourceSoundProperties(CommandInterface::am_sourceID_t sourceID, CommandInterface::am_Error_e& result, CommandInterface::am_MainSoundProperty_l& listSourceProperties);
+	    virtual void getListMainSourceSoundProperties(org::genivi::am::am_sourceID_t sourceID, org::genivi::am::am_MainSoundProperty_L& listSourceProperties, org::genivi::am::am_Error_e& result);
 
-	    virtual void GetListSourceClasses(CommandInterface::am_Error_e& result, CommandInterface::am_SourceClass_l& listSourceClasses);
+	    virtual void getListSourceClasses( org::genivi::am::am_SourceClass_L& listSourceClasses,org::genivi::am::am_Error_e& result);
 
-	    virtual void GetListSinkClasses(CommandInterface::am_Error_e& result, CommandInterface::am_SinkClass_l& listSinkClasses);
+	    virtual void getListSinkClasses( org::genivi::am::am_SinkClass_L& listSinkClasses,org::genivi::am::am_Error_e& result);
 
-	    virtual void GetListSystemProperties(CommandInterface::am_Error_e& result, CommandInterface::am_SystemProperty_l& listSystemProperties);
+	    virtual void getListSystemProperties(org::genivi::am::am_SystemProperty_L& listSystemProperties,org::genivi::am::am_Error_e& result);
 
-	    virtual void GetTimingInformation(CommandInterface::am_mainConnectionID_t mainConnectionID, CommandInterface::am_Error_e& result, CommandInterface::am_timeSync_t& delay);
+	    virtual void getTimingInformation(org::genivi::am::am_mainConnectionID_t mainConnectionID, org::genivi::am::am_timeSync_t& delay,org::genivi::am::am_Error_e& result);
 };
 
 } /* namespace am */

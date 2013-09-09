@@ -19,8 +19,8 @@
 #define CAMROUTINGSENDERSERVICE_H_
 
 #include "audiomanagertypes.h"
-#include <org/genivi/audiomanager/RoutingSenderStubDefault.h>
-#include <org/genivi/audiomanager/RoutingInterfaceProxy.h>
+#include <org/genivi/am/RoutingControlStubDefault.h>
+#include <org/genivi/am/RoutingControlObserverProxy.h>
 
 /** 
  * GENERATED FROM CMAKE. PLEASE USE cmake/CAmRoutingSenderService.h.in IF YOU WANT TO MAKE CHANGES.
@@ -29,7 +29,6 @@
 namespace am {
 
 using namespace CommonAPI;
-using namespace org::genivi::audiomanager;
 
 class CAmCommonAPIWrapper;
 
@@ -49,59 +48,59 @@ class CAmCommonAPIWrapper;
 *
 *	Please see cmake/CAmRoutingSenderService.h.in	
 */
-class CAmRoutingSenderService : public RoutingSenderStubDefault {
+class CAmRoutingSenderService : public org::genivi::am::RoutingControlStubDefault {
 
-	am_gen::am_Domain_s mDomainData;
-	uint16_t mAbortedHandle;
+	org::genivi::am::am_Domain_s mDomainData;
+	org::genivi::am::am_Handle_s mAbortedHandle;
 	bool mIsServiceAvailable;
 	bool mIsDomainRegistred;
 	bool mIsReady;
 	CAmCommonAPIWrapper *mpWrapper;
-	std::shared_ptr<RoutingInterfaceProxy<> > mRoutingInterfaceProxy;
+	std::shared_ptr<org::genivi::am::RoutingControlObserverProxy<> > mRoutingInterfaceProxy;
 
 public:
 
 	CAmRoutingSenderService();
 	CAmRoutingSenderService(CAmCommonAPIWrapper * aWrapper);
-	CAmRoutingSenderService(CAmCommonAPIWrapper * aWrapper, std::shared_ptr<RoutingInterfaceProxy<> > aProxy);
+	CAmRoutingSenderService(CAmCommonAPIWrapper * aWrapper, std::shared_ptr<org::genivi::am::RoutingControlObserverProxy<> > aProxy);
 	virtual ~CAmRoutingSenderService();
 
 	void onServiceStatusEvent(const CommonAPI::AvailabilityStatus& serviceStatus);
 	void onRoutingReadyRundown();
 	void onRoutingReadyEvent();
 	void registerDomain();
-	void setAbortHandle(uint16_t handle);
-	uint16_t errorForHandle(const uint16_t & handle);
+	void setAbortHandle(org::genivi::am::am_Handle_s handle);
+	org::genivi::am::am_Error_e errorForHandle(const org::genivi::am::am_Handle_s & handle);
 
-	virtual void asyncSetSourceState(uint16_t handle, am_gen::am_sourceID_t sourceID, am_gen::am_SourceState_e sourceState);
+	virtual void asyncSetSourceState(org::genivi::am::am_Handle_s handle, org::genivi::am::am_sourceID_t sourceID, org::genivi::am::am_SourceState_e sourceState);
 
-	virtual void setDomainState(am_gen::am_domainID_t domainID, am_gen::am_DomainState_e domainState, am_gen::am_Error_e& error);
+	virtual void setDomainState(org::genivi::am::am_domainID_t domainID, org::genivi::am::am_DomainState_e domainState, org::genivi::am::am_Error_e& error);
 
-	virtual void asyncSetSourceVolume(am_gen::am_handle_t handle, am_gen::am_sourceID_t sourceID, am_gen::am_volume_t volume, am_gen::am_RampType_e ramp, am_gen::am_time_t time);
+	virtual void asyncSetSourceVolume(org::genivi::am::am_Handle_s handle, org::genivi::am::am_sourceID_t sourceID, org::genivi::am::am_volume_t volume, org::genivi::am::am_RampType_pe ramp, org::genivi::am::am_time_t time);
 
-	virtual void asyncSetSinkVolume(am_gen::am_handle_t handle, am_gen::am_sinkID_t sinkID, am_gen::am_volume_t volume, am_gen::am_RampType_e ramp, am_gen::am_time_t time);
+	virtual void asyncSetSinkVolume(org::genivi::am::am_Handle_s handle, org::genivi::am::am_sinkID_t sinkID, org::genivi::am::am_volume_t volume, org::genivi::am::am_RampType_pe ramp, org::genivi::am::am_time_t time);
 
-	virtual void asyncConnect(am_gen::am_handle_t handle, am_gen::am_connectionID_t connectionID, am_gen::am_sourceID_t sourceID, am_gen::am_sinkID_t sinkID, am_gen::am_ConnectionFormat_e connectionFormat);
+	virtual void asyncConnect(org::genivi::am::am_Handle_s handle, org::genivi::am::am_connectionID_t connectionID, org::genivi::am::am_sourceID_t sourceID, org::genivi::am::am_sinkID_t sinkID, org::genivi::am::am_ConnectionFormat_pe connectionFormat);
 
-	virtual void asyncDisconnect(am_gen::am_handle_t handle, am_gen::am_connectionID_t connectionID);
+	virtual void asyncDisconnect(org::genivi::am::am_Handle_s handle, org::genivi::am::am_connectionID_t connectionID);
 
-	virtual void asyncAbort(am_gen::am_handle_t handle, am_gen::am_Error_e& error);
+	virtual void asyncAbort(org::genivi::am::am_Handle_s handle);
 
-	virtual void asyncSetSinkSoundProperties(am_gen::am_handle_t handle, am_gen::am_sinkID_t sinkID, am_gen::am_SoundProperty_L listSoundProperties);
+	virtual void asyncSetSinkSoundProperties(org::genivi::am::am_Handle_s handle, org::genivi::am::am_sinkID_t sinkID, org::genivi::am::am_SoundProperty_L listSoundProperties);
 
-	virtual void asyncSetSinkSoundProperty(am_gen::am_handle_t handle, am_gen::am_sinkID_t sinkID, am_gen::am_SoundProperty_s soundProperty);
+	virtual void asyncSetSinkSoundProperty(org::genivi::am::am_Handle_s handle, org::genivi::am::am_sinkID_t sinkID, org::genivi::am::am_SoundProperty_s soundProperty);
 
-	virtual void asyncSetSourceSoundProperties(am_gen::am_handle_t handle, am_gen::am_sourceID_t sourceID, am_gen::am_SoundProperty_L listSoundProperties);
+	virtual void asyncSetSourceSoundProperties(org::genivi::am::am_Handle_s handle, org::genivi::am::am_sourceID_t sourceID, org::genivi::am::am_SoundProperty_L listSoundProperties);
 
-	virtual void asyncSetSourceSoundProperty(am_gen::am_handle_t handle, am_gen::am_sourceID_t sourceID, am_gen::am_SoundProperty_s soundProperty);
+	virtual void asyncSetSourceSoundProperty(org::genivi::am::am_Handle_s handle, org::genivi::am::am_sourceID_t sourceID, org::genivi::am::am_SoundProperty_s soundProperty);
 
-	virtual void asyncCrossFade(am_gen::am_handle_t handle, am_gen::am_crossfaderID_t crossfaderID, am_gen::am_HotSink_e hotSink, am_gen::am_RampType_e rampType, am_gen::am_time_t time);
+	virtual void asyncCrossFade(org::genivi::am::am_Handle_s handle, org::genivi::am::am_crossfaderID_t crossfaderID, org::genivi::am::am_HotSink_e hotSink, org::genivi::am::am_RampType_pe rampType, org::genivi::am::am_time_t time);
 
-	virtual void asyncSetVolumes(am_gen::am_handle_t handle, am_gen::am_Volumes_l volumes);
+	virtual void asyncSetVolumes(org::genivi::am::am_Handle_s handle, org::genivi::am::am_Volumes_L volumes);
 
-	virtual void asyncSetSinkNotificationConfiguration(am_gen::am_handle_t handle, am_gen::am_sinkID_t sinkID, am_gen::am_NotificationConfiguration_s notificationConfiguration);
+	virtual void asyncSetSinkNotificationConfiguration(org::genivi::am::am_Handle_s handle, org::genivi::am::am_sinkID_t sinkID, org::genivi::am::am_NotificationConfiguration_s notificationConfiguration);
 
-	virtual void asyncSetSourceNotificationConfiguration(am_gen::am_handle_t handle, am_gen::am_sourceID_t sourceID, am_gen::am_NotificationConfiguration_s notificationConfiguration);
+	virtual void asyncSetSourceNotificationConfiguration(org::genivi::am::am_Handle_s handle, org::genivi::am::am_sourceID_t sourceID, org::genivi::am::am_NotificationConfiguration_s notificationConfiguration);
 
 	static const char * ROUTING_SENDER_SERVICE;
 	static const char * ROUTING_INTERFACE_SERVICE;

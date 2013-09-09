@@ -1,0 +1,152 @@
+package org.genivi.NodeStateManager
+
+<**
+    @author : Christian Linke
+**>
+
+interface Consumer {
+    version {
+        major 1
+        minor 0
+    }
+
+    attribute Int32 BootMode readonly noSubscriptions
+
+    attribute Int32 RestartReason readonly noSubscriptions
+
+    attribute Int32 ShutdownReason readonly noSubscriptions
+
+    attribute Int32 WakeUpReason readonly noSubscriptions
+
+    method GetAppHealthCount {
+        out {
+            UInt32 Count
+        }
+    }
+    method LifecycleRequestComplete {
+        in {
+            UInt32 RequestId
+            Int32 Status
+        }
+        out {
+            Int32 ErrorCode
+        }
+    }
+    method GetInterfaceVersion {
+        out {
+            UInt32 Version
+        }
+    }
+    method GetApplicationMode {
+        out {
+            Int32 ErrorCode
+            Int32 ApplicationModeId
+        }
+    }
+    method UnRegisterSession {
+        in {
+            String SessionName
+            String SessionOwner
+            Int32 SeatID
+        }
+        out {
+            Int32 ErrorCode
+        }
+    }
+    method RegisterSession {
+        in {
+            String SessionName
+            String SessionOwner
+            Int32 SeatID
+            Int32 SessionState
+        }
+        out {
+            Int32 ErrorCode
+        }
+    }
+    method UnRegisterShutdownClient {
+        in {
+            String BusName
+            String ObjName
+            UInt32 ShutdownMode
+        }
+        out {
+            Int32 ErrorCode
+        }
+    }
+    method RegisterShutdownClient {
+        in {
+            String BusName
+            String ObjName
+            UInt32 ShutdownMode
+            UInt32 TimeoutMs
+        }
+        out {
+            Int32 ErrorCode
+        }
+    }
+    method GetNodeState {
+        out {
+            Int32 ErrorCode
+            Int32 NodeStateId
+        }
+    }
+    method GetSessionState {
+        in {
+            String SessionName
+            Int32 SeatID
+        }
+        out {
+            Int32 SessionState
+            Int32 ErrorCode
+        }
+    }
+    method SetSessionState {
+        in {
+            String SessionName
+            String SessionOwner
+            Int32 SessionState
+            Int32 SeatID
+        }
+        out {
+            Int32 ErrorCode
+        }
+    }
+    broadcast NodeApplicationMode {
+        out {
+            Int32 ApplicationModeId
+        }
+    }
+    broadcast SessionStateChanged {
+        out {
+            String SessionStateName
+            Int32 SeatID
+            Int32 SessionState
+        }
+    }
+    broadcast NodeState {
+        out {
+            Int32 NodeState
+        }
+    }
+}
+
+<**
+    @author : Christian Linke
+**>
+
+interface LifeCycleConsumer {
+    version {
+        major 1
+        minor 0
+    }
+    method LifecycleRequest {
+        in {
+            UInt32 Request
+            UInt32 RequestId
+        }
+        out {
+            Int32 ErrorCode
+        }
+    }
+}

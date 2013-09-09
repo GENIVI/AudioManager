@@ -18,7 +18,7 @@
 #ifndef CAMROUTINGSERVICE_H_
 #define CAMROUTINGSERVICE_H_
 
-#include <org/genivi/audiomanager/RoutingInterfaceStubDefault.h>
+#include <org/genivi/am/RoutingControlObserverStubDefault.h>
 #include "../../include/routing/IAmRoutingReceive.h"
 #include "CAmLookupData.h"
 
@@ -27,12 +27,11 @@ namespace am {
 class CAmCommonAPIWrapper;
 
 using namespace CommonAPI;
-using namespace org::genivi::audiomanager;
 
 /** Routing interface stub implementation.
  * This class is the routing interface service for the Audio Manager.
  */
-class CAmRoutingService: public RoutingInterfaceStubDefault {
+class CAmRoutingService: public org::genivi::am::RoutingControlObserverStubDefault {
 	CAmCommonAPIWrapper *mpCAmCAPIWrapper; ///< pointer to common-api wrapper
 	IAmRoutingReceive* mpIAmRoutingReceive; ///< pointer to the routing receive interface
 	CAmLookupData*   mpLookpData;			///< pointer to the plugin's lookup mechanism implementation
@@ -50,98 +49,94 @@ public:
 	 *
 	 */
 
-	virtual void ackConnect(uint16_t handle, am_gen::am_connectionID_t connectionID, uint16_t error);
+	void ackConnect(org::genivi::am::am_Handle_s handle, org::genivi::am::am_connectionID_t connectionID, org::genivi::am::am_Error_e error);
 
-	virtual void ackDisconnect(uint16_t handle, am_gen::am_connectionID_t connectionID, uint16_t error);
+	void ackDisconnect(org::genivi::am::am_Handle_s handle, org::genivi::am::am_connectionID_t connectionID, org::genivi::am::am_Error_e error);
 
-	virtual void ackSetSinkVolume(uint16_t handle, am_gen::am_volume_t volume, uint16_t error);
+	void ackSetSinkVolumeChange(org::genivi::am::am_Handle_s handle, org::genivi::am::am_volume_t volume, org::genivi::am::am_Error_e error);
 
-	virtual void ackSetSourceVolume(uint16_t handle, am_gen::am_volume_t volume, uint16_t error);
+	void ackSetSourceVolumeChange(org::genivi::am::am_Handle_s handle, org::genivi::am::am_volume_t volume, org::genivi::am::am_Error_e error);
 
-	virtual void ackSetSourceState(uint16_t handle, uint16_t error);
+	void ackSetSourceState(org::genivi::am::am_Handle_s handle, org::genivi::am::am_Error_e error);
 
-	virtual void ackSetSinkSoundProperties(uint16_t handle, uint16_t error);
+	void ackSetSinkSoundProperties(org::genivi::am::am_Handle_s handle, org::genivi::am::am_Error_e error);
 
-	virtual void ackSetSinkSoundProperty(uint16_t handle, uint16_t error);
+	void ackSetSinkSoundProperty(org::genivi::am::am_Handle_s handle, org::genivi::am::am_Error_e error);
 
-	virtual void ackSetSourceSoundProperties(uint16_t handle, uint16_t error);
+	void ackSetSourceSoundProperties(org::genivi::am::am_Handle_s handle, org::genivi::am::am_Error_e error);
 
-	virtual void ackSetSourceSoundProperty(uint16_t handle, uint16_t error);
+	void ackSetSourceSoundProperty(org::genivi::am::am_Handle_s handle, org::genivi::am::am_Error_e error);
 
-	virtual void ackCrossFading(uint16_t handle, am_gen::am_HotSink_e hotSink, am_gen::am_Error_e returnError);
+	void ackCrossFading(org::genivi::am::am_Handle_s handle, org::genivi::am::am_HotSink_e hotSink, org::genivi::am::am_Error_e error);
 
-	virtual void ackSourceVolumeTick(uint16_t handle, am_gen::am_sourceID_t source, am_gen::am_volume_t volume);
+	void ackSourceVolumeTick(org::genivi::am::am_Handle_s handle, org::genivi::am::am_sourceID_t source, org::genivi::am::am_volume_t volume);
 
-	virtual void ackSinkVolumeTick(uint16_t handle, am_gen::am_sinkID_t sink, am_gen::am_volume_t volume);
+	void ackSinkVolumeTick(org::genivi::am::am_Handle_s handle, org::genivi::am::am_sinkID_t sink, org::genivi::am::am_volume_t volume);
 
-	virtual void peekDomain(std::string name, am_gen::am_domainID_t& domainID, am_gen::am_Error_e& error);
+	void peekDomain(std::string name, org::genivi::am::am_domainID_t& domainID, org::genivi::am::am_Error_e& error);
 
-	virtual void registerDomain(am_gen::am_Domain_s domainData, std::string returnBusname, std::string returnPath, std::string returnInterface, am_gen::am_domainID_t& domainID, am_gen::am_Error_e& error);
+	void registerDomain(org::genivi::am::am_Domain_s domainData, std::string returnBusname, std::string, std::string returnInterface, org::genivi::am::am_domainID_t& domainID, org::genivi::am::am_Error_e& error);
 
-	virtual void deregisterDomain(am_gen::am_domainID_t domainID, am_gen::am_Error_e& returnError);
+	void deregisterDomain(org::genivi::am::am_domainID_t domainID, org::genivi::am::am_Error_e& returnError);
 
-	virtual void registerGateway(am_gen::am_Gateway_s gatewayData, am_gen::am_gatewayID_t& gatewayID, am_gen::am_Error_e& error);
+	void registerGateway(org::genivi::am::am_Gateway_s gatewayData, org::genivi::am::am_gatewayID_t& gatewayID, org::genivi::am::am_Error_e& error);
 
-	virtual void deregisterGateway(am_gen::am_gatewayID_t gatewayID, am_gen::am_Error_e& returnError);
+	void deregisterGateway(org::genivi::am::am_gatewayID_t gatewayID, org::genivi::am::am_Error_e& returnError);
 
-	virtual void peekSink(std::string name, am_gen::am_sinkID_t& sinkID, am_gen::am_Error_e& error);
+	void peekSink(std::string name, org::genivi::am::am_sinkID_t& sinkID, org::genivi::am::am_Error_e& error);
 
-	virtual void registerSink(am_gen::sinkData_s sinkData, am_gen::am_sinkID_t& sinkID, am_gen::am_Error_e& error);
+	void registerSink(org::genivi::am::am_Sink_s sinkData, org::genivi::am::am_sinkID_t& sinkID, org::genivi::am::am_Error_e& error);
 
-	virtual void deregisterSink(am_gen::am_sinkID_t sinkID, am_gen::am_Error_e& returnError);
+	void deregisterSink(org::genivi::am::am_sinkID_t sinkID, org::genivi::am::am_Error_e& returnError);
 
-	virtual void peekSource(std::string name, am_gen::am_sourceID_t& sourceID, am_gen::am_Error_e& error);
+	void peekSource(std::string name, org::genivi::am::am_sourceID_t& sourceID, org::genivi::am::am_Error_e& error);
 
-	virtual void registerSource(am_gen::sourceData_s sourceData, am_gen::am_sourceID_t& sourceID, am_gen::am_Error_e& error);
+	void registerSource(org::genivi::am::am_Source_s sourceData, org::genivi::am::am_sourceID_t& sourceID, org::genivi::am::am_Error_e& error);
 
-	virtual void deregisterSource(am_gen::am_sourceID_t sourceID, am_gen::am_Error_e& returnError);
+	void deregisterSource(org::genivi::am::am_sourceID_t sourceID, org::genivi::am::am_Error_e& returnError);
 
-	virtual void registerCrossfader(am_gen::crossfaderData_s crossfaderData, am_gen::am_crossfaderID_t& crossfaderID, am_gen::am_Error_e& error);
+	void registerCrossfader(org::genivi::am::am_Crossfader_s crossfaderData, org::genivi::am::am_crossfaderID_t& crossfaderID, org::genivi::am::am_Error_e& error);
 
-	virtual void deregisterCrossfader(am_gen::am_crossfaderID_t crossfaderID, am_gen::am_Error_e& returnError);
+	void deregisterCrossfader(org::genivi::am::am_crossfaderID_t crossfaderID, org::genivi::am::am_Error_e& returnError);
 
-	virtual void peekSourceClassID(std::string name, am_gen::am_sourceClass_t& sourceClassID, am_gen::am_Error_e& error);
+	void peekSourceClassID(std::string name, org::genivi::am::am_sourceClass_t& sourceClassID, org::genivi::am::am_Error_e& error);
 
-	virtual void peekSinkClassID(std::string name, am_gen::am_sinkClass_t& sinkClassID, am_gen::am_Error_e& error);
+	void peekSinkClassID(std::string name, org::genivi::am::am_sinkClass_t& sinkClassID, org::genivi::am::am_Error_e& error);
 
-	virtual void hookInterruptStatusChange(am_gen::am_sourceID_t sourceID, uint16_t interruptState);
+	void hookInterruptStatusChange(org::genivi::am::am_sourceID_t sourceID, org::genivi::am::am_InterruptState_e InterruptState);
 
-	virtual void hookDomainRegistrationComplete(am_gen::am_domainID_t domainID);
+	void hookDomainRegistrationComplete(org::genivi::am::am_domainID_t domainID);
 
-	virtual void hookSinkAvailablityStatusChange(am_gen::am_sinkID_t sinkID, am_gen::am_Availability_s availability);
+	void hookSinkAvailablityStatusChange(org::genivi::am::am_sinkID_t sinkID, org::genivi::am::am_Availability_s availability);
 
-	virtual void hookSourceAvailablityStatusChange(am_gen::am_sourceID_t sourceID, am_gen::am_Availability_s availability);
+	void hookSourceAvailablityStatusChange(org::genivi::am::am_sourceID_t sourceID, org::genivi::am::am_Availability_s availability);
 
-	virtual void hookDomainStateChange(am_gen::am_domainID_t domainID, am_gen::am_DomainState_e domainState);
+	void hookDomainStateChange(org::genivi::am::am_domainID_t domainID, org::genivi::am::am_DomainState_e domainState);
 
-	virtual void hookTimingInformationChanged(am_gen::am_connectionID_t connectionID, int16_t delay);
+	void hookTimingInformationChanged(org::genivi::am::am_connectionID_t connectionID, int16_t delay);
 
-	virtual void sendChangedData(am_gen::am_EarlyData_l earlyData_volumes, am_gen::am_EarlyData_l earlyData_soundproperties);
+	void sendChangedData(org::genivi::am::am_EarlyData_L earlyData);
 
-	virtual void confirmRoutingReady(am_gen::am_domainID_t domainID);
+	void updateGateway(org::genivi::am::am_gatewayID_t gatewayID, org::genivi::am::am_ConnectionFormat_L listSourceFormats, org::genivi::am::am_ConnectionFormat_L listSinkFormats, org::genivi::am::am_Convertion_L convertionMatrix, org::genivi::am::am_Error_e& error);
 
-	virtual void confirmRoutingRundown(am_gen::am_domainID_t domainID);
+	void updateSink(org::genivi::am::am_sinkID_t sinkID, org::genivi::am::am_sinkClass_t sinkClassID, org::genivi::am::am_SoundProperty_L listSoundProperties, org::genivi::am::am_ConnectionFormat_L listConnectionFormats, org::genivi::am::am_MainSoundProperty_L listMainSoundProperties, org::genivi::am::am_Error_e& error);
 
-	virtual void updateGateway(am_gen::am_gatewayID_t gatewayID, am_gen::am_ConnectionFormat_L listSourceFormats, am_gen::am_ConnectionFormat_L listSinkFormats, am_gen::bool_L convertionMatrix);
+	void updateSource(org::genivi::am::am_sourceID_t sourceID, org::genivi::am::am_sourceClass_t sourceClassID, org::genivi::am::am_SoundProperty_L listSoundProperties, org::genivi::am::am_ConnectionFormat_L listConnectionFormats, org::genivi::am::am_MainSoundProperty_L listMainSoundProperties, org::genivi::am::am_Error_e& error);
 
-	virtual void updateSink(am_gen::am_sinkID_t sinkID, am_gen::am_sinkClass_t sinkClassID, am_gen::am_SoundProperty_L listSoundProperties, am_gen::am_ConnectionFormat_L listConnectionFormats, am_gen::am_MainSoundProperty_L listMainSoundProperties);
+	void ackSetVolumes(org::genivi::am::am_Handle_s handle , org::genivi::am::am_Volumes_L listVolumes, org::genivi::am::am_Error_e error);
 
-	virtual void updateSource(am_gen::am_sourceID_t sourceID, am_gen::am_sourceClass_t sourceClassID, am_gen::am_SoundProperty_L listSoundProperties, am_gen::am_ConnectionFormat_L listConnectionFormats, am_gen::am_MainSoundProperty_L listMainSoundProperties);
+	void ackSinkNotificationConfiguration (org::genivi::am::am_Handle_s handle, org::genivi::am::am_Error_e error);
 
-	virtual void ackSetVolumes(uint16_t handle, am_gen::am_Volumes_l listVolumes, uint16_t error);
+	void ackSourceNotificationConfiguration(org::genivi::am::am_Handle_s handle, org::genivi::am::am_Error_e error);
 
-	virtual void ackSinkNotificationConfiguration(uint16_t handle, uint16_t error);
+	void hookSinkNotificationDataChange(org::genivi::am::am_sinkID_t sinkID, org::genivi::am::am_NotificationPayload_s payload);
 
-	virtual void ackSourceNotificationConfiguration(uint16_t handle, uint16_t error);
+	void hookSourceNotificationDataChange(org::genivi::am::am_sourceID_t sourceID, org::genivi::am::am_NotificationPayload_s payload);
 
-	virtual void hookSinkNotificationDataChange(am_gen::am_sinkID_t sinkID, am_gen::notificationPayload_s payload);
+	void confirmRoutingRundown(std::string domainName);
 
-	virtual void hookSourceNotificationDataChange(am_gen::am_sourceID_t sourceID, am_gen::notificationPayload_s payload);
-
-	virtual void getRoutingReadyState(bool& readyState);
-
-	void gotReady(int16_t numberDomains, uint16_t handle);
 	void gotRundown(int16_t numberDomains, uint16_t handle);
+
 };
 
 } /* namespace am */

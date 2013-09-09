@@ -29,7 +29,6 @@
 namespace am
 {
 using namespace CommonAPI;
-using namespace org::genivi::audiomanager;
 
 
 /**

@@ -24,7 +24,7 @@
 #include <set>
 #include <sys/time.h>
 #include <CommonAPI/CommonAPI.h>
-#include <org/genivi/audiomanager/am_gen.h>
+#include <org/genivi/am.h>
 #include "CAmRoutingInterfaceCAPITests.h"
 #include "TAmPluginTemplate.h"
 #include "shared/CAmDltWrapper.h"
@@ -34,7 +34,6 @@
 #include "IAmRoutingSenderBackdoor.h"
 
 using namespace am;
-using namespace org::genivi::audiomanager;
 using namespace CommonAPI;
 using namespace testing;
 
@@ -65,24 +64,24 @@ pthread_mutex_t     mutexSer    = PTHREAD_MUTEX_INITIALIZER;
 /**
  * Initialize common-api and am sinks
  */
-void initSink(am_gen::sinkData_s & newSink, am_Sink_s & newAmSink, const am_gen::am_domainID_t & domainID, const am_gen::am_sinkID_t & sinkID = 0)
+void initSink(org::genivi::am::am_Sink_s & newSink, am_Sink_s & newAmSink, const org::genivi::am::am_domainID_t & domainID, const org::genivi::am::am_sinkID_t & sinkID = 0)
 {
-	am_gen::am_MuteState_e muteState = am_gen::am_MuteState_e::MS_UNKNOWN;
-    am_gen::am_Availability_s available(am_gen::am_Availability_e::A_MAX, am_gen::am_AvailabilityReason_e::AR_MAX);
-	am_gen::am_SoundProperty_L listSoundProperties;
-	listSoundProperties.push_back(am_gen::am_SoundProperty_s(am_gen::am_SoundPropertyType_e::SP_INTERR_OVERLAYID, 100));
-	listSoundProperties.push_back(am_gen::am_SoundProperty_s(am_gen::am_SoundPropertyType_e::SP_EXAMPLE_BASS, 101));
-	listSoundProperties.push_back(am_gen::am_SoundProperty_s(am_gen::am_SoundPropertyType_e::SP_MAX, 102));
-	am_gen::am_ConnectionFormat_L listConnectionFormats;
-	listConnectionFormats.push_back(am_gen::am_ConnectionFormat_e::CF_MAX);
-	am_gen::am_MainSoundProperty_L listMainSoundProperties;
-	listMainSoundProperties.push_back(am_gen::am_MainSoundProperty_s(am_gen::am_MainSoundPropertyType_e::MSP_MAX, 100));
-	am_gen::am_NotificationConfiguration_L listMainNotificationConfigurations;
-	listMainNotificationConfigurations.push_back(am_gen::am_NotificationConfiguration_s(am_gen::am_NotificationType_e::NT_MAX, am_gen::am_NotificationStatus_e::NS_MAX, 100));
-	am_gen::am_NotificationConfiguration_L listNotificationConfigurations;
-	listNotificationConfigurations.push_back(am_gen::am_NotificationConfiguration_s(am_gen::am_NotificationType_e::NT_MAX, am_gen::am_NotificationStatus_e::NS_MAX, 100));
+	org::genivi::am::am_MuteState_e muteState = org::genivi::am::am_MuteState_e::MS_UNKNOWN;
+    org::genivi::am::am_Availability_s available(org::genivi::am::am_Availability_e::A_MAX, static_cast<org::genivi::am::am_AvailabilityReason_pe>(AR_MAX));
+	org::genivi::am::am_SoundProperty_L listSoundProperties;
+	listSoundProperties.push_back(org::genivi::am::am_SoundProperty_s(static_cast<org::genivi::am::am_SoundPropertyType_pe>(SP_INTERR_OVERLAYID), 100));
+	listSoundProperties.push_back(org::genivi::am::am_SoundProperty_s(static_cast<org::genivi::am::am_SoundPropertyType_pe>(SP_EXAMPLE_BASS), 101));
+	listSoundProperties.push_back(org::genivi::am::am_SoundProperty_s(static_cast<org::genivi::am::am_SoundPropertyType_pe>(SP_MAX), 102));
+	org::genivi::am::am_ConnectionFormat_L listConnectionFormats;
+	listConnectionFormats.push_back(static_cast<org::genivi::am::am_ConnectionFormat_pe>(CF_MAX));
+	org::genivi::am::am_MainSoundProperty_L listMainSoundProperties;
+	listMainSoundProperties.push_back(org::genivi::am::am_MainSoundProperty_s(static_cast<org::genivi::am::am_MainSoundPropertyType_pe>(MSP_MAX), 100));
+	org::genivi::am::am_NotificationConfiguration_L listMainNotificationConfigurations;
+	listMainNotificationConfigurations.push_back(org::genivi::am::am_NotificationConfiguration_s(static_cast<org::genivi::am::am_NotificationType_pe>(NT_MAX), org::genivi::am::am_NotificationStatus_e::NS_MAX, 100));
+	org::genivi::am::am_NotificationConfiguration_L listNotificationConfigurations;
+	listNotificationConfigurations.push_back(org::genivi::am::am_NotificationConfiguration_s(static_cast<org::genivi::am::am_NotificationType_pe>(NT_MAX), org::genivi::am::am_NotificationStatus_e::NS_MAX, 100));
 
-	am_gen::sinkData_s sink(sinkID, "name", domainID, 104, 50, true, available, muteState, 50,
+	org::genivi::am::am_Sink_s sink(sinkID, "name", domainID, 104, 50, true, available, muteState, 50,
 							listSoundProperties, listConnectionFormats, listMainSoundProperties, listMainNotificationConfigurations, listNotificationConfigurations);
 	newSink = sink;
 	CAmConvertCAPI2AM(sink, newAmSink);
@@ -91,24 +90,24 @@ void initSink(am_gen::sinkData_s & newSink, am_Sink_s & newAmSink, const am_gen:
 /**
  * Initialize common-api and am sources
  */
-void initSource(am_gen::sourceData_s & newSource, am_Source_s & newAmSource, const am_gen::am_domainID_t & domainID, const am_gen::am_sourceID_t & sourceID = 0)
+void initSource(org::genivi::am::am_Source_s & newSource, am_Source_s & newAmSource, const org::genivi::am::am_domainID_t & domainID, const org::genivi::am::am_sourceID_t & sourceID = 0)
 {
-	am_gen::am_SourceState_e srcState = am_gen::am_SourceState_e::SS_MAX;
-    am_gen::am_Availability_s available(am_gen::am_Availability_e::A_MAX, am_gen::am_AvailabilityReason_e::AR_MAX);
-	am_gen::am_SoundProperty_L listSoundProperties;
-	listSoundProperties.push_back(am_gen::am_SoundProperty_s(am_gen::am_SoundPropertyType_e::SP_INTERR_OVERLAYID, 100));
-	listSoundProperties.push_back(am_gen::am_SoundProperty_s(am_gen::am_SoundPropertyType_e::SP_EXAMPLE_BASS, 101));
-	listSoundProperties.push_back(am_gen::am_SoundProperty_s(am_gen::am_SoundPropertyType_e::SP_MAX, 102));
-	am_gen::am_ConnectionFormat_L listConnectionFormats;
-	listConnectionFormats.push_back(am_gen::am_ConnectionFormat_e::CF_MAX);
-	am_gen::am_MainSoundProperty_L listMainSoundProperties;
-	listMainSoundProperties.push_back(am_gen::am_MainSoundProperty_s(am_gen::am_MainSoundPropertyType_e::MSP_MAX, 100));
-	am_gen::am_NotificationConfiguration_L listMainNotificationConfigurations;
-	listMainNotificationConfigurations.push_back(am_gen::am_NotificationConfiguration_s(am_gen::am_NotificationType_e::NT_MAX, am_gen::am_NotificationStatus_e::NS_MAX, 100));
-	am_gen::am_NotificationConfiguration_L listNotificationConfigurations;
-	listNotificationConfigurations.push_back(am_gen::am_NotificationConfiguration_s(am_gen::am_NotificationType_e::NT_MAX, am_gen::am_NotificationStatus_e::NS_MAX, 100));
+	org::genivi::am::am_SourceState_e srcState = org::genivi::am::am_SourceState_e::SS_MAX;
+    org::genivi::am::am_Availability_s available(org::genivi::am::am_Availability_e::A_MAX, static_cast<org::genivi::am::am_AvailabilityReason_pe>(AR_MAX));
+	org::genivi::am::am_SoundProperty_L listSoundProperties;
+	listSoundProperties.push_back(org::genivi::am::am_SoundProperty_s(static_cast<org::genivi::am::am_SoundPropertyType_pe>(SP_INTERR_OVERLAYID), 100));
+	listSoundProperties.push_back(org::genivi::am::am_SoundProperty_s(static_cast<org::genivi::am::am_SoundPropertyType_pe>(SP_EXAMPLE_BASS), 101));
+	listSoundProperties.push_back(org::genivi::am::am_SoundProperty_s(static_cast<org::genivi::am::am_SoundPropertyType_pe>(SP_MAX), 102));
+	org::genivi::am::am_ConnectionFormat_L listConnectionFormats;
+	listConnectionFormats.push_back(static_cast<org::genivi::am::am_ConnectionFormat_pe>(CF_MAX));
+	org::genivi::am::am_MainSoundProperty_L listMainSoundProperties;
+	listMainSoundProperties.push_back(org::genivi::am::am_MainSoundProperty_s(static_cast<org::genivi::am::am_MainSoundPropertyType_pe>(MSP_MAX), 100));
+	org::genivi::am::am_NotificationConfiguration_L listMainNotificationConfigurations;
+	listMainNotificationConfigurations.push_back(org::genivi::am::am_NotificationConfiguration_s(static_cast<org::genivi::am::am_NotificationType_pe>(NT_MAX), org::genivi::am::am_NotificationStatus_e::NS_MAX, 100));
+	org::genivi::am::am_NotificationConfiguration_L listNotificationConfigurations;
+	listNotificationConfigurations.push_back(org::genivi::am::am_NotificationConfiguration_s(static_cast<org::genivi::am::am_NotificationType_pe>(NT_MAX), org::genivi::am::am_NotificationStatus_e::NS_MAX, 100));
 
-	am_gen::sourceData_s source(sourceID, domainID, "name", 104, srcState, 50, true, available, am_gen::am_InterruptState_e::IS_MAX,
+	org::genivi::am::am_Source_s source(sourceID, domainID, "name", 104, srcState, 50, true, available, org::genivi::am::am_InterruptState_e::IS_MAX,
 								listSoundProperties, listConnectionFormats, listMainSoundProperties, listMainNotificationConfigurations, listNotificationConfigurations);
 	newSource = source;
 	CAmConvertCAPI2AM(source, newAmSource);
@@ -117,9 +116,9 @@ void initSource(am_gen::sourceData_s & newSource, am_Source_s & newAmSource, con
 /**
  * Initialize common-api and am crossfaders
  */
-void initCrossfader(am_gen::crossfaderData_s & newCrossfader, am_Crossfader_s & newAmCrossfader, const am_gen::am_crossfaderID_t & crossfaderID = 0)
+void initCrossfader(org::genivi::am::am_Crossfader_s & newCrossfader, am_Crossfader_s & newAmCrossfader, const org::genivi::am::am_crossfaderID_t & crossfaderID = 0)
 {
-	am_gen::crossfaderData_s crossfader(crossfaderID, "name", TEST_ID_1, TEST_ID_2, TEST_ID_1, am_gen::am_HotSink_e::HS_MAX);
+	org::genivi::am::am_Crossfader_s crossfader(crossfaderID, "name", TEST_ID_1, TEST_ID_2, TEST_ID_1, org::genivi::am::am_HotSink_e::HS_MAX);
 	CAmConvertCAPI2AM(crossfader, newAmCrossfader);
 	newCrossfader = crossfader;
 }
@@ -134,7 +133,7 @@ void* run_client(void*)
 	env->mSocketHandlerClient = &socketHandler;
 	std::shared_ptr<CommonAPI::Factory> factory = wrapper.factory();
 
-	env->mProxy = factory->buildProxy<RoutingInterfaceProxy>(CAmRoutingSenderCAPI::ROUTING_INTERFACE_SERVICE);
+	env->mProxy = factory->buildProxy<org::genivi::am::RoutingControlObserverProxy>(CAmRoutingSenderCAPI::ROUTING_INTERFACE_SERVICE);
 	env->mProxy->getProxyStatusEvent().subscribe(std::bind(&CAmTestsEnvironment::onServiceStatusEvent,env,std::placeholders::_1));
 
 	env->mDomainService = std::make_shared<CAmRoutingSenderService>(&wrapper, env->mProxy);
@@ -345,11 +344,13 @@ TEST_F(CAmRoutingInterfaceCAPITests, ackConnect)
 	if(env->mIsServiceAvailable)
 	{
 		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
-		am_gen::am_connectionID_t connectionID = TEST_ID_1;
+		org::genivi::am::am_connectionID_t connectionID = TEST_ID_1;
 		am_Error_e error = E_OK;
 		am_Handle_s handle = {H_CONNECT, 20};
+		org::genivi::am::am_Handle_s CAPIHandle;
+		CAmConvertAM2CAPI(handle,CAPIHandle);
 		EXPECT_CALL(*env->mpRoutingReceive, ackConnect(IsHandleEqual(handle), connectionID, error)).Times(1);
-		env->mProxy->ackConnect(20, connectionID, error, callStatus);
+		env->mProxy->ackConnect(CAPIHandle, connectionID, static_cast<org::genivi::am::am_Error_e>(error), callStatus);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
@@ -361,11 +362,13 @@ TEST_F(CAmRoutingInterfaceCAPITests, ackDisconnect)
 	if(env->mIsServiceAvailable)
 	{
 		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
-		am_gen::am_connectionID_t connectionID = TEST_ID_1;
+		org::genivi::am::am_connectionID_t connectionID = TEST_ID_1;
 		am_Error_e error = E_OK;
 		am_Handle_s handle = {H_DISCONNECT, 20};
+		org::genivi::am::am_Handle_s CAPIHandle;
+		CAmConvertAM2CAPI(handle,CAPIHandle);
 		EXPECT_CALL(*env->mpRoutingReceive, ackDisconnect(IsHandleEqual(handle), connectionID, error)).Times(1);
-		env->mProxy->ackDisconnect(20, connectionID, error, callStatus);
+		env->mProxy->ackDisconnect(CAPIHandle, connectionID, static_cast<org::genivi::am::am_Error_e>(error), callStatus);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
@@ -380,8 +383,10 @@ TEST_F(CAmRoutingInterfaceCAPITests, ackSetSinkVolumeChange)
 		am_Error_e error = E_OK;
 		am_volume_t volume = 50;
 		am_Handle_s handle = {H_SETSINKVOLUME, 20};
+		org::genivi::am::am_Handle_s CAPIHandle;
+		CAmConvertAM2CAPI(handle,CAPIHandle);
 		EXPECT_CALL(*env->mpRoutingReceive, ackSetSinkVolumeChange(IsHandleEqual(handle), volume, error)).Times(1);
-		env->mProxy->ackSetSinkVolume(20, volume, error, callStatus);
+		env->mProxy->ackSetSinkVolumeChange(CAPIHandle, static_cast<org::genivi::am::am_volume_t>(volume), static_cast<org::genivi::am::am_Error_e>(error), callStatus);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
@@ -396,8 +401,10 @@ TEST_F(CAmRoutingInterfaceCAPITests, ackSetSourceVolumeChange)
 		am_Error_e error = E_OK;
 		am_volume_t volume = 50;
 		am_Handle_s handle = {H_SETSOURCEVOLUME, 20};
+		org::genivi::am::am_Handle_s CAPIHandle;
+		CAmConvertAM2CAPI(handle,CAPIHandle);
 		EXPECT_CALL(*env->mpRoutingReceive, ackSetSourceVolumeChange(IsHandleEqual(handle), volume, error)).Times(1);
-		env->mProxy->ackSetSourceVolume(20, volume, error, callStatus);
+		env->mProxy->ackSetSourceVolumeChange(CAPIHandle, static_cast<org::genivi::am::am_volume_t>(volume), static_cast<org::genivi::am::am_Error_e>(error), callStatus);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
 
@@ -413,8 +420,10 @@ TEST_F(CAmRoutingInterfaceCAPITests, ackSetSourceState)
 		am_Error_e error = E_OK;
 		am_volume_t volume = 50;
 		am_Handle_s handle = {H_SETSOURCESTATE, 20};
+		org::genivi::am::am_Handle_s CAPIHandle;
+		CAmConvertAM2CAPI(handle,CAPIHandle);
 		EXPECT_CALL(*env->mpRoutingReceive, ackSetSourceState(IsHandleEqual(handle), error)).Times(1);
-		env->mProxy->ackSetSourceState(20, error, callStatus);
+		env->mProxy->ackSetSourceState(CAPIHandle, static_cast<org::genivi::am::am_Error_e>(error), callStatus);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
 
@@ -430,8 +439,10 @@ TEST_F(CAmRoutingInterfaceCAPITests, ackSetSinkSoundProperties)
 		am_Error_e error = E_OK;
 		am_volume_t volume = 50;
 		am_Handle_s handle = {H_SETSINKSOUNDPROPERTIES, 20};
+		org::genivi::am::am_Handle_s CAPIHandle;
+		CAmConvertAM2CAPI(handle,CAPIHandle);
 		EXPECT_CALL(*env->mpRoutingReceive, ackSetSinkSoundProperties(IsHandleEqual(handle), error)).Times(1);
-		env->mProxy->ackSetSinkSoundProperties(20, error, callStatus);
+		env->mProxy->ackSetSinkSoundProperties(CAPIHandle, static_cast<org::genivi::am::am_Error_e>(error), callStatus);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
 
@@ -447,8 +458,10 @@ TEST_F(CAmRoutingInterfaceCAPITests, ackSetSinkSoundProperty)
 		am_Error_e error = E_OK;
 		am_volume_t volume = 50;
 		am_Handle_s handle = {H_SETSINKSOUNDPROPERTY, 20};
+		org::genivi::am::am_Handle_s CAPIHandle;
+		CAmConvertAM2CAPI(handle,CAPIHandle);
 		EXPECT_CALL(*env->mpRoutingReceive, ackSetSinkSoundProperty(IsHandleEqual(handle), error)).Times(1);
-		env->mProxy->ackSetSinkSoundProperty(20, error, callStatus);
+		env->mProxy->ackSetSinkSoundProperty(CAPIHandle, static_cast<org::genivi::am::am_Error_e>(error), callStatus);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
 
@@ -464,8 +477,10 @@ TEST_F(CAmRoutingInterfaceCAPITests, ackSetSourceSoundProperties)
 		am_Error_e error = E_OK;
 		am_volume_t volume = 50;
 		am_Handle_s handle = {H_SETSOURCESOUNDPROPERTIES, 20};
+		org::genivi::am::am_Handle_s CAPIHandle;
+		CAmConvertAM2CAPI(handle,CAPIHandle);
 		EXPECT_CALL(*env->mpRoutingReceive, ackSetSourceSoundProperties(IsHandleEqual(handle), error)).Times(1);
-		env->mProxy->ackSetSourceSoundProperties(20, error, callStatus);
+		env->mProxy->ackSetSourceSoundProperties(CAPIHandle, static_cast<org::genivi::am::am_Error_e>(error), callStatus);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
 
@@ -481,8 +496,10 @@ TEST_F(CAmRoutingInterfaceCAPITests, ackSetSourceSoundProperty)
 		am_Error_e error = E_OK;
 		am_volume_t volume = 50;
 		am_Handle_s handle = {H_SETSOURCESOUNDPROPERTY, 20};
+		org::genivi::am::am_Handle_s CAPIHandle;
+		CAmConvertAM2CAPI(handle,CAPIHandle);
 		EXPECT_CALL(*env->mpRoutingReceive, ackSetSourceSoundProperty(IsHandleEqual(handle), error)).Times(1);
-		env->mProxy->ackSetSourceSoundProperty(20, error, callStatus);
+		env->mProxy->ackSetSourceSoundProperty(CAPIHandle, static_cast<org::genivi::am::am_Error_e>(error), callStatus);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
@@ -497,8 +514,10 @@ TEST_F(CAmRoutingInterfaceCAPITests, ackCrossFading)
 		am_Error_e error = E_OK;
 		am_HotSink_e hotSink = HS_UNKNOWN;
 		am_Handle_s handle = {H_CROSSFADE, 20};
+		org::genivi::am::am_Handle_s CAPIHandle;
+		CAmConvertAM2CAPI(handle,CAPIHandle);
 		EXPECT_CALL(*env->mpRoutingReceive, ackCrossFading(IsHandleEqual(handle), hotSink, error)).Times(1);
-		env->mProxy->ackCrossFading(20, static_cast<am_gen::am_HotSink_e>(hotSink), (am_gen::am_Error_e)error, callStatus);
+		env->mProxy->ackCrossFading(CAPIHandle, static_cast<org::genivi::am::am_HotSink_e>(hotSink), static_cast<org::genivi::am::am_Error_e>(error), callStatus);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
@@ -513,8 +532,11 @@ TEST_F(CAmRoutingInterfaceCAPITests, ackSourceVolumeTick)
 		am_Error_e error = E_OK;
 		am_sourceID_t sourceID = TEST_ID_1;
 		am_Handle_s handle = {H_SETSOURCEVOLUME, 20};
-		EXPECT_CALL(*env->mpRoutingReceive, ackSourceVolumeTick(IsHandleEqual(handle), sourceID, error)).Times(1);
-		env->mProxy->ackSourceVolumeTick(20, sourceID, error, callStatus);
+		am_volume_t volume (20);
+		org::genivi::am::am_Handle_s CAPIHandle;
+		CAmConvertAM2CAPI(handle,CAPIHandle);
+		EXPECT_CALL(*env->mpRoutingReceive, ackSourceVolumeTick(IsHandleEqual(handle), sourceID, volume)).Times(1);
+		env->mProxy->ackSourceVolumeTick(CAPIHandle, sourceID, static_cast<org::genivi::am::am_volume_t>(volume), callStatus);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
@@ -529,8 +551,11 @@ TEST_F(CAmRoutingInterfaceCAPITests, ackSinkVolumeTick)
 		am_Error_e error = E_OK;
 		am_sinkID_t sID = TEST_ID_1;
 		am_Handle_s handle = {H_SETSINKVOLUME, 20};
-		EXPECT_CALL(*env->mpRoutingReceive, ackSinkVolumeTick(IsHandleEqual(handle), sID, error)).Times(1);
-		env->mProxy->ackSinkVolumeTick(20, sID, error, callStatus);
+		org::genivi::am::am_Handle_s CAPIHandle;
+		CAmConvertAM2CAPI(handle,CAPIHandle);
+		am_volume_t volume (20);
+		EXPECT_CALL(*env->mpRoutingReceive, ackSinkVolumeTick(IsHandleEqual(handle), sID, volume)).Times(1);
+		env->mProxy->ackSinkVolumeTick(CAPIHandle, sID,static_cast<org::genivi::am::am_volume_t>(volume), callStatus);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
@@ -550,14 +575,14 @@ TEST_F(CAmRoutingInterfaceCAPITests, peekDomain)
 	if(env->mIsServiceAvailable)
 	{
 		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
-		am_gen::am_Error_e error = am_gen::am_Error_e::E_UNKNOWN;
+		org::genivi::am::am_Error_e error = org::genivi::am::am_Error_e::E_UNKNOWN;
 		std::string  name("domain name");
-		am_gen::am_domainID_t domainID = 0;
+		org::genivi::am::am_domainID_t domainID = 0;
 		ON_CALL(*env->mpRoutingReceive, peekDomain(_, _)).WillByDefault(Return(E_OK));
 		EXPECT_CALL(*env->mpRoutingReceive, peekDomain(name, _)).WillOnce(DoAll(actionPeekDomain(), Return(E_OK)));
 		env->mProxy->peekDomain(name, callStatus, domainID, error);
 		ASSERT_EQ( domainID, TEST_ID_1 );
-		ASSERT_EQ( error, am_gen::am_Error_e::E_OK );
+		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
@@ -579,16 +604,16 @@ TEST_F(CAmRoutingInterfaceCAPITests, registerDomain)
 	if(env->mIsServiceAvailable)
 	{
 		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
-		am_gen::am_Error_e error = am_gen::am_Error_e::E_UNKNOWN;
+		org::genivi::am::am_Error_e error = org::genivi::am::am_Error_e::E_UNKNOWN;
 
 		std::string name("domain name");
         std::string busname("busname");
         std::string nodename("nodename");
 
-		am_gen::am_Domain_s domainData(0, name, busname, nodename, false, false, am_gen::am_DomainState_e::DS_CONTROLLED);
+		org::genivi::am::am_Domain_s domainData(0, name, busname, nodename, false, false, org::genivi::am::am_DomainState_e::DS_CONTROLLED);
 		am::am_Domain_s amDomainData;
 		CAmConvertCAPI2AM(domainData, amDomainData);
-		am_gen:am_domainID_t domainID = 0;
+		org::genivi::am::am_domainID_t domainID = 0;
 //If the result is E_OK, then the routing service will try to establish a connection with the domain via common-api.
 //For now we won't test common-api connection with the domain therefore E_ABORTED is returned.
 		ON_CALL(*env->mpRoutingReceive, registerDomain(_, _)).WillByDefault(Return(E_ABORTED));
@@ -603,7 +628,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, registerDomain)
 									domainID,
 									error);
 		ASSERT_EQ( domainID, TEST_ID_1 );
-		ASSERT_EQ( error, am_gen::am_Error_e::E_ABORTED );
+		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_ABORTED );
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
@@ -615,13 +640,13 @@ TEST_F(CAmRoutingInterfaceCAPITests, deregisterDomain)
 	if(env->mIsServiceAvailable)
 	{
 		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
-		am_gen::am_Error_e error = am_gen::am_Error_e::E_UNKNOWN;
-		am_gen:am_domainID_t domainID = TEST_ID_1;
+		org::genivi::am::am_Error_e error = org::genivi::am::am_Error_e::E_UNKNOWN;
+		org::genivi::am::am_domainID_t domainID = TEST_ID_1;
 
 		ON_CALL(*env->mpRoutingReceive, deregisterDomain(_)).WillByDefault(Return(E_OK));
 		EXPECT_CALL(*env->mpRoutingReceive, deregisterDomain(domainID)).WillOnce(Return(E_OK));
 		env->mProxy->deregisterDomain(domainID, callStatus, error);
-		ASSERT_EQ( error, am_gen::am_Error_e::E_OK );
+		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
@@ -650,20 +675,20 @@ TEST_F(CAmRoutingInterfaceCAPITests, registerGateway)
 	if(env->mIsServiceAvailable)
 	{
 		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
-		am_gen::am_Error_e error = am_gen::am_Error_e::E_UNKNOWN;
+		org::genivi::am::am_Error_e error = org::genivi::am::am_Error_e::E_UNKNOWN;
 
-		am_gen::am_ConnectionFormat_L listSourceFormats;
-		listSourceFormats.push_back(am_gen::am_ConnectionFormat_e::CF_GENIVI_ANALOG);
-		listSourceFormats.push_back(am_gen::am_ConnectionFormat_e::CF_GENIVI_AUTO);
-		am_gen::am_ConnectionFormat_L listSinkFormats;
-		listSinkFormats.push_back(am_gen::am_ConnectionFormat_e::CF_GENIVI_AUTO);
-		listSinkFormats.push_back(am_gen::am_ConnectionFormat_e::CF_GENIVI_ANALOG);
-		am_gen::bool_L convertionMatrix;
+		org::genivi::am::am_ConnectionFormat_L listSourceFormats;
+		listSourceFormats.push_back(static_cast<org::genivi::am::am_ConnectionFormat_pe>(CF_GENIVI_ANALOG));
+		listSourceFormats.push_back(static_cast<org::genivi::am::am_ConnectionFormat_pe>(CF_GENIVI_AUTO));
+		org::genivi::am::am_ConnectionFormat_L listSinkFormats;
+		listSinkFormats.push_back(static_cast<org::genivi::am::am_ConnectionFormat_pe>(CF_GENIVI_AUTO));
+		listSinkFormats.push_back(static_cast<org::genivi::am::am_ConnectionFormat_pe>(CF_GENIVI_ANALOG));
+		org::genivi::am::am_Convertion_L convertionMatrix;
 		convertionMatrix.push_back(1);
 		convertionMatrix.push_back(0);
 
-		am_gen:am_gatewayID_t gatewayID = 0;
-		am_gen::am_Gateway_s gateway(gatewayID, "name", 103, 104, 105, 106, 107, listSourceFormats, listSinkFormats, convertionMatrix);
+		org::genivi::am::am_gatewayID_t gatewayID = 0;
+		org::genivi::am::am_Gateway_s gateway(gatewayID, "name", 103, 104, 105, 106, 107, listSourceFormats, listSinkFormats, convertionMatrix);
 		am_Gateway_s amGateway;
 		CAmConvertCAPI2AM(gateway, amGateway);
 
@@ -671,7 +696,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, registerGateway)
 		EXPECT_CALL(*env->mpRoutingReceive, registerGateway(IsGatewayDataEqualTo(amGateway), _)).WillOnce(DoAll(actionRegisterGateway(), Return(E_OK)));
 		env->mProxy->registerGateway(gateway, callStatus, gatewayID, error);
 		ASSERT_EQ( gatewayID, TEST_ID_1 );
-		ASSERT_EQ( error, am_gen::am_Error_e::E_OK );
+		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
@@ -683,13 +708,13 @@ TEST_F(CAmRoutingInterfaceCAPITests, deregisterGateway)
 	if(env->mIsServiceAvailable)
 	{
 		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
-		am_gen::am_Error_e error = am_gen::am_Error_e::E_UNKNOWN;
-		am_gen:am_gatewayID_t gatewayID = TEST_ID_1;
+		org::genivi::am::am_Error_e error = org::genivi::am::am_Error_e::E_UNKNOWN;
+		org::genivi::am::am_gatewayID_t gatewayID = TEST_ID_1;
 
 		ON_CALL(*env->mpRoutingReceive, deregisterGateway(_)).WillByDefault(Return(E_OK));
 		EXPECT_CALL(*env->mpRoutingReceive, deregisterGateway(gatewayID)).WillOnce(Return(E_OK));
 		env->mProxy->deregisterGateway(gatewayID, callStatus, error);
-		ASSERT_EQ( error, am_gen::am_Error_e::E_OK );
+		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
@@ -705,14 +730,14 @@ TEST_F(CAmRoutingInterfaceCAPITests, peekSink)
 	if(env->mIsServiceAvailable)
 	{
 		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
-		am_gen::am_Error_e error = am_gen::am_Error_e::E_UNKNOWN;
+		org::genivi::am::am_Error_e error = org::genivi::am::am_Error_e::E_UNKNOWN;
 		std::string  name("name");
-		am_gen::am_sinkID_t sinkID = 0;
+		org::genivi::am::am_sinkID_t sinkID = 0;
 		ON_CALL(*env->mpRoutingReceive, peekSink(_, _)).WillByDefault(Return(E_OK));
 		EXPECT_CALL(*env->mpRoutingReceive, peekSink(name, _)).WillOnce(DoAll(actionPeek(), Return(E_OK)));
 		env->mProxy->peekSink(name, callStatus, sinkID, error);
 		ASSERT_EQ( sinkID, TEST_ID_1 );
-		ASSERT_EQ( error, am_gen::am_Error_e::E_OK );
+		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
@@ -775,18 +800,18 @@ TEST_F(CAmRoutingInterfaceCAPITests, registerSink)
 	if(env->mIsServiceAvailable)
 	{
 		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
-		am_gen::am_Error_e error = am_gen::am_Error_e::E_UNKNOWN;
+		org::genivi::am::am_Error_e error = org::genivi::am::am_Error_e::E_UNKNOWN;
 
-		am_gen::sinkData_s sink;
+		org::genivi::am::am_Sink_s sink;
 		am_Sink_s amSink;
-		am_gen:am_sinkID_t sinkID = 0;
+		org::genivi::am::am_sinkID_t sinkID = 0;
 		initSink(sink, amSink, TEST_ID_2, sinkID);
 
 		ON_CALL(*env->mpRoutingReceive, registerSink(_, _)).WillByDefault(Return(E_OK));
 		EXPECT_CALL(*env->mpRoutingReceive, registerSink(IsSinkDataEqualTo(amSink), _)).WillOnce(DoAll(actionRegister(), Return(E_OK)));
 		env->mProxy->registerSink(sink, callStatus, sinkID, error);
 		ASSERT_EQ( sinkID, TEST_ID_1 );
-		ASSERT_EQ( error, am_gen::am_Error_e::E_OK );
+		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
@@ -798,13 +823,13 @@ TEST_F(CAmRoutingInterfaceCAPITests, deregisterSink)
 	if(env->mIsServiceAvailable)
 	{
 		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
-		am_gen::am_Error_e error = am_gen::am_Error_e::E_UNKNOWN;
-		am_gen:am_sinkID_t sinkID = TEST_ID_1;
+		org::genivi::am::am_Error_e error = org::genivi::am::am_Error_e::E_UNKNOWN;
+		org::genivi::am::am_sinkID_t sinkID = TEST_ID_1;
 
 		ON_CALL(*env->mpRoutingReceive, deregisterSink(_)).WillByDefault(Return(E_OK));
 		EXPECT_CALL(*env->mpRoutingReceive, deregisterSink(sinkID)).WillOnce(Return(E_OK));
 		env->mProxy->deregisterSink(sinkID, callStatus, error);
-		ASSERT_EQ( error, am_gen::am_Error_e::E_OK );
+		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
@@ -816,14 +841,14 @@ TEST_F(CAmRoutingInterfaceCAPITests, peekSource)
 	if(env->mIsServiceAvailable)
 	{
 		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
-		am_gen::am_Error_e error = am_gen::am_Error_e::E_UNKNOWN;
+		org::genivi::am::am_Error_e error = org::genivi::am::am_Error_e::E_UNKNOWN;
 		std::string  name("name");
-		am_gen::am_sourceID_t sinkID = 0;
+		org::genivi::am::am_sourceID_t sinkID = 0;
 		ON_CALL(*env->mpRoutingReceive, peekSource(_, _)).WillByDefault(Return(E_OK));
 		EXPECT_CALL(*env->mpRoutingReceive, peekSource(name, _)).WillOnce(DoAll(actionPeek(), Return(E_OK)));
 		env->mProxy->peekSource(name, callStatus, sinkID, error);
 		ASSERT_EQ( sinkID, TEST_ID_1 );
-		ASSERT_EQ( error, am_gen::am_Error_e::E_OK );
+		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
@@ -888,18 +913,18 @@ TEST_F(CAmRoutingInterfaceCAPITests, registerSource)
 	if(env->mIsServiceAvailable)
 	{
 		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
-		am_gen::am_Error_e error = am_gen::am_Error_e::E_UNKNOWN;
+		org::genivi::am::am_Error_e error = org::genivi::am::am_Error_e::E_UNKNOWN;
 
-		am_gen::sourceData_s source;
+		org::genivi::am::am_Source_s source;
 		am_Source_s amSource;
-		am_gen:am_sourceID_t sinkID = 0;
-		initSource(source, amSource, TEST_ID_2, sinkID);
+		org::genivi::am::am_sourceID_t sourceID = 0;
+		initSource(source, amSource, TEST_ID_2, sourceID);
 
 		ON_CALL(*env->mpRoutingReceive, registerSource(_, _)).WillByDefault(Return(E_OK));
 		EXPECT_CALL(*env->mpRoutingReceive, registerSource(IsSourceDataEqualTo(amSource), _)).WillOnce(DoAll(actionRegister(), Return(E_OK)));
-		env->mProxy->registerSource(source, callStatus, sinkID, error);
-		ASSERT_EQ( sinkID, TEST_ID_1 );
-		ASSERT_EQ( error, am_gen::am_Error_e::E_OK );
+		env->mProxy->registerSource(source, callStatus, sourceID, error);
+		ASSERT_EQ( sourceID, TEST_ID_1 );
+		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
@@ -911,13 +936,13 @@ TEST_F(CAmRoutingInterfaceCAPITests, deregisterSource)
 	if(env->mIsServiceAvailable)
 	{
 		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
-		am_gen::am_Error_e error = am_gen::am_Error_e::E_UNKNOWN;
-		am_gen:am_sourceID_t sinkID = TEST_ID_1;
+		org::genivi::am::am_Error_e error = org::genivi::am::am_Error_e::E_UNKNOWN;
+		org::genivi::am::am_sourceID_t sinkID = TEST_ID_1;
 
 		ON_CALL(*env->mpRoutingReceive, deregisterSource(_)).WillByDefault(Return(E_OK));
 		EXPECT_CALL(*env->mpRoutingReceive, deregisterSource(sinkID)).WillOnce(Return(E_OK));
 		env->mProxy->deregisterSource(sinkID, callStatus, error);
-		ASSERT_EQ( error, am_gen::am_Error_e::E_OK );
+		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
@@ -944,10 +969,10 @@ TEST_F(CAmRoutingInterfaceCAPITests, registerCrossfader)
 	if(env->mIsServiceAvailable)
 	{
 		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
-		am_gen::am_Error_e error = am_gen::am_Error_e::E_UNKNOWN;
+		org::genivi::am::am_Error_e error = org::genivi::am::am_Error_e::E_UNKNOWN;
 
-		am_gen:am_crossfaderID_t crossfaderID = 0;
-		am_gen::crossfaderData_s crossfader;
+		org::genivi::am::am_crossfaderID_t crossfaderID = 0;
+		org::genivi::am::am_Crossfader_s crossfader;
 		am_Crossfader_s amCrossfader;
 		initCrossfader(crossfader, amCrossfader, crossfaderID);
 
@@ -955,7 +980,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, registerCrossfader)
 		EXPECT_CALL(*env->mpRoutingReceive, registerCrossfader(IsCrossfaderDataEqualTo(amCrossfader), _)).WillOnce(DoAll(actionRegister(), Return(E_OK)));
 		env->mProxy->registerCrossfader(crossfader, callStatus, crossfaderID, error);
 		ASSERT_EQ( crossfaderID, TEST_ID_1 );
-		ASSERT_EQ( error, am_gen::am_Error_e::E_OK );
+		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
@@ -967,13 +992,13 @@ TEST_F(CAmRoutingInterfaceCAPITests, deregisterCrossfader)
 	if(env->mIsServiceAvailable)
 	{
 		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
-		am_gen::am_Error_e error = am_gen::am_Error_e::E_UNKNOWN;
-		am_gen:am_crossfaderID_t crossfaderID = TEST_ID_1;
+		org::genivi::am::am_Error_e error = org::genivi::am::am_Error_e::E_UNKNOWN;
+		org::genivi::am::am_crossfaderID_t crossfaderID = TEST_ID_1;
 
 		ON_CALL(*env->mpRoutingReceive, deregisterCrossfader(_)).WillByDefault(Return(E_OK));
 		EXPECT_CALL(*env->mpRoutingReceive, deregisterCrossfader(crossfaderID)).WillOnce(Return(E_OK));
 		env->mProxy->deregisterCrossfader(crossfaderID, callStatus, error);
-		ASSERT_EQ( error, am_gen::am_Error_e::E_OK );
+		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
@@ -985,14 +1010,14 @@ TEST_F(CAmRoutingInterfaceCAPITests, peekSourceClassID)
 	if(env->mIsServiceAvailable)
 	{
 		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
-		am_gen::am_Error_e error = am_gen::am_Error_e::E_UNKNOWN;
+		org::genivi::am::am_Error_e error = org::genivi::am::am_Error_e::E_UNKNOWN;
 		std::string  name("name");
-		am_gen::am_sourceClass_t sinkID = 0;
+		org::genivi::am::am_sourceClass_t sinkID = 0;
 		ON_CALL(*env->mpRoutingReceive, peekSourceClassID(_, _)).WillByDefault(Return(E_OK));
 		EXPECT_CALL(*env->mpRoutingReceive, peekSourceClassID(name, _)).WillOnce(DoAll(actionPeek(), Return(E_OK)));
 		env->mProxy->peekSourceClassID(name, callStatus, sinkID, error);
 		ASSERT_EQ( sinkID, TEST_ID_1 );
-		ASSERT_EQ( error, am_gen::am_Error_e::E_OK );
+		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
@@ -1004,14 +1029,14 @@ TEST_F(CAmRoutingInterfaceCAPITests, peekSinkClassID)
 	if(env->mIsServiceAvailable)
 	{
 		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
-		am_gen::am_Error_e error = am_gen::am_Error_e::E_UNKNOWN;
+		org::genivi::am::am_Error_e error = org::genivi::am::am_Error_e::E_UNKNOWN;
 		std::string  name("name");
-		am_gen::am_sinkClass_t sinkID = 0;
+		org::genivi::am::am_sinkClass_t sinkID = 0;
 		ON_CALL(*env->mpRoutingReceive, peekSinkClassID(_, _)).WillByDefault(Return(E_OK));
 		EXPECT_CALL(*env->mpRoutingReceive, peekSinkClassID(name, _)).WillOnce(DoAll(actionPeek(), Return(E_OK)));
 		env->mProxy->peekSinkClassID(name, callStatus, sinkID, error);
 		ASSERT_EQ( sinkID, TEST_ID_1 );
-		ASSERT_EQ( error, am_gen::am_Error_e::E_OK );
+		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
@@ -1024,10 +1049,11 @@ TEST_F(CAmRoutingInterfaceCAPITests, hookInterruptStatusChange)
 	{
 		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
 		am_Error_e error = E_OK;
-		am_gen::am_sourceID_t sourceID = TEST_ID_1;
+		org::genivi::am::am_sourceID_t sourceID = TEST_ID_1;
 		am_InterruptState_e interruptState = am_InterruptState_e::IS_MAX;
+		org::genivi::am::am_InterruptState_e CAPIInterruptState=static_cast<org::genivi::am::am_InterruptState_e>(interruptState);
 		EXPECT_CALL(*env->mpRoutingReceive, hookInterruptStatusChange(sourceID, interruptState)).Times(1);
-		env->mProxy->hookInterruptStatusChange(sourceID, interruptState, callStatus);
+		env->mProxy->hookInterruptStatusChange(sourceID, CAPIInterruptState, callStatus);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
@@ -1040,7 +1066,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, hookDomainRegistrationComplete)
 	{
 		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
 		am_Error_e error = E_OK;
-		am_gen::am_domainID_t testID = TEST_ID_1;
+		org::genivi::am::am_domainID_t testID = TEST_ID_1;
 		EXPECT_CALL(*env->mpRoutingReceive, hookDomainRegistrationComplete(testID)).Times(1);
 		env->mProxy->hookDomainRegistrationComplete(testID, callStatus);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
@@ -1061,9 +1087,9 @@ TEST_F(CAmRoutingInterfaceCAPITests, hookSinkAvailablityStatusChange)
 	{
 		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
 		am_Error_e error = E_OK;
-		am_gen::am_sinkID_t testID = TEST_ID_1;
+		org::genivi::am::am_sinkID_t testID = TEST_ID_1;
 
-		am_gen::am_Availability_s available(am_gen::am_Availability_e::A_MAX, am_gen::am_AvailabilityReason_e::AR_MAX);
+		org::genivi::am::am_Availability_s available(org::genivi::am::am_Availability_e::A_MAX, static_cast<org::genivi::am::am_AvailabilityReason_pe>(AR_MAX));
 		am_Availability_s amAvailable;
 		CAmConvertCAPI2AM(available, amAvailable);
 
@@ -1081,9 +1107,9 @@ TEST_F(CAmRoutingInterfaceCAPITests, hookSourceAvailablityStatusChange)
 	{
 		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
 		am_Error_e error = E_OK;
-		am_gen::am_sourceID_t testID = TEST_ID_1;
+		org::genivi::am::am_sourceID_t testID = TEST_ID_1;
 
-		am_gen::am_Availability_s available(am_gen::am_Availability_e::A_MAX, am_gen::am_AvailabilityReason_e::AR_MAX);
+		org::genivi::am::am_Availability_s available(org::genivi::am::am_Availability_e::A_MAX, static_cast<org::genivi::am::am_AvailabilityReason_pe>(AR_MAX));
 		am_Availability_s amAvailable;
 		CAmConvertCAPI2AM(available, amAvailable);
 
@@ -1101,8 +1127,8 @@ TEST_F(CAmRoutingInterfaceCAPITests, hookDomainStateChange)
 	{
 		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
 		am_Error_e error = E_OK;
-		am_gen::am_domainID_t testID = TEST_ID_1;
-		am_gen::am_DomainState_e domainState = am_gen::am_DomainState_e::DS_MAX;
+		org::genivi::am::am_domainID_t testID = TEST_ID_1;
+		org::genivi::am::am_DomainState_e domainState = org::genivi::am::am_DomainState_e::DS_MAX;
 		EXPECT_CALL(*env->mpRoutingReceive, hookDomainStateChange(testID, (am_DomainState_e)domainState)).Times(1);
 		env->mProxy->hookDomainStateChange(testID, domainState, callStatus);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
@@ -1117,9 +1143,9 @@ TEST_F(CAmRoutingInterfaceCAPITests, hookTimingInformationChanged)
 	{
 		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
 		am_Error_e error = E_OK;
-		am_gen::am_connectionID_t testID = TEST_ID_1;
+		org::genivi::am::am_connectionID_t testID = TEST_ID_1;
 		int16_t delay = 10;
-		am_gen::am_DomainState_e domainState = am_gen::am_DomainState_e::DS_MAX;
+		org::genivi::am::am_DomainState_e domainState = org::genivi::am::am_DomainState_e::DS_MAX;
 		EXPECT_CALL(*env->mpRoutingReceive, hookTimingInformationChanged(testID, delay)).Times(1);
 		env->mProxy->hookTimingInformationChanged(testID, delay, callStatus);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
@@ -1127,15 +1153,15 @@ TEST_F(CAmRoutingInterfaceCAPITests, hookTimingInformationChanged)
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
 }
 
-MATCHER_P(IsSinkEarlyDataEqualTo, value, "") {
+MATCHER_P(IsEarlyDataEqualTo, value, "") {
 
 	std::vector<am_EarlyData_s> lh = arg;
 	bool result = lh.size() == value.size();
 	for(int i=0; result && i<lh.size(); i++)
 	{
 		am_EarlyData_s ed_lh = lh.at(i);
-		am_EarlyData_s ed_rh = value.at(i);
-		if(ed_lh.type != ed_rh.type)
+		org::genivi::am::am_EarlyData_s ed_rh = value.at(i);
+		if(ed_lh.type != static_cast<am_EarlyDataType_e>(ed_rh.type))
 		{
 			result = false;
 			break;
@@ -1144,51 +1170,27 @@ MATCHER_P(IsSinkEarlyDataEqualTo, value, "") {
 		{
 			if(ed_lh.type==ED_SINK_VOLUME)
 			{
-				result &= ed_lh.data.volume == ed_rh.data.volume;
-				result &= ed_lh.sinksource.sink == ed_rh.sinksource.sink;
+				result &= ed_lh.data.volume == ed_rh.data.get<org::genivi::am::am_volume_t>();
+				result &= ed_lh.sinksource.sink == ed_rh.sinksource.get<org::genivi::am::am_sinkID_t>();
 			}
 			else if(ed_lh.type==ED_SINK_PROPERTY)
 			{
-				result &= ed_lh.data.soundProperty.type == ed_rh.data.soundProperty.type;
-				result &= ed_lh.data.soundProperty.value == ed_rh.data.soundProperty.value;
-				result &= ed_lh.sinksource.sink == ed_rh.sinksource.sink;
+				org::genivi::am::am_SoundProperty_s soundproperty=ed_rh.data.get<org::genivi::am::am_SoundProperty_s>();
+				result &= ed_lh.data.soundProperty.type == soundproperty.type;
+				result &= ed_lh.data.soundProperty.value == soundproperty.value;
+				result &= ed_lh.sinksource.sink == ed_rh.sinksource.get<org::genivi::am::am_sinkID_t>();
 			}
-			else
+			else if(ed_lh.type==ED_SOURCE_VOLUME)
 			{
-				result = false;
-				break;
-			}
-		}
-	}
-
-	return result;
-}
-
-MATCHER_P(IsSourceEarlyDataEqualTo, value, "") {
-
-	std::vector<am_EarlyData_s> lh = arg;
-	bool result = lh.size() == value.size();
-	for(int i=0; result && i<lh.size(); i++)
-	{
-		am_EarlyData_s ed_lh = lh.at(i);
-		am_EarlyData_s ed_rh = value.at(i);
-		if(ed_lh.type != ed_rh.type)
-		{
-			result = false;
-			break;
-		}
-		else
-		{
-			if(ed_lh.type==ED_SOURCE_VOLUME)
-			{
-				result &= ed_lh.data.volume == ed_rh.data.volume;
-				result &= ed_lh.sinksource.source == ed_rh.sinksource.source;
+				result &= ed_lh.data.volume == ed_rh.data.get<org::genivi::am::am_volume_t>();
+				result &= ed_lh.sinksource.source == ed_rh.sinksource.get<org::genivi::am::am_sourceID_t>();
 			}
 			else if(ed_lh.type==ED_SOURCE_PROPERTY)
 			{
-				result &= ed_lh.data.soundProperty.type == ed_rh.data.soundProperty.type;
-				result &= ed_lh.data.soundProperty.value == ed_rh.data.soundProperty.value;
-				result &= ed_lh.sinksource.source == ed_rh.sinksource.source;
+				org::genivi::am::am_SoundProperty_s soundproperty=ed_rh.data.get<org::genivi::am::am_SoundProperty_s>();
+				result &= ed_lh.data.soundProperty.type == soundproperty.type;
+				result &= ed_lh.data.soundProperty.value == soundproperty.value;
+				result &= ed_lh.sinksource.source == ed_rh.sinksource.get<org::genivi::am::am_sinkID_t>();
 			}
 			else
 			{
@@ -1208,128 +1210,32 @@ TEST_F(CAmRoutingInterfaceCAPITests, sendChangedData)
 	{
 		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
 		am_Error_e error = E_OK;
-		am_gen::am_connectionID_t testID = TEST_ID_1;
-		am_gen::am_EarlyData_l earlyData_soundproperties;
-		am_gen::am_EarlyData_l earlyData_volumes;
+		org::genivi::am::am_connectionID_t testID = TEST_ID_1;
+		org::genivi::am::am_EarlyData_L earlyData;
 
-		am_gen::am_DataType_u dt11(static_cast<am_gen::am_sinkID_t>(103));
-		am_gen::am_EarlyData_u ed11(static_cast<am_gen::am_volume_t>(50));
-		earlyData_volumes.push_back(am_gen::am_EarlyData_s(am_gen::am_EarlyDataType_e::ED_SINK_VOLUME,
+		org::genivi::am::am_DataType_u dt11(static_cast<org::genivi::am::am_sinkID_t>(103));
+		org::genivi::am::am_EarlyData_u ed11(static_cast<org::genivi::am::am_volume_t>(50));
+		earlyData.push_back(org::genivi::am::am_EarlyData_s(org::genivi::am::am_EarlyDataType_e::ED_SINK_VOLUME,
 											dt11,
 											ed11));
-		am_gen::am_DataType_u dt12(static_cast<am_gen::am_sinkID_t>(104));
-		earlyData_volumes.push_back(am_gen::am_EarlyData_s(am_gen::am_EarlyDataType_e::ED_SINK_VOLUME,
+		org::genivi::am::am_DataType_u dt12(static_cast<org::genivi::am::am_sinkID_t>(104));
+		earlyData.push_back(org::genivi::am::am_EarlyData_s(org::genivi::am::am_EarlyDataType_e::ED_SINK_VOLUME,
 											dt12,
 											ed11));
 
-		am_gen::am_DataType_u dt13(static_cast<am_gen::am_sinkID_t>(105));
-		am_gen::am_EarlyData_u ed12(am_gen::am_SoundProperty_s(am_gen::am_SoundPropertyType_e::SP_MAX, 50));
-		earlyData_soundproperties.push_back(am_gen::am_EarlyData_s(am_gen::am_EarlyDataType_e::ED_SINK_PROPERTY,
+		org::genivi::am::am_DataType_u dt13(static_cast<org::genivi::am::am_sinkID_t>(105));
+		org::genivi::am::am_EarlyData_u ed12(org::genivi::am::am_SoundProperty_s(static_cast<org::genivi::am::am_SoundPropertyType_pe>(SP_MAX), 50));
+		earlyData.push_back(org::genivi::am::am_EarlyData_s(org::genivi::am::am_EarlyDataType_e::ED_SINK_PROPERTY,
 											dt13,
 											ed12));
-		am_gen::am_DataType_u dt14(static_cast<am_gen::am_sinkID_t>(106));
-		earlyData_soundproperties.push_back(am_gen::am_EarlyData_s(am_gen::am_EarlyDataType_e::ED_SINK_PROPERTY,
+		org::genivi::am::am_DataType_u dt14(static_cast<org::genivi::am::am_sinkID_t>(106));
+		earlyData.push_back(org::genivi::am::am_EarlyData_s(org::genivi::am::am_EarlyDataType_e::ED_SINK_PROPERTY,
 											dt14,
 											ed12));
 
-		std::vector<am_EarlyData_s> earlyData;
-		am_EarlyData_s amEarlyData11;
-		amEarlyData11.type = am_EarlyDataType_e::ED_SINK_VOLUME;
-		amEarlyData11.data.volume = 50;
-		amEarlyData11.sinksource.sink = 103;
-		earlyData.push_back(amEarlyData11);
-		amEarlyData11.sinksource.sink = 104;
-		earlyData.push_back(amEarlyData11);
+		EXPECT_CALL(*env->mpRoutingReceive, sendChangedData(IsEarlyDataEqualTo(earlyData))).Times(1);
 
-		am_EarlyData_s amEarlyData12;
-		amEarlyData12.type = am_EarlyDataType_e::ED_SINK_PROPERTY;
-		amEarlyData12.sinksource.sink = 105;
-		amEarlyData12.data.soundProperty = (am_SoundProperty_s){SP_MAX, 50};
-		earlyData.push_back(amEarlyData12);
-		amEarlyData12.sinksource.sink = 106;
-		earlyData.push_back(amEarlyData12);
-
-		EXPECT_CALL(*env->mpRoutingReceive, sendChangedData(IsSinkEarlyDataEqualTo(earlyData))).Times(1);
-
-		env->mProxy->sendChangedData(earlyData_volumes, earlyData_soundproperties, callStatus);
-
-		earlyData_soundproperties.clear();
-		earlyData_volumes.clear();
-		earlyData.clear();
-
-		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
-
-		am_gen::am_DataType_u dt21(static_cast<am_gen::am_sourceID_t>(103));
-		am_gen::am_EarlyData_u ed21(static_cast<am_gen::am_volume_t>(50));
-		earlyData_volumes.push_back(am_gen::am_EarlyData_s(am_gen::am_EarlyDataType_e::ED_SOURCE_VOLUME,
-											dt21,
-											ed21));
-		am_gen::am_DataType_u dt22(static_cast<am_gen::am_sourceID_t>(104));
-		earlyData_volumes.push_back(am_gen::am_EarlyData_s(am_gen::am_EarlyDataType_e::ED_SOURCE_VOLUME,
-											dt22,
-											ed21));
-
-		am_gen::am_DataType_u dt23(static_cast<am_gen::am_sourceID_t>(105));
-		am_gen::am_EarlyData_u ed22(am_gen::am_SoundProperty_s(am_gen::am_SoundPropertyType_e::SP_MAX, 50));
-		earlyData_soundproperties.push_back(am_gen::am_EarlyData_s(am_gen::am_EarlyDataType_e::ED_SOURCE_PROPERTY,
-											dt23,
-											ed22));
-		am_gen::am_DataType_u dt24(static_cast<am_gen::am_sourceID_t>(106));
-		earlyData_soundproperties.push_back(am_gen::am_EarlyData_s(am_gen::am_EarlyDataType_e::ED_SOURCE_PROPERTY,
-											dt24,
-											ed22));
-
-		am_EarlyData_s amEarlyData21;
-		amEarlyData21.type = am_EarlyDataType_e::ED_SOURCE_VOLUME;
-		amEarlyData21.data.volume = 50;
-		amEarlyData21.sinksource.sink = 103;
-		earlyData.push_back(amEarlyData21);
-		amEarlyData21.sinksource.sink = 104;
-		earlyData.push_back(amEarlyData21);
-
-		am_EarlyData_s amEarlyData22;
-		amEarlyData22.type = am_EarlyDataType_e::ED_SOURCE_PROPERTY;
-		amEarlyData22.sinksource.sink = 105;
-		amEarlyData22.data.soundProperty = (am_SoundProperty_s){SP_MAX, 50};
-		earlyData.push_back(amEarlyData22);
-		amEarlyData22.sinksource.sink = 106;
-		earlyData.push_back(amEarlyData22);
-
-		EXPECT_CALL(*env->mpRoutingReceive, sendChangedData(IsSourceEarlyDataEqualTo(earlyData))).Times(1);
-
-		env->mProxy->sendChangedData(earlyData_volumes, earlyData_soundproperties, callStatus);
-
-		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
-	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
-}
-
-TEST_F(CAmRoutingInterfaceCAPITests, confirmRoutingReady)
-{
-	ASSERT_TRUE(env->mIsServiceAvailable);
-	if(env->mIsServiceAvailable)
-	{
-		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
-		am_Error_e error = E_OK;
-		am_gen::am_domainID_t testID = TEST_ID_1;
-		EXPECT_CALL(*env->mpRoutingReceive, confirmRoutingReady(10, error)).Times(1);
-		env->mProxy->confirmRoutingReady(testID, callStatus);
-		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
-	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
-}
-
-TEST_F(CAmRoutingInterfaceCAPITests, confirmRoutingRundown)
-{
-	ASSERT_TRUE(env->mIsServiceAvailable);
-	if(env->mIsServiceAvailable)
-	{
-		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
-		am_Error_e error = E_OK;
-		am_gen::am_domainID_t testID = TEST_ID_1;
-		EXPECT_CALL(*env->mpRoutingReceive, confirmRoutingRundown(10, error)).Times(1);
-		env->mProxy->confirmRoutingRundown(testID, callStatus);
-		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
+		env->mProxy->sendChangedData(earlyData, callStatus);
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
 }
@@ -1341,17 +1247,17 @@ TEST_F(CAmRoutingInterfaceCAPITests, updateGateway)
 	{
 		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
 		am_Error_e error = E_OK;
-		am_gen::am_gatewayID_t testID = TEST_ID_1;
+		org::genivi::am::am_gatewayID_t testID = TEST_ID_1;
 
-		am_gen::am_ConnectionFormat_L listSourceFormats;
-		listSourceFormats.push_back(am_gen::am_ConnectionFormat_e::CF_GENIVI_ANALOG);
-		listSourceFormats.push_back(am_gen::am_ConnectionFormat_e::CF_GENIVI_AUTO);
+		org::genivi::am::am_ConnectionFormat_L listSourceFormats;
+		listSourceFormats.push_back(static_cast<org::genivi::am::am_ConnectionFormat_pe>(CF_GENIVI_ANALOG));
+		listSourceFormats.push_back(static_cast<org::genivi::am::am_ConnectionFormat_pe>(CF_GENIVI_AUTO));
 
-		am_gen::am_ConnectionFormat_L listSinkFormats;
-		listSinkFormats.push_back(am_gen::am_ConnectionFormat_e::CF_GENIVI_AUTO);
-		listSinkFormats.push_back(am_gen::am_ConnectionFormat_e::CF_GENIVI_ANALOG);
+		org::genivi::am::am_ConnectionFormat_L listSinkFormats;
+		listSinkFormats.push_back(static_cast<org::genivi::am::am_ConnectionFormat_pe>(CF_GENIVI_AUTO));
+		listSinkFormats.push_back(static_cast<org::genivi::am::am_ConnectionFormat_pe>(CF_GENIVI_ANALOG));
 
-		am_gen::bool_L convertionMatrix;
+		org::genivi::am::am_Convertion_L convertionMatrix;
 		convertionMatrix.push_back(1);
 		convertionMatrix.push_back(0);
 
@@ -1369,7 +1275,8 @@ TEST_F(CAmRoutingInterfaceCAPITests, updateGateway)
 		ON_CALL(*env->mpRoutingReceive, updateGateway(_, _, _, _)).WillByDefault(Return(E_OK));
 		EXPECT_CALL(*env->mpRoutingReceive, updateGateway(testID, am_listSourceFormats, am_listSinkFormats, am_convertionMatrix)).Times(1);
 
-		env->mProxy->updateGateway(testID, listSourceFormats, listSinkFormats, convertionMatrix, callStatus);
+		org::genivi::am::am_Error_e CAPIError;
+		env->mProxy->updateGateway(testID, listSourceFormats, listSinkFormats, convertionMatrix, callStatus,CAPIError);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
@@ -1387,21 +1294,21 @@ MATCHER_P(IsSoundPropertiesArrayEqualTo, value, "") {
 	return bSoundProperties;
 }
 
-void prepareArrays(	am_gen::am_SoundProperty_L & listSoundProperties,
-						am_gen::am_ConnectionFormat_L & listSinkFormats,
-						am_gen::am_MainSoundProperty_L & listMainSoundProperties,
+void prepareArrays(	org::genivi::am::am_SoundProperty_L & listSoundProperties,
+						org::genivi::am::am_ConnectionFormat_L & listSinkFormats,
+						org::genivi::am::am_MainSoundProperty_L & listMainSoundProperties,
 						std::vector<am_ConnectionFormat_e> & am_listSinkFormats,
 						std::vector<am_SoundProperty_s> & am_listSoundProperties,
 						std::vector<am_MainSoundProperty_s> & am_listMainSoundProperties)
 {
-	listSoundProperties.push_back(am_gen::am_SoundProperty_s(am_gen::am_SoundPropertyType_e::SP_MAX, 50));
-	listSoundProperties.push_back(am_gen::am_SoundProperty_s(am_gen::am_SoundPropertyType_e::SP_MAX, 51));
+	listSoundProperties.push_back(org::genivi::am::am_SoundProperty_s(static_cast<org::genivi::am::am_SoundPropertyType_pe>(SP_MAX), 50));
+	listSoundProperties.push_back(org::genivi::am::am_SoundProperty_s(static_cast<org::genivi::am::am_SoundPropertyType_pe>(SP_MAX), 51));
 
-	listSinkFormats.push_back(am_gen::am_ConnectionFormat_e::CF_GENIVI_AUTO);
-	listSinkFormats.push_back(am_gen::am_ConnectionFormat_e::CF_GENIVI_ANALOG);
+	listSinkFormats.push_back(static_cast<org::genivi::am::am_ConnectionFormat_pe>(CF_GENIVI_AUTO));
+	listSinkFormats.push_back(static_cast<org::genivi::am::am_ConnectionFormat_pe>(CF_GENIVI_ANALOG));
 
-	listMainSoundProperties.push_back(am_gen::am_MainSoundProperty_s(am_gen::am_MainSoundPropertyType_e::MSP_MAX, 50));
-	listMainSoundProperties.push_back(am_gen::am_MainSoundProperty_s(am_gen::am_MainSoundPropertyType_e::MSP_MAX, 51));
+	listMainSoundProperties.push_back(org::genivi::am::am_MainSoundProperty_s(static_cast<org::genivi::am::am_MainSoundPropertyType_pe>(MSP_MAX), 50));
+	listMainSoundProperties.push_back(org::genivi::am::am_MainSoundProperty_s(static_cast<org::genivi::am::am_MainSoundPropertyType_pe>(MSP_MAX), 51));
 
 	am_listSinkFormats.push_back(am_ConnectionFormat_e::CF_GENIVI_AUTO);
 	am_listSinkFormats.push_back(am_ConnectionFormat_e::CF_GENIVI_ANALOG);
@@ -1420,11 +1327,11 @@ TEST_F(CAmRoutingInterfaceCAPITests, updateSink)
 	{
 		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
 		am_Error_e error = E_OK;
-		am_gen::am_sinkID_t testID = TEST_ID_1;
+		org::genivi::am::am_sinkID_t testID = TEST_ID_1;
 
-		am_gen::am_SoundProperty_L listSoundProperties;
-		am_gen::am_ConnectionFormat_L listSinkFormats;
-		am_gen::am_MainSoundProperty_L listMainSoundProperties;
+		org::genivi::am::am_SoundProperty_L listSoundProperties;
+		org::genivi::am::am_ConnectionFormat_L listSinkFormats;
+		org::genivi::am::am_MainSoundProperty_L listMainSoundProperties;
 		std::vector<am_ConnectionFormat_e> am_listSinkFormats;
 		std::vector<am_SoundProperty_s> am_listSoundProperties;
 		std::vector<am_MainSoundProperty_s> am_listMainSoundProperties;
@@ -1432,7 +1339,8 @@ TEST_F(CAmRoutingInterfaceCAPITests, updateSink)
 
 		ON_CALL(*env->mpRoutingReceive, updateSink(_, _, _, _, _)).WillByDefault(Return(E_OK));
 		EXPECT_CALL(*env->mpRoutingReceive, updateSink(testID, TEST_ID_2, IsSoundPropertiesArrayEqualTo(am_listSoundProperties), am_listSinkFormats, IsSoundPropertiesArrayEqualTo(am_listMainSoundProperties))).Times(1);
-		env->mProxy->updateSink(testID, TEST_ID_2, listSoundProperties, listSinkFormats, listMainSoundProperties, callStatus);
+		org::genivi::am::am_Error_e CAPIError;
+		env->mProxy->updateSink(testID, TEST_ID_2, listSoundProperties, listSinkFormats, listMainSoundProperties, callStatus,CAPIError);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
@@ -1445,11 +1353,11 @@ TEST_F(CAmRoutingInterfaceCAPITests, updateSource)
 	{
 		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
 		am_Error_e error = E_OK;
-		am_gen::am_sourceID_t testID = TEST_ID_1;
+		org::genivi::am::am_sourceID_t testID = TEST_ID_1;
 
-		am_gen::am_SoundProperty_L listSoundProperties;
-		am_gen::am_ConnectionFormat_L listSinkFormats;
-		am_gen::am_MainSoundProperty_L listMainSoundProperties;
+		org::genivi::am::am_SoundProperty_L listSoundProperties;
+		org::genivi::am::am_ConnectionFormat_L listSinkFormats;
+		org::genivi::am::am_MainSoundProperty_L listMainSoundProperties;
 		std::vector<am_ConnectionFormat_e> am_listSinkFormats;
 		std::vector<am_SoundProperty_s> am_listSoundProperties;
 		std::vector<am_MainSoundProperty_s> am_listMainSoundProperties;
@@ -1457,7 +1365,8 @@ TEST_F(CAmRoutingInterfaceCAPITests, updateSource)
 
 		ON_CALL(*env->mpRoutingReceive, updateSource(_, _, _, _, _)).WillByDefault(Return(E_OK));
 		EXPECT_CALL(*env->mpRoutingReceive, updateSource(testID, TEST_ID_2, IsSoundPropertiesArrayEqualTo(am_listSoundProperties), am_listSinkFormats, IsSoundPropertiesArrayEqualTo(am_listMainSoundProperties))).Times(1);
-		env->mProxy->updateSource(testID, TEST_ID_2, listSoundProperties, listSinkFormats, listMainSoundProperties, callStatus);
+		org::genivi::am::am_Error_e CAPIError;
+		env->mProxy->updateSource(testID, TEST_ID_2, listSoundProperties, listSinkFormats, listMainSoundProperties, callStatus,CAPIError);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
@@ -1492,12 +1401,12 @@ TEST_F(CAmRoutingInterfaceCAPITests, ackSetVolumes)
 		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
 		uint16_t error = (uint16_t)E_OK;
 		uint16_t testID = 10;
-		am_gen::am_Volumes_l listVolumes;
-		am_gen::am_DataType_u dt(static_cast<am_gen::am_sinkID_t>(103));
-		listVolumes.push_back(am_gen::am_Volumes_s(am_gen::am_VolumeType_e::VT_MAX,
+		org::genivi::am::am_Volumes_L listVolumes;
+		org::genivi::am::am_DataType_u dt(static_cast<org::genivi::am::am_sinkID_t>(103));
+		listVolumes.push_back(org::genivi::am::am_Volumes_s(org::genivi::am::am_VolumeType_e::VT_MAX,
 												   dt,
 												   50,
-												   am_gen::am_RampType_e::RAMP_GENIVI_DIRECT,
+												   static_cast<org::genivi::am::am_RampType_pe>(RAMP_GENIVI_DIRECT),
 												   50));
 
 		std::vector<am_Volumes_s> am_listVolumes;
@@ -1512,9 +1421,11 @@ TEST_F(CAmRoutingInterfaceCAPITests, ackSetVolumes)
 		am_Handle_s handle_s;
 		handle_s.handle = 10;
 		handle_s.handleType = H_SETVOLUMES;
-
-		EXPECT_CALL(*env->mpRoutingReceive, ackSetVolumes(IsHandleStructEqualTo(handle_s), IsSinkVolumeArrayEqualTo(am_listVolumes, true), _)).Times(1);
-		env->mProxy->ackSetVolumes(testID, listVolumes, error, callStatus);
+		org::genivi::am::am_Handle_s handle;
+		CAmConvertAM2CAPI(handle_s,handle);
+		org::genivi::am::am_Error_e genError(org::genivi::am::am_Error_e::E_OK);
+		EXPECT_CALL(*env->mpRoutingReceive, ackSetVolumes(IsHandleStructEqualTo(handle_s), IsSinkVolumeArrayEqualTo(am_listVolumes, true), E_OK)).Times(1);
+		env->mProxy->ackSetVolumes(handle, listVolumes, genError, callStatus);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
@@ -1526,13 +1437,16 @@ TEST_F(CAmRoutingInterfaceCAPITests, ackSinkNotificationConfiguration)
 	if(env->mIsServiceAvailable)
 	{
 		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
-		am_gen::am_Error_e error = am_gen::am_Error_e::E_OK;
+		org::genivi::am::am_Error_e error = org::genivi::am::am_Error_e::E_OK;
 		uint16_t testID = TEST_ID_1;
 		am_Handle_s handle_s;
 		handle_s.handle = testID;
 		handle_s.handleType = H_CONNECT;
+		org::genivi::am::am_Handle_s CAPIHandle;
+		CAmConvertAM2CAPI(handle_s,CAPIHandle);
+		org::genivi::am::am_Error_e genError(org::genivi::am::am_Error_e::E_OK);
 		EXPECT_CALL(*env->mpRoutingReceive, ackSinkNotificationConfiguration(IsHandleStructEqualTo(handle_s), (am_Error_e)error)).Times(1);
-		env->mProxy->ackSinkNotificationConfiguration(testID, (uint16_t)error, callStatus);
+		env->mProxy->ackSinkNotificationConfiguration(CAPIHandle, genError, callStatus);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
@@ -1544,13 +1458,16 @@ TEST_F(CAmRoutingInterfaceCAPITests, ackSourceNotificationConfiguration)
 	if(env->mIsServiceAvailable)
 	{
 		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
-		am_gen::am_Error_e error = am_gen::am_Error_e::E_OK;
+		org::genivi::am::am_Error_e error = org::genivi::am::am_Error_e::E_OK;
 		uint16_t testID = TEST_ID_1;
 		am_Handle_s handle_s;
 		handle_s.handle = testID;
 		handle_s.handleType = H_CONNECT;
+		org::genivi::am::am_Handle_s CAPIHandle;
+		CAmConvertAM2CAPI(handle_s,CAPIHandle);
+		org::genivi::am::am_Error_e genError(org::genivi::am::am_Error_e::E_OK);
 		EXPECT_CALL(*env->mpRoutingReceive, ackSourceNotificationConfiguration(IsHandleStructEqualTo(handle_s), (am_Error_e)error)).Times(1);
-		env->mProxy->ackSourceNotificationConfiguration(testID, (uint16_t)error, callStatus);
+		env->mProxy->ackSourceNotificationConfiguration(CAPIHandle, genError, callStatus);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
@@ -1570,8 +1487,8 @@ TEST_F(CAmRoutingInterfaceCAPITests, hookSinkNotificationDataChange)
 	{
 		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
 		am_Error_e error = E_OK;
-		am_gen::am_sinkID_t testID = TEST_ID_1;
-		am_gen::notificationPayload_s payload(am_NotificationType_e::NT_MAX, 50);
+		org::genivi::am::am_sinkID_t testID = TEST_ID_1;
+		org::genivi::am::am_NotificationPayload_s payload(static_cast<org::genivi::am::am_NotificationType_pe>(am_NotificationType_e::NT_MAX), 50);
 
 		am_NotificationPayload_s am_payload = (am_NotificationPayload_s){am_NotificationType_e::NT_MAX, 50};
 
@@ -1589,8 +1506,8 @@ TEST_F(CAmRoutingInterfaceCAPITests, hookSourceNotificationDataChange)
 	{
 		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
 		am_Error_e error = E_OK;
-		am_gen::am_sourceID_t testID = TEST_ID_1;
-		am_gen::notificationPayload_s payload(am_NotificationType_e::NT_MAX, 50);
+		org::genivi::am::am_sourceID_t testID = TEST_ID_1;
+		org::genivi::am::am_NotificationPayload_s payload(am_NotificationType_e::NT_MAX, 50);
 
 		am_NotificationPayload_s am_payload = (am_NotificationPayload_s){am_NotificationType_e::NT_MAX, 50};
 
@@ -1621,16 +1538,16 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_registerDomain)
 		ASSERT_FALSE( backdoor.containsDomainWithID( (const am_domainID_t)TEST_ID_1) );
 
 		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
-		am_gen::am_Error_e error = am_gen::am_Error_e::E_UNKNOWN;
-		am_gen:am_domainID_t domainID = 0;
-	    am_gen::am_Domain_s domainData;
+		org::genivi::am::am_Error_e error = org::genivi::am::am_Error_e::E_UNKNOWN;
+		org::genivi::am::am_domainID_t domainID = 0;
+	    org::genivi::am::am_Domain_s domainData;
 	    domainData.name = "TestDomain";
 	    domainData.busname ="TestDomain";
 	    domainData.complete = true;
 	    domainData.domainID = domainID;
 	    domainData.early = false;
 	    domainData.nodename = "Test";
-	    domainData.state = am_gen::am_DomainState_e::DS_CONTROLLED;
+	    domainData.state = org::genivi::am::am_DomainState_e::DS_CONTROLLED;
 
 		am::am_Domain_s amDomainData;
 		CAmConvertCAPI2AM(domainData, amDomainData);
@@ -1647,7 +1564,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_registerDomain)
 								    error);
 	    usleep(50000);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
-		ASSERT_EQ( error, am_gen::am_Error_e::E_OK );
+		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
 		ASSERT_EQ( domainID, TEST_ID_1 );
 		ASSERT_TRUE( backdoor.containsDomainWithID(domainID) );
 
@@ -1666,7 +1583,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_registerDomain)
 									error);
 		usleep(50000);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
-		ASSERT_EQ( error, am_gen::am_Error_e::E_OK );
+		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
 		ASSERT_EQ( domainID, TEST_ID_2 );
 		ASSERT_TRUE( backdoor.domainsCount()==2 );
 		ASSERT_TRUE( backdoor.containsDomainWithID( (const am_domainID_t)TEST_ID_1) );
@@ -1681,16 +1598,16 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_registerSource)
 	ASSERT_TRUE(env->mIsServiceAvailable);
 	if(env->mIsServiceAvailable)
 	{
-		const am_gen::am_domainID_t domainID = TEST_ID_1;
+		const org::genivi::am::am_domainID_t domainID = TEST_ID_1;
 		IAmRoutingSenderBackdoor backdoor(env->mpPlugin);
 		ASSERT_TRUE( backdoor.containsDomainWithID( (const am_domainID_t)domainID) );
 
 		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
-		am_gen::am_Error_e error = am_gen::am_Error_e::E_UNKNOWN;
+		org::genivi::am::am_Error_e error = org::genivi::am::am_Error_e::E_UNKNOWN;
 
-		am_gen::sourceData_s source;
+		org::genivi::am::am_Source_s source;
 		am_Source_s amSource;
-		am_gen:am_sourceID_t sinkID = 0;
+		org::genivi::am::am_sourceID_t sinkID = 0;
 		initSource(source, amSource, domainID, sinkID);
 
 		ON_CALL(*env->mpRoutingReceive, registerSource(_, _)).WillByDefault(Return(E_OK));
@@ -1698,7 +1615,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_registerSource)
 		env->mProxy->registerSource(source, callStatus, sinkID, error);
 		usleep(50000);
 		ASSERT_EQ( sinkID, TEST_ID_1 );
-		ASSERT_EQ( error, am_gen::am_Error_e::E_OK );
+		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 		ASSERT_TRUE( backdoor.containsSourceWithID( (const am_sourceID_t)TEST_ID_1) );
 
@@ -1707,7 +1624,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_registerSource)
 		env->mProxy->registerSource(source, callStatus, sinkID, error);
 		usleep(50000);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
-		ASSERT_EQ( error, am_gen::am_Error_e::E_OK );
+		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
 		ASSERT_EQ( sinkID, TEST_ID_2 );
 		ASSERT_TRUE( backdoor.containsSourceWithID( (const am_sourceID_t)TEST_ID_2) );
 		ASSERT_TRUE( backdoor.sourcesCount()==2 );
@@ -1722,16 +1639,16 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_registerSink)
 	ASSERT_TRUE(env->mIsServiceAvailable);
 	if(env->mIsServiceAvailable)
 	{
-		const am_gen::am_domainID_t domainID = TEST_ID_1;
+		const org::genivi::am::am_domainID_t domainID = TEST_ID_1;
 		IAmRoutingSenderBackdoor backdoor(env->mpPlugin);
 		ASSERT_TRUE( backdoor.containsDomainWithID( (const am_domainID_t)domainID) );
 
 		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
-		am_gen::am_Error_e error = am_gen::am_Error_e::E_UNKNOWN;
+		org::genivi::am::am_Error_e error = org::genivi::am::am_Error_e::E_UNKNOWN;
 
-		am_gen::sinkData_s sink;
+		org::genivi::am::am_Sink_s sink;
 		am_Sink_s amSink;
-		am_gen:am_sinkID_t sinkID = 0;
+		org::genivi::am::am_sinkID_t sinkID = 0;
 		initSink(sink, amSink, domainID, sinkID);
 
 		ON_CALL(*env->mpRoutingReceive, registerSink(_, _)).WillByDefault(Return(E_OK));
@@ -1740,7 +1657,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_registerSink)
 
 		usleep(50000);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
-		ASSERT_EQ( error, am_gen::am_Error_e::E_OK );
+		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
 		ASSERT_EQ( sinkID, TEST_ID_1 );
 		ASSERT_TRUE( backdoor.containsSinkWithID( (const am_sourceID_t)TEST_ID_1) );
 
@@ -1750,7 +1667,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_registerSink)
 
 		usleep(50000);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
-		ASSERT_EQ( error, am_gen::am_Error_e::E_OK );
+		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
 		ASSERT_EQ( sinkID, TEST_ID_2 );
 		ASSERT_TRUE( backdoor.containsSinkWithID( (const am_sourceID_t)TEST_ID_2) );
 		ASSERT_TRUE( backdoor.sinksCount()==2 );
@@ -1768,8 +1685,8 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetSourceState)
 	ASSERT_TRUE(env->mIsServiceAvailable);
 	if(env->mIsServiceAvailable)
 	{
-		const am_gen::am_domainID_t domainID = TEST_ID_1;
-		const am_gen::am_sourceID_t sID = TEST_ID_1;
+		const org::genivi::am::am_domainID_t domainID = TEST_ID_1;
+		const org::genivi::am::am_sourceID_t sID = TEST_ID_1;
 		IAmRoutingSenderBackdoor backdoor(env->mpPlugin);
 		ASSERT_TRUE( backdoor.containsDomainWithID( (const am_domainID_t)domainID) );
 		ASSERT_TRUE( backdoor.containsSourceWithID( (const am_sourceID_t)sID) );
@@ -1792,8 +1709,8 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetSourceVolume)
 	ASSERT_TRUE(env->mIsServiceAvailable);
 	if(env->mIsServiceAvailable)
 	{
-		const am_gen::am_domainID_t domainID = TEST_ID_1;
-		const am_gen::am_sourceID_t sID = TEST_ID_1;
+		const org::genivi::am::am_domainID_t domainID = TEST_ID_1;
+		const org::genivi::am::am_sourceID_t sID = TEST_ID_1;
 		IAmRoutingSenderBackdoor backdoor(env->mpPlugin);
 		ASSERT_TRUE( backdoor.containsDomainWithID( (const am_domainID_t)domainID) );
 		ASSERT_TRUE( backdoor.containsSourceWithID( (const am_sourceID_t)sID) );
@@ -1818,15 +1735,15 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_registerCrossfader)
 	ASSERT_TRUE(env->mIsServiceAvailable);
 	if(env->mIsServiceAvailable)
 	{
-		const am_gen::am_domainID_t domainID = TEST_ID_1;
+		const org::genivi::am::am_domainID_t domainID = TEST_ID_1;
 		IAmRoutingSenderBackdoor backdoor(env->mpPlugin);
 		ASSERT_TRUE( backdoor.containsDomainWithID( (const am_domainID_t)domainID) );
 
 		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
-		am_gen::am_Error_e error = am_gen::am_Error_e::E_UNKNOWN;
+		org::genivi::am::am_Error_e error = org::genivi::am::am_Error_e::E_UNKNOWN;
 
-		am_gen::am_crossfaderID_t crossfaderID = 0;
-		am_gen::crossfaderData_s crossfaderData;
+		org::genivi::am::am_crossfaderID_t crossfaderID = 0;
+		org::genivi::am::am_Crossfader_s crossfaderData;
 		am_Crossfader_s amCrossfaderData;
 		initCrossfader(crossfaderData, amCrossfaderData, crossfaderID);
 
@@ -1836,7 +1753,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_registerCrossfader)
 
 		usleep(50000);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
-		ASSERT_EQ( error, am_gen::am_Error_e::E_OK );
+		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
 		ASSERT_EQ( crossfaderID, TEST_ID_1 );
 		ASSERT_TRUE( backdoor.containsCrossfader( TEST_ID_1) );
 	}
@@ -1848,8 +1765,8 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetSinkVolume)
 	ASSERT_TRUE(env->mIsServiceAvailable);
 	if(env->mIsServiceAvailable)
 	{
-		const am_gen::am_domainID_t domainID = TEST_ID_1;
-		const am_gen::am_sinkID_t sID = TEST_ID_1;
+		const org::genivi::am::am_domainID_t domainID = TEST_ID_1;
+		const org::genivi::am::am_sinkID_t sID = TEST_ID_1;
 		IAmRoutingSenderBackdoor backdoor(env->mpPlugin);
 		ASSERT_TRUE( backdoor.containsDomainWithID( (const am_domainID_t)domainID) );
 		ASSERT_TRUE( backdoor.containsSourceWithID( (const am_sourceID_t)sID) );
@@ -1874,13 +1791,13 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncConnect)
 	ASSERT_TRUE(env->mIsServiceAvailable);
 	if(env->mIsServiceAvailable)
 	{
-//		const am_gen::am_domainID_t domainID = TEST_ID_1;
+//		const org::genivi::am::am_domainID_t domainID = TEST_ID_1;
 		IAmRoutingSenderBackdoor backdoor(env->mpPlugin);
 		ASSERT_TRUE( backdoor.containsDomainWithID( TEST_ID_1 ));
 		ASSERT_TRUE( backdoor.containsSinkWithID( TEST_ID_1 ));
 		ASSERT_TRUE( backdoor.containsSourceWithID( TEST_ID_1 ));
 
-		am_gen::am_connectionID_t connectionID = TEST_ID_1;
+		org::genivi::am::am_connectionID_t connectionID = TEST_ID_1;
 		am_Handle_s handle = {H_CONNECT, 20};
 		am_ConnectionFormat_e cf = am_ConnectionFormat_e::CF_GENIVI_STEREO;
 		EXPECT_CALL(*env->mpRoutingReceive, ackConnect(IsHandleEqual(handle), connectionID, E_OK)).Times(1);
@@ -1902,7 +1819,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncDisconnect)
 		ASSERT_TRUE( backdoor.containsDomainWithID( TEST_ID_1 ));
 		ASSERT_TRUE( backdoor.containsConnection( TEST_ID_1 ));
 
-		am_gen::am_connectionID_t connectionID = TEST_ID_1;
+		org::genivi::am::am_connectionID_t connectionID = TEST_ID_1;
 		am_Handle_s handle = {H_DISCONNECT, 20};
 		am_ConnectionFormat_e cf = am_ConnectionFormat_e::CF_GENIVI_STEREO;
 		EXPECT_CALL(*env->mpRoutingReceive, ackDisconnect(IsHandleEqual(handle), connectionID, E_OK)).Times(1);
@@ -1920,18 +1837,21 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncAbort)
 	ASSERT_TRUE(env->mIsServiceAvailable);
 	if(env->mIsServiceAvailable)
 	{
-		const am_gen::am_domainID_t domainID = TEST_ID_1;
-		const am_gen::am_sourceID_t sID = TEST_ID_1;
+		const org::genivi::am::am_domainID_t domainID = TEST_ID_1;
+		const org::genivi::am::am_sourceID_t sID = TEST_ID_1;
 		IAmRoutingSenderBackdoor backdoor(env->mpPlugin);
 		ASSERT_TRUE( backdoor.containsDomainWithID( (const am_domainID_t)domainID) );
 		ASSERT_TRUE( backdoor.containsSourceWithID( (const am_sourceID_t)sID) );
 
 		am_volume_t volume = 50;
 		am_Handle_s handle = {H_SETSOURCESTATE, 200};
+		org::genivi::am::am_Handle_s CAPIHandle;
+		CAPIHandle.handle=200;
+		CAPIHandle.handleType=org::genivi::am::am_Handle_e::H_SETSOURCESTATE;
 		am_SourceState_e state = am_SourceState_e::SS_MAX;
 
 		//we set an abort handle in order to test the return status
-		env->mDomainService->setAbortHandle(handle.handle);
+		env->mDomainService->setAbortHandle(CAPIHandle);
 
 		EXPECT_CALL(*env->mpRoutingReceive, ackSetSourceState(IsHandleEqual(handle), E_ABORTED)).Times(1);
 		am_Error_e error = env->mpPlugin->asyncSetSourceState(handle, sID, state);
@@ -1960,8 +1880,8 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetSinkSoundProperties)
 	ASSERT_TRUE(env->mIsServiceAvailable);
 	if(env->mIsServiceAvailable)
 	{
-		const am_gen::am_domainID_t domainID = TEST_ID_1;
-		const am_gen::am_sinkID_t sID = TEST_ID_1;
+		const org::genivi::am::am_domainID_t domainID = TEST_ID_1;
+		const org::genivi::am::am_sinkID_t sID = TEST_ID_1;
 		IAmRoutingSenderBackdoor backdoor(env->mpPlugin);
 		ASSERT_TRUE( backdoor.containsDomainWithID( (const am_domainID_t)domainID) );
 		ASSERT_TRUE( backdoor.containsSourceWithID( (const am_sourceID_t)sID) );
@@ -1989,8 +1909,8 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetSinkSoundProperty)
 	ASSERT_TRUE(env->mIsServiceAvailable);
 	if(env->mIsServiceAvailable)
 	{
-		const am_gen::am_domainID_t domainID = TEST_ID_1;
-		const am_gen::am_sinkID_t sID = TEST_ID_1;
+		const org::genivi::am::am_domainID_t domainID = TEST_ID_1;
+		const org::genivi::am::am_sinkID_t sID = TEST_ID_1;
 		IAmRoutingSenderBackdoor backdoor(env->mpPlugin);
 		ASSERT_TRUE( backdoor.containsDomainWithID( (const am_domainID_t)domainID) );
 		ASSERT_TRUE( backdoor.containsSourceWithID( (const am_sourceID_t)sID) );
@@ -2013,8 +1933,8 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetSourceSoundProperties)
 	ASSERT_TRUE(env->mIsServiceAvailable);
 	if(env->mIsServiceAvailable)
 	{
-		const am_gen::am_domainID_t domainID = TEST_ID_1;
-		const am_gen::am_sourceID_t sID = TEST_ID_1;
+		const org::genivi::am::am_domainID_t domainID = TEST_ID_1;
+		const org::genivi::am::am_sourceID_t sID = TEST_ID_1;
 		IAmRoutingSenderBackdoor backdoor(env->mpPlugin);
 		ASSERT_TRUE( backdoor.containsDomainWithID( (const am_domainID_t)domainID) );
 		ASSERT_TRUE( backdoor.containsSourceWithID( (const am_sourceID_t)sID) );
@@ -2042,8 +1962,8 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetSourceSoundProperty)
 	ASSERT_TRUE(env->mIsServiceAvailable);
 	if(env->mIsServiceAvailable)
 	{
-		const am_gen::am_domainID_t domainID = TEST_ID_1;
-		const am_gen::am_sourceID_t sID = TEST_ID_1;
+		const org::genivi::am::am_domainID_t domainID = TEST_ID_1;
+		const org::genivi::am::am_sourceID_t sID = TEST_ID_1;
 		IAmRoutingSenderBackdoor backdoor(env->mpPlugin);
 		ASSERT_TRUE( backdoor.containsDomainWithID( (const am_domainID_t)domainID) );
 		ASSERT_TRUE( backdoor.containsSourceWithID( (const am_sourceID_t)sID) );
@@ -2066,7 +1986,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncCrossFade)
 	ASSERT_TRUE(env->mIsServiceAvailable);
 	if(env->mIsServiceAvailable)
 	{
-		const am_gen::am_crossfaderID_t sID = TEST_ID_1;
+		const org::genivi::am::am_crossfaderID_t sID = TEST_ID_1;
 		IAmRoutingSenderBackdoor backdoor(env->mpPlugin);
 		ASSERT_TRUE( backdoor.containsDomainWithID( TEST_ID_1 ));
 		ASSERT_TRUE( backdoor.containsSourceWithID( TEST_ID_1 ));
@@ -2136,12 +2056,12 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetVolumes)
 		ASSERT_TRUE( backdoor.containsDomainWithID( TEST_ID_1) );
 		ASSERT_TRUE( backdoor.containsSourceWithID( TEST_ID_1) );
 
-		am_gen::am_Volumes_l listVolumes;
-		am_gen::am_DataType_u dt(static_cast<am_gen::am_sourceID_t>(TEST_ID_1));
-		listVolumes.push_back(am_gen::am_Volumes_s(am_gen::am_VolumeType_e::VT_SOURCE,
+		org::genivi::am::am_Volumes_L listVolumes;
+		org::genivi::am::am_DataType_u dt(static_cast<org::genivi::am::am_sourceID_t>(TEST_ID_1));
+		listVolumes.push_back(org::genivi::am::am_Volumes_s(org::genivi::am::am_VolumeType_e::VT_SOURCE,
 												   dt,
 												   50,
-												   am_gen::am_RampType_e::RAMP_GENIVI_DIRECT,
+												   static_cast<org::genivi::am::am_RampType_pe>(RAMP_GENIVI_DIRECT),
 												   50));
 
 		std::vector<am_Volumes_s> am_listVolumes;
@@ -2171,8 +2091,8 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_deregisterSink)
 	if(env->mIsServiceAvailable)
 	{
 		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
-		am_gen::am_Error_e error = am_gen::am_Error_e::E_UNKNOWN;
-		am_gen:am_sinkID_t sinkID = TEST_ID_2;
+		org::genivi::am::am_Error_e error = org::genivi::am::am_Error_e::E_UNKNOWN;
+		org::genivi::am::am_sinkID_t sinkID = TEST_ID_2;
 
 		IAmRoutingSenderBackdoor backdoor(env->mpPlugin);
 		ASSERT_TRUE( backdoor.containsSinkWithID( sinkID ));
@@ -2181,7 +2101,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_deregisterSink)
 		EXPECT_CALL(*env->mpRoutingReceive, deregisterSink(sinkID)).WillOnce(Return(E_OK));
 		env->mProxy->deregisterSink(sinkID, callStatus, error);
 		usleep(50000);
-		ASSERT_EQ( error, am_gen::am_Error_e::E_OK );
+		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 		ASSERT_FALSE( backdoor.containsSinkWithID( sinkID ));
 	}
@@ -2194,8 +2114,8 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_deregisterSource)
 	if(env->mIsServiceAvailable)
 	{
 		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
-		am_gen::am_Error_e error = am_gen::am_Error_e::E_UNKNOWN;
-		am_gen:am_sourceID_t sID = TEST_ID_2;
+		org::genivi::am::am_Error_e error = org::genivi::am::am_Error_e::E_UNKNOWN;
+		org::genivi::am::am_sourceID_t sID = TEST_ID_2;
 
 		IAmRoutingSenderBackdoor backdoor(env->mpPlugin);
 		ASSERT_TRUE( backdoor.containsSourceWithID( sID ));
@@ -2204,7 +2124,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_deregisterSource)
 		EXPECT_CALL(*env->mpRoutingReceive, deregisterSource(sID)).WillOnce(Return(E_OK));
 		env->mProxy->deregisterSource(sID, callStatus, error);
 		usleep(50000);
-		ASSERT_EQ( error, am_gen::am_Error_e::E_OK );
+		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 		ASSERT_FALSE( backdoor.containsSourceWithID( sID ));
 	}
@@ -2217,8 +2137,8 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_deregisterCrossfader)
 	if(env->mIsServiceAvailable)
 	{
 		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
-		am_gen::am_Error_e error = am_gen::am_Error_e::E_UNKNOWN;
-		am_gen:am_crossfaderID_t sID = TEST_ID_1;
+		org::genivi::am::am_Error_e error = org::genivi::am::am_Error_e::E_UNKNOWN;
+		org::genivi::am::am_crossfaderID_t sID = TEST_ID_1;
 
 		IAmRoutingSenderBackdoor backdoor(env->mpPlugin);
 		ASSERT_TRUE( backdoor.containsCrossfader( sID ));
@@ -2227,7 +2147,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_deregisterCrossfader)
 		EXPECT_CALL(*env->mpRoutingReceive, deregisterCrossfader(sID)).WillOnce(Return(E_OK));
 		env->mProxy->deregisterCrossfader(sID, callStatus, error);
 		usleep(50000);
-		ASSERT_EQ( error, am_gen::am_Error_e::E_OK );
+		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 		ASSERT_FALSE( backdoor.containsCrossfader( sID ));
 	}
@@ -2242,13 +2162,13 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_deregisterDomain)
 		IAmRoutingSenderBackdoor backdoor(env->mpPlugin);
 		ASSERT_TRUE( backdoor.containsDomainWithID( TEST_ID_2 ));
 		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
-		am_gen::am_Error_e error = am_gen::am_Error_e::E_UNKNOWN;
+		org::genivi::am::am_Error_e error = org::genivi::am::am_Error_e::E_UNKNOWN;
 
 		ON_CALL(*env->mpRoutingReceive, deregisterDomain(_)).WillByDefault(Return(E_OK));
 		EXPECT_CALL(*env->mpRoutingReceive, deregisterDomain(TEST_ID_2)).WillOnce(Return(E_OK));
 		env->mProxy->deregisterDomain(TEST_ID_2, callStatus, error);
 		usleep(50000);
-		ASSERT_EQ( error, am_gen::am_Error_e::E_OK );
+		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 		ASSERT_EQ( backdoor.domainsCount(), 1 );
 		ASSERT_FALSE( backdoor.containsDomainWithID( TEST_ID_2 ));
@@ -2256,7 +2176,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_deregisterDomain)
 		EXPECT_CALL(*env->mpRoutingReceive, deregisterDomain(TEST_ID_1)).WillOnce(Return(E_OK));
 		env->mProxy->deregisterDomain(TEST_ID_1, callStatus, error);
 		usleep(50000);
-		ASSERT_EQ( error, am_gen::am_Error_e::E_OK );
+		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 		ASSERT_FALSE( backdoor.containsDomainWithID( TEST_ID_1 ));
 		ASSERT_EQ( backdoor.domainsCount(), 0 );
@@ -2264,6 +2184,28 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_deregisterDomain)
 		ASSERT_EQ( backdoor.sinksCount(), 0 );
 		ASSERT_EQ( backdoor.crossfadersCount(), 0 );
 		ASSERT_EQ( backdoor.connectionsCount(), 0 );
+	}
+	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+}
+
+TEST_F(CAmRoutingInterfaceCAPITests, confirmRoutingRundown)
+{
+	ASSERT_TRUE(env->mIsServiceAvailable);
+	if(env->mIsServiceAvailable)
+	{
+		CallStatus callStatus = CallStatus::NOT_AVAILABLE, domainstatus;
+		org::genivi::am::am_domainID_t domainID;
+		am_Error_e error = E_OK;
+		org::genivi::am::am_Error_e CAPIError;
+		std::string testID = "myDomain";
+		org::genivi::am::am_Domain_s domainData;
+		ON_CALL(*env->mpRoutingReceive, registerDomain(_,_)).WillByDefault(Return(E_OK));
+		env->mProxy->registerDomain(domainData,"sd","sds","sd",domainstatus,domainID,CAPIError);
+		env->mpPlugin->setRoutingRundown(5);
+		EXPECT_CALL(*env->mpRoutingReceive, confirmRoutingRundown(5,E_OK)).Times(1);
+		env->mProxy->confirmRoutingRundown(testID, callStatus);
+		env->mProxy->deregisterDomain(domainID,domainstatus,CAPIError);
+		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
 }

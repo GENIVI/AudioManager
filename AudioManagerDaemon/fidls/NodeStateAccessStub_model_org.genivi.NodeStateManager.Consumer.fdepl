@@ -1,6 +1,0 @@
-import "platform:/plugin/org.genivi.commonapi.dbus/deployment/deployment.fdepl"
-import "NodeStateAccessStub_model_org.genivi.NodeStateManager.Consumer.fidl"
-
-define org.genivi.commonapi.dbus.deployment.deployment for interface org.genivi.NodeStateManager.Consumer.Consumer {
-	 PropertiesType=freedesktop
-}

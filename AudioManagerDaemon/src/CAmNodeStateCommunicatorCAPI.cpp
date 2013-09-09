@@ -32,7 +32,7 @@
 #include "shared/CAmDltWrapper.h"
 #include "CAmNodeStateCommunicatorCAPI.h"
 #include "CAmControlSender.h"
-#include "LifeCycleConsumer.h"
+#include <org/genivi/NodeStateManager/LifeCycleConsumerProxy.h>
 
 
 
@@ -122,7 +122,13 @@ am_Error_e CAmNodeStateCommunicatorCAPI::nsmGetRestartReasonProperty(NsmRestartR
 	//Check the service via the proxy object is available
 	IF_NOT_AVAILABLE_RETURN(E_NOT_POSSIBLE)
 	//Get the attribute
-	return getAttributeValue(&mNSMProxy->getRestartReasonAttribute(), restartReason);
+	int32_t value;
+	CommonAPI::CallStatus status;
+	mNSMProxy->getRestartReasonAttribute().getValue(status,value);
+	if (status!=CommonAPI::CallStatus::SUCCESS)
+		return (E_UNKNOWN);
+	restartReason=static_cast<NsmRestartReason_e>(value);
+	return (E_OK);
 }
 
 /** retrieves the actual shutdown reason
@@ -135,7 +141,13 @@ am_Error_e CAmNodeStateCommunicatorCAPI::nsmGetShutdownReasonProperty(NsmShutdow
 	//Check the service via the proxy object is available
 	IF_NOT_AVAILABLE_RETURN(E_NOT_POSSIBLE)
 	//Get the attribute
-	return getAttributeValue(&mNSMProxy->getShutdownReasonAttribute(), ShutdownReason);
+	int32_t value;
+	CommonAPI::CallStatus status;
+	mNSMProxy->getShutdownReasonAttribute().getValue(status,value);
+	if (status!=CommonAPI::CallStatus::SUCCESS)
+		return (E_UNKNOWN);
+	ShutdownReason=static_cast<NsmShutdownReason_e>(value);
+	return (E_OK);
 }
 
 /** retrieves the actual running reason
@@ -148,7 +160,13 @@ am_Error_e CAmNodeStateCommunicatorCAPI::nsmGetRunningReasonProperty(NsmRunningR
 	//Check the service via the proxy object is available
 	IF_NOT_AVAILABLE_RETURN(E_NOT_POSSIBLE)
 	//Get the attribute
-	return getAttributeValue(&mNSMProxy->getWakeUpReasonAttribute(), nsmRunningReason);
+	int32_t value;
+	CommonAPI::CallStatus status;
+	mNSMProxy->getWakeUpReasonAttribute().getValue(status,value);
+	if (status!=CommonAPI::CallStatus::SUCCESS)
+		return (E_UNKNOWN);
+	nsmRunningReason=static_cast<NsmRunningReason_e>(value);
+	return (E_OK);
 }
 
 /** gets the node state
@@ -186,7 +204,7 @@ NsmErrorStatus_e CAmNodeStateCommunicatorCAPI::nsmGetSessionState(const std::str
 
 	CallStatus callStatus;
 	int32_t tmpSessionState = 0 , errorCode = 0;
-	mNSMProxy->GetSessionState(sessionName, seatID, callStatus, tmpSessionState, errorCode);
+	mNSMProxy->GetSessionState(sessionName,seatID,callStatus, tmpSessionState, errorCode);
 
 	if( CallStatus::SUCCESS == callStatus)
 	{

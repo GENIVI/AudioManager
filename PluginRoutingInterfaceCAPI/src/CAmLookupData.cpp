@@ -29,7 +29,7 @@ const char * CAmLookupData::BUS_NAME = "CAPIRoutingPlugin";
  * rs_lookupData_s
  */
 
-rs_lookupData_s::rs_lookupData_s(const std::shared_ptr<RoutingSenderProxy<> > & aProxy):mSenderProxy(aProxy)
+rs_lookupData_s::rs_lookupData_s(const std::shared_ptr<org::genivi::am::RoutingControlProxy<> > & aProxy):mSenderProxy(aProxy)
 {
 	logInfo(__PRETTY_FUNCTION__);
 	mSubscription = mSenderProxy->getProxyStatusEvent().subscribe(std::bind(&rs_lookupData_s::onServiceStatusEvent,this,std::placeholders::_1));
@@ -41,7 +41,7 @@ rs_lookupData_s::~rs_lookupData_s()
 	mSenderProxy.reset();
 }
 
-std::shared_ptr<RoutingSenderProxy<>> & rs_lookupData_s::getProxy()
+std::shared_ptr<org::genivi::am::RoutingControlProxy<>> & rs_lookupData_s::getProxy()
 {
 	return mSenderProxy;
 }
@@ -51,124 +51,138 @@ bool rs_lookupData_s::isConnected()
 	return mIsConnected;
 }
 
-am_Error_e rs_lookupData_s::asyncAbort(const uint16_t handle, RoutingSenderProxyBase::AsyncAbortAsyncCallback callback)
+am_Error_e rs_lookupData_s::asyncAbort(const am_Handle_s handle, org::genivi::am::RoutingControlProxyBase::AsyncAbortAsyncCallback callback)
 {
 	logInfo(__PRETTY_FUNCTION__, " [ isConnected : ", isConnected(), " ]");
 	if(isConnected())
 	{
-		mSenderProxy->asyncAbortAsync(static_cast<am_gen::am_handle_t>(handle), callback);
+		org::genivi::am::am_Handle_s myHandle;
+		CAmConvertAM2CAPI(handle,myHandle);
+		mSenderProxy->asyncAbortAsync(myHandle, callback);
 		return (E_OK);
 	}
 	return (E_UNKNOWN);
 }
 
-am_Error_e rs_lookupData_s::asyncConnect(const uint16_t handle,
+am_Error_e rs_lookupData_s::asyncConnect(const am_Handle_s handle,
 											const am_connectionID_t connectionID,
 											const am_sourceID_t sourceID,
 											const am_sinkID_t sinkID,
 											const am_ConnectionFormat_e connectionFormat,
-											RoutingSenderProxyBase::AsyncConnectAsyncCallback callback)
+											org::genivi::am::RoutingControlProxyBase::AsyncConnectAsyncCallback callback)
 {
 	logInfo(__PRETTY_FUNCTION__, " [ isConnected : ", isConnected(), " ]");
 	if(isConnected())
 	{
-		mSenderProxy->asyncConnectAsync(static_cast<am_gen::am_handle_t>(handle),
-										static_cast<am_gen::am_connectionID_t>(connectionID),
-										static_cast<am_gen::am_sourceID_t>(sourceID),
-										static_cast<am_gen::am_sinkID_t>(sinkID),
-										static_cast<am_gen::am_ConnectionFormat_e>(connectionFormat),
+		org::genivi::am::am_Handle_s myHandle;
+		CAmConvertAM2CAPI(handle,myHandle);
+		mSenderProxy->asyncConnectAsync(myHandle,
+										static_cast<org::genivi::am::am_connectionID_t>(connectionID),
+										static_cast<org::genivi::am::am_sourceID_t>(sourceID),
+										static_cast<org::genivi::am::am_sinkID_t>(sinkID),
+										static_cast<org::genivi::am::am_ConnectionFormat_pe>(connectionFormat),
 										callback);
 		return (E_OK);
 	}
 	return (E_UNKNOWN);
 }
 
-am_Error_e rs_lookupData_s::asyncDisconnect(const uint16_t handle,
+am_Error_e rs_lookupData_s::asyncDisconnect(const am_Handle_s handle,
 												const am_connectionID_t connectionID,
-												RoutingSenderProxyBase::AsyncDisconnectAsyncCallback cb)
+												org::genivi::am::RoutingControlProxyBase::AsyncDisconnectAsyncCallback cb)
 {
 	logInfo(__PRETTY_FUNCTION__, " [ isConnected : ", isConnected(), " ]");
 	if(isConnected())
 	{
-		mSenderProxy->asyncDisconnectAsync(static_cast<am_gen::am_handle_t>(handle),
-										   static_cast<am_gen::am_connectionID_t>(connectionID),
+		org::genivi::am::am_Handle_s myHandle;
+		CAmConvertAM2CAPI(handle,myHandle);
+		mSenderProxy->asyncDisconnectAsync(myHandle,
+										   static_cast<org::genivi::am::am_connectionID_t>(connectionID),
 										   cb);
 		return (E_OK);
 	}
 	return (E_UNKNOWN);
 }
 
-am_Error_e rs_lookupData_s::asyncSetSinkVolume(	const uint16_t handle,
+am_Error_e rs_lookupData_s::asyncSetSinkVolume(	const am_Handle_s handle,
 													const am_sinkID_t sinkID,
 													const am_volume_t volume,
 													const am_RampType_e ramp,
 													const am_time_t time,
-													RoutingSenderProxyBase::AsyncSetSinkVolumeAsyncCallback cb)
+													org::genivi::am::RoutingControlProxyBase::AsyncSetSinkVolumeAsyncCallback cb)
 {
 	logInfo(__PRETTY_FUNCTION__, " [ isConnected : ", isConnected(), " ]");
 	if(isConnected())
 	{
-		mSenderProxy->asyncSetSinkVolumeAsync(static_cast<am_gen::am_handle_t>(handle),
-										      static_cast<am_gen::am_sinkID_t>(sinkID),
-										      static_cast<am_gen::am_volume_t>(volume),
-										      static_cast<am_gen::am_RampType_e>(ramp),
-										      static_cast<am_gen::am_time_t>(time),
+		org::genivi::am::am_Handle_s myHandle;
+		CAmConvertAM2CAPI(handle,myHandle);
+		mSenderProxy->asyncSetSinkVolumeAsync(myHandle,
+										      static_cast<org::genivi::am::am_sinkID_t>(sinkID),
+										      static_cast<org::genivi::am::am_volume_t>(volume),
+										      static_cast<org::genivi::am::am_RampType_pe>(ramp),
+										      static_cast<org::genivi::am::am_time_t>(time),
 										      cb);
 		return (E_OK);
 	}
 	return (E_UNKNOWN);
 }
 
-am_Error_e rs_lookupData_s::asyncSetSourceVolume(const uint16_t handle,
+am_Error_e rs_lookupData_s::asyncSetSourceVolume(const am_Handle_s handle,
 														const am_sourceID_t sourceID,
 														const am_volume_t volume,
 														const am_RampType_e ramp,
 														const am_time_t time,
-														RoutingSenderProxyBase::AsyncSetSourceVolumeAsyncCallback cb)
+														org::genivi::am::RoutingControlProxyBase::AsyncSetSourceVolumeAsyncCallback cb)
 {
 	logInfo(__PRETTY_FUNCTION__, " [ isConnected : ", isConnected(), " ]");
 	if(isConnected())
 	{
-		mSenderProxy->asyncSetSourceVolumeAsync(static_cast<am_gen::am_handle_t>(handle),
-												static_cast<am_gen::am_sourceID_t>(sourceID),
-												static_cast<am_gen::am_volume_t>(volume),
-												static_cast<am_gen::am_RampType_e>(ramp),
-												static_cast<am_gen::am_time_t>(time),
+		org::genivi::am::am_Handle_s myHandle;
+		CAmConvertAM2CAPI(handle,myHandle);
+		mSenderProxy->asyncSetSourceVolumeAsync(myHandle,
+												static_cast<org::genivi::am::am_sourceID_t>(sourceID),
+												static_cast<org::genivi::am::am_volume_t>(volume),
+												static_cast<org::genivi::am::am_RampType_pe>(ramp),
+												static_cast<org::genivi::am::am_time_t>(time),
 												cb);
 		return (E_OK);
 	}
 	return (E_UNKNOWN);
 }
 
-am_Error_e rs_lookupData_s::asyncSetSourceState(	const uint16_t handle,
+am_Error_e rs_lookupData_s::asyncSetSourceState(	const am_Handle_s handle,
 															const am_sourceID_t sourceID,
 															const am_SourceState_e state,
-															RoutingSenderProxyBase::AsyncSetSinkSoundPropertiesAsyncCallback cb)
+															org::genivi::am::RoutingControlProxyBase::AsyncSetSinkSoundPropertiesAsyncCallback cb)
 {
 	logInfo(__PRETTY_FUNCTION__, " [ isConnected : ", isConnected(), " ]");
 	if(isConnected())
 	{
-		mSenderProxy->asyncSetSourceStateAsync(static_cast<am_gen::am_handle_t>(handle),
-												static_cast<am_gen::am_sourceID_t>(sourceID),
-												static_cast<am_gen::am_SourceState_e>(state),
+		org::genivi::am::am_Handle_s myHandle;
+		CAmConvertAM2CAPI(handle,myHandle);
+		mSenderProxy->asyncSetSourceStateAsync(myHandle,
+												static_cast<org::genivi::am::am_sourceID_t>(sourceID),
+												static_cast<org::genivi::am::am_SourceState_e>(state),
 												cb);
 		return (E_OK);
 	}
 	return (E_UNKNOWN);
 }
 
-am_Error_e rs_lookupData_s::asyncSetSinkSoundProperties(	const uint16_t handle,
+am_Error_e rs_lookupData_s::asyncSetSinkSoundProperties(	const am_Handle_s handle,
 																const am_sinkID_t sinkID,
 																const std::vector<am_SoundProperty_s>& listSoundProperties,
-																RoutingSenderProxyBase::AsyncSetSinkSoundPropertiesAsyncCallback cb)
+																org::genivi::am::RoutingControlProxyBase::AsyncSetSinkSoundPropertiesAsyncCallback cb)
 {
 	logInfo(__PRETTY_FUNCTION__, " [ isConnected : ", isConnected(), " ]");
 	if(isConnected())
 	{
-		am_gen::am_SoundProperty_L lsp;
+		org::genivi::am::am_SoundProperty_L lsp;
 		CAmConvertAMVector2CAPI(listSoundProperties, lsp);
-		mSenderProxy->asyncSetSinkSoundPropertiesAsync(static_cast<am_gen::am_handle_t>(handle),
-														static_cast<am_gen::am_sinkID_t>(sinkID),
+		org::genivi::am::am_Handle_s myHandle;
+		CAmConvertAM2CAPI(handle,myHandle);
+		mSenderProxy->asyncSetSinkSoundPropertiesAsync(myHandle,
+														static_cast<org::genivi::am::am_sinkID_t>(sinkID),
 														lsp,
 														cb);
 		return (E_OK);
@@ -176,18 +190,20 @@ am_Error_e rs_lookupData_s::asyncSetSinkSoundProperties(	const uint16_t handle,
 	return (E_UNKNOWN);
 }
 
-am_Error_e rs_lookupData_s::asyncSetSinkSoundProperty(	const uint16_t handle,
+am_Error_e rs_lookupData_s::asyncSetSinkSoundProperty(	const am_Handle_s handle,
 															const am_sinkID_t sinkID,
 															const am_SoundProperty_s& soundProperty,
-															RoutingSenderProxyBase::AsyncSetSinkSoundPropertyAsyncCallback cb)
+															org::genivi::am::RoutingControlProxyBase::AsyncSetSinkSoundPropertyAsyncCallback cb)
 {
 	logInfo(__PRETTY_FUNCTION__, " [ isConnected : ", isConnected(), " ]");
 	if(isConnected())
 	{
-		am_gen::am_SoundProperty_s converted;
+		org::genivi::am::am_SoundProperty_s converted;
 		CAmConvertAM2CAPI(soundProperty, converted);
-		mSenderProxy->asyncSetSinkSoundPropertyAsync(static_cast<am_gen::am_handle_t>(handle),
-													 static_cast<am_gen::am_sinkID_t>(sinkID),
+		org::genivi::am::am_Handle_s myHandle;
+		CAmConvertAM2CAPI(handle,myHandle);
+		mSenderProxy->asyncSetSinkSoundPropertyAsync(myHandle,
+													 static_cast<org::genivi::am::am_sinkID_t>(sinkID),
 													 converted,
 													 cb);
 		return (E_OK);
@@ -195,18 +211,20 @@ am_Error_e rs_lookupData_s::asyncSetSinkSoundProperty(	const uint16_t handle,
 	return (E_UNKNOWN);
 }
 
-am_Error_e rs_lookupData_s::asyncSetSourceSoundProperties(const uint16_t handle,
+am_Error_e rs_lookupData_s::asyncSetSourceSoundProperties(const am_Handle_s handle,
 																const am_sourceID_t sourceID,
 																const std::vector<am_SoundProperty_s>& listSoundProperties,
-																RoutingSenderProxyBase::AsyncSetSourceSoundPropertiesAsyncCallback cb)
+																org::genivi::am::RoutingControlProxyBase::AsyncSetSourceSoundPropertiesAsyncCallback cb)
 {
 	logInfo(__PRETTY_FUNCTION__, " [ isConnected : ", isConnected(), " ]");
 	if(isConnected())
 	{
-		am_gen::am_SoundProperty_L lsp;
+		org::genivi::am::am_SoundProperty_L lsp;
 		CAmConvertAMVector2CAPI(listSoundProperties, lsp);
-		mSenderProxy->asyncSetSourceSoundPropertiesAsync(static_cast<am_gen::am_handle_t>(handle),
-														static_cast<am_gen::am_sourceID_t>(sourceID),
+		org::genivi::am::am_Handle_s myHandle;
+		CAmConvertAM2CAPI(handle,myHandle);
+		mSenderProxy->asyncSetSourceSoundPropertiesAsync(myHandle,
+														static_cast<org::genivi::am::am_sourceID_t>(sourceID),
 														lsp,
 														cb);
 		return (E_OK);
@@ -214,18 +232,20 @@ am_Error_e rs_lookupData_s::asyncSetSourceSoundProperties(const uint16_t handle,
 	return (E_UNKNOWN);
 }
 
-am_Error_e rs_lookupData_s::asyncSetSourceSoundProperty(const uint16_t handle,
+am_Error_e rs_lookupData_s::asyncSetSourceSoundProperty(const am_Handle_s handle,
 																const am_sourceID_t sourceID,
 																const am_SoundProperty_s& soundProperty,
-																RoutingSenderProxyBase::AsyncSetSourceSoundPropertyAsyncCallback cb)
+																org::genivi::am::RoutingControlProxyBase::AsyncSetSourceSoundPropertyAsyncCallback cb)
 {
 	logInfo(__PRETTY_FUNCTION__, " [ isConnected : ", isConnected(), " ]");
 	if(isConnected())
 	{
-		am_gen::am_SoundProperty_s converted;
+		org::genivi::am::am_SoundProperty_s converted;
 		CAmConvertAM2CAPI(soundProperty, converted);
-		mSenderProxy->asyncSetSourceSoundPropertyAsync(	static_cast<am_gen::am_handle_t>(handle),
-														static_cast<am_gen::am_sourceID_t>(sourceID),
+		org::genivi::am::am_Handle_s myHandle;
+		CAmConvertAM2CAPI(handle,myHandle);
+		mSenderProxy->asyncSetSourceSoundPropertyAsync(	myHandle,
+														static_cast<org::genivi::am::am_sourceID_t>(sourceID),
 														converted,
 														cb);
 		return (E_OK);
@@ -234,50 +254,54 @@ am_Error_e rs_lookupData_s::asyncSetSourceSoundProperty(const uint16_t handle,
 }
 
 
-am_Error_e rs_lookupData_s::asyncCrossFade(const uint16_t handle,
+am_Error_e rs_lookupData_s::asyncCrossFade(const am_Handle_s handle,
 												const am_crossfaderID_t crossfaderID,
 												const am_HotSink_e hotSink,
 												const am_RampType_e rampType,
 												const am_time_t time,
-												RoutingSenderProxyBase::AsyncCrossFadeAsyncCallback cb)
+												org::genivi::am::RoutingControlProxyBase::AsyncCrossFadeAsyncCallback cb)
 {
 	logInfo(__PRETTY_FUNCTION__, " [ isConnected : ", isConnected(), " ]");
 	if(isConnected())
 	{
-		mSenderProxy->asyncCrossFadeAsync(static_cast<am_gen::am_handle_t>(handle),
-										  static_cast<am_gen::am_crossfaderID_t>(crossfaderID),
-										  static_cast<am_gen::am_HotSink_e>(hotSink),
-										  static_cast<am_gen::am_RampType_e>(rampType),
-										  static_cast<am_gen::am_time_t>(time),
+		org::genivi::am::am_Handle_s myHandle;
+		CAmConvertAM2CAPI(handle,myHandle);
+		mSenderProxy->asyncCrossFadeAsync(myHandle,
+										  static_cast<org::genivi::am::am_crossfaderID_t>(crossfaderID),
+										  static_cast<org::genivi::am::am_HotSink_e>(hotSink),
+										  static_cast<org::genivi::am::am_RampType_pe>(rampType),
+										  static_cast<org::genivi::am::am_time_t>(time),
 										  cb);
 		return (E_OK);
 	}
 	return (E_UNKNOWN);
 }
 
-am_Error_e rs_lookupData_s::setDomainState(const am_domainID_t domainID, const am_DomainState_e domainState, RoutingSenderProxyBase::SetDomainStateAsyncCallback cb)
+am_Error_e rs_lookupData_s::setDomainState(const am_domainID_t domainID, const am_DomainState_e domainState, org::genivi::am::RoutingControlProxyBase::SetDomainStateAsyncCallback cb)
 {
 	logInfo(__PRETTY_FUNCTION__, " [ isConnected : ", isConnected(), " ]");
 	if(isConnected())
 	{
-		mSenderProxy->setDomainStateAsync(static_cast<am_gen::am_domainID_t>(domainID),
-										  static_cast<am_gen::am_DomainState_e>(domainState),
+		mSenderProxy->setDomainStateAsync(static_cast<org::genivi::am::am_domainID_t>(domainID),
+										  static_cast<org::genivi::am::am_DomainState_e>(domainState),
 										  cb);
 		return (E_OK);
 	}
 	return (E_UNKNOWN);
 }
 
-am_Error_e rs_lookupData_s::asyncSetVolumes(const uint16_t handle,
+am_Error_e rs_lookupData_s::asyncSetVolumes(const am_Handle_s handle,
 												const std::vector<am_Volumes_s>& volumes ,
-												RoutingSenderProxyBase::AsyncSetVolumesAsyncCallback cb )
+												org::genivi::am::RoutingControlProxyBase::AsyncSetVolumesAsyncCallback cb )
 {
 	logInfo(__PRETTY_FUNCTION__, " [ isConnected : ", isConnected(), " ]");
 	if(isConnected())
 	{
-		am_gen::am_Volumes_l list;
+		org::genivi::am::am_Volumes_L list;
 		CAmConvertAMVector2CAPI(volumes, list);
-		mSenderProxy->asyncSetVolumesAsync(static_cast<am_gen::am_handle_t>(handle),
+		org::genivi::am::am_Handle_s myHandle;
+		CAmConvertAM2CAPI(handle,myHandle);
+		mSenderProxy->asyncSetVolumesAsync(myHandle,
 								      list,
 									   cb);
 		return (E_OK);
@@ -285,18 +309,20 @@ am_Error_e rs_lookupData_s::asyncSetVolumes(const uint16_t handle,
 	return (E_UNKNOWN);
 }
 
-am_Error_e rs_lookupData_s::asyncSetSinkNotificationConfiguration(const uint16_t handle,
+am_Error_e rs_lookupData_s::asyncSetSinkNotificationConfiguration(const am_Handle_s handle,
 																		 const am_sinkID_t sinkID,
 																		 const am_NotificationConfiguration_s& notificationConfiguration,
-																		 RoutingSenderProxyBase::AsyncSetSinkNotificationConfigurationAsyncCallback cb)
+																		 org::genivi::am::RoutingControlProxyBase::AsyncSetSinkNotificationConfigurationAsyncCallback cb)
 {
 	logInfo(__PRETTY_FUNCTION__, " [ isConnected : ", isConnected(), " ]");
 	if(isConnected())
 	{
-		am_gen::am_NotificationConfiguration_s converted;
+		org::genivi::am::am_NotificationConfiguration_s converted;
 		CAmConvertAM2CAPI(notificationConfiguration, converted);
-		mSenderProxy->asyncSetSinkNotificationConfigurationAsync(static_cast<am_gen::am_handle_t>(handle),
-										  	  	  	  	    static_cast<am_gen::am_sinkID_t>(sinkID),
+		org::genivi::am::am_Handle_s myHandle;
+		CAmConvertAM2CAPI(handle,myHandle);
+		mSenderProxy->asyncSetSinkNotificationConfigurationAsync(myHandle,
+										  	  	  	  	    static_cast<org::genivi::am::am_sinkID_t>(sinkID),
 										  	  	  	  	    converted,
 										  	  	  	  	   	cb);
 		return (E_OK);
@@ -304,18 +330,20 @@ am_Error_e rs_lookupData_s::asyncSetSinkNotificationConfiguration(const uint16_t
 	return (E_UNKNOWN);
 }
 
-am_Error_e rs_lookupData_s::asyncSetSourceNotificationConfiguration(const uint16_t handle,
+am_Error_e rs_lookupData_s::asyncSetSourceNotificationConfiguration(const am_Handle_s handle,
 																			const am_sourceID_t sourceID,
 																			const am_NotificationConfiguration_s& notificationConfiguration,
-																			RoutingSenderProxyBase::AsyncSetSourceNotificationConfigurationAsyncCallback cb)
+																			org::genivi::am::RoutingControlProxyBase::AsyncSetSourceNotificationConfigurationAsyncCallback cb)
 {
 	logInfo(__PRETTY_FUNCTION__, " [ isConnected : ", isConnected(), " ]");
 	if(isConnected())
 	{
-		am_gen::am_NotificationConfiguration_s converted;
+		org::genivi::am::am_NotificationConfiguration_s converted;
 		CAmConvertAM2CAPI(notificationConfiguration, converted);
-		mSenderProxy->asyncSetSourceNotificationConfigurationAsync(	static_cast<am_gen::am_handle_t>(handle),
-																static_cast<am_gen::am_sourceID_t>(sourceID),
+		org::genivi::am::am_Handle_s myHandle;
+		CAmConvertAM2CAPI(handle,myHandle);
+		mSenderProxy->asyncSetSourceNotificationConfigurationAsync( myHandle,
+																static_cast<org::genivi::am::am_sourceID_t>(sourceID),
 																converted,
 																cb);
 		return (E_OK);
@@ -344,16 +372,16 @@ CAmLookupData::~CAmLookupData() {
 }
 
 void CAmLookupData::addDomainLookup(am_domainID_t & domainID,
-										std::shared_ptr<RoutingSenderProxy<>> & aProxy)
+										std::shared_ptr<org::genivi::am::RoutingControlProxy<>> & aProxy)
 {
 	logInfo(__PRETTY_FUNCTION__, " [ domainID : ", domainID, " ]");
 	RSLookupDataPtr lookupData = std::make_shared<rs_lookupData_s>(aProxy);
 	mMapDomains.insert(std::make_pair(domainID, lookupData));
 }
 
-void CAmLookupData::removeHandle(uint16_t handle)
+void CAmLookupData::removeHandle(am_Handle_s handle)
 {
-	mMapHandles.erase(handle);
+	mMapHandles.erase(handle.handle);
 }
 
 void CAmLookupData::addSourceLookup(am_sourceID_t sourceID, am_domainID_t domainID)
@@ -450,164 +478,164 @@ template <typename TKey> const CAmLookupData::RSLookupDataPtr  CAmLookupData::ge
 	return NULL;
 }
 
-am_Error_e CAmLookupData::asyncAbort(const uint16_t handle, RoutingSenderProxyBase::AsyncAbortAsyncCallback callback)
+am_Error_e CAmLookupData::asyncAbort(const am_Handle_s handle, org::genivi::am::RoutingControlProxyBase::AsyncAbortAsyncCallback callback)
 {
-	RSLookupDataPtr result = getValueForKey(handle, mMapHandles);
+	RSLookupDataPtr result = getValueForKey(handle.handle, mMapHandles);
     if(result)
    		return result->asyncAbort(handle, callback);
     return (E_UNKNOWN);
 }
 
-am_Error_e CAmLookupData::asyncConnect(const uint16_t handle,
+am_Error_e CAmLookupData::asyncConnect(const am_Handle_s handle,
 											const am_connectionID_t connectionID,
 											const am_sourceID_t sourceID,
 											const am_sinkID_t sinkID,
 											const am_ConnectionFormat_e connectionFormat,
-											RoutingSenderProxyBase::AsyncConnectAsyncCallback callback)
+											org::genivi::am::RoutingControlProxyBase::AsyncConnectAsyncCallback callback)
 {
     RSLookupDataPtr result = CAmLookupData::getValueForKey(sourceID, mMapSources);
     if(result)
     {
         mMapConnections.insert(std::make_pair(connectionID, result));
-        mMapHandles.insert(std::make_pair(+handle, result));
+        mMapHandles.insert(std::make_pair(+handle.handle, result));
    		return result->asyncConnect(handle, connectionID, sourceID, sinkID, connectionFormat, callback);
     }
     return (E_UNKNOWN);
 }
 
-am_Error_e CAmLookupData::asyncDisconnect(const uint16_t handle,
+am_Error_e CAmLookupData::asyncDisconnect(const am_Handle_s handle,
 												const am_connectionID_t connectionID,
-												RoutingSenderProxyBase::AsyncDisconnectAsyncCallback cb)
+												org::genivi::am::RoutingControlProxyBase::AsyncDisconnectAsyncCallback cb)
 {
     RSLookupDataPtr result = CAmLookupData::getValueForKey(connectionID, mMapConnections);
     if(result)
     {
-    	mMapHandles.insert(std::make_pair(+handle, result));
+    	mMapHandles.insert(std::make_pair(+handle.handle, result));
    		return result->asyncDisconnect(handle, connectionID, cb);
     }
     return (E_UNKNOWN);
 }
 
-am_Error_e CAmLookupData::asyncSetSinkVolume(	const uint16_t handle,
+am_Error_e CAmLookupData::asyncSetSinkVolume(	const am_Handle_s handle,
 													const am_sinkID_t sinkID,
 													const am_volume_t volume,
 													const am_RampType_e ramp,
 													const am_time_t time,
-													RoutingSenderProxyBase::AsyncSetSinkVolumeAsyncCallback cb)
+													org::genivi::am::RoutingControlProxyBase::AsyncSetSinkVolumeAsyncCallback cb)
 {
     RSLookupDataPtr result = CAmLookupData::getValueForKey(sinkID, mMapSinks);
     if(result)
     {
-    	mMapHandles.insert(std::make_pair(+handle, result));
+    	mMapHandles.insert(std::make_pair(+handle.handle, result));
    		return result->asyncSetSinkVolume(handle, sinkID, volume, ramp, time, cb);
     }
     return (E_UNKNOWN);
 }
 
-am_Error_e CAmLookupData::asyncSetSourceVolume(const uint16_t handle,
+am_Error_e CAmLookupData::asyncSetSourceVolume(const am_Handle_s handle,
 													const am_sourceID_t sourceID,
 													const am_volume_t volume,
 													const am_RampType_e ramp,
 													const am_time_t time,
-													RoutingSenderProxyBase::AsyncSetSourceVolumeAsyncCallback cb)
+													org::genivi::am::RoutingControlProxyBase::AsyncSetSourceVolumeAsyncCallback cb)
 {
     RSLookupDataPtr result = CAmLookupData::getValueForKey(sourceID, mMapSources);
     if(result)
     {
-    	mMapHandles.insert(std::make_pair(+handle, result));
+    	mMapHandles.insert(std::make_pair(+handle.handle, result));
    		return result->asyncSetSourceVolume(handle, sourceID, volume, ramp, time, cb);
     }
     return (E_UNKNOWN);
 }
 
-am_Error_e CAmLookupData::asyncSetSourceState(const uint16_t handle,
+am_Error_e CAmLookupData::asyncSetSourceState(const am_Handle_s handle,
 													const am_sourceID_t sourceID,
 													const am_SourceState_e state,
-													RoutingSenderProxyBase::AsyncSetSinkSoundPropertiesAsyncCallback cb)
+													org::genivi::am::RoutingControlProxyBase::AsyncSetSinkSoundPropertiesAsyncCallback cb)
 {
     RSLookupDataPtr result = CAmLookupData::getValueForKey(sourceID, mMapSources);
     if(result)
     {
-    	mMapHandles.insert(std::make_pair(+handle, result));
+    	mMapHandles.insert(std::make_pair(+handle.handle, result));
    		return result->asyncSetSourceState(handle, sourceID, state, cb);
     }
     return (E_UNKNOWN);
 }
 
-am_Error_e CAmLookupData::asyncSetSinkSoundProperties(	const uint16_t handle,
+am_Error_e CAmLookupData::asyncSetSinkSoundProperties(	const am_Handle_s handle,
 																const am_sinkID_t sinkID,
 																const std::vector<am_SoundProperty_s>& listSoundProperties,
-																RoutingSenderProxyBase::AsyncSetSinkSoundPropertiesAsyncCallback cb)
+																org::genivi::am::RoutingControlProxyBase::AsyncSetSinkSoundPropertiesAsyncCallback cb)
 {
     RSLookupDataPtr result = CAmLookupData::getValueForKey(sinkID, mMapSinks);
     if(result)
     {
-    	mMapHandles.insert(std::make_pair(+handle, result));
+    	mMapHandles.insert(std::make_pair(+handle.handle, result));
    		return result->asyncSetSinkSoundProperties(handle, sinkID, listSoundProperties, cb);
     }
     return (E_UNKNOWN);
 }
 
-am_Error_e CAmLookupData::asyncSetSinkSoundProperty(	const uint16_t handle,
+am_Error_e CAmLookupData::asyncSetSinkSoundProperty(	const am_Handle_s handle,
 															const am_sinkID_t sinkID,
 															const am_SoundProperty_s& soundProperty,
-															RoutingSenderProxyBase::AsyncSetSinkSoundPropertyAsyncCallback cb)
+															org::genivi::am::RoutingControlProxyBase::AsyncSetSinkSoundPropertyAsyncCallback cb)
 {
     RSLookupDataPtr result = CAmLookupData::getValueForKey(sinkID, mMapSinks);
     if(result)
     {
-    	mMapHandles.insert(std::make_pair(+handle, result));
+    	mMapHandles.insert(std::make_pair(+handle.handle, result));
    		return result->asyncSetSinkSoundProperty(handle, sinkID, soundProperty, cb);
     }
     return (E_UNKNOWN);
 }
 
-am_Error_e CAmLookupData::asyncSetSourceSoundProperties(const uint16_t handle,
+am_Error_e CAmLookupData::asyncSetSourceSoundProperties(const am_Handle_s handle,
 																const am_sourceID_t sourceID,
 																const std::vector<am_SoundProperty_s>& listSoundProperties,
-																RoutingSenderProxyBase::AsyncSetSourceSoundPropertiesAsyncCallback cb)
+																org::genivi::am::RoutingControlProxyBase::AsyncSetSourceSoundPropertiesAsyncCallback cb)
 {
     RSLookupDataPtr result = CAmLookupData::getValueForKey(sourceID, mMapSources);
     if(result)
     {
-    	mMapHandles.insert(std::make_pair(+handle, result));
+    	mMapHandles.insert(std::make_pair(+handle.handle, result));
    		return result->asyncSetSourceSoundProperties(handle, sourceID, listSoundProperties, cb);
     }
     return (E_UNKNOWN);
 }
 
-am_Error_e CAmLookupData::asyncSetSourceSoundProperty(const uint16_t handle,
+am_Error_e CAmLookupData::asyncSetSourceSoundProperty(const am_Handle_s handle,
 															const am_sourceID_t sourceID,
 															const am_SoundProperty_s& soundProperty,
-															RoutingSenderProxyBase::AsyncSetSourceSoundPropertyAsyncCallback cb)
+															org::genivi::am::RoutingControlProxyBase::AsyncSetSourceSoundPropertyAsyncCallback cb)
 {
     RSLookupDataPtr result = CAmLookupData::getValueForKey(sourceID, mMapSources);
     if(result)
     {
-    	mMapHandles.insert(std::make_pair(+handle, result));
+    	mMapHandles.insert(std::make_pair(+handle.handle, result));
    		return result->asyncSetSourceSoundProperty(handle, sourceID, soundProperty, cb);
     }
     return (E_UNKNOWN);
 }
 
 
-am_Error_e CAmLookupData::asyncCrossFade(const uint16_t handle,
+am_Error_e CAmLookupData::asyncCrossFade(const am_Handle_s handle,
 												const am_crossfaderID_t crossfaderID,
 												const am_HotSink_e hotSink,
 												const am_RampType_e rampType,
 												const am_time_t time,
-												RoutingSenderProxyBase::AsyncCrossFadeAsyncCallback cb)
+												org::genivi::am::RoutingControlProxyBase::AsyncCrossFadeAsyncCallback cb)
 {
     RSLookupDataPtr result = CAmLookupData::getValueForKey(crossfaderID, mMapCrossfaders);
     if(result)
     {
-    	mMapHandles.insert(std::make_pair(+handle, result));
+    	mMapHandles.insert(std::make_pair(+handle.handle, result));
    		return result->asyncCrossFade(handle, crossfaderID, hotSink, rampType, time, cb);
     }
     return (E_UNKNOWN);
 }
 
-am_Error_e CAmLookupData::setDomainState(const am_domainID_t domainID, const am_DomainState_e domainState, RoutingSenderProxyBase::SetDomainStateAsyncCallback cb)
+am_Error_e CAmLookupData::setDomainState(const am_domainID_t domainID, const am_DomainState_e domainState, org::genivi::am::RoutingControlProxyBase::SetDomainStateAsyncCallback cb)
 {
     RSLookupDataPtr result = CAmLookupData::getValueForKey(domainID, mMapDomains);
     if(result)
@@ -616,9 +644,9 @@ am_Error_e CAmLookupData::setDomainState(const am_domainID_t domainID, const am_
 }
 
 
-am_Error_e CAmLookupData::asyncSetVolumes(const uint16_t handle,
+am_Error_e CAmLookupData::asyncSetVolumes(const am_Handle_s handle,
 												const std::vector<am_Volumes_s>& volumes ,
-												RoutingSenderProxyBase::AsyncSetVolumesAsyncCallback cb )
+												org::genivi::am::RoutingControlProxyBase::AsyncSetVolumesAsyncCallback cb )
 {
 
 	if(volumes.size())
@@ -631,36 +659,36 @@ am_Error_e CAmLookupData::asyncSetVolumes(const uint16_t handle,
 			result = CAmLookupData::getValueForKey(volumeItem.volumeID.source, mMapSources);
 	    if(result)
 	    {
-	    	mMapHandles.insert(std::make_pair(+handle, result));
+	    	mMapHandles.insert(std::make_pair(+handle.handle, result));
 	   		return result->asyncSetVolumes(handle, volumes, cb);
 	    }
 	}
     return (E_UNKNOWN);
 }
 
-am_Error_e CAmLookupData::asyncSetSinkNotificationConfiguration(const uint16_t handle,
+am_Error_e CAmLookupData::asyncSetSinkNotificationConfiguration(const am_Handle_s handle,
 																	 const am_sinkID_t sinkID,
 																	 const am_NotificationConfiguration_s& notificationConfiguration,
-																	 RoutingSenderProxyBase::AsyncSetSinkNotificationConfigurationAsyncCallback cb)
+																	 org::genivi::am::RoutingControlProxyBase::AsyncSetSinkNotificationConfigurationAsyncCallback cb)
 {
     RSLookupDataPtr result = CAmLookupData::getValueForKey(sinkID, mMapSinks);
     if(result)
     {
-    	mMapHandles.insert(std::make_pair(+handle, result));
+    	mMapHandles.insert(std::make_pair(+handle.handle, result));
    		return result->asyncSetSinkNotificationConfiguration(handle, sinkID, notificationConfiguration, cb);
     }
     return (E_UNKNOWN);
 }
 
-am_Error_e CAmLookupData::asyncSetSourceNotificationConfiguration(const uint16_t handle,
+am_Error_e CAmLookupData::asyncSetSourceNotificationConfiguration(const am_Handle_s handle,
 																		const am_sourceID_t sourceID,
 																		const am_NotificationConfiguration_s& notificationConfiguration,
-																		RoutingSenderProxyBase::AsyncSetSourceNotificationConfigurationAsyncCallback cb)
+																		org::genivi::am::RoutingControlProxyBase::AsyncSetSourceNotificationConfigurationAsyncCallback cb)
 {
 	RSLookupDataPtr result = CAmLookupData::getValueForKey(sourceID, mMapSources);
 	if(result)
 	{
-		mMapHandles.insert(std::make_pair(+handle, result));
+		mMapHandles.insert(std::make_pair(+handle.handle, result));
 		return result->asyncSetSourceNotificationConfiguration(handle, sourceID, notificationConfiguration, cb);
 	}
 	return (E_UNKNOWN);

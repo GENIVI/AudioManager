@@ -24,7 +24,7 @@
 #include "CAmTestCAPIWrapper.h"
 #include "../include/CAmCommandSenderCAPI.h"
 #include "MockIAmCommandReceive.h"
-#include <../src-gen/org/genivi/audiomanager/CommandInterfaceProxy.h>
+#include <../src-gen/org/genivi/am/CommandControlProxy.h>
 
 #define UNIT_TEST 1
 
@@ -49,7 +49,7 @@ public:
 	MockIAmCommandReceive *mpCommandReceive;
 	CAmCommandSenderCAPI *mpPlugin;
 
-	std::shared_ptr<CommandInterfaceProxy<> >  mProxy;
+	std::shared_ptr<org::genivi::am::CommandControlProxy<> >  mProxy;
 
 	CAmTestsEnvironment();
     ~CAmTestsEnvironment();

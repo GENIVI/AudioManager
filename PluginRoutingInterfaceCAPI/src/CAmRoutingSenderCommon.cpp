@@ -22,7 +22,7 @@
  * Utility functions
  */
 
-void CAmConvertCAPI2AM(const am_gen::am_Domain_s & source, am::am_Domain_s & destination)
+void CAmConvertCAPI2AM(const org::genivi::am::am_Domain_s & source, am::am_Domain_s & destination)
 {
 	destination.domainID = source.domainID;
 	destination.name = source.name;
@@ -33,40 +33,40 @@ void CAmConvertCAPI2AM(const am_gen::am_Domain_s & source, am::am_Domain_s & des
 	destination.state = static_cast<am::am_DomainState_e>(source.state);
 }
 
-void CAmConvertCAPI2AM(const am_gen::am_SoundProperty_s & source, am::am_SoundProperty_s & destination)
+void CAmConvertCAPI2AM(const org::genivi::am::am_SoundProperty_s & source, am::am_SoundProperty_s & destination)
 {
 	destination.type = static_cast<am::am_SoundPropertyType_e>(source.type);
 	destination.value = source.value;
 }
 
-void CAmConvertCAPIVector2AM(const std::vector<am_gen::am_SoundProperty_s> & source, std::vector<am::am_SoundProperty_s> & destination)
+void CAmConvertCAPIVector2AM(const std::vector<org::genivi::am::am_SoundProperty_s> & source, std::vector<am::am_SoundProperty_s> & destination)
 {
 	am::am_SoundProperty_s soundProp;
 	destination.clear();
-	for(std::vector<am_gen::am_SoundProperty_s>::const_iterator iter = source.begin(); iter!=source.end(); iter++)
+	for(std::vector<org::genivi::am::am_SoundProperty_s>::const_iterator iter = source.begin(); iter!=source.end(); ++iter)
 	{
 		CAmConvertCAPI2AM(*iter, soundProp);
 		destination.push_back(soundProp);
 	}
 }
 
-void CAmConvertCAPI2AM(const am_gen::am_MainSoundProperty_s & source, am::am_MainSoundProperty_s & destination)
+void CAmConvertCAPI2AM(const org::genivi::am::am_MainSoundProperty_s & source, am::am_MainSoundProperty_s & destination)
 {
 	destination.type = static_cast<am::am_MainSoundPropertyType_e>(source.type);
 	destination.value = source.value;
 }
 
 
-void CAmConvertCAPI2AM(const am_gen::notificationPayload_s & source, am::am_NotificationPayload_s & destination)
+void CAmConvertCAPI2AM(const org::genivi::am::am_NotificationPayload_s & source, am::am_NotificationPayload_s & destination)
 {
 	destination.type = static_cast<am::am_NotificationType_e>(source.type);
-	destination.value = source.payload;
+	destination.value = source.value;
 }
 
-void CAmConvertCAPIVector2AM(const std::vector<am_gen::am_Volumes_s> & source, std::vector<am::am_Volumes_s> & destination)
+void CAmConvertCAPIVector2AM(const std::vector<org::genivi::am::am_Volumes_s> & source, std::vector<am::am_Volumes_s> & destination)
 {
 	destination.clear();
-	for(std::vector<am_gen::am_Volumes_s>::const_iterator iter = source.begin(); iter!=source.end(); iter++)
+	for(std::vector<org::genivi::am::am_Volumes_s>::const_iterator iter = source.begin(); iter!=source.end(); ++iter)
 	{
 		am::am_Volumes_s volume;
 		CAmConvertCAPI2AM(*iter, volume);
@@ -74,45 +74,45 @@ void CAmConvertCAPIVector2AM(const std::vector<am_gen::am_Volumes_s> & source, s
 	}
 }
 
-void CAmConvertCAPIVector2AM(const std::vector<am_gen::am_MainSoundProperty_s> & source, std::vector<am::am_MainSoundProperty_s> & destination)
+void CAmConvertCAPIVector2AM(const std::vector<org::genivi::am::am_MainSoundProperty_s> & source, std::vector<am::am_MainSoundProperty_s> & destination)
 {
 	am::am_MainSoundProperty_s soundProp;
 	destination.clear();
-	for(std::vector<am_gen::am_MainSoundProperty_s>::const_iterator iter = source.begin(); iter!=source.end(); iter++)
+	for(std::vector<org::genivi::am::am_MainSoundProperty_s>::const_iterator iter = source.begin(); iter!=source.end(); ++iter)
 	{
 		CAmConvertCAPI2AM(*iter, soundProp);
 		destination.push_back(soundProp);
 	}
 }
 
-void CAmConvertCAPI2AM(const am_gen::am_NotificationConfiguration_s & source, am::am_NotificationConfiguration_s & destination)
+void CAmConvertCAPI2AM(const org::genivi::am::am_NotificationConfiguration_s & source, am::am_NotificationConfiguration_s & destination)
 {
 	destination.type = static_cast<am::am_NotificationType_e>(source.type);
 	destination.status = static_cast<am::am_NotificationStatus_e>(source.status);
 	destination.parameter = source.parameter;
 }
 
-void CAmConvertCAPIVector2AM(const std::vector<am_gen::am_NotificationConfiguration_s> & source, std::vector<am::am_NotificationConfiguration_s> & destination)
+void CAmConvertCAPIVector2AM(const std::vector<org::genivi::am::am_NotificationConfiguration_s> & source, std::vector<am::am_NotificationConfiguration_s> & destination)
 {
 	am::am_NotificationConfiguration_s soundProp;
 	destination.clear();
-	for(std::vector<am_gen::am_NotificationConfiguration_s>::const_iterator iter = source.begin(); iter!=source.end(); iter++)
+	for(std::vector<org::genivi::am::am_NotificationConfiguration_s>::const_iterator iter = source.begin(); iter!=source.end(); ++iter)
 	{
 		CAmConvertCAPI2AM(*iter, soundProp);
 		destination.push_back(soundProp);
 	}
 }
 
-void CAmConvertCAPIVector2AM(const std::vector<am_gen::am_ConnectionFormat_e> & source, std::vector<am::am_ConnectionFormat_e> & destination)
+void CAmConvertCAPIVector2AM(const std::vector<org::genivi::am::am_ConnectionFormat_pe> & source, std::vector<am::am_ConnectionFormat_e> & destination)
 {
 	destination.clear();
-	for(std::vector<am_gen::am_ConnectionFormat_e>::const_iterator iter = source.begin(); iter!=source.end(); iter++)
+	for(std::vector<org::genivi::am::am_ConnectionFormat_pe>::const_iterator iter = source.begin(); iter!=source.end(); ++iter)
 		destination.push_back(static_cast<am::am_ConnectionFormat_e>(*iter));
 }
 
 
 
-void CAmConvertCAPI2AM(const am_gen::sourceData_s & source, am::am_Source_s & destination)
+void CAmConvertCAPI2AM(const org::genivi::am::am_Source_s & source, am::am_Source_s & destination)
 {
 	destination.sourceID = source.sourceID;
 	destination.domainID = source.domainID;
@@ -130,7 +130,7 @@ void CAmConvertCAPI2AM(const am_gen::sourceData_s & source, am::am_Source_s & de
 	CAmConvertCAPIVector2AM(source.listMainNotificationConfigurations, destination.listMainNotificationConfigurations);
 }
 
-void CAmConvertCAPI2AM(const am_gen::sinkData_s & source, am::am_Sink_s & destination)
+void CAmConvertCAPI2AM(const org::genivi::am::am_Sink_s & source, am::am_Sink_s & destination)
 {
 	destination.sinkID = source.sinkID;
 	destination.domainID = source.domainID;
@@ -148,7 +148,7 @@ void CAmConvertCAPI2AM(const am_gen::sinkData_s & source, am::am_Sink_s & destin
 	CAmConvertCAPIVector2AM(source.listMainNotificationConfigurations, destination.listMainNotificationConfigurations);
 }
 
-void CAmConvertCAPI2AM(const am_gen::am_Volumes_s & source, am::am_Volumes_s & destination)
+void CAmConvertCAPI2AM(const org::genivi::am::am_Volumes_s & source, am::am_Volumes_s & destination)
 {
 	CAmConvertCAPI2AM(source.volumeID, destination.volumeID);
 	destination.volume = source.volume;
@@ -158,7 +158,7 @@ void CAmConvertCAPI2AM(const am_gen::am_Volumes_s & source, am::am_Volumes_s & d
 }
 
 
-void CAmConvertCAPI2AM(const am_gen::crossfaderData_s & source, am::am_Crossfader_s & destination)
+void CAmConvertCAPI2AM(const org::genivi::am::am_Crossfader_s & source, am::am_Crossfader_s & destination)
 {
 	destination.crossfaderID = source.crossfaderID;
 	destination.sinkID_A = source.sinkID_A;
@@ -169,7 +169,7 @@ void CAmConvertCAPI2AM(const am_gen::crossfaderData_s & source, am::am_Crossfade
 }
 
 
-void CAmConvertCAPI2AM(const am_gen::am_Gateway_s & source, am::am_Gateway_s & destination)
+void CAmConvertCAPI2AM(const org::genivi::am::am_Gateway_s & source, am::am_Gateway_s & destination)
 {
 	destination.sinkID = source.sinkID;
 	destination.gatewayID = source.gatewayID;
@@ -183,37 +183,37 @@ void CAmConvertCAPI2AM(const am_gen::am_Gateway_s & source, am::am_Gateway_s & d
 	destination.convertionMatrix = source.convertionMatrix;
 }
 
-void CAmConvertCAPI2AM(const am_gen::am_EarlyData_u & source, am::am_EarlyData_u & destination)
+void CAmConvertCAPI2AM(const org::genivi::am::am_EarlyData_u & source, am::am_EarlyData_u & destination)
 {
-	if(source.isType<am_gen::am_volume_t>())
+	if(source.isType<org::genivi::am::am_volume_t>())
 	{
-		am_volume_t value = static_cast<am_volume_t>(source.get<am_gen::am_volume_t>());
+		am_volume_t value = static_cast<am_volume_t>(source.get<org::genivi::am::am_volume_t>());
 		destination.volume = value;
 	}
-	else if(source.isType<am_gen::am_SoundProperty_s>())
+	else if(source.isType<org::genivi::am::am_SoundProperty_s>())
 	{
-		am_gen::am_SoundProperty_s value = source.get<am_gen::am_SoundProperty_s>();
+		org::genivi::am::am_SoundProperty_s value = source.get<org::genivi::am::am_SoundProperty_s>();
 		am_SoundProperty_s converted;
 		CAmConvertCAPI2AM(value, converted);
 		destination.soundProperty = converted;
 	}
 }
 
-void CAmConvertCAPI2AM(const am_gen::am_DataType_u & source, am::am_DataType_u & destination)
+void CAmConvertCAPI2AM(const org::genivi::am::am_DataType_u & source, am::am_DataType_u & destination)
 {
-	if(source.isType<am_gen::am_sinkID_t>())
+	if(source.isType<org::genivi::am::am_sinkID_t>())
 	{
-		am_sinkID_t value = static_cast<am_sinkID_t>(source.get<am_gen::am_sinkID_t>());
+		am_sinkID_t value = static_cast<am_sinkID_t>(source.get<org::genivi::am::am_sinkID_t>());
 		destination.sink = value;
 	}
-	else if(source.isType<am_gen::am_sourceID_t>())
+	else if(source.isType<org::genivi::am::am_sourceID_t>())
 	{
-		am_sourceID_t value = static_cast<am_sourceID_t>(source.get<am_gen::am_sourceID_t>());
+		am_sourceID_t value = static_cast<am_sourceID_t>(source.get<org::genivi::am::am_sourceID_t>());
 		destination.source = value;
 	}
 }
 
-void CAmConvertCAPI2AM(const am_gen::am_EarlyData_s & source, am::am_EarlyData_s & destination)
+void CAmConvertCAPI2AM(const org::genivi::am::am_EarlyData_s & source, am::am_EarlyData_s & destination)
 {
 	CAmConvertCAPI2AM(source.data, destination.data);
 	CAmConvertCAPI2AM(source.sinksource, destination.sinksource);
@@ -221,60 +221,84 @@ void CAmConvertCAPI2AM(const am_gen::am_EarlyData_s & source, am::am_EarlyData_s
 }
 
 
-void CAmConvertCAPI2AM(const am_gen::am_Availability_s  & source,  am_Availability_s & destination)
+void CAmConvertCAPI2AM(const org::genivi::am::am_Availability_s  & source,  am_Availability_s & destination)
 {
 	destination.availability = static_cast<am_Availability_e>(source.availability);
 	destination.availabilityReason = static_cast<am_AvailabilityReason_e>(source.availabilityReason);
 }
 
-void CAmConvertAM2CAPI(const am_Availability_s & source,  am_gen::am_Availability_s & destination)
+void CAmConvertCAPI2AM(const org::genivi::am::am_Handle_s& source, am_Handle_s& destination)
 {
-	destination.availability = static_cast<am_gen::am_Availability_e>(source.availability);
-	destination.availabilityReason = static_cast<am_gen::am_AvailabilityReason_e>(source.availabilityReason);
+	destination.handle = static_cast<int16_t>(source.handle);
+	destination.handleType = static_cast<am_Handle_e>(source.handleType);
 }
 
-void CAmConvertAM2CAPI(const am::am_SoundProperty_s & source, am_gen::am_SoundProperty_s & destination)
+void CAmConvertAM2CAPI(const am_Availability_s & source,  org::genivi::am::am_Availability_s & destination)
 {
-	destination.type = static_cast<am_gen::am_SoundPropertyType_e>(source.type);
+	destination.availability = static_cast<org::genivi::am::am_Availability_e>(source.availability);
+	destination.availabilityReason = static_cast<org::genivi::am::am_AvailabilityReason_pe>(source.availabilityReason);
+}
+
+void CAmConvertAM2CAPI(const am::am_SoundProperty_s & source, org::genivi::am::am_SoundProperty_s & destination)
+{
+	destination.type = static_cast<org::genivi::am::am_SoundPropertyType_pe>(source.type);
 	destination.value = source.value;
 }
 
-void CAmConvertAM2CAPI(const am::am_NotificationConfiguration_s & source, am_gen::am_NotificationConfiguration_s & destination)
+extern void CAmConvertAM2CAPI(const am::am_Handle_s& source,
+		org::genivi::am::am_Handle_s& destination)
 {
-	destination.type = static_cast<am_gen::am_NotificationType_e>(source.type);
-	destination.status = static_cast<am_gen::am_NotificationStatus_e>(source.status);
+	destination.handle = static_cast<uint16_t>(source.handle);
+	destination.handleType = static_cast<org::genivi::am::am_Handle_e>(source.handleType);
+}
+
+
+void CAmConvertAM2CAPI(const am::am_NotificationConfiguration_s & source, org::genivi::am::am_NotificationConfiguration_s & destination)
+{
+	destination.type = static_cast<org::genivi::am::am_NotificationType_pe>(source.type);
+	destination.status = static_cast<org::genivi::am::am_NotificationStatus_e>(source.status);
 	destination.parameter = source.parameter;
 }
 
-void CAmConvertAM2CAPI(const am::am_Volumes_s & source, am_gen::am_Volumes_s & destination)
+void CAmConvertAM2CAPI(const am::am_Volumes_s & source, org::genivi::am::am_Volumes_s & destination)
 {
 	if(source.volumeType == VT_SINK)
-		destination.volumeID = am_gen::am_DataType_u(static_cast<am_gen::am_sinkID_t>(source.volumeID.sink));
+		destination.volumeID = org::genivi::am::am_DataType_u(static_cast<org::genivi::am::am_sinkID_t>(source.volumeID.sink));
 	else if(source.volumeType == VT_SOURCE)
-		destination.volumeID = am_gen::am_DataType_u(static_cast<am_gen::am_sourceID_t>(source.volumeID.source));
-	destination.volumeType = static_cast<am_gen::am_VolumeType_e>(source.volumeType);
-	destination.volume = static_cast<am_gen::am_volume_t>(source.volume);
-	destination.ramp = static_cast<am_gen::am_RampType_e>(source.ramp);
-	destination.time = static_cast<am_gen::am_time_t>(source.time);
+		destination.volumeID = org::genivi::am::am_DataType_u(static_cast<org::genivi::am::am_sourceID_t>(source.volumeID.source));
+	destination.volumeType = static_cast<org::genivi::am::am_VolumeType_e>(source.volumeType);
+	destination.volume = static_cast<org::genivi::am::am_volume_t>(source.volume);
+	destination.ramp = static_cast<org::genivi::am::am_RampType_pe>(source.ramp);
+	destination.time = static_cast<org::genivi::am::am_time_t>(source.time);
 }
 
-
-void CAmConvertAMVector2CAPI(const std::vector<am::am_Volumes_s> & source, std::vector<am_gen::am_Volumes_s> & destination)
+void CAmConvertAMVector2CAPI(const std::vector<am::am_Volumes_s> & source, org::genivi::am::am_Volumes_L & destination)
 {
 	destination.clear();
-	for(std::vector<am::am_Volumes_s>::const_iterator iter = source.begin(); iter!=source.end(); iter++)
+	for(std::vector<am::am_Volumes_s>::const_iterator iter = source.begin(); iter!=source.end(); ++iter)
 	{
-		am_gen::am_Volumes_s volume;
+		org::genivi::am::am_Volumes_s volume;
 		CAmConvertAM2CAPI(*iter, volume);
 		destination.push_back(volume);
 	}
 }
 
-void CAmConvertAMVector2CAPI(const std::vector<am::am_SoundProperty_s> & source, std::vector<am_gen::am_SoundProperty_s> & destination)
+void CAmConvertCAPIVector2AM(const org::genivi::am::am_EarlyData_L& source,std::vector<am::am_EarlyData_s>& destination)
 {
-	am_gen::am_SoundProperty_s soundProp;
 	destination.clear();
-	for(std::vector<am::am_SoundProperty_s>::const_iterator iter = source.begin(); iter!=source.end(); iter++)
+	for (org::genivi::am::am_EarlyData_L::const_iterator iter = source.begin(); iter!=source.end(); ++iter)
+	{
+		am_EarlyData_s earlyData;
+		CAmConvertCAPI2AM(*iter,earlyData);
+		destination.push_back(earlyData);
+	}
+}
+
+void CAmConvertAMVector2CAPI(const std::vector<am::am_SoundProperty_s> & source, std::vector<org::genivi::am::am_SoundProperty_s> & destination)
+{
+	org::genivi::am::am_SoundProperty_s soundProp;
+	destination.clear();
+	for(std::vector<am::am_SoundProperty_s>::const_iterator iter = source.begin(); iter!=source.end(); ++iter)
 	{
 		CAmConvertAM2CAPI(*iter, soundProp);
 		destination.push_back(soundProp);

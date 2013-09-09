@@ -20,42 +20,38 @@
 
 #include <memory>
 #include "audiomanagertypes.h"
-#include <org/genivi/audiomanager/CommandInterface.h>
+#include <org/genivi/am.h>
 
 using namespace am;
-using namespace org::genivi::audiomanager;
 
 /**
  * The following functions convert the basics AudiomManager types from/to CommonAPI types.
  */
 
-extern void CAmConvertAvailablility(const am_Availability_s & , CommandInterface::am_Availability_s & );
-extern void CAmConvertMainSoundProperty(const am_MainSoundProperty_s & , CommandInterface::am_MainSoundProperty_s & );
-extern void CAmConvertSystemProperty(const am_SystemProperty_s &, CommandInterface::am_SystemProperty_s &);
+extern void CAmConvertAvailablility(const am_Availability_s & , org::genivi::am::am_Availability_s & );
+extern void CAmConvertMainSoundProperty(const am_MainSoundProperty_s & , org::genivi::am::am_MainSoundProperty_s & );
+extern void CAmConvertSystemProperty(const am_SystemProperty_s &, org::genivi::am::am_SystemProperty_s &);
 
-extern CommandInterface::am_ClassProperty_e CAmConvert2CAPIType(const am_ClassProperty_e & property);
-extern CommandInterface::am_SystemPropertyType_e CAmConvert2CAPIType(const am_SystemPropertyType_e &);
-extern CommandInterface::am_Availablility_e CAmConvert2CAPIType(const am_Availability_e & );
-extern CommandInterface::am_AvailabilityReason_e CAmConvert2CAPIType(const am_AvailabilityReason_e & );
+extern org::genivi::am::am_ClassProperty_pe CAmConvert2CAPIType(const am_ClassProperty_e & property);
+extern org::genivi::am::am_SystemPropertyType_pe CAmConvert2CAPIType(const am_SystemPropertyType_e &);
+extern org::genivi::am::am_Availability_e CAmConvert2CAPIType(const am_Availability_e & );
+extern org::genivi::am::am_AvailabilityReason_pe CAmConvert2CAPIType(const am_AvailabilityReason_e & );
 
-extern CommandInterface::am_MuteState_e CAmConvert2CAPIType(const am_MuteState_e &);
-extern am_MuteState_e CAmConvertFromCAPIType(const CommandInterface::am_MuteState_e &);
+extern org::genivi::am::am_MuteState_e CAmConvert2CAPIType(const am_MuteState_e &);
+extern am_MuteState_e CAmConvertFromCAPIType(const org::genivi::am::am_MuteState_e &);
 
-extern CommandInterface::am_MainSoundPropertyType_e CAmConvert2CAPIType(const am_MainSoundPropertyType_e &);
-extern am_MainSoundPropertyType_e CAmConvertFromCAPIType(const CommandInterface::am_MainSoundPropertyType_e &);
+extern org::genivi::am::am_MainSoundPropertyType_pe CAmConvert2CAPIType(const am_MainSoundPropertyType_e &);
 
-extern CommandInterface::am_ConnectionState_e CAmConvert2CAPIType(const am_ConnectionState_e &);
-extern am_ConnectionState_e CAmConvertFromCAPIType(const CommandInterface::am_ConnectionState_e &);
+extern org::genivi::am::am_ConnectionState_e CAmConvert2CAPIType(const am_ConnectionState_e &);
+extern am_ConnectionState_e CAmConvertFromCAPIType(const org::genivi::am::am_ConnectionState_e &);
 
-extern org::genivi::audiomanager::am::am_NotificationType_e CAmConvert2CAPIType(const am_NotificationType_e &);
-extern am_NotificationType_e CAmConvertFromCAPIType(const org::genivi::audiomanager::am::am_NotificationType_e &);
+extern am_NotificationType_e CAmConvert2CAPIType(const org::genivi::am::am_NotificationType_pe &);
+extern org::genivi::am::am_NotificationType_pe CAmConvertFromCAPIType(const am_NotificationType_e &);
 
-extern org::genivi::audiomanager::am::am_NotificationStatus_e CAmConvert2CAPIType(const am_NotificationStatus_e &);
-extern am_NotificationStatus_e CAmConvertFromCAPIType(const org::genivi::audiomanager::am::am_NotificationStatus_e &);
+extern am_NotificationStatus_e CAmConvert2CAPIType(const org::genivi::am::am_NotificationStatus_e &);
+extern org::genivi::am::am_NotificationStatus_e CAmConvertFromCAPIType(const am_NotificationStatus_e &);
 
-extern CommandInterface::am_Error_e CAmConvert2CAPIType(const am_Error_e &);
-extern am_Error_e CAmConvertFromCAPIType(const CommandInterface::am_Error_e & error);
-
-extern am_SystemPropertyType_e CAmConvertFromCAPIType(const CommandInterface::am_SystemPropertyType_e &);
+extern org::genivi::am::am_Error_e CAmConvert2CAPIType(const am_Error_e &);
+extern am_Error_e CAmConvertFromCAPIType(const org::genivi::am::am_Error_e & error);
 
 #endif /* CAMCOMMANDSENDERCOMMON_H_ */

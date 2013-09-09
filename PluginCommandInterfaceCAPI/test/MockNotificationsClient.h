@@ -21,90 +21,94 @@
 
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
-#include <org/genivi/audiomanager/CommandInterfaceStubDefault.h>
+#include <org/genivi/am/CommandControlProxy.h>
 
 
 namespace am {
 using namespace testing;
 using namespace CommonAPI;
-using namespace org::genivi::audiomanager;
 
 class IAmNotificationsClient
 {
 public:
-		IAmNotificationsClient()
-		{}
-
-		virtual ~IAmNotificationsClient()
-		{}
-	    virtual void onNumberOfMainConnectionsChangedEvent() = 0;
-	    virtual void onNumberOfSourceClassesChangedEvent() = 0;
-		virtual void onMainConnectionStateChangedEvent(CommandInterface::am_mainConnectionID_t, CommandInterface::am_ConnectionState_e) = 0;
-		virtual void onSourceAddedEvent(const CommandInterface::am_SourceType_s &) = 0;
-		virtual void onSourceRemovedEvent(CommandInterface::am_sourceID_t)  = 0;
-		virtual void onMainSourceSoundPropertyChangedEvent(CommandInterface::am_sourceID_t, const CommandInterface::am_MainSoundProperty_s & )  = 0;
-		virtual void onSourceAvailabilityChangedEvent(CommandInterface::am_sourceID_t, const CommandInterface::am_Availability_s &)  = 0;
-		virtual void onNumberOfSinkClassesChangedEvent()  = 0;
-		virtual void onSinkAddedEvent(const CommandInterface::am_SinkType_s &)  = 0;
-		virtual void onSinkRemovedEvent(CommandInterface::am_sinkID_t)  = 0;
-		virtual void onMainSinkSoundPropertyChangedEvent(CommandInterface::am_sinkID_t, const CommandInterface::am_MainSoundProperty_s &)  = 0;
-		virtual void onSinkAvailabilityChangedEvent(CommandInterface::am_sinkID_t, const CommandInterface::am_Availability_s &)  = 0;
-		virtual void onVolumeChangedEvent(CommandInterface::am_sinkID_t, CommandInterface::am_mainVolume_t)  = 0;
-		virtual void onSinkMuteStateChangedEvent(CommandInterface::am_sinkID_t, CommandInterface::am_MuteState_e)  = 0;
-		virtual void onSystemPropertyChangedEvent(const CommandInterface::am_SystemProperty_s &) = 0;
-		virtual void onTimingInformationChangedEvent(CommandInterface::am_mainConnectionID_t, CommandInterface::am_timeSync_t)  = 0;
-		virtual void onSinkUpdatedEvent(CommandInterface::am_sinkID_t, CommandInterface::am_sinkClass_t, const CommandInterface::am_MainSoundProperty_l &)  = 0;
-		virtual void onSourceUpdatedEvent(CommandInterface::am_sourceID_t, CommandInterface::am_sourceClass_t, const CommandInterface::am_MainSoundProperty_l &)   = 0;
-		virtual void onSinkNotificationEvent(CommandInterface::am_sinkID_t, const CommandInterface::am_NotificationPayload_s & ) = 0;
-		virtual void onSourceNotificationEvent(CommandInterface::am_sourceID_t, const CommandInterface::am_NotificationPayload_s &)  = 0;
-		virtual void onMainSinkNotificationConfigurationChangedEvent(CommandInterface::am_sinkID_t, const org::genivi::audiomanager::am::am_NotificationConfiguration_s &)  = 0;
-		virtual void onMainSourceNotificationConfigurationChangedEvent(CommandInterface::am_sourceID_t, const org::genivi::audiomanager::am::am_NotificationConfiguration_s &) = 0;
+		IAmNotificationsClient() {}
+		virtual ~IAmNotificationsClient() {}
+	    virtual void onNewMainConnection(const org::genivi::am::am_MainConnectionType_s &) = 0 ;
+	    virtual void removedMainConnection(org::genivi::am::am_mainConnectionID_t) = 0 ;
+	    virtual void onNumberOfSourceClassesChangedEvent() = 0 ;
+		virtual void onMainConnectionStateChangedEvent(org::genivi::am::am_mainConnectionID_t, org::genivi::am::am_ConnectionState_e) = 0 ;
+		virtual void onSourceAddedEvent(const org::genivi::am::am_SourceType_s &) = 0 ;
+		virtual void onSourceRemovedEvent(org::genivi::am::am_sourceID_t) = 0  ;
+		virtual void onMainSourceSoundPropertyChangedEvent(org::genivi::am::am_sourceID_t, const org::genivi::am::am_MainSoundProperty_s & ) = 0 ;
+		virtual void onSourceAvailabilityChangedEvent(org::genivi::am::am_sourceID_t, const org::genivi::am::am_Availability_s &) = 0 ;
+		virtual void onNumberOfSinkClassesChangedEvent() = 0 ;
+		virtual void onSinkAddedEvent(const org::genivi::am::am_SinkType_s &)= 0  ;
+		virtual void onSinkRemovedEvent(org::genivi::am::am_sinkID_t) = 0  ;
+		virtual void onMainSinkSoundPropertyChangedEvent(org::genivi::am::am_sinkID_t, const org::genivi::am::am_MainSoundProperty_s &) = 0  ;
+		virtual void onSinkAvailabilityChangedEvent(org::genivi::am::am_sinkID_t, const org::genivi::am::am_Availability_s &) = 0 ;
+		virtual void onVolumeChangedEvent(org::genivi::am::am_sinkID_t, org::genivi::am::am_mainVolume_t)  = 0 ;
+		virtual void onSinkMuteStateChangedEvent(org::genivi::am::am_sinkID_t, org::genivi::am::am_MuteState_e)  = 0 ;
+		virtual void onSystemPropertyChangedEvent(const org::genivi::am::am_SystemProperty_s &) = 0 ;
+		virtual void onTimingInformationChangedEvent(org::genivi::am::am_mainConnectionID_t, org::genivi::am::am_timeSync_t)  = 0 ;
+		virtual void onSinkUpdatedEvent(org::genivi::am::am_sinkID_t, org::genivi::am::am_sinkClass_t, const org::genivi::am::am_MainSoundProperty_L &)  = 0 ;
+		virtual void onSourceUpdatedEvent(org::genivi::am::am_sourceID_t, org::genivi::am::am_sourceClass_t, const org::genivi::am::am_MainSoundProperty_L &)   = 0 ;
+		virtual void onSinkNotificationEvent(org::genivi::am::am_sinkID_t, const org::genivi::am::am_NotificationPayload_s & ) = 0 ;
+		virtual void onSourceNotificationEvent(org::genivi::am::am_sourceID_t, const org::genivi::am::am_NotificationPayload_s &)  = 0 ;
+		virtual void onMainSinkNotificationConfigurationChangedEvent(org::genivi::am::am_sinkID_t, const org::genivi::am::am_NotificationConfiguration_s &)  = 0 ;
+		virtual void onMainSourceNotificationConfigurationChangedEvent(org::genivi::am::am_sourceID_t, const org::genivi::am::am_NotificationConfiguration_s &) = 0 ;
 };
 
 class MockNotificationsClient : public IAmNotificationsClient {
- public:
-	MOCK_METHOD0(onNumberOfMainConnectionsChangedEvent,
-			void());
-	MOCK_METHOD0(onNumberOfSourceClassesChangedEvent, void());
-	MOCK_METHOD2(onMainConnectionStateChangedEvent,
-			void(CommandInterface::am_mainConnectionID_t mcID, CommandInterface::am_ConnectionState_e cs));
-	MOCK_METHOD1(onSourceAddedEvent, void(const CommandInterface::am_SourceType_s & st));
-	MOCK_METHOD1(onSourceRemovedEvent, void(CommandInterface::am_sourceID_t sid));
-	MOCK_METHOD2(onMainSourceSoundPropertyChangedEvent,
-			void(CommandInterface::am_sourceID_t sid, const CommandInterface::am_MainSoundProperty_s & msp) );
-	MOCK_METHOD2(onSourceAvailabilityChangedEvent,
-			void(CommandInterface::am_sourceID_t st, const CommandInterface::am_Availability_s & a) );
-	MOCK_METHOD0(onNumberOfSinkClassesChangedEvent,
-			void());
-	MOCK_METHOD1(onSinkAddedEvent,
-			void(const CommandInterface::am_SinkType_s & st));
-	MOCK_METHOD1(onSinkRemovedEvent,
-			void(CommandInterface::am_sinkID_t sid));
-	MOCK_METHOD2(onMainSinkSoundPropertyChangedEvent,
-			void(CommandInterface::am_sinkID_t sid, const CommandInterface::am_MainSoundProperty_s & msp) );
-	MOCK_METHOD2(onSinkAvailabilityChangedEvent,
-			void(CommandInterface::am_sinkID_t sid, const CommandInterface::am_Availability_s & a) );
-	MOCK_METHOD2(onVolumeChangedEvent,
-			void(CommandInterface::am_sinkID_t sid, CommandInterface::am_mainVolume_t mv) );
-	MOCK_METHOD2(onSinkMuteStateChangedEvent,
-			void(CommandInterface::am_sinkID_t sid, CommandInterface::am_MuteState_e ms) );
-	MOCK_METHOD1(onSystemPropertyChangedEvent,
-			void(const CommandInterface::am_SystemProperty_s & sp));
-	MOCK_METHOD2(onTimingInformationChangedEvent,
-			void(CommandInterface::am_mainConnectionID_t cid, CommandInterface::am_timeSync_t ts) );
-	MOCK_METHOD3(onSinkUpdatedEvent,
-			void(CommandInterface::am_sinkID_t sid, CommandInterface::am_sinkClass_t sc, const CommandInterface::am_MainSoundProperty_l & msp) );
-	MOCK_METHOD3(onSourceUpdatedEvent,
-			void(CommandInterface::am_sourceID_t sid, CommandInterface::am_sourceClass_t sc, const CommandInterface::am_MainSoundProperty_l & msp)  );
-	MOCK_METHOD2(onSinkNotificationEvent,
-			void(CommandInterface::am_sinkID_t sid, const CommandInterface::am_NotificationPayload_s & np));
-	MOCK_METHOD2(onSourceNotificationEvent,
-			void(CommandInterface::am_sourceID_t sid, const CommandInterface::am_NotificationPayload_s & np) );
-	MOCK_METHOD2(onMainSinkNotificationConfigurationChangedEvent,
-			void(CommandInterface::am_sinkID_t sid, const org::genivi::audiomanager::am::am_NotificationConfiguration_s & nc) );
-	MOCK_METHOD2(onMainSourceNotificationConfigurationChangedEvent,
-			void(CommandInterface::am_sourceID_t sid, const org::genivi::audiomanager::am::am_NotificationConfiguration_s & nc));
-};
+public:
+	 MOCK_METHOD1(onNewMainConnection,
+	      void(const org::genivi::am::am_MainConnectionType_s&));
+	  MOCK_METHOD1(removedMainConnection,
+	      void(org::genivi::am::am_mainConnectionID_t));
+	  MOCK_METHOD0(onNumberOfSourceClassesChangedEvent,
+	      void());
+	  MOCK_METHOD2(onMainConnectionStateChangedEvent,
+	      void(org::genivi::am::am_mainConnectionID_t, org::genivi::am::am_ConnectionState_e));
+	  MOCK_METHOD1(onSourceAddedEvent,
+	      void(const org::genivi::am::am_SourceType_s &));
+	  MOCK_METHOD1(onSourceRemovedEvent,
+	      void(org::genivi::am::am_sourceID_t));
+	  MOCK_METHOD2(onMainSourceSoundPropertyChangedEvent,
+	      void(org::genivi::am::am_sourceID_t, const org::genivi::am::am_MainSoundProperty_s&));
+	  MOCK_METHOD2(onSourceAvailabilityChangedEvent,
+	      void(org::genivi::am::am_sourceID_t, const org::genivi::am::am_Availability_s&));
+	  MOCK_METHOD0(onNumberOfSinkClassesChangedEvent,
+	      void());
+	  MOCK_METHOD1(onSinkAddedEvent,
+	      void(const org::genivi::am::am_SinkType_s&));
+	  MOCK_METHOD1(onSinkRemovedEvent,
+	      void(org::genivi::am::am_sinkID_t));
+	  MOCK_METHOD2(onMainSinkSoundPropertyChangedEvent,
+	      void(org::genivi::am::am_sinkID_t, const org::genivi::am::am_MainSoundProperty_s&));
+	  MOCK_METHOD2(onSinkAvailabilityChangedEvent,
+	      void(org::genivi::am::am_sinkID_t, const org::genivi::am::am_Availability_s&));
+	  MOCK_METHOD2(onVolumeChangedEvent,
+	      void(org::genivi::am::am_sinkID_t, org::genivi::am::am_mainVolume_t));
+	  MOCK_METHOD2(onSinkMuteStateChangedEvent,
+	      void(org::genivi::am::am_sinkID_t, org::genivi::am::am_MuteState_e));
+	  MOCK_METHOD1(onSystemPropertyChangedEvent,
+	      void(const org::genivi::am::am_SystemProperty_s&));
+	  MOCK_METHOD2(onTimingInformationChangedEvent,
+	      void(org::genivi::am::am_mainConnectionID_t, org::genivi::am::am_timeSync_t));
+	  MOCK_METHOD3(onSinkUpdatedEvent,
+	      void(org::genivi::am::am_sinkID_t, org::genivi::am::am_sinkClass_t, const org::genivi::am::am_MainSoundProperty_L&));
+	  MOCK_METHOD3(onSourceUpdatedEvent,
+	      void(org::genivi::am::am_sourceID_t, org::genivi::am::am_sourceClass_t, const org::genivi::am::am_MainSoundProperty_L&));
+	  MOCK_METHOD2(onSinkNotificationEvent,
+	      void(org::genivi::am::am_sinkID_t, const org::genivi::am::am_NotificationPayload_s&));
+	  MOCK_METHOD2(onSourceNotificationEvent,
+	      void(org::genivi::am::am_sourceID_t, const org::genivi::am::am_NotificationPayload_s&));
+	  MOCK_METHOD2(onMainSinkNotificationConfigurationChangedEvent,
+	      void(org::genivi::am::am_sinkID_t, const org::genivi::am::am_NotificationConfiguration_s&));
+	  MOCK_METHOD2(onMainSourceNotificationConfigurationChangedEvent,
+	      void(org::genivi::am::am_sourceID_t, const org::genivi::am::am_NotificationConfiguration_s&));
+	};
+
+
 
 }  // namespace am
 #endif /* MOCKCOMMANDRECEIVENTERFACE_H_ */
