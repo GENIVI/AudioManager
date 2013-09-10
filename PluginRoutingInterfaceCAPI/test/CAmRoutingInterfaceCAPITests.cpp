@@ -1522,6 +1522,32 @@ ACTION(actionRegister2){
 	arg1=TEST_ID_2;
 }
 
+TEST_F(CAmRoutingInterfaceCAPITests, confirmRoutingRundown)
+{
+	ASSERT_TRUE(env->mIsServiceAvailable);
+	if(env->mIsServiceAvailable)
+	{
+		CallStatus callStatus = CallStatus::NOT_AVAILABLE, domainstatus = CallStatus::NOT_AVAILABLE;
+		org::genivi::am::am_domainID_t domainID;
+		am_Error_e error = E_OK;
+		org::genivi::am::am_Error_e CAPIError;
+		std::string name("test domain name");
+        std::string busname("busname");
+        std::string nodename("nodename");
+		org::genivi::am::am_Domain_s domainData(0, name, busname, nodename, false, false, org::genivi::am::am_DomainState_e::DS_CONTROLLED);
+		ON_CALL(*env->mpRoutingReceive, registerDomain(_,_)).WillByDefault(Return(E_OK));
+		EXPECT_CALL(*env->mpRoutingReceive, registerDomain(_, _));
+		env->mProxy->registerDomain(domainData,"sd","sds","sd",domainstatus,domainID,CAPIError);
+		ASSERT_EQ( domainstatus, CallStatus::SUCCESS );
+		env->mpPlugin->setRoutingRundown(5);
+		EXPECT_CALL(*env->mpRoutingReceive, confirmRoutingRundown(5,E_OK)).Times(1);
+		env->mProxy->confirmRoutingRundown(name, callStatus);
+		EXPECT_CALL(*env->mpRoutingReceive, deregisterDomain(_));
+		env->mProxy->deregisterDomain(domainID,domainstatus,CAPIError);
+		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
+	}
+	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+}
 
 /** CAmRoutingSenderCAPITests
  * The following methods must be executed in the given order.
@@ -2188,24 +2214,3 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_deregisterDomain)
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
 }
 
-TEST_F(CAmRoutingInterfaceCAPITests, confirmRoutingRundown)
-{
-	ASSERT_TRUE(env->mIsServiceAvailable);
-	if(env->mIsServiceAvailable)
-	{
-		CallStatus callStatus = CallStatus::NOT_AVAILABLE, domainstatus;
-		org::genivi::am::am_domainID_t domainID;
-		am_Error_e error = E_OK;
-		org::genivi::am::am_Error_e CAPIError;
-		std::string testID = "myDomain";
-		org::genivi::am::am_Domain_s domainData;
-		ON_CALL(*env->mpRoutingReceive, registerDomain(_,_)).WillByDefault(Return(E_OK));
-		env->mProxy->registerDomain(domainData,"sd","sds","sd",domainstatus,domainID,CAPIError);
-		env->mpPlugin->setRoutingRundown(5);
-		EXPECT_CALL(*env->mpRoutingReceive, confirmRoutingRundown(5,E_OK)).Times(1);
-		env->mProxy->confirmRoutingRundown(testID, callStatus);
-		env->mProxy->deregisterDomain(domainID,domainstatus,CAPIError);
-		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
-	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
-}
