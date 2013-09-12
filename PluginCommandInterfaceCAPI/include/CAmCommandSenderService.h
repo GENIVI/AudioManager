@@ -49,7 +49,7 @@ public:
 
 	    virtual void setSystemProperty(org::genivi::am::am_SystemProperty_s soundProperty, org::genivi::am::am_Error_e& result);
 
-	    virtual void getListMainConnections(org::genivi::am::am_Error_e& result, org::genivi::am::am_MainConnection_L& listConnections);
+	    virtual void getListMainConnections(org::genivi::am::am_MainConnection_L& listConnections,org::genivi::am::am_Error_e& result);
 
 	    virtual void getListMainSinks(org::genivi::am::am_SinkType_L& listMainSinks, org::genivi::am::am_Error_e& result);
 

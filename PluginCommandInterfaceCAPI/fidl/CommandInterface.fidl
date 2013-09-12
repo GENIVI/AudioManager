@@ -101,7 +101,7 @@ interface CommandControl {
     **>
     method setMainSinkSoundProperty {
         in {
-        	am_sinkID_t sinkID
+            am_sinkID_t sinkID
             am_MainSoundProperty_s soundProperty
         }
         out {
@@ -115,7 +115,7 @@ interface CommandControl {
     **>
     method setMainSourceSoundProperty {
         in {
-        	am_sourceID_t sourceID
+            am_sourceID_t sourceID
             am_MainSoundProperty_s soundProperty
         }
         out {
@@ -146,12 +146,12 @@ interface CommandControl {
     **>
     method getListMainConnections {
         out {
-            am_Error_e ^error
 
             <**
                 @description : returns a list of all connections
             **>
             am_MainConnection_L listConnections
+            am_Error_e ^error
         }
     }
 
@@ -602,4 +602,5 @@ interface CommandControl {
             am_NotificationConfiguration_s mainNotificationConfiguration
         }
     }
+
 }

@@ -21,6 +21,8 @@
 The nodestatemanager is part of the GENIVI compliance. It basically handles startup and rundown of components in the IVI context.\n
 For more information, please go to http://projects.genivi.org
 
+The Nodestatemanagement will either work with CommonAPI or DBus native.
+
 \section nsmiact The Interaction between the NodeStateManager and the AudioManager
 It is the job of am::CAmNodeStateCommunicator to interact with the nodestatemanager via DBUS.\n
 The ControllerPlugin can register by the NSM to be informed when a shutdown will occour. For this, the Audiomanager presents an DBus interface, defined in LifeCycleConsumer.xml that will be called from the NSM during a shutdown,

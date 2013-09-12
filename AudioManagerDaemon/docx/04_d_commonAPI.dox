@@ -1,0 +1,30 @@
+ /*
+ * Copyright (C) 2012, BMW AG
+ *
+ * This file is part of GENIVI Project AudioManager.
+ *
+ * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contribution License Agreements.
+ *
+ * \copyright
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
+ * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ * \\author Christian Linke (christian.linke@bmw.de)
+ *
+ */
+ 
+ /*!
+ \page comminAPI AudioManager and CommonAPI
+The audiomanager supports CommonAPI in very comfortable way. It will register CommonAPI in the audiomanager mainloop (am::CAmSocketHandler) and make
+threadsafe calls to the stubs registered via the factory provided by the wrapper.
+ If enabled (by default) via cmake, the am::CAmCommonAPIWrapper is created. It is instantiated as singleton
+and every Plugin can use it.
+First, you have to create the interfaces out of the FIDL data like usual. 
+Then, you can access the singletons via am::CAmCommonAPIWrapper::factory and am::CAmCommonAPIWrapper::runtime.
+
+More information about CommonAPI can be found here:
+http://projects.genivi.org/commonapi/
+
+*/

@@ -214,6 +214,7 @@ ENDIF(WITH_TESTS)
 IF(WITH_DOCUMENTATION)
 	find_package(Doxygen)
 	configure_file(${DOXY_FILE}  ${DOC_OUTPUT_PATH}/Doxyfile  @ONLY IMMEDIATE)
+	configure_file("README.html" ${DOC_OUTPUT_PATH}/html/README.html)
   	add_custom_target (AudioManangerDoku ALL 
   		COMMAND ${DOXYGEN_EXECUTABLE} ${DOC_OUTPUT_PATH}/Doxyfile WORKING_DIRECTORY ${DOC_OUTPUT_PATH}
   		SOURCES ${CMAKE_SOURCE_DIR} ${DOC_OUTPUT_PATH}/Doxyfile

@@ -81,5 +81,19 @@
  am::IAmRoutingSend::returnBusName. The AudioManagerDaemon used this information to link a plugin with a domain. All other elements like
  sinks, sources etc are linked to domains. This is how the hierarchy looks like that is used:
  \image html routing_hierarchy.png
+ 
+ \subsection CAPIplugins CommonAPI plugins
+ As "sample code" with MIT license, PluginCommandInterfaceCAPI and PluginRoutingInterfaceCAPI are provided with the source code. The FRANCA 
+ fidls have been generated out of the Enterprise architect model, so they might be used to draw project specific behavior in sequences.
+ The sources in src-gen have been generated out of the provided fidl files.
+ 
+ \image html PluginCommandInterfaceCAPI.png
+ 
+ \image html PluginRoutingInterfaceCAPI.png
+ 
+ There is no fixed domain associated with this plugin. So you have to implement the interface org::genivi::am::RoutingControlStub and report
+ busname and path to the routingplugin on the interface org::genivi::am::RoutingControlObserverStub like this:
+ 
+ \image html Register_Domain.png
 
 */

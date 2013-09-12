@@ -372,7 +372,7 @@ TEST_F(CAmCommandSenderCAPITest, GetListMainConnectionsTest)
 
 		EXPECT_CALL(*env->mpCommandReceive, getListMainConnections(_)).WillOnce(DoAll(returnListConnections(), Return(E_OK)));
 		org::genivi::am::am_MainConnection_L listConnections;
-		env->mProxy->getListMainConnections(callStatus, result, listConnections);
+		env->mProxy->getListMainConnections(callStatus, listConnections, result);
 		ASSERT_EQ(result, org::genivi::am::am_Error_e::E_OK);
 		ASSERT_EQ(1, listConnections.size());
 		ASSERT_EQ(15, listConnections.at(0).mainConnectionID);

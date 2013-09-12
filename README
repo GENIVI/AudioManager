@@ -60,28 +60,33 @@ These are the compile options with default values:
  BUILD_SHARED_LIBS                OFF                                                                                                                                                                             
  CMAKE_BUILD_TYPE                                                                                                                                                                                                 
  CMAKE_INSTALL_PREFIX             /usr/local                                                                                                                                                                      
+ COMMON_API_DBUS_LIBRARY          /usr/local/lib/libCommonAPI-DBus.so                                                                                                                                             
+ COMMON_API_LIBRARY               /usr/local/lib/libCommonAPI.so                                                                                                                                                  
  GLIB_DBUS_TYPES_TOLERANT         ON                                                                                                                                                                              
  USE_BUILD_LIBS                   ON                                                                                                                                                                              
- WITH_COMMAND_INTERFACE_DBUS      ON                                                                                                                                                                              
- WITH_DATABASE_STORAGE            ON                                                                                                                                                                              
- WITH_DBUS_WRAPPER                ON                                                                                                                                                                              
- WITH_DLT                         OFF                                                                                                                                                                             
- WITH_DOCUMENTATION               ON                                                                                                                                                                                                                                                                                                                                                         
- WITH_NSM                         OFF                                                                                                                                                                                                                                                                                                                                                       
+ WITH_COMMAND_INTERFACE_COMMON_   ON                                                                                                                                                                              
+ WITH_DATABASE_STORAGE            OFF                                                                                                                                                                             
+ WITH_DLT                         ON                                                                                                                                                                              
+ WITH_DOCUMENTATION               ON                                                                                                                                                                              
+ WITH_ENABLED_IPC                 CAPI                                                                                                                                                                            
+ WITH_LOGSTATE                    ON                                                                                                                                                                              
+ WITH_NSM                         ON                                                                                                                                                                              
+ WITH_OXF_ANIMATION               OFF                                                                                                                                                                             
+ WITH_OXF_TRACE                   OFF                                                                                                                                                                             
  WITH_PLUGIN_COMMAND              ON                                                                                                                                                                              
  WITH_PLUGIN_CONTROL              ON                                                                                                                                                                              
  WITH_PLUGIN_ROUTING              ON                                                                                                                                                                              
  WITH_ROUTING_INTERFACE_ASYNC     OFF                                                                                                                                                                             
- WITH_ROUTING_INTERFACE_DBUS      ON                                                                                                                                                                              
+ WITH_ROUTING_INTERFACE_CAPI      ON                                                                                                                                                                              
  WITH_SYSTEMD_WATCHDOG            OFF                                                                                                                                                                             
- WITH_TELNET                      OFF                                                                                                                                                                             
- WITH_TESTS                       OFF                                                                                                                                                                             
+ WITH_TELNET                      ON                                                                                                                                                                              
+ WITH_TESTS                       ON                                                                                                                                                                              
  WITH_TEST_CONTROLLER             OFF                                                                                                                                                                             
  gmock_build_tests                OFF                                                                                                                                                                             
  gtest_build_samples              OFF                                                                                                                                                                             
  gtest_build_tests                OFF                                                                                                                                                                             
  gtest_disable_pthreads           OFF                                                                                                                                                                             
- gtest_force_shared_crt           OFF
+ gtest_force_shared_crt           OFF 
     
 === Passing options to cmake:
 
@@ -118,7 +123,8 @@ You will need optionally fullfill some dependencies in order to comile the GENIV
 * dbus (only when DBUS_WRAPPER==ON) [tested on version 1.2.16]
 * sqlite3 [tested on version 3.6.22] (only when WITH_DATABASE_STORAGE==ON)
 * automotive-dlt [greater 2.5.0] (only when WITH_DLT==ON)        
-* doxygen (only when WITH_DOCUMENTATION==ON) [tested on version 1.6.3]
+* doxygen [tested on version 1.6.3] (only when WITH_DOCUMENTATION==ON) 
+* commonAPI [version > 2.1] (only with WITH_ENABLED_IPC CAPI), more information here http://projects.genivi.org/commonapi/
 
 To install them in a build environment like Ubuntu you can use:
 ----

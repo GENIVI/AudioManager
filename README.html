@@ -805,22 +805,27 @@ make</tt></pre>
 <pre><tt>BUILD_SHARED_LIBS                OFF
 CMAKE_BUILD_TYPE
 CMAKE_INSTALL_PREFIX             /usr/local
+COMMON_API_DBUS_LIBRARY          /usr/local/lib/libCommonAPI-DBus.so
+COMMON_API_LIBRARY               /usr/local/lib/libCommonAPI.so
 GLIB_DBUS_TYPES_TOLERANT         ON
 USE_BUILD_LIBS                   ON
-WITH_COMMAND_INTERFACE_DBUS      ON
-WITH_DATABASE_STORAGE            ON
-WITH_DBUS_WRAPPER                ON
-WITH_DLT                         OFF
+WITH_COMMAND_INTERFACE_COMMON_   ON
+WITH_DATABASE_STORAGE            OFF
+WITH_DLT                         ON
 WITH_DOCUMENTATION               ON
-WITH_NSM                         OFF
+WITH_ENABLED_IPC                 CAPI
+WITH_LOGSTATE                    ON
+WITH_NSM                         ON
+WITH_OXF_ANIMATION               OFF
+WITH_OXF_TRACE                   OFF
 WITH_PLUGIN_COMMAND              ON
 WITH_PLUGIN_CONTROL              ON
 WITH_PLUGIN_ROUTING              ON
 WITH_ROUTING_INTERFACE_ASYNC     OFF
-WITH_ROUTING_INTERFACE_DBUS      ON
+WITH_ROUTING_INTERFACE_CAPI      ON
 WITH_SYSTEMD_WATCHDOG            OFF
-WITH_TELNET                      OFF
-WITH_TESTS                       OFF
+WITH_TELNET                      ON
+WITH_TESTS                       ON
 WITH_TEST_CONTROLLER             OFF
 gmock_build_tests                OFF
 gtest_build_samples              OFF
@@ -864,7 +869,12 @@ automotive-dlt [greater 2.5.0] (only when WITH_DLT==ON)
 </li>
 <li>
 <p>
-doxygen (only when WITH_DOCUMENTATION==ON) [tested on version 1.6.3]
+doxygen [tested on version 1.6.3] (only when WITH_DOCUMENTATION==ON)
+</p>
+</li>
+<li>
+<p>
+commonAPI [version &gt; 2.1] (only with WITH_ENABLED_IPC CAPI), more information here <a href="http://projects.genivi.org/commonapi/">http://projects.genivi.org/commonapi/</a>
 </p>
 </li>
 </ul></div>
@@ -1210,7 +1220,7 @@ handle later on.</p></div>
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2013-06-26 17:30:25 CEST
+Last updated 2013-09-12 10:26:35 CEST
 </div>
 </div>
 </body>

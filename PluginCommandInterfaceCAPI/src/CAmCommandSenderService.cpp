@@ -81,7 +81,7 @@ void CAmCommandSenderService::setSystemProperty(org::genivi::am::am_SystemProper
     result = CAmConvert2CAPIType(mpIAmCommandReceive->setSystemProperty(property));
 }
 
-void CAmCommandSenderService::getListMainConnections(org::genivi::am::am_Error_e& result, org::genivi::am::am_MainConnection_L& listConnections) {
+void CAmCommandSenderService::getListMainConnections(org::genivi::am::am_MainConnection_L& listConnections,org::genivi::am::am_Error_e& result) {
     assert(mpIAmCommandReceive);
     std::vector<am_MainConnectionType_s> list;
     result = CAmConvert2CAPIType(mpIAmCommandReceive->getListMainConnections(list));
