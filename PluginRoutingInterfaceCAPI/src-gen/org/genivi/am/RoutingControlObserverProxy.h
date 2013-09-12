@@ -350,7 +350,7 @@ class RoutingControlObserverProxy: virtual public RoutingControlObserver, virtua
      * will be set.
      * Synchronous calls are not supported (will block indefinitely) when mainloop integration is used.
      */
-    virtual void registerDomain(const am_Domain_s& domainData, const std::string& returnInterface, const std::string& returnPath, const std::string& returnBusname, CommonAPI::CallStatus& callStatus, am_domainID_t& domainID, am_Error_e& error);
+    virtual void registerDomain(const am_Domain_s& domainData, const std::string& returnBusname, const std::string& returnInterface, CommonAPI::CallStatus& callStatus, am_domainID_t& domainID, am_Error_e& error);
     /**
      * Calls registerDomain with asynchronous semantics.
      * 
@@ -361,7 +361,7 @@ class RoutingControlObserverProxy: virtual public RoutingControlObserver, virtua
      * The std::future returned by this method will be fulfilled at arrival of the reply.
      * It will provide the same value for CallStatus as will be handed to the callback.
      */
-    virtual std::future<CommonAPI::CallStatus> registerDomainAsync(const am_Domain_s& domainData, const std::string& returnInterface, const std::string& returnPath, const std::string& returnBusname, RegisterDomainAsyncCallback callback);
+    virtual std::future<CommonAPI::CallStatus> registerDomainAsync(const am_Domain_s& domainData, const std::string& returnBusname, const std::string& returnInterface, RegisterDomainAsyncCallback callback);
 
     /**
      * Calls deregisterDomain with synchronous semantics.
@@ -1214,13 +1214,13 @@ std::future<CommonAPI::CallStatus> RoutingControlObserverProxy<_AttributeExtensi
 }
 
 template <typename ... _AttributeExtensions>
-void RoutingControlObserverProxy<_AttributeExtensions...>::registerDomain(const am_Domain_s& domainData, const std::string& returnInterface, const std::string& returnPath, const std::string& returnBusname, CommonAPI::CallStatus& callStatus, am_domainID_t& domainID, am_Error_e& error) {
-    delegate_->registerDomain(domainData, returnInterface, returnPath, returnBusname, callStatus, domainID, error);
+void RoutingControlObserverProxy<_AttributeExtensions...>::registerDomain(const am_Domain_s& domainData, const std::string& returnBusname, const std::string& returnInterface, CommonAPI::CallStatus& callStatus, am_domainID_t& domainID, am_Error_e& error) {
+    delegate_->registerDomain(domainData, returnBusname, returnInterface, callStatus, domainID, error);
 }
 
 template <typename ... _AttributeExtensions>
-std::future<CommonAPI::CallStatus> RoutingControlObserverProxy<_AttributeExtensions...>::registerDomainAsync(const am_Domain_s& domainData, const std::string& returnInterface, const std::string& returnPath, const std::string& returnBusname, RegisterDomainAsyncCallback callback) {
-    return delegate_->registerDomainAsync(domainData, returnInterface, returnPath, returnBusname, callback);
+std::future<CommonAPI::CallStatus> RoutingControlObserverProxy<_AttributeExtensions...>::registerDomainAsync(const am_Domain_s& domainData, const std::string& returnBusname, const std::string& returnInterface, RegisterDomainAsyncCallback callback) {
+    return delegate_->registerDomainAsync(domainData, returnBusname, returnInterface, callback);
 }
 
 template <typename ... _AttributeExtensions>

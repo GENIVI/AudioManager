@@ -96,8 +96,8 @@ class RoutingControlObserverDBusProxy: virtual public RoutingControlObserverProx
     virtual void peekDomain(const std::string& name, CommonAPI::CallStatus& callStatus, am_domainID_t& domainID, am_Error_e& error);
     virtual std::future<CommonAPI::CallStatus> peekDomainAsync(const std::string& name, PeekDomainAsyncCallback callback);
 
-    virtual void registerDomain(const am_Domain_s& domainData, const std::string& returnInterface, const std::string& returnPath, const std::string& returnBusname, CommonAPI::CallStatus& callStatus, am_domainID_t& domainID, am_Error_e& error);
-    virtual std::future<CommonAPI::CallStatus> registerDomainAsync(const am_Domain_s& domainData, const std::string& returnInterface, const std::string& returnPath, const std::string& returnBusname, RegisterDomainAsyncCallback callback);
+    virtual void registerDomain(const am_Domain_s& domainData, const std::string& returnBusname, const std::string& returnInterface, CommonAPI::CallStatus& callStatus, am_domainID_t& domainID, am_Error_e& error);
+    virtual std::future<CommonAPI::CallStatus> registerDomainAsync(const am_Domain_s& domainData, const std::string& returnBusname, const std::string& returnInterface, RegisterDomainAsyncCallback callback);
 
     virtual void deregisterDomain(const am_domainID_t& domainID, CommonAPI::CallStatus& callStatus, am_Error_e& error);
     virtual std::future<CommonAPI::CallStatus> deregisterDomainAsync(const am_domainID_t& domainID, DeregisterDomainAsyncCallback callback);

@@ -127,7 +127,7 @@ class RoutingControlObserverStub : public CommonAPI::Stub<RoutingControlObserver
     /// This is the method that will be called on remote calls on the method peekDomain.
     virtual void peekDomain(std::string name, am_domainID_t& domainID, am_Error_e& error) = 0;
     /// This is the method that will be called on remote calls on the method registerDomain.
-    virtual void registerDomain(am_Domain_s domainData, std::string returnInterface, std::string returnPath, std::string returnBusname, am_domainID_t& domainID, am_Error_e& error) = 0;
+    virtual void registerDomain(am_Domain_s domainData, std::string returnBusname, std::string returnInterface, am_domainID_t& domainID, am_Error_e& error) = 0;
     /// This is the method that will be called on remote calls on the method deregisterDomain.
     virtual void deregisterDomain(am_domainID_t domainID, am_Error_e& error) = 0;
     /// This is the method that will be called on remote calls on the method registerGateway.

@@ -126,7 +126,7 @@ void RoutingControlObserverStubDefault::peekDomain(std::string name, am_domainID
     // No operation in default
 }
 
-void RoutingControlObserverStubDefault::registerDomain(am_Domain_s domainData, std::string returnInterface, std::string returnPath, std::string returnBusname, am_domainID_t& domainID, am_Error_e& error) {
+void RoutingControlObserverStubDefault::registerDomain(am_Domain_s domainData, std::string returnBusname, std::string returnInterface, am_domainID_t& domainID, am_Error_e& error) {
     // No operation in default
 }
 

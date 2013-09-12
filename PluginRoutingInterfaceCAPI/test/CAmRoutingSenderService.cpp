@@ -115,7 +115,6 @@ void CAmRoutingSenderService::registerDomain()
     CommonAPI::CallStatus callStatus;
     mRoutingInterfaceProxy->registerDomain(mDomainData,
     									   CAPI_SENDER_INSTANCE,
-    									   CAPI_SENDER_PATH,
     									   CAPI_SENDER_INTERFACE,
     									   callStatus,
     									   mDomainData.domainID,

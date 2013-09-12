@@ -129,9 +129,8 @@ const char* RoutingControlObserverDBusStubAdapter::getMethodsDBusIntrospectionXm
         "</method>\n"
         "<method name=\"registerDomain\">\n"
             "<arg name=\"domainData\" type=\"(qsssbbi)\" direction=\"in\" />\n"
-            "<arg name=\"returnInterface\" type=\"s\" direction=\"in\" />\n"
-            "<arg name=\"returnPath\" type=\"s\" direction=\"in\" />\n"
             "<arg name=\"returnBusname\" type=\"s\" direction=\"in\" />\n"
+            "<arg name=\"returnInterface\" type=\"s\" direction=\"in\" />\n"
             "<arg name=\"domainID\" type=\"q\" direction=\"out\" />\n"
             "<arg name=\"error\" type=\"i\" direction=\"out\" />\n"
         "</method>\n"
@@ -354,7 +353,7 @@ static CommonAPI::DBus::DBusMethodWithReplyStubDispatcher<
     > peekDomainStubDispatcher(&RoutingControlObserverStub::peekDomain, "qi");
 static CommonAPI::DBus::DBusMethodWithReplyStubDispatcher<
     RoutingControlObserverStub,
-    std::tuple<am_Domain_s, std::string, std::string, std::string>,
+    std::tuple<am_Domain_s, std::string, std::string>,
     std::tuple<am_domainID_t, am_Error_e>
     > registerDomainStubDispatcher(&RoutingControlObserverStub::registerDomain, "qi");
 static CommonAPI::DBus::DBusMethodWithReplyStubDispatcher<
@@ -536,7 +535,7 @@ const org::genivi::am::RoutingControlObserverDBusStubAdapterHelper::StubDispatch
     { { "ackSourceVolumeTick", "(iq)qn" }, &org::genivi::am::ackSourceVolumeTickStubDispatcher },
     { { "ackSinkVolumeTick", "(iq)qn" }, &org::genivi::am::ackSinkVolumeTickStubDispatcher },
     { { "peekDomain", "s" }, &org::genivi::am::peekDomainStubDispatcher },
-    { { "registerDomain", "(qsssbbi)sss" }, &org::genivi::am::registerDomainStubDispatcher },
+    { { "registerDomain", "(qsssbbi)ss" }, &org::genivi::am::registerDomainStubDispatcher },
     { { "deregisterDomain", "q" }, &org::genivi::am::deregisterDomainStubDispatcher },
     { { "registerGateway", "(qsqqqqqaqaqab)" }, &org::genivi::am::registerGatewayStubDispatcher },
     { { "deregisterGateway", "q" }, &org::genivi::am::deregisterGatewayStubDispatcher },

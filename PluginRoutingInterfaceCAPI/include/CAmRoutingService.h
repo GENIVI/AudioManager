@@ -75,7 +75,7 @@ public:
 
 	void peekDomain(std::string name, org::genivi::am::am_domainID_t& domainID, org::genivi::am::am_Error_e& error);
 
-	void registerDomain(org::genivi::am::am_Domain_s domainData, std::string returnBusname, std::string, std::string returnInterface, org::genivi::am::am_domainID_t& domainID, org::genivi::am::am_Error_e& error);
+	void registerDomain(org::genivi::am::am_Domain_s domainData, std::string returnBusname, std::string returnInterface, org::genivi::am::am_domainID_t& domainID, org::genivi::am::am_Error_e& error);
 
 	void deregisterDomain(org::genivi::am::am_domainID_t domainID, org::genivi::am::am_Error_e& returnError);
 

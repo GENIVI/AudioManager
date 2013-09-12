@@ -622,7 +622,6 @@ TEST_F(CAmRoutingInterfaceCAPITests, registerDomain)
 //example: 	[local:org.genivi.audiomanger.testdomaininterface:org.genivi.audiomanger]
 		env->mProxy->registerDomain(domainData,
 									"org.genivi.audiomanger", //(last part)
-									"",
 									"org.genivi.audiomanger.testdomaininterface", //(middle part)
 									callStatus,
 									domainID,
@@ -1537,7 +1536,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, confirmRoutingRundown)
 		org::genivi::am::am_Domain_s domainData(0, name, busname, nodename, false, false, org::genivi::am::am_DomainState_e::DS_CONTROLLED);
 		ON_CALL(*env->mpRoutingReceive, registerDomain(_,_)).WillByDefault(Return(E_OK));
 		EXPECT_CALL(*env->mpRoutingReceive, registerDomain(_, _));
-		env->mProxy->registerDomain(domainData,"sd","sds","sd",domainstatus,domainID,CAPIError);
+		env->mProxy->registerDomain(domainData,"sd","sd",domainstatus,domainID,CAPIError);
 		ASSERT_EQ( domainstatus, CallStatus::SUCCESS );
 		env->mpPlugin->setRoutingRundown(5);
 		EXPECT_CALL(*env->mpRoutingReceive, confirmRoutingRundown(5,E_OK)).Times(1);
@@ -1583,7 +1582,6 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_registerDomain)
 		EXPECT_CALL(*env->mpRoutingReceive, registerDomain(IsDomainDataEqualTo(amDomainData), _)).WillOnce(DoAll(actionRegister(), Return(E_OK)));
 	    env->mProxy->registerDomain(domainData,
 								    CAPI_SENDER_INSTANCE,
-								    CAPI_SENDER_PATH,
 								    CAPI_SENDER_INTERFACE,
 								    callStatus,
 								    domainID,
@@ -1602,7 +1600,6 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_registerDomain)
 		EXPECT_CALL(*env->mpRoutingReceive, registerDomain(IsDomainDataEqualTo(amDomainData), _)).WillOnce(DoAll(actionRegister2(), Return(E_OK)));
 		env->mProxy->registerDomain(domainData,
 									CAPI_SENDER_INSTANCE,
-									CAPI_SENDER_PATH,
 									CAPI_SENDER_INTERFACE,
 									callStatus,
 									domainID,

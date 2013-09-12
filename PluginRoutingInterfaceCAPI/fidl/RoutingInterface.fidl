@@ -411,9 +411,8 @@ A client should notify himself to this attribute in order to know the current st
                 @description : domainID in am_Domain_s must be 0!
             **>
             am_Domain_s domainData
-            String returnInterface
-            String returnPath
             String returnBusname
+            String returnInterface
         }
         out {
             am_domainID_t domainID

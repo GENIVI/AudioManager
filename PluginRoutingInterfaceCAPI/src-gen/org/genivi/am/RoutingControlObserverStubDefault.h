@@ -78,7 +78,7 @@ class RoutingControlObserverStubDefault : public RoutingControlObserverStub {
 
     virtual void peekDomain(std::string name, am_domainID_t& domainID, am_Error_e& error);
 
-    virtual void registerDomain(am_Domain_s domainData, std::string returnInterface, std::string returnPath, std::string returnBusname, am_domainID_t& domainID, am_Error_e& error);
+    virtual void registerDomain(am_Domain_s domainData, std::string returnBusname, std::string returnInterface, am_domainID_t& domainID, am_Error_e& error);
 
     virtual void deregisterDomain(am_domainID_t domainID, am_Error_e& error);
 

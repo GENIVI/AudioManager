@@ -306,23 +306,23 @@ std::future<CommonAPI::CallStatus> RoutingControlObserverDBusProxy::peekDomainAs
         name, 
         std::move(callback));
 }
-void RoutingControlObserverDBusProxy::registerDomain(const am_Domain_s& domainData, const std::string& returnInterface, const std::string& returnPath, const std::string& returnBusname, CommonAPI::CallStatus& callStatus, am_domainID_t& domainID, am_Error_e& error) {
-    CommonAPI::DBus::DBusProxyHelper<CommonAPI::DBus::DBusSerializableArguments<am_Domain_s, std::string, std::string, std::string>,
+void RoutingControlObserverDBusProxy::registerDomain(const am_Domain_s& domainData, const std::string& returnBusname, const std::string& returnInterface, CommonAPI::CallStatus& callStatus, am_domainID_t& domainID, am_Error_e& error) {
+    CommonAPI::DBus::DBusProxyHelper<CommonAPI::DBus::DBusSerializableArguments<am_Domain_s, std::string, std::string>,
                                      CommonAPI::DBus::DBusSerializableArguments<am_domainID_t, am_Error_e> >::callMethodWithReply(
         *this,
         "registerDomain",
-        "(qsssbbi)sss",
-        domainData, returnInterface, returnPath, returnBusname, 
+        "(qsssbbi)ss",
+        domainData, returnBusname, returnInterface, 
         callStatus
         , domainID, error);
 }
-std::future<CommonAPI::CallStatus> RoutingControlObserverDBusProxy::registerDomainAsync(const am_Domain_s& domainData, const std::string& returnInterface, const std::string& returnPath, const std::string& returnBusname, RegisterDomainAsyncCallback callback) {
-    return CommonAPI::DBus::DBusProxyHelper<CommonAPI::DBus::DBusSerializableArguments<am_Domain_s, std::string, std::string, std::string>,
+std::future<CommonAPI::CallStatus> RoutingControlObserverDBusProxy::registerDomainAsync(const am_Domain_s& domainData, const std::string& returnBusname, const std::string& returnInterface, RegisterDomainAsyncCallback callback) {
+    return CommonAPI::DBus::DBusProxyHelper<CommonAPI::DBus::DBusSerializableArguments<am_Domain_s, std::string, std::string>,
                                      CommonAPI::DBus::DBusSerializableArguments<am_domainID_t, am_Error_e> >::callMethodAsync(
         *this,
         "registerDomain",
-        "(qsssbbi)sss",
-        domainData, returnInterface, returnPath, returnBusname, 
+        "(qsssbbi)ss",
+        domainData, returnBusname, returnInterface, 
         std::move(callback));
 }
 void RoutingControlObserverDBusProxy::deregisterDomain(const am_domainID_t& domainID, CommonAPI::CallStatus& callStatus, am_Error_e& error) {

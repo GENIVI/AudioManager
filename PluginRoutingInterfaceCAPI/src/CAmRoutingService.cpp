@@ -150,7 +150,7 @@ void CAmRoutingService::peekDomain(std::string name, org::genivi::am::am_domainI
 	error = static_cast<org::genivi::am::am_Error_e>(mpIAmRoutingReceive->peekDomain(name, domainID));
 }
 
-void CAmRoutingService::registerDomain(org::genivi::am::am_Domain_s domainData, std::string returnBusname, std::string, std::string returnInterface, org::genivi::am::am_domainID_t& domainID, org::genivi::am::am_Error_e& error) {
+void CAmRoutingService::registerDomain(org::genivi::am::am_Domain_s domainData, std::string returnBusname, std::string returnInterface, org::genivi::am::am_domainID_t& domainID, org::genivi::am::am_Error_e& error) {
 	assert(mpIAmRoutingReceive);
 	assert(mpLookpData);
 	assert(mpCAmCAPIWrapper);
