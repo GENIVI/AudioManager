@@ -27,6 +27,7 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
+#include "shared/CAmSocketHandler.h"
 #include "CAmDatabaseHandlerMap.h"
 #include "CAmControlReceiver.h"
 #include "CAmControlSender.h"
@@ -39,7 +40,6 @@
 #include "../CAmCommonFunctions.h"
 #include "../MockIAmControlSend.h"
 #include "../MockIAmCommandSend.h"
-#include "shared/CAmSocketHandler.h"
 #include "MockDatabaseObserver.h"
 
 namespace am

@@ -22,20 +22,28 @@
 #ifndef MAPHANDLER_H_
 #define MAPHANDLER_H_
 
-#include "IAmDatabaseHandler.h"
 #include <stdint.h>
 #include <limits.h>
 #include <sstream>
 #include <iostream>
 #include <unordered_map>
-
-
+#include "IAmDatabaseHandler.h"
 
 namespace am
 {
 #ifndef AM_MAP_CAPACITY
 	#define AM_MAP_CAPACITY 0
 #endif
+
+#ifndef AM_MAX_CONNECTIONS
+	#define AM_MAX_CONNECTIONS 0x1000
+#endif
+
+#ifndef AM_MAX_MAIN_CONNECTIONS
+	#define AM_MAX_MAIN_CONNECTIONS SHRT_MAX
+#endif
+
+
 
 //todo: check the enum values before entering & changing in the database.
 //todo: change asserts for dynamic boundary checks into failure answers.#
@@ -255,16 +263,16 @@ public:
 	AM_TYPEDEF_SUBCLASS_END(CAmCrossfader)
 
     private:
-    typedef std::unordered_map<am_domainID_t, CAmDomain>  		  			 CAmMapDomain;
+    typedef std::unordered_map<am_domainID_t, CAmDomain>  		  			 	 CAmMapDomain;
     typedef std::unordered_map<am_sourceClass_t, CAmSourceClass> 				 CAmMapSourceClass;
     typedef std::unordered_map<am_sinkClass_t, CAmSinkClass> 		  	  	     CAmMapSinkClass;
     typedef std::unordered_map<am_sinkID_t, CAmSink> 			   				 CAmMapSink;
     typedef std::unordered_map<am_sourceID_t, CAmSource> 		 			 	 CAmMapSource;
-    typedef std::unordered_map<am_gatewayID_t, CAmGateway> 			 	 	 CAmMapGateway;
+    typedef std::unordered_map<am_gatewayID_t, CAmGateway> 			 	 		 CAmMapGateway;
     typedef std::unordered_map<am_crossfaderID_t, CAmCrossfader> 		    	 CAmMapCrossfader;
     typedef std::unordered_map<am_connectionID_t, CAmConnection>				 CAmMapConnection;
     typedef std::unordered_map<am_mainConnectionID_t, CAmMainConnection> 	 	 CAmMapMainConnection;
-    typedef std::vector<am_SystemProperty_s> 	   				     CAmVectorSystemProperties;
+    typedef std::vector<am_SystemProperty_s> 	   				  			     CAmVectorSystemProperties;
     /**
      * The following structure groups the map objects needed for the implementation.
      * Every map object is coupled with an identifier, which hold the current value.
@@ -274,17 +282,29 @@ public:
      */
     typedef struct CAmMappedData
     {
-    	int16_t mCurrentDomainID;			//!< domain ID
-    	int16_t mCurrentSourceClassesID;	//!< source classes ID
-    	int16_t mCurrentSinkClassesID;		//!< sink classes ID
-    	int16_t mCurrentSinkID;				//!< sink ID
-    	int16_t mCurrentSourceID;			//!< source ID
-    	int16_t mCurrentGatewayID;			//!< gateway ID
-    	int16_t mCurrentCrossfaderID;		//!< crossfader ID
-    	int16_t mCurrentConnectionID;		//!< connection ID
-    	int16_t mCurrentMainConnectionID;	//!< mainconnection ID
+        /**
+         * The structure encapsulates the id boundary and the current id value.
+         * It defines a range within the id can vary.
+         */
+    	struct am_Identifier_s
+    	{
+    		int16_t mMin;			//!< min possible value
+    		int16_t mMax;			//!< max possible value
+    		int16_t mCurrentValue;	//!< current value
 
-    	int16_t mDefaultIDLimit; //!< Upper limit for all IDs, default is SHRT_MAX
+    		am_Identifier_s():mMin(DYNAMIC_ID_BOUNDARY), mMax(SHRT_MAX), mCurrentValue(mMin){};
+    		am_Identifier_s(const int16_t & min, const int16_t &  max):mMin(min), mMax(max), mCurrentValue(mMin){assert(min<max);};
+    	};
+
+    	am_Identifier_s mCurrentDomainID;			//!< domain ID
+    	am_Identifier_s mCurrentSourceClassesID;	//!< source classes ID
+    	am_Identifier_s mCurrentSinkClassesID;		//!< sink classes ID
+    	am_Identifier_s mCurrentSinkID;				//!< sink ID
+    	am_Identifier_s mCurrentSourceID;			//!< source ID
+    	am_Identifier_s mCurrentGatewayID;			//!< gateway ID
+    	am_Identifier_s mCurrentCrossfaderID;		//!< crossfader ID
+    	am_Identifier_s mCurrentConnectionID;		//!< connection ID
+    	am_Identifier_s mCurrentMainConnectionID;	//!< mainconnection ID
 
     	CAmVectorSystemProperties mSystemProperties; //!< vector with system properties
     	CAmMapDomain mDomainMap;					 //!< map for domain structures
@@ -298,10 +318,15 @@ public:
     	CAmMapMainConnection mMainConnectionMap;	 //!< map for main connection structures
 
     	CAmMappedData(): //For Domain, MainConnections, Connections we don't have static IDs.
-    		mCurrentDomainID(1), mCurrentSourceClassesID(DYNAMIC_ID_BOUNDARY), mCurrentSinkClassesID(DYNAMIC_ID_BOUNDARY),
-    		mCurrentSinkID(DYNAMIC_ID_BOUNDARY), mCurrentSourceID(DYNAMIC_ID_BOUNDARY), mCurrentGatewayID(DYNAMIC_ID_BOUNDARY),
-    		mCurrentCrossfaderID(DYNAMIC_ID_BOUNDARY), mCurrentConnectionID(1), mCurrentMainConnectionID(1),
-    		mDefaultIDLimit(SHRT_MAX),
+    		mCurrentDomainID(1, SHRT_MAX),
+    		mCurrentSourceClassesID(DYNAMIC_ID_BOUNDARY, SHRT_MAX),
+    		mCurrentSinkClassesID(DYNAMIC_ID_BOUNDARY, SHRT_MAX),
+    		mCurrentSinkID(DYNAMIC_ID_BOUNDARY, SHRT_MAX),
+    		mCurrentSourceID(DYNAMIC_ID_BOUNDARY, SHRT_MAX),
+    		mCurrentGatewayID(DYNAMIC_ID_BOUNDARY, SHRT_MAX),
+    		mCurrentCrossfaderID(DYNAMIC_ID_BOUNDARY, SHRT_MAX),
+    		mCurrentConnectionID(1, AM_MAX_CONNECTIONS),
+    		mCurrentMainConnectionID(1, AM_MAX_MAIN_CONNECTIONS),
 
     		mSystemProperties(),
 			mDomainMap(),mSourceClassesMap(), mSinkClassesMap(), mSinkMap(AM_MAP_CAPACITY), mSourceMap(AM_MAP_CAPACITY),
@@ -319,15 +344,22 @@ public:
     	 * @param preferedStaticIDBoundary A limit for a given dynamic ID. Default is DYNAMIC_ID_BOUNDARY.
     	 * @return TRUE on successfully changed ID.
     	 */
-    	bool increaseID(int16_t * resultID, int16_t * sourceID,
-						int16_t const desiredStaticID, int16_t const preferedStaticIDBoundary );
+    	bool increaseID(int16_t & resultID, am_Identifier_s & sourceID, int16_t const desiredStaticID);
       	/**
 		 * \brief Increases the main connection ID.
 		 *
 		 * @param resultID Pointer to an output variable.
 		 * @return TRUE on successfully changed ID.
 		 */
-    	bool increaseMainConnectionID(int16_t * resultID);
+    	bool increaseMainConnectionID(int16_t & resultID);
+
+    	/**
+		 * \brief Increases the connection ID.
+		 *
+		 * @param resultID Pointer to an output variable.
+		 * @return TRUE on successfully changed ID.
+		 */
+    	bool increaseConnectionID(int16_t & resultID);
 
         template <class TPrintObject> static void print (const TPrintObject & t, std::ostream & output)
         {
@@ -341,6 +373,9 @@ public:
         	for(; iter!=t.end(); iter++)
         		CAmMappedData::print(iter->second, output);
         }
+    private:
+        template <typename TMapKey,class TMapObject> bool getNextConnectionID(int16_t & resultID, am_Identifier_s & sourceID,
+        																			  const std::unordered_map<TMapKey, TMapObject> & map);
     } CAmMappedData;
     /*
      * Helper methods.
@@ -359,6 +394,24 @@ public:
     CAmDatabaseObserver *mpDatabaseObserver; //!< pointer to the Observer
     ListConnectionFormat mListConnectionFormat; //!< list of connection formats
     CAmMappedData mMappedData; //!< Internal structure encapsulating all the maps used in this class
+#ifdef UNIT_TEST
+    public:
+    void setConnectionIDRange(const int16_t & min, const int16_t &  max)
+	{
+		mMappedData.mCurrentConnectionID.mMin = min;
+		mMappedData.mCurrentConnectionID.mMax = max;
+	}
+	void setMainConnectionIDRange(const int16_t & min, const int16_t &  max)
+	{
+		mMappedData.mCurrentMainConnectionID.mMin = min;
+		mMappedData.mCurrentMainConnectionID.mMax = max;
+	}
+	void setSinkIDRange(const int16_t & min, const int16_t &  max)
+	{
+		mMappedData.mCurrentSinkID.mMin = min;
+		mMappedData.mCurrentSinkID.mMax = max;
+	}
+#endif
 };
 
 }

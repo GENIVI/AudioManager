@@ -30,13 +30,15 @@
 using namespace am;
 using namespace testing;
 
-//extern int GetRandomNumber(int nLow, int nHigh);
-//extern bool equalSoundProperty (const am_SoundProperty_s a, const am_SoundProperty_s b);
+
 extern bool equalMainSoundProperty(const am_MainSoundProperty_s a, const am_MainSoundProperty_s b);
 extern bool equalNotificationConfiguration(const am_NotificationConfiguration_s a, const am_NotificationConfiguration_s b);
-//extern bool equalRoutingElement(const am_RoutingElement_s a, const am_RoutingElement_s b);
 extern bool equalClassProperties(const am_ClassProperty_s a, const am_ClassProperty_s b);
 extern std::string int2string(int i);
+
+int16_t const TEST_MAX_CONNECTION_ID = 20;
+int16_t const TEST_MAX_MAINCONNECTION_ID = 20;
+int16_t const TEST_MAX_SINK_ID = 40;
 
 CAmMapHandlerTest::CAmMapHandlerTest() :
         plistRoutingPluginDirs(), //
@@ -54,6 +56,9 @@ CAmMapHandlerTest::CAmMapHandlerTest() :
         pObserver(&pCommandSender,&pRoutingSender, &pSocketHandler)
 {
     pDatabaseHandler.registerObserver(&pObserver);
+    pDatabaseHandler.setConnectionIDRange(1, TEST_MAX_CONNECTION_ID);
+    pDatabaseHandler.setMainConnectionIDRange(1, TEST_MAX_MAINCONNECTION_ID);
+    pDatabaseHandler.setSinkIDRange(DYNAMIC_ID_BOUNDARY, DYNAMIC_ID_BOUNDARY+TEST_MAX_SINK_ID);
     pCommandInterfaceBackdoor.injectInterface(&pCommandSender, &pMockInterface);
 }
 
@@ -70,8 +75,6 @@ void CAmMapHandlerTest::createMainConnectionSetup()
     std::vector<am_connectionID_t> connectionList;
 
     //we create 9 sources and sinks:
-
-
 
     for (uint16_t i = 1; i < 10; i++)
     {
@@ -2268,6 +2271,145 @@ TEST_F(CAmMapHandlerTest, peekDomain_2)
     ASSERT_TRUE(listDomains[0].domainID==domainID);
 }
 
+TEST_F(CAmMapHandlerTest, connectionIDBoundary)
+{
+	am_Sink_s sink;
+	am_Source_s source;
+	am_Connection_s connection;
+	connection.delay = -1;
+	connection.connectionFormat = CF_GENIVI_ANALOG;
+	connection.connectionID = 0;
+	am_sinkID_t forgetSink;
+	am_sourceID_t forgetSource;
+	am_connectionID_t connectionID;
+	for (uint16_t i = 1; i < TEST_MAX_SINK_ID; i++)
+	{
+		pCF.createSink(sink);
+		sink.sinkID = 0;
+		sink.name = "sink" + int2string(i);
+		sink.domainID = 4;
+		pCF.createSource(source);
+		source.sourceID = 0;
+		source.name = "source" + int2string(i);
+		source.domainID = 4;
+		ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink, forgetSink));
+		ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source, forgetSource));
+		connection.sinkID = forgetSink;
+		connection.sourceID = forgetSource;
+		if( i < TEST_MAX_CONNECTION_ID )
+		{
+			ASSERT_EQ(E_OK, pDatabaseHandler.enterConnectionDB(connection,connectionID));
+			ASSERT_EQ(i, connectionID);
+		}
+	}
+	std::vector<am_Connection_s> connectionList;
+	ASSERT_EQ(E_OK, pDatabaseHandler.getListConnections(connectionList));
+	ASSERT_EQ(TEST_MAX_CONNECTION_ID-1, connectionList.size());
+	ASSERT_EQ(E_UNKNOWN, pDatabaseHandler.enterConnectionDB(connection,connectionID));
+	ASSERT_EQ(0, connectionID);
+
+	ASSERT_EQ(E_OK, pDatabaseHandler.removeConnection(10));
+	ASSERT_EQ(E_OK, pDatabaseHandler.removeConnection(12));
+
+	ASSERT_EQ(E_OK, pDatabaseHandler.enterConnectionDB(connection,connectionID));
+	ASSERT_EQ(10, connectionID);
+	connection.sinkID = 77;
+	connection.sourceID = 77;
+	ASSERT_EQ(E_OK, pDatabaseHandler.enterConnectionDB(connection,connectionID));
+	ASSERT_EQ(12, connectionID);
+	ASSERT_EQ(E_UNKNOWN, pDatabaseHandler.enterConnectionDB(connection,connectionID));
+	ASSERT_EQ(0, connectionID);
+}
+
+TEST_F(CAmMapHandlerTest, mainConnectionIDBoundary)
+{
+	am_Sink_s sink;
+	am_Source_s source;
+	am_Connection_s connection;
+	connection.delay = -1;
+	connection.connectionFormat = CF_GENIVI_ANALOG;
+	connection.connectionID = 0;
+	am_sinkID_t forgetSink;
+	am_sourceID_t forgetSource;
+	am_connectionID_t connectionID;
+	std::vector<am_connectionID_t> connectionIDList;
+	for (uint16_t i = 1; i < TEST_MAX_SINK_ID; i++)
+	{
+		pCF.createSink(sink);
+		sink.sinkID = 0;
+		sink.name = "sink" + int2string(i);
+		sink.domainID = 4;
+		pCF.createSource(source);
+		source.sourceID = 0;
+		source.name = "source" + int2string(i);
+		source.domainID = 4;
+		ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink, forgetSink));
+		ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source, forgetSource));
+		connection.sinkID = forgetSink;
+		connection.sourceID = forgetSource;
+		if( i < TEST_MAX_CONNECTION_ID )
+		{
+			ASSERT_EQ(E_OK, pDatabaseHandler.enterConnectionDB(connection,connectionID));
+			ASSERT_EQ(i, connectionID);
+			connectionIDList.push_back(i);
+		}
+	}
+	std::vector<am_Connection_s> connectionList;
+	ASSERT_EQ(E_OK, pDatabaseHandler.getListConnections(connectionList));
+	ASSERT_EQ(TEST_MAX_CONNECTION_ID-1, connectionList.size());
+
+	//create a mainConnection
+
+	am_MainConnection_s mainConnection;
+	am_mainConnectionID_t mainConnectionID;
+	mainConnection.listConnectionID = connectionIDList;
+	mainConnection.mainConnectionID = 0;
+	mainConnection.connectionState = CS_CONNECTED;
+	mainConnection.delay = -1;
+
+	for (uint16_t i = 1; i < TEST_MAX_MAINCONNECTION_ID; i++)
+	{
+		mainConnection.sinkID = DYNAMIC_ID_BOUNDARY + i;
+		mainConnection.sourceID = DYNAMIC_ID_BOUNDARY + i;
+		ASSERT_EQ(E_OK, pDatabaseHandler.enterMainConnectionDB(mainConnection,mainConnectionID));
+		ASSERT_EQ(i, mainConnectionID);
+	}
+	ASSERT_EQ(E_OK, pDatabaseHandler.removeMainConnectionDB(10));
+	ASSERT_EQ(E_OK, pDatabaseHandler.removeMainConnectionDB(12));
+	ASSERT_EQ(E_OK, pDatabaseHandler.enterMainConnectionDB(mainConnection,mainConnectionID));
+	ASSERT_EQ(10, mainConnectionID);
+	mainConnection.sinkID = 77;
+	mainConnection.sourceID = 77;
+	ASSERT_EQ(E_OK, pDatabaseHandler.enterMainConnectionDB(mainConnection,mainConnectionID));
+	ASSERT_EQ(12, mainConnectionID);
+	ASSERT_EQ(E_UNKNOWN, pDatabaseHandler.enterMainConnectionDB(mainConnection,mainConnectionID));
+	ASSERT_EQ(0, mainConnectionID);
+}
+
+TEST_F(CAmMapHandlerTest, increaseID)
+{
+	am_Sink_s sink;
+	am_sinkID_t sinkID;
+	for (uint16_t i = 0; i < TEST_MAX_SINK_ID; i++)
+	{
+		pCF.createSink(sink);
+		sink.sinkID = 0;
+		sink.name = "sink" + int2string(i);
+		sink.domainID = 4;
+		ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink, sinkID));
+		ASSERT_EQ(DYNAMIC_ID_BOUNDARY+i, sinkID);
+	}
+	ASSERT_EQ(E_UNKNOWN, pDatabaseHandler.enterSinkDB(sink, sinkID));
+
+	ASSERT_EQ(E_OK, pDatabaseHandler.removeSinkDB(DYNAMIC_ID_BOUNDARY+10));
+	ASSERT_EQ(E_OK, pDatabaseHandler.removeSinkDB(DYNAMIC_ID_BOUNDARY+12));
+
+	ASSERT_EQ(E_UNKNOWN, pDatabaseHandler.enterSinkDB(sink, sinkID));
+	ASSERT_EQ(E_UNKNOWN, pDatabaseHandler.enterSinkDB(sink, sinkID));
+	ASSERT_EQ(E_UNKNOWN, pDatabaseHandler.enterSinkDB(sink, sinkID));
+}
+
+
 CAmMapHandlerObserverCallbacksTest::CAmMapHandlerObserverCallbacksTest() :
                 plistRoutingPluginDirs(),
                 plistCommandPluginDirs(),
@@ -2772,4 +2914,5 @@ int main(int argc, char **argv)
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
+
 

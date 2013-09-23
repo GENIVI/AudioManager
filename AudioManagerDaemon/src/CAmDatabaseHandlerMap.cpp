@@ -19,7 +19,6 @@
  *
  */
 
-#include "CAmDatabaseHandlerMap.h"
 #include <iostream>
 #include <cassert>
 #include <stdexcept>
@@ -29,11 +28,10 @@
 #include <string>
 #include <algorithm>
 #include <limits>
+#include "CAmDatabaseHandlerMap.h"
 #include "CAmDatabaseObserver.h"
 #include "CAmRouter.h"
 #include "shared/CAmDltWrapper.h"
-#include "CAmLog.h"
-
 
 namespace am
 {
@@ -359,46 +357,45 @@ void CAmDatabaseHandlerMap::CAmCrossfader::getDescription (std::string & outStri
 	outString = fmt.str();
 }
 
-bool CAmDatabaseHandlerMap::CAmMappedData::increaseID(int16_t * resultID,
-															 int16_t * sourceID,
-															 int16_t const desiredStaticID = 0,
-															 int16_t const preferedStaticIDBoundary = DYNAMIC_ID_BOUNDARY)
+bool CAmDatabaseHandlerMap::CAmMappedData::increaseID(int16_t & resultID, am_Identifier_s & sourceID,
+															 int16_t const desiredStaticID = 0)
 {
-	if( desiredStaticID > 0 && desiredStaticID < preferedStaticIDBoundary )
+	if( desiredStaticID > 0 && desiredStaticID < sourceID.mMin )
 	{
-		*resultID = desiredStaticID;
+		resultID = desiredStaticID;
 		return true;
 	}
-	else if( *sourceID < mDefaultIDLimit ) //The last used value is 'limit' - 1. e.g. SHRT_MAX - 1, SHRT_MAX is reserved.
+	else if( sourceID.mCurrentValue < sourceID.mMax ) //The last used value is 'limit' - 1. e.g. SHRT_MAX - 1, SHRT_MAX is reserved.
 	{
-		*resultID = (*sourceID)++;
+		resultID = sourceID.mCurrentValue++;
 		return true;
 	}
 	else
 	{
-		*resultID = -1;
+		resultID = -1;
 		return false;
 	}
  }
 
-bool CAmDatabaseHandlerMap::CAmMappedData::increaseMainConnectionID(int16_t * resultID)
+template <typename TMapKey,class TMapObject> bool CAmDatabaseHandlerMap::CAmMappedData::getNextConnectionID(int16_t & resultID, am_Identifier_s & sourceID,
+																			  	  	  	  	  	  	  	  	  	  	  	  const std::unordered_map<TMapKey, TMapObject> & map)
 {
-	am_mainConnectionID_t nextID;
-	am_mainConnectionID_t const lastID = mCurrentMainConnectionID;
-	if( mCurrentMainConnectionID < mDefaultIDLimit )
-		nextID = mCurrentMainConnectionID++;
+	TMapKey nextID;
+	int16_t const lastID = sourceID.mCurrentValue;
+	if( sourceID.mCurrentValue < sourceID.mMax )
+		nextID = sourceID.mCurrentValue++;
 	else
-		nextID = mCurrentMainConnectionID = 1;
+		nextID = sourceID.mCurrentValue = sourceID.mMin;
 
 	bool notFreeIDs = false;
-	while( existsObjectWithKeyInMap(nextID, mMainConnectionMap) )
+	while( existsObjectWithKeyInMap(nextID, map) )
 	{
-		if( mCurrentMainConnectionID < mDefaultIDLimit )
-			nextID = mCurrentMainConnectionID++;
+		if( sourceID.mCurrentValue < sourceID.mMax )
+			nextID = sourceID.mCurrentValue++;
 		else
-			nextID = mCurrentMainConnectionID = 1;
+			nextID = sourceID.mCurrentValue = sourceID.mMin;
 
-		if( mCurrentMainConnectionID == lastID )
+		if( sourceID.mCurrentValue == lastID )
 		{
 			notFreeIDs = true;
 			break;
@@ -406,11 +403,21 @@ bool CAmDatabaseHandlerMap::CAmMappedData::increaseMainConnectionID(int16_t * re
 	}
 	if(notFreeIDs)
 	{
-		*resultID = -1;
+		resultID = -1;
 		return false;
 	}
-	*resultID = nextID;
+	resultID = nextID;
 	return true;
+}
+
+bool CAmDatabaseHandlerMap::CAmMappedData::increaseMainConnectionID(int16_t & resultID)
+{
+	return getNextConnectionID(resultID, mCurrentMainConnectionID, mMainConnectionMap);
+}
+
+bool CAmDatabaseHandlerMap::CAmMappedData::increaseConnectionID(int16_t & resultID)
+{
+	return getNextConnectionID(resultID, mCurrentConnectionID, mConnectionMap);
 }
 
 
@@ -424,7 +431,7 @@ CAmDatabaseHandlerMap::CAmDatabaseHandlerMap():	mFirstStaticSink(true), //
 														mListConnectionFormat(), //
 														mMappedData()
 {
-	logInfo(__PRETTY_FUNCTION__,"Init");
+	logInfo(__PRETTY_FUNCTION__,"Init ");
 }
 
 CAmDatabaseHandlerMap::~CAmDatabaseHandlerMap()
@@ -459,7 +466,7 @@ am_Error_e CAmDatabaseHandlerMap::enterDomainDB(const am_Domain_s & domainData, 
     }
     else
     {
-		if(mMappedData.increaseID(&nextID, &mMappedData.mCurrentDomainID))
+		if(mMappedData.increaseID(nextID, mMappedData.mCurrentDomainID))
 		{
 			domainID = nextID;
 			mMappedData.mDomainMap[nextID] = domainData;
@@ -507,7 +514,7 @@ am_Error_e CAmDatabaseHandlerMap::enterMainConnectionDB(const am_MainConnection_
 
     int16_t delay = 0;
     int16_t nextID = 0;
-	if(mMappedData.increaseMainConnectionID(&nextID))
+	if(mMappedData.increaseMainConnectionID(nextID))
 	{
 		connectionID = nextID;
 		mMappedData.mMainConnectionMap[nextID] = mainConnectionData;
@@ -546,7 +553,7 @@ am_Error_e CAmDatabaseHandlerMap::enterMainConnectionDB(const am_MainConnection_
 bool CAmDatabaseHandlerMap::insertSinkDB(const am_Sink_s & sinkData, am_sinkID_t & sinkID)
 {
     int16_t nextID = 0;
-	if(  mMappedData.increaseID(&nextID, &mMappedData.mCurrentSinkID, sinkData.sinkID) )
+	if(  mMappedData.increaseID(nextID, mMappedData.mCurrentSinkID, sinkData.sinkID) )
 	{
 		sinkID = nextID;
 		mMappedData.mSinkMap[nextID] = sinkData;
@@ -622,7 +629,7 @@ am_Error_e CAmDatabaseHandlerMap::enterSinkDB(const am_Sink_s & sinkData, am_sin
 bool CAmDatabaseHandlerMap::insertCrossfaderDB(const am_Crossfader_s & crossfaderData, am_crossfaderID_t & crossfaderID)
 {
     int16_t nextID = 0;
-	if(mMappedData.increaseID(&nextID, &mMappedData.mCurrentCrossfaderID, crossfaderData.crossfaderID))
+	if(mMappedData.increaseID(nextID, mMappedData.mCurrentCrossfaderID, crossfaderData.crossfaderID))
 	{
 		crossfaderID = nextID;
 		mMappedData.mCrossfaderMap[nextID] = crossfaderData;
@@ -683,7 +690,7 @@ am_Error_e CAmDatabaseHandlerMap::enterCrossfaderDB(const am_Crossfader_s & cros
 bool CAmDatabaseHandlerMap::insertGatewayDB(const am_Gateway_s & gatewayData, am_gatewayID_t & gatewayID)
 {
     int16_t nextID = 0;
-	if(mMappedData.increaseID(&nextID, &mMappedData.mCurrentGatewayID, gatewayData.gatewayID))
+	if(mMappedData.increaseID(nextID, mMappedData.mCurrentGatewayID, gatewayData.gatewayID))
 	{
 		gatewayID = nextID;
 		mMappedData.mGatewayMap[nextID] = gatewayData;
@@ -769,7 +776,7 @@ void CAmDatabaseHandlerMap::dump( std::ostream & output ) const
 bool CAmDatabaseHandlerMap::insertSourceDB(const am_Source_s & sourceData, am_sourceID_t & sourceID)
 {
     int16_t nextID = 0;
-	if(mMappedData.increaseID(&nextID, &mMappedData.mCurrentSourceID, sourceData.sourceID))
+	if(mMappedData.increaseID(nextID, mMappedData.mCurrentSourceID, sourceData.sourceID))
 	{
 		sourceID = nextID;
 		mMappedData.mSourceMap[nextID] = sourceData;
@@ -848,7 +855,7 @@ am_Error_e CAmDatabaseHandlerMap::enterConnectionDB(const am_Connection_s& conne
     assert(connection.sourceID!=0);
     //connection format is not checked, because it's project specific
     int16_t nextID = 0;
-    if(mMappedData.increaseID(&nextID, &mMappedData.mCurrentConnectionID))
+    if(mMappedData.increaseConnectionID(nextID))
 	{
 		connectionID = nextID;
 		mMappedData.mConnectionMap[nextID] = connection;
@@ -868,7 +875,7 @@ am_Error_e CAmDatabaseHandlerMap::enterConnectionDB(const am_Connection_s& conne
 bool CAmDatabaseHandlerMap::insertSinkClassDB(const am_SinkClass_s & sinkClass, am_sinkClass_t & sinkClassID)
 {
     int16_t nextID = 0;
-	if(mMappedData.increaseID(&nextID, &mMappedData.mCurrentSinkClassesID, sinkClass.sinkClassID))
+	if(mMappedData.increaseID(nextID, mMappedData.mCurrentSinkClassesID, sinkClass.sinkClassID))
 	{
 		sinkClassID = nextID;
 		mMappedData.mSinkClassesMap[nextID] = sinkClass;
@@ -924,7 +931,7 @@ am_Error_e CAmDatabaseHandlerMap::enterSinkClassDB(const am_SinkClass_s & sinkCl
 bool CAmDatabaseHandlerMap::insertSourceClassDB(am_sourceClass_t & sourceClassID, const am_SourceClass_s & sourceClass)
 {
     int16_t nextID = 0;
-	if(mMappedData.increaseID(&nextID, &mMappedData.mCurrentSourceClassesID, sourceClass.sourceClassID))
+	if(mMappedData.increaseID(nextID, mMappedData.mCurrentSourceClassesID, sourceClass.sourceClassID))
 	{
 		sourceClassID = nextID;
 		mMappedData.mSourceClassesMap[nextID] = sourceClass;
@@ -1854,7 +1861,7 @@ bool CAmDatabaseHandlerMap::existSourceNameOrID(const am_sourceID_t sourceID, co
  */
 bool CAmDatabaseHandlerMap::existSourceName(const std::string & name) const
 {
-    return existSourceNameOrID(SHRT_MAX, name);
+    return existSourceNameOrID(mMappedData.mCurrentSourceID.mMax, name);
 }
 
 /**
@@ -1926,7 +1933,7 @@ bool CAmDatabaseHandlerMap::existSinkNameOrID(const am_sinkID_t sinkID, const st
  */
 bool CAmDatabaseHandlerMap::existSinkName(const std::string & name) const
 {
-    return existSinkNameOrID(SHRT_MAX, name);
+    return existSinkNameOrID(mMappedData.mCurrentSinkID.mMax, name);
 }
 
 /**
@@ -2265,7 +2272,7 @@ am_Error_e CAmDatabaseHandlerMap::peekDomain(const std::string & name, am_domain
     else
     {
     	int16_t nextID = 0;
-    	if( mMappedData.increaseID( &nextID, &mMappedData.mCurrentDomainID) )
+    	if( mMappedData.increaseID( nextID, mMappedData.mCurrentDomainID) )
     	{
     		domainID = nextID;
     		am_Domain_Database_s domain;
@@ -2292,7 +2299,7 @@ am_Error_e CAmDatabaseHandlerMap::peekSink(const std::string & name, am_sinkID_t
     else
     {
     	int16_t nextID = 0;
-    	if(mMappedData.increaseID(&nextID, &mMappedData.mCurrentSinkID))
+    	if(mMappedData.increaseID(nextID, mMappedData.mCurrentSinkID))
     	{
     		if(mFirstStaticSink)
     		{
@@ -2323,7 +2330,7 @@ am_Error_e CAmDatabaseHandlerMap::peekSource(const std::string & name, am_source
     else
     {
     	int16_t nextID = 0;
-    	if(mMappedData.increaseID(&nextID, &mMappedData.mCurrentSourceID))
+    	if(mMappedData.increaseID(nextID, mMappedData.mCurrentSourceID))
     	{
     		if(mFirstStaticSource)
     		{
