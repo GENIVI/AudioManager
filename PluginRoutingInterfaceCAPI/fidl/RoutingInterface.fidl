@@ -201,7 +201,7 @@ interface RoutingControlObserver {
         @description : This attribute signals to the clients the current routing state.
 A client should notify himself to this attribute in order to know the current state and act accordingly.
     **>
-    attribute am_RoutingReady_e RoutingReady  //readonly
+    attribute am_RoutingReady_e RoutingReady readonly
 
     <**
         @description : acknowledges a asyncConnect

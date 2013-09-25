@@ -74,7 +74,7 @@ interface CommandControl {
             <**
                 @description : indicated the number of steps that should be incremented or decremented. Positive values here inkrement, negative values decrement
             **>
-            Int16 volumeStep
+            Int16 volumeStep_
         }
         out {
             am_Error_e ^error
