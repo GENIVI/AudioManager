@@ -114,6 +114,31 @@ private:
     };
 
     /**
+	* delegate template for one argument
+	*/
+   template<class TClass, typename Targ> class CAmOneArgDelegateRef: public CAmDelegate
+   {
+   private:
+	   TClass* mInstance;
+	   void (TClass::*mFunction)(Targ&);
+	   Targ mArgument;
+
+   public:
+	   CAmOneArgDelegateRef(TClass* instance, void (TClass::*function)(Targ&), Targ& argument) :
+			   mInstance(instance), //
+			   mFunction(function), //
+			   mArgument(argument)
+	   {};
+
+	   bool call(int* pipe)
+	   {
+		   (void) pipe;
+		   (*mInstance.*mFunction)(mArgument);
+		   return (true);
+	   };
+   };
+
+    /**
      * delegate template for two arguments
      */
     template<class TClass, typename Targ, typename Targ1> class CAmTwoArgDelegate: public CAmDelegate
@@ -953,7 +978,7 @@ public:
     template<class TClass1, class Targ>
     void asyncCall(TClass1* instance, void (TClass1::*function)(Targ&), Targ& argument)
     {
-        CAmDelegagePtr p(new CAmOneArgDelegate<TClass1, Targ&>(instance, function, argument));
+        CAmDelegagePtr p(new CAmOneArgDelegateRef<TClass1, Targ>(instance, function, argument));
         send(p);
     }
 
