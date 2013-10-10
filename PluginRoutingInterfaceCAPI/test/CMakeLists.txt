@@ -76,17 +76,17 @@ file(GLOB_RECURSE  CAPI_PLUGIN_INTERFACE_GEN_SRCS_CXX
      "../src-gen/*.cpp" 
 )
 
-set (CAPI_SENDER_INTERFACE "org.genivi.audiomanger.routingsender")
+set (CAPI_SENDER_INTERFACE "org.genivi.audiomanager.routingsender")
 set (CAPI_SENDER_INSTANCE "org.genivi.routingsender")
-set (CAPI_SENDER_PATH "/org/genivi/audiomanger/routingsender")
+set (CAPI_SENDER_PATH "/org/genivi/audiomanager/routingsender")
 
 set (CAPI_SENDER_INTERFACE_H "\"${CAPI_SENDER_INTERFACE}\"")
 set (CAPI_SENDER_INSTANCE_H "\"${CAPI_SENDER_INSTANCE}\"")
 set (CAPI_SENDER_PATH_H "\"${CAPI_SENDER_PATH}\"")
 
-set (CAPI_ROUTING_INTERFACE "org.genivi.audiomanger.routinginterface")
-set (CAPI_ROUTING_INSTANCE "org.genivi.audiomanger")
-set (CAPI_ROUTING_PATH "/org/genivi/audiomanger/routinginterface")
+set (CAPI_ROUTING_INTERFACE "org.genivi.audiomanager.routinginterface")
+set (CAPI_ROUTING_INSTANCE "org.genivi.audiomanager")
+set (CAPI_ROUTING_PATH "/org/genivi/audiomanager/routinginterface")
 
 set (CAPI_ROUTING_INTERFACE_H "\"${CAPI_ROUTING_INTERFACE}\"")
 set (CAPI_ROUTING_INSTANCE_H "\"${CAPI_ROUTING_INSTANCE}\"")

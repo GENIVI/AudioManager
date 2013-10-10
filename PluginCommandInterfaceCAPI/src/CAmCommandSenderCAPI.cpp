@@ -45,7 +45,7 @@ extern "C" void destroyPluginCommandInterfaceCAPIFactory(IAmCommandSend* command
 }
 
 
-const char * CAmCommandSenderCAPI::COMMAND_SENDER_SERVICE = "local:org.genivi.audiomanger.commandinterface:org.genivi.audiomanger";
+const char * CAmCommandSenderCAPI::COMMAND_SENDER_SERVICE = "local:org.genivi.audiomanager.commandinterface:org.genivi.audiomanager";
 
 #define RETURN_IF_NOT_READY() if(!mReady) return;
 

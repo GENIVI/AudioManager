@@ -35,13 +35,11 @@
 #include <org/genivi/NodeStateManager/LifeCycleConsumerProxy.h>
 
 
-
-
 namespace am
 {
 
 const char * CAmNodeStateCommunicatorCAPI::CLIENT_STRING = "local:org.genivi.NodeStateManager.Consumer:org.genivi.NodeStateManager";
-const char * CAmNodeStateCommunicatorCAPI::SERVER_STRING = "local:org.genivi.NodeStateManager.LifeCycleConsumer:org.genivi.audiomanger";
+const char * CAmNodeStateCommunicatorCAPI::SERVER_STRING = "local:org.genivi.NodeStateManager.LifeCycleConsumer:org.genivi.audiomanager";
 
 const char * CAmNodeStateCommunicatorCAPI::OBJECT_NAME = "/org/genivi/audiomanager/LifeCycleConsumer";
 const char * CAmNodeStateCommunicatorCAPI::BUS_NAME = "org.genivi.audiomanager";

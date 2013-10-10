@@ -35,13 +35,13 @@ class CAmCommonAPIWrapper;
 /** 
  * THE FOLLOWING DEFINES ARE POPULATED FROM THE CMAKELISTS.TXT .
  */
-#define CAPI_SENDER_INTERFACE  "org.genivi.audiomanger.routingsender" 
+#define CAPI_SENDER_INTERFACE  "org.genivi.audiomanager.routingsender" 
 #define CAPI_SENDER_INSTANCE  	"org.genivi.routingsender"  
-#define CAPI_SENDER_PATH 		"/org/genivi/audiomanger/routingsender"  
+#define CAPI_SENDER_PATH 		"/org/genivi/audiomanager/routingsender"  
 
-#define CAPI_ROUTING_INTERFACE  "org.genivi.audiomanger.routinginterface"
-#define CAPI_ROUTING_INSTANCE   "org.genivi.audiomanger"
-#define CAPI_ROUTING_PATH 		 "/org/genivi/audiomanger/routinginterface"
+#define CAPI_ROUTING_INTERFACE  "org.genivi.audiomanager.routinginterface"
+#define CAPI_ROUTING_INSTANCE   "org.genivi.audiomanager"
+#define CAPI_ROUTING_PATH 		 "/org/genivi/audiomanager/routinginterface"
 
 
 /** Test class implementing the routing sender service.

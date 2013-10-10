@@ -32,6 +32,7 @@ const char * CAmLookupData::BUS_NAME = "CAPIRoutingPlugin";
 rs_lookupData_s::rs_lookupData_s(const std::shared_ptr<org::genivi::am::RoutingControlProxy<> > & aProxy):mSenderProxy(aProxy)
 {
 	logInfo(__PRETTY_FUNCTION__);
+	mIsConnected = mSenderProxy->isAvailable();
 	mSubscription = mSenderProxy->getProxyStatusEvent().subscribe(std::bind(&rs_lookupData_s::onServiceStatusEvent,this,std::placeholders::_1));
 }
 
@@ -353,8 +354,7 @@ am_Error_e rs_lookupData_s::asyncSetSourceNotificationConfiguration(const am_Han
 
 void rs_lookupData_s::onServiceStatusEvent(const CommonAPI::AvailabilityStatus& serviceStatus)
 {
-	std::string serviceID;
-	logInfo(__PRETTY_FUNCTION__, serviceID, " status : ", (int)serviceStatus );
+	logInfo(__PRETTY_FUNCTION__, " status : ", (int)serviceStatus );
 	mIsConnected = (serviceStatus==CommonAPI::AvailabilityStatus::AVAILABLE);
 }
 
@@ -494,8 +494,11 @@ am_Error_e CAmLookupData::asyncConnect(const am_Handle_s handle,
 											org::genivi::am::RoutingControlProxyBase::AsyncConnectAsyncCallback callback)
 {
     RSLookupDataPtr result = CAmLookupData::getValueForKey(sourceID, mMapSources);
+    logInfo(__PRETTY_FUNCTION__, " [sourceID:", sourceID, "]", "[sinkID:", sinkID, "]");
     if(result)
     {
+    	logInfo(" [isConnected:", result->isConnected(), "]", "[address:", result->getProxy()->getAddress(), "]");
+
         mMapConnections.insert(std::make_pair(connectionID, result));
         mMapHandles.insert(std::make_pair(+handle.handle, result));
    		return result->asyncConnect(handle, connectionID, sourceID, sinkID, connectionFormat, callback);

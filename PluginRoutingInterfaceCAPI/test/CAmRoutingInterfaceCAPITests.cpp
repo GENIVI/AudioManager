@@ -619,10 +619,10 @@ TEST_F(CAmRoutingInterfaceCAPITests, registerDomain)
 		ON_CALL(*env->mpRoutingReceive, registerDomain(_, _)).WillByDefault(Return(E_ABORTED));
 		EXPECT_CALL(*env->mpRoutingReceive, registerDomain(IsDomainDataEqualTo(amDomainData), _)).WillOnce(DoAll(actionRegister(), Return(E_ABORTED)));
 
-//example: 	[local:org.genivi.audiomanger.testdomaininterface:org.genivi.audiomanger]
+//example: 	[local:org.genivi.audiomanager.testdomaininterface:org.genivi.audiomanager]
 		env->mProxy->registerDomain(domainData,
-									"org.genivi.audiomanger", //(last part)
-									"org.genivi.audiomanger.testdomaininterface", //(middle part)
+									"org.genivi.audiomanager", //(last part)
+									"org.genivi.audiomanager.testdomaininterface", //(middle part)
 									callStatus,
 									domainID,
 									error);
