@@ -59,12 +59,7 @@ INCLUDE_DIRECTORIES(
 # all source files go here
 file(GLOB PLUGINDBUS_SRCS_CXX "src/*.cpp")
 
-
 add_library(PluginRoutingInterfaceDbus MODULE ${PLUGINDBUS_SRCS_CXX})
-
-SET_TARGET_PROPERTIES(PluginRoutingInterfaceDbus PROPERTIES 
-                                            SOVERSION "${LIB_INTERFACE_VERSION}"
-)
 
 TARGET_LINK_LIBRARIES(PluginRoutingInterfaceDbus 
     ${DLT_LIBRARIES}

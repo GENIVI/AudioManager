@@ -50,10 +50,6 @@ file(GLOB PLUGINDBUS_SRCS_CXX "src/*.cpp")
 
 add_library(PluginRoutingInterfaceAsync MODULE ${PLUGINDBUS_SRCS_CXX})
 
-SET_TARGET_PROPERTIES(PluginRoutingInterfaceAsync PROPERTIES 
-                                            SOVERSION "${LIB_INTERFACE_VERSION}"
-)
-
 TARGET_LINK_LIBRARIES(PluginRoutingInterfaceAsync
     ${DLT_LIBRARIES}
     ${DBUS_LIBRARY}

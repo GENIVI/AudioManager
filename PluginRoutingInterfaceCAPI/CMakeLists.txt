@@ -62,10 +62,6 @@ file(GLOB PLUGINCAPI_SRCS_CXX "src/*.cpp" ${COMMON_API_GEN_SOURCES})
 
 add_library(PluginRoutingInterfaceCAPI MODULE ${PLUGINCAPI_SRCS_CXX})
 
-SET_TARGET_PROPERTIES(PluginRoutingInterfaceCAPI PROPERTIES 
-                                            SOVERSION "${LIB_INTERFACE_VERSION}"
-)
-
 TARGET_LINK_LIBRARIES(PluginRoutingInterfaceCAPI 
     ${DLT_LIBRARIES}
     ${COMMON_API_LIBRARIES}

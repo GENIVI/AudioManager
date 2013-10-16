@@ -49,9 +49,6 @@ file(GLOB PLUGIN_CONTROL_SRCS_CXX "src/*.cpp")
 
 add_library(PluginControlInterface MODULE ${PLUGIN_CONTROL_SRCS_CXX})
 
-SET_TARGET_PROPERTIES(PluginControlInterface PROPERTIES 
-                                            SOVERSION "${LIB_INTERFACE_VERSION}"
-)
 
 TARGET_LINK_LIBRARIES(PluginControlInterface 
     ${DLT_LIBRARIES})
