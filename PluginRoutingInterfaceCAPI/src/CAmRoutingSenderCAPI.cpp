@@ -147,7 +147,7 @@ am_Error_e CAmRoutingSenderCAPI::asyncAbort(const am_Handle_s handle)
 am_Error_e CAmRoutingSenderCAPI::asyncConnect(const am_Handle_s handle, const am_connectionID_t connectionID, const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_ConnectionFormat_e connectionFormat)
 {
     log(&ctxCommandCAPI, DLT_LOG_INFO, "CAmRoutingSenderCAPI::asyncConnect called");
-   	return mLookupData.asyncConnect(handle,connectionID, sourceID, sinkID, connectionFormat, [&mService,handle,connectionID](const CommonAPI::CallStatus& callStatus){
+   	return mLookupData.asyncConnect(handle,connectionID, sourceID, sinkID, connectionFormat, [&,handle,connectionID](const CommonAPI::CallStatus& callStatus){
 		log(&ctxCommandCAPI, DLT_LOG_INFO, __PRETTY_FUNCTION__, "Response with call status:", static_cast<int16_t>(callStatus));
 		if (callStatus != CommonAPI::CallStatus::SUCCESS)
 		{
@@ -161,7 +161,7 @@ am_Error_e CAmRoutingSenderCAPI::asyncConnect(const am_Handle_s handle, const am
 am_Error_e CAmRoutingSenderCAPI::asyncDisconnect(const am_Handle_s handle, const am_connectionID_t connectionID)
 {
 	log(&ctxCommandCAPI, DLT_LOG_INFO, "CAmRoutingSenderCAPI::asyncDisconnect called");
-	return mLookupData.asyncDisconnect(handle,connectionID, [&mService, handle, connectionID](const CommonAPI::CallStatus& callStatus){
+	return mLookupData.asyncDisconnect(handle,connectionID, [&, handle, connectionID](const CommonAPI::CallStatus& callStatus){
 		log(&ctxCommandCAPI, DLT_LOG_INFO, __PRETTY_FUNCTION__, "Response with call status:", static_cast<int16_t>(callStatus));
 		if (callStatus != CommonAPI::CallStatus::SUCCESS)
 		{
@@ -175,7 +175,7 @@ am_Error_e CAmRoutingSenderCAPI::asyncDisconnect(const am_Handle_s handle, const
 am_Error_e CAmRoutingSenderCAPI::asyncSetSinkVolume(const am_Handle_s handle, const am_sinkID_t sinkID, const am_volume_t volume, const am_RampType_e ramp, const am_time_t time)
 {
     log(&ctxCommandCAPI, DLT_LOG_INFO, "CAmRoutingSenderCAPI::asyncSetSinkVolume called");
-	return mLookupData.asyncSetSinkVolume(handle,sinkID, volume, ramp, time, [&mService, handle, volume](const CommonAPI::CallStatus& callStatus){
+	return mLookupData.asyncSetSinkVolume(handle,sinkID, volume, ramp, time, [&, handle, volume](const CommonAPI::CallStatus& callStatus){
 		log(&ctxCommandCAPI, DLT_LOG_INFO, __PRETTY_FUNCTION__, "Response with call status:", static_cast<int16_t>(callStatus));
 		if (callStatus != CommonAPI::CallStatus::SUCCESS)
 		{
@@ -189,7 +189,7 @@ am_Error_e CAmRoutingSenderCAPI::asyncSetSinkVolume(const am_Handle_s handle, co
 am_Error_e CAmRoutingSenderCAPI::asyncSetSourceVolume(const am_Handle_s handle, const am_sourceID_t sourceID, const am_volume_t volume, const am_RampType_e ramp, const am_time_t time)
 {
     log(&ctxCommandCAPI, DLT_LOG_INFO, "CAmRoutingSenderCAPI::asyncSetSourceVolume called");
-	return mLookupData.asyncSetSourceVolume(handle,sourceID, volume, ramp, time, [&mService, handle, volume](const CommonAPI::CallStatus& callStatus){
+	return mLookupData.asyncSetSourceVolume(handle,sourceID, volume, ramp, time, [&, handle, volume](const CommonAPI::CallStatus& callStatus){
 		log(&ctxCommandCAPI, DLT_LOG_INFO, __PRETTY_FUNCTION__, "Response with call status:", static_cast<int16_t>(callStatus));
 		if (callStatus != CommonAPI::CallStatus::SUCCESS)
 		{
@@ -203,7 +203,7 @@ am_Error_e CAmRoutingSenderCAPI::asyncSetSourceVolume(const am_Handle_s handle, 
 am_Error_e CAmRoutingSenderCAPI::asyncSetSourceState(const am_Handle_s handle, const am_sourceID_t sourceID, const am_SourceState_e state)
 {
     log(&ctxCommandCAPI, DLT_LOG_INFO, "CAmRoutingSenderCAPI::asyncSetSourceState called");
-	return mLookupData.asyncSetSourceState(handle,sourceID, state,[&mService, handle](const CommonAPI::CallStatus& callStatus){
+	return mLookupData.asyncSetSourceState(handle,sourceID, state,[&, handle](const CommonAPI::CallStatus& callStatus){
 		log(&ctxCommandCAPI, DLT_LOG_INFO, __PRETTY_FUNCTION__, "Response with call status:", static_cast<int16_t>(callStatus));
 		if (callStatus != CommonAPI::CallStatus::SUCCESS)
 		{
@@ -217,7 +217,7 @@ am_Error_e CAmRoutingSenderCAPI::asyncSetSourceState(const am_Handle_s handle, c
 am_Error_e CAmRoutingSenderCAPI::asyncSetSinkSoundProperties(const am_Handle_s handle, const am_sinkID_t sinkID, const std::vector<am_SoundProperty_s>& listSoundProperties)
 {
     log(&ctxCommandCAPI, DLT_LOG_INFO, "CAmRoutingSenderCAPI::asyncSetSinkSoundProperties called");
-	return mLookupData.asyncSetSinkSoundProperties(handle,sinkID, listSoundProperties, [&mService, handle](const CommonAPI::CallStatus& callStatus){
+	return mLookupData.asyncSetSinkSoundProperties(handle,sinkID, listSoundProperties, [&, handle](const CommonAPI::CallStatus& callStatus){
 		log(&ctxCommandCAPI, DLT_LOG_INFO, __PRETTY_FUNCTION__, "Response with call status:", static_cast<int16_t>(callStatus));
 		if (callStatus != CommonAPI::CallStatus::SUCCESS)
 		{
@@ -231,7 +231,7 @@ am_Error_e CAmRoutingSenderCAPI::asyncSetSinkSoundProperties(const am_Handle_s h
 am_Error_e CAmRoutingSenderCAPI::asyncSetSinkSoundProperty(const am_Handle_s handle, const am_sinkID_t sinkID, const am_SoundProperty_s& soundProperty)
 {
     log(&ctxCommandCAPI, DLT_LOG_INFO, "CAmRoutingSenderCAPI::asyncSetSinkSoundProperty called");
-	return mLookupData.asyncSetSinkSoundProperty(handle, sinkID, soundProperty, [&mService, handle](const CommonAPI::CallStatus& callStatus){
+	return mLookupData.asyncSetSinkSoundProperty(handle, sinkID, soundProperty, [&, handle](const CommonAPI::CallStatus& callStatus){
 		log(&ctxCommandCAPI, DLT_LOG_INFO, __PRETTY_FUNCTION__, "Response with call status:", static_cast<int16_t>(callStatus));
 		if (callStatus != CommonAPI::CallStatus::SUCCESS)
 		{
@@ -245,7 +245,7 @@ am_Error_e CAmRoutingSenderCAPI::asyncSetSinkSoundProperty(const am_Handle_s han
 am_Error_e CAmRoutingSenderCAPI::asyncSetSourceSoundProperties(const am_Handle_s handle, const am_sourceID_t sourceID, const std::vector<am_SoundProperty_s>& listSoundProperties)
 {
     log(&ctxCommandCAPI, DLT_LOG_INFO, "CAmRoutingSenderCAPI::asyncSetSourceSoundProperties called");
-	return mLookupData.asyncSetSourceSoundProperties(handle, sourceID, listSoundProperties, [&mService, handle](const CommonAPI::CallStatus& callStatus){
+	return mLookupData.asyncSetSourceSoundProperties(handle, sourceID, listSoundProperties, [&, handle](const CommonAPI::CallStatus& callStatus){
 		log(&ctxCommandCAPI, DLT_LOG_INFO, __PRETTY_FUNCTION__, "Response with call status:", static_cast<int16_t>(callStatus));
 		if (callStatus != CommonAPI::CallStatus::SUCCESS)
 		{
@@ -259,7 +259,7 @@ am_Error_e CAmRoutingSenderCAPI::asyncSetSourceSoundProperties(const am_Handle_s
 am_Error_e CAmRoutingSenderCAPI::asyncSetSourceSoundProperty(const am_Handle_s handle, const am_sourceID_t sourceID, const am_SoundProperty_s& soundProperty)
 {
     log(&ctxCommandCAPI, DLT_LOG_INFO, "CAmRoutingSenderCAPI::asyncSetSourceSoundProperty called");
-	return mLookupData.asyncSetSourceSoundProperty(handle, sourceID, soundProperty, [&mService, handle](const CommonAPI::CallStatus& callStatus){
+	return mLookupData.asyncSetSourceSoundProperty(handle, sourceID, soundProperty, [&, handle](const CommonAPI::CallStatus& callStatus){
 		log(&ctxCommandCAPI, DLT_LOG_INFO, __PRETTY_FUNCTION__, "Response with call status:", static_cast<int16_t>(callStatus));
 		if (callStatus != CommonAPI::CallStatus::SUCCESS)
 		{
@@ -272,7 +272,7 @@ am_Error_e CAmRoutingSenderCAPI::asyncSetSourceSoundProperty(const am_Handle_s h
 
 am_Error_e CAmRoutingSenderCAPI::asyncCrossFade(const am_Handle_s handle, const am_crossfaderID_t crossfaderID, const am_HotSink_e hotSink, const am_RampType_e rampType, const am_time_t time)
 {
-	return mLookupData.asyncCrossFade(handle, crossfaderID, hotSink, rampType, time, [&mService, handle, hotSink](const CommonAPI::CallStatus& callStatus){
+	return mLookupData.asyncCrossFade(handle, crossfaderID, hotSink, rampType, time, [&, handle, hotSink](const CommonAPI::CallStatus& callStatus){
 		log(&ctxCommandCAPI, DLT_LOG_INFO, __PRETTY_FUNCTION__, "Response with call status:", static_cast<int16_t>(callStatus));
 		if (callStatus != CommonAPI::CallStatus::SUCCESS)
 		{
@@ -300,7 +300,7 @@ am_Error_e CAmRoutingSenderCAPI::returnBusName(std::string& BusName) const
 am_Error_e CAmRoutingSenderCAPI::asyncSetVolumes(const am_Handle_s handle, const std::vector<am_Volumes_s>& volumes)
 {
 	log(&ctxCommandCAPI, DLT_LOG_INFO, "CAmRoutingSenderCAPI::asyncSetVolumes called");
-	return mLookupData.asyncSetVolumes(handle, volumes, [&mService, handle, volumes](const CommonAPI::CallStatus& callStatus){
+	return mLookupData.asyncSetVolumes(handle, volumes, [&, handle, volumes](const CommonAPI::CallStatus& callStatus){
 		log(&ctxCommandCAPI, DLT_LOG_INFO, __PRETTY_FUNCTION__, "Response with call status:", static_cast<int16_t>(callStatus));
 		if (callStatus != CommonAPI::CallStatus::SUCCESS)
 		{
@@ -316,7 +316,7 @@ am_Error_e CAmRoutingSenderCAPI::asyncSetVolumes(const am_Handle_s handle, const
 am_Error_e CAmRoutingSenderCAPI::asyncSetSinkNotificationConfiguration(const am_Handle_s handle, const am_sinkID_t sinkID, const am_NotificationConfiguration_s& nc)
 {
 	log(&ctxCommandCAPI, DLT_LOG_INFO, "CAmRoutingSenderCAPI::asyncSetSinkNotificationConfiguration called");
-	return mLookupData.asyncSetSinkNotificationConfiguration(handle, sinkID, nc, [&mService, handle](const CommonAPI::CallStatus& callStatus){
+	return mLookupData.asyncSetSinkNotificationConfiguration(handle, sinkID, nc, [&, handle](const CommonAPI::CallStatus& callStatus){
 		log(&ctxCommandCAPI, DLT_LOG_INFO, __PRETTY_FUNCTION__, "Response with call status:", static_cast<int16_t>(callStatus));
 		if (callStatus != CommonAPI::CallStatus::SUCCESS)
 		{
@@ -330,7 +330,7 @@ am_Error_e CAmRoutingSenderCAPI::asyncSetSinkNotificationConfiguration(const am_
 am_Error_e CAmRoutingSenderCAPI::asyncSetSourceNotificationConfiguration(const am_Handle_s handle, const am_sourceID_t sourceID, const am_NotificationConfiguration_s& nc)
 {
 	log(&ctxCommandCAPI, DLT_LOG_INFO, "CAmRoutingSenderCAPI::asyncSetSourceNotificationConfiguration called");
-	return mLookupData.asyncSetSourceNotificationConfiguration(handle, sourceID, nc, [&mService, handle](const CommonAPI::CallStatus& callStatus){
+	return mLookupData.asyncSetSourceNotificationConfiguration(handle, sourceID, nc, [&, handle](const CommonAPI::CallStatus& callStatus){
 		log(&ctxCommandCAPI, DLT_LOG_INFO, __PRETTY_FUNCTION__, "Response with call status:", static_cast<int16_t>(callStatus));
 		if (callStatus != CommonAPI::CallStatus::SUCCESS)
 		{
