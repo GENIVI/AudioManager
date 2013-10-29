@@ -2,7 +2,6 @@
 <!DOCTYPE node PUBLIC
   "-//freedesktop//DTD D-Bus Object Introspection 1.0//EN"
   "http://standards.freedesktop.org/dbus/1.0/introspect.dtd">
-
 <node>
      <interface name="org.genivi.audiomanager.commandinterface">
         <method name="Connect">
@@ -111,6 +110,18 @@
             <arg type="n" name="result" direction="out"/> <!-- method return code (am_Error_e) -->
             <arg type="a(nnn)" name="listMainNotificationConfigurations" direction="out"/> <!-- am_am_notification_e type; am_status_e status; int16t parameter; -->
         </method>
+        
+        <method name="setMainSinkNotificationConfiguration">
+			<arg type="q" name="sinkID" direction="in"/>
+			<arg type="(nnn)" name="mainNotificationConfiguration" direction="in"/> <!-- am_am_notification_e type; am_status_e status; int16t parameter; -->
+			<arg type="n" name="error" direction="out"/>
+        </method>
+        
+        <method name="setMainSourceNotificationConfiguration">
+			<arg type="q" name="sourceID" direction="in"/>
+			<arg type="(nnn)" name="mainNotificationConfiguration" direction="in"/> <!-- am_am_notification_e type; am_status_e status; int16t parameter; -->
+			<arg type="n" name="error" direction="out"/>
+        </method>
 
         <signal name="NumberOfMainConnectionsChanged"></signal>
 
@@ -210,7 +221,6 @@
         <signal name="SourceMainNotificationConfigurationChanged">
 			<arg type="q" name="sourceID" direction="out"/>
 			<arg type="(nnn)" name="mainNotificationConfiguration" direction="out"/> <!-- am_am_notification_e type; am_status_e status; int16t parameter; -->
-        </signal>
-       
+        </signal>         
     </interface>
 </node>
