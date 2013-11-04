@@ -225,11 +225,12 @@ void CAmCommonAPIWrapper::registerTimeout(Timeout* timeout, const DispatchPriori
 
     //prepare handle and callback. new is eval, but there is no other choice because we need the pointer!
     sh_timerHandle_t handle;
-    timerHandles myHandle({handle,timeout});
-    mpListTimerhandles.push_back(myHandle);
 
     //add the timer to the pollLoop
     mpSocketHandler->addTimer(pollTimeout, &pCommonTimerCallback, handle, timeout);
+
+    timerHandles myHandle({handle,timeout});
+    mpListTimerhandles.push_back(myHandle);
 
     return;
 }
