@@ -187,7 +187,7 @@ am_Error_e CAmDatabaseHandler::enterDomainDB(const am_Domain_s & domainData, am_
     MY_SQLITE_BIND_TEXT(query, 1, domainData.name.c_str(), domainData.name.size(), SQLITE_STATIC)
     if ((eCode = sqlite3_step(query)) == SQLITE_ROW)
     {
-		domainID = sqlite3_column_int(query, 0);
+        domainID = sqlite3_column_int(query, 0);
         command = "UPDATE " + std::string(DOMAIN_TABLE) + " SET name=?, busname=?, nodename=?, early=?, complete=?, state=?, reserved=? WHERE domainID=" + i2s(sqlite3_column_int(query, 0));
     }
     else if (eCode == SQLITE_DONE)
@@ -593,8 +593,10 @@ am_Error_e CAmDatabaseHandler::enterGatewayDB(const am_Gateway_s & gatewayData, 
     assert(!gatewayData.convertionMatrix.empty());
     assert(!gatewayData.listSinkFormats.empty());
     assert(!gatewayData.listSourceFormats.empty());
-    assert(existSink(gatewayData.sinkID));
-    assert(existSource(gatewayData.sourceID));
+
+    //might be that the sinks and sources are not there during registration time
+    //assert(existSink(gatewayData.sinkID));
+    //assert(existSource(gatewayData.sourceID));
 
     sqlite3_stmt* query = NULL;
     int eCode = 0;
@@ -1290,16 +1292,22 @@ am_Error_e CAmDatabaseHandler::removeSourceDB(const am_sourceID_t sourceID)
     std::string command1 = "DROP table SourceConnectionFormat" + i2s(sourceID);
     std::string command2 = "DROP table SourceMainSoundProperty" + i2s(sourceID);
     std::string command3 = "DROP table SourceSoundProperty" + i2s(sourceID);
+    std::string command4 = "DROP table SourceNotificationConfiguration" + i2s(sourceID);
+    std::string command5 = "DROP table SourceMainNotificationConfiguration" + i2s(sourceID);
     if (!sqQuery(command))
         return (E_DATABASE_ERROR);
     if (!sqQuery(command1))
         return (E_DATABASE_ERROR);
     if (!sqQuery(command3))
         return (E_DATABASE_ERROR);
+    if (!sqQuery(command4))
+        return (E_DATABASE_ERROR);
 
     if(visible)
     {
         if (!sqQuery(command2))
+            return (E_DATABASE_ERROR);
+        if (!sqQuery(command5))
             return (E_DATABASE_ERROR);
     }
     logInfo("DatabaseHandler::removeSourceDB removed:", sourceID);
@@ -3578,11 +3586,11 @@ bool CAmDatabaseHandler::sourceVisible(const am_sourceID_t sourceID) const
     bool returnVal = false;
     MY_SQLITE_PREPARE_V2_BOOL(mpDatabase, command.c_str(), -1, &query, NULL)
 
-    if ((eCode = sqlite3_step(query)) == SQLITE_DONE)
+    if ((eCode = sqlite3_step(query)) == SQLITE_ROW)
     {
         returnVal = (bool) sqlite3_column_int(query, 0);
     }
-    else if (eCode != SQLITE_ROW)
+    else if (eCode != SQLITE_DONE)
     {
         returnVal = false;
         logError("DatabaseHandler::sourceVisible database error!:", eCode);
@@ -3604,11 +3612,11 @@ bool CAmDatabaseHandler::sinkVisible(const am_sinkID_t sinkID) const
     int eCode = 0;
     bool returnVal = false;
     MY_SQLITE_PREPARE_V2_BOOL(mpDatabase, command.c_str(), -1, &query, NULL)
-    if ((eCode = sqlite3_step(query)) == SQLITE_DONE)
+    if ((eCode = sqlite3_step(query)) == SQLITE_ROW)
     {
         returnVal = sqlite3_column_int(query, 0);
     }
-    else if (eCode != SQLITE_ROW)
+    else if (eCode != SQLITE_DONE)
     {
         returnVal = false;
         logError("DatabaseHandler::sinkVisible database error!:", eCode);
@@ -3882,6 +3890,7 @@ am_Error_e CAmDatabaseHandler::getDomainState(const am_domainID_t domainID, am_D
 
 am_Error_e CAmDatabaseHandler::peekDomain(const std::string & name, am_domainID_t & domainID)
 {
+    domainID=0;
     sqlite3_stmt* query = NULL, *queryInsert = NULL;
     std::string command = "SELECT domainID FROM " + std::string(DOMAIN_TABLE) + " WHERE name=?";
     int eCode = 0, eCode1 = 0;
