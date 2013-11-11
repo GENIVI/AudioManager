@@ -57,19 +57,7 @@ ELSE(COMMON_API_DBUS_FOUND)
              
          
 ENDIF(COMMON_API_DBUS_FOUND)
-
-FIND_LIBRARY(DBUS_LIBRARY
-    NAMES dbus-1
-    PATHS 
-    /lib
-    /usr/local/lib
-    /usr/lib
-)
-
-IF (NOT DBUS_LIBRARY)
-    MESSAGE (ERROR "did not find DBus library!")
-ENDIF (NOT DBUS_LIBRARY)
-    
+ 
 
 SET(COMMON_API_DBUS_LIBRARIES ${COMMON_API_DBUS_LIBRARY} ${DBUS_LIBRARY})
 
