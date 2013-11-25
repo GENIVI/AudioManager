@@ -63,7 +63,7 @@ add_library(PluginRoutingInterfaceDbus MODULE ${PLUGINDBUS_SRCS_CXX})
 
 TARGET_LINK_LIBRARIES(PluginRoutingInterfaceDbus 
     ${DLT_LIBRARIES}
-    ${DBUS_LIBRARY}
+    ${DBUS_LIBRARIES}
 )
 
 IF(WITH_TESTS)

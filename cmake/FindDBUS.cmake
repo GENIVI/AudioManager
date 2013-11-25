@@ -17,18 +17,17 @@
 #
 ############################################################################
 
-FIND_PATH(DBUS_INCLUDE_DIR dbus/dbus.h
-/usr/include/dbus-1.0
-)
+FIND_PATH(DBUS_INCLUDE_DIR dbus/dbus.h   	
+          PATHS "/usr/include/dbus-1.0")
 
 FIND_PATH(DBUS_ARCH_INCLUDE_DIR dbus/dbus-arch-deps.h
-/usr/lib/dbus-1.0/include
-/usr/lib/*/dbus-1.0/include
+PATHS "/usr/lib/dbus-1.0/include" 
+      "/usr/lib/*/dbus-1.0/include"
 )
 
 FIND_LIBRARY(DBUS_LIBRARY
 NAMES dbus-1
-PATHS /lib
+PATHS "/usr/lib"
 )
 
 SET( DBUS_FOUND "NO" )
@@ -44,3 +43,4 @@ MARK_AS_ADVANCED(
   DBUS_ARCH_INCLUDE_DIR
   DBUS_LIBRARY
 )
+

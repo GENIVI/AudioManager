@@ -1,19 +1,8 @@
-# Copyright (C) 2013, BMW AG
 #
-# This file is part of GENIVI Project AudioManager.
+# Copyright (C) 2012, BMW AG
 # 
-# Contributions are licensed to the GENIVI Alliance under one or more
-# Contribution License Agreements.
+# \author Christian Linke
 # 
-# copyright
-# This Source Code Form is subject to the terms of the
-# Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
-# this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-# 
-# author Christian Linke, christian.linke@bmw.de BMW 2013
-#
-# For further information see http://www.genivi.org/.
-#
 
 include(UsePkgConfig)
 
@@ -26,17 +15,16 @@ IF(COMMON_API_DBUS_FOUND)
               PATH_SUFFIXES CommonAPI-${COMMON_API_VERSION}	 
               PATHS
               ${COMMON_API_DBUS_INCLUDE_DIRS}	
-              /usr/local/include        	
-              /usr/include)
+              "/usr/local/include"       	
+              "/usr/include")
 
     FIND_LIBRARY(COMMON_API_DBUS_LIBRARY 
-                 NAMES CommonAPI-DBus 
+                 NAMES CommonAPI-DBus murmurhash-internal
                  PATHS
-                 ${CommonAPI_PKG_LIBRARY_DIRS}
-                 /usr/local/lib
-                 /usr/lib)
-                 
-                                                                
+                 "/usr/local/lib"
+                 "/usr/lib"
+                 )      
+                                                               
 ELSE(COMMON_API_DBUS_FOUND)
     
     MESSAGE(STATUS "CommonAPI_DBUS package not found, search directly, trying version 0.7 ...")
@@ -46,20 +34,19 @@ ELSE(COMMON_API_DBUS_FOUND)
               NAMES CommonAPI/DBus/DBusRuntime.h CommonAPI/DBus/DBusProxy.h 
               PATH_SUFFIXES CommonAPI-0.7
               PATHS
-              /usr/local/include        	
-              /usr/include)
+              "/usr/local/include"       	
+              "/usr/include")
               
     FIND_LIBRARY(COMMON_API_DBUS_LIBRARY 
              NAMES CommonAPI-DBus
              PATHS
-             /usr/local/lib
-             /usr/lib)
-             
-         
+             "/usr/local/lib"
+             "/usr/lib"
+             NO_SYSTEM_ENVIRONMENT_PATH)
 ENDIF(COMMON_API_DBUS_FOUND)
- 
+   
 
-SET(COMMON_API_DBUS_LIBRARIES ${COMMON_API_DBUS_LIBRARY} ${DBUS_LIBRARY})
+SET(COMMON_API_DBUS_LIBRARIES ${COMMON_API_DBUS_LIBRARY})
 
 IF(COMMON_API_DBUS_INCLUDE_DIR AND COMMON_API_DBUS_LIBRARY)   
    message(STATUS "Found CommonAPI_DBUS")

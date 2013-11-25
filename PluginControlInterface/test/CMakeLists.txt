@@ -59,7 +59,7 @@ TARGET_LINK_LIBRARIES(AmControlReceiverShadowTest
     ${DLT_LIBRARIES}
     ${CMAKE_DL_LIBS}
     ${CMAKE_THREAD_LIBS_INIT}
-    ${DBUS_LIBRARY}
+    ${DBUS_LIBRARIES}
     ${SQLITE_LIBRARIES}
     gtest
     gmock

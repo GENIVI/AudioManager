@@ -52,7 +52,7 @@ add_library(PluginRoutingInterfaceAsync MODULE ${PLUGINDBUS_SRCS_CXX})
 
 TARGET_LINK_LIBRARIES(PluginRoutingInterfaceAsync
     ${DLT_LIBRARIES}
-    ${DBUS_LIBRARY}
+    ${DBUS_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
 )
 

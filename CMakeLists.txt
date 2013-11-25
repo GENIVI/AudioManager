@@ -39,8 +39,10 @@ message(STATUS "Build Version ${DAEMONVERSION}")
 
 execute_process(COMMAND git log --pretty=short WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} 
                 OUTPUT_FILE ${CMAKE_CURRENT_SOURCE_DIR}/CHANGELOG)
-
+        
 PROJECT(AudioManagerDeamon)
+
+message( STATUS "CMAKE_TOOLCHAIN_FILE='${CMAKE_TOOLCHAIN_FILE}'" )
 
 FIND_PACKAGE(PkgConfig)
 
@@ -225,6 +227,7 @@ ENDIF(WITH_DOCUMENTATION)
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Wextra -std=gnu++0x -D_GNU_SOURCE -pedantic -Wno-variadic-macros -Wno-long-long")
 #set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Wextra -std=c++98 -D_GNU_SOURCE")
 
+
 if(WITH_PLUGIN_COMMAND)
     if(WITH_DBUS_WRAPPER)
       	    add_subdirectory (PluginCommandInterfaceDbus)
@@ -247,6 +250,7 @@ if(WITH_PLUGIN_CONTROL)
 endif(WITH_PLUGIN_CONTROL)
 
 add_subdirectory (AudioManagerDaemon)
+
 
 IF(EXISTS "${CMAKE_SOURCE_DIR}/ProjectSpecific/")
     add_subdirectory (ProjectSpecific)
