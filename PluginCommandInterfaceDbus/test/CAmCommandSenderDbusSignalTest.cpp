@@ -265,7 +265,7 @@ TEST_F(CAmCommandSenderDbusSignalTest,cbSourceAvailabilityChanged)
             "	loop.quit()\n"
             "dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)\n"
             "bus = dbus.SessionBus()\n"
-            "bus.add_signal_receiver(catchsignal, signal_name='NumberOfMainConnectionsChanged', dbus_interface = 'org.genivi.audiomanager.CommandInterface', message_keyword='dbus_message')\n"
+            "bus.add_signal_receiver(catchsignal, signal_name='NumberOfMainConnectionsChanged', dbus_interface = 'org.genivi.audiomanager.commandinterface', message_keyword='dbus_message')\n"
             "print('Started thread') \n"
             "loop.run()\n", NULL);
     pthread_join(pythonloop, NULL);
@@ -286,7 +286,7 @@ TEST_F(CAmCommandSenderDbusSignalTest,cbSourceAvailabilityChanged)
             "	loop.quit()\n"
             "dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)\n"
             "bus = dbus.SessionBus()\n"
-            "bus.add_signal_receiver(catchSinkAdded, signal_name='SinkAdded', dbus_interface = 'org.genivi.audiomanager.CommandInterface', message_keyword='dbus_message')\n"
+            "bus.add_signal_receiver(catchSinkAdded, signal_name='SinkAdded', dbus_interface = 'org.genivi.audiomanager.commandinterface', message_keyword='dbus_message')\n"
             "loop.run()\n", NULL);
     pthread_join(pythonloop, NULL);
 
@@ -315,7 +315,7 @@ TEST_F(CAmCommandSenderDbusSignalTest,cbSourceAvailabilityChanged)
             "	loop.quit()\n"
             "dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)\n"
             "bus = dbus.SessionBus()\n"
-            "bus.add_signal_receiver(catchSinkRemoved, signal_name='SinkRemoved', dbus_interface = 'org.genivi.audiomanager.CommandInterface', message_keyword='dbus_message')\n"
+            "bus.add_signal_receiver(catchSinkRemoved, signal_name='SinkRemoved', dbus_interface = 'org.genivi.audiomanager.commandinterface', message_keyword='dbus_message')\n"
             "loop.run()\n", NULL);
     pthread_join(pythonloop, NULL);
 
@@ -345,7 +345,7 @@ TEST_F(CAmCommandSenderDbusSignalTest,cbSourceAvailabilityChanged)
             "	loop.quit()\n"
             "dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)\n"
             "bus = dbus.SessionBus()\n"
-            "bus.add_signal_receiver(catchSourceAdded, signal_name='SourceAdded', dbus_interface = 'org.genivi.audiomanager.CommandInterface', message_keyword='dbus_message')\n"
+            "bus.add_signal_receiver(catchSourceAdded, signal_name='SourceAdded', dbus_interface = 'org.genivi.audiomanager.commandinterface', message_keyword='dbus_message')\n"
             "loop.run()\n", NULL);
     pthread_join(pythonloop, NULL);
 
@@ -374,7 +374,7 @@ TEST_F(CAmCommandSenderDbusSignalTest,cbSourceAvailabilityChanged)
             "	loop.quit()\n"
             "dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)\n"
             "bus = dbus.SessionBus()\n"
-            "bus.add_signal_receiver(catchSourceRemoved, signal_name='SourceRemoved', dbus_interface = 'org.genivi.audiomanager.CommandInterface', message_keyword='dbus_message')\n"
+            "bus.add_signal_receiver(catchSourceRemoved, signal_name='SourceRemoved', dbus_interface = 'org.genivi.audiomanager.commandinterface', message_keyword='dbus_message')\n"
             "loop.run()\n", NULL);
     pthread_join(pythonloop, NULL);
 
@@ -400,7 +400,7 @@ TEST_F(CAmCommandSenderDbusSignalTest,cbSourceAvailabilityChanged)
             "	loop.quit()\n"
             "dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)\n"
             "bus = dbus.SessionBus()\n"
-            "bus.add_signal_receiver(catchNumberOfSinkClassesChanged, signal_name='NumberOfSinkClassesChanged', dbus_interface = 'org.genivi.audiomanager.CommandInterface', message_keyword='dbus_message')\n"
+            "bus.add_signal_receiver(catchNumberOfSinkClassesChanged, signal_name='NumberOfSinkClassesChanged', dbus_interface = 'org.genivi.audiomanager.commandinterface', message_keyword='dbus_message')\n"
             "loop.run()\n", NULL);
     pthread_join(pythonloop, NULL);
 
@@ -416,7 +416,7 @@ TEST_F(CAmCommandSenderDbusSignalTest,cbSourceAvailabilityChanged)
             "	loop.quit()\n"
             "dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)\n"
             "bus = dbus.SessionBus()\n"
-            "bus.add_signal_receiver(CatchNumberOfSourceClassesChanged, signal_name='NumberOfSourceClassesChanged', dbus_interface = 'org.genivi.audiomanager.CommandInterface', message_keyword='dbus_message')\n"
+            "bus.add_signal_receiver(CatchNumberOfSourceClassesChanged, signal_name='NumberOfSourceClassesChanged', dbus_interface = 'org.genivi.audiomanager.commandinterface', message_keyword='dbus_message')\n"
             "loop.run()\n", NULL);
     pthread_join(pythonloop, NULL);
 
@@ -439,7 +439,7 @@ TEST_F(CAmCommandSenderDbusSignalTest,cbSourceAvailabilityChanged)
             "	loop.quit()\n"
             "dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)\n"
             "bus = dbus.SessionBus()\n"
-            "bus.add_signal_receiver(catchMainConnectionStateChanged, signal_name='MainConnectionStateChanged', dbus_interface = 'org.genivi.audiomanager.CommandInterface', message_keyword='dbus_message')\n"
+            "bus.add_signal_receiver(catchMainConnectionStateChanged, signal_name='MainConnectionStateChanged', dbus_interface = 'org.genivi.audiomanager.commandinterface', message_keyword='dbus_message')\n"
             "loop.run()\n", NULL);
     pthread_join(pythonloop, NULL);
 
@@ -481,7 +481,7 @@ TEST_F(CAmCommandSenderDbusSignalTest,cbSourceAvailabilityChanged)
             "	loop.quit()\n"
             "dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)\n"
             "bus = dbus.SessionBus()\n"
-            "bus.add_signal_receiver(catchMainSinkSoundPropertyChanged, signal_name='MainSinkSoundPropertyChanged', dbus_interface = 'org.genivi.audiomanager.CommandInterface', message_keyword='dbus_message')\n"
+            "bus.add_signal_receiver(catchMainSinkSoundPropertyChanged, signal_name='MainSinkSoundPropertyChanged', dbus_interface = 'org.genivi.audiomanager.commandinterface', message_keyword='dbus_message')\n"
             "loop.run()\n", NULL);
     pthread_join(pythonloop, NULL);
 
@@ -522,7 +522,7 @@ TEST_F(CAmCommandSenderDbusSignalTest,cbSourceAvailabilityChanged)
             "	loop.quit()\n"
             "dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)\n"
             "bus = dbus.SessionBus()\n"
-            "bus.add_signal_receiver(catchMainSourceSoundPropertyChanged, signal_name='MainSourceSoundPropertyChanged', dbus_interface = 'org.genivi.audiomanager.CommandInterface', message_keyword='dbus_message')\n"
+            "bus.add_signal_receiver(catchMainSourceSoundPropertyChanged, signal_name='MainSourceSoundPropertyChanged', dbus_interface = 'org.genivi.audiomanager.commandinterface', message_keyword='dbus_message')\n"
             "loop.run()\n", NULL);
     pthread_join(pythonloop, NULL);
 
@@ -563,7 +563,7 @@ TEST_F(CAmCommandSenderDbusSignalTest,cbSourceAvailabilityChanged)
             "	loop.quit()\n"
             "dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)\n"
             "bus = dbus.SessionBus()\n"
-            "bus.add_signal_receiver(catchSinkAvailabilityChanged, signal_name='SinkAvailabilityChanged', dbus_interface = 'org.genivi.audiomanager.CommandInterface', message_keyword='dbus_message')\n"
+            "bus.add_signal_receiver(catchSinkAvailabilityChanged, signal_name='SinkAvailabilityChanged', dbus_interface = 'org.genivi.audiomanager.commandinterface', message_keyword='dbus_message')\n"
             "loop.run()\n", NULL);
     pthread_join(pythonloop, NULL);
 
@@ -604,7 +604,7 @@ TEST_F(CAmCommandSenderDbusSignalTest,cbSourceAvailabilityChanged)
             "	loop.quit()\n"
             "dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)\n"
             "bus = dbus.SessionBus()\n"
-            "bus.add_signal_receiver(catchSourceAvailability, signal_name='SourceAvailabilityChanged', dbus_interface = 'org.genivi.audiomanager.CommandInterface', message_keyword='dbus_message')\n"
+            "bus.add_signal_receiver(catchSourceAvailability, signal_name='SourceAvailabilityChanged', dbus_interface = 'org.genivi.audiomanager.commandinterface', message_keyword='dbus_message')\n"
             "loop.run()\n", NULL);
     pthread_join(pythonloop, NULL);
 
@@ -645,7 +645,7 @@ TEST_F(CAmCommandSenderDbusSignalTest,cbSourceAvailabilityChanged)
             "	loop.quit()\n"
             "dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)\n"
             "bus = dbus.SessionBus()\n"
-            "bus.add_signal_receiver(catchVolumeChanged, signal_name='VolumeChanged', dbus_interface = 'org.genivi.audiomanager.CommandInterface', message_keyword='dbus_message')\n"
+            "bus.add_signal_receiver(catchVolumeChanged, signal_name='VolumeChanged', dbus_interface = 'org.genivi.audiomanager.commandinterface', message_keyword='dbus_message')\n"
             "loop.run()\n", NULL);
     pthread_join(pythonloop, NULL);
 
@@ -687,7 +687,7 @@ TEST_F(CAmCommandSenderDbusSignalTest,cbSourceAvailabilityChanged)
             "	loop.quit()\n"
             "dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)\n"
             "bus = dbus.SessionBus()\n"
-            "bus.add_signal_receiver(catchSinkMuteStateChanged, signal_name='SinkMuteStateChanged', dbus_interface = 'org.genivi.audiomanager.CommandInterface', message_keyword='dbus_message')\n"
+            "bus.add_signal_receiver(catchSinkMuteStateChanged, signal_name='SinkMuteStateChanged', dbus_interface = 'org.genivi.audiomanager.commandinterface', message_keyword='dbus_message')\n"
             "loop.run()\n", NULL);
     pthread_join(pythonloop, NULL);
 
@@ -728,7 +728,7 @@ TEST_F(CAmCommandSenderDbusSignalTest,cbSourceAvailabilityChanged)
             "	loop.quit()\n"
             "dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)\n"
             "bus = dbus.SessionBus()\n"
-            "bus.add_signal_receiver(catchSystemPropertyChanged, signal_name='SystemPropertyChanged', dbus_interface = 'org.genivi.audiomanager.CommandInterface', message_keyword='dbus_message')\n"
+            "bus.add_signal_receiver(catchSystemPropertyChanged, signal_name='SystemPropertyChanged', dbus_interface = 'org.genivi.audiomanager.commandinterface', message_keyword='dbus_message')\n"
             "loop.run()\n", NULL);
     pthread_join(pythonloop, NULL);
 
@@ -760,7 +760,7 @@ TEST_F(CAmCommandSenderDbusSignalTest,cbSourceAvailabilityChanged)
             "	loop.quit()\n"
             "dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)\n"
             "bus = dbus.SessionBus()\n"
-            "bus.add_signal_receiver(catchTimingInformationChanged, signal_name='TimingInformationChanged', dbus_interface = 'org.genivi.audiomanager.CommandInterface', message_keyword='dbus_message')\n"
+            "bus.add_signal_receiver(catchTimingInformationChanged, signal_name='TimingInformationChanged', dbus_interface = 'org.genivi.audiomanager.commandinterface', message_keyword='dbus_message')\n"
             "loop.run()\n", NULL);
     pthread_join(pythonloop, NULL);
 
