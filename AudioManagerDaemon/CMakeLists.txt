@@ -46,7 +46,6 @@ FIND_PACKAGE(NSM REQUIRED)
 
 IF(WITH_CAPI_WRAPPER)
     FIND_PACKAGE(CommonAPI REQUIRED)
-    FIND_PACKAGE(CommonAPI_DBus REQUIRED) 
 ENDIF(WITH_CAPI_WRAPPER)
 
 SET(AUDIOMAN_SRCS_CXX
@@ -156,6 +155,17 @@ INCLUDE_DIRECTORIES(
 )
 
 IF(WITH_CAPI_WRAPPER)
+
+# Find the common-api sources. 
+# The sources can be placed in the build directory (DESTINATION) or in the source tree (ALT_DESTINATION). 
+# The ALT_DESTINATION is used as fall back if the DESTINATION directory dosen't contain the sources or you just don't want to use the generator.
+INCLUDE(CommonAPIGenerator)
+COMMON_API_GENERATE_SOUCRES(TARGET COMMON_API 
+                            FIDLS fidls/NodeStateManager.fdepl # a list with fidls
+                            DESTINATION src-gen  # a relative path to the build directory or an absolute path
+                            ALT_DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/src-gen # an alternative relative/absolute path with common-api sources, usually in the source tree
+                            DBUS)
+
 INCLUDE_DIRECTORIES(${INCLUDE_DIRECTORIES}
     ${COMMON_API_INCLUDE_DIRS}
 	${COMMON_API_DBUS_INCLUDE_DIRS}

@@ -27,14 +27,8 @@ set(EXECUTABLE_OUTPUT_PATH ${TEST_EXECUTABLE_OUTPUT_PATH})
 
 FIND_PACKAGE(Threads)
 FIND_PACKAGE(PkgConfig)
-pkg_check_modules(SQLITE REQUIRED sqlite3)
-
 FIND_PACKAGE(CommonAPI REQUIRED)
-FIND_PACKAGE(CommonAPI_DBus REQUIRED) 
-
-
-#grab the parent source gen folder, instead of making a copy for the tests
-FILE(GLOB_RECURSE COMMON_API_GEN_SOURCES "../../src-gen/*.cpp")
+pkg_check_modules(SQLITE REQUIRED sqlite3)
 
 IF(WITH_DLT)    
     pkg_check_modules(DLT REQUIRED automotive-dlt>=2.2.0)   

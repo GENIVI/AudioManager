@@ -30,8 +30,7 @@ set(EXECUTABLE_OUTPUT_PATH ${TEST_EXECUTABLE_OUTPUT_PATH})
 FIND_PACKAGE(Threads)
 FIND_PACKAGE(PkgConfig)
 FIND_PACKAGE(PythonLibs REQUIRED)
-pkg_check_modules(PC_COMMON REQUIRED CommonAPI)
-pkg_check_modules(PC_COMMON_DBUS REQUIRED CommonAPI-DBus)
+FIND_PACKAGE(CommonAPI REQUIRED)
 
 IF(WITH_DLT)    
     pkg_check_modules(DLT REQUIRED automotive-dlt>=2.2.0)   
@@ -44,8 +43,9 @@ INCLUDE_DIRECTORIES(
     ${AUDIO_INCLUDE_FOLDER}
     ${CMAKE_SOURCE_DIR} 
     ${DLT_INCLUDE_DIRS}
-    ${PC_COMMON_INCLUDE_DIRS}
-	${PC_COMMON_DBUS_INCLUDE_DIRS}
+    ${COMMON_API_INCLUDE_DIRS}
+	${COMMON_API_DBUS_INCLUDE_DIRS}
+	${COMMON_API_COMMAND_INTERFACE_GEN_INCLUDE_DIR}
     ${INCLUDE_FOLDER}
     ${PYTHON_INCLUDE_DIRS}
     ${GOOGLE_TEST_INCLUDE_DIR}
@@ -56,25 +56,22 @@ INCLUDE_DIRECTORIES(
 
 link_directories(
         ${LINK_DIRECTORIES}
-        ${PC_COMMON_LIBRARY_DIRS}
-		${PC_COMMON_DBUS_LIBRARY_DIRS}
+        ${COMMON_API_LIBRARY_DIRS}
+		${COMMON_API_DBUS_LIBRARY_DIRS}
 )
    
 file(GLOB CAPI_PLUGIN_INTERFACE_SRCS_CXX 
      "../../AudioManagerDaemon/src/CAmCommonAPIWrapper.cpp"
      "../../AudioManagerDaemon/src/CAmSocketHandler.cpp"
-     "../../AudioManagerDaemon/src/CAmDltWrapper.cpp"
-     "../src/*.cpp"  
+     "../../AudioManagerDaemon/src/CAmDltWrapper.cpp" 
      "CAmCommandSenderCAPITest.cpp"
      "CAmTestCAPIWrapper.cpp"
      "CAmCommandSenderCommon.cpp"
+     "../src/*.cpp"
+     ${COMMON_API_COMMAND_INTERFACE_GEN_SOURCES}
 )
 
-file(GLOB_RECURSE  CAPI_PLUGIN_INTERFACE_GEN_SRCS_CXX 
-     "../src-gen/*.cpp" 
-)
-
-ADD_EXECUTABLE(AmCommandSenderCAPITest ${CAPI_PLUGIN_INTERFACE_SRCS_CXX} ${CAPI_PLUGIN_INTERFACE_GEN_SRCS_CXX})
+ADD_EXECUTABLE(AmCommandSenderCAPITest ${CAPI_PLUGIN_INTERFACE_SRCS_CXX})
 
 TARGET_LINK_LIBRARIES(AmCommandSenderCAPITest 
     ${DLT_LIBRARIES}
@@ -82,8 +79,8 @@ TARGET_LINK_LIBRARIES(AmCommandSenderCAPITest
     ${CMAKE_THREAD_LIBS_INIT}
     ${PYTHON_LIBRARY}
     ${PC_GSTREAMER_LIBRARIES}
-	${PC_COMMON_LIBRARIES}
-	${PC_COMMON_DBUS_LIBRARIES}
+	${COMMON_API_LIBRARIES}
+    ${COMMON_API_DBUS_LIBRARIES}
     gtest
     gmock
 )

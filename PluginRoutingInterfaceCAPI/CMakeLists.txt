@@ -43,7 +43,16 @@ set(ROUTING_INTERFACE_DBUS_CONF ${ROUTING_INTERFACE_DBUS_CONF} PARENT_SCOPE)
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.cmake ${CMAKE_CURRENT_SOURCE_DIR}/include/configRoutingCAPI.h )
 
 FIND_PACKAGE(CommonAPI REQUIRED)
-FIND_PACKAGE(CommonAPI_DBus REQUIRED) 
+
+# Find the common-api sources. 
+# The sources can be placed in the build directory (DESTINATION) or in the source tree (ALT_DESTINATION). 
+# The ALT_DESTINATION is used as fall back if the DESTINATION directory dosen't contain the sources or you just don't want to use the generator.
+INCLUDE(CommonAPIGenerator)
+COMMON_API_GENERATE_SOUCRES(TARGET COMMON_API_ROUTING_INTERFACE 
+                            FIDLS fidl/RoutingInterface.fidl # a list with fidls
+                            DESTINATION src-gen  # a relative path to the build directory or an absolute path
+                            ALT_DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/src-gen # an alternative relative/absolute path with common-api sources, usually in the source tree
+                            DBUS)
 
 INCLUDE_DIRECTORIES(
 	${CMAKE_SOURCE_DIR} 
@@ -52,13 +61,12 @@ INCLUDE_DIRECTORIES(
 	${PROJECT_INCLUDE_FOLDER}
 	${COMMON_API_INCLUDE_DIRS}
 	${COMMON_API_DBUS_INCLUDE_DIRS}
-	${COMMON_API_GEN_INCLUDE_DIR}
+	${COMMON_API_ROUTING_INTERFACE_GEN_INCLUDE_DIR}
 	${INCLUDE_FOLDER}
 )
 
 # all source files go here
-file(GLOB PLUGINCAPI_SRCS_CXX "src/*.cpp" ${COMMON_API_GEN_SOURCES})
-
+file(GLOB PLUGINCAPI_SRCS_CXX "src/*.cpp" ${COMMON_API_ROUTING_INTERFACE_GEN_SOURCES})
 
 add_library(PluginRoutingInterfaceCAPI MODULE ${PLUGINCAPI_SRCS_CXX})
 
