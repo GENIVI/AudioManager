@@ -352,7 +352,7 @@ am_Domain_s CAmRoutingDbusMessageHandler::getDomainData()
 	domainData.nodename = getString(domainDataIter, true);
 	domainData.early = getBool(domainDataIter, true);
 	domainData.complete = getBool(domainDataIter, true);
-	domainData.state = static_cast<am_DomainState_e>(getInt32(domainDataIter, false));
+	domainData.state = static_cast<am_DomainState_e>(getInt(domainDataIter, false));
         dbus_message_iter_next(&mDBusMessageIter);
     }
     return (domainData);
@@ -388,7 +388,7 @@ am_Source_s CAmRoutingDbusMessageHandler::getSourceData()
 	sourceData.available.availability = static_cast<am_Availability_e>(getInt32(availIter, true));
 	sourceData.available.availabilityReason = static_cast<am_AvailabilityReason_e>(getInt32(availIter, false));
 	dbus_message_iter_next(&sourceDataIter);
-	sourceData.interruptState = static_cast<am_InterruptState_e>(getInt32(sourceDataIter, true));
+	sourceData.interruptState = static_cast<am_InterruptState_e>(getUInt(sourceDataIter, true));
 	dbus_message_iter_recurse(&sourceDataIter, &arrayIter);
 	do
 	{
@@ -421,8 +421,8 @@ am_Source_s CAmRoutingDbusMessageHandler::getSourceData()
     {
         dbus_message_iter_recurse(&arrayIter, &structIter);
         MainnotificationConfiguration.type = static_cast<am_NotificationType_e>(getInt32(structIter, true));
-        MainnotificationConfiguration.parameter = static_cast<int16_t>(getInt(structIter, false));
-        MainnotificationConfiguration.status = static_cast<am_NotificationStatus_e>(getInt32(structIter, true));
+        MainnotificationConfiguration.parameter = static_cast<int16_t>(getInt32(structIter, false));
+        MainnotificationConfiguration.status = static_cast<am_NotificationStatus_e>(getInt(structIter, true));
         sourceData.listMainNotificationConfigurations.push_back(MainnotificationConfiguration);
     } while (dbus_message_iter_next(&arrayIter));
         dbus_message_iter_next(&sourceDataIter);
@@ -432,8 +432,8 @@ am_Source_s CAmRoutingDbusMessageHandler::getSourceData()
     {
         dbus_message_iter_recurse(&arrayIter, &structIter);
         notificationConfiguration.type = static_cast<am_NotificationType_e>(getInt32(structIter, true));
-        notificationConfiguration.parameter = static_cast<int16_t>(getInt(structIter, false));
-        notificationConfiguration.status = static_cast<am_NotificationStatus_e>(getInt32(structIter, true));
+        notificationConfiguration.parameter = static_cast<int16_t>(getInt32(structIter, false));
+        notificationConfiguration.status = static_cast<am_NotificationStatus_e>(getInt(structIter, true));
         sourceData.listNotificationConfigurations.push_back(notificationConfiguration);
     } while (dbus_message_iter_next(&arrayIter));
         dbus_message_iter_next(&mDBusMessageIter);
@@ -463,14 +463,14 @@ am_Sink_s CAmRoutingDbusMessageHandler::getSinkData()
 	sinkData.sinkID = static_cast<am_sinkID_t>(getUInt(sinkDataIter, true));
 	sinkData.name = getString(sinkDataIter, true);
 	sinkData.domainID = static_cast<am_domainID_t>(getUInt(sinkDataIter, true));
-	sinkData.sinkClassID = static_cast<am_sinkClass_t>(getUInt(sinkDataIter, true));
+	sinkData.sinkClassID = static_cast<am_sinkClass_t>(getInt32(sinkDataIter, true));
 	sinkData.volume = static_cast<am_volume_t>(getInt(sinkDataIter, true));
 	sinkData.visible = getBool(sinkDataIter, true);
 	dbus_message_iter_recurse(&sinkDataIter, &availIter);
 	sinkData.available.availability = static_cast<am_Availability_e>(getInt32(availIter, true));
 	sinkData.available.availabilityReason = static_cast<am_AvailabilityReason_e>(getInt32(availIter, false));
 	dbus_message_iter_next(&sinkDataIter);
-	sinkData.muteState = static_cast<am_MuteState_e>(getInt32(sinkDataIter, true));
+	sinkData.muteState = static_cast<am_MuteState_e>(getInt(sinkDataIter, true));
 	sinkData.mainVolume = static_cast<am_mainVolume_t>(getInt(sinkDataIter, true));
 
 	dbus_message_iter_recurse(&sinkDataIter, &arrayIter);
@@ -507,8 +507,8 @@ am_Sink_s CAmRoutingDbusMessageHandler::getSinkData()
     {
         dbus_message_iter_recurse(&arrayIter, &structIter);
         MainnotificationConfiguration.type = static_cast<am_NotificationType_e>(getInt32(structIter, true));
-        MainnotificationConfiguration.parameter = static_cast<int16_t>(getInt(structIter, false));
-        MainnotificationConfiguration.status = static_cast<am_NotificationStatus_e>(getInt32(structIter, true));
+        MainnotificationConfiguration.parameter = static_cast<int16_t>(getInt32(structIter, false));
+        MainnotificationConfiguration.status = static_cast<am_NotificationStatus_e>(getInt(structIter, true));
         sinkData.listMainNotificationConfigurations.push_back(MainnotificationConfiguration);
     } while (dbus_message_iter_next(&arrayIter));
         dbus_message_iter_next(&sinkDataIter);
@@ -518,8 +518,8 @@ am_Sink_s CAmRoutingDbusMessageHandler::getSinkData()
     {
         dbus_message_iter_recurse(&arrayIter, &structIter);
         notificationConfiguration.type = static_cast<am_NotificationType_e>(getInt32(structIter, true));
-        notificationConfiguration.parameter = static_cast<int16_t>(getInt(structIter, false));
-        notificationConfiguration.status = static_cast<am_NotificationStatus_e>(getInt32(structIter, true));
+        notificationConfiguration.parameter = static_cast<int16_t>(getInt32(structIter, false));
+        notificationConfiguration.status = static_cast<am_NotificationStatus_e>(getInt(structIter, true));
         sinkData.listNotificationConfigurations.push_back(notificationConfiguration);
     } while (dbus_message_iter_next(&arrayIter));
         dbus_message_iter_next(&mDBusMessageIter);
@@ -588,12 +588,12 @@ am_Crossfader_s CAmRoutingDbusMessageHandler::getCrossfaderData()
     else
     {
         dbus_message_iter_recurse(&mDBusMessageIter, &crossfaderDataIter);
-	crossfaderData.crossfaderID = static_cast<am_crossfaderID_t> (getInt(crossfaderDataIter, true));
+	crossfaderData.crossfaderID = static_cast<am_crossfaderID_t> (getUInt(crossfaderDataIter, true));
 	crossfaderData.name = static_cast<std::string> (getString(crossfaderDataIter, true));
-	crossfaderData.sinkID_A = static_cast<am_sinkID_t> (getInt(crossfaderDataIter, true));
-	crossfaderData.sinkID_B = static_cast<am_sinkID_t> (getInt(crossfaderDataIter, true));
-	crossfaderData.sourceID = static_cast<am_sourceID_t> (getInt(crossfaderDataIter, true));
-	crossfaderData.hotSink = static_cast<am_HotSink_e> (getInt(crossfaderDataIter, false));
+	crossfaderData.sinkID_A = static_cast<am_sinkID_t> (getUInt(crossfaderDataIter, true));
+	crossfaderData.sinkID_B = static_cast<am_sinkID_t> (getUInt(crossfaderDataIter, true));
+	crossfaderData.sourceID = static_cast<am_sourceID_t> (getUInt(crossfaderDataIter, true));
+	crossfaderData.hotSink = static_cast<am_HotSink_e> (getUInt(crossfaderDataIter, false));
         dbus_message_iter_next(&mDBusMessageIter);
     }
     return (crossfaderData);
@@ -1125,7 +1125,7 @@ void CAmRoutingDbusMessageHandler::append(const std::vector<am::am_SystemPropert
 
 void CAmRoutingDbusMessageHandler::append(const am::am_Error_e error)
 {
-    if (!dbus_message_iter_append_basic(&mDBusMessageIter, DBUS_TYPE_INT32, &error))
+    if (!dbus_message_iter_append_basic(&mDBusMessageIter, DBUS_TYPE_UINT16, &error))
     {
         log(&routingDbus, DLT_LOG_ERROR, "DBusMessageHandler::append Cannot allocate DBus message!");
         mErrorName = std::string(DBUS_ERROR_NO_MEMORY);
