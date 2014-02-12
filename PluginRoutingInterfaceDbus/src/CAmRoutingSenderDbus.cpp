@@ -154,10 +154,10 @@ am_Error_e CAmRoutingSenderDbus::asyncSetSinkVolume(const am_Handle_s handle, co
         send.append(handle.handle);
         send.append(sinkID);
         send.append(volume);
-        send.append(static_cast<int32_t>(ramp));
+        send.append(static_cast<int16_t>(ramp));
         send.append(time);
         mMapHandles.insert(std::make_pair(+handle.handle, iter->second));
-        return (send.send());
+        return (send.sendAsync());
     }
     log(&routingDbus, DLT_LOG_ERROR, "CAmRoutingSenderDbus::asyncSetSinkVolume could not find interface");
     return (E_UNKNOWN);
@@ -177,7 +177,7 @@ am_Error_e CAmRoutingSenderDbus::asyncSetSourceVolume(const am_Handle_s handle, 
         send.append(static_cast<int16_t>(ramp));
         send.append(time);
         mMapHandles.insert(std::make_pair(+handle.handle, iter->second));
-        return (send.send());
+        return (send.sendAsync());
     }
     log(&routingDbus, DLT_LOG_ERROR, "CAmRoutingSenderDbus::asyncSetSourceVolume could not find interface");
     return (E_UNKNOWN);
@@ -213,7 +213,7 @@ am_Error_e CAmRoutingSenderDbus::asyncSetSinkSoundProperties(const am_Handle_s h
         send.append(sinkID);
         send.append(listSoundProperties);
         mMapHandles.insert(std::make_pair(+handle.handle, iter->second));
-        return (send.send());
+        return (send.sendAsync());
     }
     log(&routingDbus, DLT_LOG_ERROR, "CAmRoutingSenderDbus::asyncSetSinkSoundProperties could not find interface");
     return (E_UNKNOWN);
@@ -231,7 +231,7 @@ am_Error_e CAmRoutingSenderDbus::asyncSetSinkSoundProperty(const am_Handle_s han
         send.append(sinkID);
         send.append(soundProperty);
         mMapHandles.insert(std::make_pair(+handle.handle, iter->second));
-        return (send.send());
+        return (send.sendAsync());
     }
     log(&routingDbus, DLT_LOG_ERROR, "CAmRoutingSenderDbus::asyncSetSinkSoundProperty could not find interface");
     return (E_UNKNOWN);
@@ -249,7 +249,7 @@ am_Error_e CAmRoutingSenderDbus::asyncSetSourceSoundProperties(const am_Handle_s
         send.append(sourceID);
         send.append(listSoundProperties);
         mMapHandles.insert(std::make_pair(+handle.handle, iter->second));
-        return (send.send());
+        return (send.sendAsync());
     }
     log(&routingDbus, DLT_LOG_ERROR, "CAmRoutingSenderDbus::asyncSetSourceSoundProperties could not find interface");
     return (E_UNKNOWN);
@@ -267,7 +267,7 @@ am_Error_e CAmRoutingSenderDbus::asyncSetSourceSoundProperty(const am_Handle_s h
         send.append(sourceID);
         send.append(soundProperty);
         mMapHandles.insert(std::make_pair(+handle.handle, iter->second));
-        return (send.send());
+        return (send.sendAsync());
     }
     log(&routingDbus, DLT_LOG_ERROR, "CAmRoutingSenderDbus::asyncSetSourceSoundProperty could not find interface");
     return (E_UNKNOWN);
@@ -293,7 +293,7 @@ am_Error_e CAmRoutingSenderDbus::setDomainState(const am_domainID_t domainID, co
     {
         CAmRoutingDbusSend send(mpDBusConnection, iter->second.busname, iter->second.path, iter->second.interface, "setDomainState");
         send.append(domainID);
-        send.append(static_cast<int>(domainState));
+        send.append(static_cast<uint16_t>(domainState));
         return (send.send());
     }
     log(&routingDbus, DLT_LOG_ERROR, "CAmRoutingSenderDbus::setDomainState could not find interface");
