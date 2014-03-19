@@ -995,7 +995,6 @@ public:
     template<class TClass1, class Targ, class Targ1>
     void asyncCall(TClass1* instance, void (TClass1::*function)(Targ argument, Targ1 argument1), Targ argument, Targ1 argument1)
     {
-        logInfo("took without ref");
         CAmDelegagePtr p(new CAmTwoArgDelegate<TClass1, Targ, Targ1>(instance, function, argument, argument1));
         send(p);
     }

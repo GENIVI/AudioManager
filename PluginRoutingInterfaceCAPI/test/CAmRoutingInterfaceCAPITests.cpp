@@ -69,7 +69,7 @@ void initSink(org::genivi::am::am_Sink_s & newSink, am_Sink_s & newAmSink, const
 	org::genivi::am::am_MuteState_e muteState = org::genivi::am::am_MuteState_e::MS_UNKNOWN;
     org::genivi::am::am_Availability_s available(org::genivi::am::am_Availability_e::A_MAX, static_cast<org::genivi::am::am_AvailabilityReason_pe>(AR_MAX));
 	org::genivi::am::am_SoundProperty_L listSoundProperties;
-	listSoundProperties.push_back(org::genivi::am::am_SoundProperty_s(static_cast<org::genivi::am::am_SoundPropertyType_pe>(SP_INTERR_OVERLAYID), 100));
+	listSoundProperties.push_back(org::genivi::am::am_SoundProperty_s(static_cast<org::genivi::am::am_SoundPropertyType_pe>(SP_INPUTB), 100));
 	listSoundProperties.push_back(org::genivi::am::am_SoundProperty_s(static_cast<org::genivi::am::am_SoundPropertyType_pe>(SP_EXAMPLE_BASS), 101));
 	listSoundProperties.push_back(org::genivi::am::am_SoundProperty_s(static_cast<org::genivi::am::am_SoundPropertyType_pe>(SP_MAX), 102));
 	org::genivi::am::am_ConnectionFormat_L listConnectionFormats;
@@ -95,7 +95,7 @@ void initSource(org::genivi::am::am_Source_s & newSource, am_Source_s & newAmSou
 	org::genivi::am::am_SourceState_e srcState = org::genivi::am::am_SourceState_e::SS_MAX;
     org::genivi::am::am_Availability_s available(org::genivi::am::am_Availability_e::A_MAX, static_cast<org::genivi::am::am_AvailabilityReason_pe>(AR_MAX));
 	org::genivi::am::am_SoundProperty_L listSoundProperties;
-	listSoundProperties.push_back(org::genivi::am::am_SoundProperty_s(static_cast<org::genivi::am::am_SoundPropertyType_pe>(SP_INTERR_OVERLAYID), 100));
+	listSoundProperties.push_back(org::genivi::am::am_SoundProperty_s(static_cast<org::genivi::am::am_SoundPropertyType_pe>(SP_INPUTB), 100));
 	listSoundProperties.push_back(org::genivi::am::am_SoundProperty_s(static_cast<org::genivi::am::am_SoundPropertyType_pe>(SP_EXAMPLE_BASS), 101));
 	listSoundProperties.push_back(org::genivi::am::am_SoundProperty_s(static_cast<org::genivi::am::am_SoundPropertyType_pe>(SP_MAX), 102));
 	org::genivi::am::am_ConnectionFormat_L listConnectionFormats;
@@ -1913,7 +1913,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetSinkSoundProperties)
 		am_SourceState_e state = am_SourceState_e::SS_MAX;
 
 		std::vector<am_SoundProperty_s> listSoundProperties;
-		listSoundProperties.push_back((am_SoundProperty_s){am_SoundPropertyType_e::SP_INTERR_OVERLAYID, 100});
+		listSoundProperties.push_back((am_SoundProperty_s){am_SoundPropertyType_e::SP_INPUTB, 100});
 		listSoundProperties.push_back((am_SoundProperty_s){am_SoundPropertyType_e::SP_MAX, 101});
 		listSoundProperties.push_back((am_SoundProperty_s){am_SoundPropertyType_e::SP_PRIORITY, 100});
 
@@ -1942,7 +1942,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetSinkSoundProperty)
 		am_SourceState_e state = am_SourceState_e::SS_MAX;
 
 		EXPECT_CALL(*env->mpRoutingReceive, ackSetSinkSoundProperty(IsHandleEqual(handle), E_OK)).Times(1);
-		am_Error_e error = env->mpPlugin->asyncSetSinkSoundProperty(handle, sID, (am_SoundProperty_s){am_SoundPropertyType_e::SP_INTERR_OVERLAYID, 100});
+		am_Error_e error = env->mpPlugin->asyncSetSinkSoundProperty(handle, sID, (am_SoundProperty_s){am_SoundPropertyType_e::SP_INPUTB, 100});
 		usleep(50000);
 		ASSERT_EQ( error, E_OK );
 		ASSERT_FALSE( backdoor.containsHandle( handle.handle) );
@@ -1966,7 +1966,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetSourceSoundProperties)
 		am_SourceState_e state = am_SourceState_e::SS_MAX;
 
 		std::vector<am_SoundProperty_s> listSoundProperties;
-		listSoundProperties.push_back((am_SoundProperty_s){am_SoundPropertyType_e::SP_INTERR_OVERLAYID, 100});
+		listSoundProperties.push_back((am_SoundProperty_s){am_SoundPropertyType_e::SP_INPUTB, 100});
 		listSoundProperties.push_back((am_SoundProperty_s){am_SoundPropertyType_e::SP_MAX, 101});
 		listSoundProperties.push_back((am_SoundProperty_s){am_SoundPropertyType_e::SP_PRIORITY, 100});
 
@@ -1995,7 +1995,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetSourceSoundProperty)
 		am_SourceState_e state = am_SourceState_e::SS_MAX;
 
 		EXPECT_CALL(*env->mpRoutingReceive, ackSetSourceSoundProperty(IsHandleEqual(handle), E_OK)).Times(1);
-		am_Error_e error = env->mpPlugin->asyncSetSourceSoundProperty(handle, sID, (am_SoundProperty_s){am_SoundPropertyType_e::SP_INTERR_OVERLAYID, 100});
+		am_Error_e error = env->mpPlugin->asyncSetSourceSoundProperty(handle, sID, (am_SoundProperty_s){am_SoundPropertyType_e::SP_INPUTB, 100});
 		usleep(50000);
 		ASSERT_EQ( error, E_OK );
 		ASSERT_FALSE( backdoor.containsHandle( handle.handle) );
