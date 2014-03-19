@@ -236,6 +236,53 @@ void CAmDltWrapper::append(const uint64_t value)
 #endif
 }
 
+void CAmDltWrapper::append(am_Error_e value)
+{
+	std::string txt;
+	switch (value)
+	{
+		case am_Error_e::E_OK:
+			txt="E_OK";
+			break;
+		case am_Error_e::E_ABORTED:
+			txt="E_ABORTED";
+			break;
+		case am_Error_e::E_ALREADY_EXISTS:
+			txt="E_ALREADY_EXISTS";
+			break;
+		case am_Error_e::E_DATABASE_ERROR:
+			txt="E_DATABASE_ERROR";
+			break;
+		case am_Error_e::E_NON_EXISTENT:
+			txt="E_NON_EXISTENT";
+			break;
+		case am_Error_e::E_NOT_POSSIBLE:
+			txt="E_NOT_POSSIBLE";
+			break;
+		case am_Error_e::E_NOT_USED:
+			txt="E_NOT_USED";
+			break;
+		case am_Error_e::E_NO_CHANGE:
+			txt="E_NO_CHANGE";
+			break;
+		case am_Error_e::E_OUT_OF_RANGE:
+			txt="E_OUT_OF_RANGE";
+			break;
+		case am_Error_e::E_UNKNOWN:
+			txt="E_UNKNOWN";
+			break;
+		default:
+			txt="E_UNKNOWN";
+
+	}
+#ifdef WITH_DLT
+
+    dlt_user_log_write_string(&mDltContextData, txt.c_str());
+#else
+    mDltContextData.buffer << txt;
+#endif
+}
+
 #ifndef WITH_DLT
 template<class T> void CAmDltWrapper::appendNoDLT(T value)
 {
@@ -257,4 +304,5 @@ CAmDltWrapper::~CAmDltWrapper()
     }
 }
 }
+
 
