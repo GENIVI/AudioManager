@@ -85,6 +85,10 @@ void* run_service(void*)
 	}
     else
     {
+    	ON_CALL(*env->mpCommandReceive, getListMainSources(_)).WillByDefault(Return(E_OK));
+    	ON_CALL(*env->mpCommandReceive, getListMainSinks(_)).WillByDefault(Return(E_OK));
+    	ON_CALL(*env->mpCommandReceive, getListMainSourceSoundProperties(_,_)).WillByDefault(Return(E_OK));
+
     	EXPECT_CALL(*env->mpCommandReceive,confirmCommandReady(10,_));
     	plugin.setCommandReady(10);
     	socketHandler.start_listenting();
@@ -203,6 +207,8 @@ CAmCommandSenderCAPITest::~CAmCommandSenderCAPITest()
 void CAmCommandSenderCAPITest::SetUp()
 {
 	::testing::GTEST_FLAG(throw_on_failure) = false;
+	::testing::FLAGS_gmock_verbose = "error";
+//	::testing::DefaultValue<am_Error_e>::Set(am_Error_e(E_OK));
 }
 
 void CAmCommandSenderCAPITest::TearDown()

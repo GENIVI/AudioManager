@@ -1248,8 +1248,15 @@ TEST_F(CAmRouterMapTest,simpleRoute4Domains2Routes)
 
     ASSERT_EQ(E_OK, pRouter.getRoute(false,sourceID,sinkID,listRoutes));
     ASSERT_EQ(static_cast<uint>(2), listRoutes.size());
-    ASSERT_TRUE(pCF.compareRoute(compareRoute,listRoutes[0]));
-    ASSERT_TRUE(pCF.compareRoute(compareRoute1,listRoutes[1]));
+
+    bool containsRoute1 = std::find_if(listRoutes.begin(), listRoutes.end(), [&](const am_Route_s & ref) {
+    		return pCF.compareRoute(compareRoute, ref);
+    })!=listRoutes.end();
+    bool containsRoute2 = std::find_if(listRoutes.begin(), listRoutes.end(), [&](const am_Route_s & ref) {
+       		return pCF.compareRoute(compareRoute1, ref);
+       })!=listRoutes.end();
+    ASSERT_TRUE(containsRoute1);
+    ASSERT_TRUE(containsRoute2);
 }
 
 //test that checks 3 domains, one sink one source but the connectionformat of third domains do not fit.

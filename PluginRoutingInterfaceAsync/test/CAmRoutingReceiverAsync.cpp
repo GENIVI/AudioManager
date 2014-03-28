@@ -46,12 +46,13 @@ CAmEnvironment::~CAmEnvironment()
 
 void CAmEnvironment::SetUp()
 {
+	::testing::GTEST_FLAG(throw_on_failure) = false;
     logInfo("RoutingSendInterface Test started ");
 
     std::vector<int> domainIDs;
     domainIDs.push_back(0);
     domainIDs.push_back(1);
-
+    EXPECT_TRUE(Mock::VerifyAndClearExpectations(&env->pReceiveInterface));
     EXPECT_CALL(env->pReceiveInterface,getSocketHandler(_)).WillOnce(DoAll(SetArgReferee<0>(&env->pSocketHandler), Return(E_OK)));
     EXPECT_CALL(env->pReceiveInterface,registerDomain(_,_)).WillRepeatedly(Invoke(CAmEnvironment::handleDomainRegister));
     EXPECT_CALL(env->pReceiveInterface,registerSource(_,_)).WillRepeatedly(Invoke(CAmEnvironment::handleSourceRegister));
@@ -94,7 +95,7 @@ void CAmEnvironment::SetUp()
 
 void CAmEnvironment::TearDown()
 {
-
+	::testing::GTEST_FLAG(throw_on_failure) = true;
 }
 
 CAmRoutingReceiverAsync::CAmRoutingReceiverAsync() :

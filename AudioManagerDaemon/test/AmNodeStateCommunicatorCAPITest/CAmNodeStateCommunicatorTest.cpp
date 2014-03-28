@@ -164,6 +164,7 @@ TEST_F(CAmNodeStateCommunicatorTest, receiveLifecycleRequest)
     std::ostringstream send;
     send << "python send2nsm.py LifecycleRequest "<<Request<<" "<<RequestID;
     system(send.str().c_str());
+    sleep(2);
 }
 
 TEST_F(CAmNodeStateCommunicatorTest, UnRegisterShutdownClient)

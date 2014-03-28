@@ -2268,7 +2268,10 @@ TEST_F(CAmMapHandlerTest, peekDomain_2)
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domain2ID));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListDomains(listDomains));
     ASSERT_EQ(domainID, domain2ID);               // FAILS, ID is 2 instead of 1
-    ASSERT_TRUE(listDomains[0].domainID==domainID);
+	bool containsDomainID = std::find_if(listDomains.begin(), listDomains.end(), [&](const am_Domain_s & ref) {
+		return ref.domainID==domainID;
+	})!=listDomains.end();
+    ASSERT_TRUE(containsDomainID);
 }
 
 TEST_F(CAmMapHandlerTest, connectionIDBoundary)
@@ -2475,7 +2478,10 @@ TEST_F(CAmMapHandlerObserverCallbacksTest, peek_enter_removeDomain)
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domain2ID));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListDomains(listDomains));
     ASSERT_EQ(domainID, domain2ID);               // FAILS, ID is 2 instead of 1
-    ASSERT_TRUE(listDomains[0].domainID==domainID);
+	bool containsDomainID = std::find_if(listDomains.begin(), listDomains.end(), [&](const am_Domain_s & ref) {
+		return ref.domainID==domainID;
+	})!=listDomains.end();
+    ASSERT_TRUE(containsDomainID);
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), removeDomain(domainID)).Times(1);
     ASSERT_EQ(E_OK,pDatabaseHandler.removeDomainDB(domainID))<< "ERROR: database error";
     EXPECT_TRUE(Mock::VerifyAndClearExpectations(MockDatabaseObserver::getMockObserverObject()));
@@ -2513,7 +2519,10 @@ TEST_F(CAmMapHandlerObserverCallbacksTest, peek_enter_update_removeSource)
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,source3ID));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListSources(listSources));
     ASSERT_EQ(sourceID, source3ID);
-    ASSERT_TRUE(listSources[0].sourceID==sourceID);
+    bool containsSourceID = std::find_if(listSources.begin(), listSources.end(), [&](const am_Source_s & ref) {
+    		return ref.sourceID==sourceID;
+    	})!=listSources.end();
+    ASSERT_TRUE(containsSourceID);
     std::vector<am_SoundProperty_s> listSoundProperties;
     std::vector<am_ConnectionFormat_e> listConnectionFormats;
     std::vector<am_MainSoundProperty_s> listMainSoundProperties;
@@ -2556,7 +2565,10 @@ TEST_F(CAmMapHandlerObserverCallbacksTest, peek_enter_update_removeSink)
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sink3ID));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListSinks(listSinks));
     ASSERT_EQ(sinkID, sink3ID);
-    ASSERT_TRUE(listSinks[0].sinkID==sinkID);
+    bool containsSourceID = std::find_if(listSinks.begin(), listSinks.end(), [&](const am_Sink_s & ref) {
+			return ref.sinkID==sinkID;
+	})!=listSinks.end();
+	ASSERT_TRUE(containsSourceID);
     std::vector<am_SoundProperty_s> listSoundProperties;
     std::vector<am_ConnectionFormat_e> listConnectionFormats;
     std::vector<am_MainSoundProperty_s> listMainSoundProperties;
