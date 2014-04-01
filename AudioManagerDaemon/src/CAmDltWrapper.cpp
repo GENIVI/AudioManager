@@ -236,51 +236,88 @@ void CAmDltWrapper::append(const uint64_t value)
 #endif
 }
 
-void CAmDltWrapper::append(am_Error_e value)
+void CAmDltWrapper::append(const am_Error_e value)
 {
-	std::string txt;
 	switch (value)
 	{
 		case am_Error_e::E_OK:
-			txt="E_OK";
+			#ifdef WITH_DLT
+				dlt_user_log_write_string(&mDltContextData, "E_OK");
+			#else
+				mDltContextData.buffer << "E_OK";
+			#endif
 			break;
 		case am_Error_e::E_ABORTED:
-			txt="E_ABORTED";
+			#ifdef WITH_DLT
+				dlt_user_log_write_string(&mDltContextData, "E_ABORTED");
+			#else
+				mDltContextData.buffer << "E_ABORTED";
+			#endif
 			break;
 		case am_Error_e::E_ALREADY_EXISTS:
-			txt="E_ALREADY_EXISTS";
+			#ifdef WITH_DLT
+				dlt_user_log_write_string(&mDltContextData, "E_ALREADY_EXISTS");
+			#else
+				mDltContextData.buffer << "E_ALREADY_EXISTS";
+			#endif
 			break;
 		case am_Error_e::E_DATABASE_ERROR:
-			txt="E_DATABASE_ERROR";
+			#ifdef WITH_DLT
+				dlt_user_log_write_string(&mDltContextData, "E_DATABASE_ERROR");
+			#else
+				mDltContextData.buffer << "E_DATABASE_ERROR";
+			#endif
 			break;
 		case am_Error_e::E_NON_EXISTENT:
-			txt="E_NON_EXISTENT";
+			#ifdef WITH_DLT
+				dlt_user_log_write_string(&mDltContextData, "E_NON_EXISTENT");
+			#else
+				mDltContextData.buffer << "E_NON_EXISTENT";
+			#endif
 			break;
 		case am_Error_e::E_NOT_POSSIBLE:
-			txt="E_NOT_POSSIBLE";
+			#ifdef WITH_DLT
+				dlt_user_log_write_string(&mDltContextData, "E_NOT_POSSIBLE");
+			#else
+				mDltContextData.buffer << "E_NOT_POSSIBLE";
+			#endif
 			break;
 		case am_Error_e::E_NOT_USED:
-			txt="E_NOT_USED";
+			#ifdef WITH_DLT
+				dlt_user_log_write_string(&mDltContextData, "E_NOT_USED");
+			#else
+				mDltContextData.buffer << "E_NOT_USED";
+			#endif
 			break;
 		case am_Error_e::E_NO_CHANGE:
-			txt="E_NO_CHANGE";
+			#ifdef WITH_DLT
+				dlt_user_log_write_string(&mDltContextData, "E_NO_CHANGE");
+			#else
+				mDltContextData.buffer << "E_NO_CHANGE";
+			#endif
 			break;
 		case am_Error_e::E_OUT_OF_RANGE:
-			txt="E_OUT_OF_RANGE";
+			#ifdef WITH_DLT
+				dlt_user_log_write_string(&mDltContextData, "E_OUT_OF_RANGE");
+			#else
+				mDltContextData.buffer << "E_OUT_OF_RANGE";
+			#endif
 			break;
 		case am_Error_e::E_UNKNOWN:
-			txt="E_UNKNOWN";
+			#ifdef WITH_DLT
+				dlt_user_log_write_string(&mDltContextData, "E_UNKNOWN");
+			#else
+				mDltContextData.buffer << "E_UNKNOWN";
+			#endif
 			break;
 		default:
-			txt="E_UNKNOWN";
+			#ifdef WITH_DLT
+				dlt_user_log_write_string(&mDltContextData, "E_UNKNOWN");
+			#else
+				mDltContextData.buffer << "E_UNKNOWN";
+			#endif
 
 	}
-#ifdef WITH_DLT
-
-    dlt_user_log_write_string(&mDltContextData, txt.c_str());
-#else
-    mDltContextData.buffer << txt;
-#endif
 }
 
 #ifndef WITH_DLT

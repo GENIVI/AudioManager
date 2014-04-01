@@ -109,7 +109,7 @@ public:
     void append(const char*& value);
     void append(const std::string& value);
     void append(const bool value);
-    void append(am_Error_e value);
+    void append(const am_Error_e value);
 #ifndef WITH_DLT
     void enableNoDLTDebug(const bool enableNoDLTDebug = true);
 #endif
