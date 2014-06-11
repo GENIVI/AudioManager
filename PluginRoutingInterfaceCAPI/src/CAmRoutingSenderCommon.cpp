@@ -35,7 +35,7 @@ void CAmConvertCAPI2AM(const org::genivi::am::am_Domain_s & source, am::am_Domai
 
 void CAmConvertCAPI2AM(const org::genivi::am::am_SoundProperty_s & source, am::am_SoundProperty_s & destination)
 {
-	destination.type = static_cast<am::am_SoundPropertyType_e>(source.type);
+	destination.type = static_cast<am::am_CustomSoundPropertyType_t>(source.type);
 	destination.value = source.value;
 }
 
@@ -52,14 +52,14 @@ void CAmConvertCAPIVector2AM(const std::vector<org::genivi::am::am_SoundProperty
 
 void CAmConvertCAPI2AM(const org::genivi::am::am_MainSoundProperty_s & source, am::am_MainSoundProperty_s & destination)
 {
-	destination.type = static_cast<am::am_MainSoundPropertyType_e>(source.type);
+	destination.type = static_cast<am::am_CustomMainSoundPropertyType_t>(source.type);
 	destination.value = source.value;
 }
 
 
 void CAmConvertCAPI2AM(const org::genivi::am::am_NotificationPayload_s & source, am::am_NotificationPayload_s & destination)
 {
-	destination.type = static_cast<am::am_NotificationType_e>(source.type);
+	destination.type = static_cast<am::am_CustomNotificationType_t>(source.type);
 	destination.value = source.value;
 }
 
@@ -87,7 +87,7 @@ void CAmConvertCAPIVector2AM(const std::vector<org::genivi::am::am_MainSoundProp
 
 void CAmConvertCAPI2AM(const org::genivi::am::am_NotificationConfiguration_s & source, am::am_NotificationConfiguration_s & destination)
 {
-	destination.type = static_cast<am::am_NotificationType_e>(source.type);
+	destination.type = static_cast<am::am_CustomNotificationType_t>(source.type);
 	destination.status = static_cast<am::am_NotificationStatus_e>(source.status);
 	destination.parameter = source.parameter;
 }
@@ -103,11 +103,11 @@ void CAmConvertCAPIVector2AM(const std::vector<org::genivi::am::am_NotificationC
 	}
 }
 
-void CAmConvertCAPIVector2AM(const std::vector<org::genivi::am::am_ConnectionFormat_pe> & source, std::vector<am::am_ConnectionFormat_e> & destination)
+void CAmConvertCAPIVector2AM(const std::vector<org::genivi::am::am_CustomConnectionFormat_t> & source, std::vector<am::am_CustomConnectionFormat_t> & destination)
 {
 	destination.clear();
-	for(std::vector<org::genivi::am::am_ConnectionFormat_pe>::const_iterator iter = source.begin(); iter!=source.end(); ++iter)
-		destination.push_back(static_cast<am::am_ConnectionFormat_e>(*iter));
+	for(std::vector<org::genivi::am::am_CustomConnectionFormat_t>::const_iterator iter = source.begin(); iter!=source.end(); ++iter)
+		destination.push_back(static_cast<am::am_CustomConnectionFormat_t>(*iter));
 }
 
 
@@ -154,7 +154,7 @@ void CAmConvertCAPI2AM(const org::genivi::am::am_Volumes_s & source, am::am_Volu
 	destination.volume = source.volume;
 	destination.time = source.time;
 	destination.volumeType = static_cast<am::am_VolumeType_e>(source.volumeType);
-	destination.ramp = static_cast<am::am_RampType_e>(source.ramp);
+	destination.ramp = static_cast<am::am_CustomRampType_t>(source.ramp);
 }
 
 
@@ -224,7 +224,7 @@ void CAmConvertCAPI2AM(const org::genivi::am::am_EarlyData_s & source, am::am_Ea
 void CAmConvertCAPI2AM(const org::genivi::am::am_Availability_s  & source,  am_Availability_s & destination)
 {
 	destination.availability = static_cast<am_Availability_e>(source.availability);
-	destination.availabilityReason = static_cast<am_AvailabilityReason_e>(source.availabilityReason);
+	destination.availabilityReason = static_cast<am_CustomAvailabilityReason_t>(source.availabilityReason);
 }
 
 void CAmConvertCAPI2AM(const org::genivi::am::am_Handle_s& source, am_Handle_s& destination)
@@ -236,12 +236,12 @@ void CAmConvertCAPI2AM(const org::genivi::am::am_Handle_s& source, am_Handle_s& 
 void CAmConvertAM2CAPI(const am_Availability_s & source,  org::genivi::am::am_Availability_s & destination)
 {
 	destination.availability = static_cast<org::genivi::am::am_Availability_e>(source.availability);
-	destination.availabilityReason = static_cast<org::genivi::am::am_AvailabilityReason_pe>(source.availabilityReason);
+	destination.availabilityReason = static_cast<org::genivi::am::am_CustomAvailabilityReason_t>(source.availabilityReason);
 }
 
 void CAmConvertAM2CAPI(const am::am_SoundProperty_s & source, org::genivi::am::am_SoundProperty_s & destination)
 {
-	destination.type = static_cast<org::genivi::am::am_SoundPropertyType_pe>(source.type);
+	destination.type = static_cast<org::genivi::am::am_CustomSoundPropertyType_t>(source.type);
 	destination.value = source.value;
 }
 
@@ -255,7 +255,7 @@ extern void CAmConvertAM2CAPI(const am::am_Handle_s& source,
 
 void CAmConvertAM2CAPI(const am::am_NotificationConfiguration_s & source, org::genivi::am::am_NotificationConfiguration_s & destination)
 {
-	destination.type = static_cast<org::genivi::am::am_NotificationType_pe>(source.type);
+	destination.type = static_cast<org::genivi::am::am_CustomNotificationType_t>(source.type);
 	destination.status = static_cast<org::genivi::am::am_NotificationStatus_e>(source.status);
 	destination.parameter = source.parameter;
 }
@@ -268,7 +268,7 @@ void CAmConvertAM2CAPI(const am::am_Volumes_s & source, org::genivi::am::am_Volu
 		destination.volumeID = org::genivi::am::am_DataType_u(static_cast<org::genivi::am::am_sourceID_t>(source.volumeID.source));
 	destination.volumeType = static_cast<org::genivi::am::am_VolumeType_e>(source.volumeType);
 	destination.volume = static_cast<org::genivi::am::am_volume_t>(source.volume);
-	destination.ramp = static_cast<org::genivi::am::am_RampType_pe>(source.ramp);
+	destination.ramp = static_cast<org::genivi::am::am_CustomRampType_t>(source.ramp);
 	destination.time = static_cast<org::genivi::am::am_time_t>(source.time);
 }
 

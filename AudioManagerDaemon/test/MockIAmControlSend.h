@@ -114,7 +114,7 @@ class MockIAmControlSend : public IAmControlSend {
     MOCK_METHOD2(cbAckSetSinkSoundProperty,
         void(const am_Handle_s handle, const am_Error_e error));
     MOCK_METHOD5(getConnectionFormatChoice,
-        am_Error_e(const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_Route_s listRoute, const std::vector<am_ConnectionFormat_e> listPossibleConnectionFormats, std::vector<am_ConnectionFormat_e>& listPrioConnectionFormats));
+        am_Error_e(const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_Route_s listRoute, const std::vector<am_CustomAvailabilityReason_t> listPossibleConnectionFormats, std::vector<am_CustomAvailabilityReason_t>& listPrioConnectionFormats));
     MOCK_METHOD1(confirmCommandReady,
         void(const am_Error_e error));
     MOCK_METHOD1(confirmRoutingReady,
@@ -124,11 +124,11 @@ class MockIAmControlSend : public IAmControlSend {
     MOCK_METHOD1(confirmRoutingRundown,
         void(const am_Error_e error));
     MOCK_METHOD5(hookSystemUpdateSink,
-        am_Error_e(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_ConnectionFormat_e>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties));
+        am_Error_e(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_CustomAvailabilityReason_t>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties));
     MOCK_METHOD5(hookSystemUpdateSource,
-        am_Error_e(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_ConnectionFormat_e>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties));
+        am_Error_e(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_CustomAvailabilityReason_t>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties));
     MOCK_METHOD4(hookSystemUpdateGateway,
-        am_Error_e(const am_gatewayID_t gatewayID, const std::vector<am_ConnectionFormat_e>& listSourceConnectionFormats, const std::vector<am_ConnectionFormat_e>& listSinkConnectionFormats, const std::vector<bool>& convertionMatrix));
+        am_Error_e(const am_gatewayID_t gatewayID, const std::vector<am_CustomAvailabilityReason_t>& listSourceConnectionFormats, const std::vector<am_CustomAvailabilityReason_t>& listSinkConnectionFormats, const std::vector<bool>& convertionMatrix));
     MOCK_METHOD3(cbAckSetVolumes,
         void(const am_Handle_s handle, const std::vector<am_Volumes_s>& listVolumes, const am_Error_e error));
     MOCK_METHOD2(cbAckSetSinkNotificationConfiguration,

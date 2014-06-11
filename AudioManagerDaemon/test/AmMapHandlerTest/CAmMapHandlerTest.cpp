@@ -2092,7 +2092,7 @@ TEST_F(CAmMapHandlerTest,getMainNotificationsSink)
     testSinkData.listMainNotificationConfigurations.push_back(notify);
 
     am_NotificationConfiguration_s notify1;
-    notify1.type=NT_MAX;
+    notify1.type=NT_UNKNOWN;
     notify1.status=NS_PERIODIC;
     notify1.parameter=5;
 
@@ -2127,7 +2127,7 @@ TEST_F(CAmMapHandlerTest,getMainNotificationsSources)
     testSourceData.listMainNotificationConfigurations.push_back(notify);
 
     am_NotificationConfiguration_s notify1;
-    notify1.type=NT_MAX;
+    notify1.type=NT_UNKNOWN;
     notify1.status=NS_PERIODIC;
     notify1.parameter=5;
 
@@ -2162,12 +2162,12 @@ TEST_F(CAmMapHandlerTest,changeMainNotificationsSources)
     testSourceData.listMainNotificationConfigurations.push_back(notify);
 
     am_NotificationConfiguration_s notify1;
-    notify1.type=NT_MAX;
+    notify1.type=NT_UNKNOWN;
     notify1.status=NS_PERIODIC;
     notify1.parameter=5;
 
     am_NotificationConfiguration_s notify2;
-    notify2.type=NT_MAX;
+    notify2.type=NT_UNKNOWN;
     notify2.status=NS_CHANGE;
     notify2.parameter=10;
 
@@ -2215,12 +2215,12 @@ TEST_F(CAmMapHandlerTest,changeMainNotificationsSink)
     testSinkData.listMainNotificationConfigurations.push_back(notify);
 
     am_NotificationConfiguration_s notify1;
-    notify1.type=NT_MAX;
+    notify1.type=NT_UNKNOWN;
     notify1.status=NS_PERIODIC;
     notify1.parameter=5;
 
     am_NotificationConfiguration_s notify2;
-    notify2.type=NT_MAX;
+    notify2.type=NT_UNKNOWN;
     notify2.status=NS_CHANGE;
     notify2.parameter=27;
 
@@ -2524,7 +2524,7 @@ TEST_F(CAmMapHandlerObserverCallbacksTest, peek_enter_update_removeSource)
     	})!=listSources.end();
     ASSERT_TRUE(containsSourceID);
     std::vector<am_SoundProperty_s> listSoundProperties;
-    std::vector<am_ConnectionFormat_e> listConnectionFormats;
+    std::vector<am_CustomAvailabilityReason_t> listConnectionFormats;
     std::vector<am_MainSoundProperty_s> listMainSoundProperties;
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), sourceUpdated(sourceID, _, _, _)).Times(1);
     ASSERT_EQ(E_OK,pDatabaseHandler.changeSourceDB(sourceID, 1, listSoundProperties, listConnectionFormats, listMainSoundProperties))<< "ERROR: database error";
@@ -2570,7 +2570,7 @@ TEST_F(CAmMapHandlerObserverCallbacksTest, peek_enter_update_removeSink)
 	})!=listSinks.end();
 	ASSERT_TRUE(containsSourceID);
     std::vector<am_SoundProperty_s> listSoundProperties;
-    std::vector<am_ConnectionFormat_e> listConnectionFormats;
+    std::vector<am_CustomAvailabilityReason_t> listConnectionFormats;
     std::vector<am_MainSoundProperty_s> listMainSoundProperties;
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), sinkUpdated(sinkID, _, _, _)).Times(1);
     ASSERT_EQ(E_OK,pDatabaseHandler.changeSinkDB(sinkID, 1, listSoundProperties, listConnectionFormats, listMainSoundProperties))<< "ERROR: database error";
@@ -2858,12 +2858,12 @@ TEST_F(CAmMapHandlerObserverCallbacksTest, changeMainNotificationsSink)
     testSinkData.listMainNotificationConfigurations.push_back(notify);
 
     am_NotificationConfiguration_s notify1;
-    notify1.type=NT_MAX;
+    notify1.type=NT_UNKNOWN;
     notify1.status=NS_PERIODIC;
     notify1.parameter=5;
 
     am_NotificationConfiguration_s notify2;
-    notify2.type=NT_MAX;
+    notify2.type=NT_UNKNOWN;
     notify2.status=NS_CHANGE;
     notify2.parameter=27;
 
@@ -2896,12 +2896,12 @@ TEST_F(CAmMapHandlerObserverCallbacksTest, changeMainNotificationsSources)
     testSourceData.listMainNotificationConfigurations.push_back(notify);
 
     am_NotificationConfiguration_s notify1;
-    notify1.type=NT_MAX;
+    notify1.type=NT_UNKNOWN;
     notify1.status=NS_PERIODIC;
     notify1.parameter=5;
 
     am_NotificationConfiguration_s notify2;
-    notify2.type=NT_MAX;
+    notify2.type=NT_UNKNOWN;
     notify2.status=NS_CHANGE;
     notify2.parameter=10;
 

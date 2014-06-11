@@ -146,19 +146,19 @@ void CAmRoutingSenderService::setDomainState(org::genivi::am::am_domainID_t doma
 	mRoutingInterfaceProxy->hookDomainStateChange(domainID, domainState, callStatus);
 }
 
-void CAmRoutingSenderService::asyncSetSourceVolume(org::genivi::am::am_Handle_s handle, org::genivi::am::am_sourceID_t sourceID, org::genivi::am::am_volume_t volume, org::genivi::am::am_RampType_pe ramp, org::genivi::am::am_time_t time) {
+void CAmRoutingSenderService::asyncSetSourceVolume(org::genivi::am::am_Handle_s handle, org::genivi::am::am_sourceID_t sourceID, org::genivi::am::am_volume_t volume, org::genivi::am::am_CustomRampType_t ramp, org::genivi::am::am_time_t time) {
    logInfo(__FUNCTION__, " called");
 	CommonAPI::CallStatus callStatus;
 	mRoutingInterfaceProxy->ackSetSourceVolumeChange(handle, volume, errorForHandle(handle), callStatus);
 }
 
-void CAmRoutingSenderService::asyncSetSinkVolume(org::genivi::am::am_Handle_s handle, org::genivi::am::am_sinkID_t sinkID, org::genivi::am::am_volume_t volume, org::genivi::am::am_RampType_pe ramp, org::genivi::am::am_time_t time) {
+void CAmRoutingSenderService::asyncSetSinkVolume(org::genivi::am::am_Handle_s handle, org::genivi::am::am_sinkID_t sinkID, org::genivi::am::am_volume_t volume, org::genivi::am::am_CustomRampType_t ramp, org::genivi::am::am_time_t time) {
    logInfo(__FUNCTION__, " called");
 	CommonAPI::CallStatus callStatus;
 	mRoutingInterfaceProxy->ackSetSinkVolumeChange(handle, volume, errorForHandle(handle), callStatus);
 }
 
-void CAmRoutingSenderService::asyncConnect(org::genivi::am::am_Handle_s handle, org::genivi::am::am_connectionID_t connectionID, org::genivi::am::am_sourceID_t sourceID, org::genivi::am::am_sinkID_t sinkID, org::genivi::am::am_ConnectionFormat_pe connectionFormat) {
+void CAmRoutingSenderService::asyncConnect(org::genivi::am::am_Handle_s handle, org::genivi::am::am_connectionID_t connectionID, org::genivi::am::am_sourceID_t sourceID, org::genivi::am::am_sinkID_t sinkID, org::genivi::am::am_CustomConnectionFormat_t connectionFormat) {
    logInfo(__FUNCTION__, " called");
 	CommonAPI::CallStatus callStatus;
 	mRoutingInterfaceProxy->ackConnect(handle, connectionID, errorForHandle(handle), callStatus);
@@ -199,7 +199,7 @@ void CAmRoutingSenderService::asyncSetSourceSoundProperty(org::genivi::am::am_Ha
 	mRoutingInterfaceProxy->ackSetSourceSoundProperty(handle, errorForHandle(handle), callStatus);
 }
 
-void CAmRoutingSenderService::asyncCrossFade(org::genivi::am::am_Handle_s handle, org::genivi::am::am_crossfaderID_t crossfaderID, org::genivi::am::am_HotSink_e hotSink, org::genivi::am::am_RampType_pe rampType, org::genivi::am::am_time_t time) {
+void CAmRoutingSenderService::asyncCrossFade(org::genivi::am::am_Handle_s handle, org::genivi::am::am_crossfaderID_t crossfaderID, org::genivi::am::am_HotSink_e hotSink, org::genivi::am::am_CustomRampType_t rampType, org::genivi::am::am_time_t time) {
    logInfo(__FUNCTION__, " called");
 	CommonAPI::CallStatus callStatus;
 	mRoutingInterfaceProxy->ackCrossFading(handle, hotSink, (org::genivi::am::am_Error_e)errorForHandle(handle), callStatus);

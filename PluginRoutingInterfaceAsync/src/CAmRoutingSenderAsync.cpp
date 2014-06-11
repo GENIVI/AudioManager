@@ -266,7 +266,7 @@ am_Error_e CAmRoutingSenderAsync::asyncAbort(const am_Handle_s handle)
     return (E_UNKNOWN);
 }
 
-am_Error_e CAmRoutingSenderAsync::asyncConnect(const am_Handle_s handle, const am_connectionID_t connectionID, const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_ConnectionFormat_e connectionFormat)
+am_Error_e CAmRoutingSenderAsync::asyncConnect(const am_Handle_s handle, const am_connectionID_t connectionID, const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_CustomConnectionFormat_t connectionFormat)
 {
     assert(mReceiveInterface!=0);
     assert(handle.handle!=0);
@@ -364,7 +364,7 @@ am_Error_e CAmRoutingSenderAsync::asyncDisconnect(const am_Handle_s handle, cons
     return (E_OK);
 }
 
-am_Error_e CAmRoutingSenderAsync::asyncSetSinkVolume(const am_Handle_s handle, const am_sinkID_t sinkID, const am_volume_t volume, const am_RampType_e ramp, const am_time_t time)
+am_Error_e CAmRoutingSenderAsync::asyncSetSinkVolume(const am_Handle_s handle, const am_sinkID_t sinkID, const am_volume_t volume, const am_CustomRampType_t ramp, const am_time_t time)
 {
     assert(mReceiveInterface!=0);
     assert(handle.handle!=0);
@@ -406,7 +406,7 @@ am_Error_e CAmRoutingSenderAsync::asyncSetSinkVolume(const am_Handle_s handle, c
     return (E_OK);
 }
 
-am_Error_e CAmRoutingSenderAsync::asyncSetSourceVolume(const am_Handle_s handle, const am_sourceID_t sourceID, const am_volume_t volume, const am_RampType_e ramp, const am_time_t time)
+am_Error_e CAmRoutingSenderAsync::asyncSetSourceVolume(const am_Handle_s handle, const am_sourceID_t sourceID, const am_volume_t volume, const am_CustomRampType_t ramp, const am_time_t time)
 {
     assert(mReceiveInterface!=0);
     assert(handle.handle!=0);
@@ -532,7 +532,7 @@ am_Error_e CAmRoutingSenderAsync::asyncSetSinkSoundProperty(const am_Handle_s ha
     return (E_OK);
 }
 
-am_Error_e CAmRoutingSenderAsync::asyncCrossFade(const am_Handle_s handle, const am_crossfaderID_t crossfaderID, const am_HotSink_e hotSink, const am_RampType_e rampType, const am_time_t time)
+am_Error_e CAmRoutingSenderAsync::asyncCrossFade(const am_Handle_s handle, const am_crossfaderID_t crossfaderID, const am_HotSink_e hotSink, const am_CustomRampType_t rampType, const am_time_t time)
 {
     //todo: implement crossfader
     (void) handle;
@@ -655,17 +655,17 @@ std::vector<am_Sink_s> CAmRoutingSenderAsync::createSinkTable()
     std::vector<am_Sink_s> table;
     am_Sink_s item;
     am_SoundProperty_s sp;
-    sp.type = SP_EXAMPLE_BASS;
+    sp.type = SP_GENIVI_BASS;
     sp.value = 0;
 
     std::vector<am_MainSoundProperty_s> listMainSoundProperties;
     am_MainSoundProperty_s msp;
-    msp.type = MSP_EXAMPLE_BASS;
+    msp.type = MSP_GENIVI_BASS;
     msp.value = 5;
     listMainSoundProperties.push_back(msp);
-    msp.type = MSP_EXAMPLE_MID;
+    msp.type = MSP_GENIVI_MID;
     listMainSoundProperties.push_back(msp);
-    msp.type = MSP_EXAMPLE_TREBLE;
+    msp.type = MSP_GENIVI_TREBLE;
     listMainSoundProperties.push_back(msp);
     for (int16_t i = 0; i <= 10; i++)
     {
@@ -926,7 +926,7 @@ std::vector<am_Gateway_s> CAmRoutingSenderAsync::createGatewayTable()
     return (table);
 }
 
-asycConnectWorker::asycConnectWorker(CAmRoutingSenderAsync * asyncSender, CAmWorkerThreadPool *pool, IAmRoutingReceiverShadow* shadow, const am_Handle_s handle, const am_connectionID_t connectionID, const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_ConnectionFormat_e connectionFormat) :
+asycConnectWorker::asycConnectWorker(CAmRoutingSenderAsync * asyncSender, CAmWorkerThreadPool *pool, IAmRoutingReceiverShadow* shadow, const am_Handle_s handle, const am_connectionID_t connectionID, const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_CustomConnectionFormat_t connectionFormat) :
         CAmWorker(pool), //
         mAsyncSender(asyncSender), //
         mShadow(shadow), //
@@ -1008,7 +1008,7 @@ void asycDisConnectWorker::cancelWork()
     mShadow->ackDisconnect(mHandle, mConnectionID, E_ABORTED);
 }
 
-asyncSetSinkVolumeWorker::asyncSetSinkVolumeWorker(CAmRoutingSenderAsync *asyncSender, CAmWorkerThreadPool *pool, IAmRoutingReceiverShadow *shadow, const am_volume_t currentVolume, const am_Handle_s handle, const am_sinkID_t sinkID, const am_volume_t volume, const am_RampType_e ramp, const am_time_t time) :
+asyncSetSinkVolumeWorker::asyncSetSinkVolumeWorker(CAmRoutingSenderAsync *asyncSender, CAmWorkerThreadPool *pool, IAmRoutingReceiverShadow *shadow, const am_volume_t currentVolume, const am_Handle_s handle, const am_sinkID_t sinkID, const am_volume_t volume, const am_CustomRampType_t ramp, const am_time_t time) :
         CAmWorker(pool), //
         mAsyncSender(asyncSender), //
         mShadow(shadow), //
@@ -1057,7 +1057,7 @@ void asyncSetSinkVolumeWorker::cancelWork()
     mShadow->ackSetSinkVolumeChange(mHandle, mCurrentVolume, E_ABORTED);
 }
 
-asyncSetSourceVolumeWorker::asyncSetSourceVolumeWorker(CAmRoutingSenderAsync *asyncSender, CAmWorkerThreadPool *pool, IAmRoutingReceiverShadow *shadow, const am_volume_t currentVolume, const am_Handle_s handle, const am_sourceID_t SourceID, const am_volume_t volume, const am_RampType_e ramp, const am_time_t time) :
+asyncSetSourceVolumeWorker::asyncSetSourceVolumeWorker(CAmRoutingSenderAsync *asyncSender, CAmWorkerThreadPool *pool, IAmRoutingReceiverShadow *shadow, const am_volume_t currentVolume, const am_Handle_s handle, const am_sourceID_t SourceID, const am_volume_t volume, const am_CustomRampType_t ramp, const am_time_t time) :
         CAmWorker(pool), //
         mAsyncSender(asyncSender), //
         mShadow(shadow), //

@@ -21,7 +21,7 @@
 #include "TAmPluginTemplate.h"
 #include "MockIAmRoutingReceive.h"
 #include "shared/CAmDltWrapper.h"
-#include "routing/IAmRoutingSend.h"
+
 
 using namespace am;
 using namespace testing;
@@ -29,11 +29,12 @@ using namespace testing;
 static CAmEnvironment* env;
 
 am_domainID_t CAmEnvironment::mDomainIDCount = 0;
-static IAmRoutingSend* pRouter;
+
 
 CAmEnvironment::CAmEnvironment() :
         pSocketHandler(),
-        pReceiveInterface(),
+        pRouter(NULL),
+        pReceiveInterface(NULL),
         ptimerCallback(this, &CAmEnvironment::timerCallback)
 {
     DefaultValue<am_Error_e>::Set(E_OK); // Sets the default value to be returned.
@@ -46,18 +47,19 @@ CAmEnvironment::~CAmEnvironment()
 
 void CAmEnvironment::SetUp()
 {
-	::testing::GTEST_FLAG(throw_on_failure) = false;
     logInfo("RoutingSendInterface Test started ");
+
+    pReceiveInterface = new MockIAmRoutingReceive();
 
     std::vector<int> domainIDs;
     domainIDs.push_back(0);
     domainIDs.push_back(1);
-    EXPECT_TRUE(Mock::VerifyAndClearExpectations(&env->pReceiveInterface));
-    EXPECT_CALL(env->pReceiveInterface,getSocketHandler(_)).WillOnce(DoAll(SetArgReferee<0>(&env->pSocketHandler), Return(E_OK)));
-    EXPECT_CALL(env->pReceiveInterface,registerDomain(_,_)).WillRepeatedly(Invoke(CAmEnvironment::handleDomainRegister));
-    EXPECT_CALL(env->pReceiveInterface,registerSource(_,_)).WillRepeatedly(Invoke(CAmEnvironment::handleSourceRegister));
-    EXPECT_CALL(env->pReceiveInterface,registerSink(_,_)).WillRepeatedly(Invoke(CAmEnvironment::handleSinkRegister));
-    EXPECT_CALL(env->pReceiveInterface,confirmRoutingReady(_,_)).Times(1);
+
+    EXPECT_CALL(*env->pReceiveInterface,getSocketHandler(_)).WillOnce(DoAll(SetArgReferee<0>(&env->pSocketHandler), Return(E_OK)));
+    EXPECT_CALL(*env->pReceiveInterface,registerDomain(_,_)).WillRepeatedly(Invoke(CAmEnvironment::handleDomainRegister));
+    EXPECT_CALL(*env->pReceiveInterface,registerSource(_,_)).WillRepeatedly(Invoke(CAmEnvironment::handleSourceRegister));
+    EXPECT_CALL(*env->pReceiveInterface,registerSink(_,_)).WillRepeatedly(Invoke(CAmEnvironment::handleSinkRegister));
+    EXPECT_CALL(*env->pReceiveInterface,confirmRoutingReady(_,_)).Times(1);
 
     IAmRoutingSend* (*createFunc)();
     void* tempLibHandle = NULL;
@@ -78,7 +80,7 @@ void CAmEnvironment::SetUp()
         exit(1);
     }
 
-    pRouter->startupInterface(&env->pReceiveInterface);
+    pRouter->startupInterface(env->pReceiveInterface);
     pRouter->setRoutingReady(10);
 
     timespec t;
@@ -95,36 +97,10 @@ void CAmEnvironment::SetUp()
 
 void CAmEnvironment::TearDown()
 {
-	::testing::GTEST_FLAG(throw_on_failure) = true;
-}
-
-CAmRoutingReceiverAsync::CAmRoutingReceiverAsync() :
-        ptimerCallback(this, &CAmRoutingReceiverAsync::timerCallback)
-{
-}
-
-CAmRoutingReceiverAsync::~CAmRoutingReceiverAsync()
-{
-}
-
-void CAmRoutingReceiverAsync::timerCallback(sh_timerHandle_t handle, void *userData)
-{
-    (void) handle;
-    (void) userData;
-    env->pSocketHandler.stop_listening();
-}
-
-void CAmRoutingReceiverAsync::SetUp()
-{
-//    timespec t;
-//    t.tv_nsec = 0;
-//    t.tv_sec = 2;
-//
-//    sh_timerHandle_t handle;
-//
-//    shTimerCallBack *buf = &ptimerCallback;
-//    //lets use a timeout so the test will finish
-//    env->pSocketHandler.addTimer(t, buf, handle, (void*) NULL);
+	if(pReceiveInterface)
+		delete pReceiveInterface, pReceiveInterface = NULL;
+	if(pRouter)
+		delete pRouter, pRouter = NULL;
 }
 
 std::vector<std::string> CAmEnvironment::returnListPlugins()
@@ -162,20 +138,53 @@ void CAmEnvironment::timerCallback(sh_timerHandle_t handle, void *userData)
     env->pSocketHandler.stop_listening();
 }
 
-void CAmRoutingReceiverAsync::TearDown()
+
+CAmRoutingReceiverAsync::CAmRoutingReceiverAsync() :
+        ptimerCallback(this, &CAmRoutingReceiverAsync::timerCallback)
 {
 }
+
+CAmRoutingReceiverAsync::~CAmRoutingReceiverAsync()
+{
+}
+
+void CAmRoutingReceiverAsync::timerCallback(sh_timerHandle_t handle, void *userData)
+{
+    (void) handle;
+    (void) userData;
+    env->pSocketHandler.stop_listening();
+}
+
+void CAmRoutingReceiverAsync::SetUp()
+{
+//    timespec t;
+//    t.tv_nsec = 0;
+//    t.tv_sec = 2;
+//
+//    sh_timerHandle_t handle;
+//
+//    shTimerCallBack *buf = &ptimerCallback;
+//    //lets use a timeout so the test will finish
+//    env->pSocketHandler.addTimer(t, buf, handle, (void*) NULL);
+}
+
+void CAmRoutingReceiverAsync::TearDown()
+{
+
+}
+
 
 TEST_F(CAmRoutingReceiverAsync,setDomainState)
 {
     am_domainID_t domainID = 1;
     am_DomainState_e state = DS_INDEPENDENT_RUNDOWN;
 
-    EXPECT_CALL(env->pReceiveInterface,hookDomainStateChange(_,DS_INDEPENDENT_RUNDOWN)).Times(1);
+    EXPECT_CALL(*env->pReceiveInterface,hookDomainStateChange(_,DS_INDEPENDENT_RUNDOWN)).Times(1);
 
-    ASSERT_EQ(E_OK, pRouter->setDomainState(domainID,state));
+    ASSERT_EQ(E_OK, env->pRouter->setDomainState(domainID,state));
     env->pSocketHandler.start_listenting();
 }
+
 
 TEST_F(CAmRoutingReceiverAsync,setSourceSoundProperty)
 {
@@ -186,12 +195,12 @@ TEST_F(CAmRoutingReceiverAsync,setSourceSoundProperty)
 
     am_sourceID_t sourceID = 3;
     am_SoundProperty_s property;
-    property.type = SP_EXAMPLE_MID;
+    property.type = SP_GENIVI_MID;
     property.value = 24;
 
-    EXPECT_CALL(env->pReceiveInterface,ackSetSourceSoundProperty(_,E_OK)).Times(1);
+    EXPECT_CALL(*env->pReceiveInterface,ackSetSourceSoundProperty(_,E_OK)).Times(1);
 
-    ASSERT_EQ(E_OK, pRouter->asyncSetSourceSoundProperty(handle,sourceID,property));
+    ASSERT_EQ(E_OK, env->pRouter->asyncSetSourceSoundProperty(handle,sourceID,property));
     env->pSocketHandler.start_listenting();
 }
 
@@ -204,12 +213,12 @@ TEST_F(CAmRoutingReceiverAsync,setSinkSoundProperty)
 
     am_sinkID_t sinkID = 1;
     am_SoundProperty_s property;
-    property.type = SP_EXAMPLE_MID;
+    property.type = SP_GENIVI_MID;
     property.value = 24;
 
-    EXPECT_CALL(env->pReceiveInterface,ackSetSinkSoundProperty(_,E_OK)).Times(1);
+    EXPECT_CALL(*env->pReceiveInterface,ackSetSinkSoundProperty(_,E_OK)).Times(1);
 
-    ASSERT_EQ(E_OK, pRouter->asyncSetSinkSoundProperty(handle,sinkID,property));
+    ASSERT_EQ(E_OK, env->pRouter->asyncSetSinkSoundProperty(handle,sinkID,property));
     env->pSocketHandler.start_listenting();
 }
 
@@ -223,9 +232,9 @@ TEST_F(CAmRoutingReceiverAsync,setSourceState)
     am_sourceID_t sourceID = 1;
     am_SourceState_e state = SS_OFF;
 
-    EXPECT_CALL(env->pReceiveInterface,ackSetSourceState(_,E_OK)).Times(1);
+    EXPECT_CALL(*env->pReceiveInterface,ackSetSourceState(_,E_OK)).Times(1);
 
-    ASSERT_EQ(E_OK, pRouter->asyncSetSourceState(handle,sourceID,state));
+    ASSERT_EQ(E_OK, env->pRouter->asyncSetSourceState(handle,sourceID,state));
     env->pSocketHandler.start_listenting();
 }
 
@@ -238,13 +247,13 @@ TEST_F(CAmRoutingReceiverAsync,setSourceVolume)
 
     am_sourceID_t sourceID = 3;
     am_volume_t volume = 3;
-    am_RampType_e ramp = RAMP_GENIVI_DIRECT;
+    am_CustomRampType_t ramp = RAMP_GENIVI_DIRECT;
     am_time_t myTime = 25;
 
-    EXPECT_CALL(env->pReceiveInterface,ackSourceVolumeTick(_,sourceID,_)).Times(AtLeast(1));
-    EXPECT_CALL(env->pReceiveInterface,ackSetSourceVolumeChange(_,volume,E_OK)).Times(1);
+    EXPECT_CALL(*env->pReceiveInterface,ackSourceVolumeTick(_,sourceID,_)).Times(AtLeast(1));
+    EXPECT_CALL(*env->pReceiveInterface,ackSetSourceVolumeChange(_,volume,E_OK)).Times(1);
 
-    ASSERT_EQ(E_OK, pRouter->asyncSetSourceVolume(handle,sourceID,volume,ramp,myTime));
+    ASSERT_EQ(E_OK, env->pRouter->asyncSetSourceVolume(handle,sourceID,volume,ramp,myTime));
     env->pSocketHandler.start_listenting();
 }
 
@@ -257,13 +266,13 @@ TEST_F(CAmRoutingReceiverAsync,setSinkVolume)
 
     am_sinkID_t sinkID = 1;
     am_volume_t volume = 9;
-    am_RampType_e ramp = RAMP_GENIVI_DIRECT;
+    am_CustomRampType_t ramp = RAMP_GENIVI_DIRECT;
     am_time_t myTime = 25;
 
-    EXPECT_CALL(env->pReceiveInterface,ackSinkVolumeTick(_,sinkID,_)).Times(AtLeast(2));
-    EXPECT_CALL(env->pReceiveInterface,ackSetSinkVolumeChange(_,volume,E_OK)).Times(1);
+    EXPECT_CALL(*env->pReceiveInterface,ackSinkVolumeTick(_,sinkID,_)).Times(AtLeast(2));
+    EXPECT_CALL(*env->pReceiveInterface,ackSetSinkVolumeChange(_,volume,E_OK)).Times(1);
 
-    ASSERT_EQ(E_OK, pRouter->asyncSetSinkVolume(handle,sinkID,volume,ramp,myTime));
+    ASSERT_EQ(E_OK, env->pRouter->asyncSetSinkVolume(handle,sinkID,volume,ramp,myTime));
     env->pSocketHandler.start_listenting();
 }
 
@@ -276,15 +285,15 @@ TEST_F(CAmRoutingReceiverAsync,setSinkVolumeAbort)
 
     am_sinkID_t sinkID = 2;
     am_volume_t volume = 25;
-    am_RampType_e ramp = RAMP_GENIVI_DIRECT;
+    am_CustomRampType_t ramp = RAMP_GENIVI_DIRECT;
     am_time_t myTime = 25;
 
-    EXPECT_CALL(env->pReceiveInterface, ackSinkVolumeTick(_,sinkID,_));
-    EXPECT_CALL(env->pReceiveInterface,ackSetSinkVolumeChange(_,AllOf(Ne(volume),Ne(0)),E_ABORTED)).Times(1);
+    EXPECT_CALL(*env->pReceiveInterface, ackSinkVolumeTick(_,sinkID,_));
+    EXPECT_CALL(*env->pReceiveInterface,ackSetSinkVolumeChange(_,AllOf(Ne(volume),Ne(0)),E_ABORTED)).Times(1);
 
-    ASSERT_EQ(E_OK, pRouter->asyncSetSinkVolume(handle,sinkID,volume,ramp,myTime));
+    ASSERT_EQ(E_OK, env->pRouter->asyncSetSinkVolume(handle,sinkID,volume,ramp,myTime));
     sleep(0.5);
-    ASSERT_EQ(E_OK, pRouter->asyncAbort(handle));
+    ASSERT_EQ(E_OK, env->pRouter->asyncAbort(handle));
     env->pSocketHandler.start_listenting();
 }
 
@@ -297,9 +306,9 @@ TEST_F(CAmRoutingReceiverAsync,disconnectNonExisting)
 
     am_connectionID_t connectionID = 4;
 
-    EXPECT_CALL(env->pReceiveInterface,ackConnect(_,connectionID,E_OK)).Times(0);
-    EXPECT_CALL(env->pReceiveInterface,ackDisconnect(_,connectionID,E_OK)).Times(0);
-    ASSERT_EQ(E_NON_EXISTENT, pRouter->asyncDisconnect(handle,connectionID));
+    EXPECT_CALL(*env->pReceiveInterface,ackConnect(_,connectionID,E_OK)).Times(0);
+    EXPECT_CALL(*env->pReceiveInterface,ackDisconnect(_,connectionID,E_OK)).Times(0);
+    ASSERT_EQ(E_NON_EXISTENT, env->pRouter->asyncDisconnect(handle,connectionID));
     env->pSocketHandler.start_listenting();
 }
 
@@ -317,12 +326,12 @@ TEST_F(CAmRoutingReceiverAsync,disconnectTooEarly)
     am_connectionID_t connectionID = 4;
     am_sourceID_t sourceID = 2;
     am_sinkID_t sinkID = 1;
-    am_ConnectionFormat_e format = CF_GENIVI_ANALOG;
+    am_CustomConnectionFormat_t format = CF_GENIVI_ANALOG;
 
-    EXPECT_CALL(env->pReceiveInterface, ackConnect(_,connectionID,E_OK));
-    EXPECT_CALL(env->pReceiveInterface,ackDisconnect(_,connectionID,E_OK)).Times(0);
-    ASSERT_EQ(E_OK, pRouter->asyncConnect(handle_c,connectionID,sourceID,sinkID,format));
-    ASSERT_EQ(E_NON_EXISTENT, pRouter->asyncDisconnect(handle,connectionID));
+    EXPECT_CALL(*env->pReceiveInterface, ackConnect(_,connectionID,E_OK));
+    EXPECT_CALL(*env->pReceiveInterface,ackDisconnect(_,connectionID,E_OK)).Times(0);
+    ASSERT_EQ(E_OK, env->pRouter->asyncConnect(handle_c,connectionID,sourceID,sinkID,format));
+    ASSERT_EQ(E_NON_EXISTENT, env->pRouter->asyncDisconnect(handle,connectionID));
     env->pSocketHandler.start_listenting();
 }
 
@@ -340,14 +349,14 @@ TEST_F(CAmRoutingReceiverAsync,disconnectAbort)
     am_connectionID_t connectionID = 5;
     am_sourceID_t sourceID = 2;
     am_sinkID_t sinkID = 1;
-    am_ConnectionFormat_e format = CF_GENIVI_ANALOG;
+    am_CustomConnectionFormat_t format = CF_GENIVI_ANALOG;
 
-    EXPECT_CALL(env->pReceiveInterface, ackConnect(_,connectionID,E_OK));
-    EXPECT_CALL(env->pReceiveInterface, ackDisconnect(_,connectionID,E_ABORTED));
-    ASSERT_EQ(E_OK, pRouter->asyncConnect(handle_c,connectionID,sourceID,sinkID,format));
+    EXPECT_CALL(*env->pReceiveInterface, ackConnect(_,connectionID,E_OK));
+    EXPECT_CALL(*env->pReceiveInterface, ackDisconnect(_,connectionID,E_ABORTED));
+    ASSERT_EQ(E_OK, env->pRouter->asyncConnect(handle_c,connectionID,sourceID,sinkID,format));
     sleep(2);
-    ASSERT_EQ(E_OK, pRouter->asyncDisconnect(handle,connectionID));
-    ASSERT_EQ(E_OK, pRouter->asyncAbort(handle));
+    ASSERT_EQ(E_OK, env->pRouter->asyncDisconnect(handle,connectionID));
+    ASSERT_EQ(E_OK, env->pRouter->asyncAbort(handle));
     env->pSocketHandler.start_listenting();
 }
 
@@ -365,13 +374,13 @@ TEST_F(CAmRoutingReceiverAsync,disconnect)
     am_connectionID_t connectionID = 4;
     am_sourceID_t sourceID = 2;
     am_sinkID_t sinkID = 1;
-    am_ConnectionFormat_e format = CF_GENIVI_ANALOG;
+    am_CustomConnectionFormat_t format = CF_GENIVI_ANALOG;
 
-    EXPECT_CALL(env->pReceiveInterface, ackConnect(_,connectionID,E_OK));
-    EXPECT_CALL(env->pReceiveInterface, ackDisconnect(_,connectionID,E_OK));
-    ASSERT_EQ(E_OK, pRouter->asyncConnect(handle_c,connectionID,sourceID,sinkID,format));
+    EXPECT_CALL(*env->pReceiveInterface, ackConnect(_,connectionID,E_OK));
+    EXPECT_CALL(*env->pReceiveInterface, ackDisconnect(_,connectionID,E_OK));
+    ASSERT_EQ(E_OK, env->pRouter->asyncConnect(handle_c,connectionID,sourceID,sinkID,format));
     sleep(2);
-    ASSERT_EQ(E_OK, pRouter->asyncDisconnect(handle,connectionID));
+    ASSERT_EQ(E_OK, env->pRouter->asyncDisconnect(handle,connectionID));
     env->pSocketHandler.start_listenting();
 }
 
@@ -385,12 +394,12 @@ TEST_F(CAmRoutingReceiverAsync,connectAbortTooLate)
     am_connectionID_t connectionID = 4;
     am_sourceID_t sourceID = 2;
     am_sinkID_t sinkID = 1;
-    am_ConnectionFormat_e format = CF_GENIVI_ANALOG;
+    am_CustomConnectionFormat_t format = CF_GENIVI_ANALOG;
 
-    EXPECT_CALL(env->pReceiveInterface,ackConnect(_,connectionID,E_OK)).Times(1);
-    ASSERT_EQ(E_OK, pRouter->asyncConnect(handle,connectionID,sourceID,sinkID,format));
+    EXPECT_CALL(*env->pReceiveInterface,ackConnect(_,connectionID,E_OK)).Times(1);
+    ASSERT_EQ(E_OK, env->pRouter->asyncConnect(handle,connectionID,sourceID,sinkID,format));
     sleep(3);
-    ASSERT_EQ(E_NON_EXISTENT, pRouter->asyncAbort(handle));
+    ASSERT_EQ(E_NON_EXISTENT, env->pRouter->asyncAbort(handle));
     env->pSocketHandler.start_listenting();
 }
 
@@ -404,12 +413,12 @@ TEST_F(CAmRoutingReceiverAsync,connectAbort)
     am_connectionID_t connectionID = 4;
     am_sourceID_t sourceID = 2;
     am_sinkID_t sinkID = 1;
-    am_ConnectionFormat_e format = CF_GENIVI_ANALOG;
+    am_CustomConnectionFormat_t format = CF_GENIVI_ANALOG;
 
-    EXPECT_CALL(env->pReceiveInterface,ackConnect(_,connectionID,E_ABORTED)).Times(1);
-    ASSERT_EQ(E_OK, pRouter->asyncConnect(handle,connectionID,sourceID,sinkID,format));
+    EXPECT_CALL(*env->pReceiveInterface,ackConnect(_,connectionID,E_ABORTED)).Times(1);
+    ASSERT_EQ(E_OK, env->pRouter->asyncConnect(handle,connectionID,sourceID,sinkID,format));
     sleep(0.5);
-    ASSERT_EQ(E_OK, pRouter->asyncAbort(handle));
+    ASSERT_EQ(E_OK, env->pRouter->asyncAbort(handle));
     env->pSocketHandler.start_listenting();
 }
 
@@ -423,10 +432,10 @@ TEST_F(CAmRoutingReceiverAsync,connectWrongFormat)
     am_connectionID_t connectionID = 4;
     am_sourceID_t sourceID = 2;
     am_sinkID_t sinkID = 1;
-    am_ConnectionFormat_e format = CF_GENIVI_MONO;
+    am_CustomConnectionFormat_t format = CF_GENIVI_MONO;
 
-    EXPECT_CALL(env->pReceiveInterface,ackConnect(_,connectionID,E_OK)).Times(0);
-    ASSERT_EQ(E_WRONG_FORMAT, pRouter->asyncConnect(handle,connectionID,sourceID,sinkID,format));
+    EXPECT_CALL(*env->pReceiveInterface,ackConnect(_,connectionID,E_OK)).Times(0);
+    ASSERT_EQ(E_WRONG_FORMAT, env->pRouter->asyncConnect(handle,connectionID,sourceID,sinkID,format));
     env->pSocketHandler.start_listenting();
 }
 
@@ -440,10 +449,10 @@ TEST_F(CAmRoutingReceiverAsync,connectWrongSink)
     am_connectionID_t connectionID = 4;
     am_sourceID_t sourceID = 2;
     am_sinkID_t sinkID = 122;
-    am_ConnectionFormat_e format = CF_GENIVI_ANALOG;
+    am_CustomConnectionFormat_t format = CF_GENIVI_ANALOG;
 
-    EXPECT_CALL(env->pReceiveInterface,ackConnect(_,connectionID,E_OK)).Times(0);
-    ASSERT_EQ(E_NON_EXISTENT, pRouter->asyncConnect(handle,connectionID,sourceID,sinkID,format));
+    EXPECT_CALL(*env->pReceiveInterface,ackConnect(_,connectionID,E_OK)).Times(0);
+    ASSERT_EQ(E_NON_EXISTENT, env->pRouter->asyncConnect(handle,connectionID,sourceID,sinkID,format));
     env->pSocketHandler.start_listenting();
 }
 
@@ -456,10 +465,10 @@ TEST_F(CAmRoutingReceiverAsync,connectWrongSource)
     am_connectionID_t connectionID = 4;
     am_sourceID_t sourceID = 25;
     am_sinkID_t sinkID = 1;
-    am_ConnectionFormat_e format = CF_GENIVI_ANALOG;
+    am_CustomConnectionFormat_t format = CF_GENIVI_ANALOG;
 
-    EXPECT_CALL(env->pReceiveInterface,ackConnect(_,connectionID,E_OK)).Times(0);
-    ASSERT_EQ(E_NON_EXISTENT, pRouter->asyncConnect(handle,connectionID,sourceID,sinkID,format));
+    EXPECT_CALL(*env->pReceiveInterface,ackConnect(_,connectionID,E_OK)).Times(0);
+    ASSERT_EQ(E_NON_EXISTENT, env->pRouter->asyncConnect(handle,connectionID,sourceID,sinkID,format));
     env->pSocketHandler.start_listenting();
 }
 
@@ -473,10 +482,10 @@ TEST_F(CAmRoutingReceiverAsync,connect)
     am_connectionID_t connectionID = 4;
     am_sourceID_t sourceID = 2;
     am_sinkID_t sinkID = 1;
-    am_ConnectionFormat_e format = CF_GENIVI_ANALOG;
+    am_CustomConnectionFormat_t format = CF_GENIVI_ANALOG;
 
-    EXPECT_CALL(env->pReceiveInterface, ackConnect(_,connectionID,E_OK));
-    ASSERT_EQ(E_OK, pRouter->asyncConnect(handle,connectionID,sourceID,sinkID,format));
+    EXPECT_CALL(*env->pReceiveInterface, ackConnect(_,connectionID,E_OK));
+    ASSERT_EQ(E_OK, env->pRouter->asyncConnect(handle,connectionID,sourceID,sinkID,format));
     env->pSocketHandler.start_listenting();
 }
 
@@ -490,23 +499,23 @@ TEST_F(CAmRoutingReceiverAsync,connectNoMoreThreads)
     am_connectionID_t connectionID = 1;
     am_sourceID_t sourceID = 2;
     am_sinkID_t sinkID = 1;
-    am_ConnectionFormat_e format = CF_GENIVI_ANALOG;
+    am_CustomConnectionFormat_t format = CF_GENIVI_ANALOG;
 
-    EXPECT_CALL(env->pReceiveInterface,ackConnect(_,_,E_OK)).Times(10);
+    EXPECT_CALL(*env->pReceiveInterface,ackConnect(_,_,E_OK)).Times(10);
     for (int i = 0; i < 10; i++)
     {
         handle.handle++;
         connectionID++;
-        ASSERT_EQ(E_OK, pRouter->asyncConnect(handle,connectionID,sourceID,sinkID,format));
+        ASSERT_EQ(E_OK, env->pRouter->asyncConnect(handle,connectionID,sourceID,sinkID,format));
     }
-    ASSERT_EQ(E_NOT_POSSIBLE, pRouter->asyncConnect(handle,connectionID,sourceID,sinkID,format));
+    ASSERT_EQ(E_NOT_POSSIBLE, env->pRouter->asyncConnect(handle,connectionID,sourceID,sinkID,format));
     env->pSocketHandler.start_listenting();
 }
 
 int main(int argc, char **argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
-    ::testing::Environment* const env = ::testing::AddGlobalTestEnvironment(new CAmEnvironment);
+    CAmEnvironment* const env = (CAmEnvironment*)::testing::AddGlobalTestEnvironment(new CAmEnvironment);
     (void) env;
     return RUN_ALL_TESTS();
 }

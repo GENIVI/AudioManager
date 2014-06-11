@@ -304,10 +304,10 @@ void CAmRoutingService::sendChangedData(org::genivi::am::am_EarlyData_L earlyDat
 void CAmRoutingService::updateGateway(org::genivi::am::am_gatewayID_t gatewayID, org::genivi::am::am_ConnectionFormat_L listSourceFormats, org::genivi::am::am_ConnectionFormat_L listSinkFormats, org::genivi::am::am_Convertion_L convertionMatrix, org::genivi::am::am_Error_e& error) {
 
 	assert(mpIAmRoutingReceive);
-	std::vector<am_ConnectionFormat_e> destinationSourceConnectionFormats;
+	std::vector<am_CustomConnectionFormat_t> destinationSourceConnectionFormats;
 	CAmConvertCAPIVector2AM(listSourceFormats, destinationSourceConnectionFormats);
 
-	std::vector<am_ConnectionFormat_e> destinationSinkConnectionFormats;
+	std::vector<am_CustomConnectionFormat_t> destinationSinkConnectionFormats;
 	CAmConvertCAPIVector2AM(listSinkFormats, destinationSinkConnectionFormats);
 
 	mpIAmRoutingReceive->updateGateway(gatewayID, destinationSourceConnectionFormats, destinationSinkConnectionFormats, convertionMatrix);
@@ -317,7 +317,7 @@ void CAmRoutingService::updateSink(org::genivi::am::am_sinkID_t sinkID, org::gen
 	assert(mpIAmRoutingReceive);
 	std::vector<am_SoundProperty_s> dstListSoundProperties;
     CAmConvertCAPIVector2AM(listSoundProperties, dstListSoundProperties);
-    std::vector<am_ConnectionFormat_e> dstListSinkConnectionFormats;
+    std::vector<am_CustomConnectionFormat_t> dstListSinkConnectionFormats;
     CAmConvertCAPIVector2AM(listConnectionFormats, dstListSinkConnectionFormats);
     std::vector<am_MainSoundProperty_s> dstListMainSoundProperties;
     CAmConvertCAPIVector2AM(listMainSoundProperties, dstListMainSoundProperties);
@@ -328,7 +328,7 @@ void CAmRoutingService::updateSource(org::genivi::am::am_sourceID_t sourceID, or
 	assert(mpIAmRoutingReceive);
 	std::vector<am_SoundProperty_s> dstListSoundProperties;
     CAmConvertCAPIVector2AM(listSoundProperties, dstListSoundProperties);
-    std::vector<am_ConnectionFormat_e> dstListSinkConnectionFormats;
+    std::vector<am_CustomConnectionFormat_t> dstListSinkConnectionFormats;
     CAmConvertCAPIVector2AM(listConnectionFormats, dstListSinkConnectionFormats);
     std::vector<am_MainSoundProperty_s> dstListMainSoundProperties;
     CAmConvertCAPIVector2AM(listMainSoundProperties, dstListMainSoundProperties);

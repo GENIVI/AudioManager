@@ -142,7 +142,7 @@ TEST_F(CAmRoutingInterfaceTest,setSinkSoundPropertyNoChange)
     am_domainID_t domainID;
     am_Handle_s handle;
     am_SoundProperty_s soundProperty;
-    soundProperty.type = SP_EXAMPLE_TREBLE;
+    soundProperty.type = SP_GENIVI_TREBLE;
     soundProperty.value = 23;
     std::vector<am_Handle_s> listHandles;
     pCF.createSink(sink);
@@ -215,7 +215,7 @@ TEST_F(CAmRoutingInterfaceTest,setSinkSoundProperty)
     am_Handle_s handle;
     am_SoundProperty_s soundProperty;
     soundProperty.value=5;
-    soundProperty.type=SP_EXAMPLE_MID;
+    soundProperty.type=SP_GENIVI_MID;
     std::vector<am_Handle_s> listHandles;
     pCF.createSink(sink);
     pCF.createDomain(domain);
@@ -244,7 +244,7 @@ TEST_F(CAmRoutingInterfaceTest,setSourceVolumeNoChange)
     am_domainID_t domainID;
     am_Handle_s handle;
     am_volume_t volume = 34;
-    am_RampType_e rampType = RAMP_GENIVI_DIRECT;
+    am_CustomRampType_t rampType = RAMP_GENIVI_DIRECT;
     am_time_t rampTime = 300;
     std::vector<am_Handle_s> listHandles;
     pCF.createSource(source);
@@ -270,7 +270,7 @@ TEST_F(CAmRoutingInterfaceTest,setSourceVolume)
     am_domainID_t domainID;
     am_Handle_s handle;
     am_volume_t volume = 34;
-    am_RampType_e rampType = RAMP_GENIVI_DIRECT;
+    am_CustomRampType_t rampType = RAMP_GENIVI_DIRECT;
     am_time_t rampTime = 300;
     std::vector<am_Handle_s> listHandles;
     pCF.createSource(source);
@@ -298,7 +298,7 @@ TEST_F(CAmRoutingInterfaceTest,setSinkVolumeNoChange)
     am_domainID_t domainID;
     am_Handle_s handle;
     am_volume_t volume = 34;
-    am_RampType_e rampType = RAMP_GENIVI_DIRECT;
+    am_CustomRampType_t rampType = RAMP_GENIVI_DIRECT;
     am_time_t rampTime = 300;
     std::vector<am_Handle_s> listHandles;
     pCF.createSink(sink);
@@ -324,7 +324,7 @@ TEST_F(CAmRoutingInterfaceTest,setSinkVolume)
     am_domainID_t domainID;
     am_Handle_s handle;
     am_volume_t volume = 34;
-    am_RampType_e rampType = RAMP_GENIVI_DIRECT;
+    am_CustomRampType_t rampType = RAMP_GENIVI_DIRECT;
     am_time_t rampTime = 300;
     std::vector<am_Handle_s> listHandles;
     pCF.createSink(sink);

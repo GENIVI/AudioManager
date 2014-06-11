@@ -313,7 +313,7 @@ TEST_F(CAmCommandSenderCAPITest, SetMainSinkSoundPropertyTest)
 		EXPECT_CALL(*env->mpCommandReceive, setMainSinkSoundProperty(AllOf(
 				Field(&am_MainSoundProperty_s::value, 3),
 				Field(&am_MainSoundProperty_s::type, MSP_UNKNOWN)), sinkID)).WillOnce(Return(E_OK));
-		org::genivi::am::am_MainSoundProperty_s value(static_cast<org::genivi::am::am_MainSoundPropertyType_pe>(am_MainSoundPropertyType_e::MSP_UNKNOWN), (const int16_t)3);
+		org::genivi::am::am_MainSoundProperty_s value(MSP_UNKNOWN, (const int16_t)3);
 		env->mProxy->setMainSinkSoundProperty(sinkID, value, callStatus, result);
 		ASSERT_EQ(result, org::genivi::am::am_Error_e::E_OK);
 	}
@@ -332,7 +332,7 @@ TEST_F(CAmCommandSenderCAPITest, SetMainSourceSoundPropertyTest)
 		EXPECT_CALL(*env->mpCommandReceive, setMainSourceSoundProperty(AllOf(
 				Field(&am_MainSoundProperty_s::value, 3),
 				Field(&am_MainSoundProperty_s::type, MSP_UNKNOWN)), sID)).WillOnce(Return(E_OK));
-		org::genivi::am::am_MainSoundProperty_s value(static_cast<org::genivi::am::am_MainSoundPropertyType_pe>(am_MainSoundPropertyType_e::MSP_UNKNOWN), (const int16_t)3);
+		org::genivi::am::am_MainSoundProperty_s value(MSP_UNKNOWN, (const int16_t)3);
 		env->mProxy->setMainSourceSoundProperty(sID, value, callStatus, result);
 		ASSERT_EQ(result, org::genivi::am::am_Error_e::E_OK);
 	}
@@ -349,7 +349,7 @@ TEST_F(CAmCommandSenderCAPITest, SetSystemPropertyTest)
 
 		EXPECT_CALL(*env->mpCommandReceive, setSystemProperty(Field(&am_SystemProperty_s::value, 2))).WillOnce(Return(E_OK));
 
-		org::genivi::am::am_SystemProperty_s value(static_cast<org::genivi::am::am_SystemPropertyType_pe>(am_SystemPropertyType_e::SYP_UNKNOWN), (const int16_t)2);
+		org::genivi::am::am_SystemProperty_s value(SYP_UNKNOWN, (const int16_t)2);
 		env->mProxy->setSystemProperty(value, callStatus, result);
 		ASSERT_EQ(result, org::genivi::am::am_Error_e::E_OK);
 	}
@@ -417,7 +417,7 @@ TEST_F(CAmCommandSenderCAPITest, GetListMainSinksTest)
 		ASSERT_EQ(34, listMainSinks.at(0).sinkClassID);
 		ASSERT_EQ(24, listMainSinks.at(0).sinkID);
 		ASSERT_EQ(org::genivi::am::am_Availability_e::A_UNAVAILABLE, listMainSinks.at(0).availability.availability);
-		ASSERT_EQ(static_cast<org::genivi::am::am_AvailabilityReason_pe>(am_AvailabilityReason_e::AR_GENIVI_NOMEDIA), listMainSinks.at(0).availability.availabilityReason);
+		ASSERT_EQ(AR_GENIVI_NOMEDIA, listMainSinks.at(0).availability.availabilityReason);
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpCommandReceive));
 }
@@ -452,7 +452,7 @@ TEST_F(CAmCommandSenderCAPITest, GetListMainSourcesTest)
 		ASSERT_EQ(12, list.at(0).sourceClassID);
 		ASSERT_EQ(224, list.at(0).sourceID);
 		ASSERT_EQ(org::genivi::am::am_Availability_e::A_MAX, list.at(0).availability.availability);
-		ASSERT_EQ(static_cast<org::genivi::am::am_AvailabilityReason_pe>(am_AvailabilityReason_e::AR_GENIVI_SAMEMEDIA), list.at(0).availability.availabilityReason);
+		ASSERT_EQ(AR_GENIVI_SAMEMEDIA, list.at(0).availability.availabilityReason);
 		ASSERT_EQ(22, list.at(1).sourceID);
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpCommandReceive));
@@ -461,10 +461,10 @@ TEST_F(CAmCommandSenderCAPITest, GetListMainSourcesTest)
 ACTION(returnListMainSinkSoundProperties){
 	std::vector<am_MainSoundProperty_s> list;
 	am_MainSoundProperty_s listItem;
-	listItem.type=MSP_MAX;
+	listItem.type=MSP_UNKNOWN;
 	listItem.value=223;
 	list.push_back(listItem);
-	listItem.type=MSP_MAX;
+	listItem.type=MSP_GENIVI_BASS;
 	listItem.value=2;
 	list.push_back(listItem);
 	arg1=list;
@@ -485,9 +485,9 @@ TEST_F(CAmCommandSenderCAPITest, GetListMainSinkSoundPropertiesTest)
 		ASSERT_EQ(result, org::genivi::am::am_Error_e::E_OK);
 		ASSERT_EQ(2, list.size());
 		ASSERT_EQ(223, list.at(0).value);
-		ASSERT_EQ(static_cast<org::genivi::am::am_MainSoundPropertyType_pe>(am_MainSoundPropertyType_e::MSP_MAX), list.at(0).type);
+		ASSERT_EQ(MSP_UNKNOWN, list.at(0).type);
 		ASSERT_EQ(2, list.at(1).value);
-		ASSERT_EQ(static_cast<org::genivi::am::am_MainSoundPropertyType_pe>(am_MainSoundPropertyType_e::MSP_MAX), list.at(1).type);
+		ASSERT_EQ(MSP_GENIVI_BASS, list.at(1).type);
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpCommandReceive));
 }
@@ -495,10 +495,10 @@ TEST_F(CAmCommandSenderCAPITest, GetListMainSinkSoundPropertiesTest)
 ACTION(returnListMainSourceSoundProperties){
 	std::vector<am_MainSoundProperty_s> list;
 	am_MainSoundProperty_s listItem;
-	listItem.type=MSP_EXAMPLE_MID;
+	listItem.type=MSP_GENIVI_MID;
 	listItem.value=223;
 	list.push_back(listItem);
-	listItem.type=MSP_MAX;
+	listItem.type=MSP_GENIVI_BASS;
 	listItem.value=2;
 	list.push_back(listItem);
 	arg1=list;
@@ -519,9 +519,9 @@ TEST_F(CAmCommandSenderCAPITest, GetListMainSourceSoundPropertiesTest)
 		ASSERT_EQ(result, org::genivi::am::am_Error_e::E_OK);
 		ASSERT_EQ(2, list.size());
 		ASSERT_EQ(223, list.at(0).value);
-		ASSERT_EQ(static_cast<org::genivi::am::am_MainSoundPropertyType_pe>(am_MainSoundPropertyType_e::MSP_EXAMPLE_MID), list.at(0).type);
+		ASSERT_EQ(MSP_GENIVI_MID, list.at(0).type);
 		ASSERT_EQ(2, list.at(1).value);
-		ASSERT_EQ(static_cast<org::genivi::am::am_MainSoundPropertyType_pe>(am_MainSoundPropertyType_e::MSP_MAX), list.at(1).type);
+		ASSERT_EQ(MSP_GENIVI_BASS, list.at(1).type);
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpCommandReceive));
 }
@@ -530,7 +530,7 @@ ACTION(returnListSourceClasses){
 	std::vector<am_SourceClass_s> list;
 	am_SourceClass_s listItem;
 	am_ClassProperty_s property;
-	property.classProperty=CP_MAX;
+	property.classProperty=CP_UNKNOWN;
 	property.value=12;
 	listItem.name="FirstCLass";
 	listItem.sourceClassID=23;
@@ -559,11 +559,11 @@ TEST_F(CAmCommandSenderCAPITest, GetListSourceClassesTest)
 
 		ASSERT_EQ(23, list.at(0).sourceClassID);
 		ASSERT_EQ(1, list.at(0).listClassProperties.size());
-		ASSERT_EQ(static_cast<org::genivi::am::am_ClassProperty_pe>(am_ClassProperty_e::CP_MAX), list.at(0).listClassProperties.at(0).classProperty);
+		ASSERT_EQ(CP_UNKNOWN, list.at(0).listClassProperties.at(0).classProperty);
 
 		ASSERT_EQ(2, list.at(1).sourceClassID);
 		ASSERT_EQ(2, list.at(1).listClassProperties.size());
-		ASSERT_EQ(static_cast<org::genivi::am::am_ClassProperty_pe>(am_ClassProperty_e::CP_MAX), list.at(1).listClassProperties.at(0).classProperty);
+		ASSERT_EQ(CP_UNKNOWN, list.at(1).listClassProperties.at(0).classProperty);
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpCommandReceive));
 }
@@ -572,7 +572,7 @@ ACTION(returnListSinkClasses){
 	std::vector<am_SinkClass_s> list;
 	am_SinkClass_s listItem;
 	am_ClassProperty_s property;
-	property.classProperty=CP_MAX;
+	property.classProperty=CP_UNKNOWN;
 	property.value=122;
 	listItem.name="FirstCLass";
 	listItem.sinkClassID=23;
@@ -602,12 +602,12 @@ TEST_F(CAmCommandSenderCAPITest, GetListSinkClassesTest)
 		ASSERT_EQ(0, list.at(0).name.compare("FirstCLass"));
 		ASSERT_EQ(23, list.at(0).sinkClassID);
 		ASSERT_EQ(1, list.at(0).listClassProperties.size());
-		ASSERT_EQ(static_cast<org::genivi::am::am_ClassProperty_pe>(am_ClassProperty_e::CP_MAX), list.at(0).listClassProperties.at(0).classProperty);
+		ASSERT_EQ(CP_UNKNOWN, list.at(0).listClassProperties.at(0).classProperty);
 
 		ASSERT_EQ(0, list.at(1).name.compare("SecondCLass"));
 		ASSERT_EQ(2, list.at(1).sinkClassID);
 		ASSERT_EQ(2, list.at(1).listClassProperties.size());
-		ASSERT_EQ(static_cast<org::genivi::am::am_ClassProperty_pe>(am_ClassProperty_e::CP_MAX), list.at(1).listClassProperties.at(0).classProperty);
+		ASSERT_EQ(CP_UNKNOWN, list.at(1).listClassProperties.at(0).classProperty);
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpCommandReceive));
 }
@@ -615,7 +615,7 @@ TEST_F(CAmCommandSenderCAPITest, GetListSinkClassesTest)
 ACTION(returnListSystemProperties){
 	std::vector<am_SystemProperty_s> list;
 	am_SystemProperty_s listItem;
-	listItem.type=SYP_MAX;
+	listItem.type=SYP_UNKNOWN;
 	listItem.value=-2245;
 	list.push_back(listItem);
 	arg0=list;
@@ -636,7 +636,7 @@ TEST_F(CAmCommandSenderCAPITest, GetListSystemPropertiesTest)
 		ASSERT_EQ(1, list.size());
 
 		ASSERT_EQ(-2245, list.at(0).value);
-		ASSERT_EQ(static_cast<org::genivi::am::am_ClassProperty_pe>(am_SystemPropertyType_e::SYP_MAX), list.at(0).type);
+		ASSERT_EQ(SYP_UNKNOWN, list.at(0).type);
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpCommandReceive));
 }
@@ -735,14 +735,14 @@ TEST_F(CAmCommandSenderCAPITest, onSourceAddedEventTest)
 		destination.sourceID = 100;
 		destination.name = "Name";
 		destination.availability.availability = org::genivi::am::am_Availability_e::A_MAX;
-		destination.availability.availabilityReason = static_cast<org::genivi::am::am_AvailabilityReason_pe>(AR_MAX);
+		destination.availability.availabilityReason = AR_UNKNOWN;
 		destination.sourceClassID = 200;
 
 		am_SourceType_s origin;
 		origin.sourceID = 100;
 		origin.name = "Name";
 		origin.availability.availability = A_MAX;
-		origin.availability.availabilityReason = AR_MAX;
+		origin.availability.availabilityReason = AR_UNKNOWN;
  		origin.sourceClassID = 200;
 		EXPECT_CALL(mock, onSourceAddedEvent(destination));
 		env->mpPlugin->cbNewSource(origin);
@@ -780,9 +780,9 @@ TEST_F(CAmCommandSenderCAPITest, onMainSourceSoundPropertyChangedEventTest)
 
 		am_MainSoundProperty_s soundProperty;
 		soundProperty.value = 10;
-		soundProperty.type = am_MainSoundPropertyType_e::MSP_MAX;
+		soundProperty.type = MSP_UNKNOWN;
 
-		org::genivi::am::am_MainSoundProperty_s destination(static_cast<org::genivi::am::am_MainSoundPropertyType_pe>(MSP_MAX), 10);
+		org::genivi::am::am_MainSoundProperty_s destination(MSP_UNKNOWN, 10);
 
 		EXPECT_CALL(mock, onMainSourceSoundPropertyChangedEvent(101, destination));
 		env->mpPlugin->cbMainSourceSoundPropertyChanged(101, soundProperty);
@@ -803,9 +803,9 @@ TEST_F(CAmCommandSenderCAPITest, onSourceAvailabilityChangedEventTest)
 
 		am_Availability_s availability;
 		availability.availability = A_MAX;
-		availability.availabilityReason = AR_MAX;
+		availability.availabilityReason = AR_UNKNOWN;
 
-		org::genivi::am::am_Availability_s destination(org::genivi::am::am_Availability_e::A_MAX, static_cast<org::genivi::am::am_AvailabilityReason_pe>(AR_MAX));
+		org::genivi::am::am_Availability_s destination(org::genivi::am::am_Availability_e::A_MAX, AR_UNKNOWN);
 
 		EXPECT_CALL(mock, onSourceAvailabilityChangedEvent(101, destination));
 		env->mpPlugin->cbSourceAvailabilityChanged(101, availability);
@@ -842,7 +842,7 @@ TEST_F(CAmCommandSenderCAPITest, onSinkAddedEventTest)
 		destination.sinkID = 100;
 		destination.name = "Name";
 		destination.availability.availability = org::genivi::am::am_Availability_e::A_MAX;
-		destination.availability.availabilityReason = static_cast<org::genivi::am::am_AvailabilityReason_pe>(AR_MAX);
+		destination.availability.availabilityReason = AR_UNKNOWN;
 		destination.muteState = org::genivi::am::am_MuteState_e::MS_MAX;
 		destination.volume = 1;
 		destination.sinkClassID = 100;
@@ -851,7 +851,7 @@ TEST_F(CAmCommandSenderCAPITest, onSinkAddedEventTest)
 		origin.sinkID = 100;
 		origin.name = "Name";
 		origin.availability.availability = A_MAX;
-		origin.availability.availabilityReason = AR_MAX;
+		origin.availability.availabilityReason = AR_UNKNOWN;
  		origin.muteState = am_MuteState_e::MS_MAX;
  		origin.volume = 1;
  		origin.sinkClassID = 100;
@@ -891,9 +891,9 @@ TEST_F(CAmCommandSenderCAPITest, onMainSinkSoundPropertyChangedEventTest)
 
 		am_MainSoundProperty_s soundProperty;
 		soundProperty.value = 10;
-		soundProperty.type = am_MainSoundPropertyType_e::MSP_MAX;
+		soundProperty.type = MSP_UNKNOWN;
 
-		org::genivi::am::am_MainSoundProperty_s destination(static_cast<org::genivi::am::am_MainSoundPropertyType_pe>(MSP_MAX), 10);
+		org::genivi::am::am_MainSoundProperty_s destination(MSP_UNKNOWN, 10);
 
 		EXPECT_CALL(mock, onMainSinkSoundPropertyChangedEvent(101, destination));
 		env->mpPlugin->cbMainSinkSoundPropertyChanged(101, soundProperty);
@@ -914,9 +914,9 @@ TEST_F(CAmCommandSenderCAPITest, onSinkAvailabilityChangedEventTest)
 
 		am_Availability_s availability;
 		availability.availability = A_MAX;
-		availability.availabilityReason = AR_MAX;
+		availability.availabilityReason = AR_UNKNOWN;
 
-		org::genivi::am::am_Availability_s destination(org::genivi::am::am_Availability_e::A_MAX, static_cast<org::genivi::am::am_AvailabilityReason_pe>(AR_MAX));
+		org::genivi::am::am_Availability_s destination(org::genivi::am::am_Availability_e::A_MAX, AR_UNKNOWN);
 
 		EXPECT_CALL(mock, onSinkAvailabilityChangedEvent(101, destination));
 		env->mpPlugin->cbSinkAvailabilityChanged(101, availability);
@@ -967,10 +967,10 @@ TEST_F(CAmCommandSenderCAPITest, onSystemPropertyChangedEventTest)
 		auto subscription = env->mProxy->getSystemPropertyChangedEvent().subscribe(std::bind(&MockNotificationsClient::onSystemPropertyChangedEvent, std::ref(mock),
 													   std::placeholders::_1));
 
-		org::genivi::am::am_SystemProperty_s value(static_cast<org::genivi::am::am_SystemPropertyType_pe>(SYP_UNKNOWN), (const int16_t)2);
+		org::genivi::am::am_SystemProperty_s value(static_cast<org::genivi::am::am_CustomSystemPropertyType_t>(SYP_UNKNOWN), (const int16_t)2);
 		am_SystemProperty_s systemProperty;
 		systemProperty.value = 2;
-		systemProperty.type = am_SystemPropertyType_e::SYP_UNKNOWN;
+		systemProperty.type = SYP_UNKNOWN;
 
 		EXPECT_CALL(mock, onSystemPropertyChangedEvent(value));
 		env->mpPlugin->cbSystemPropertyChanged(systemProperty);
@@ -1008,7 +1008,7 @@ TEST_F(CAmCommandSenderCAPITest, onSinkUpdatedEventTest)
 		std::vector<am_MainSoundProperty_s> listMainSoundProperties;
 		am_MainSoundProperty_s prop;
 		prop.value = 1;
-		prop.type = am_MainSoundPropertyType_e::MSP_MAX;
+		prop.type = MSP_UNKNOWN;
 		listMainSoundProperties.push_back(prop);
 		EXPECT_CALL(mock, onSinkUpdatedEvent(1, 2, _));
 		env->mpPlugin->cbSinkUpdated(1, 2, listMainSoundProperties);
@@ -1029,7 +1029,7 @@ TEST_F(CAmCommandSenderCAPITest, onSourceUpdatedTest)
 		std::vector<am_MainSoundProperty_s> listMainSoundProperties;
 		am_MainSoundProperty_s prop;
 		prop.value = 1;
-		prop.type = am_MainSoundPropertyType_e::MSP_MAX;
+		prop.type = MSP_UNKNOWN;
 		listMainSoundProperties.push_back(prop);
 		EXPECT_CALL(mock, onSourceUpdatedEvent(1, 2, _));
 		env->mpPlugin->cbSourceUpdated(1, 2, listMainSoundProperties);
@@ -1048,10 +1048,10 @@ TEST_F(CAmCommandSenderCAPITest, onSinkNotificationEventTest)
 		auto subscription = env->mProxy->getSinkNotificationEvent().subscribe(std::bind(&MockNotificationsClient::onSinkNotificationEvent, std::ref(mock),
 													   std::placeholders::_1, std::placeholders::_2));
 		am_NotificationPayload_s orig;
-		orig.type = am_NotificationType_e::NT_MAX;
+		orig.type = NT_UNKNOWN;
 		orig.value = 1;
 		org::genivi::am::am_NotificationPayload_s dest;
-		dest.type = static_cast<org::genivi::am::am_NotificationType_pe>(NT_MAX);
+		dest.type = NT_UNKNOWN;
 		dest.value = 1;
 
 		EXPECT_CALL(mock, onSinkNotificationEvent(1, dest));
@@ -1072,10 +1072,10 @@ TEST_F(CAmCommandSenderCAPITest, onSourceNotificationEventTest)
 		auto subscription = env->mProxy->getSourceNotificationEvent().subscribe(std::bind(&MockNotificationsClient::onSourceNotificationEvent, std::ref(mock),
 													   std::placeholders::_1, std::placeholders::_2));
 		am_NotificationPayload_s orig;
-		orig.type = am_NotificationType_e::NT_MAX;
+		orig.type = NT_UNKNOWN;
 		orig.value = 1;
 		org::genivi::am::am_NotificationPayload_s dest;
-		dest.type = static_cast<org::genivi::am::am_NotificationType_pe>(NT_MAX);
+		dest.type = NT_UNKNOWN;
 		dest.value = 1;
 
 		EXPECT_CALL(mock, onSourceNotificationEvent(1, dest));
@@ -1095,11 +1095,11 @@ TEST_F(CAmCommandSenderCAPITest, onMainSinkNotificationConfigurationChangedEvent
 		auto subscription = env->mProxy->getMainSinkNotificationConfigurationChangedEvent().subscribe(std::bind(&MockNotificationsClient::onMainSinkNotificationConfigurationChangedEvent, std::ref(mock),
 													   std::placeholders::_1, std::placeholders::_2));
 		am_NotificationConfiguration_s orig;
-		orig.type = am_NotificationType_e::NT_MAX;
+		orig.type = NT_UNKNOWN;
 		orig.parameter = 1;
 		orig.status = am_NotificationStatus_e::NS_MAX;
 		org::genivi::am::am_NotificationConfiguration_s dest;
-		dest.type = static_cast<org::genivi::am::am_NotificationType_pe>(NT_MAX);
+		dest.type = NT_UNKNOWN;
 		dest.parameter = 1;
 		dest.status = org::genivi::am::am_NotificationStatus_e::NS_MAX;
 
@@ -1120,11 +1120,11 @@ TEST_F(CAmCommandSenderCAPITest, onMainSourceNotificationConfigurationChangedEve
 		auto subscription = env->mProxy->getMainSourceNotificationConfigurationChangedEvent().subscribe(std::bind(&MockNotificationsClient::onMainSourceNotificationConfigurationChangedEvent, std::ref(mock),
 													   std::placeholders::_1, std::placeholders::_2));
 		am_NotificationConfiguration_s orig;
-		orig.type = am_NotificationType_e::NT_MAX;
+		orig.type = NT_UNKNOWN;
 		orig.parameter = 1;
 		orig.status = am_NotificationStatus_e::NS_MAX;
 		org::genivi::am::am_NotificationConfiguration_s dest;
-		dest.type =static_cast<org::genivi::am::am_NotificationType_pe>(NT_MAX);
+		dest.type = NT_UNKNOWN;
 		dest.parameter = 1;
 		dest.status = org::genivi::am::am_NotificationStatus_e::NS_MAX;
 

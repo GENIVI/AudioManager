@@ -42,8 +42,8 @@ public:
 
 private:
     am_Error_e findBestWay(am_sinkID_t sinkID, am_sourceID_t sourceID, std::vector<am_RoutingElement_s>& listRoute, std::vector<am_RoutingElement_s>::iterator routeIterator, std::vector<am_gatewayID_t>::iterator gatewayIterator);
-    void listPossibleConnectionFormats(const am_sourceID_t sourceID, const am_sinkID_t sinkID, std::vector<am_ConnectionFormat_e>& listFormats) const;
-    void listRestrictedOutputFormatsGateways(const am_gatewayID_t gatewayID, const am_ConnectionFormat_e sinkConnectionFormat, std::vector<am_ConnectionFormat_e>& listFormats) const;
+    void listPossibleConnectionFormats(const am_sourceID_t sourceID, const am_sinkID_t sinkID, std::vector<am_CustomConnectionFormat_t>& listFormats) const;
+    void listRestrictedOutputFormatsGateways(const am_gatewayID_t gatewayID, const am_CustomConnectionFormat_t sinkConnectionFormat, std::vector<am_CustomConnectionFormat_t>& listFormats) const;
     IAmDatabaseHandler* mpDatabaseHandler; //!< pointer to database handler
     CAmControlSender* mpControlSender; //!< pointer the controlsender - is used to retrieve information for the optimal route
 };

@@ -743,8 +743,8 @@ void IAmRoutingReceiverShadowDbus::updateGateway(DBusConnection* conn, DBusMessa
     assert(mRoutingReceiveInterface != NULL);
     mDBUSMessageHandler.initReceive(msg);
     am_gatewayID_t gatewayID(mDBUSMessageHandler.getInt());
-    std::vector<am_ConnectionFormat_e> listSourceConnectionFormats(mDBUSMessageHandler.getListconnectionFormats());
-    std::vector<am_ConnectionFormat_e> listSinkConnectionFormats(mDBUSMessageHandler.getListconnectionFormats());
+    std::vector<am_CustomAvailabilityReason_t> listSourceConnectionFormats(mDBUSMessageHandler.getListconnectionFormats());
+    std::vector<am_CustomAvailabilityReason_t> listSinkConnectionFormats(mDBUSMessageHandler.getListconnectionFormats());
     std::vector<bool> convertionMatrix(mDBUSMessageHandler.getListBool());
 
     am_Error_e returnCode = mRoutingReceiveInterface->updateGateway(gatewayID,listSourceConnectionFormats,listSinkConnectionFormats,convertionMatrix);
@@ -766,7 +766,7 @@ void IAmRoutingReceiverShadowDbus::updateSink(DBusConnection* conn, DBusMessage*
     am_sinkID_t sinkID(mDBUSMessageHandler.getInt());
     am_sinkClass_t sinkClassID(mDBUSMessageHandler.getInt());
     std::vector<am_SoundProperty_s> listSoundProperties(mDBUSMessageHandler.getListSoundProperties());
-    std::vector<am_ConnectionFormat_e> listSinkConnectionFormats(mDBUSMessageHandler.getListconnectionFormats());
+    std::vector<am_CustomAvailabilityReason_t> listSinkConnectionFormats(mDBUSMessageHandler.getListconnectionFormats());
     std::vector<am_MainSoundProperty_s> listMainSoundProperties(mDBUSMessageHandler.getListMainSoundProperties());
 
     am_Error_e returnCode = mRoutingReceiveInterface->updateSink(sinkID,sinkClassID,listSoundProperties,listSinkConnectionFormats,listMainSoundProperties);
@@ -788,7 +788,7 @@ void IAmRoutingReceiverShadowDbus::updateSource(DBusConnection* conn, DBusMessag
     am_sourceID_t sourceID(mDBUSMessageHandler.getInt());
     am_sourceClass_t sourceClassID(mDBUSMessageHandler.getInt());
     std::vector<am_SoundProperty_s> listSoundProperties(mDBUSMessageHandler.getListSoundProperties());
-    std::vector<am_ConnectionFormat_e> listSinkConnectionFormats(mDBUSMessageHandler.getListconnectionFormats());
+    std::vector<am_CustomAvailabilityReason_t> listSinkConnectionFormats(mDBUSMessageHandler.getListconnectionFormats());
     std::vector<am_MainSoundProperty_s> listMainSoundProperties(mDBUSMessageHandler.getListMainSoundProperties());
 
     am_Error_e returnCode = mRoutingReceiveInterface->updateSource(sourceID,sourceClassID,listSoundProperties,listSinkConnectionFormats,listMainSoundProperties);

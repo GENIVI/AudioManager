@@ -69,13 +69,13 @@
         <method name="GetListMainSinkSoundProperties">
             <arg type="q" name="sinkID" direction="in"/> 
             <arg type="n" name="result" direction="out"/> <!-- method return code (am_Error_e) -->
-            <arg type="a(nn)" name="listSoundProperties" direction="out"/> <!-- am_MainSoundPropertyType_e type; int16_t value; -->
+            <arg type="a(nn)" name="listSoundProperties" direction="out"/> <!-- am_CustomMainSoundPropertyType_t type; int16_t value; -->
         </method>
 
         <method name="GetListMainSourceSoundProperties">
             <arg type="q" name="sourceID" direction="in"/>
             <arg type="n" name="result" direction="out"/> <!-- method return code (am_Error_e) -->
-            <arg type="a(nn)" name="listSourceProperties" direction="out"/> <!-- am_MainSoundPropertyType_e type; int16_t value; -->
+            <arg type="a(nn)" name="listSourceProperties" direction="out"/> <!-- am_CustomMainSoundPropertyType_t type; int16_t value; -->
         </method>
 
         <method name="GetListSourceClasses">
@@ -194,13 +194,13 @@
         <signal name="SinkUpdated">
 			<arg type="q" name="sinkID" direction="out"/>
 			<arg type="q" name="sinkClassID" direction="out"/>
-			<arg type="a(nn)" name="listMainSinkProperties" direction="out"/> <!-- am_MainSoundPropertyType_e type; int16_t value; -->
+			<arg type="a(nn)" name="listMainSinkProperties" direction="out"/> <!-- am_CustomMainSoundPropertyType_t type; int16_t value; -->
         </signal>
         
         <signal name="SourceUpdated">
 			<arg type="q" name="sourceID" direction="out"/>
 			<arg type="q" name="sourceClassID" direction="out"/>
-			<arg type="a(nn)" name="listMainSinkProperties" direction="out"/> <!-- am_MainSoundPropertyType_e type; int16_t value; -->
+			<arg type="a(nn)" name="listMainSinkProperties" direction="out"/> <!-- am_CustomMainSoundPropertyType_t type; int16_t value; -->
         </signal>
         
         <signal name="SourceNotification">

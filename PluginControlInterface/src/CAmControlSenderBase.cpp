@@ -197,7 +197,7 @@ am_Error_e CAmControlSenderBase::hookUserSetMainSinkSoundProperty(const am_sinkI
     }
 
 //I know this is bad - just for the reference, ok?
-    sp.type = static_cast<am_SoundPropertyType_e>(soundProperty.type);
+    sp.type = static_cast<am_CustomSoundPropertyType_t>(soundProperty.type);
     sp.value = (soundProperty.value - 5) * 30;
     am_Error_e error;
     if ((error = mControlReceiveInterface->setSinkSoundProperty(set.handle, sinkID, sp)) != E_OK)
@@ -565,7 +565,7 @@ void CAmControlSenderBase::setControllerRundown(const int16_t signal)
     mControlReceiveInterface->confirmControllerRundown(E_OK);
 }
 
-am_Error_e CAmControlSenderBase::getConnectionFormatChoice(const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_Route_s listRoute, const std::vector<am_ConnectionFormat_e> listPossibleConnectionFormats, std::vector<am_ConnectionFormat_e> & listPrioConnectionFormats)
+am_Error_e CAmControlSenderBase::getConnectionFormatChoice(const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_Route_s listRoute, const std::vector<am_CustomAvailabilityReason_t> listPossibleConnectionFormats, std::vector<am_CustomConnectionFormat_t> & listPrioConnectionFormats)
 {
     (void) sourceID;
     (void) sinkID;
@@ -812,7 +812,7 @@ NsmErrorStatus_e CAmControlSenderBase::hookSystemLifecycleRequest(const uint32_t
     return (NsmErrorStatus_Error);
 }
 
-am_Error_e CAmControlSenderBase::hookSystemUpdateSink(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_ConnectionFormat_e>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)
+am_Error_e CAmControlSenderBase::hookSystemUpdateSink(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_CustomConnectionFormat_t>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)
 {
     (void) sinkID;
     (void) sinkClassID;
@@ -822,7 +822,7 @@ am_Error_e CAmControlSenderBase::hookSystemUpdateSink(const am_sinkID_t sinkID, 
     return (E_NOT_USED);
 }
 
-am_Error_e CAmControlSenderBase::hookSystemUpdateSource(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_ConnectionFormat_e>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)
+am_Error_e CAmControlSenderBase::hookSystemUpdateSource(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_CustomConnectionFormat_t>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)
 {
     (void) sourceID;
     (void) sourceClassID;
@@ -832,7 +832,7 @@ am_Error_e CAmControlSenderBase::hookSystemUpdateSource(const am_sourceID_t sour
     return (E_NOT_USED);
 }
 
-am_Error_e CAmControlSenderBase::hookSystemUpdateGateway(const am_gatewayID_t gatewayID, const std::vector<am_ConnectionFormat_e>& listSourceConnectionFormats, const std::vector<am_ConnectionFormat_e>& listSinkConnectionFormats, const std::vector<bool>& convertionMatrix)
+am_Error_e CAmControlSenderBase::hookSystemUpdateGateway(const am_gatewayID_t gatewayID, const std::vector<am_CustomConnectionFormat_t>& listSourceConnectionFormats, const std::vector<am_CustomConnectionFormat_t>& listSinkConnectionFormats, const std::vector<bool>& convertionMatrix)
 {
     (void) gatewayID;
     (void) listSourceConnectionFormats;

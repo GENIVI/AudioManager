@@ -457,7 +457,7 @@ am_Error_e CAmDatabaseHandlerSQLite::enterSinkDB(const am_Sink_s & sinkData, am_
     //fill ConnectionFormats
     command = "INSERT INTO SinkConnectionFormat" + i2s(sinkID) + std::string("(soundFormat) VALUES (?)");
     MY_SQLITE_PREPARE_V2(mpDatabase, command.c_str(), -1, &query, NULL)
-    std::vector<am_ConnectionFormat_e>::const_iterator connectionFormatIterator = sinkData.listConnectionFormats.begin();
+    std::vector<am_CustomConnectionFormat_t>::const_iterator connectionFormatIterator = sinkData.listConnectionFormats.begin();
     for (; connectionFormatIterator < sinkData.listConnectionFormats.end(); ++connectionFormatIterator)
     {
         MY_SQLITE_BIND_INT(query, 1, *connectionFormatIterator)
@@ -722,7 +722,7 @@ am_Error_e CAmDatabaseHandlerSQLite::enterGatewayDB(const am_Gateway_s & gateway
     //fill ConnectionFormats
     command = "INSERT INTO GatewaySourceFormat" + i2s(gatewayID) + std::string("(soundFormat) VALUES (?)");
     MY_SQLITE_PREPARE_V2(mpDatabase, command.c_str(), -1, &query, NULL)
-    std::vector<am_ConnectionFormat_e>::const_iterator connectionFormatIterator = gatewayData.listSourceFormats.begin();
+    std::vector<am_CustomConnectionFormat_t>::const_iterator connectionFormatIterator = gatewayData.listSourceFormats.begin();
     for (; connectionFormatIterator < gatewayData.listSourceFormats.end(); ++connectionFormatIterator)
     {
         MY_SQLITE_BIND_INT(query, 1, *connectionFormatIterator)
@@ -874,7 +874,7 @@ am_Error_e CAmDatabaseHandlerSQLite::enterSourceDB(const am_Source_s & sourceDat
     //fill ConnectionFormats
     command = "INSERT INTO SourceConnectionFormat" + i2s(sourceID) + std::string("(soundFormat) VALUES (?)");
     MY_SQLITE_PREPARE_V2(mpDatabase, command.c_str(), -1, &query, NULL)
-    std::vector<am_ConnectionFormat_e>::const_iterator connectionFormatIterator = sourceData.listConnectionFormats.begin();
+    std::vector<am_CustomConnectionFormat_t>::const_iterator connectionFormatIterator = sourceData.listConnectionFormats.begin();
     for (; connectionFormatIterator != sourceData.listConnectionFormats.end(); ++connectionFormatIterator)
     {
         MY_SQLITE_BIND_INT(query, 1, *connectionFormatIterator)
@@ -1111,7 +1111,6 @@ am_Error_e CAmDatabaseHandlerSQLite::changeSinkAvailabilityDB(const am_Availabil
 {
     assert(sinkID!=0);
     assert(availability.availability>=A_UNKNOWN && availability.availability<=A_MAX);
-    assert(availability.availabilityReason>=AR_UNKNOWN && availability.availabilityReason<=AR_MAX);
 
     sqlite3_stmt* query = NULL;
     int eCode = 0;
@@ -1203,7 +1202,6 @@ am_Error_e CAmDatabaseHandlerSQLite::changeSinkMuteStateDB(const am_MuteState_e 
 
 am_Error_e CAmDatabaseHandlerSQLite::changeMainSinkSoundPropertyDB(const am_MainSoundProperty_s & soundProperty, const am_sinkID_t sinkID)
 {
-    assert(soundProperty.type>=MSP_UNKNOWN && soundProperty.type<=MSP_MAX);
     assert(sinkID!=0);
 
     sqlite3_stmt* query = NULL;
@@ -1233,7 +1231,6 @@ am_Error_e CAmDatabaseHandlerSQLite::changeMainSinkSoundPropertyDB(const am_Main
 
 am_Error_e CAmDatabaseHandlerSQLite::changeMainSourceSoundPropertyDB(const am_MainSoundProperty_s & soundProperty, const am_sourceID_t sourceID)
 {
-    assert(soundProperty.type>=MSP_UNKNOWN && soundProperty.type<=MSP_MAX);
     assert(sourceID!=0);
 
     sqlite3_stmt* query = NULL;
@@ -1266,7 +1263,6 @@ am_Error_e CAmDatabaseHandlerSQLite::changeSourceAvailabilityDB(const am_Availab
 {
     assert(sourceID!=0);
     assert(availability.availability>=A_UNKNOWN && availability.availability<=A_MAX);
-    assert(availability.availabilityReason>=AR_UNKNOWN && availability.availabilityReason<=AR_MAX);
 
     sqlite3_stmt* query = NULL;
     int eCode = 0;
@@ -1298,7 +1294,6 @@ am_Error_e CAmDatabaseHandlerSQLite::changeSourceAvailabilityDB(const am_Availab
 
 am_Error_e CAmDatabaseHandlerSQLite::changeSystemPropertyDB(const am_SystemProperty_s & property)
 {
-    assert(property.type>=SYP_UNKNOWN && property.type<=SYP_MAX);
     sqlite3_stmt* query = NULL;
     int eCode = 0;
     std::string command = "UPDATE " + std::string(SYSTEM_TABLE) + " set value=? WHERE type=?";
@@ -1580,7 +1575,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getSourceClassInfoDB(const am_sourceID_t so
     MY_SQLITE_PREPARE_V2(mpDatabase, command.c_str(), -1, &query, NULL)
     while ((eCode = sqlite3_step(query)) == SQLITE_ROW)
     {
-        propertyTemp.classProperty = (am_ClassProperty_e) sqlite3_column_int(query, 0);
+        propertyTemp.classProperty = (am_CustomClassProperty_t) sqlite3_column_int(query, 0);
         propertyTemp.value = sqlite3_column_int(query, 1);
         classInfo.listClassProperties.push_back(propertyTemp);
     }
@@ -1608,7 +1603,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getSinkInfoDB(const am_sinkID_t sinkID, am_
 
     sqlite3_stmt* query = NULL, *qConnectionFormat = NULL, *qSoundProperty = NULL, *qMAinSoundProperty = NULL, *qMainNotification = NULL, *qNotification = NULL;
     int eCode = 0;
-    am_ConnectionFormat_e tempConnectionFormat;
+    am_CustomConnectionFormat_t tempConnectionFormat;
     am_SoundProperty_s tempSoundProperty;
     am_MainSoundProperty_s tempMainSoundProperty;
     am_NotificationConfiguration_s tempNotificationConfiguration,tempMainNotification;
@@ -1623,7 +1618,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getSinkInfoDB(const am_sinkID_t sinkID, am_
         sinkData.volume = sqlite3_column_int(query, 3);
         sinkData.visible = sqlite3_column_int(query, 4);
         sinkData.available.availability = (am_Availability_e) sqlite3_column_int(query, 5);
-        sinkData.available.availabilityReason = (am_AvailabilityReason_e) sqlite3_column_int(query, 6);
+        sinkData.available.availabilityReason = (am_CustomAvailabilityReason_t) sqlite3_column_int(query, 6);
         sinkData.muteState = (am_MuteState_e) sqlite3_column_int(query, 7);
         sinkData.mainVolume = sqlite3_column_int(query, 8);
         sinkData.sinkID = sqlite3_column_int(query, 9);
@@ -1633,7 +1628,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getSinkInfoDB(const am_sinkID_t sinkID, am_
         MY_SQLITE_PREPARE_V2(mpDatabase, commandConnectionFormat.c_str(), -1, &qConnectionFormat, NULL)
         while ((eCode = sqlite3_step(qConnectionFormat)) == SQLITE_ROW)
         {
-            tempConnectionFormat = (am_ConnectionFormat_e) sqlite3_column_int(qConnectionFormat, 0);
+            tempConnectionFormat = (am_CustomConnectionFormat_t) sqlite3_column_int(qConnectionFormat, 0);
             sinkData.listConnectionFormats.push_back(tempConnectionFormat);
         }
 
@@ -1644,7 +1639,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getSinkInfoDB(const am_sinkID_t sinkID, am_
         MY_SQLITE_PREPARE_V2(mpDatabase, commandSoundProperty.c_str(), -1, &qSoundProperty, NULL)
         while ((eCode = sqlite3_step(qSoundProperty)) == SQLITE_ROW)
         {
-            tempSoundProperty.type = (am_SoundPropertyType_e) sqlite3_column_int(qSoundProperty, 0);
+            tempSoundProperty.type = (am_CustomSoundPropertyType_t) sqlite3_column_int(qSoundProperty, 0);
             tempSoundProperty.value = sqlite3_column_int(qSoundProperty, 1);
             sinkData.listSoundProperties.push_back(tempSoundProperty);
         }
@@ -1656,7 +1651,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getSinkInfoDB(const am_sinkID_t sinkID, am_
 
         while ((eCode = sqlite3_step(qNotification)) == SQLITE_ROW)
         {
-            tempNotificationConfiguration.type =  static_cast<am_NotificationType_e>(sqlite3_column_int(qNotification, 0));
+            tempNotificationConfiguration.type =  static_cast<am_CustomNotificationType_t>(sqlite3_column_int(qNotification, 0));
             tempNotificationConfiguration.status = static_cast<am_NotificationStatus_e>(sqlite3_column_int(qNotification, 1));
             tempNotificationConfiguration.parameter= static_cast<int16_t>(sqlite3_column_int(qNotification, 2));
             sinkData.listNotificationConfigurations.push_back(tempNotificationConfiguration);
@@ -1671,7 +1666,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getSinkInfoDB(const am_sinkID_t sinkID, am_
             MY_SQLITE_PREPARE_V2(mpDatabase, commandMainSoundProperty.c_str(), -1, &qMAinSoundProperty, NULL)
             while ((eCode = sqlite3_step(qMAinSoundProperty)) == SQLITE_ROW)
             {
-                tempMainSoundProperty.type = (am_MainSoundPropertyType_e) sqlite3_column_int(qMAinSoundProperty, 0);
+                tempMainSoundProperty.type = (am_CustomMainSoundPropertyType_t) sqlite3_column_int(qMAinSoundProperty, 0);
                 tempMainSoundProperty.value = sqlite3_column_int(qMAinSoundProperty, 1);
                 sinkData.listMainSoundProperties.push_back(tempMainSoundProperty);
             }
@@ -1683,7 +1678,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getSinkInfoDB(const am_sinkID_t sinkID, am_
 
             while ((eCode = sqlite3_step(qMainNotification)) == SQLITE_ROW)
             {
-                tempMainNotification.type =  static_cast<am_NotificationType_e>(sqlite3_column_int(qMainNotification, 0));
+                tempMainNotification.type =  static_cast<am_CustomNotificationType_t>(sqlite3_column_int(qMainNotification, 0));
                 tempMainNotification.status = static_cast<am_NotificationStatus_e>(sqlite3_column_int(qMainNotification, 1));
                 tempMainNotification.parameter= static_cast<int16_t>(sqlite3_column_int(qMainNotification, 2));
                 sinkData.listMainNotificationConfigurations.push_back(tempMainNotification);
@@ -1715,7 +1710,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getSourceInfoDB(const am_sourceID_t sourceI
 
     sqlite3_stmt* query = NULL, *qConnectionFormat = NULL, *qSoundProperty = NULL, *qMAinSoundProperty = NULL, *qMainNotification = NULL, *qNotification = NULL;
     int eCode = 0;
-    am_ConnectionFormat_e tempConnectionFormat;
+    am_CustomConnectionFormat_t tempConnectionFormat;
     am_SoundProperty_s tempSoundProperty;
     am_MainSoundProperty_s tempMainSoundProperty;
     am_NotificationConfiguration_s tempNotificationConfiguration,tempMainNotification;
@@ -1731,7 +1726,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getSourceInfoDB(const am_sourceID_t sourceI
         sourceData.volume = sqlite3_column_int(query, 4);
         sourceData.visible = sqlite3_column_int(query, 5);
         sourceData.available.availability = (am_Availability_e) sqlite3_column_int(query, 6);
-        sourceData.available.availabilityReason = (am_AvailabilityReason_e) sqlite3_column_int(query, 7);
+        sourceData.available.availabilityReason = (am_CustomAvailabilityReason_t) sqlite3_column_int(query, 7);
         sourceData.interruptState = (am_InterruptState_e) sqlite3_column_int(query, 8);
         sourceData.sourceID = sqlite3_column_int(query, 9);
 
@@ -1740,7 +1735,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getSourceInfoDB(const am_sourceID_t sourceI
         MY_SQLITE_PREPARE_V2(mpDatabase, commandConnectionFormat.c_str(), -1, &qConnectionFormat, NULL)
         while ((eCode = sqlite3_step(qConnectionFormat)) == SQLITE_ROW)
         {
-            tempConnectionFormat = (am_ConnectionFormat_e) sqlite3_column_int(qConnectionFormat, 0);
+            tempConnectionFormat = (am_CustomConnectionFormat_t) sqlite3_column_int(qConnectionFormat, 0);
             sourceData.listConnectionFormats.push_back(tempConnectionFormat);
         }
 
@@ -1751,7 +1746,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getSourceInfoDB(const am_sourceID_t sourceI
         MY_SQLITE_PREPARE_V2(mpDatabase, commandSoundProperty.c_str(), -1, &qSoundProperty, NULL);
         while ((eCode = sqlite3_step(qSoundProperty)) == SQLITE_ROW)
         {
-            tempSoundProperty.type = (am_SoundPropertyType_e) sqlite3_column_int(qSoundProperty, 0);
+            tempSoundProperty.type = (am_CustomSoundPropertyType_t) sqlite3_column_int(qSoundProperty, 0);
             tempSoundProperty.value = sqlite3_column_int(qSoundProperty, 1);
             sourceData.listSoundProperties.push_back(tempSoundProperty);
         }
@@ -1763,7 +1758,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getSourceInfoDB(const am_sourceID_t sourceI
 
         while ((eCode = sqlite3_step(qNotification)) == SQLITE_ROW)
         {
-            tempNotificationConfiguration.type =  static_cast<am_NotificationType_e>(sqlite3_column_int(qNotification, 0));
+            tempNotificationConfiguration.type =  static_cast<am_CustomNotificationType_t>(sqlite3_column_int(qNotification, 0));
             tempNotificationConfiguration.status = static_cast<am_NotificationStatus_e>(sqlite3_column_int(qNotification, 1));
             tempNotificationConfiguration.parameter= static_cast<int16_t>(sqlite3_column_int(qNotification, 2));
             sourceData.listNotificationConfigurations.push_back(tempNotificationConfiguration);
@@ -1778,7 +1773,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getSourceInfoDB(const am_sourceID_t sourceI
             MY_SQLITE_PREPARE_V2(mpDatabase, commandMainSoundProperty.c_str(), -1, &qMAinSoundProperty, NULL)
             while ((eCode = sqlite3_step(qMAinSoundProperty)) == SQLITE_ROW)
             {
-                tempMainSoundProperty.type = (am_MainSoundPropertyType_e) sqlite3_column_int(qMAinSoundProperty, 0);
+                tempMainSoundProperty.type = (am_CustomMainSoundPropertyType_t) sqlite3_column_int(qMAinSoundProperty, 0);
                 tempMainSoundProperty.value = sqlite3_column_int(qMAinSoundProperty, 1);
                 sourceData.listMainSoundProperties.push_back(tempMainSoundProperty);
             }
@@ -1790,7 +1785,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getSourceInfoDB(const am_sourceID_t sourceI
 
             while ((eCode = sqlite3_step(qMainNotification)) == SQLITE_ROW)
             {
-                tempMainNotification.type =  static_cast<am_NotificationType_e>(sqlite3_column_int(qMainNotification, 0));
+                tempMainNotification.type =  static_cast<am_CustomNotificationType_t>(sqlite3_column_int(qMainNotification, 0));
                 tempMainNotification.status = static_cast<am_NotificationStatus_e>(sqlite3_column_int(qMainNotification, 1));
                 tempMainNotification.parameter= static_cast<int16_t>(sqlite3_column_int(qMainNotification, 2));
                 sourceData.listMainNotificationConfigurations.push_back(tempMainNotification);
@@ -1979,7 +1974,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getSinkClassInfoDB(const am_sinkID_t sinkID
     MY_SQLITE_PREPARE_V2(mpDatabase, command.c_str(), -1, &query, NULL)
     while ((eCode = sqlite3_step(query)) == SQLITE_ROW)
     {
-        propertyTemp.classProperty = (am_ClassProperty_e) sqlite3_column_int(query, 0);
+        propertyTemp.classProperty = (am_CustomClassProperty_t) sqlite3_column_int(query, 0);
         propertyTemp.value = sqlite3_column_int(query, 1);
         sinkClass.listClassProperties.push_back(propertyTemp);
     }
@@ -2004,7 +1999,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getGatewayInfoDB(const am_gatewayID_t gatew
     }
     sqlite3_stmt* query = NULL, *qSinkConnectionFormat = NULL, *qSourceConnectionFormat = NULL;
     int eCode = 0;
-    am_ConnectionFormat_e tempConnectionFormat;
+    am_CustomConnectionFormat_t tempConnectionFormat;
     std::string command = "SELECT name, sinkID, sourceID, domainSinkID, domainSourceID, controlDomainID, gatewayID FROM " + std::string(GATEWAY_TABLE) + " WHERE gatewayID=" + i2s(gatewayID);
     MY_SQLITE_PREPARE_V2(mpDatabase, command.c_str(), -1, &query, NULL)
 
@@ -2034,7 +2029,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getGatewayInfoDB(const am_gatewayID_t gatew
         MY_SQLITE_PREPARE_V2(mpDatabase, commandConnectionFormat.c_str(), -1, &qSourceConnectionFormat, NULL)
         while ((eCode = sqlite3_step(qSourceConnectionFormat)) == SQLITE_ROW)
         {
-            tempConnectionFormat = (am_ConnectionFormat_e) sqlite3_column_int(qSourceConnectionFormat, 0);
+            tempConnectionFormat = (am_CustomConnectionFormat_t) sqlite3_column_int(qSourceConnectionFormat, 0);
             gatewayData.listSourceFormats.push_back(tempConnectionFormat);
         }
 
@@ -2045,7 +2040,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getGatewayInfoDB(const am_gatewayID_t gatew
         MY_SQLITE_PREPARE_V2(mpDatabase, commandConnectionFormat.c_str(), -1, &qSinkConnectionFormat, NULL)
         while ((eCode = sqlite3_step(qSinkConnectionFormat)) == SQLITE_ROW)
         {
-            tempConnectionFormat = (am_ConnectionFormat_e) sqlite3_column_int(qSinkConnectionFormat, 0);
+            tempConnectionFormat = (am_CustomConnectionFormat_t) sqlite3_column_int(qSinkConnectionFormat, 0);
             gatewayData.listSinkFormats.push_back(tempConnectionFormat);
         }
 
@@ -2318,7 +2313,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getListConnections(std::vector<am_Connectio
         temp.sourceID = sqlite3_column_int(query, 1);
         temp.sinkID = sqlite3_column_int(query, 2);
         temp.delay = sqlite3_column_int(query, 3);
-        temp.connectionFormat = (am_ConnectionFormat_e) sqlite3_column_int(query, 4);
+        temp.connectionFormat = (am_CustomConnectionFormat_t) sqlite3_column_int(query, 4);
         listConnections.push_back(temp);
     }
 
@@ -2340,7 +2335,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getListSinks(std::vector<am_Sink_s> & listS
     sqlite3_stmt* query = NULL, *qConnectionFormat = NULL, *qSoundProperty = NULL, *qNotificationConfiguration= NULL, *qMAinSoundProperty = NULL, *qMainNotificationConfiguration= NULL;
     int eCode = 0;
     am_Sink_s temp;
-    am_ConnectionFormat_e tempConnectionFormat;
+    am_CustomConnectionFormat_t tempConnectionFormat;
     am_SoundProperty_s tempSoundProperty;
     am_MainSoundProperty_s tempMainSoundProperty;
     am_NotificationConfiguration_s tempNotificationConfiguration;
@@ -2356,7 +2351,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getListSinks(std::vector<am_Sink_s> & listS
         temp.volume = sqlite3_column_int(query, 3);
         temp.visible = sqlite3_column_int(query, 4);
         temp.available.availability = (am_Availability_e) sqlite3_column_int(query, 5);
-        temp.available.availabilityReason = (am_AvailabilityReason_e) sqlite3_column_int(query, 6);
+        temp.available.availabilityReason = (am_CustomAvailabilityReason_t) sqlite3_column_int(query, 6);
         temp.muteState = (am_MuteState_e) sqlite3_column_int(query, 7);
         temp.mainVolume = sqlite3_column_int(query, 8);
         temp.sinkID = sqlite3_column_int(query, 9);
@@ -2366,7 +2361,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getListSinks(std::vector<am_Sink_s> & listS
         MY_SQLITE_PREPARE_V2(mpDatabase, commandConnectionFormat.c_str(), -1, &qConnectionFormat, NULL)
         while ((eCode = sqlite3_step(qConnectionFormat)) == SQLITE_ROW)
         {
-            tempConnectionFormat = (am_ConnectionFormat_e) sqlite3_column_int(qConnectionFormat, 0);
+            tempConnectionFormat = (am_CustomConnectionFormat_t) sqlite3_column_int(qConnectionFormat, 0);
             temp.listConnectionFormats.push_back(tempConnectionFormat);
         }
 
@@ -2377,7 +2372,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getListSinks(std::vector<am_Sink_s> & listS
         MY_SQLITE_PREPARE_V2(mpDatabase, commandSoundProperty.c_str(), -1, &qSoundProperty, NULL)
         while ((eCode = sqlite3_step(qSoundProperty)) == SQLITE_ROW)
         {
-            tempSoundProperty.type = (am_SoundPropertyType_e) sqlite3_column_int(qSoundProperty, 0);
+            tempSoundProperty.type = (am_CustomSoundPropertyType_t) sqlite3_column_int(qSoundProperty, 0);
             tempSoundProperty.value = sqlite3_column_int(qSoundProperty, 1);
             temp.listSoundProperties.push_back(tempSoundProperty);
         }
@@ -2389,7 +2384,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getListSinks(std::vector<am_Sink_s> & listS
         MY_SQLITE_PREPARE_V2(mpDatabase, commandNotificationConfiguration.c_str(), -1, &qNotificationConfiguration, NULL)
         while ((eCode = sqlite3_step(qNotificationConfiguration)) == SQLITE_ROW)
         {
-            tempNotificationConfiguration.type = static_cast<am_NotificationType_e> (sqlite3_column_int(qNotificationConfiguration, 0));
+            tempNotificationConfiguration.type = static_cast<am_CustomNotificationType_t> (sqlite3_column_int(qNotificationConfiguration, 0));
             tempNotificationConfiguration.status = static_cast<am_NotificationStatus_e> (sqlite3_column_int(qNotificationConfiguration, 1));
             tempNotificationConfiguration.parameter = static_cast<int16_t> (sqlite3_column_int(qNotificationConfiguration, 2));
             temp.listNotificationConfigurations.push_back(tempNotificationConfiguration);
@@ -2404,7 +2399,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getListSinks(std::vector<am_Sink_s> & listS
             MY_SQLITE_PREPARE_V2(mpDatabase, commandMainSoundProperty.c_str(), -1, &qMAinSoundProperty, NULL)
             while ((eCode = sqlite3_step(qMAinSoundProperty)) == SQLITE_ROW)
             {
-                tempMainSoundProperty.type = (am_MainSoundPropertyType_e) sqlite3_column_int(qMAinSoundProperty, 0);
+                tempMainSoundProperty.type = (am_CustomMainSoundPropertyType_t) sqlite3_column_int(qMAinSoundProperty, 0);
                 tempMainSoundProperty.value = sqlite3_column_int(qMAinSoundProperty, 1);
                 temp.listMainSoundProperties.push_back(tempMainSoundProperty);
             }
@@ -2416,7 +2411,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getListSinks(std::vector<am_Sink_s> & listS
             MY_SQLITE_PREPARE_V2(mpDatabase, commandMainNotificationConfiguration.c_str(), -1, &qMainNotificationConfiguration, NULL)
             while ((eCode = sqlite3_step(qMainNotificationConfiguration)) == SQLITE_ROW)
             {
-                tempMainNotificationConfiguration.type = static_cast <am_NotificationType_e> (sqlite3_column_int(qMainNotificationConfiguration, 0));
+                tempMainNotificationConfiguration.type = static_cast <am_CustomNotificationType_t> (sqlite3_column_int(qMainNotificationConfiguration, 0));
                 tempMainNotificationConfiguration.status = static_cast <am_NotificationStatus_e> (sqlite3_column_int(qMainNotificationConfiguration, 1));
                 tempMainNotificationConfiguration.parameter = static_cast <uint16_t>(sqlite3_column_int(qMainNotificationConfiguration, 2));
                 temp.listMainNotificationConfigurations.push_back(tempMainNotificationConfiguration);
@@ -2449,7 +2444,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getListSources(std::vector<am_Source_s> & l
     sqlite3_stmt* query = NULL, *qConnectionFormat = NULL, *qSoundProperty = NULL, *qMAinSoundProperty = NULL, *qNotification(NULL), *qMainNotification(NULL);
     int eCode = 0;
     am_Source_s temp;
-    am_ConnectionFormat_e tempConnectionFormat;
+    am_CustomConnectionFormat_t tempConnectionFormat;
     am_SoundProperty_s tempSoundProperty;
     am_MainSoundProperty_s tempMainSoundProperty;
     am_NotificationConfiguration_s tempNotificationConfiguration;
@@ -2465,7 +2460,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getListSources(std::vector<am_Source_s> & l
         temp.volume = sqlite3_column_int(query, 4);
         temp.visible = sqlite3_column_int(query, 5);
         temp.available.availability = (am_Availability_e) sqlite3_column_int(query, 6);
-        temp.available.availabilityReason = (am_AvailabilityReason_e) sqlite3_column_int(query, 7);
+        temp.available.availabilityReason = (am_CustomAvailabilityReason_t) sqlite3_column_int(query, 7);
         temp.interruptState = (am_InterruptState_e) sqlite3_column_int(query, 8);
         temp.sourceID = sqlite3_column_int(query, 9);
 
@@ -2474,7 +2469,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getListSources(std::vector<am_Source_s> & l
         MY_SQLITE_PREPARE_V2(mpDatabase, commandConnectionFormat.c_str(), -1, &qConnectionFormat, NULL)
         while ((eCode = sqlite3_step(qConnectionFormat)) == SQLITE_ROW)
         {
-            tempConnectionFormat = (am_ConnectionFormat_e) sqlite3_column_int(qConnectionFormat, 0);
+            tempConnectionFormat = (am_CustomConnectionFormat_t) sqlite3_column_int(qConnectionFormat, 0);
             temp.listConnectionFormats.push_back(tempConnectionFormat);
         }
 
@@ -2485,7 +2480,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getListSources(std::vector<am_Source_s> & l
         MY_SQLITE_PREPARE_V2(mpDatabase, commandSoundProperty.c_str(), -1, &qSoundProperty, NULL)
         while ((eCode = sqlite3_step(qSoundProperty)) == SQLITE_ROW)
         {
-            tempSoundProperty.type = (am_SoundPropertyType_e) sqlite3_column_int(qSoundProperty, 0);
+            tempSoundProperty.type = (am_CustomSoundPropertyType_t) sqlite3_column_int(qSoundProperty, 0);
             tempSoundProperty.value = sqlite3_column_int(qSoundProperty, 1);
             temp.listSoundProperties.push_back(tempSoundProperty);
         }
@@ -2497,7 +2492,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getListSources(std::vector<am_Source_s> & l
 
         while ((eCode = sqlite3_step(qNotification)) == SQLITE_ROW)
         {
-            tempNotificationConfiguration.type =  static_cast<am_NotificationType_e>(sqlite3_column_int(qNotification, 0));
+            tempNotificationConfiguration.type =  static_cast<am_CustomNotificationType_t>(sqlite3_column_int(qNotification, 0));
             tempNotificationConfiguration.status = static_cast<am_NotificationStatus_e>(sqlite3_column_int(qNotification, 1));
             tempNotificationConfiguration.parameter= static_cast<int16_t>(sqlite3_column_int(qNotification, 2));
             temp.listNotificationConfigurations.push_back(tempNotificationConfiguration);
@@ -2511,7 +2506,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getListSources(std::vector<am_Source_s> & l
             MY_SQLITE_PREPARE_V2(mpDatabase, commandMainSoundProperty.c_str(), -1, &qMAinSoundProperty, NULL)
             while ((eCode = sqlite3_step(qMAinSoundProperty)) == SQLITE_ROW)
             {
-                tempMainSoundProperty.type = (am_MainSoundPropertyType_e) sqlite3_column_int(qMAinSoundProperty, 0);
+                tempMainSoundProperty.type = (am_CustomMainSoundPropertyType_t) sqlite3_column_int(qMAinSoundProperty, 0);
                 tempMainSoundProperty.value = sqlite3_column_int(qMAinSoundProperty, 1);
                 temp.listMainSoundProperties.push_back(tempMainSoundProperty);
             }
@@ -2523,7 +2518,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getListSources(std::vector<am_Source_s> & l
 
             while ((eCode = sqlite3_step(qMainNotification)) == SQLITE_ROW)
             {
-                tempNotificationConfiguration.type =  static_cast<am_NotificationType_e>(sqlite3_column_int(qMainNotification, 0));
+                tempNotificationConfiguration.type =  static_cast<am_CustomNotificationType_t>(sqlite3_column_int(qMainNotification, 0));
                 tempNotificationConfiguration.status = static_cast<am_NotificationStatus_e>(sqlite3_column_int(qMainNotification, 1));
                 tempNotificationConfiguration.parameter= static_cast<int16_t>(sqlite3_column_int(qMainNotification, 2));
                 temp.listMainNotificationConfigurations.push_back(tempNotificationConfiguration);
@@ -2574,7 +2569,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getListSourceClasses(std::vector<am_SourceC
 
         while ((eCode1 = sqlite3_step(subQuery)) == SQLITE_ROW)
         {
-            propertyTemp.classProperty = (am_ClassProperty_e) sqlite3_column_int(subQuery, 0);
+            propertyTemp.classProperty = (am_CustomClassProperty_t) sqlite3_column_int(subQuery, 0);
             propertyTemp.value = sqlite3_column_int(subQuery, 1);
             classTemp.listClassProperties.push_back(propertyTemp);
         }
@@ -2642,7 +2637,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getListGateways(std::vector<am_Gateway_s> &
     sqlite3_stmt* query = NULL, *qSinkConnectionFormat = NULL, *qSourceConnectionFormat = NULL;
     int eCode = 0;
     am_Gateway_s temp;
-    am_ConnectionFormat_e tempConnectionFormat;
+    am_CustomConnectionFormat_t tempConnectionFormat;
 
     std::string command = "SELECT name, sinkID, sourceID, domainSinkID, domainSourceID, controlDomainID, gatewayID FROM " + std::string(GATEWAY_TABLE);
     MY_SQLITE_PREPARE_V2(mpDatabase, command.c_str(), -1, &query, NULL)
@@ -2673,7 +2668,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getListGateways(std::vector<am_Gateway_s> &
         MY_SQLITE_PREPARE_V2(mpDatabase, commandConnectionFormat.c_str(), -1, &qSourceConnectionFormat, NULL)
         while ((eCode = sqlite3_step(qSourceConnectionFormat)) == SQLITE_ROW)
         {
-            tempConnectionFormat = (am_ConnectionFormat_e) sqlite3_column_int(qSourceConnectionFormat, 0);
+            tempConnectionFormat = (am_CustomConnectionFormat_t) sqlite3_column_int(qSourceConnectionFormat, 0);
             temp.listSourceFormats.push_back(tempConnectionFormat);
         }
 
@@ -2684,7 +2679,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getListGateways(std::vector<am_Gateway_s> &
         MY_SQLITE_PREPARE_V2(mpDatabase, commandConnectionFormat.c_str(), -1, &qSinkConnectionFormat, NULL)
         while ((eCode = sqlite3_step(qSinkConnectionFormat)) == SQLITE_ROW)
         {
-            tempConnectionFormat = (am_ConnectionFormat_e) sqlite3_column_int(qSinkConnectionFormat, 0);
+            tempConnectionFormat = (am_CustomConnectionFormat_t) sqlite3_column_int(qSinkConnectionFormat, 0);
             temp.listSinkFormats.push_back(tempConnectionFormat);
         }
 
@@ -2731,7 +2726,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getListSinkClasses(std::vector<am_SinkClass
 
         while ((eCode = sqlite3_step(subQuery)) == SQLITE_ROW)
         {
-            propertyTemp.classProperty = (am_ClassProperty_e) sqlite3_column_int(subQuery, 0);
+            propertyTemp.classProperty = (am_CustomClassProperty_t) sqlite3_column_int(subQuery, 0);
             propertyTemp.value = sqlite3_column_int(subQuery, 1);
             classTemp.listClassProperties.push_back(propertyTemp);
         }
@@ -2807,7 +2802,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getListMainSinks(std::vector<am_SinkType_s>
         temp.name = std::string((const char*) sqlite3_column_text(query, 0));
         temp.sinkID = sqlite3_column_int(query, 1);
         temp.availability.availability = (am_Availability_e) sqlite3_column_int(query, 2);
-        temp.availability.availabilityReason = (am_AvailabilityReason_e) sqlite3_column_int(query, 3);
+        temp.availability.availabilityReason = (am_CustomAvailabilityReason_t) sqlite3_column_int(query, 3);
         temp.muteState = (am_MuteState_e) sqlite3_column_int(query, 4);
         temp.volume = sqlite3_column_int(query, 5);
         temp.sinkClassID = sqlite3_column_int(query, 6);
@@ -2840,7 +2835,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getListMainSources(std::vector<am_SourceTyp
         temp.name = std::string((const char*) sqlite3_column_text(query, 0));
         temp.sourceClassID = sqlite3_column_int(query, 1);
         temp.availability.availability = (am_Availability_e) sqlite3_column_int(query, 2);
-        temp.availability.availabilityReason = (am_AvailabilityReason_e) sqlite3_column_int(query, 3);
+        temp.availability.availabilityReason = (am_CustomAvailabilityReason_t) sqlite3_column_int(query, 3);
         temp.sourceID = sqlite3_column_int(query, 4);
 
         listMainSources.push_back(temp);
@@ -2873,7 +2868,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getListMainSinkSoundProperties(const am_sin
 
     while ((eCode = sqlite3_step(query)) == SQLITE_ROW)
     {
-        temp.type = (am_MainSoundPropertyType_e) sqlite3_column_int(query, 0);
+        temp.type = (am_CustomMainSoundPropertyType_t) sqlite3_column_int(query, 0);
         temp.value = sqlite3_column_int(query, 1);
         listSoundProperties.push_back(temp);
     }
@@ -2905,7 +2900,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getListMainSourceSoundProperties(const am_s
 
     while ((eCode = sqlite3_step(query)) == SQLITE_ROW)
     {
-        temp.type = (am_MainSoundPropertyType_e) sqlite3_column_int(query, 0);
+        temp.type = (am_CustomMainSoundPropertyType_t) sqlite3_column_int(query, 0);
         temp.value = sqlite3_column_int(query, 1);
         listSourceProperties.push_back(temp);
     }
@@ -2934,7 +2929,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getListSystemProperties(std::vector<am_Syst
 
     while ((eCode = sqlite3_step(query)) == SQLITE_ROW)
     {
-        temp.type = (am_SystemPropertyType_e) sqlite3_column_int(query, 0);
+        temp.type = (am_CustomSystemPropertyType_t) sqlite3_column_int(query, 0);
         temp.value = sqlite3_column_int(query, 1);
         listSystemProperties.push_back(temp);
     }
@@ -2951,17 +2946,17 @@ am_Error_e CAmDatabaseHandlerSQLite::getListSystemProperties(std::vector<am_Syst
     return (E_OK);
 }
 
-am_Error_e am::CAmDatabaseHandlerSQLite::getListSinkConnectionFormats(const am_sinkID_t sinkID, std::vector<am_ConnectionFormat_e> & listConnectionFormats) const
+am_Error_e am::CAmDatabaseHandlerSQLite::getListSinkConnectionFormats(const am_sinkID_t sinkID, std::vector<am_CustomConnectionFormat_t> & listConnectionFormats) const
 {
     listConnectionFormats.clear();
     sqlite3_stmt *qConnectionFormat = NULL;
     int eCode = 0;
-    am_ConnectionFormat_e tempConnectionFormat;
+    am_CustomConnectionFormat_t tempConnectionFormat;
     std::string commandConnectionFormat = "SELECT soundFormat FROM SinkConnectionFormat" + i2s(sinkID);
     MY_SQLITE_PREPARE_V2(mpDatabase, commandConnectionFormat.c_str(), -1, &qConnectionFormat, NULL)
     while ((eCode = sqlite3_step(qConnectionFormat)) == SQLITE_ROW)
     {
-        tempConnectionFormat = (am_ConnectionFormat_e) sqlite3_column_int(qConnectionFormat, 0);
+        tempConnectionFormat = (am_CustomConnectionFormat_t) sqlite3_column_int(qConnectionFormat, 0);
         listConnectionFormats.push_back(tempConnectionFormat);
     }
 
@@ -2970,19 +2965,19 @@ am_Error_e am::CAmDatabaseHandlerSQLite::getListSinkConnectionFormats(const am_s
     return (E_OK);
 }
 
-am_Error_e am::CAmDatabaseHandlerSQLite::getListSourceConnectionFormats(const am_sourceID_t sourceID, std::vector<am_ConnectionFormat_e> & listConnectionFormats) const
+am_Error_e am::CAmDatabaseHandlerSQLite::getListSourceConnectionFormats(const am_sourceID_t sourceID, std::vector<am_CustomConnectionFormat_t> & listConnectionFormats) const
 {
     listConnectionFormats.clear();
     sqlite3_stmt* qConnectionFormat = NULL;
     int eCode = 0;
-    am_ConnectionFormat_e tempConnectionFormat;
+    am_CustomConnectionFormat_t tempConnectionFormat;
 
     //read out the connectionFormats
     std::string commandConnectionFormat = "SELECT soundFormat FROM SourceConnectionFormat" + i2s(sourceID);
     MY_SQLITE_PREPARE_V2(mpDatabase, commandConnectionFormat.c_str(), -1, &qConnectionFormat, NULL)
     while ((eCode = sqlite3_step(qConnectionFormat)) == SQLITE_ROW)
     {
-        tempConnectionFormat = (am_ConnectionFormat_e) sqlite3_column_int(qConnectionFormat, 0);
+        tempConnectionFormat = (am_CustomConnectionFormat_t) sqlite3_column_int(qConnectionFormat, 0);
         listConnectionFormats.push_back(tempConnectionFormat);
     }
 
@@ -4039,7 +4034,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getSourceVolume(const am_sourceID_t sourceI
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandlerSQLite::getSinkSoundPropertyValue(const am_sinkID_t sinkID, const am_SoundPropertyType_e propertyType, int16_t & value) const
+am_Error_e CAmDatabaseHandlerSQLite::getSinkSoundPropertyValue(const am_sinkID_t sinkID, const am_CustomSoundPropertyType_t propertyType, int16_t & value) const
 {
     assert(sinkID!=0);
     if (!existSink(sinkID))
@@ -4066,7 +4061,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getSinkSoundPropertyValue(const am_sinkID_t
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandlerSQLite::getSourceSoundPropertyValue(const am_sourceID_t sourceID, const am_SoundPropertyType_e propertyType, int16_t & value) const
+am_Error_e CAmDatabaseHandlerSQLite::getSourceSoundPropertyValue(const am_sourceID_t sourceID, const am_CustomSoundPropertyType_t propertyType, int16_t & value) const
 {
     assert(sourceID!=0);
     if (!existSource(sourceID))
@@ -4310,7 +4305,6 @@ am_Error_e CAmDatabaseHandlerSQLite::changeSourceVolume(const am_sourceID_t sour
 
 am_Error_e CAmDatabaseHandlerSQLite::changeSourceSoundPropertyDB(const am_SoundProperty_s & soundProperty, const am_sourceID_t sourceID)
 {
-    assert(soundProperty.type>=SP_UNKNOWN && soundProperty.type<=SP_MAX);
     assert(sourceID!=0);
 
     sqlite3_stmt* query = NULL;
@@ -4338,7 +4332,6 @@ am_Error_e CAmDatabaseHandlerSQLite::changeSourceSoundPropertyDB(const am_SoundP
 
 am_Error_e CAmDatabaseHandlerSQLite::changeSinkSoundPropertyDB(const am_SoundProperty_s & soundProperty, const am_sinkID_t sinkID)
 {
-    assert(soundProperty.type>=SP_UNKNOWN && soundProperty.type<=SP_MAX);
     assert(sinkID!=0);
 
     sqlite3_stmt* query = NULL;
@@ -4510,7 +4503,7 @@ am_Error_e am::CAmDatabaseHandlerSQLite::peekSourceClassID(const std::string & n
 }
 
 
-am_Error_e CAmDatabaseHandlerSQLite::changeSourceDB(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_ConnectionFormat_e>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)
+am_Error_e CAmDatabaseHandlerSQLite::changeSourceDB(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_CustomConnectionFormat_t>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)
 {
     assert(sourceID!=0);
 
@@ -4591,7 +4584,7 @@ am_Error_e CAmDatabaseHandlerSQLite::changeSourceDB(const am_sourceID_t sourceID
         //fill ConnectionFormats
        command = "INSERT INTO SourceConnectionFormat" + i2s(sourceID) + std::string("(soundFormat) VALUES (?)");
        MY_SQLITE_PREPARE_V2(mpDatabase, command.c_str(), -1, &query, NULL)
-       std::vector<am_ConnectionFormat_e>::const_iterator connectionFormatIterator = listConnectionFormats.begin();
+       std::vector<am_CustomConnectionFormat_t>::const_iterator connectionFormatIterator = listConnectionFormats.begin();
        for (; connectionFormatIterator < listConnectionFormats.end(); ++connectionFormatIterator)
        {
            MY_SQLITE_BIND_INT(query, 1, *connectionFormatIterator)
@@ -4647,7 +4640,7 @@ am_Error_e CAmDatabaseHandlerSQLite::changeSourceDB(const am_sourceID_t sourceID
 
 }
 
-am_Error_e CAmDatabaseHandlerSQLite::changeSinkDB(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_ConnectionFormat_e>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)
+am_Error_e CAmDatabaseHandlerSQLite::changeSinkDB(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_CustomConnectionFormat_t>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)
 {
     assert(sinkID!=0);
 
@@ -4728,7 +4721,7 @@ am_Error_e CAmDatabaseHandlerSQLite::changeSinkDB(const am_sinkID_t sinkID, cons
         //fill ConnectionFormats
        command = "INSERT INTO SinkConnectionFormat" + i2s(sinkID) + std::string("(soundFormat) VALUES (?)");
        MY_SQLITE_PREPARE_V2(mpDatabase, command.c_str(), -1, &query, NULL)
-       std::vector<am_ConnectionFormat_e>::const_iterator connectionFormatIterator = listConnectionFormats.begin();
+       std::vector<am_CustomConnectionFormat_t>::const_iterator connectionFormatIterator = listConnectionFormats.begin();
        for (; connectionFormatIterator < listConnectionFormats.end(); ++connectionFormatIterator)
        {
            MY_SQLITE_BIND_INT(query, 1, *connectionFormatIterator)
@@ -4798,7 +4791,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getListMainSinkNotificationConfigurations(c
 
     while ((eCode = sqlite3_step(query)) == SQLITE_ROW)
     {
-        temp.type =  static_cast<am_NotificationType_e>(sqlite3_column_int(query, 0));
+        temp.type =  static_cast<am_CustomNotificationType_t>(sqlite3_column_int(query, 0));
         temp.status = static_cast<am_NotificationStatus_e>(sqlite3_column_int(query, 1));
         temp.parameter= static_cast<int16_t>(sqlite3_column_int(query, 2));
         listMainNotificationConfigurations.push_back(temp);
@@ -4832,7 +4825,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getListMainSourceNotificationConfigurations
 
     while ((eCode = sqlite3_step(query)) == SQLITE_ROW)
     {
-        temp.type =  static_cast<am_NotificationType_e>(sqlite3_column_int(query, 0));
+        temp.type =  static_cast<am_CustomNotificationType_t>(sqlite3_column_int(query, 0));
         temp.status = static_cast<am_NotificationStatus_e>(sqlite3_column_int(query, 1));
         temp.parameter= static_cast<int16_t>(sqlite3_column_int(query, 2));
         listMainNotificationConfigurations.push_back(temp);
@@ -4912,7 +4905,7 @@ am_Error_e CAmDatabaseHandlerSQLite::changeMainSourceNotificationConfigurationDB
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandlerSQLite::changeGatewayDB(const am_gatewayID_t gatewayID, const std::vector<am_ConnectionFormat_e>& listSourceConnectionFormats, const std::vector<am_ConnectionFormat_e>& listSinkConnectionFormats, const std::vector<bool>& convertionMatrix)
+am_Error_e CAmDatabaseHandlerSQLite::changeGatewayDB(const am_gatewayID_t gatewayID, const std::vector<am_CustomConnectionFormat_t>& listSourceConnectionFormats, const std::vector<am_CustomConnectionFormat_t>& listSinkConnectionFormats, const std::vector<bool>& convertionMatrix)
 {
     assert(gatewayID!=0);
 
@@ -4935,7 +4928,7 @@ am_Error_e CAmDatabaseHandlerSQLite::changeGatewayDB(const am_gatewayID_t gatewa
        //fill ConnectionFormats
        command = "INSERT INTO GatewaySourceFormat" + i2s(gatewayID) + std::string("(soundFormat) VALUES (?)");
        MY_SQLITE_PREPARE_V2(mpDatabase, command.c_str(), -1, &query, NULL)
-       std::vector<am_ConnectionFormat_e>::const_iterator connectionFormatIterator = listSourceConnectionFormats.begin();
+       std::vector<am_CustomConnectionFormat_t>::const_iterator connectionFormatIterator = listSourceConnectionFormats.begin();
        for (; connectionFormatIterator < listSourceConnectionFormats.end(); ++connectionFormatIterator)
        {
            MY_SQLITE_BIND_INT(query, 1, *connectionFormatIterator)
@@ -4959,7 +4952,7 @@ am_Error_e CAmDatabaseHandlerSQLite::changeGatewayDB(const am_gatewayID_t gatewa
 
        command = "INSERT INTO GatewaySinkFormat" + i2s(gatewayID) + std::string("(soundFormat) VALUES (?)");
        MY_SQLITE_PREPARE_V2(mpDatabase, command.c_str(), -1, &query, NULL)
-       std::vector<am_ConnectionFormat_e>::const_iterator connectionFormatIterator = listSinkConnectionFormats.begin();
+       std::vector<am_CustomConnectionFormat_t>::const_iterator connectionFormatIterator = listSinkConnectionFormats.begin();
        for (; connectionFormatIterator < listSinkConnectionFormats.end(); ++connectionFormatIterator)
        {
          MY_SQLITE_BIND_INT(query, 1, *connectionFormatIterator)

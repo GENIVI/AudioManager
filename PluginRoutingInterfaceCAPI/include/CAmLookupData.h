@@ -61,16 +61,16 @@ public:
      * proxy wrapping methods.
      */
     am_Error_e asyncAbort(const am_Handle_s handle, org::genivi::am::RoutingControlProxyBase::AsyncAbortAsyncCallback);
-    am_Error_e asyncConnect(const am_Handle_s handle, const am_connectionID_t, const am_sourceID_t, const am_sinkID_t, const am_ConnectionFormat_e, org::genivi::am::RoutingControlProxyBase::AsyncConnectAsyncCallback);
+    am_Error_e asyncConnect(const am_Handle_s handle, const am_connectionID_t, const am_sourceID_t, const am_sinkID_t, const am_CustomConnectionFormat_t, org::genivi::am::RoutingControlProxyBase::AsyncConnectAsyncCallback);
     am_Error_e asyncDisconnect(const am_Handle_s handle, const am_connectionID_t, org::genivi::am::RoutingControlProxyBase::AsyncDisconnectAsyncCallback);
-    am_Error_e asyncSetSinkVolume(const am_Handle_s handle, const am_sinkID_t, const am_volume_t, const am_RampType_e, const am_time_t, org::genivi::am::RoutingControlProxyBase::AsyncSetSinkVolumeAsyncCallback);
-    am_Error_e asyncSetSourceVolume(const am_Handle_s handle, const am_sourceID_t , const am_volume_t, const am_RampType_e, const am_time_t, org::genivi::am::RoutingControlProxyBase::AsyncSetSourceVolumeAsyncCallback);
+    am_Error_e asyncSetSinkVolume(const am_Handle_s handle, const am_sinkID_t, const am_volume_t, const am_CustomRampType_t, const am_time_t, org::genivi::am::RoutingControlProxyBase::AsyncSetSinkVolumeAsyncCallback);
+    am_Error_e asyncSetSourceVolume(const am_Handle_s handle, const am_sourceID_t , const am_volume_t, const am_CustomRampType_t, const am_time_t, org::genivi::am::RoutingControlProxyBase::AsyncSetSourceVolumeAsyncCallback);
     am_Error_e asyncSetSourceState(const am_Handle_s handle, const am_sourceID_t, const am_SourceState_e, org::genivi::am::RoutingControlProxyBase::AsyncSetSourceStateAsyncCallback);
     am_Error_e asyncSetSinkSoundProperties(const am_Handle_s handle, const am_sinkID_t, const std::vector<am_SoundProperty_s>&, org::genivi::am::RoutingControlProxyBase::AsyncSetSinkSoundPropertiesAsyncCallback);
     am_Error_e asyncSetSinkSoundProperty(const am_Handle_s handle, const am_sinkID_t, const am_SoundProperty_s&, org::genivi::am::RoutingControlProxyBase::AsyncSetSinkSoundPropertyAsyncCallback);
     am_Error_e asyncSetSourceSoundProperties(const am_Handle_s handle, const am_sourceID_t, const std::vector<am_SoundProperty_s>&, org::genivi::am::RoutingControlProxyBase::AsyncSetSourceSoundPropertiesAsyncCallback);
     am_Error_e asyncSetSourceSoundProperty(const am_Handle_s handle, const am_sourceID_t, const am_SoundProperty_s&, org::genivi::am::RoutingControlProxyBase::AsyncSetSourceSoundPropertyAsyncCallback);
-    am_Error_e asyncCrossFade(const am_Handle_s handle, const am_crossfaderID_t, const am_HotSink_e, const am_RampType_e, const am_time_t, org::genivi::am::RoutingControlProxyBase::AsyncCrossFadeAsyncCallback);
+    am_Error_e asyncCrossFade(const am_Handle_s handle, const am_crossfaderID_t, const am_HotSink_e, const am_CustomRampType_t, const am_time_t, org::genivi::am::RoutingControlProxyBase::AsyncCrossFadeAsyncCallback);
     am_Error_e setDomainState(const am_domainID_t, const am_DomainState_e, org::genivi::am::RoutingControlProxyBase::SetDomainStateAsyncCallback);
     am_Error_e asyncSetVolumes(const am_Handle_s handle, const std::vector<am_Volumes_s>&, org::genivi::am::RoutingControlProxyBase::AsyncSetVolumesAsyncCallback);
     am_Error_e asyncSetSinkNotificationConfiguration(const am_Handle_s handle, const am_sinkID_t, const am_NotificationConfiguration_s&, org::genivi::am::RoutingControlProxyBase::AsyncSetSinkNotificationConfigurationAsyncCallback);
@@ -180,16 +180,16 @@ public:
      * Wrapping methods.
      */
     am_Error_e asyncAbort(const am_Handle_s, org::genivi::am::RoutingControlProxyBase::AsyncAbortAsyncCallback);
-    am_Error_e asyncConnect(const am_Handle_s , const am_connectionID_t, const am_sourceID_t, const am_sinkID_t, const am_ConnectionFormat_e, org::genivi::am::RoutingControlProxyBase::AsyncConnectAsyncCallback);
+    am_Error_e asyncConnect(const am_Handle_s , const am_connectionID_t, const am_sourceID_t, const am_sinkID_t, const am_CustomConnectionFormat_t, org::genivi::am::RoutingControlProxyBase::AsyncConnectAsyncCallback);
     am_Error_e asyncDisconnect(const am_Handle_s , const am_connectionID_t, org::genivi::am::RoutingControlProxyBase::AsyncDisconnectAsyncCallback);
-    am_Error_e asyncSetSinkVolume(const am_Handle_s , const am_sinkID_t, const am_volume_t, const am_RampType_e, const am_time_t, org::genivi::am::RoutingControlProxyBase::AsyncSetSinkVolumeAsyncCallback);
-    am_Error_e asyncSetSourceVolume(const am_Handle_s , const am_sourceID_t , const am_volume_t, const am_RampType_e, const am_time_t, org::genivi::am::RoutingControlProxyBase::AsyncSetSourceVolumeAsyncCallback);
+    am_Error_e asyncSetSinkVolume(const am_Handle_s , const am_sinkID_t, const am_volume_t, const am_CustomRampType_t, const am_time_t, org::genivi::am::RoutingControlProxyBase::AsyncSetSinkVolumeAsyncCallback);
+    am_Error_e asyncSetSourceVolume(const am_Handle_s , const am_sourceID_t , const am_volume_t, const am_CustomRampType_t, const am_time_t, org::genivi::am::RoutingControlProxyBase::AsyncSetSourceVolumeAsyncCallback);
     am_Error_e asyncSetSourceState(const am_Handle_s , const am_sourceID_t, const am_SourceState_e, org::genivi::am::RoutingControlProxyBase::AsyncSetSourceStateAsyncCallback);
     am_Error_e asyncSetSinkSoundProperties(const am_Handle_s , const am_sinkID_t, const std::vector<am_SoundProperty_s>&, org::genivi::am::RoutingControlProxyBase::AsyncSetSinkSoundPropertiesAsyncCallback);
     am_Error_e asyncSetSinkSoundProperty(const am_Handle_s , const am_sinkID_t, const am_SoundProperty_s&, org::genivi::am::RoutingControlProxyBase::AsyncSetSinkSoundPropertyAsyncCallback);
     am_Error_e asyncSetSourceSoundProperties(const am_Handle_s , const am_sourceID_t, const std::vector<am_SoundProperty_s>&, org::genivi::am::RoutingControlProxyBase::AsyncSetSourceSoundPropertiesAsyncCallback);
     am_Error_e asyncSetSourceSoundProperty(const am_Handle_s , const am_sourceID_t, const am_SoundProperty_s&, org::genivi::am::RoutingControlProxyBase::AsyncSetSourceSoundPropertyAsyncCallback);
-    am_Error_e asyncCrossFade(const am_Handle_s , const am_crossfaderID_t, const am_HotSink_e, const am_RampType_e, const am_time_t, org::genivi::am::RoutingControlProxyBase::AsyncCrossFadeAsyncCallback);
+    am_Error_e asyncCrossFade(const am_Handle_s , const am_crossfaderID_t, const am_HotSink_e, const am_CustomRampType_t, const am_time_t, org::genivi::am::RoutingControlProxyBase::AsyncCrossFadeAsyncCallback);
     am_Error_e setDomainState(const am_domainID_t, const am_DomainState_e, org::genivi::am::RoutingControlProxyBase::SetDomainStateAsyncCallback);
     am_Error_e asyncSetVolumes(const am_Handle_s , const std::vector<am_Volumes_s>&, org::genivi::am::RoutingControlProxyBase::AsyncSetVolumesAsyncCallback);
     am_Error_e asyncSetSinkNotificationConfiguration(const am_Handle_s , const am_sinkID_t, const am_NotificationConfiguration_s&, org::genivi::am::RoutingControlProxyBase::AsyncSetSinkNotificationConfigurationAsyncCallback);

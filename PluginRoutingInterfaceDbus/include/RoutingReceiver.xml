@@ -81,7 +81,7 @@
 		<arg name="error" type="q" direction="out" />
 	</method>
 	<method name="registerGateway">
-		<arg name="gatewayData" type="(qsqqqqqaiaiab)" direction="in" /> <!-- am_gatewayID_t gatewayID; std::string name; am_sinkID_t sinkID; am_sourceID_t sourceID; am_domainID_t domainSinkID; am_domainID_t domainSourceID; am_domainID_t controlDomainID; std::vector<am_ConnectionFormat_e> listSourceFormats; std::vector<am_ConnectionFormat_e> listSinkFormats; std::vector<bool> convertionMatrix; -->
+		<arg name="gatewayData" type="(qsqqqqqaiaiab)" direction="in" /> <!-- am_gatewayID_t gatewayID; std::string name; am_sinkID_t sinkID; am_sourceID_t sourceID; am_domainID_t domainSinkID; am_domainID_t domainSourceID; am_domainID_t controlDomainID; std::vector<am_CustomAvailabilityReason_t> listSourceFormats; std::vector<am_CustomAvailabilityReason_t> listSinkFormats; std::vector<bool> convertionMatrix; -->
 		<arg name="gatewayID" type="q" direction="out" />
 		<arg name="error" type="q" direction="out" />
 	</method>
@@ -95,7 +95,7 @@
 	    <arg name="error" type="q" direction="out" />
 	</method>
 	<method name="registerSink">      
-		<arg name="sinkData" type="(qsqinb(ii)nna(in)aia(in)a(iin)a(iin))" direction="in" /> <!-- am_sinkID_t sinkID; std::string name; am_domainID_t domainID; am_sinkClass_t sinkClassID; am_volume_t volume; bool visible; am_Availability_s available; am_MuteState_e muteState;am_mainVolume_t mainVolume; std::vector<am_SoundProperty_s> listSoundProperties; std::vector<am_ConnectionFormat_e> listConnectionFormats;  std::vector<am_MainSoundProperty_s> listMainSoundProperties; -->     
+		<arg name="sinkData" type="(qsqinb(ii)nna(in)aia(in)a(iin)a(iin))" direction="in" /> <!-- am_sinkID_t sinkID; std::string name; am_domainID_t domainID; am_sinkClass_t sinkClassID; am_volume_t volume; bool visible; am_Availability_s available; am_MuteState_e muteState;am_mainVolume_t mainVolume; std::vector<am_SoundProperty_s> listSoundProperties; std::vector<am_CustomAvailabilityReason_t> listConnectionFormats;  std::vector<am_MainSoundProperty_s> listMainSoundProperties; -->     
 		<arg name="sinkID" type="q" direction="out" /> 
 		<arg name="error" type="q" direction="out" />
 	</method>
@@ -109,7 +109,7 @@
 		<arg name="error" type="q" direction="out" />		
 	</method>
 	<method name="registerSource">      
-		<arg name="sourceData" type="(qqsqinb(ii)qa(in)aia(in)a(iin)a(iin))" direction="in" />  <!-- am_sourceID_t sourceID; am_domainID_t domainID; std::string name; am_sourceClass_t sourceClassID; am_SourceState_e sourceState; am_volume_t volume; bool visible; am_Availability_s available; am_InterruptState_e interruptState; std::vector<am_SoundProperty_s> listSoundProperties; std::vector<am_ConnectionFormat_e> listConnectionFormats; std::vector<am_MainSoundProperty_s> listMainSoundProperties; -->    
+		<arg name="sourceData" type="(qqsqinb(ii)qa(in)aia(in)a(iin)a(iin))" direction="in" />  <!-- am_sourceID_t sourceID; am_domainID_t domainID; std::string name; am_sourceClass_t sourceClassID; am_SourceState_e sourceState; am_volume_t volume; bool visible; am_Availability_s available; am_InterruptState_e interruptState; std::vector<am_SoundProperty_s> listSoundProperties; std::vector<am_CustomAvailabilityReason_t> listConnectionFormats; std::vector<am_MainSoundProperty_s> listMainSoundProperties; -->    
 		<arg name="sourceID" type="q" direction="out" /> 
 		<arg name="error" type="q" direction="out" />
 	</method>

@@ -105,7 +105,7 @@ am_Error_e CAmRoutingSenderDbus::asyncAbort(const am_Handle_s handle)
 
 }
 
-am_Error_e CAmRoutingSenderDbus::asyncConnect(const am_Handle_s handle, const am_connectionID_t connectionID, const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_ConnectionFormat_e connectionFormat)
+am_Error_e CAmRoutingSenderDbus::asyncConnect(const am_Handle_s handle, const am_connectionID_t connectionID, const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_CustomAvailabilityReason_t connectionFormat)
 {
     log(&routingDbus, DLT_LOG_INFO, "CAmRoutingSenderDbus::asyncConnect called");
     mapSources_t::iterator iter = mMapSources.begin();
@@ -143,7 +143,7 @@ am_Error_e CAmRoutingSenderDbus::asyncDisconnect(const am_Handle_s handle, const
     return (E_UNKNOWN);
 }
 
-am_Error_e CAmRoutingSenderDbus::asyncSetSinkVolume(const am_Handle_s handle, const am_sinkID_t sinkID, const am_volume_t volume, const am_RampType_e ramp, const am_time_t time)
+am_Error_e CAmRoutingSenderDbus::asyncSetSinkVolume(const am_Handle_s handle, const am_sinkID_t sinkID, const am_volume_t volume, const am_CustomRampType_t ramp, const am_time_t time)
 {
     log(&routingDbus, DLT_LOG_INFO, "CAmRoutingSenderDbus::asyncSetSinkVolume called");
     mapSinks_t::iterator iter = mMapSinks.begin();
@@ -163,7 +163,7 @@ am_Error_e CAmRoutingSenderDbus::asyncSetSinkVolume(const am_Handle_s handle, co
     return (E_UNKNOWN);
 }
 
-am_Error_e CAmRoutingSenderDbus::asyncSetSourceVolume(const am_Handle_s handle, const am_sourceID_t sourceID, const am_volume_t volume, const am_RampType_e ramp, const am_time_t time)
+am_Error_e CAmRoutingSenderDbus::asyncSetSourceVolume(const am_Handle_s handle, const am_sourceID_t sourceID, const am_volume_t volume, const am_CustomRampType_t ramp, const am_time_t time)
 {
     log(&routingDbus, DLT_LOG_INFO, "CAmRoutingSenderDbus::asyncSetSourceVolume called");
     mapSources_t::iterator iter = mMapSources.begin();
@@ -273,7 +273,7 @@ am_Error_e CAmRoutingSenderDbus::asyncSetSourceSoundProperty(const am_Handle_s h
     return (E_UNKNOWN);
 }
 
-am_Error_e CAmRoutingSenderDbus::asyncCrossFade(const am_Handle_s handle, const am_crossfaderID_t crossfaderID, const am_HotSink_e hotSink, const am_RampType_e rampType, const am_time_t time)
+am_Error_e CAmRoutingSenderDbus::asyncCrossFade(const am_Handle_s handle, const am_crossfaderID_t crossfaderID, const am_HotSink_e hotSink, const am_CustomRampType_t rampType, const am_time_t time)
 {
     (void)handle;
     (void)crossfaderID;

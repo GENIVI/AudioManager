@@ -22,7 +22,7 @@ Every flow of audio is using a format to exchange data. The format that the sour
 experience. It is common that sources and sinks are capable of supporting more than one audioformat.\n
 So all sources and sinks register with a list of connectionFormats that they support and for each connection a format must be chosen that is then used
 to transport the audio data. Gateways (and Soundconverters) have the information which connectionFormat can be transformed into another one.
-am::am_ConnectionFormat_e has all formats listed.\n
+am::am_CustomAvailabilityReason_t has all formats listed.\n
 There is a special usecase that is worth showing as an example in this regard: the change of a connectionFormat when switching from one song to another. Here is an
 example of how the project specific parts could handle this:
 \image html ChangeofAudioformatduringplaytime.png

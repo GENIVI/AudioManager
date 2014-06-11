@@ -40,13 +40,13 @@ class MockIAmRoutingSend : public IAmRoutingSend {
     MOCK_METHOD1(asyncAbort,
         am_Error_e(const am_Handle_s handle));
     MOCK_METHOD5(asyncConnect,
-        am_Error_e(const am_Handle_s handle, const am_connectionID_t connectionID, const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_ConnectionFormat_e connectionFormat));
+        am_Error_e(const am_Handle_s handle, const am_connectionID_t connectionID, const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_CustomAvailabilityReason_t connectionFormat));
     MOCK_METHOD2(asyncDisconnect,
         am_Error_e(const am_Handle_s handle, const am_connectionID_t connectionID));
     MOCK_METHOD5(asyncSetSinkVolume,
-        am_Error_e(const am_Handle_s handle, const am_sinkID_t sinkID, const am_volume_t volume, const am_RampType_e ramp, const am_time_t time));
+        am_Error_e(const am_Handle_s handle, const am_sinkID_t sinkID, const am_volume_t volume, const am_CustomRampType_t ramp, const am_time_t time));
     MOCK_METHOD5(asyncSetSourceVolume,
-        am_Error_e(const am_Handle_s handle, const am_sourceID_t sourceID, const am_volume_t volume, const am_RampType_e ramp, const am_time_t time));
+        am_Error_e(const am_Handle_s handle, const am_sourceID_t sourceID, const am_volume_t volume, const am_CustomRampType_t ramp, const am_time_t time));
     MOCK_METHOD3(asyncSetSourceState,
         am_Error_e(const am_Handle_s handle, const am_sourceID_t sourceID, const am_SourceState_e state));
     MOCK_METHOD3(asyncSetSinkSoundProperties,
@@ -58,7 +58,7 @@ class MockIAmRoutingSend : public IAmRoutingSend {
     MOCK_METHOD3(asyncSetSourceSoundProperty,
         am_Error_e(const am_Handle_s handle, const am_sourceID_t sourceID, const am_SoundProperty_s& soundProperty));
     MOCK_METHOD5(asyncCrossFade,
-        am_Error_e(const am_Handle_s handle, const am_crossfaderID_t crossfaderID, const am_HotSink_e hotSink, const am_RampType_e rampType, const am_time_t time));
+        am_Error_e(const am_Handle_s handle, const am_crossfaderID_t crossfaderID, const am_HotSink_e hotSink, const am_CustomRampType_t rampType, const am_time_t time));
     MOCK_METHOD2(setDomainState,
         am_Error_e(const am_domainID_t domainID, const am_DomainState_e domainState));
     MOCK_CONST_METHOD1(returnBusName,

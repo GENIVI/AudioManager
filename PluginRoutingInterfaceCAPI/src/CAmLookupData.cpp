@@ -69,7 +69,7 @@ am_Error_e rs_lookupData_s::asyncConnect(const am_Handle_s handle,
 											const am_connectionID_t connectionID,
 											const am_sourceID_t sourceID,
 											const am_sinkID_t sinkID,
-											const am_ConnectionFormat_e connectionFormat,
+											const am_CustomConnectionFormat_t connectionFormat,
 											org::genivi::am::RoutingControlProxyBase::AsyncConnectAsyncCallback callback)
 {
 	logInfo(__PRETTY_FUNCTION__, " [ isConnected : ", isConnected(), " ]");
@@ -81,7 +81,7 @@ am_Error_e rs_lookupData_s::asyncConnect(const am_Handle_s handle,
 										static_cast<org::genivi::am::am_connectionID_t>(connectionID),
 										static_cast<org::genivi::am::am_sourceID_t>(sourceID),
 										static_cast<org::genivi::am::am_sinkID_t>(sinkID),
-										static_cast<org::genivi::am::am_ConnectionFormat_pe>(connectionFormat),
+										static_cast<org::genivi::am::am_CustomConnectionFormat_t>(connectionFormat),
 										callback);
 		return (E_OK);
 	}
@@ -108,7 +108,7 @@ am_Error_e rs_lookupData_s::asyncDisconnect(const am_Handle_s handle,
 am_Error_e rs_lookupData_s::asyncSetSinkVolume(	const am_Handle_s handle,
 													const am_sinkID_t sinkID,
 													const am_volume_t volume,
-													const am_RampType_e ramp,
+													const am_CustomRampType_t ramp,
 													const am_time_t time,
 													org::genivi::am::RoutingControlProxyBase::AsyncSetSinkVolumeAsyncCallback cb)
 {
@@ -120,7 +120,7 @@ am_Error_e rs_lookupData_s::asyncSetSinkVolume(	const am_Handle_s handle,
 		mSenderProxy->asyncSetSinkVolumeAsync(myHandle,
 										      static_cast<org::genivi::am::am_sinkID_t>(sinkID),
 										      static_cast<org::genivi::am::am_volume_t>(volume),
-										      static_cast<org::genivi::am::am_RampType_pe>(ramp),
+										      static_cast<org::genivi::am::am_CustomRampType_t>(ramp),
 										      static_cast<org::genivi::am::am_time_t>(time),
 										      cb);
 		return (E_OK);
@@ -131,7 +131,7 @@ am_Error_e rs_lookupData_s::asyncSetSinkVolume(	const am_Handle_s handle,
 am_Error_e rs_lookupData_s::asyncSetSourceVolume(const am_Handle_s handle,
 														const am_sourceID_t sourceID,
 														const am_volume_t volume,
-														const am_RampType_e ramp,
+														const am_CustomRampType_t ramp,
 														const am_time_t time,
 														org::genivi::am::RoutingControlProxyBase::AsyncSetSourceVolumeAsyncCallback cb)
 {
@@ -143,7 +143,7 @@ am_Error_e rs_lookupData_s::asyncSetSourceVolume(const am_Handle_s handle,
 		mSenderProxy->asyncSetSourceVolumeAsync(myHandle,
 												static_cast<org::genivi::am::am_sourceID_t>(sourceID),
 												static_cast<org::genivi::am::am_volume_t>(volume),
-												static_cast<org::genivi::am::am_RampType_pe>(ramp),
+												static_cast<org::genivi::am::am_CustomRampType_t>(ramp),
 												static_cast<org::genivi::am::am_time_t>(time),
 												cb);
 		return (E_OK);
@@ -258,7 +258,7 @@ am_Error_e rs_lookupData_s::asyncSetSourceSoundProperty(const am_Handle_s handle
 am_Error_e rs_lookupData_s::asyncCrossFade(const am_Handle_s handle,
 												const am_crossfaderID_t crossfaderID,
 												const am_HotSink_e hotSink,
-												const am_RampType_e rampType,
+												const am_CustomRampType_t rampType,
 												const am_time_t time,
 												org::genivi::am::RoutingControlProxyBase::AsyncCrossFadeAsyncCallback cb)
 {
@@ -270,7 +270,7 @@ am_Error_e rs_lookupData_s::asyncCrossFade(const am_Handle_s handle,
 		mSenderProxy->asyncCrossFadeAsync(myHandle,
 										  static_cast<org::genivi::am::am_crossfaderID_t>(crossfaderID),
 										  static_cast<org::genivi::am::am_HotSink_e>(hotSink),
-										  static_cast<org::genivi::am::am_RampType_pe>(rampType),
+										  static_cast<org::genivi::am::am_CustomRampType_t>(rampType),
 										  static_cast<org::genivi::am::am_time_t>(time),
 										  cb);
 		return (E_OK);
@@ -490,7 +490,7 @@ am_Error_e CAmLookupData::asyncConnect(const am_Handle_s handle,
 											const am_connectionID_t connectionID,
 											const am_sourceID_t sourceID,
 											const am_sinkID_t sinkID,
-											const am_ConnectionFormat_e connectionFormat,
+											const am_CustomConnectionFormat_t connectionFormat,
 											org::genivi::am::RoutingControlProxyBase::AsyncConnectAsyncCallback callback)
 {
     RSLookupDataPtr result = CAmLookupData::getValueForKey(sourceID, mMapSources);
@@ -522,7 +522,7 @@ am_Error_e CAmLookupData::asyncDisconnect(const am_Handle_s handle,
 am_Error_e CAmLookupData::asyncSetSinkVolume(	const am_Handle_s handle,
 													const am_sinkID_t sinkID,
 													const am_volume_t volume,
-													const am_RampType_e ramp,
+													const am_CustomRampType_t ramp,
 													const am_time_t time,
 													org::genivi::am::RoutingControlProxyBase::AsyncSetSinkVolumeAsyncCallback cb)
 {
@@ -538,7 +538,7 @@ am_Error_e CAmLookupData::asyncSetSinkVolume(	const am_Handle_s handle,
 am_Error_e CAmLookupData::asyncSetSourceVolume(const am_Handle_s handle,
 													const am_sourceID_t sourceID,
 													const am_volume_t volume,
-													const am_RampType_e ramp,
+													const am_CustomRampType_t ramp,
 													const am_time_t time,
 													org::genivi::am::RoutingControlProxyBase::AsyncSetSourceVolumeAsyncCallback cb)
 {
@@ -625,7 +625,7 @@ am_Error_e CAmLookupData::asyncSetSourceSoundProperty(const am_Handle_s handle,
 am_Error_e CAmLookupData::asyncCrossFade(const am_Handle_s handle,
 												const am_crossfaderID_t crossfaderID,
 												const am_HotSink_e hotSink,
-												const am_RampType_e rampType,
+												const am_CustomRampType_t rampType,
 												const am_time_t time,
 												org::genivi::am::RoutingControlProxyBase::AsyncCrossFadeAsyncCallback cb)
 {

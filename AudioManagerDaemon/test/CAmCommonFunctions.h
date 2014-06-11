@@ -30,7 +30,7 @@ class CAmCommonFunctions
 {
 public:
 
-    static std::vector<am_ConnectionFormat_e> getStandardConnectionFormatList();
+    static std::vector<am_CustomAvailabilityReason_t> getStandardConnectionFormatList();
     static std::vector<am_SoundProperty_s> getStandardSoundPropertyList();
     static std::vector<am_MainSoundProperty_s> getStandardMainSoundPropertyList();
     static std::vector<bool> getStandardConvertionMatrix();
@@ -59,7 +59,7 @@ public:
 
     struct sortByConnectionFormat
     {
-        bool operator()(const am_ConnectionFormat_e & a, const am_ConnectionFormat_e & b) const
+        bool operator()(const am_CustomAvailabilityReason_t & a, const am_CustomAvailabilityReason_t & b) const
         {
             return (a < b);
         }

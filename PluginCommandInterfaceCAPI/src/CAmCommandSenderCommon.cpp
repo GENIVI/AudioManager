@@ -21,32 +21,22 @@
 /**
  * Utility functions
  */
-void CAmConvertAvailablility(const am_Availability_s & amAavailability, org::genivi::am::am_Availability_s & result)
+void CAmConvertAvailablility(const am_Availability_s & amAvailability, org::genivi::am::am_Availability_s & result)
 {
-	result.availability = CAmConvert2CAPIType(amAavailability.availability);
-	result.availabilityReason = CAmConvert2CAPIType(amAavailability.availabilityReason);
+	result.availability = CAmConvert2CAPIType(amAvailability.availability);
+	result.availabilityReason = amAvailability.availabilityReason;
 }
 
 void CAmConvertMainSoundProperty(const am_MainSoundProperty_s & amMainSoundProperty, org::genivi::am::am_MainSoundProperty_s & result)
 {
-	result.type = CAmConvert2CAPIType(amMainSoundProperty.type);
+	result.type = amMainSoundProperty.type;
 	result.value = amMainSoundProperty.value;
 }
 
 void CAmConvertSystemProperty(const am_SystemProperty_s & amSystemProperty, org::genivi::am::am_SystemProperty_s & result)
 {
-	result.type = CAmConvert2CAPIType(amSystemProperty.type);
+	result.type = amSystemProperty.type;
 	result.value = amSystemProperty.value;
-}
-
-org::genivi::am::am_ClassProperty_pe CAmConvert2CAPIType(const am_ClassProperty_e & property)
-{
-	return static_cast<org::genivi::am::am_ClassProperty_pe>(property);
-}
-
-org::genivi::am::am_SystemPropertyType_pe CAmConvert2CAPIType(const am_SystemPropertyType_e & property)
-{
-	return 	static_cast<org::genivi::am::am_SystemPropertyType_pe>(property);
 }
 
 org::genivi::am::am_Availability_e CAmConvert2CAPIType(const am_Availability_e & availability)
@@ -54,11 +44,6 @@ org::genivi::am::am_Availability_e CAmConvert2CAPIType(const am_Availability_e &
 	return (A_MAX==availability)?org::genivi::am::am_Availability_e::A_MAX
 								 :
 								 static_cast<org::genivi::am::am_Availability_e>(availability);
-}
-
-org::genivi::am::am_AvailabilityReason_pe CAmConvert2CAPIType(const am_AvailabilityReason_e & availabilityReason)
-{
-	return static_cast<org::genivi::am::am_AvailabilityReason_pe>(availabilityReason);
 }
 
 org::genivi::am::am_MuteState_e CAmConvert2CAPIType(const am_MuteState_e & muteState)
@@ -75,15 +60,6 @@ am_MuteState_e CAmConvertFromCAPIType(const org::genivi::am::am_MuteState_e & mu
 							MS_MAX:static_cast<am_MuteState_e>(muteState);
 }
 
-org::genivi::am::am_MainSoundPropertyType_pe CAmConvert2CAPIType(const am_MainSoundPropertyType_e & type)
-{
-	return static_cast<org::genivi::am::am_MainSoundPropertyType_pe>(type);
-}
-am_MainSoundPropertyType_e CAmConvertFromCAPIType(const org::genivi::am::am_MainSoundPropertyType_pe & type)
-{
-	return static_cast<am_MainSoundPropertyType_e>(type);
-}
-
 org::genivi::am::am_ConnectionState_e CAmConvert2CAPIType(const am_ConnectionState_e & connectionState)
 {
 	return CS_MAX==connectionState?
@@ -95,11 +71,6 @@ am_ConnectionState_e CAmConvertFromCAPIType(const org::genivi::am::am_Connection
 {
 	return org::genivi::am::am_ConnectionState_e::CS_MAX==connectionState?
 			CS_MAX:static_cast<am_ConnectionState_e>(connectionState);
-}
-
-org::genivi::am::am_NotificationType_pe CAmConvert2CAPIType(const am_NotificationType_e & notificationType)
-{
-	return 	static_cast<org::genivi::am::am_NotificationType_pe>(notificationType);
 }
 
 org::genivi::am::am_NotificationStatus_e CAmConvert2CAPIType(const am_NotificationStatus_e & notificationStatus)

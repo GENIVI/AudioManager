@@ -492,7 +492,7 @@ TEST_F(CAmControlInterfaceTest,ackSetSinkSoundProperty)
     domain.busname = "mock";
     sink.sinkID = 2;
     sink.domainID = 1;
-    soundProperty.type = SP_EXAMPLE_BASS;
+    soundProperty.type = SP_GENIVI_BASS;
     soundProperty.value = 244;
 
     //setup environment, we need a domain and a sink
@@ -509,7 +509,7 @@ TEST_F(CAmControlInterfaceTest,ackSetSinkSoundProperty)
     ASSERT_EQ(handlesList[0].handleType, H_SETSINKSOUNDPROPERTY);
 
     //read out this property. There is no change, because the ack did not arrive yet.
-    ASSERT_EQ(E_OK, pDatabaseHandler.getSinkSoundPropertyValue(2,SP_EXAMPLE_BASS,oldvalue));
+    ASSERT_EQ(E_OK, pDatabaseHandler.getSinkSoundPropertyValue(2,SP_GENIVI_BASS,oldvalue));
     ASSERT_EQ(sink.listSoundProperties[0].value, oldvalue);
 
     //lets send the answer and expect a call on the controlInterface
@@ -517,7 +517,7 @@ TEST_F(CAmControlInterfaceTest,ackSetSinkSoundProperty)
     pRoutingReceiver.ackSetSinkSoundProperty(handle, E_OK);
 
     //finally, the new value must be in the database
-    ASSERT_EQ(E_OK, pDatabaseHandler.getSinkSoundPropertyValue(sinkID,SP_EXAMPLE_BASS,oldvalue));
+    ASSERT_EQ(E_OK, pDatabaseHandler.getSinkSoundPropertyValue(sinkID,SP_GENIVI_BASS,oldvalue));
     ASSERT_EQ(soundProperty.value, oldvalue);
 
     //and the handle must be destroyed
@@ -545,7 +545,7 @@ TEST_F(CAmControlInterfaceTest,ackSetSourceSoundProperty)
     domain.busname = "mock";
     source.sourceID = 2;
     source.domainID = 1;
-    soundProperty.type = SP_EXAMPLE_BASS;
+    soundProperty.type = SP_GENIVI_BASS;
     soundProperty.value = 244;
 
     //prepare the scene
@@ -562,7 +562,7 @@ TEST_F(CAmControlInterfaceTest,ackSetSourceSoundProperty)
     ASSERT_EQ(handlesList[0].handleType, H_SETSOURCESOUNDPROPERTY);
 
     //read out this property. There is no change, because the ack did not arrive yet.
-    ASSERT_EQ(E_OK, pDatabaseHandler.getSourceSoundPropertyValue(2,SP_EXAMPLE_BASS,oldvalue));
+    ASSERT_EQ(E_OK, pDatabaseHandler.getSourceSoundPropertyValue(2,SP_GENIVI_BASS,oldvalue));
     ASSERT_EQ(source.listSoundProperties[0].value, oldvalue);
 
     //lets send the answer and expect a call on the controlInterface
@@ -570,7 +570,7 @@ TEST_F(CAmControlInterfaceTest,ackSetSourceSoundProperty)
     pRoutingReceiver.ackSetSourceSoundProperty(handle, E_OK);
 
     //finally, the new value must be in the database
-    ASSERT_EQ(E_OK, pDatabaseHandler.getSourceSoundPropertyValue(sourceID,SP_EXAMPLE_BASS,oldvalue));
+    ASSERT_EQ(E_OK, pDatabaseHandler.getSourceSoundPropertyValue(sourceID,SP_GENIVI_BASS,oldvalue));
     ASSERT_EQ(soundProperty.value, oldvalue);
 
     //and the handle must be destroyed

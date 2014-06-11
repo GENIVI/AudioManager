@@ -144,7 +144,7 @@ am_Error_e CAmRoutingSenderCAPI::asyncAbort(const am_Handle_s handle)
 	});
 }
 
-am_Error_e CAmRoutingSenderCAPI::asyncConnect(const am_Handle_s handle, const am_connectionID_t connectionID, const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_ConnectionFormat_e connectionFormat)
+am_Error_e CAmRoutingSenderCAPI::asyncConnect(const am_Handle_s handle, const am_connectionID_t connectionID, const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_CustomConnectionFormat_t connectionFormat)
 {
     log(&ctxCommandCAPI, DLT_LOG_INFO, "CAmRoutingSenderCAPI::asyncConnect called");
    	return mLookupData.asyncConnect(handle,connectionID, sourceID, sinkID, connectionFormat, [&,handle,connectionID](const CommonAPI::CallStatus& callStatus){
@@ -172,7 +172,7 @@ am_Error_e CAmRoutingSenderCAPI::asyncDisconnect(const am_Handle_s handle, const
 	});
 }
 
-am_Error_e CAmRoutingSenderCAPI::asyncSetSinkVolume(const am_Handle_s handle, const am_sinkID_t sinkID, const am_volume_t volume, const am_RampType_e ramp, const am_time_t time)
+am_Error_e CAmRoutingSenderCAPI::asyncSetSinkVolume(const am_Handle_s handle, const am_sinkID_t sinkID, const am_volume_t volume, const am_CustomRampType_t ramp, const am_time_t time)
 {
     log(&ctxCommandCAPI, DLT_LOG_INFO, "CAmRoutingSenderCAPI::asyncSetSinkVolume called");
 	return mLookupData.asyncSetSinkVolume(handle,sinkID, volume, ramp, time, [&, handle, volume](const CommonAPI::CallStatus& callStatus){
@@ -186,7 +186,7 @@ am_Error_e CAmRoutingSenderCAPI::asyncSetSinkVolume(const am_Handle_s handle, co
 	});
 }
 
-am_Error_e CAmRoutingSenderCAPI::asyncSetSourceVolume(const am_Handle_s handle, const am_sourceID_t sourceID, const am_volume_t volume, const am_RampType_e ramp, const am_time_t time)
+am_Error_e CAmRoutingSenderCAPI::asyncSetSourceVolume(const am_Handle_s handle, const am_sourceID_t sourceID, const am_volume_t volume, const am_CustomRampType_t ramp, const am_time_t time)
 {
     log(&ctxCommandCAPI, DLT_LOG_INFO, "CAmRoutingSenderCAPI::asyncSetSourceVolume called");
 	return mLookupData.asyncSetSourceVolume(handle,sourceID, volume, ramp, time, [&, handle, volume](const CommonAPI::CallStatus& callStatus){
@@ -270,7 +270,7 @@ am_Error_e CAmRoutingSenderCAPI::asyncSetSourceSoundProperty(const am_Handle_s h
 	});
 }
 
-am_Error_e CAmRoutingSenderCAPI::asyncCrossFade(const am_Handle_s handle, const am_crossfaderID_t crossfaderID, const am_HotSink_e hotSink, const am_RampType_e rampType, const am_time_t time)
+am_Error_e CAmRoutingSenderCAPI::asyncCrossFade(const am_Handle_s handle, const am_crossfaderID_t crossfaderID, const am_HotSink_e hotSink, const am_CustomRampType_t rampType, const am_time_t time)
 {
 	return mLookupData.asyncCrossFade(handle, crossfaderID, hotSink, rampType, time, [&, handle, hotSink](const CommonAPI::CallStatus& callStatus){
 		log(&ctxCommandCAPI, DLT_LOG_INFO, __PRETTY_FUNCTION__, "Response with call status:", static_cast<int16_t>(callStatus));

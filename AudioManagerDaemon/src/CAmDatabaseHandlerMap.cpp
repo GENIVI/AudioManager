@@ -179,7 +179,7 @@ void CAmDatabaseHandlerMap::CAmSource::getDescription (std::string & outString) 
 				fmt << "[type:" << ref.type << " value:" << ref.value <<"]";
 			});
 			fmt << ") listConnectionFormats (";
-			std::for_each(listConnectionFormats.begin(), listConnectionFormats.end(), [&](const am_ConnectionFormat_e & ref) {
+			std::for_each(listConnectionFormats.begin(), listConnectionFormats.end(), [&](const am_CustomConnectionFormat_t & ref) {
 				fmt << "[" << ref << "]";
 			});
 			fmt << ") listMainSoundProperties (";
@@ -217,7 +217,7 @@ void CAmDatabaseHandlerMap::CAmSink::getDescription (std::string & outString) co
 				fmt << "[type:" << ref.type << " value:" << ref.value <<"]";
 			});
 			fmt << ") listConnectionFormats (";
-			std::for_each(listConnectionFormats.begin(), listConnectionFormats.end(), [&](const am_ConnectionFormat_e & ref) {
+			std::for_each(listConnectionFormats.begin(), listConnectionFormats.end(), [&](const am_CustomConnectionFormat_t & ref) {
 				fmt << "[" << ref << "]";
 			});
 			fmt << ") listMainSoundProperties (";
@@ -328,11 +328,11 @@ void CAmDatabaseHandlerMap::CAmGateway::getDescription (std::string & outString)
 			") domainSourceID(" << domainSourceID <<
 			") controlDomainID(" << controlDomainID <<
 			") listSourceFormats (";
-			std::for_each(listSourceFormats.begin(), listSourceFormats.end(), [&](const am_ConnectionFormat_e & ref) {
+			std::for_each(listSourceFormats.begin(), listSourceFormats.end(), [&](const am_CustomConnectionFormat_t & ref) {
 				fmt << "[" << ref << "]";
 			});
 			fmt << ") listSinkFormats (";
-			std::for_each(listSinkFormats.begin(), listSinkFormats.end(), [&](const am_ConnectionFormat_e & ref) {
+			std::for_each(listSinkFormats.begin(), listSinkFormats.end(), [&](const am_CustomConnectionFormat_t & ref) {
 				fmt << "[" << ref << "]";
 			});
 			fmt << ") convertionMatrix (";
@@ -1056,7 +1056,6 @@ am_Error_e CAmDatabaseHandlerMap::changeSinkAvailabilityDB(const am_Availability
 {
     assert(sinkID!=0);
     assert(availability.availability>=A_UNKNOWN && availability.availability<=A_MAX);
-    assert(availability.availabilityReason>=AR_UNKNOWN && availability.availabilityReason<=AR_MAX);
 
     if (!existSink(sinkID))
     {
@@ -1110,7 +1109,6 @@ am_Error_e CAmDatabaseHandlerMap::changeSinkMuteStateDB(const am_MuteState_e mut
 
 am_Error_e CAmDatabaseHandlerMap::changeMainSinkSoundPropertyDB(const am_MainSoundProperty_s & soundProperty, const am_sinkID_t sinkID)
 {
-    assert(soundProperty.type>=MSP_UNKNOWN && soundProperty.type<=MSP_MAX);
     assert(sinkID!=0);
 
     if (!existSink(sinkID))
@@ -1133,7 +1131,6 @@ am_Error_e CAmDatabaseHandlerMap::changeMainSinkSoundPropertyDB(const am_MainSou
 
 am_Error_e CAmDatabaseHandlerMap::changeMainSourceSoundPropertyDB(const am_MainSoundProperty_s & soundProperty, const am_sourceID_t sourceID)
 {
-    assert(soundProperty.type>=MSP_UNKNOWN && soundProperty.type<=MSP_MAX);
     assert(sourceID!=0);
 
     if (!existSource(sourceID))
@@ -1159,7 +1156,6 @@ am_Error_e CAmDatabaseHandlerMap::changeSourceAvailabilityDB(const am_Availabili
 {
     assert(sourceID!=0);
     assert(availability.availability>=A_UNKNOWN && availability.availability<=A_MAX);
-    assert(availability.availabilityReason>=AR_UNKNOWN && availability.availabilityReason<=AR_MAX);
 
     if (!existSource(sourceID))
     {
@@ -1177,8 +1173,6 @@ am_Error_e CAmDatabaseHandlerMap::changeSourceAvailabilityDB(const am_Availabili
 
 am_Error_e CAmDatabaseHandlerMap::changeSystemPropertyDB(const am_SystemProperty_s & property)
 {
-    assert(property.type>=SYP_UNKNOWN && property.type<=SYP_MAX);
-
     std::vector<am_SystemProperty_s>::iterator elementIterator = mMappedData.mSystemProperties.begin();
 	for (;elementIterator != mMappedData.mSystemProperties.end(); ++elementIterator)
 	{
@@ -1757,7 +1751,7 @@ am_Error_e CAmDatabaseHandlerMap::getListSystemProperties(std::vector<am_SystemP
     return (E_OK);
 }
 
-am_Error_e am::CAmDatabaseHandlerMap::getListSinkConnectionFormats(const am_sinkID_t sinkID, std::vector<am_ConnectionFormat_e> & listConnectionFormats) const
+am_Error_e am::CAmDatabaseHandlerMap::getListSinkConnectionFormats(const am_sinkID_t sinkID, std::vector<am_CustomConnectionFormat_t> & listConnectionFormats) const
 {
    if (!existSink(sinkID))
 	   return E_NON_EXISTENT;
@@ -1767,7 +1761,7 @@ am_Error_e am::CAmDatabaseHandlerMap::getListSinkConnectionFormats(const am_sink
     return (E_OK);
 }
 
-am_Error_e am::CAmDatabaseHandlerMap::getListSourceConnectionFormats(const am_sourceID_t sourceID, std::vector<am_ConnectionFormat_e> & listConnectionFormats) const
+am_Error_e am::CAmDatabaseHandlerMap::getListSourceConnectionFormats(const am_sourceID_t sourceID, std::vector<am_CustomConnectionFormat_t> & listConnectionFormats) const
 {
    if (!existSource(sourceID))
 	   return E_NON_EXISTENT;
@@ -2201,7 +2195,7 @@ am_Error_e CAmDatabaseHandlerMap::getSourceVolume(const am_sourceID_t sourceID, 
 	return (E_NON_EXISTENT);
 }
 
-am_Error_e CAmDatabaseHandlerMap::getSinkSoundPropertyValue(const am_sinkID_t sinkID, const am_SoundPropertyType_e propertyType, int16_t & value) const
+am_Error_e CAmDatabaseHandlerMap::getSinkSoundPropertyValue(const am_sinkID_t sinkID, const am_CustomSoundPropertyType_t propertyType, int16_t & value) const
 {
     assert(sinkID!=0);
 
@@ -2222,7 +2216,7 @@ am_Error_e CAmDatabaseHandlerMap::getSinkSoundPropertyValue(const am_sinkID_t si
 	return (E_NON_EXISTENT);
 }
 
-am_Error_e CAmDatabaseHandlerMap::getSourceSoundPropertyValue(const am_sourceID_t sourceID, const am_SoundPropertyType_e propertyType, int16_t & value) const
+am_Error_e CAmDatabaseHandlerMap::getSourceSoundPropertyValue(const am_sourceID_t sourceID, const am_CustomSoundPropertyType_t propertyType, int16_t & value) const
 {
     assert(sourceID!=0);
 
@@ -2377,7 +2371,6 @@ am_Error_e CAmDatabaseHandlerMap::changeSourceVolume(const am_sourceID_t sourceI
 
 am_Error_e CAmDatabaseHandlerMap::changeSourceSoundPropertyDB(const am_SoundProperty_s & soundProperty, const am_sourceID_t sourceID)
 {
-    assert(soundProperty.type>=SP_UNKNOWN && soundProperty.type<=SP_MAX);
     assert(sourceID!=0);
 
     if (!existSource(sourceID))
@@ -2399,7 +2392,6 @@ am_Error_e CAmDatabaseHandlerMap::changeSourceSoundPropertyDB(const am_SoundProp
 
 am_Error_e CAmDatabaseHandlerMap::changeSinkSoundPropertyDB(const am_SoundProperty_s & soundProperty, const am_sinkID_t sinkID)
 {
-    assert(soundProperty.type>=SP_UNKNOWN && soundProperty.type<=SP_MAX);
     assert(sinkID!=0);
 
     if (!existSink(sinkID))
@@ -2422,7 +2414,7 @@ am_Error_e CAmDatabaseHandlerMap::changeSinkSoundPropertyDB(const am_SoundProper
 am_Error_e CAmDatabaseHandlerMap::changeCrossFaderHotSink(const am_crossfaderID_t crossfaderID, const am_HotSink_e hotsink)
 {
     assert(crossfaderID!=0);
-    assert(hotsink>=HS_UNKNOWN && hotsink>=HS_MAX);
+    assert(hotsink!=HS_UNKNOWN);
 
     if (!existcrossFader(crossfaderID))
     {
@@ -2512,7 +2504,7 @@ am_Error_e am::CAmDatabaseHandlerMap::peekSourceClassID(const std::string & name
 }
 
 
-am_Error_e CAmDatabaseHandlerMap::changeSourceDB(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_ConnectionFormat_e>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)
+am_Error_e CAmDatabaseHandlerMap::changeSourceDB(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_CustomConnectionFormat_t>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)
 {
     assert(sourceID!=0);
 
@@ -2570,7 +2562,7 @@ am_Error_e CAmDatabaseHandlerMap::changeSourceDB(const am_sourceID_t sourceID, c
 
 }
 
-am_Error_e CAmDatabaseHandlerMap::changeSinkDB(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_ConnectionFormat_e>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)
+am_Error_e CAmDatabaseHandlerMap::changeSinkDB(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_CustomConnectionFormat_t>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)
 {
     assert(sinkID!=0);
 
@@ -2703,7 +2695,7 @@ am_Error_e CAmDatabaseHandlerMap::changeMainSourceNotificationConfigurationDB(co
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandlerMap::changeGatewayDB(const am_gatewayID_t gatewayID, const std::vector<am_ConnectionFormat_e>& listSourceConnectionFormats, const std::vector<am_ConnectionFormat_e>& listSinkConnectionFormats, const std::vector<bool>& convertionMatrix)
+am_Error_e CAmDatabaseHandlerMap::changeGatewayDB(const am_gatewayID_t gatewayID, const std::vector<am_CustomConnectionFormat_t>& listSourceConnectionFormats, const std::vector<am_CustomConnectionFormat_t>& listSinkConnectionFormats, const std::vector<bool>& convertionMatrix)
 {
     assert(gatewayID!=0);
 

@@ -96,7 +96,7 @@ TEST_F(CAmControlReceiverShadowTest,connect)
     handle.handle = 1;
     handle.handleType = H_CONNECT;
     am_connectionID_t connectionID(3), connectionIDReturn;
-    am_ConnectionFormat_e connectionFormat(CF_GENIVI_ANALOG);
+    am_CustomAvailabilityReason_t connectionFormat(CF_GENIVI_ANALOG);
     am_sourceID_t sourceID(1);
     am_sinkID_t sinkID(2);
 

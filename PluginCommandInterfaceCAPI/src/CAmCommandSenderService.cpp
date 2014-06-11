@@ -65,19 +65,19 @@ void CAmCommandSenderService::setSinkMuteState(org::genivi::am::am_sinkID_t sink
 
 void CAmCommandSenderService::setMainSinkSoundProperty(org::genivi::am::am_sinkID_t sinkID, org::genivi::am::am_MainSoundProperty_s soundProperty, org::genivi::am::am_Error_e& result) {
 	assert(mpIAmCommandReceive);
-	am_MainSoundProperty_s property = {static_cast<am_MainSoundPropertyType_e>(soundProperty.type), soundProperty.value};
+	am_MainSoundProperty_s property = {static_cast<am_CustomMainSoundPropertyType_t>(soundProperty.type), soundProperty.value};
 	result = CAmConvert2CAPIType(mpIAmCommandReceive->setMainSinkSoundProperty(property, sinkID));
 }
 
 void CAmCommandSenderService::setMainSourceSoundProperty(org::genivi::am::am_sourceID_t sourceID, org::genivi::am::am_MainSoundProperty_s soundProperty, org::genivi::am::am_Error_e& result) {
     assert(mpIAmCommandReceive);
-    am_MainSoundProperty_s property = {static_cast<am_MainSoundPropertyType_e>(soundProperty.type), soundProperty.value};
+    am_MainSoundProperty_s property = {static_cast<am_CustomMainSoundPropertyType_t>(soundProperty.type), soundProperty.value};
     result = CAmConvert2CAPIType(mpIAmCommandReceive->setMainSourceSoundProperty(property, sourceID));
 }
 
 void CAmCommandSenderService::setSystemProperty(org::genivi::am::am_SystemProperty_s soundProperty, org::genivi::am::am_Error_e& result) {
     assert(mpIAmCommandReceive);
-    am_SystemProperty_s property = {static_cast<am_SystemPropertyType_e>(soundProperty.type), soundProperty.value};
+    am_SystemProperty_s property = {static_cast<am_CustomSystemPropertyType_t>(soundProperty.type), soundProperty.value};
     result = CAmConvert2CAPIType(mpIAmCommandReceive->setSystemProperty(property));
 }
 
@@ -147,7 +147,7 @@ void CAmCommandSenderService::getListMainSinkSoundProperties(org::genivi::am::am
 		org::genivi::am::am_MainSoundProperty_s item;
 		for(std::vector<am_MainSoundProperty_s>::const_iterator iter = list.begin(); iter!=list.end(); iter++)
 		{
-			item.type = CAmConvert2CAPIType(iter->type);
+			item.type = iter->type;
 			item.value = iter->value;
 			listSoundProperties.push_back (item);
 		}
@@ -163,7 +163,7 @@ void CAmCommandSenderService::getListMainSourceSoundProperties(org::genivi::am::
 		org::genivi::am::am_MainSoundProperty_s item;
 		for(std::vector<am_MainSoundProperty_s>::const_iterator iter = list.begin(); iter!=list.end(); iter++)
 		{
-			item.type = CAmConvert2CAPIType(iter->type);
+			item.type = iter->type;
 			item.value = iter->value;
 			listSourceProperties.push_back (item);
 		}
@@ -183,7 +183,7 @@ void CAmCommandSenderService::getListSourceClasses(org::genivi::am::am_SourceCla
 			item.name = iter->name;
 			item.listClassProperties.clear();
 			std::for_each(iter->listClassProperties.begin(), iter->listClassProperties.end(), [&](const am_ClassProperty_s & ref) {
-				org::genivi::am::am_ClassProperty_s classProp(CAmConvert2CAPIType(ref.classProperty), ref.value);
+				org::genivi::am::am_ClassProperty_s classProp(ref.classProperty, ref.value);
 				item.listClassProperties.push_back(classProp);
 			});
 			listSourceClasses.push_back (item);
@@ -204,7 +204,7 @@ void CAmCommandSenderService::getListSinkClasses(org::genivi::am::am_SinkClass_L
 			item.name = iter->name;
 			item.listClassProperties.clear();
 			std::for_each(iter->listClassProperties.begin(), iter->listClassProperties.end(), [&](const am_ClassProperty_s & ref) {
-				org::genivi::am::am_ClassProperty_s classProp(CAmConvert2CAPIType(ref.classProperty), ref.value);
+				org::genivi::am::am_ClassProperty_s classProp(ref.classProperty, ref.value);
 				item.listClassProperties.push_back(classProp);
 			});
 			listSinkClasses.push_back (item);
@@ -221,7 +221,7 @@ void CAmCommandSenderService::getListSystemProperties(org::genivi::am::am_System
     		org::genivi::am::am_SystemProperty_s item;
     		for(std::vector<am_SystemProperty_s>::const_iterator iter = list.begin(); iter!=list.end(); iter++)
     		{
-    			item.type = CAmConvert2CAPIType(iter->type);
+    			item.type = iter->type;
     			item.value = iter->value;
     			listSystemProperties.push_back (item);
     		}

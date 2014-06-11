@@ -205,9 +205,9 @@ bool CAmCommonFunctions::compareRoute(am_Route_s a, am_Route_s b)
     return retVal;
 }
 
-std::vector<am_ConnectionFormat_e> CAmCommonFunctions::getStandardConnectionFormatList()
+std::vector<am_CustomAvailabilityReason_t> CAmCommonFunctions::getStandardConnectionFormatList()
 {
-    std::vector<am_ConnectionFormat_e> list;
+    std::vector<am_CustomAvailabilityReason_t> list;
     list.push_back(CF_GENIVI_ANALOG);
     list.push_back(CF_GENIVI_STEREO);
     return list;
@@ -217,10 +217,10 @@ std::vector<am_SoundProperty_s> CAmCommonFunctions::getStandardSoundPropertyList
 {
     std::vector<am_SoundProperty_s> soundPropertyList;
     am_SoundProperty_s soundProperty;
-    soundProperty.type = SP_EXAMPLE_BASS;
+    soundProperty.type = SP_GENIVI_BASS;
     soundProperty.value = 23;
     soundPropertyList.push_back(soundProperty);
-    soundProperty.type = SP_EXAMPLE_MID;
+    soundProperty.type = SP_GENIVI_MID;
     soundProperty.value = 2;
     soundPropertyList.push_back(soundProperty);
     return soundPropertyList;
@@ -331,7 +331,7 @@ std::vector<am_NotificationConfiguration_s> am::CAmCommonFunctions::getStandardN
     am_NotificationConfiguration_s tempNotificationConfiguration;
     tempNotificationConfiguration.parameter=12;
     tempNotificationConfiguration.status=NS_PERIODIC;
-    tempNotificationConfiguration.type=NT_MAX;
+    tempNotificationConfiguration.type=NT_UNKNOWN;
     listNotificationConfigurations.push_back(tempNotificationConfiguration);
 
     tempNotificationConfiguration.parameter=16;

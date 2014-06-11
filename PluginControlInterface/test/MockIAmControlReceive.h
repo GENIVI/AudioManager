@@ -30,19 +30,19 @@ class MockIAmControlReceive : public IAmControlReceive {
     MOCK_METHOD4(getRoute,
         am_Error_e(const bool onlyfree, const am_sourceID_t sourceID, const am_sinkID_t sinkID, std::vector<am_Route_s>& returnList));
     MOCK_METHOD5(connect,
-        am_Error_e(am_Handle_s& handle, am_connectionID_t& connectionID, const am_ConnectionFormat_e format, const am_sourceID_t sourceID, const am_sinkID_t sinkID));
+        am_Error_e(am_Handle_s& handle, am_connectionID_t& connectionID, const am_CustomAvailabilityReason_t format, const am_sourceID_t sourceID, const am_sinkID_t sinkID));
     MOCK_METHOD2(disconnect,
         am_Error_e(am_Handle_s& handle, const am_connectionID_t connectionID));
     MOCK_METHOD5(crossfade,
-        am_Error_e(am_Handle_s& handle, const am_HotSink_e hotSource, const am_crossfaderID_t crossfaderID, const am_RampType_e rampType, const am_time_t rampTime));
+        am_Error_e(am_Handle_s& handle, const am_HotSink_e hotSource, const am_crossfaderID_t crossfaderID, const am_CustomRampType_t rampType, const am_time_t rampTime));
     MOCK_METHOD1(abortAction,
         am_Error_e(const am_Handle_s handle));
     MOCK_METHOD3(setSourceState,
         am_Error_e(am_Handle_s& handle, const am_sourceID_t sourceID, const am_SourceState_e state));
     MOCK_METHOD5(setSinkVolume,
-        am_Error_e(am_Handle_s& handle, const am_sinkID_t sinkID, const am_volume_t volume, const am_RampType_e ramp, const am_time_t time));
+        am_Error_e(am_Handle_s& handle, const am_sinkID_t sinkID, const am_volume_t volume, const am_CustomRampType_t ramp, const am_time_t time));
     MOCK_METHOD5(setSourceVolume,
-        am_Error_e(am_Handle_s& handle, const am_sourceID_t sourceID, const am_volume_t volume, const am_RampType_e rampType, const am_time_t time));
+        am_Error_e(am_Handle_s& handle, const am_sourceID_t sourceID, const am_volume_t volume, const am_CustomRampType_t rampType, const am_time_t time));
     MOCK_METHOD3(setSinkSoundProperties,
         am_Error_e(am_Handle_s& handle, const am_sinkID_t sinkID, const std::vector<am_SoundProperty_s>& soundProperty));
     MOCK_METHOD3(setSinkSoundProperty,
@@ -170,11 +170,11 @@ class MockIAmControlReceive : public IAmControlReceive {
     MOCK_METHOD1(getSocketHandler,
         am_Error_e(CAmSocketHandler*& socketHandler));
     MOCK_METHOD5(changeSourceDB,
-        am_Error_e(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_ConnectionFormat_e>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties));
+        am_Error_e(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_CustomAvailabilityReason_t>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties));
     MOCK_METHOD5(changeSinkDB,
-        am_Error_e(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_ConnectionFormat_e>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties));
+        am_Error_e(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_CustomAvailabilityReason_t>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties));
     MOCK_METHOD4(changeGatewayDB,
-        am_Error_e(const am_gatewayID_t gatewayID, const std::vector<am_ConnectionFormat_e>& listSourceConnectionFormats, const std::vector<am_ConnectionFormat_e>& listSinkConnectionFormats, const std::vector<bool>& convertionMatrix));
+        am_Error_e(const am_gatewayID_t gatewayID, const std::vector<am_CustomAvailabilityReason_t>& listSourceConnectionFormats, const std::vector<am_CustomAvailabilityReason_t>& listSinkConnectionFormats, const std::vector<bool>& convertionMatrix));
     MOCK_METHOD2(setVolumes,
         am_Error_e(am_Handle_s& handle, const std::vector<am_Volumes_s>& listVolumes));
     MOCK_METHOD3(setSinkNotificationConfiguration,

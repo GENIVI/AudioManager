@@ -35,13 +35,13 @@ public:
     IAmControlReceiverShadow(IAmControlReceive* iReceiveInterface, CAmSocketHandler* iSocketHandler);
     ~IAmControlReceiverShadow();
     am_Error_e getRoute(bool onlyfree, am_sourceID_t sourceID, am_sinkID_t sinkID, std::vector<am_Route_s>& returnList);
-    am_Error_e connect(am_Handle_s& handle, am_connectionID_t& connectionID, am_ConnectionFormat_e format, am_sourceID_t sourceID, am_sinkID_t sinkID);
+    am_Error_e connect(am_Handle_s& handle, am_connectionID_t& connectionID, am_CustomConnectionFormat_t format, am_sourceID_t sourceID, am_sinkID_t sinkID);
     am_Error_e disconnect(am_Handle_s& handle, am_connectionID_t connectionID);
-    am_Error_e crossfade(am_Handle_s& handle, am_HotSink_e hotSource, am_crossfaderID_t crossfaderID, am_RampType_e rampType, am_time_t rampTime);
+    am_Error_e crossfade(am_Handle_s& handle, am_HotSink_e hotSource, am_crossfaderID_t crossfaderID, am_CustomRampType_t rampType, am_time_t rampTime);
     am_Error_e abortAction(am_Handle_s handle);
     am_Error_e setSourceState(am_Handle_s& handle, am_sourceID_t sourceID, am_SourceState_e state);
-    am_Error_e setSinkVolume(am_Handle_s& handle, am_sinkID_t sinkID, am_volume_t volume, am_RampType_e ramp, am_time_t time);
-    am_Error_e setSourceVolume(am_Handle_s& handle, am_sourceID_t sourceID, am_volume_t volume, am_RampType_e rampType, am_time_t time);
+    am_Error_e setSinkVolume(am_Handle_s& handle, am_sinkID_t sinkID, am_volume_t volume, am_CustomRampType_t ramp, am_time_t time);
+    am_Error_e setSourceVolume(am_Handle_s& handle, am_sourceID_t sourceID, am_volume_t volume, am_CustomRampType_t rampType, am_time_t time);
     am_Error_e setSinkSoundProperties(am_Handle_s& handle, am_sinkID_t sinkID, std::vector<am_SoundProperty_s>& soundProperty);
     am_Error_e setSinkSoundProperty(am_Handle_s& handle, am_sinkID_t sinkID, am_SoundProperty_s& soundProperty);
     am_Error_e setSourceSoundProperties(am_Handle_s& handle, am_sourceID_t sourceID, std::vector<am_SoundProperty_s>& soundProperty);

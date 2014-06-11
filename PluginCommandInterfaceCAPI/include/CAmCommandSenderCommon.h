@@ -32,21 +32,13 @@ extern void CAmConvertAvailablility(const am_Availability_s & , org::genivi::am:
 extern void CAmConvertMainSoundProperty(const am_MainSoundProperty_s & , org::genivi::am::am_MainSoundProperty_s & );
 extern void CAmConvertSystemProperty(const am_SystemProperty_s &, org::genivi::am::am_SystemProperty_s &);
 
-extern org::genivi::am::am_ClassProperty_pe CAmConvert2CAPIType(const am_ClassProperty_e & property);
-extern org::genivi::am::am_SystemPropertyType_pe CAmConvert2CAPIType(const am_SystemPropertyType_e &);
-extern org::genivi::am::am_Availability_e CAmConvert2CAPIType(const am_Availability_e & );
-extern org::genivi::am::am_AvailabilityReason_pe CAmConvert2CAPIType(const am_AvailabilityReason_e & );
+extern org::genivi::am::am_Availability_e CAmConvert2CAPIType(const am_Availability_e &);
 
 extern org::genivi::am::am_MuteState_e CAmConvert2CAPIType(const am_MuteState_e &);
 extern am_MuteState_e CAmConvertFromCAPIType(const org::genivi::am::am_MuteState_e &);
 
-extern org::genivi::am::am_MainSoundPropertyType_pe CAmConvert2CAPIType(const am_MainSoundPropertyType_e &);
-
 extern org::genivi::am::am_ConnectionState_e CAmConvert2CAPIType(const am_ConnectionState_e &);
 extern am_ConnectionState_e CAmConvertFromCAPIType(const org::genivi::am::am_ConnectionState_e &);
-
-extern am_NotificationType_e CAmConvert2CAPIType(const org::genivi::am::am_NotificationType_pe &);
-extern org::genivi::am::am_NotificationType_pe CAmConvertFromCAPIType(const am_NotificationType_e &);
 
 extern am_NotificationStatus_e CAmConvert2CAPIType(const org::genivi::am::am_NotificationStatus_e &);
 extern org::genivi::am::am_NotificationStatus_e CAmConvertFromCAPIType(const am_NotificationStatus_e &);

@@ -142,7 +142,7 @@ void IAmCommandReceiverShadow::setMainSinkSoundProperty(DBusConnection *conn, DB
     dbus_int16_t value = 0;
     mDBUSMessageHandler.getProperty(type, value);
     am_MainSoundProperty_s mainSoundProperty;
-    mainSoundProperty.type = (am_MainSoundPropertyType_e) type;
+    mainSoundProperty.type = (am_CustomMainSoundPropertyType_t) type;
     mainSoundProperty.value = (int32_t) value;
     am_Error_e returnCode = mpIAmCommandReceive->setMainSinkSoundProperty(mainSoundProperty, sinkID);
     mDBUSMessageHandler.initReply(msg);
@@ -163,7 +163,7 @@ void IAmCommandReceiverShadow::setMainSourceSoundProperty(DBusConnection *conn, 
     dbus_int16_t value = 0;
     mDBUSMessageHandler.getProperty(type, value);
     am_MainSoundProperty_s mainSoundProperty;
-    mainSoundProperty.type = (am_MainSoundPropertyType_e) type;
+    mainSoundProperty.type = (am_CustomMainSoundPropertyType_t) type;
     mainSoundProperty.value = (int32_t) value;
     am_Error_e returnCode = mpIAmCommandReceive->setMainSourceSoundProperty(mainSoundProperty, sourceID);
     mDBUSMessageHandler.initReply(msg);
@@ -183,7 +183,7 @@ void IAmCommandReceiverShadow::setSystemProperty(DBusConnection *conn, DBusMessa
     dbus_int16_t value = 0;
     mDBUSMessageHandler.getProperty(type, value);
     am_SystemProperty_s systemProperty;
-    systemProperty.type = (am_SystemPropertyType_e) type;
+    systemProperty.type = (am_CustomSystemPropertyType_t) type;
     systemProperty.value = (int32_t) value;
     am_Error_e returnCode = mpIAmCommandReceive->setSystemProperty(systemProperty);
     mDBUSMessageHandler.initReply(msg);
@@ -465,7 +465,7 @@ void am::IAmCommandReceiverShadow::setSinkMainNotificationConfiguration(DBusConn
     dbus_int16_t parameter = 0;
     mDBUSMessageHandler.getNotificationConfiguration(type, status, parameter);
     am_NotificationConfiguration_s mainNotificationConfiguration;
-    mainNotificationConfiguration.type = static_cast<am_NotificationType_e> (type);
+    mainNotificationConfiguration.type = static_cast<am_CustomNotificationType_t> (type);
     mainNotificationConfiguration.status = static_cast<am_NotificationStatus_e> (status);
     mainNotificationConfiguration.parameter = static_cast<int16_t>(parameter);
     am_Error_e returnCode = mpIAmCommandReceive->setMainSinkNotificationConfiguration(sinkID,mainNotificationConfiguration);
@@ -488,7 +488,7 @@ void am::IAmCommandReceiverShadow::setSourceMainNotificationConfiguration(DBusCo
     dbus_int16_t parameter = 0;
     mDBUSMessageHandler.getNotificationConfiguration(type, status, parameter);
     am_NotificationConfiguration_s mainNotificationConfiguration;
-    mainNotificationConfiguration.type = static_cast<am_NotificationType_e> (type);
+    mainNotificationConfiguration.type = static_cast<am_CustomNotificationType_t> (type);
     mainNotificationConfiguration.status = static_cast<am_NotificationStatus_e> (status);
     mainNotificationConfiguration.parameter = static_cast<int16_t>(parameter);
     am_Error_e returnCode = mpIAmCommandReceive->setMainSourceNotificationConfiguration(sourceID,mainNotificationConfiguration);

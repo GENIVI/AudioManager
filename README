@@ -206,29 +206,108 @@ This will create the following package:
 All packages will be placed in a folder called packages
 
 === Adding own plugins
-Since the AudioManager needs to be completed with on plugins before it can be used, it provides a mechanism to keep the own sources away from the GENIVI code but compile them together.
+The AudioManager needs to be completed with on plugins. To keep the own sources away from the GENIVI code the project specific elements can be reconfigured with own type definitions.
 
 TIP: Using this feature is simple: +
-Just add a folder with the name _ProjectSpecific_ (be sure to name it excactly like this!) on the main level of the AudioManager folder. CMake will look for CMakeLists.txt in this folder and add all files that it finds in /include to the include path. You can use this to add subfolders with your own plugins and includes, and overwrite productspecific.h for example.
-
-.Here is a sample CMakeLists.txt that can be placed in ProjectSpecific folder:
+Create in your projects an own projecttypes.h. The name is no naming convention given. The file is your project specific type definition which will be only referenced by the HMI, Routing Adapters and the Controller Plug-in.
+ 
+.The are already examples given in audiomanagertypes.h:
 ----
-cmake_minimum_required(VERSION 2.6)
+/**
+ * This type gives the information about reason for Source/Sink change
+ */
+typedef uint16_t am_CustomAvailabilityReason_t;
+static const am_CustomAvailabilityReason_t AR_UNKNOWN = 0;
+/** new media was entered  */
+static const am_CustomAvailabilityReason_t AR_GENIVI_NEWMEDIA = 1;
+/** same media was entered */
+static const am_CustomAvailabilityReason_t AR_GENIVI_SAMEMEDIA = 2;
+/** there is no media or media is removed */
+static const am_CustomAvailabilityReason_t AR_GENIVI_NOMEDIA = 3;
+/** there was a temperature event */
+static const am_CustomAvailabilityReason_t AR_GENIVI_TEMPERATURE = 4;
+/** there was a voltage event */
+static const am_CustomAvailabilityReason_t AR_GENIVI_VOLTAGE = 5;
+/** fatal errors on reading or accessing media */
+static const am_CustomAvailabilityReason_t AR_GENIVI_ERRORMEDIA = 6;
 
-### set your own buildflags:
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Wextra -std=c++98 -D_GNU_SOURCE -pedantic -Wno-variadic-macros")
+/**
+ * This is a custom specific identifier of property. It can be used to
+ * differentiate between interrupt source/sink, main source/sink, etc.
+ */
+typedef uint16_t am_CustomClassProperty_t;
+static const am_CustomClassProperty_t CP_UNKNOWN = 0;
+static const am_CustomClassProperty_t CP_GENIVI_SOURCE_TYPE = 1;
+static const am_CustomClassProperty_t CP_GENIVI_SINK_TYPE = 2;
 
-##overwrite priojecttypes.h:
-CONFIGURE_FILE( ${CMAKE_SOURCE_DIR}/ProjectSpecific/overwrite/projecttypes.h ${CMAKE_SOURCE_DIR}/include/projecttypes.h COPYONLY)
+/**
+ * This type classifies the format in which data is exchanged within a connection.
+ * The type itself is project specific although there are some standard formats
+ * defined.
+ */
+typedef uint16_t am_CustomConnectionFormat_t;
+static const am_CustomConnectionFormat_t CF_UNKNOWN = 0;
+/** plain mono */
+static const am_CustomConnectionFormat_t CF_GENIVI_MONO = 1;
+/** stereo connection */
+static const am_CustomConnectionFormat_t CF_GENIVI_STEREO = 2;
+/** analog connection */
+static const am_CustomConnectionFormat_t CF_GENIVI_ANALOG = 3;
+/** automatic connection.  */
+static const am_CustomConnectionFormat_t CF_GENIVI_AUTO = 4;
 
-if(WITH_PLUGIN_ROUTING)
-	add_subdirectory (../PluginRoutingInterfaceMyRoutingPlugin ${CMAKE_CURRENT_BINARY_DIR}/PluginRoutingInterfaceMyRoutingPlugin )
-endif(WITH_PLUGIN_ROUTING)
+/**
+ * Here are all SoundProperties that can be set via the CommandInterface.
+ * This type is product specific and can be changed or extended.
+ */
+typedef uint16_t am_CustomMainSoundPropertyType_t;
+static const am_CustomMainSoundPropertyType_t MSP_UNKNOWN = 0;
+/** example value between -10 and +10  */
+static const am_CustomMainSoundPropertyType_t MSP_GENIVI_TREBLE = 1;
+/** example value between -10 and +10  */
+static const am_CustomMainSoundPropertyType_t MSP_GENIVI_MID = 2;
+/** example value between -10 and +10  */
+static const am_CustomMainSoundPropertyType_t MSP_GENIVI_BASS = 3;
 
-if(WITH_PLUGIN_CONTROL)
-	add_subdirectory ( ../PluginControlInterfaceMyControlPlugin ${CMAKE_CURRENT_BINARY_DIR}/PluginControlInterfaceMyControlPlugin)
-endif(WITH_PLUGIN_CONTROL)
+/**
+ * The notification types are project specific.
+ */
+typedef uint16_t am_CustomNotificationType_t;
+static const am_CustomNotificationType_t NT_UNKNOWN = 0;
 
+/**
+ * The given ramp types here are just examples. For products, different ramp types
+ * can be defined here. It is in the responsibility of the product to make sure
+ * that the routing plugins are aware of the ramp types used.
+ */
+typedef uint16_t am_CustomRampType_t;
+static const am_CustomRampType_t RAMP_UNKNOWN = 0;
+/** sets directly the value without a ramp */
+static const am_CustomRampType_t RAMP_GENIVI_DIRECT = 1;
+/** Sets the volume as fast as possible */
+static const am_CustomRampType_t RAMP_GENIVI_NO_PLOP = 2;
+static const am_CustomRampType_t RAMP_GENIVI_EXP_INV = 3;
+static const am_CustomRampType_t RAMP_GENIVI_LINEAR = 4;
+static const am_CustomRampType_t RAMP_GENIVI_EXP = 5;
+
+/**
+ * Within genivi only the some example properties are defined.
+ * For products these should be changed or extended.
+ */
+typedef uint16_t am_CustomSoundPropertyType_t;
+static const am_CustomSoundPropertyType_t SP_UNKNOWN = 0;
+/** example treble value min =-10 max =10 */
+static const am_CustomSoundPropertyType_t SP_GENIVI_TREBLE = 1;
+/** example mid value min =-10 max =10 */
+static const am_CustomSoundPropertyType_t SP_GENIVI_MID = 2;
+/** example bass value min =-10 max =10 */
+static const am_CustomSoundPropertyType_t SP_GENIVI_BASS = 3;
+
+/**
+ * Describes the different system properties which are project specific.
+ */
+typedef uint16_t am_CustomSystemPropertyType_t;
+static const am_CustomSystemPropertyType_t SYP_UNKNOWN = 0;
 ----
 
 === CommandLine options

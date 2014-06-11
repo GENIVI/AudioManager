@@ -883,10 +883,7 @@ void CAmTelnetMenuHelper::setSourceSoundPropertyExec(std::queue<std::string>& Cm
             error = true;
 
         am_MainSoundProperty_s soundProperty;
-        if (tmpType < MSP_MAX)
-            soundProperty.type = static_cast<am_MainSoundPropertyType_e>(tmpType);
-        else
-            error = true;
+        soundProperty.type = static_cast<am_CustomMainSoundPropertyType_t>(tmpType);
 
         if (!(istream_value >> soundProperty.value))
             error = true;
@@ -1147,10 +1144,7 @@ void CAmTelnetMenuHelper::setSourceSoundPropertiesExec(std::queue<std::string>& 
             error = true;
 
         am_MainSoundProperty_s soundProperty;
-        if (tmpType < MSP_MAX)
-            soundProperty.type = static_cast<am_MainSoundPropertyType_e>(tmpType);
-        else
-            error = true;
+        soundProperty.type = static_cast<am_CustomMainSoundPropertyType_t>(tmpType);
 
         if (!(istream_value >> soundProperty.value))
             error = true;
@@ -1207,10 +1201,7 @@ void CAmTelnetMenuHelper::setSinkSoundPropertyExec(std::queue<std::string>& CmdQ
             error = true;
 
         am_MainSoundProperty_s soundProperty;
-        if (tmpType < MSP_MAX)
-            soundProperty.type = static_cast<am_MainSoundPropertyType_e>(tmpType);
-        else
-            error = true;
+        soundProperty.type = static_cast<am_CustomMainSoundPropertyType_t>(tmpType);
 
         if (!(istream_value >> soundProperty.value))
             error = true;

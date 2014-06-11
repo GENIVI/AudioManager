@@ -222,7 +222,7 @@ void CAmCommandSenderCAPI::cbMainSinkSoundPropertyChanged(const am_sinkID_t sink
 	RETURN_IF_NOT_READY()
 	assert((bool)mService);
     log(&ctxCommandCAPI, DLT_LOG_INFO, "cbMainSinkSoundPropertyChanged called, sinkID", sinkID, "SoundProperty.type", soundProperty.type, "SoundProperty.value", soundProperty.value);
-    org::genivi::am::am_MainSoundProperty_s mainSoundProp(CAmConvert2CAPIType(soundProperty.type), soundProperty.value);
+    org::genivi::am::am_MainSoundProperty_s mainSoundProp(soundProperty.type, soundProperty.value);
 	mService->fireMainSinkSoundPropertyChangedEvent(sinkID, mainSoundProp);
 }
 
@@ -304,7 +304,7 @@ void CAmCommandSenderCAPI::cbSinkUpdated(const am_sinkID_t sinkID, const am_sink
     log(&ctxCommandCAPI, DLT_LOG_INFO, "cbSinkUpdated called, sinkID", sinkID);
     org::genivi::am::am_MainSoundProperty_L list;
     std::for_each(listMainSoundProperties.begin(), listMainSoundProperties.end(), [&](const am_MainSoundProperty_s & ref) {
-				org::genivi::am::am_MainSoundProperty_s prop(CAmConvert2CAPIType(ref.type), ref.value);
+				org::genivi::am::am_MainSoundProperty_s prop(ref.type, ref.value);
 				list.push_back(prop);
     });
     mService->fireSinkUpdatedEvent(sinkID, sinkClassID, list);
@@ -317,7 +317,7 @@ void CAmCommandSenderCAPI::cbSourceUpdated(const am_sourceID_t sourceID, const a
     log(&ctxCommandCAPI, DLT_LOG_INFO, "cbSourceUpdated called, sourceID", sourceID);
     org::genivi::am::am_MainSoundProperty_L list;
     std::for_each(listMainSoundProperties.begin(), listMainSoundProperties.end(), [&](const am_MainSoundProperty_s & ref) {
-    			org::genivi::am::am_MainSoundProperty_s prop(CAmConvert2CAPIType(ref.type), ref.value);
+    			org::genivi::am::am_MainSoundProperty_s prop(ref.type, ref.value);
 				list.push_back(prop);
     });
     mService->fireSourceUpdatedEvent(sourceID, sourceClassID, list);
@@ -328,7 +328,7 @@ void CAmCommandSenderCAPI::cbSinkNotification(const am_sinkID_t sinkID, const am
 	RETURN_IF_NOT_READY()
 	assert((bool)mService);
     log(&ctxCommandCAPI, DLT_LOG_INFO, "cbSinkNotification called, sinkID", sinkID);
-    org::genivi::am::am_NotificationPayload_s ciNnotif(static_cast<org::genivi::am::am_NotificationType_pe>(notification.type), notification.value);
+    org::genivi::am::am_NotificationPayload_s ciNnotif(notification.type, notification.value);
     mService->fireSinkNotificationEvent(sinkID, ciNnotif);
 }
 
@@ -337,7 +337,7 @@ void CAmCommandSenderCAPI::cbSourceNotification(const am_sourceID_t sourceID, co
 	RETURN_IF_NOT_READY()
 	assert((bool)mService);
     log(&ctxCommandCAPI, DLT_LOG_INFO, "cbSourceNotification called, sourceID", sourceID);
-    org::genivi::am::am_NotificationPayload_s ciNnotif(static_cast<org::genivi::am::am_NotificationType_pe>(notification.type), notification.value);
+    org::genivi::am::am_NotificationPayload_s ciNnotif(notification.type, notification.value);
     mService->fireSourceNotificationEvent(sourceID, ciNnotif);
 }
 
@@ -346,7 +346,7 @@ void CAmCommandSenderCAPI::cbMainSinkNotificationConfigurationChanged(const am_s
 	RETURN_IF_NOT_READY()
 	assert((bool)mService);
     log(&ctxCommandCAPI, DLT_LOG_INFO, "cbSinkMainNotificationConfigurationChanged called, sinkID", sinkID);
-    org::genivi::am::am_NotificationConfiguration_s ciNotifConfig(static_cast<org::genivi::am::am_NotificationType_pe>(mainNotificationConfiguration.type),
+    org::genivi::am::am_NotificationConfiguration_s ciNotifConfig(mainNotificationConfiguration.type,
     															  static_cast<org::genivi::am::am_NotificationStatus_e>(mainNotificationConfiguration.status),
 																				mainNotificationConfiguration.parameter);
     mService->fireMainSinkNotificationConfigurationChangedEvent(sinkID, ciNotifConfig);
@@ -357,7 +357,7 @@ void CAmCommandSenderCAPI::cbMainSourceNotificationConfigurationChanged(const am
 	RETURN_IF_NOT_READY()
 	assert((bool)mService);
     log(&ctxCommandCAPI, DLT_LOG_INFO, "cbSourceMainNotificationConfigurationChanged called, sourceID", sourceID);
-    org::genivi::am::am_NotificationConfiguration_s ciNotifConfig(static_cast<org::genivi::am::am_NotificationType_pe>(mainNotificationConfiguration.type),
+    org::genivi::am::am_NotificationConfiguration_s ciNotifConfig(mainNotificationConfiguration.type,
     															  static_cast<org::genivi::am::am_NotificationStatus_e>(mainNotificationConfiguration.status),
 																				mainNotificationConfiguration.parameter);
     mService->fireMainSourceNotificationConfigurationChangedEvent(sourceID, ciNotifConfig);

@@ -109,7 +109,7 @@ arg0=list;
 ACTION(returnListMainSinkSoundProperties){
 std::vector<am::am_MainSoundProperty_s> list;
 am::am_MainSoundProperty_s listItem;
-listItem.type=MSP_EXAMPLE_MID;
+listItem.type=MSP_GENIVI_MID;
 listItem.value=223;
 list.push_back(listItem);
 listItem.type=MSP_UNKNOWN;
@@ -122,7 +122,7 @@ ACTION(returnListSourceClasses){
 std::vector<am::am_SourceClass_s> list;
 am::am_SourceClass_s listItem;
 am::am_ClassProperty_s property;
-property.classProperty=static_cast<am_ClassProperty_e>(2);
+property.classProperty=static_cast<am_CustomClassProperty_t>(2);
 property.value=12;
 listItem.name="FirstCLass";
 listItem.sourceClassID=23;
@@ -139,7 +139,7 @@ ACTION(returnListSinkClasses){
 std::vector<am::am_SinkClass_s> list;
 am::am_SinkClass_s listItem;
 am::am_ClassProperty_s property;
-property.classProperty=static_cast<am_ClassProperty_e>(1);
+property.classProperty=static_cast<am_CustomClassProperty_t>(1);
 property.value=122;
 listItem.name="FirstCLass";
 listItem.sinkClassID=2123;

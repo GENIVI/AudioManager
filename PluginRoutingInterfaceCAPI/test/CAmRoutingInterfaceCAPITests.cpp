@@ -67,19 +67,19 @@ pthread_mutex_t     mutexSer    = PTHREAD_MUTEX_INITIALIZER;
 void initSink(org::genivi::am::am_Sink_s & newSink, am_Sink_s & newAmSink, const org::genivi::am::am_domainID_t & domainID, const org::genivi::am::am_sinkID_t & sinkID = 0)
 {
 	org::genivi::am::am_MuteState_e muteState = org::genivi::am::am_MuteState_e::MS_UNKNOWN;
-    org::genivi::am::am_Availability_s available(org::genivi::am::am_Availability_e::A_MAX, static_cast<org::genivi::am::am_AvailabilityReason_pe>(AR_MAX));
+    org::genivi::am::am_Availability_s available(org::genivi::am::am_Availability_e::A_MAX, AR_UNKNOWN);
 	org::genivi::am::am_SoundProperty_L listSoundProperties;
-	listSoundProperties.push_back(org::genivi::am::am_SoundProperty_s(static_cast<org::genivi::am::am_SoundPropertyType_pe>(SP_EXAMPLE_MID), 100));
-	listSoundProperties.push_back(org::genivi::am::am_SoundProperty_s(static_cast<org::genivi::am::am_SoundPropertyType_pe>(SP_EXAMPLE_BASS), 101));
-	listSoundProperties.push_back(org::genivi::am::am_SoundProperty_s(static_cast<org::genivi::am::am_SoundPropertyType_pe>(SP_MAX), 102));
+	listSoundProperties.push_back(org::genivi::am::am_SoundProperty_s(SP_GENIVI_MID, 100));
+	listSoundProperties.push_back(org::genivi::am::am_SoundProperty_s(SP_GENIVI_BASS, 101));
+	listSoundProperties.push_back(org::genivi::am::am_SoundProperty_s(SP_UNKNOWN, 102));
 	org::genivi::am::am_ConnectionFormat_L listConnectionFormats;
-	listConnectionFormats.push_back(static_cast<org::genivi::am::am_ConnectionFormat_pe>(CF_MAX));
+	listConnectionFormats.push_back(CF_UNKNOWN);
 	org::genivi::am::am_MainSoundProperty_L listMainSoundProperties;
-	listMainSoundProperties.push_back(org::genivi::am::am_MainSoundProperty_s(static_cast<org::genivi::am::am_MainSoundPropertyType_pe>(MSP_MAX), 100));
+	listMainSoundProperties.push_back(org::genivi::am::am_MainSoundProperty_s(MSP_UNKNOWN, 100));
 	org::genivi::am::am_NotificationConfiguration_L listMainNotificationConfigurations;
-	listMainNotificationConfigurations.push_back(org::genivi::am::am_NotificationConfiguration_s(static_cast<org::genivi::am::am_NotificationType_pe>(NT_MAX), org::genivi::am::am_NotificationStatus_e::NS_MAX, 100));
+	listMainNotificationConfigurations.push_back(org::genivi::am::am_NotificationConfiguration_s(NT_UNKNOWN, org::genivi::am::am_NotificationStatus_e::NS_MAX, 100));
 	org::genivi::am::am_NotificationConfiguration_L listNotificationConfigurations;
-	listNotificationConfigurations.push_back(org::genivi::am::am_NotificationConfiguration_s(static_cast<org::genivi::am::am_NotificationType_pe>(NT_MAX), org::genivi::am::am_NotificationStatus_e::NS_MAX, 100));
+	listNotificationConfigurations.push_back(org::genivi::am::am_NotificationConfiguration_s(NT_UNKNOWN, org::genivi::am::am_NotificationStatus_e::NS_MAX, 100));
 
 	org::genivi::am::am_Sink_s sink(sinkID, "name", domainID, 104, 50, true, available, muteState, 50,
 							listSoundProperties, listConnectionFormats, listMainSoundProperties, listMainNotificationConfigurations, listNotificationConfigurations);
@@ -93,19 +93,19 @@ void initSink(org::genivi::am::am_Sink_s & newSink, am_Sink_s & newAmSink, const
 void initSource(org::genivi::am::am_Source_s & newSource, am_Source_s & newAmSource, const org::genivi::am::am_domainID_t & domainID, const org::genivi::am::am_sourceID_t & sourceID = 0)
 {
 	org::genivi::am::am_SourceState_e srcState = org::genivi::am::am_SourceState_e::SS_MAX;
-    org::genivi::am::am_Availability_s available(org::genivi::am::am_Availability_e::A_MAX, static_cast<org::genivi::am::am_AvailabilityReason_pe>(AR_MAX));
+    org::genivi::am::am_Availability_s available(org::genivi::am::am_Availability_e::A_MAX, AR_UNKNOWN);
 	org::genivi::am::am_SoundProperty_L listSoundProperties;
-	listSoundProperties.push_back(org::genivi::am::am_SoundProperty_s(static_cast<org::genivi::am::am_SoundPropertyType_pe>(SP_EXAMPLE_MID), 100));
-	listSoundProperties.push_back(org::genivi::am::am_SoundProperty_s(static_cast<org::genivi::am::am_SoundPropertyType_pe>(SP_EXAMPLE_BASS), 101));
-	listSoundProperties.push_back(org::genivi::am::am_SoundProperty_s(static_cast<org::genivi::am::am_SoundPropertyType_pe>(SP_MAX), 102));
+	listSoundProperties.push_back(org::genivi::am::am_SoundProperty_s(SP_GENIVI_MID, 100));
+	listSoundProperties.push_back(org::genivi::am::am_SoundProperty_s(SP_GENIVI_BASS, 101));
+	listSoundProperties.push_back(org::genivi::am::am_SoundProperty_s(SP_UNKNOWN, 102));
 	org::genivi::am::am_ConnectionFormat_L listConnectionFormats;
-	listConnectionFormats.push_back(static_cast<org::genivi::am::am_ConnectionFormat_pe>(CF_MAX));
+	listConnectionFormats.push_back(CF_UNKNOWN);
 	org::genivi::am::am_MainSoundProperty_L listMainSoundProperties;
-	listMainSoundProperties.push_back(org::genivi::am::am_MainSoundProperty_s(static_cast<org::genivi::am::am_MainSoundPropertyType_pe>(MSP_MAX), 100));
+	listMainSoundProperties.push_back(org::genivi::am::am_MainSoundProperty_s(MSP_UNKNOWN, 100));
 	org::genivi::am::am_NotificationConfiguration_L listMainNotificationConfigurations;
-	listMainNotificationConfigurations.push_back(org::genivi::am::am_NotificationConfiguration_s(static_cast<org::genivi::am::am_NotificationType_pe>(NT_MAX), org::genivi::am::am_NotificationStatus_e::NS_MAX, 100));
+	listMainNotificationConfigurations.push_back(org::genivi::am::am_NotificationConfiguration_s(NT_UNKNOWN, org::genivi::am::am_NotificationStatus_e::NS_MAX, 100));
 	org::genivi::am::am_NotificationConfiguration_L listNotificationConfigurations;
-	listNotificationConfigurations.push_back(org::genivi::am::am_NotificationConfiguration_s(static_cast<org::genivi::am::am_NotificationType_pe>(NT_MAX), org::genivi::am::am_NotificationStatus_e::NS_MAX, 100));
+	listNotificationConfigurations.push_back(org::genivi::am::am_NotificationConfiguration_s(NT_UNKNOWN, org::genivi::am::am_NotificationStatus_e::NS_MAX, 100));
 
 	org::genivi::am::am_Source_s source(sourceID, domainID, "name", 104, srcState, 50, true, available, org::genivi::am::am_InterruptState_e::IS_MAX,
 								listSoundProperties, listConnectionFormats, listMainSoundProperties, listMainNotificationConfigurations, listNotificationConfigurations);
@@ -677,11 +677,11 @@ TEST_F(CAmRoutingInterfaceCAPITests, registerGateway)
 		org::genivi::am::am_Error_e error = org::genivi::am::am_Error_e::E_UNKNOWN;
 
 		org::genivi::am::am_ConnectionFormat_L listSourceFormats;
-		listSourceFormats.push_back(static_cast<org::genivi::am::am_ConnectionFormat_pe>(CF_GENIVI_ANALOG));
-		listSourceFormats.push_back(static_cast<org::genivi::am::am_ConnectionFormat_pe>(CF_GENIVI_AUTO));
+		listSourceFormats.push_back(static_cast<org::genivi::am::am_CustomConnectionFormat_t>(CF_GENIVI_ANALOG));
+		listSourceFormats.push_back(static_cast<org::genivi::am::am_CustomConnectionFormat_t>(CF_GENIVI_AUTO));
 		org::genivi::am::am_ConnectionFormat_L listSinkFormats;
-		listSinkFormats.push_back(static_cast<org::genivi::am::am_ConnectionFormat_pe>(CF_GENIVI_AUTO));
-		listSinkFormats.push_back(static_cast<org::genivi::am::am_ConnectionFormat_pe>(CF_GENIVI_ANALOG));
+		listSinkFormats.push_back(static_cast<org::genivi::am::am_CustomConnectionFormat_t>(CF_GENIVI_AUTO));
+		listSinkFormats.push_back(static_cast<org::genivi::am::am_CustomConnectionFormat_t>(CF_GENIVI_ANALOG));
 		org::genivi::am::am_Convertion_L convertionMatrix;
 		convertionMatrix.push_back(1);
 		convertionMatrix.push_back(0);
@@ -1088,7 +1088,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, hookSinkAvailablityStatusChange)
 		am_Error_e error = E_OK;
 		org::genivi::am::am_sinkID_t testID = TEST_ID_1;
 
-		org::genivi::am::am_Availability_s available(org::genivi::am::am_Availability_e::A_MAX, static_cast<org::genivi::am::am_AvailabilityReason_pe>(AR_MAX));
+		org::genivi::am::am_Availability_s available(org::genivi::am::am_Availability_e::A_MAX, AR_UNKNOWN);
 		am_Availability_s amAvailable;
 		CAmConvertCAPI2AM(available, amAvailable);
 
@@ -1108,7 +1108,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, hookSourceAvailablityStatusChange)
 		am_Error_e error = E_OK;
 		org::genivi::am::am_sourceID_t testID = TEST_ID_1;
 
-		org::genivi::am::am_Availability_s available(org::genivi::am::am_Availability_e::A_MAX, static_cast<org::genivi::am::am_AvailabilityReason_pe>(AR_MAX));
+		org::genivi::am::am_Availability_s available(org::genivi::am::am_Availability_e::A_MAX, AR_UNKNOWN);
 		am_Availability_s amAvailable;
 		CAmConvertCAPI2AM(available, amAvailable);
 
@@ -1223,7 +1223,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, sendChangedData)
 											ed11));
 
 		org::genivi::am::am_DataType_u dt13(static_cast<org::genivi::am::am_sinkID_t>(105));
-		org::genivi::am::am_EarlyData_u ed12(org::genivi::am::am_SoundProperty_s(static_cast<org::genivi::am::am_SoundPropertyType_pe>(SP_MAX), 50));
+		org::genivi::am::am_EarlyData_u ed12(org::genivi::am::am_SoundProperty_s(SP_UNKNOWN, 50));
 		earlyData.push_back(org::genivi::am::am_EarlyData_s(org::genivi::am::am_EarlyDataType_e::ED_SINK_PROPERTY,
 											dt13,
 											ed12));
@@ -1249,24 +1249,24 @@ TEST_F(CAmRoutingInterfaceCAPITests, updateGateway)
 		org::genivi::am::am_gatewayID_t testID = TEST_ID_1;
 
 		org::genivi::am::am_ConnectionFormat_L listSourceFormats;
-		listSourceFormats.push_back(static_cast<org::genivi::am::am_ConnectionFormat_pe>(CF_GENIVI_ANALOG));
-		listSourceFormats.push_back(static_cast<org::genivi::am::am_ConnectionFormat_pe>(CF_GENIVI_AUTO));
+		listSourceFormats.push_back(static_cast<org::genivi::am::am_CustomConnectionFormat_t>(CF_GENIVI_ANALOG));
+		listSourceFormats.push_back(static_cast<org::genivi::am::am_CustomConnectionFormat_t>(CF_GENIVI_AUTO));
 
 		org::genivi::am::am_ConnectionFormat_L listSinkFormats;
-		listSinkFormats.push_back(static_cast<org::genivi::am::am_ConnectionFormat_pe>(CF_GENIVI_AUTO));
-		listSinkFormats.push_back(static_cast<org::genivi::am::am_ConnectionFormat_pe>(CF_GENIVI_ANALOG));
+		listSinkFormats.push_back(static_cast<org::genivi::am::am_CustomConnectionFormat_t>(CF_GENIVI_AUTO));
+		listSinkFormats.push_back(static_cast<org::genivi::am::am_CustomConnectionFormat_t>(CF_GENIVI_ANALOG));
 
 		org::genivi::am::am_Convertion_L convertionMatrix;
 		convertionMatrix.push_back(1);
 		convertionMatrix.push_back(0);
 
-		std::vector<am_ConnectionFormat_e> am_listSourceFormats;
-		am_listSourceFormats.push_back(am_ConnectionFormat_e::CF_GENIVI_ANALOG);
-		am_listSourceFormats.push_back(am_ConnectionFormat_e::CF_GENIVI_AUTO);
+		std::vector<am_CustomConnectionFormat_t> am_listSourceFormats;
+		am_listSourceFormats.push_back(CF_GENIVI_ANALOG);
+		am_listSourceFormats.push_back(CF_GENIVI_AUTO);
 
-		std::vector<am_ConnectionFormat_e> am_listSinkFormats;
-		am_listSinkFormats.push_back(am_ConnectionFormat_e::CF_GENIVI_AUTO);
-		am_listSinkFormats.push_back(am_ConnectionFormat_e::CF_GENIVI_ANALOG);
+		std::vector<am_CustomConnectionFormat_t> am_listSinkFormats;
+		am_listSinkFormats.push_back(CF_GENIVI_AUTO);
+		am_listSinkFormats.push_back(CF_GENIVI_ANALOG);
 
 		std::vector<bool> am_convertionMatrix;
 		am_convertionMatrix.push_back(1);
@@ -1296,27 +1296,27 @@ MATCHER_P(IsSoundPropertiesArrayEqualTo, value, "") {
 void prepareArrays(	org::genivi::am::am_SoundProperty_L & listSoundProperties,
 						org::genivi::am::am_ConnectionFormat_L & listSinkFormats,
 						org::genivi::am::am_MainSoundProperty_L & listMainSoundProperties,
-						std::vector<am_ConnectionFormat_e> & am_listSinkFormats,
+						std::vector<am_CustomConnectionFormat_t> & am_listSinkFormats,
 						std::vector<am_SoundProperty_s> & am_listSoundProperties,
 						std::vector<am_MainSoundProperty_s> & am_listMainSoundProperties)
 {
-	listSoundProperties.push_back(org::genivi::am::am_SoundProperty_s(static_cast<org::genivi::am::am_SoundPropertyType_pe>(SP_MAX), 50));
-	listSoundProperties.push_back(org::genivi::am::am_SoundProperty_s(static_cast<org::genivi::am::am_SoundPropertyType_pe>(SP_MAX), 51));
+	listSoundProperties.push_back(org::genivi::am::am_SoundProperty_s(SP_UNKNOWN, 50));
+	listSoundProperties.push_back(org::genivi::am::am_SoundProperty_s(SP_UNKNOWN, 51));
 
-	listSinkFormats.push_back(static_cast<org::genivi::am::am_ConnectionFormat_pe>(CF_GENIVI_AUTO));
-	listSinkFormats.push_back(static_cast<org::genivi::am::am_ConnectionFormat_pe>(CF_GENIVI_ANALOG));
+	listSinkFormats.push_back(static_cast<org::genivi::am::am_CustomConnectionFormat_t>(CF_GENIVI_AUTO));
+	listSinkFormats.push_back(static_cast<org::genivi::am::am_CustomConnectionFormat_t>(CF_GENIVI_ANALOG));
 
-	listMainSoundProperties.push_back(org::genivi::am::am_MainSoundProperty_s(static_cast<org::genivi::am::am_MainSoundPropertyType_pe>(MSP_MAX), 50));
-	listMainSoundProperties.push_back(org::genivi::am::am_MainSoundProperty_s(static_cast<org::genivi::am::am_MainSoundPropertyType_pe>(MSP_MAX), 51));
+	listMainSoundProperties.push_back(org::genivi::am::am_MainSoundProperty_s(MSP_UNKNOWN, 50));
+	listMainSoundProperties.push_back(org::genivi::am::am_MainSoundProperty_s(MSP_UNKNOWN, 51));
 
-	am_listSinkFormats.push_back(am_ConnectionFormat_e::CF_GENIVI_AUTO);
-	am_listSinkFormats.push_back(am_ConnectionFormat_e::CF_GENIVI_ANALOG);
+	am_listSinkFormats.push_back(CF_GENIVI_AUTO);
+	am_listSinkFormats.push_back(CF_GENIVI_ANALOG);
 
-	am_listSoundProperties.push_back((am_SoundProperty_s){am_SoundPropertyType_e::SP_MAX, 50});
-	am_listSoundProperties.push_back((am_SoundProperty_s){am_SoundPropertyType_e::SP_MAX, 51});
+	am_listSoundProperties.push_back((am_SoundProperty_s){SP_UNKNOWN, 50});
+	am_listSoundProperties.push_back((am_SoundProperty_s){SP_UNKNOWN, 51});
 
-	am_listMainSoundProperties.push_back((am_MainSoundProperty_s){am_MainSoundPropertyType_e::MSP_MAX, 50});
-	am_listMainSoundProperties.push_back((am_MainSoundProperty_s){am_MainSoundPropertyType_e::MSP_MAX, 51});
+	am_listMainSoundProperties.push_back((am_MainSoundProperty_s){MSP_UNKNOWN, 50});
+	am_listMainSoundProperties.push_back((am_MainSoundProperty_s){MSP_UNKNOWN, 51});
 }
 
 TEST_F(CAmRoutingInterfaceCAPITests, updateSink)
@@ -1331,7 +1331,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, updateSink)
 		org::genivi::am::am_SoundProperty_L listSoundProperties;
 		org::genivi::am::am_ConnectionFormat_L listSinkFormats;
 		org::genivi::am::am_MainSoundProperty_L listMainSoundProperties;
-		std::vector<am_ConnectionFormat_e> am_listSinkFormats;
+		std::vector<am_CustomConnectionFormat_t> am_listSinkFormats;
 		std::vector<am_SoundProperty_s> am_listSoundProperties;
 		std::vector<am_MainSoundProperty_s> am_listMainSoundProperties;
 		prepareArrays(listSoundProperties, listSinkFormats, listMainSoundProperties, am_listSinkFormats, am_listSoundProperties, am_listMainSoundProperties);
@@ -1357,7 +1357,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, updateSource)
 		org::genivi::am::am_SoundProperty_L listSoundProperties;
 		org::genivi::am::am_ConnectionFormat_L listSinkFormats;
 		org::genivi::am::am_MainSoundProperty_L listMainSoundProperties;
-		std::vector<am_ConnectionFormat_e> am_listSinkFormats;
+		std::vector<am_CustomConnectionFormat_t> am_listSinkFormats;
 		std::vector<am_SoundProperty_s> am_listSoundProperties;
 		std::vector<am_MainSoundProperty_s> am_listMainSoundProperties;
 		prepareArrays(listSoundProperties, listSinkFormats, listMainSoundProperties, am_listSinkFormats, am_listSoundProperties, am_listMainSoundProperties);
@@ -1405,16 +1405,16 @@ TEST_F(CAmRoutingInterfaceCAPITests, ackSetVolumes)
 		listVolumes.push_back(org::genivi::am::am_Volumes_s(org::genivi::am::am_VolumeType_e::VT_MAX,
 												   dt,
 												   50,
-												   static_cast<org::genivi::am::am_RampType_pe>(RAMP_GENIVI_DIRECT),
+												   static_cast<org::genivi::am::am_CustomRampType_t>(RAMP_GENIVI_DIRECT),
 												   50));
 
 		std::vector<am_Volumes_s> am_listVolumes;
 		am_DataType_u dt1;
 		dt1.sink = 103;
-		am_listVolumes.push_back((am_Volumes_s){am_VolumeType_e::VT_MAX,
+		am_listVolumes.push_back((am_Volumes_s){VT_MAX,
 												dt1,
 												50,
-												am_RampType_e::RAMP_GENIVI_DIRECT,
+												RAMP_GENIVI_DIRECT,
 												50});
 
 		am_Handle_s handle_s;
@@ -1487,9 +1487,9 @@ TEST_F(CAmRoutingInterfaceCAPITests, hookSinkNotificationDataChange)
 		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
 		am_Error_e error = E_OK;
 		org::genivi::am::am_sinkID_t testID = TEST_ID_1;
-		org::genivi::am::am_NotificationPayload_s payload(static_cast<org::genivi::am::am_NotificationType_pe>(am_NotificationType_e::NT_MAX), 50);
+		org::genivi::am::am_NotificationPayload_s payload(NT_UNKNOWN, 50);
 
-		am_NotificationPayload_s am_payload = (am_NotificationPayload_s){am_NotificationType_e::NT_MAX, 50};
+		am_NotificationPayload_s am_payload = (am_NotificationPayload_s){NT_UNKNOWN, 50};
 
 		EXPECT_CALL(*env->mpRoutingReceive, hookSinkNotificationDataChange(testID, IsPayloadEqualTo(am_payload))).Times(1);
 		env->mProxy->hookSinkNotificationDataChange(testID, payload, callStatus);
@@ -1506,9 +1506,9 @@ TEST_F(CAmRoutingInterfaceCAPITests, hookSourceNotificationDataChange)
 		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
 		am_Error_e error = E_OK;
 		org::genivi::am::am_sourceID_t testID = TEST_ID_1;
-		org::genivi::am::am_NotificationPayload_s payload(am_NotificationType_e::NT_MAX, 50);
+		org::genivi::am::am_NotificationPayload_s payload(NT_UNKNOWN, 50);
 
-		am_NotificationPayload_s am_payload = (am_NotificationPayload_s){am_NotificationType_e::NT_MAX, 50};
+		am_NotificationPayload_s am_payload = (am_NotificationPayload_s){NT_UNKNOWN, 50};
 
 		EXPECT_CALL(*env->mpRoutingReceive, hookSourceNotificationDataChange(testID, IsPayloadEqualTo(am_payload))).Times(1);
 		env->mProxy->hookSourceNotificationDataChange(testID, payload, callStatus);
@@ -1740,7 +1740,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetSourceVolume)
 
 		am_volume_t volume = 50;
 		am_time_t time = 10;
-		am_RampType_e ramp = am_RampType_e::RAMP_GENIVI_DIRECT;
+		am_CustomRampType_t ramp = RAMP_GENIVI_DIRECT;
 		am_Handle_s handle = {H_SETSOURCEVOLUME, 20};
 		am_SourceState_e state = am_SourceState_e::SS_MAX;
 		EXPECT_CALL(*env->mpRoutingReceive, ackSetSourceVolumeChange(IsHandleEqual(handle), volume, E_OK)).Times(1);
@@ -1796,7 +1796,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetSinkVolume)
 
 		am_volume_t volume = 50;
 		am_time_t time = 10;
-		am_RampType_e ramp = am_RampType_e::RAMP_GENIVI_DIRECT;
+		am_CustomRampType_t ramp = RAMP_GENIVI_DIRECT;
 		am_Handle_s handle = {H_SETSINKVOLUME, 20};
 		am_SourceState_e state = am_SourceState_e::SS_MAX;
 		EXPECT_CALL(*env->mpRoutingReceive, ackSetSinkVolumeChange(IsHandleEqual(handle), volume, E_OK)).Times(1);
@@ -1822,7 +1822,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncConnect)
 
 		org::genivi::am::am_connectionID_t connectionID = TEST_ID_1;
 		am_Handle_s handle = {H_CONNECT, 20};
-		am_ConnectionFormat_e cf = am_ConnectionFormat_e::CF_GENIVI_STEREO;
+		am_CustomConnectionFormat_t cf = CF_GENIVI_STEREO;
 		EXPECT_CALL(*env->mpRoutingReceive, ackConnect(IsHandleEqual(handle), connectionID, E_OK)).Times(1);
 		am_Error_e error = env->mpPlugin->asyncConnect(handle, connectionID, TEST_ID_1, TEST_ID_1, cf);
 		usleep(50000);
@@ -1844,7 +1844,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncDisconnect)
 
 		org::genivi::am::am_connectionID_t connectionID = TEST_ID_1;
 		am_Handle_s handle = {H_DISCONNECT, 20};
-		am_ConnectionFormat_e cf = am_ConnectionFormat_e::CF_GENIVI_STEREO;
+		am_CustomConnectionFormat_t cf = CF_GENIVI_STEREO;
 		EXPECT_CALL(*env->mpRoutingReceive, ackDisconnect(IsHandleEqual(handle), connectionID, E_OK)).Times(1);
 		am_Error_e error = env->mpPlugin->asyncDisconnect(handle, connectionID);
 		usleep(50000);
@@ -1913,9 +1913,9 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetSinkSoundProperties)
 		am_SourceState_e state = am_SourceState_e::SS_MAX;
 
 		std::vector<am_SoundProperty_s> listSoundProperties;
-		listSoundProperties.push_back((am_SoundProperty_s){am_SoundPropertyType_e::SP_EXAMPLE_MID, 100});
-		listSoundProperties.push_back((am_SoundProperty_s){am_SoundPropertyType_e::SP_MAX, 101});
-		listSoundProperties.push_back((am_SoundProperty_s){am_SoundPropertyType_e::SP_EXAMPLE_TREBLE, 100});
+		listSoundProperties.push_back((am_SoundProperty_s){SP_GENIVI_MID, 100});
+		listSoundProperties.push_back((am_SoundProperty_s){SP_UNKNOWN, 101});
+		listSoundProperties.push_back((am_SoundProperty_s){SP_GENIVI_TREBLE, 100});
 
 		EXPECT_CALL(*env->mpRoutingReceive, ackSetSinkSoundProperties(IsHandleEqual(handle), E_OK)).Times(1);
 		am_Error_e error = env->mpPlugin->asyncSetSinkSoundProperties(handle, sID, listSoundProperties);
@@ -1942,7 +1942,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetSinkSoundProperty)
 		am_SourceState_e state = am_SourceState_e::SS_MAX;
 
 		EXPECT_CALL(*env->mpRoutingReceive, ackSetSinkSoundProperty(IsHandleEqual(handle), E_OK)).Times(1);
-		am_Error_e error = env->mpPlugin->asyncSetSinkSoundProperty(handle, sID, (am_SoundProperty_s){am_SoundPropertyType_e::SP_EXAMPLE_MID, 100});
+		am_Error_e error = env->mpPlugin->asyncSetSinkSoundProperty(handle, sID, (am_SoundProperty_s){SP_GENIVI_MID, 100});
 		usleep(50000);
 		ASSERT_EQ( error, E_OK );
 		ASSERT_FALSE( backdoor.containsHandle( handle.handle) );
@@ -1966,9 +1966,9 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetSourceSoundProperties)
 		am_SourceState_e state = am_SourceState_e::SS_MAX;
 
 		std::vector<am_SoundProperty_s> listSoundProperties;
-		listSoundProperties.push_back((am_SoundProperty_s){am_SoundPropertyType_e::SP_EXAMPLE_MID, 100});
-		listSoundProperties.push_back((am_SoundProperty_s){am_SoundPropertyType_e::SP_MAX, 101});
-		listSoundProperties.push_back((am_SoundProperty_s){am_SoundPropertyType_e::SP_EXAMPLE_TREBLE, 100});
+		listSoundProperties.push_back((am_SoundProperty_s){SP_GENIVI_MID, 100});
+		listSoundProperties.push_back((am_SoundProperty_s){SP_UNKNOWN, 101});
+		listSoundProperties.push_back((am_SoundProperty_s){SP_GENIVI_TREBLE, 100});
 
 		EXPECT_CALL(*env->mpRoutingReceive, ackSetSourceSoundProperties(IsHandleEqual(handle), E_OK)).Times(1);
 		am_Error_e error = env->mpPlugin->asyncSetSourceSoundProperties(handle, sID, listSoundProperties);
@@ -1995,7 +1995,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetSourceSoundProperty)
 		am_SourceState_e state = am_SourceState_e::SS_MAX;
 
 		EXPECT_CALL(*env->mpRoutingReceive, ackSetSourceSoundProperty(IsHandleEqual(handle), E_OK)).Times(1);
-		am_Error_e error = env->mpPlugin->asyncSetSourceSoundProperty(handle, sID, (am_SoundProperty_s){am_SoundPropertyType_e::SP_EXAMPLE_MID, 100});
+		am_Error_e error = env->mpPlugin->asyncSetSourceSoundProperty(handle, sID, (am_SoundProperty_s){SP_GENIVI_MID, 100});
 		usleep(50000);
 		ASSERT_EQ( error, E_OK );
 		ASSERT_FALSE( backdoor.containsHandle( handle.handle) );
@@ -2016,7 +2016,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncCrossFade)
 		ASSERT_TRUE( backdoor.containsCrossfader( TEST_ID_1 ));
 
 		am_Handle_s handle = {H_CROSSFADE, 200};
-		am_RampType_e state = am_RampType_e::RAMP_GENIVI_DIRECT;
+		am_CustomRampType_t state = RAMP_GENIVI_DIRECT;
 		am_HotSink_e hotSink = HS_UNKNOWN;
 		EXPECT_CALL(*env->mpRoutingReceive, ackCrossFading(IsHandleEqual(handle), hotSink, E_OK)).Times(1);
 		am_Error_e error = env->mpPlugin->asyncCrossFade(handle, sID, hotSink, state, 50);
@@ -2038,7 +2038,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetSinkNotificationConfigurati
 		ASSERT_TRUE( backdoor.containsSinkWithID( TEST_ID_1 ));
 
 		am_Handle_s handle = {H_CONNECT, 200};
-		am_NotificationConfiguration_s nc = (am_NotificationConfiguration_s){am_NotificationType_e::NT_MAX, am_NotificationStatus_e::NS_MAX};
+		am_NotificationConfiguration_s nc = (am_NotificationConfiguration_s){NT_UNKNOWN, am_NotificationStatus_e::NS_MAX};
 		EXPECT_CALL(*env->mpRoutingReceive, ackSinkNotificationConfiguration(IsHandleStructEqualTo(handle), E_OK)).Times(1);
 		am_Error_e error = env->mpPlugin->asyncSetSinkNotificationConfiguration(handle, TEST_ID_1, nc);
 		usleep(50000);
@@ -2059,7 +2059,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetSourceNotificationConfigura
 		ASSERT_TRUE( backdoor.containsSinkWithID( TEST_ID_1 ));
 
 		am_Handle_s handle = {H_CONNECT, 200};
-		am_NotificationConfiguration_s nc = (am_NotificationConfiguration_s){am_NotificationType_e::NT_MAX, am_NotificationStatus_e::NS_MAX};
+		am_NotificationConfiguration_s nc = (am_NotificationConfiguration_s){NT_UNKNOWN, am_NotificationStatus_e::NS_MAX};
 		EXPECT_CALL(*env->mpRoutingReceive, ackSourceNotificationConfiguration(IsHandleStructEqualTo(handle), E_OK)).Times(1);
 		am_Error_e error = env->mpPlugin->asyncSetSourceNotificationConfiguration(handle, TEST_ID_1, nc);
 		usleep(50000);
@@ -2084,16 +2084,16 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetVolumes)
 		listVolumes.push_back(org::genivi::am::am_Volumes_s(org::genivi::am::am_VolumeType_e::VT_SOURCE,
 												   dt,
 												   50,
-												   static_cast<org::genivi::am::am_RampType_pe>(RAMP_GENIVI_DIRECT),
+												   static_cast<org::genivi::am::am_CustomRampType_t>(RAMP_GENIVI_DIRECT),
 												   50));
 
 		std::vector<am_Volumes_s> am_listVolumes;
 		am_DataType_u dt1;
 		dt1.source = TEST_ID_2;
-		am_listVolumes.push_back((am_Volumes_s){am_VolumeType_e::VT_SOURCE,
+		am_listVolumes.push_back((am_Volumes_s){VT_SOURCE,
 												dt1,
 												50,
-												am_RampType_e::RAMP_GENIVI_DIRECT,
+												RAMP_GENIVI_DIRECT,
 												50});
 
 		am_Handle_s handle = {H_SETVOLUMES, 200};

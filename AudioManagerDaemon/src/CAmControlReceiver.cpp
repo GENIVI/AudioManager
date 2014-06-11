@@ -78,7 +78,7 @@ am_Error_e CAmControlReceiver::getRoute(const bool onlyfree, const am_sourceID_t
     return (mRouter->getRoute(onlyfree, sourceID, sinkID, returnList));
 }
 
-am_Error_e CAmControlReceiver::connect(am_Handle_s & handle, am_connectionID_t & connectionID, const am_ConnectionFormat_e format, const am_sourceID_t sourceID, const am_sinkID_t sinkID)
+am_Error_e CAmControlReceiver::connect(am_Handle_s & handle, am_connectionID_t & connectionID, const am_CustomConnectionFormat_t format, const am_sourceID_t sourceID, const am_sinkID_t sinkID)
 {
     logInfo("CAmControlReceiver::connect got called, connectionFormat=", format, "sourceID=", sourceID, "sinkID=", sinkID);
 
@@ -99,7 +99,7 @@ am_Error_e CAmControlReceiver::disconnect(am_Handle_s & handle, const am_connect
     return (mRoutingSender->asyncDisconnect(handle, connectionID));
 }
 
-am_Error_e CAmControlReceiver::crossfade(am_Handle_s & handle, const am_HotSink_e hotSource, const am_crossfaderID_t crossfaderID, const am_RampType_e rampType, const am_time_t rampTime)
+am_Error_e CAmControlReceiver::crossfade(am_Handle_s & handle, const am_HotSink_e hotSource, const am_crossfaderID_t crossfaderID, const am_CustomRampType_t rampType, const am_time_t rampTime)
 {
     logInfo("CAmControlReceiver::crossfade got called, hotSource=", hotSource, "crossfaderID=", crossfaderID, "rampType=", rampType, "rampTime=", rampTime);
     return (mRoutingSender->asyncCrossFade(handle, crossfaderID, hotSource, rampType, rampTime));
@@ -111,13 +111,13 @@ am_Error_e CAmControlReceiver::setSourceState(am_Handle_s & handle, const am_sou
     return (mRoutingSender->asyncSetSourceState(handle, sourceID, state));
 }
 
-am_Error_e CAmControlReceiver::setSinkVolume(am_Handle_s & handle, const am_sinkID_t sinkID, const am_volume_t volume, const am_RampType_e ramp, const am_time_t time)
+am_Error_e CAmControlReceiver::setSinkVolume(am_Handle_s & handle, const am_sinkID_t sinkID, const am_volume_t volume, const am_CustomRampType_t ramp, const am_time_t time)
 {
     logInfo("CAmControlReceiver::setSinkVolume got called, sinkID=", sinkID, "volume=", volume, "ramp=", ramp, "time=", time);
     return (mRoutingSender->asyncSetSinkVolume(handle, sinkID, volume, ramp, time));
 }
 
-am_Error_e CAmControlReceiver::setSourceVolume(am_Handle_s & handle, const am_sourceID_t sourceID, const am_volume_t volume, const am_RampType_e rampType, const am_time_t time)
+am_Error_e CAmControlReceiver::setSourceVolume(am_Handle_s & handle, const am_sourceID_t sourceID, const am_volume_t volume, const am_CustomRampType_t rampType, const am_time_t time)
 {
     logInfo("CAmControlReceiver::setSourceVolume got called, sourceID=", sourceID, "volume=", volume, "ramp=", rampType, "time=", time);
     return (mRoutingSender->asyncSetSourceVolume(handle, sourceID, volume, rampType, time));
@@ -471,19 +471,19 @@ void CAmControlReceiver::getInterfaceVersion(std::string & version) const
     version = ControlReceiveVersion;
 }
 
-am_Error_e CAmControlReceiver::changeSourceDB(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_ConnectionFormat_e>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)
+am_Error_e CAmControlReceiver::changeSourceDB(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_CustomConnectionFormat_t>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)
 {
     logInfo("CAmControlReceiver::changeSourceDB was called, sourceID", sourceID);
     return (mDatabaseHandler->changeSourceDB(sourceID,sourceClassID,listSoundProperties,listConnectionFormats,listMainSoundProperties));
 }
 
-am_Error_e CAmControlReceiver::changeSinkDB(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_ConnectionFormat_e>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)
+am_Error_e CAmControlReceiver::changeSinkDB(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_CustomConnectionFormat_t>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)
 {
     logInfo("CAmControlReceiver::changeSinkDB was called with sinkID", sinkID);
     return (mDatabaseHandler->changeSinkDB(sinkID,sinkClassID,listSoundProperties,listConnectionFormats,listMainSoundProperties));
 }
 
-am_Error_e CAmControlReceiver::changeGatewayDB(const am_gatewayID_t gatewayID, const std::vector<am_ConnectionFormat_e>& listSourceConnectionFormats, const std::vector<am_ConnectionFormat_e>& listSinkConnectionFormats, const std::vector<bool>& convertionMatrix)
+am_Error_e CAmControlReceiver::changeGatewayDB(const am_gatewayID_t gatewayID, const std::vector<am_CustomConnectionFormat_t>& listSourceConnectionFormats, const std::vector<am_CustomConnectionFormat_t>& listSinkConnectionFormats, const std::vector<bool>& convertionMatrix)
 {
     logInfo("CAmControlReceiver::changeGatewayDB was called with gatewayID", gatewayID);
     return (mDatabaseHandler->changeGatewayDB(gatewayID,listSourceConnectionFormats,listSinkConnectionFormats,convertionMatrix));

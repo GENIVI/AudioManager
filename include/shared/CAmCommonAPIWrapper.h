@@ -86,6 +86,7 @@ public:
 	}
 	bool unregisterStub(const std::string & aCommonAPIAddress)
 	{
+		(void)aCommonAPIAddress;
 		/** Not implemented yet
 			todo: Check whether the appropriate method is available and uncomment...
 

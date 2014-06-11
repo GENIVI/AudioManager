@@ -23,8 +23,8 @@
  but the parameters of the Classes itself are product specific and have to be interpreted by the AudioManagerController. This concept allows for very individual
  implementations of system behaviors.\n
  Since Classes are held in the database, Classes can be registered and deregistered during runtime, it is recommended that the AudioManagerController enters
- all source & sink classes at start-up into the database.A ClassProperty exists out of an enumeration (am_ClassProperty_e, project specific) and a corresponding
- value (integer) that is interpreted by the AudioManagerController according to am_ClassProperty_e.\n
+ all source & sink classes at start-up into the database.A ClassProperty exists out of an enumeration (am_CustomClassProperty_t, project specific) and a corresponding
+ value (integer) that is interpreted by the AudioManagerController according to am_CustomClassProperty_t.\n
  There is no restriction to the number of properties a class can have and how many classes can exist in a system.\n
  \section attributes Attributes
  - am::am_SourceClass_s describes the attributes of a source class\n

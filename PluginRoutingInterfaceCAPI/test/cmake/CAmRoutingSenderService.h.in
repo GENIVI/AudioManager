@@ -76,11 +76,11 @@ public:
 
 	virtual void setDomainState(org::genivi::am::am_domainID_t domainID, org::genivi::am::am_DomainState_e domainState, org::genivi::am::am_Error_e& error);
 
-	virtual void asyncSetSourceVolume(org::genivi::am::am_Handle_s handle, org::genivi::am::am_sourceID_t sourceID, org::genivi::am::am_volume_t volume, org::genivi::am::am_RampType_pe ramp, org::genivi::am::am_time_t time);
+	virtual void asyncSetSourceVolume(org::genivi::am::am_Handle_s handle, org::genivi::am::am_sourceID_t sourceID, org::genivi::am::am_volume_t volume, org::genivi::am::am_CustomRampType_t ramp, org::genivi::am::am_time_t time);
 
-	virtual void asyncSetSinkVolume(org::genivi::am::am_Handle_s handle, org::genivi::am::am_sinkID_t sinkID, org::genivi::am::am_volume_t volume, org::genivi::am::am_RampType_pe ramp, org::genivi::am::am_time_t time);
+	virtual void asyncSetSinkVolume(org::genivi::am::am_Handle_s handle, org::genivi::am::am_sinkID_t sinkID, org::genivi::am::am_volume_t volume, org::genivi::am::am_CustomRampType_t ramp, org::genivi::am::am_time_t time);
 
-	virtual void asyncConnect(org::genivi::am::am_Handle_s handle, org::genivi::am::am_connectionID_t connectionID, org::genivi::am::am_sourceID_t sourceID, org::genivi::am::am_sinkID_t sinkID, org::genivi::am::am_ConnectionFormat_pe connectionFormat);
+	virtual void asyncConnect(org::genivi::am::am_Handle_s handle, org::genivi::am::am_connectionID_t connectionID, org::genivi::am::am_sourceID_t sourceID, org::genivi::am::am_sinkID_t sinkID, org::genivi::am::am_CustomConnectionFormat_t connectionFormat);
 
 	virtual void asyncDisconnect(org::genivi::am::am_Handle_s handle, org::genivi::am::am_connectionID_t connectionID);
 
@@ -94,7 +94,7 @@ public:
 
 	virtual void asyncSetSourceSoundProperty(org::genivi::am::am_Handle_s handle, org::genivi::am::am_sourceID_t sourceID, org::genivi::am::am_SoundProperty_s soundProperty);
 
-	virtual void asyncCrossFade(org::genivi::am::am_Handle_s handle, org::genivi::am::am_crossfaderID_t crossfaderID, org::genivi::am::am_HotSink_e hotSink, org::genivi::am::am_RampType_pe rampType, org::genivi::am::am_time_t time);
+	virtual void asyncCrossFade(org::genivi::am::am_Handle_s handle, org::genivi::am::am_crossfaderID_t crossfaderID, org::genivi::am::am_HotSink_e hotSink, org::genivi::am::am_CustomRampType_t rampType, org::genivi::am::am_time_t time);
 
 	virtual void asyncSetVolumes(org::genivi::am::am_Handle_s handle, org::genivi::am::am_Volumes_L volumes);
 

@@ -202,7 +202,7 @@ am_Error_e CAmRoutingSender::asyncAbort(const am_Handle_s& handle)
     return (E_NON_EXISTENT);
 }
 
-am_Error_e CAmRoutingSender::asyncConnect(am_Handle_s& handle, const am_connectionID_t connectionID, const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_ConnectionFormat_e connectionFormat)
+am_Error_e CAmRoutingSender::asyncConnect(am_Handle_s& handle, const am_connectionID_t connectionID, const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_CustomConnectionFormat_t connectionFormat)
 {
     am_handleData_c handleData;
     SinkInterfaceMap::iterator iter = mMapSinkInterface.begin();
@@ -236,7 +236,7 @@ am_Error_e CAmRoutingSender::asyncDisconnect(am_Handle_s& handle, const am_conne
     return (E_NON_EXISTENT);
 }
 
-am_Error_e CAmRoutingSender::asyncSetSinkVolume(am_Handle_s& handle, const am_sinkID_t sinkID, const am_volume_t volume, const am_RampType_e ramp, const am_time_t time)
+am_Error_e CAmRoutingSender::asyncSetSinkVolume(am_Handle_s& handle, const am_sinkID_t sinkID, const am_volume_t volume, const am_CustomRampType_t ramp, const am_time_t time)
 {
     am_handleData_c handleData;
     SinkInterfaceMap::iterator iter = mMapSinkInterface.begin();
@@ -252,7 +252,7 @@ am_Error_e CAmRoutingSender::asyncSetSinkVolume(am_Handle_s& handle, const am_si
     return (E_NON_EXISTENT);
 }
 
-am_Error_e CAmRoutingSender::asyncSetSourceVolume(am_Handle_s& handle, const am_sourceID_t sourceID, const am_volume_t volume, const am_RampType_e ramp, const am_time_t time)
+am_Error_e CAmRoutingSender::asyncSetSourceVolume(am_Handle_s& handle, const am_sourceID_t sourceID, const am_volume_t volume, const am_CustomRampType_t ramp, const am_time_t time)
 {
     am_handleData_c handleData;
     SourceInterfaceMap::iterator iter = mMapSourceInterface.begin();
@@ -349,7 +349,7 @@ am_Error_e CAmRoutingSender::asyncSetSinkSoundProperties(am_Handle_s& handle, co
 
 }
 
-am_Error_e CAmRoutingSender::asyncCrossFade(am_Handle_s& handle, const am_crossfaderID_t crossfaderID, const am_HotSink_e hotSink, const am_RampType_e rampType, const am_time_t time)
+am_Error_e CAmRoutingSender::asyncCrossFade(am_Handle_s& handle, const am_crossfaderID_t crossfaderID, const am_HotSink_e hotSink, const am_CustomRampType_t rampType, const am_time_t time)
 {
     am_handleData_c handleData;
     CrossfaderInterfaceMap::iterator iter = mMapCrossfaderInterface.begin();

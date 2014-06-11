@@ -63,6 +63,7 @@ SET(AUDIOMAN_SRCS_CXX
     src/CAmLog.cpp
 )
 
+
 # Preallocation variable for the map.
 IF(NOT WITH_DATABASE_STORAGE )
 

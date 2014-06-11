@@ -45,7 +45,7 @@ extern void CAmConvertCAPI2AM(const org::genivi::am::am_Handle_s &, am::am_Handl
 extern void CAmConvertCAPI2AM(const org::genivi::am::am_NotificationPayload_s & , am::am_NotificationPayload_s & );
 extern void CAmConvertCAPIVector2AM(const std::vector<org::genivi::am::am_NotificationConfiguration_s> & , std::vector<am::am_NotificationConfiguration_s> & );
 extern void CAmConvertCAPIVector2AM(const std::vector<org::genivi::am::am_SoundProperty_s> &, std::vector<am::am_SoundProperty_s> &);
-extern void CAmConvertCAPIVector2AM(const std::vector<org::genivi::am::am_ConnectionFormat_pe> &, std::vector<am::am_ConnectionFormat_e> & );
+extern void CAmConvertCAPIVector2AM(const std::vector<org::genivi::am::am_CustomConnectionFormat_t> &, std::vector<am::am_CustomConnectionFormat_t> & );
 extern void CAmConvertCAPIVector2AM(const std::vector<org::genivi::am::am_MainSoundProperty_s> &, std::vector<am::am_MainSoundProperty_s> & );
 extern void CAmConvertCAPIVector2AM(const std::vector<org::genivi::am::am_Volumes_s> &, std::vector<am::am_Volumes_s> & );
 extern void CAmConvertCAPIVector2AM(const org::genivi::am::am_EarlyData_L &, std::vector<am::am_EarlyData_s> &);

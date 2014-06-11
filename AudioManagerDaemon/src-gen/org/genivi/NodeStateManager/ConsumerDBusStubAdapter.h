@@ -8,13 +8,12 @@
 * http://mozilla.org/MPL/2.0/.
 */
 /**
- * Routing Receive sendInterface description.
- * @author Christian Mueller
+ * @author Christian Linke
  */
-#ifndef ORG_GENIVI_AM_Routing_Control_Observer_DBUS_STUB_ADAPTER_H_
-#define ORG_GENIVI_AM_Routing_Control_Observer_DBUS_STUB_ADAPTER_H_
+#ifndef ORG_GENIVI_NODESTATEMANAGER_Consumer_DBUS_STUB_ADAPTER_H_
+#define ORG_GENIVI_NODESTATEMANAGER_Consumer_DBUS_STUB_ADAPTER_H_
 
-#include <org/genivi/am/RoutingControlObserverStub.h>
+#include <org/genivi/NodeStateManager/ConsumerStub.h>
 
 #if !defined (COMMONAPI_INTERNAL_COMPILATION)
 #define COMMONAPI_INTERNAL_COMPILATION
@@ -29,13 +28,13 @@
 
 namespace org {
 namespace genivi {
-namespace am {
+namespace NodeStateManager {
 
-typedef CommonAPI::DBus::DBusStubAdapterHelper<RoutingControlObserverStub> RoutingControlObserverDBusStubAdapterHelper;
+typedef CommonAPI::DBus::DBusStubAdapterHelper<ConsumerStub> ConsumerDBusStubAdapterHelper;
 
-class RoutingControlObserverDBusStubAdapterInternal: public RoutingControlObserverStubAdapter, public RoutingControlObserverDBusStubAdapterHelper {
+class ConsumerDBusStubAdapterInternal: public ConsumerStubAdapter, public ConsumerDBusStubAdapterHelper {
  public:
-    RoutingControlObserverDBusStubAdapterInternal(
+    ConsumerDBusStubAdapterInternal(
             const std::shared_ptr<CommonAPI::DBus::DBusFactory>& factory,
             const std::string& commonApiAddress,
             const std::string& dbusInterfaceName,
@@ -44,19 +43,15 @@ class RoutingControlObserverDBusStubAdapterInternal: public RoutingControlObserv
             const std::shared_ptr<CommonAPI::DBus::DBusProxyConnection>& dbusConnection,
             const std::shared_ptr<CommonAPI::StubBase>& stub);
 
-    ~RoutingControlObserverDBusStubAdapterInternal();
-
-    /**
-     * This attribute signals to the clients the current routing state.
-    A client
-     *  should notify himself to this attribute in order to know the current state and
-     *  act accordingly.
-     */
-    void fireRoutingReadyAttributeChanged(const am_RoutingReady_e& value);
+    ~ConsumerDBusStubAdapterInternal();
 
 
+    void fireNodeApplicationModeEvent(const int32_t& ApplicationModeId);
+    void fireSessionStateChangedEvent(const std::string& SessionStateName, const int32_t& SeatID, const int32_t& SessionState);
+    void fireNodeStateEvent(const int32_t& NodeState);
 
-    const RoutingControlObserverDBusStubAdapterHelper::StubDispatcherTable& getStubDispatcherTable();
+
+    const ConsumerDBusStubAdapterHelper::StubDispatcherTable& getStubDispatcherTable();
 
     void deactivateManagedInstances();
 
@@ -65,12 +60,12 @@ class RoutingControlObserverDBusStubAdapterInternal: public RoutingControlObserv
     virtual const char* getMethodsDBusIntrospectionXmlData() const;
     
   private:
-    RoutingControlObserverDBusStubAdapterHelper::StubDispatcherTable stubDispatcherTable_;
+    ConsumerDBusStubAdapterHelper::StubDispatcherTable stubDispatcherTable_;
 };
 
-class RoutingControlObserverDBusStubAdapter: public RoutingControlObserverDBusStubAdapterInternal, public std::enable_shared_from_this<RoutingControlObserverDBusStubAdapter> {
+class ConsumerDBusStubAdapter: public ConsumerDBusStubAdapterInternal, public std::enable_shared_from_this<ConsumerDBusStubAdapter> {
 public:
-    RoutingControlObserverDBusStubAdapter(
+    ConsumerDBusStubAdapter(
                          const std::shared_ptr<CommonAPI::DBus::DBusFactory>& factory,
                          const std::string& commonApiAddress,
                          const std::string& dbusInterfaceName,
@@ -86,7 +81,7 @@ public:
                             dbusObjectPath,
                             dbusConnection,
                             false),
-            RoutingControlObserverDBusStubAdapterInternal(
+            ConsumerDBusStubAdapterInternal(
                             factory,
                             commonApiAddress,
                             dbusInterfaceName,
@@ -96,8 +91,8 @@ public:
                             stub) { }
 };
 
-} // namespace am
+} // namespace NodeStateManager
 } // namespace genivi
 } // namespace org
 
-#endif // ORG_GENIVI_AM_Routing_Control_Observer_DBUS_STUB_ADAPTER_H_
+#endif // ORG_GENIVI_NODESTATEMANAGER_Consumer_DBUS_STUB_ADAPTER_H_

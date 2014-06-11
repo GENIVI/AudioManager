@@ -2077,7 +2077,7 @@ TEST_F(CAmDatabaseHandlerTest,getMainNotificationsSink)
     testSinkData.listMainNotificationConfigurations.push_back(notify);
 
     am_NotificationConfiguration_s notify1;
-    notify1.type=NT_MAX;
+    notify1.type=NT_UNKNOWN;
     notify1.status=NS_PERIODIC;
     notify1.parameter=5;
 
@@ -2112,7 +2112,7 @@ TEST_F(CAmDatabaseHandlerTest,getMainNotificationsSources)
     testSourceData.listMainNotificationConfigurations.push_back(notify);
 
     am_NotificationConfiguration_s notify1;
-    notify1.type=NT_MAX;
+    notify1.type=NT_UNKNOWN;
     notify1.status=NS_PERIODIC;
     notify1.parameter=5;
 
@@ -2147,12 +2147,12 @@ TEST_F(CAmDatabaseHandlerTest,changeMainNotificationsSources)
     testSourceData.listMainNotificationConfigurations.push_back(notify);
 
     am_NotificationConfiguration_s notify1;
-    notify1.type=NT_MAX;
+    notify1.type=NT_UNKNOWN;
     notify1.status=NS_PERIODIC;
     notify1.parameter=5;
 
     am_NotificationConfiguration_s notify2;
-    notify2.type=NT_MAX;
+    notify2.type=NT_UNKNOWN;
     notify2.status=NS_CHANGE;
     notify2.parameter=10;
 
@@ -2197,12 +2197,12 @@ TEST_F(CAmDatabaseHandlerTest,changeMainNotificationsSink)
     testSinkData.listMainNotificationConfigurations.push_back(notify);
 
     am_NotificationConfiguration_s notify1;
-    notify1.type=NT_MAX;
+    notify1.type=NT_UNKNOWN;
     notify1.status=NS_PERIODIC;
     notify1.parameter=5;
 
     am_NotificationConfiguration_s notify2;
-    notify2.type=NT_MAX;
+    notify2.type=NT_UNKNOWN;
     notify2.status=NS_CHANGE;
     notify2.parameter=27;
 

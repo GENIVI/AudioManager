@@ -59,7 +59,7 @@ am_Error_e CAmRouter::getRoute(const bool onlyfree, const am_sourceID_t sourceID
     if (sourceDomainID == sinkDomainID) //shortcut if the domains are the same...
     {
         //first get the list of possible connection formats
-        std::vector<am_ConnectionFormat_e> listFormats, listPriorityConnectionFormats;
+        std::vector<am_CustomConnectionFormat_t> listFormats, listPriorityConnectionFormats;
         listPossibleConnectionFormats(sourceID, sinkID, listFormats);
 
         //dummy route
@@ -169,24 +169,24 @@ am_Error_e CAmRouter::getRoute(const bool onlyfree, const am_sourceID_t sourceID
     return (E_OK);
 }
 
-void CAmRouter::listPossibleConnectionFormats(const am_sourceID_t sourceID, const am_sinkID_t sinkID, std::vector<am_ConnectionFormat_e>& listFormats) const
+void CAmRouter::listPossibleConnectionFormats(const am_sourceID_t sourceID, const am_sinkID_t sinkID, std::vector<am_CustomConnectionFormat_t>& listFormats) const
 {
-    std::vector<am_ConnectionFormat_e> listSourceFormats;
-    std::vector<am_ConnectionFormat_e> listSinkFormats;
+    std::vector<am_CustomConnectionFormat_t> listSourceFormats;
+    std::vector<am_CustomConnectionFormat_t> listSinkFormats;
     mpDatabaseHandler->getListSinkConnectionFormats(sinkID, listSinkFormats);
     mpDatabaseHandler->getListSourceConnectionFormats(sourceID, listSourceFormats);
     std::sort(listSinkFormats.begin(), listSinkFormats.end()); //todo: this might be not needed if we use strictly sorted input
     std::sort(listSourceFormats.begin(), listSourceFormats.end()); //todo: this might be not needed if we use strictly sorted input
-    std::insert_iterator<std::vector<am_ConnectionFormat_e> > inserter(listFormats, listFormats.begin());
+    std::insert_iterator<std::vector<am_CustomConnectionFormat_t> > inserter(listFormats, listFormats.begin());
     set_intersection(listSourceFormats.begin(), listSourceFormats.end(), listSinkFormats.begin(), listSinkFormats.end(), inserter);
 }
 
 am_Error_e CAmRouter::findBestWay(am_sinkID_t sinkID, am_sourceID_t sourceID, std::vector<am_RoutingElement_s> & listRoute, std::vector<am_RoutingElement_s>::iterator routeIterator, std::vector<am_gatewayID_t>::iterator gatewayIterator)
 {
     am_Error_e returnError = E_NOT_POSSIBLE;
-    std::vector<am_ConnectionFormat_e> listConnectionFormats;
-    std::vector<am_ConnectionFormat_e> listMergeConnectionFormats;
-    std::vector<am_ConnectionFormat_e> listPriorityConnectionFormats;
+    std::vector<am_CustomConnectionFormat_t> listConnectionFormats;
+    std::vector<am_CustomConnectionFormat_t> listMergeConnectionFormats;
+    std::vector<am_CustomConnectionFormat_t> listPriorityConnectionFormats;
     std::vector<am_RoutingElement_s>::iterator nextIterator = routeIterator + 1;
     //get best connection format
     listPossibleConnectionFormats(routeIterator->sourceID, routeIterator->sinkID, listConnectionFormats);
@@ -195,8 +195,8 @@ am_Error_e CAmRouter::findBestWay(am_sinkID_t sinkID, am_sourceID_t sourceID, st
     if (routeIterator != listRoute.begin())
     {
         //since we have to deal with Gateways, there are restrictions what connectionFormat we can take. So we need to take the subset of connections that are restricted:
-        std::vector<am_ConnectionFormat_e> listRestrictedConnectionFormats;
-        std::insert_iterator<std::vector<am_ConnectionFormat_e> > inserter(listMergeConnectionFormats, listMergeConnectionFormats.begin());
+        std::vector<am_CustomConnectionFormat_t> listRestrictedConnectionFormats;
+        std::insert_iterator<std::vector<am_CustomConnectionFormat_t> > inserter(listMergeConnectionFormats, listMergeConnectionFormats.begin());
         std::vector<am_RoutingElement_s>::iterator tempIterator(routeIterator);
         tempIterator--;
         listRestrictedOutputFormatsGateways(*gatewayIterator, (tempIterator)->connectionFormat, listRestrictedConnectionFormats);
@@ -218,7 +218,7 @@ am_Error_e CAmRouter::findBestWay(am_sinkID_t sinkID, am_sourceID_t sourceID, st
     mpControlSender->getConnectionFormatChoice(routeIterator->sourceID, routeIterator->sinkID, route, listMergeConnectionFormats, listPriorityConnectionFormats);
 
     //we have the list sorted after prios - now we try one after the other with the next part of the route
-    std::vector<am_ConnectionFormat_e>::iterator connectionFormatIterator = listPriorityConnectionFormats.begin();
+    std::vector<am_CustomConnectionFormat_t>::iterator connectionFormatIterator = listPriorityConnectionFormats.begin();
 
     //here we need to check if we are at the end and stop
     if (nextIterator == listRoute.end())
@@ -244,12 +244,12 @@ am_Error_e CAmRouter::findBestWay(am_sinkID_t sinkID, am_sourceID_t sourceID, st
     return (returnError);
 }
 
-void CAmRouter::listRestrictedOutputFormatsGateways(const am_gatewayID_t gatewayID, const am_ConnectionFormat_e sinkConnectionFormat, std::vector<am_ConnectionFormat_e> & listFormats) const
+void CAmRouter::listRestrictedOutputFormatsGateways(const am_gatewayID_t gatewayID, const am_CustomConnectionFormat_t sinkConnectionFormat, std::vector<am_CustomConnectionFormat_t> & listFormats) const
 {
     listFormats.clear();
     am_Gateway_s gatewayData;
     mpDatabaseHandler->getGatewayInfoDB(gatewayID, gatewayData);
-    std::vector<am_ConnectionFormat_e>::const_iterator rowSinkIterator = gatewayData.listSinkFormats.begin();
+    std::vector<am_CustomConnectionFormat_t>::const_iterator rowSinkIterator = gatewayData.listSinkFormats.begin();
     std::vector<bool>::const_iterator matrixIterator = gatewayData.convertionMatrix.begin();
 
     //find the row number of the sink
