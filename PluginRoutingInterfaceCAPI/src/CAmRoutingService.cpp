@@ -165,6 +165,8 @@ void CAmRoutingService::registerDomain(org::genivi::am::am_Domain_s domainData, 
 		std::shared_ptr<org::genivi::am::RoutingControlProxy<>> shpSenderProxy = factory->buildProxy<org::genivi::am::RoutingControlProxy>(returnBusname, returnInterface , "local");
 		mpLookpData->addDomainLookup(domainID, shpSenderProxy);
 	}
+	if (domainID==2)
+	    mpIAmRoutingReceive->confirmRoutingReady(mHandle,E_OK);
 }
 
 void CAmRoutingService::deregisterDomain(org::genivi::am::am_domainID_t domainID, org::genivi::am::am_Error_e& returnError) {
@@ -310,7 +312,7 @@ void CAmRoutingService::updateGateway(org::genivi::am::am_gatewayID_t gatewayID,
 	std::vector<am_CustomConnectionFormat_t> destinationSinkConnectionFormats;
 	CAmConvertCAPIVector2AM(listSinkFormats, destinationSinkConnectionFormats);
 
-	mpIAmRoutingReceive->updateGateway(gatewayID, destinationSourceConnectionFormats, destinationSinkConnectionFormats, convertionMatrix);
+	error = (org::genivi::am::am_Error_e)mpIAmRoutingReceive->updateGateway(gatewayID, destinationSourceConnectionFormats, destinationSinkConnectionFormats, convertionMatrix);
 }
 
 void CAmRoutingService::updateSink(org::genivi::am::am_sinkID_t sinkID, org::genivi::am::am_sinkClass_t sinkClassID, org::genivi::am::am_SoundProperty_L listSoundProperties, org::genivi::am::am_ConnectionFormat_L listConnectionFormats, org::genivi::am::am_MainSoundProperty_L listMainSoundProperties, org::genivi::am::am_Error_e& error) {
@@ -321,7 +323,7 @@ void CAmRoutingService::updateSink(org::genivi::am::am_sinkID_t sinkID, org::gen
     CAmConvertCAPIVector2AM(listConnectionFormats, dstListSinkConnectionFormats);
     std::vector<am_MainSoundProperty_s> dstListMainSoundProperties;
     CAmConvertCAPIVector2AM(listMainSoundProperties, dstListMainSoundProperties);
-    mpIAmRoutingReceive->updateSink( sinkID, sinkClassID, dstListSoundProperties,dstListSinkConnectionFormats,dstListMainSoundProperties);
+    error =  (org::genivi::am::am_Error_e)mpIAmRoutingReceive->updateSink( sinkID, sinkClassID, dstListSoundProperties,dstListSinkConnectionFormats,dstListMainSoundProperties);
 }
 
 void CAmRoutingService::updateSource(org::genivi::am::am_sourceID_t sourceID, org::genivi::am::am_sourceClass_t sourceClassID, org::genivi::am::am_SoundProperty_L listSoundProperties, org::genivi::am::am_ConnectionFormat_L listConnectionFormats, org::genivi::am::am_MainSoundProperty_L listMainSoundProperties, org::genivi::am::am_Error_e& error) {
@@ -332,7 +334,7 @@ void CAmRoutingService::updateSource(org::genivi::am::am_sourceID_t sourceID, or
     CAmConvertCAPIVector2AM(listConnectionFormats, dstListSinkConnectionFormats);
     std::vector<am_MainSoundProperty_s> dstListMainSoundProperties;
     CAmConvertCAPIVector2AM(listMainSoundProperties, dstListMainSoundProperties);
-    mpIAmRoutingReceive->updateSource( sourceID, sourceClassID, dstListSoundProperties,dstListSinkConnectionFormats,dstListMainSoundProperties);
+    error =  (org::genivi::am::am_Error_e)mpIAmRoutingReceive->updateSource( sourceID, sourceClassID, dstListSoundProperties,dstListSinkConnectionFormats,dstListMainSoundProperties);
 }
 
 void CAmRoutingService::ackSetVolumes(org::genivi::am::am_Handle_s handle , org::genivi::am::am_Volumes_L listVolumes, org::genivi::am::am_Error_e error) {

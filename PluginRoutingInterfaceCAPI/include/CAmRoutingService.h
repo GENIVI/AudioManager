@@ -137,6 +137,8 @@ public:
 
 	void gotRundown(int16_t numberDomains, uint16_t handle);
 
+	void setHandle(uint16_t handle) {mHandle=handle;}
+
 };
 
 } /* namespace am */

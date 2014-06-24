@@ -123,8 +123,9 @@ void CAmRoutingSenderCAPI::getInterfaceVersion(std::string & version) const
 void CAmRoutingSenderCAPI::setRoutingReady(const uint16_t handle)
 {
 	assert(mpIAmRoutingReceive);
+	mService->setHandle(handle);
+
     log(&ctxCommandCAPI, DLT_LOG_INFO, "sending routingReady signal");
-    mpIAmRoutingReceive->confirmRoutingReady(handle,E_OK);
     mService->setRoutingReadyAttribute(org::genivi::am::am_RoutingReady_e::RR_READY);
 }
 
