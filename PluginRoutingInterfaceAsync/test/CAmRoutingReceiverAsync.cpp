@@ -65,18 +65,25 @@ void CAmEnvironment::SetUp()
     void* tempLibHandle = NULL;
     std::string libname("../plugins/routing/libPluginRoutingInterfaceAsync.so");
     createFunc = getCreateFunction<IAmRoutingSend*()>(libname, tempLibHandle);
-
     if (!createFunc)
     {
+    	libname = "/usr/lib/audioManager/routing/libPluginRoutingInterfaceAsync.so";
+    	createFunc = getCreateFunction<IAmRoutingSend*()>(libname, tempLibHandle);
+
+    	if(pReceiveInterface)
+    		delete pReceiveInterface, pReceiveInterface = NULL;
+    	fprintf(stderr, "RoutingSendInterface Test Entry point of RoutingPlugin not found\n");
         logError("RoutingSendInterface Test Entry point of RoutingPlugin not found");
         exit(1);
     }
 
     pRouter = createFunc();
-
     if (!pRouter)
     {
-        logError("RoutingSendInterface Test RoutingPlugin initialization failed. Entry Function not callable");
+    	if(pReceiveInterface)
+    	   	delete pReceiveInterface, pReceiveInterface = NULL;
+    	fprintf(stderr, "RoutingSendInterface Test RoutingPlugin initialization failed. Entry Function not callable\n");
+    	logError("RoutingSendInterface Test RoutingPlugin initialization failed. Entry Function not callable");
         exit(1);
     }
 
