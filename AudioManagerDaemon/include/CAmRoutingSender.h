@@ -118,7 +118,7 @@ private:
     {
         bool operator()(const am_Handle_s& a, const am_Handle_s& b) const
         {
-            return (a.handle < b.handle);
+        	return (a.handle<b.handle || (a.handle==b.handle && a.handleType<b.handleType));
         }
     };
 
