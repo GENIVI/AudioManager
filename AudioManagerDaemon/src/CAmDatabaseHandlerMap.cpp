@@ -390,12 +390,16 @@ template <typename TMapKey,class TMapObject> bool CAmDatabaseHandlerMap::CAmMapp
 	bool notFreeIDs = false;
 	while( existsObjectWithKeyInMap(nextID, map) )
 	{
+
 		if( sourceID.mCurrentValue < sourceID.mMax )
 			nextID = sourceID.mCurrentValue++;
 		else
-			nextID = sourceID.mCurrentValue = sourceID.mMin;
+		{
+			sourceID.mCurrentValue = sourceID.mMin;
+			nextID = sourceID.mCurrentValue++;
+		}
 
-		if( sourceID.mCurrentValue == lastID )
+		if( nextID == lastID )
 		{
 			notFreeIDs = true;
 			break;
