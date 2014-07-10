@@ -5,7 +5,7 @@ package org.genivi
 **>
 typeCollection am {
 	version {
-		major 1
+		major 2
 		minor 0
 	}
 	array am_MainConnection_L of am_MainConnectionType_s

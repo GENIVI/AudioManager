@@ -2,29 +2,29 @@ package org.genivi.am
 import org.genivi.am.* from "../../AudioManagerDaemon/fidls/AudioManagerTypes.fidl"
 
 <**
-    @description : This class implements everything from Audiomanager -&gt; RoutingAdapter
-    @author : Christian Mueller
+	@description : This class implements everything from Audiomanager -&gt; RoutingAdapter
+	@author : Christian Mueller
 **>
 
 interface RoutingControl {
-    version {
-        major 1
-        minor 0
-    }
+	version {
+		major 2
+		minor 0
+	}
 
-    <**
-        @description : aborts an asynchronous action.
+	<**
+		@description : aborts an asynchronous action.
 (at)return E_OK on success, E_UNKNOWN on error, E_NON_EXISTENT if handle was not found
-    **>
-    method asyncAbort {
-        in {
-            am_Handle_s handle
-        }
-    }
+	**>
+	method asyncAbort {
+		in {
+			am_Handle_s handle
+		}
+	}
 
-    <**
-        @description : connects a source to a sink
-(at)return E_OK on success, E_UNKNOWN on error, E_WRONG_FORMAT in case am_CustomConnectionFormat_t does not match
+	<**
+		@description : connects a source to a sink
+(at)return E_OK on success, E_UNKNOWN on error, E_WRONG_FORMAT in case am_ConnectionFormat_e does not match
 	**>
 	method asyncConnect {
 		in {
@@ -32,23 +32,23 @@ interface RoutingControl {
 			am_connectionID_t connectionID
 			am_sourceID_t sourceID
 			am_sinkID_t sinkID
-			am_CustomConnectionFormat_t connectionFormat
+			am_CConnectionFormat_t connectionFormat
 		}
 	}
 
-    <**
-        @description : disconnect a connection with given connectionID
+	<**
+		@description : disconnect a connection with given connectionID
 (at)return E_OK on success, E_UNKNOWN on error, E_NON_EXISTENT if connection was not found
-    **>
-    method asyncDisconnect {
-        in {
-            am_Handle_s handle
-            am_connectionID_t connectionID
-        }
-    }
+	**>
+	method asyncDisconnect {
+		in {
+			am_Handle_s handle
+			am_connectionID_t connectionID
+		}
+	}
 
-    <**
-        @description : this method is used to set the volume of a sink. This function is used to drive ramps, to mute or unmute or directly set the value. The difference is made through the ramptype.
+	<**
+		@description : this method is used to set the volume of a sink. This function is used to drive ramps, to mute or unmute or directly set the value. The difference is made through the ramptype.
 (at)return E_OK on success, E_UNKNOWN on error, E_OUT_OF_RANGE if new volume is out of range
 	**>
 	method asyncSetSinkVolume {
@@ -56,13 +56,13 @@ interface RoutingControl {
 			am_Handle_s handle
 			am_sinkID_t sinkID
 			am_volume_t volume
-			am_CustomRampType_t ramp
+			am_CRampType_t ramp
 			am_time_t time
 		}
 	}
 
-    <**
-        @description : sets the volume of a source. This method is used to set the volume of a sink. This function is used to drive ramps, to mute or unmute or directly set the value. The difference is made through the ramptype.
+	<**
+		@description : sets the volume of a source. This method is used to set the volume of a sink. This function is used to drive ramps, to mute or unmute or directly set the value. The difference is made through the ramptype.
 (at)return E_OK on success, E_UNKNOWN on error, E_OUT_OF_RANGE if volume is out of range.
 triggers the acknowledge ackSourceVolumeChange
 	**>
@@ -71,73 +71,73 @@ triggers the acknowledge ackSourceVolumeChange
 			am_Handle_s handle
 			am_sourceID_t sourceID
 			am_volume_t volume
-			am_CustomRampType_t ramp
+			am_CRampType_t ramp
 			am_time_t time
 		}
 	}
 
-    <**
-        @description : This function is used to set the source state of a particular source.
+	<**
+		@description : This function is used to set the source state of a particular source.
 (at)return E_OK on success, E_UNKNOWN on error
-    **>
-    method asyncSetSourceState {
-        in {
-            am_Handle_s handle
-            am_sourceID_t sourceID
-            am_SourceState_e ^state
-        }
-    }
+	**>
+	method asyncSetSourceState {
+		in {
+			am_Handle_s handle
+			am_sourceID_t sourceID
+			am_SourceState_e ^state
+		}
+	}
 
-    <**
-        @description : this function sets the sinksoundproperty.
+	<**
+		@description : this function sets the sinksoundproperty.
 (at)return E_OK on success, E_UNKNOWN on error, E_OUT_OF_RANGE in case the propery value is out of range
-    **>
-    method asyncSetSinkSoundProperties {
-        in {
-            am_Handle_s handle
-            am_sinkID_t sinkID
-            am_SoundProperty_L listSoundProperties
-        }
-    }
+	**>
+	method asyncSetSinkSoundProperties {
+		in {
+			am_Handle_s handle
+			am_sinkID_t sinkID
+			am_SoundProperty_L listSoundProperties
+		}
+	}
 
-    <**
-        @description : this function sets the sinksoundproperty.
+	<**
+		@description : this function sets the sinksoundproperty.
 (at)return E_OK on success, E_UNKNOWN on error, E_OUT_OF_RANGE in case the propery value is out of range
-    **>
-    method asyncSetSinkSoundProperty {
-        in {
-            am_Handle_s handle
-            am_sinkID_t sinkID
-            am_SoundProperty_s soundProperty
-        }
-    }
+	**>
+	method asyncSetSinkSoundProperty {
+		in {
+			am_Handle_s handle
+			am_sinkID_t sinkID
+			am_SoundProperty_s soundProperty
+		}
+	}
 
-    <**
-        @description : this function sets the sourcesoundproperty.
+	<**
+		@description : this function sets the sourcesoundproperty.
 (at)return E_OK on success, E_UNKNOWN on error, E_OUT_OF_RANGE in case the propery value is out of range
-    **>
-    method asyncSetSourceSoundProperties {
-        in {
-            am_Handle_s handle
-            am_sourceID_t sourceID
-            am_SoundProperty_L listSoundProperties
-        }
-    }
+	**>
+	method asyncSetSourceSoundProperties {
+		in {
+			am_Handle_s handle
+			am_sourceID_t sourceID
+			am_SoundProperty_L listSoundProperties
+		}
+	}
 
-    <**
-        @description : this function sets the sourcesoundproperty.
+	<**
+		@description : this function sets the sourcesoundproperty.
 (at)return E_OK on success, E_UNKNOWN on error, E_OUT_OF_RANGE in case the propery value is out of range
-    **>
-    method asyncSetSourceSoundProperty {
-        in {
-            am_Handle_s handle
-            am_sourceID_t sourceID
-            am_SoundProperty_s soundProperty
-        }
-    }
+	**>
+	method asyncSetSourceSoundProperty {
+		in {
+			am_Handle_s handle
+			am_sourceID_t sourceID
+			am_SoundProperty_s soundProperty
+		}
+	}
 
-    <**
-        @description : this function triggers crossfading.
+	<**
+		@description : this function triggers crossfading.
 (at)return E_OK on success, E_UNKNOWN on error
 	**>
 	method asyncCrossFade {
@@ -145,700 +145,700 @@ triggers the acknowledge ackSourceVolumeChange
 			am_Handle_s handle
 			am_crossfaderID_t crossfaderID
 			am_HotSink_e hotSink
-			am_CustomRampType_t rampType
+			am_CRampType_t rampType
 			am_time_t time
 		}
 	}
 
-    <**
-        @description : this function is used for early and late audio functions to set the domain state
+	<**
+		@description : this function is used for early and late audio functions to set the domain state
 (at)return E_OK on success, E_UNKNOWN on error
-    **>
-    method setDomainState {
-        in {
-            am_domainID_t domainID
-            am_DomainState_e domainState
-        }
-        out {
-            am_Error_e ^error
-        }
-    }
-    method asyncSetVolumes {
-        in {
-            am_Handle_s handle
-            am_Volumes_L volumes
-        }
-    }
-    method asyncSetSinkNotificationConfiguration {
-        in {
-            am_Handle_s handle
-            am_sinkID_t sinkID
-            am_NotificationConfiguration_s notificationConfiguration
-        }
-    }
-    method asyncSetSourceNotificationConfiguration {
-        in {
-            am_Handle_s handle
-            am_sourceID_t sourceID
-            am_NotificationConfiguration_s notificationConfiguration
-        }
-    }
+	**>
+	method setDomainState {
+		in {
+			am_domainID_t domainID
+			am_DomainState_e domainState
+		}
+		out {
+			am_Error_e ^error
+		}
+	}
+	method asyncSetVolumes {
+		in {
+			am_Handle_s handle
+			am_Volumes_L volumes
+		}
+	}
+	method asyncSetSinkNotificationConfiguration {
+		in {
+			am_Handle_s handle
+			am_sinkID_t sinkID
+			am_NotificationConfiguration_s notificationConfiguration
+		}
+	}
+	method asyncSetSourceNotificationConfiguration {
+		in {
+			am_Handle_s handle
+			am_sourceID_t sourceID
+			am_NotificationConfiguration_s notificationConfiguration
+		}
+	}
 
 }
 
 <**
-    @description : Routing Receive sendInterface description.
-    @author : Christian Mueller
+	@description : Routing Receive sendInterface description.
+	@author : Christian Mueller
 **>
 
 interface RoutingControlObserver {
-    version {
-        major 0
-        minor 1
-    }
+	version {
+		major 2
+		minor 0
+	}
 
-    <**
-        @description : This attribute signals to the clients the current routing state.
+	<**
+		@description : This attribute signals to the clients the current routing state.
 A client should notify himself to this attribute in order to know the current state and act accordingly.
-    **>
-    attribute am_RoutingReady_e RoutingReady readonly
+	**>
+	attribute am_RoutingReady_e RoutingReady readonly
 
-    <**
-        @description : acknowledges a asyncConnect
-    **>
-    method ackConnect {
-        in {
-            am_Handle_s handle
-            am_connectionID_t connectionID
+	<**
+		@description : acknowledges a asyncConnect
+	**>
+	method ackConnect {
+		in {
+			am_Handle_s handle
+			am_connectionID_t connectionID
 
-            <**
-                @description : E_OK on success, E_ABORTED if action was aborted, E_UNKNOWN on error
-            **>
-            am_Error_e ^error
-        }
-    }
+			<**
+				@description : E_OK on success, E_ABORTED if action was aborted, E_UNKNOWN on error
+			**>
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : acknowledges a asyncDisconnect
-    **>
-    method ackDisconnect {
-        in {
-            am_Handle_s handle
-            am_connectionID_t connectionID
+	<**
+		@description : acknowledges a asyncDisconnect
+	**>
+	method ackDisconnect {
+		in {
+			am_Handle_s handle
+			am_connectionID_t connectionID
 
-            <**
-                @description : E_OK on success, E_ABORTED if action was aborted, E_UNKNOWN on error
-            **>
-            am_Error_e ^error
-        }
-    }
+			<**
+				@description : E_OK on success, E_ABORTED if action was aborted, E_UNKNOWN on error
+			**>
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : acknowledges a asyncsetSinkVolume 
-    **>
-    method ackSetSinkVolumeChange {
-        in {
-            am_Handle_s handle
+	<**
+		@description : acknowledges a asyncsetSinkVolume 
+	**>
+	method ackSetSinkVolumeChange {
+		in {
+			am_Handle_s handle
 
-            <**
-                @description : The current actual value that is set 
-            **>
-            am_volume_t volume
+			<**
+				@description : The current actual value that is set 
+			**>
+			am_volume_t volume
 
-            <**
-                @description : E_OK on success, E_ABORTED if action was aborted, E_UNKNOWN on error
-            **>
-            am_Error_e ^error
-        }
-    }
+			<**
+				@description : E_OK on success, E_ABORTED if action was aborted, E_UNKNOWN on error
+			**>
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : acknowledges a asyncsetSourceVolume
-    **>
-    method ackSetSourceVolumeChange {
-        in {
+	<**
+		@description : acknowledges a asyncsetSourceVolume
+	**>
+	method ackSetSourceVolumeChange {
+		in {
 
-            <**
-                @description : handle that belongs to the change 
-            **>
-            am_Handle_s handle
+			<**
+				@description : handle that belongs to the change 
+			**>
+			am_Handle_s handle
 
-            <**
-                @description : the current volume
-            **>
-            am_volume_t volume
+			<**
+				@description : the current volume
+			**>
+			am_volume_t volume
 
-            <**
-                @description : E_OK on success, E_ABORTED if action was aborted, E_UNKNOWN on error
-            **>
-            am_Error_e ^error
-        }
-    }
+			<**
+				@description : E_OK on success, E_ABORTED if action was aborted, E_UNKNOWN on error
+			**>
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : acknowlegde for asyncSetSourceState
-    **>
-    method ackSetSourceState {
-        in {
-            am_Handle_s handle
+	<**
+		@description : acknowlegde for asyncSetSourceState
+	**>
+	method ackSetSourceState {
+		in {
+			am_Handle_s handle
 
-            <**
-                @description : E_OK on success, E_ABORTED if action was aborted, E_UNKNOWN on error
-            **>
-            am_Error_e ^error
-        }
-    }
+			<**
+				@description : E_OK on success, E_ABORTED if action was aborted, E_UNKNOWN on error
+			**>
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : acknowledges asyncSetSinkSoundProperties
-    **>
-    method ackSetSinkSoundProperties {
-        in {
-            am_Handle_s handle
+	<**
+		@description : acknowledges asyncSetSinkSoundProperties
+	**>
+	method ackSetSinkSoundProperties {
+		in {
+			am_Handle_s handle
 
-            <**
-                @description : E_OK on success, E_ABORTED if action was aborted, E_UNKNOWN on error
-            **>
-            am_Error_e ^error
-        }
-    }
+			<**
+				@description : E_OK on success, E_ABORTED if action was aborted, E_UNKNOWN on error
+			**>
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : acknowledges asyncSetSinkSoundProperty
-    **>
-    method ackSetSinkSoundProperty {
-        in {
-            am_Handle_s handle
+	<**
+		@description : acknowledges asyncSetSinkSoundProperty
+	**>
+	method ackSetSinkSoundProperty {
+		in {
+			am_Handle_s handle
 
-            <**
-                @description : E_OK on success, E_ABORTED if action was aborted, E_UNKNOWN on error
-            **>
-            am_Error_e ^error
-        }
-    }
+			<**
+				@description : E_OK on success, E_ABORTED if action was aborted, E_UNKNOWN on error
+			**>
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : acknowledges asyncSetSourceSoundProperties
-    **>
-    method ackSetSourceSoundProperties {
-        in {
-            am_Handle_s handle
+	<**
+		@description : acknowledges asyncSetSourceSoundProperties
+	**>
+	method ackSetSourceSoundProperties {
+		in {
+			am_Handle_s handle
 
-            <**
-                @description : E_OK on success, E_ABORTED if action was aborted, E_UNKNOWN on error
-            **>
-            am_Error_e ^error
-        }
-    }
+			<**
+				@description : E_OK on success, E_ABORTED if action was aborted, E_UNKNOWN on error
+			**>
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : acknowledges asyncSetSourceSoundProperty
-    **>
-    method ackSetSourceSoundProperty {
-        in {
-            am_Handle_s handle
+	<**
+		@description : acknowledges asyncSetSourceSoundProperty
+	**>
+	method ackSetSourceSoundProperty {
+		in {
+			am_Handle_s handle
 
-            <**
-                @description : E_OK on success, E_ABORTED if action was aborted, E_UNKNOWN on error
-            **>
-            am_Error_e ^error
-        }
-    }
+			<**
+				@description : E_OK on success, E_ABORTED if action was aborted, E_UNKNOWN on error
+			**>
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : acknowledges asyncCrossFade
-    **>
-    method ackCrossFading {
-        in {
-            am_Handle_s handle
+	<**
+		@description : acknowledges asyncCrossFade
+	**>
+	method ackCrossFading {
+		in {
+			am_Handle_s handle
 
-            <**
-                @description : this is the current hot sink, HS_INTERMEDIATE is here when a crossfading action did not reach the end
-            **>
-            am_HotSink_e hotSink
+			<**
+				@description : this is the current hot sink, HS_INTERMEDIATE is here when a crossfading action did not reach the end
+			**>
+			am_HotSink_e hotSink
 
-            <**
-                @description : E_OK on success, E_ABORTED if action was aborted, E_UNKNOWN on error
-            **>
-            am_Error_e ^error
-        }
-    }
+			<**
+				@description : E_OK on success, E_ABORTED if action was aborted, E_UNKNOWN on error
+			**>
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : acknowledges a volume tick. This can be used to display volumechanges during ramps
-    **>
-    method ackSourceVolumeTick {
-        in {
-            am_Handle_s handle
-            am_sourceID_t sourceID
-            am_volume_t volume
-        }
-    }
+	<**
+		@description : acknowledges a volume tick. This can be used to display volumechanges during ramps
+	**>
+	method ackSourceVolumeTick {
+		in {
+			am_Handle_s handle
+			am_sourceID_t sourceID
+			am_volume_t volume
+		}
+	}
 
-    <**
-        @description : acknowledges a volume tick. This can be used to display volumechanges during ramps
-    **>
-    method ackSinkVolumeTick {
-        in {
-            am_Handle_s handle
-            am_sinkID_t sinkID
-            am_volume_t volume
-        }
-    }
+	<**
+		@description : acknowledges a volume tick. This can be used to display volumechanges during ramps
+	**>
+	method ackSinkVolumeTick {
+		in {
+			am_Handle_s handle
+			am_sinkID_t sinkID
+			am_volume_t volume
+		}
+	}
 
-    <**
-        @description : This function returns the ID to the given domainName. If already a domain is registered with this name, it will return the corresponding ID, if not it will reserve an ID but not register the domain. The other parameters of the domain will be overwritten when the domain is registered.
+	<**
+		@description : This function returns the ID to the given domainName. If already a domain is registered with this name, it will return the corresponding ID, if not it will reserve an ID but not register the domain. The other parameters of the domain will be overwritten when the domain is registered.
 (at)return E_OK on success, E_UNKNOWN on error
-    **>
-    method peekDomain {
-        in {
-            String name
-        }
-        out {
-            am_domainID_t domainID
-            am_Error_e ^error
-        }
-    }
+	**>
+	method peekDomain {
+		in {
+			String name
+		}
+		out {
+			am_domainID_t domainID
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : registers a domain
+	<**
+		@description : registers a domain
 (at)return E_OK on succes, E_ALREADY_EXISTENT if already registered E_UNKOWN on error
-    **>
-    method registerDomain {
-        in {
+	**>
+	method registerDomain {
+		in {
 
-            <**
-                @description : domainID in am_Domain_s must be 0!
-            **>
-            am_Domain_s domainData
-            String returnBusname
-            String returnInterface
-        }
-        out {
-            am_domainID_t domainID
-            am_Error_e ^error
-        }
-    }
+			<**
+				@description : domainID in am_Domain_s must be 0!
+			**>
+			am_Domain_s domainData
+			String returnBusname
+			String returnInterface
+		}
+		out {
+			am_domainID_t domainID
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : deregisters a domain. All sources, sinks, gateways and crossfaders from that domain will be removed as well.
+	<**
+		@description : deregisters a domain. All sources, sinks, gateways and crossfaders from that domain will be removed as well.
 (at)return E_OK on succes, E_NON_EXISTENT if not found E_UNKOWN on error
-    **>
-    method deregisterDomain {
-        in {
+	**>
+	method deregisterDomain {
+		in {
 
-            <**
-                @description : < the nonde of the bus
-            **>
-            am_domainID_t domainID
-        }
-        out {
-            am_Error_e ^error
-        }
-    }
+			<**
+				@description : < the nonde of the bus
+			**>
+			am_domainID_t domainID
+		}
+		out {
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : registers a gateway. (at)return E_OK on succes, E_ALREADY_EXISTENT if already registered E_UNKOWN on error
-    **>
-    method registerGateway {
-        in {
+	<**
+		@description : registers a gateway. (at)return E_OK on succes, E_ALREADY_EXISTENT if already registered E_UNKOWN on error
+	**>
+	method registerGateway {
+		in {
 
-            <**
-                @description : In a fixed setup, the gatewayID must be below 100. In a dynamic setup, the gatewayID shall be 0. listSourceFormats and listSinkFormats are empty at registration time. Values are taken over when sources and sinks are registered.
+			<**
+				@description : In a fixed setup, the gatewayID must be below 100. In a dynamic setup, the gatewayID shall be 0. listSourceFormats and listSinkFormats are empty at registration time. Values are taken over when sources and sinks are registered.
 
 
-            **>
-            am_Gateway_s gatewayData
-        }
-        out {
-            am_gatewayID_t gatewayID
-            am_Error_e ^error
-        }
-    }
+			**>
+			am_Gateway_s gatewayData
+		}
+		out {
+			am_gatewayID_t gatewayID
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : deregisters a gateway. Also removes all sinks and sources of the controlling domain.
+	<**
+		@description : deregisters a gateway. Also removes all sinks and sources of the controlling domain.
 (at)return E_OK on succes, E_NON_EXISTENT if not found E_UNKOWN on error
-    **>
-    method deregisterGateway {
-        in {
+	**>
+	method deregisterGateway {
+		in {
 
-            <**
-                @description : domainID of the control domain
-            **>
-            am_gatewayID_t gatewayID
-        }
-        out {
-            am_Error_e ^error
-        }
-    }
+			<**
+				@description : domainID of the control domain
+			**>
+			am_gatewayID_t gatewayID
+		}
+		out {
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : This function returns the ID to the given sinkName. If already a sink is registered with this name, it will return the corresponding ID, if not it will reserve an ID but not register the sink. The other parameters of the sink will be overwritten when the sink is registered.
+	<**
+		@description : This function returns the ID to the given sinkName. If already a sink is registered with this name, it will return the corresponding ID, if not it will reserve an ID but not register the sink. The other parameters of the sink will be overwritten when the sink is registered.
 (at)return E_OK on success, E_UNKNOWN on error
-    **>
-    method peekSink {
-        in {
+	**>
+	method peekSink {
+		in {
 
-            <**
-                @description : ID is not valid since not created yet
-            **>
-            String name
-        }
-        out {
-            am_sinkID_t sinkID
-            am_Error_e ^error
-        }
-    }
+			<**
+				@description : ID is not valid since not created yet
+			**>
+			String name
+		}
+		out {
+			am_sinkID_t sinkID
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : Registers a sink. If the sink is part of a gateway, the listconnectionFormats is copied to the gatewayInformation
+	<**
+		@description : Registers a sink. If the sink is part of a gateway, the listconnectionFormats is copied to the gatewayInformation
 (at)return E_OK on succes, E_ALREADY_EXISTENT if already registered E_UNKOWN on error
-    **>
-    method registerSink {
-        in {
+	**>
+	method registerSink {
+		in {
 
-            <**
-                @description : In a fixed setup, the sinkID within am_Sink_s must be below 100. In a dynamic setup the sinkID must be 0 in am_Sink_s.
-            **>
-            am_Sink_s sinkData
-        }
-        out {
-            am_sinkID_t sinkID
-            am_Error_e ^error
-        }
-    }
+			<**
+				@description : In a fixed setup, the sinkID within am_Sink_s must be below 100. In a dynamic setup the sinkID must be 0 in am_Sink_s.
+			**>
+			am_Sink_s sinkData
+		}
+		out {
+			am_sinkID_t sinkID
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : deregisters a sink.
+	<**
+		@description : deregisters a sink.
 (at)return E_OK on succes, E_NON_EXISTENT if not found E_UNKOWN on error
-    **>
-    method deregisterSink {
-        in {
-            am_sinkID_t sinkID
-        }
-        out {
-            am_Error_e ^error
-        }
-    }
+	**>
+	method deregisterSink {
+		in {
+			am_sinkID_t sinkID
+		}
+		out {
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : This function returns the ID to the given sourceName. If already a source is registered with this name, it will return the corresponding ID, if not it will reserve an ID but not register the source. The other parameters of the source will be overwritten when the source is registered.
+	<**
+		@description : This function returns the ID to the given sourceName. If already a source is registered with this name, it will return the corresponding ID, if not it will reserve an ID but not register the source. The other parameters of the source will be overwritten when the source is registered.
 (at)return E_OK on success, E_UNKNOWN on error
-    **>
-    method peekSource {
-        in {
-            String name
-        }
-        out {
-            am_sourceID_t sourceID
-            am_Error_e ^error
-        }
-    }
+	**>
+	method peekSource {
+		in {
+			String name
+		}
+		out {
+			am_sourceID_t sourceID
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : registers a source.  If the source is part of a gateway, the listconnectionFormats is copied to the gatewayInformation
+	<**
+		@description : registers a source.  If the source is part of a gateway, the listconnectionFormats is copied to the gatewayInformation
 (at)return E_OK on success, E_UNKNOWN on error, E_ALREADY_EXIST if either name or sourceID already exists
-    **>
-    method registerSource {
-        in {
+	**>
+	method registerSource {
+		in {
 
-            <**
-                @description : In a fixed setup, the sourceID within am_Source_s must be below 100. In a dynamic setup the sourceID must be 0 in am_Source_s
-            **>
-            am_Source_s sourceData
-        }
-        out {
-            am_sourceID_t sourceID
-            am_Error_e ^error
-        }
-    }
+			<**
+				@description : In a fixed setup, the sourceID within am_Source_s must be below 100. In a dynamic setup the sourceID must be 0 in am_Source_s
+			**>
+			am_Source_s sourceData
+		}
+		out {
+			am_sourceID_t sourceID
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : deregisters a source
+	<**
+		@description : deregisters a source
 (at)return E_OK on succes, E_NON_EXISTENT if not found E_UNKOWN on error
-    **>
-    method deregisterSource {
-        in {
-            am_sourceID_t sourceID
-        }
-        out {
-            am_Error_e ^error
-        }
-    }
+	**>
+	method deregisterSource {
+		in {
+			am_sourceID_t sourceID
+		}
+		out {
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : this function registers a crossfader.
+	<**
+		@description : this function registers a crossfader.
 (at)return E_OK on succes, E_ALREADY_EXISTENT if already registered E_UNKOWN on error
-    **>
-    method registerCrossfader {
-        in {
+	**>
+	method registerCrossfader {
+		in {
 
-            <**
-                @description : in a fixed setup, the crossfaderID must be below 100. In a dynamic setup the crossfasderID shall be 0
-            **>
-            am_Crossfader_s crossfaderData
-        }
-        out {
-            am_crossfaderID_t crossfaderID
-            am_Error_e ^error
-        }
-    }
+			<**
+				@description : in a fixed setup, the crossfaderID must be below 100. In a dynamic setup the crossfasderID shall be 0
+			**>
+			am_Crossfader_s crossfaderData
+		}
+		out {
+			am_crossfaderID_t crossfaderID
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : this function deregisters a crossfader. removes all sources and sinks assiated as well.
+	<**
+		@description : this function deregisters a crossfader. removes all sources and sinks assiated as well.
 (at)return E_OK on succes, E_NON_EXISTENT if not found E_UNKOWN on error
-    **>
-    method deregisterCrossfader {
-        in {
-            am_crossfaderID_t crossfaderID
-        }
-        out {
-            am_Error_e ^error
-        }
-    }
+	**>
+	method deregisterCrossfader {
+		in {
+			am_crossfaderID_t crossfaderID
+		}
+		out {
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : this function peeks a sourceclassID. It is used by the RoutingPlugins to determine the SinkClassIDs of a sinkClass.
+	<**
+		@description : this function peeks a sourceclassID. It is used by the RoutingPlugins to determine the SinkClassIDs of a sinkClass.
 (at)return E_OK on succes, E_DATABASE_ERROR on error
-    **>
-    method peekSourceClassID {
-        in {
-            String name
-        }
-        out {
-            am_sourceClass_t sourceClassID
-            am_Error_e ^error
-        }
-    }
+	**>
+	method peekSourceClassID {
+		in {
+			String name
+		}
+		out {
+			am_sourceClass_t sourceClassID
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : this function peeks a sourceclassID. It is used by the RoutingPlugins to determine the SinkClassIDs of a sinkClass.
+	<**
+		@description : this function peeks a sourceclassID. It is used by the RoutingPlugins to determine the SinkClassIDs of a sinkClass.
 (at)return E_OK on succes, E_DATABASE_ERROR on error
-    **>
-    method peekSinkClassID {
-        in {
-            String name
-        }
-        out {
-            am_sinkClass_t sinkClassID
-            am_Error_e ^error
-        }
-    }
+	**>
+	method peekSinkClassID {
+		in {
+			String name
+		}
+		out {
+			am_sinkClass_t sinkClassID
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : is called when a low level interrupt changes it status.
-    **>
-    method hookInterruptStatusChange {
-        in {
-            am_sourceID_t sourceID
-            am_InterruptState_e interruptState
-        }
-    }
+	<**
+		@description : is called when a low level interrupt changes it status.
+	**>
+	method hookInterruptStatusChange {
+		in {
+			am_sourceID_t sourceID
+			am_InterruptState_e interruptState
+		}
+	}
 
-    <**
-        @description : This hook is called when all elements from a domain are registered.
+	<**
+		@description : This hook is called when all elements from a domain are registered.
 Is used by the Controller to know when all expected domains are finally registered
-    **>
-    method hookDomainRegistrationComplete {
-        in {
-            am_domainID_t domainID
-        }
-    }
+	**>
+	method hookDomainRegistrationComplete {
+		in {
+			am_domainID_t domainID
+		}
+	}
 
-    <**
-        @description : is called when a sink changes its availability
-    **>
-    method hookSinkAvailablityStatusChange {
-        in {
-            am_sinkID_t sinkID
-            am_Availability_s availability
-        }
-    }
+	<**
+		@description : is called when a sink changes its availability
+	**>
+	method hookSinkAvailablityStatusChange {
+		in {
+			am_sinkID_t sinkID
+			am_Availability_s availability
+		}
+	}
 
-    <**
-        @description : is called when a source changes its availability
-    **>
-    method hookSourceAvailablityStatusChange {
-        in {
-            am_sourceID_t sourceID
-            am_Availability_s availability
-        }
-    }
+	<**
+		@description : is called when a source changes its availability
+	**>
+	method hookSourceAvailablityStatusChange {
+		in {
+			am_sourceID_t sourceID
+			am_Availability_s availability
+		}
+	}
 
-    <**
-        @description : is called when a domain changes its status. This used for early domains only
-    **>
-    method hookDomainStateChange {
-        in {
-            am_domainID_t domainID
-            am_DomainState_e domainState
-        }
-    }
+	<**
+		@description : is called when a domain changes its status. This used for early domains only
+	**>
+	method hookDomainStateChange {
+		in {
+			am_domainID_t domainID
+			am_DomainState_e domainState
+		}
+	}
 
-    <**
-        @description : is called when the timinginformation (delay) changed for a connection.
-    **>
-    method hookTimingInformationChanged {
-        in {
-            am_connectionID_t connectionID
-            am_timeSync_t delay
-        }
-    }
+	<**
+		@description : is called when the timinginformation (delay) changed for a connection.
+	**>
+	method hookTimingInformationChanged {
+		in {
+			am_connectionID_t connectionID
+			am_timeSync_t delay
+		}
+	}
 
-    <**
-        @description : this function is used to send out all data that has been changed in an early state.
+	<**
+		@description : this function is used to send out all data that has been changed in an early state.
 (at)return E_OK on success, E_UNKNOWN on error
-    **>
-    method sendChangedData {
-        in {
-            am_EarlyData_L earlyData
-        }
-    }
+	**>
+	method sendChangedData {
+		in {
+			am_EarlyData_L earlyData
+		}
+	}
 
-    <**
-        @description : updates data of an gateway. (at)return E_OK on success, E_NON_EXISTENT if the gatewayID is not valid. 
-    **>
-    method updateGateway {
-        in {
+	<**
+		@description : updates data of an gateway. (at)return E_OK on success, E_NON_EXISTENT if the gatewayID is not valid. 
+	**>
+	method updateGateway {
+		in {
 
-            <**
-                @description : This is the new gateway data that has been updated. Please note that changing source and sink IDs,
+			<**
+				@description : This is the new gateway data that has been updated. Please note that changing source and sink IDs,
 
-            **>
-            am_gatewayID_t gatewayID
-            am_ConnectionFormat_L listSourceFormats
-            am_ConnectionFormat_L listSinkFormats
-            am_Convertion_L convertionMatrix
-        }
-        out {
-            am_Error_e ^error
-        }
-    }
+			**>
+			am_gatewayID_t gatewayID
+			am_ConnectionFormat_L listSourceFormats
+			am_ConnectionFormat_L listSinkFormats
+			am_Convertion_L convertionMatrix
+		}
+		out {
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : updates data of an gateway. (at)return E_OK on success, E_NON_EXISTENT if the sinkID is not valid.
-    **>
-    method updateSink {
-        in {
+	<**
+		@description : updates data of an gateway. (at)return E_OK on success, E_NON_EXISTENT if the sinkID is not valid.
+	**>
+	method updateSink {
+		in {
 
-            <**
-                @description : The sinkID of the sink 
-            **>
-            am_sinkID_t sinkID
-            am_sinkClass_t sinkClassID
-            am_SoundProperty_L listSoundProperties
-            am_ConnectionFormat_L listConnectionFormats
-            am_MainSoundProperty_L listMainSoundProperties
-        }
-        out {
-            am_Error_e ^error
-        }
-    }
+			<**
+				@description : The sinkID of the sink 
+			**>
+			am_sinkID_t sinkID
+			am_sinkClass_t sinkClassID
+			am_SoundProperty_L listSoundProperties
+			am_ConnectionFormat_L listConnectionFormats
+			am_MainSoundProperty_L listMainSoundProperties
+		}
+		out {
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : updates data of an source. (at)return E_OK on success, E_NON_EXISTENT if the sourceID in the struct is not valid. 
+	<**
+		@description : updates data of an source. (at)return E_OK on success, E_NON_EXISTENT if the sourceID in the struct is not valid. 
 Please note that only the following data out of am_Source_s have effect when they are changed:
 sourceClassID,
 listSoundProperties,
 listConnectionFormats,
 listMainSoundProperties
-    **>
-    method updateSource {
-        in {
+	**>
+	method updateSource {
+		in {
 
-            <**
-                @description : the sourceID of the source
-            **>
-            am_sourceID_t sourceID
-            am_sourceClass_t sourceClassID
-            am_SoundProperty_L listSoundProperties
-            am_ConnectionFormat_L listConnectionFormats
-            am_MainSoundProperty_L listMainSoundProperties
-        }
-        out {
-            am_Error_e ^error
-        }
-    }
+			<**
+				@description : the sourceID of the source
+			**>
+			am_sourceID_t sourceID
+			am_sourceClass_t sourceClassID
+			am_SoundProperty_L listSoundProperties
+			am_ConnectionFormat_L listConnectionFormats
+			am_MainSoundProperty_L listMainSoundProperties
+		}
+		out {
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : acknowledges a asyncSetSinkVolumes
-    **>
-    method ackSetVolumes {
-        in {
-            am_Handle_s handle
+	<**
+		@description : acknowledges a asyncSetSinkVolumes
+	**>
+	method ackSetVolumes {
+		in {
+			am_Handle_s handle
 
-            <**
-                @description : The list of volumes that have been set. ramp and time values have no meaning when the struct is used here.
-            **>
-            am_Volumes_L listvolumes
+			<**
+				@description : The list of volumes that have been set. ramp and time values have no meaning when the struct is used here.
+			**>
+			am_Volumes_L listvolumes
 
-            <**
-                @description : E_OK on success, E_ABORTED if action was aborted, E_UNKNOWN on error
-            **>
-            am_Error_e ^error
-        }
-    }
+			<**
+				@description : E_OK on success, E_ABORTED if action was aborted, E_UNKNOWN on error
+			**>
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : The acknowledge of the SinkNotificationConfiguration
-    **>
-    method ackSinkNotificationConfiguration {
-        in {
-            am_Handle_s handle
-            am_Error_e ^error
-        }
-    }
+	<**
+		@description : The acknowledge of the SinkNotificationConfiguration
+	**>
+	method ackSinkNotificationConfiguration {
+		in {
+			am_Handle_s handle
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : The acknowledge of the SourceNotificationConfiguration
-    **>
-    method ackSourceNotificationConfiguration {
-        in {
-            am_Handle_s handle
-            am_Error_e ^error
-        }
-    }
+	<**
+		@description : The acknowledge of the SourceNotificationConfiguration
+	**>
+	method ackSourceNotificationConfiguration {
+		in {
+			am_Handle_s handle
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : is called whenever a notified value needs to be send
-    **>
-    method hookSinkNotificationDataChange {
-        in {
+	<**
+		@description : is called whenever a notified value needs to be send
+	**>
+	method hookSinkNotificationDataChange {
+		in {
 
-            <**
-                @description : The sinkID of the sink where the data changed
-            **>
-            am_sinkID_t sinkID
+			<**
+				@description : The sinkID of the sink where the data changed
+			**>
+			am_sinkID_t sinkID
 
-            <**
-                @description : The payload
-            **>
-            am_NotificationPayload_s payload
-        }
-    }
+			<**
+				@description : The payload
+			**>
+			am_NotificationPayload_s payload
+		}
+	}
 
-    <**
-        @description : is called whenever a notified value needs to be send
-    **>
-    method hookSourceNotificationDataChange {
-        in {
+	<**
+		@description : is called whenever a notified value needs to be send
+	**>
+	method hookSourceNotificationDataChange {
+		in {
 
-            <**
-                @description : The sinkID of the sink where the data changed
-            **>
-            am_sourceID_t sourceID
+			<**
+				@description : The sinkID of the sink where the data changed
+			**>
+			am_sourceID_t sourceID
 
-            <**
-                @description : The payload
-            **>
-            am_NotificationPayload_s payload
-        }
-    }
-    method confirmRoutingRundown {
-        in {
-            String domainName
-        }
-    }
+			<**
+				@description : The payload
+			**>
+			am_NotificationPayload_s payload
+		}
+	}
+	method confirmRoutingRundown {
+		in {
+			String domainName
+		}
+	}
 
 }

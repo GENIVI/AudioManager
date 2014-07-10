@@ -1,606 +1,607 @@
 package org.genivi.am
 import org.genivi.am.* from "../../AudioManagerDaemon/fidls/AudioManagerTypes.fidl"
 
+
 <**
-    @description : The interface towards the Controlling Instance (e.g HMI). It handles the communication towards the HMI and other system components who need to interact with the audiomanagement.
+	@description : The interface towards the Controlling Instance (e.g HMI). It handles the communication towards the HMI and other system components who need to interact with the audiomanagement.
 There are two rules that have to be kept in mind when implementing against this interface:
-    @author : Christian Mueller
+	@author : Christian Mueller
 **>
 
 interface CommandControl {
-    version {
-        major 1
-        minor 0
-    }
+	version {
+		major 2
+		minor 0
+	}
 
-    <**
-        @description : connects a source to sink
+	<**
+		@description : connects a source to sink
 (at)return E_OK on success, E_NOT_POSSIBLE on failure, E_ALREADY_EXISTS if the connection does already exists
-    **>
-    method connect {
-        in {
-            am_sourceID_t sourceID
-            am_sinkID_t sinkID
-        }
-        out {
-            am_mainConnectionID_t mainConnectionID
-            am_Error_e ^error
-        }
-    }
+	**>
+	method connect {
+		in {
+			am_sourceID_t sourceID
+			am_sinkID_t sinkID
+		}
+		out {
+			am_mainConnectionID_t mainConnectionID
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : disconnects a mainConnection
+	<**
+		@description : disconnects a mainConnection
 (at)return E_OK on successes, E_NON_EXISTENT if the connection does not exist, E_NOT_POSSIBLE on error.
-    **>
-    method disconnect {
-        in {
-            am_mainConnectionID_t mainConnectionID
-        }
-        out {
-            am_Error_e ^error
-        }
-    }
+	**>
+	method disconnect {
+		in {
+			am_mainConnectionID_t mainConnectionID
+		}
+		out {
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : sets the volume for a sink
+	<**
+		@description : sets the volume for a sink
 (at)return E_OK on success, E_UNKOWN on error, E_OUT_OF_RANGE in case the value is out of range
-    **>
-    method setVolume {
-        in {
+	**>
+	method setVolume {
+		in {
 
-            <**
-                @description : the sink
-            **>
-            am_sinkID_t sinkID
+			<**
+				@description : the sink
+			**>
+			am_sinkID_t sinkID
 
-            <**
-                @description : the volume
-            **>
-            am_mainVolume_t volume
-        }
-        out {
-            am_Error_e ^error
-        }
-    }
+			<**
+				@description : the volume
+			**>
+			am_mainVolume_t volume
+		}
+		out {
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : This function is used to increment or decrement the current volume for a sink.
+	<**
+		@description : This function is used to increment or decrement the current volume for a sink.
 (at)return E_OK on success, E_UNKNOWN on error and E_OUT_OF_RANGE if the value is not in the given volume range.
-    **>
-    method volumeStep {
-        in {
-            am_sinkID_t sinkID
+	**>
+	method volumeStep {
+		in {
+			am_sinkID_t sinkID
 
-            <**
-                @description : indicated the number of steps that should be incremented or decremented. Positive values here inkrement, negative values decrement
-            **>
-            Int16 volumeStep_
-        }
-        out {
-            am_Error_e ^error
-        }
-    }
+			<**
+				@description : indicated the number of steps that should be incremented or decremented. Positive values here inkrement, negative values decrement
+			**>
+			Int16 volumeStep
+		}
+		out {
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : sets the mute state of a sink
+	<**
+		@description : sets the mute state of a sink
 (at)return E_OK on success, E_UNKNOWN on error. If the mute state is already the desired one, the Daemon will return E_OK.
-    **>
-    method setSinkMuteState {
-        in {
-            am_sinkID_t sinkID
-            am_MuteState_e muteState
-        }
-        out {
-            am_Error_e ^error
-        }
-    }
+	**>
+	method setSinkMuteState {
+		in {
+			am_sinkID_t sinkID
+			am_MuteState_e muteState
+		}
+		out {
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : This method is used to set sound properties, e.g. Equalizer Values. Since the capabilities of the system can differ, the exact key value pairs can be extended in each product
+	<**
+		@description : This method is used to set sound properties, e.g. Equalizer Values. Since the capabilities of the system can differ, the exact key value pairs can be extended in each product
 (at)return E_OK on success, E_OUT_OF_RANGE if value exceeds range, E_UNKNOWN in case of an error
-    **>
-    method setMainSinkSoundProperty {
-        in {
-            am_sinkID_t sinkID
-            am_MainSoundProperty_s soundProperty
-        }
-        out {
-            am_Error_e ^error
-        }
-    }
+	**>
+	method setMainSinkSoundProperty {
+		in {
+			am_sinkID_t sinkID
+			am_MainSoundProperty_s soundProperty
+		}
+		out {
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : This method is used to set sound properties, e.g. Equalizer Values. Since the capabilities of the system can differ, the exact key value pairs can be extended in each product
+	<**
+		@description : This method is used to set sound properties, e.g. Equalizer Values. Since the capabilities of the system can differ, the exact key value pairs can be extended in each product
 (at)return E_OK on success, E_OUT_OF_RANGE if value exceeds range, E_UNKNOWN in case of an error
-    **>
-    method setMainSourceSoundProperty {
-        in {
-            am_sourceID_t sourceID
-            am_MainSoundProperty_s soundProperty
-        }
-        out {
-            am_Error_e ^error
-        }
-    }
+	**>
+	method setMainSourceSoundProperty {
+		in {
+			am_sourceID_t sourceID
+			am_MainSoundProperty_s soundProperty
+		}
+		out {
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : is used to set a specific system property.
+	<**
+		@description : is used to set a specific system property.
 (at)return E_OK on success, E_OUT_OF_RANGE if value exceeds range, E_UNKNOWN in case of an error
-    **>
-    method setSystemProperty {
-        in {
+	**>
+	method setSystemProperty {
+		in {
 
-            <**
-                @description : the property that shall be set
-            **>
-            am_SystemProperty_s property
-        }
-        out {
-            am_Error_e ^error
-        }
-    }
+			<**
+				@description : the property that shall be set
+			**>
+			am_SystemProperty_s property
+		}
+		out {
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : returns the actual list of MainConnections
+	<**
+		@description : returns the actual list of MainConnections
 (at)return E_OK on success, E_DATABASE_ERROR on error 
-    **>
-    method getListMainConnections {
-        out {
+	**>
+	method getListMainConnections {
+		out {
 
-            <**
-                @description : returns a list of all connections
-            **>
-            am_MainConnection_L listConnections
-            am_Error_e ^error
-        }
-    }
+			<**
+				@description : returns a list of all connections
+			**>
+			am_MainConnection_L listConnections
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : returns the actual list of Sinks
+	<**
+		@description : returns the actual list of Sinks
 (at)return E_OK on success, E_DATABASE_ERROR on error 
-    **>
-    method getListMainSinks {
-        out {
+	**>
+	method getListMainSinks {
+		out {
 
-            <**
-                @description : the list of the sinks
-            **>
-            am_SinkType_L listMainSinks
-            am_Error_e ^error
-        }
-    }
+			<**
+				@description : the list of the sinks
+			**>
+			am_SinkType_L listMainSinks
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : returns the actual list of Sources
+	<**
+		@description : returns the actual list of Sources
 (at)return E_OK on success, E_DATABASE_ERROR on error 
-    **>
-    method getListMainSources {
-        out {
+	**>
+	method getListMainSources {
+		out {
 
-            <**
-                @description : the list of sources
-            **>
-            am_SourceType_L listMainSources
-            am_Error_e ^error
-        }
-    }
+			<**
+				@description : the list of sources
+			**>
+			am_SourceType_L listMainSources
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : This is used to retrieve all source sound properties related to a source. Returns a vector of the sound properties and values as pair
+	<**
+		@description : This is used to retrieve all source sound properties related to a source. Returns a vector of the sound properties and values as pair
 (at)return E_OK on success, E_DATABASE_ERROR on error 
-    **>
-    method getListMainSinkSoundProperties {
-        in {
-            am_sinkID_t sinkID
-        }
-        out {
-            am_MainSoundProperty_L listSoundProperties
-            am_Error_e ^error
-        }
-    }
+	**>
+	method getListMainSinkSoundProperties {
+		in {
+			am_sinkID_t sinkID
+		}
+		out {
+			am_MainSoundProperty_L listSoundProperties
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : This is used to retrieve all source sound properties related to a source.
+	<**
+		@description : This is used to retrieve all source sound properties related to a source.
 (at)return E_OK on success, E_DATABASE_ERROR on error 
-    **>
-    method getListMainSourceSoundProperties {
-        in {
-            am_sourceID_t sourceID
-        }
-        out {
-            am_MainSoundProperty_L listSourceProperties
-            am_Error_e ^error
-        }
-    }
+	**>
+	method getListMainSourceSoundProperties {
+		in {
+			am_sourceID_t sourceID
+		}
+		out {
+			am_MainSoundProperty_L listSourceProperties
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : This is used to retrieve SourceClass Information of all source classes 
+	<**
+		@description : This is used to retrieve SourceClass Information of all source classes 
 (at)return E_OK on success, E_DATABASE_ERROR on error 
-    **>
-    method getListSourceClasses {
-        out {
-            am_SourceClass_L listSourceClasses
-            am_Error_e ^error
-        }
-    }
+	**>
+	method getListSourceClasses {
+		out {
+			am_SourceClass_L listSourceClasses
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : This is used to retrieve SinkClass Information of all sink classes 
+	<**
+		@description : This is used to retrieve SinkClass Information of all sink classes 
 (at)return E_OK on success, E_DATABASE_ERROR on error 
-    **>
-    method getListSinkClasses {
-        out {
-            am_SinkClass_L listSinkClasses
-            am_Error_e ^error
-        }
-    }
+	**>
+	method getListSinkClasses {
+		out {
+			am_SinkClass_L listSinkClasses
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : Retrieves a complete list of all systemProperties.
+	<**
+		@description : Retrieves a complete list of all systemProperties.
 (at)return E_OK on success, E_DATABASE_ERROR on error 
-    **>
-    method getListSystemProperties {
-        out {
-            am_SystemProperty_L listSystemProperties
-            am_Error_e ^error
-        }
-    }
+	**>
+	method getListSystemProperties {
+		out {
+			am_SystemProperty_L listSystemProperties
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : returns the delay in ms that the audiopath for the given mainConnection has
+	<**
+		@description : returns the delay in ms that the audiopath for the given mainConnection has
 (at)return E_OK on success, E_NOT_POSSIBLE if timing information is not yet retrieved, E_DATABASE_ERROR on read error on the database
-    **>
-    method getTimingInformation {
-        in {
-            am_mainConnectionID_t mainConnectionID
-        }
-        out {
-            am_timeSync_t delay
-            am_Error_e ^error
-        }
-    }
+	**>
+	method getTimingInformation {
+		in {
+			am_mainConnectionID_t mainConnectionID
+		}
+		out {
+			am_timeSync_t delay
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : Retrieves the list of MainNotifications for a sink. Does not return the possible ones.
-    **>
-    method getListMainSinkNotificationConfigurations {
-        in {
+	<**
+		@description : Retrieves the list of MainNotifications for a sink. Does not return the possible ones.
+	**>
+	method getListMainSinkNotificationConfigurations {
+		in {
 
-            <**
-                @description : The sinkID
-            **>
-            am_sinkID_t sinkID
-        }
-        out {
-            am_NotificationConfiguration_L listMainNotificationConfigurations
-            am_Error_e ^error
-        }
-    }
+			<**
+				@description : The sinkID
+			**>
+			am_sinkID_t sinkID
+		}
+		out {
+			am_NotificationConfiguration_L listMainNotificationConfigurations
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : Retrieves the list of MainNotifications for a source. Does not return the possible ones.
-    **>
-    method getListMainSourceNotificationConfigurations {
-        in {
+	<**
+		@description : Retrieves the list of MainNotifications for a source. Does not return the possible ones.
+	**>
+	method getListMainSourceNotificationConfigurations {
+		in {
 
-            <**
-                @description : The sourceID
-            **>
-            am_sourceID_t sourceID
-        }
-        out {
-            am_NotificationConfiguration_L listMainNotificationConfigurations
-            am_Error_e ^error
-        }
-    }
+			<**
+				@description : The sourceID
+			**>
+			am_sourceID_t sourceID
+		}
+		out {
+			am_NotificationConfiguration_L listMainNotificationConfigurations
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : sets a MainNotificationConfiuration. This can be used to turn on an off notifications an to change the mode of the configuration.
+	<**
+		@description : sets a MainNotificationConfiuration. This can be used to turn on an off notifications an to change the mode of the configuration.
 (at)return E_OK on success, E_NON_EXISTENT if sinkID does not exists, E_DATABASE_ERROR on error 
-    **>
-    method setMainSinkNotificationConfiguration {
-        in {
+	**>
+	method setMainSinkNotificationConfiguration {
+		in {
 
-            <**
-                @description : The sinkID of the MainNotification to be changed
-            **>
-            am_sinkID_t sinkID
+			<**
+				@description : The sinkID of the MainNotification to be changed
+			**>
+			am_sinkID_t sinkID
 
-            <**
-                @description : The MainNotifiication that needs to be set
-            **>
-            am_NotificationConfiguration_s mainNotificationConfiguration
-        }
-        out {
-            am_Error_e ^error
-        }
-    }
+			<**
+				@description : The MainNotifiication that needs to be set
+			**>
+			am_NotificationConfiguration_s mainNotificationConfiguration
+		}
+		out {
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : sets a MainNotificationConfiuration. This can be used to turn on an off notifications an to change the mode of the configuration.
+	<**
+		@description : sets a MainNotificationConfiuration. This can be used to turn on an off notifications an to change the mode of the configuration.
 (at)return E_OK on success, E_NON_EXISTENT if sourceID does not exists, E_DATABASE_ERROR on error 
-    **>
-    method setMainSourceNotificationConfiguration {
-        in {
+	**>
+	method setMainSourceNotificationConfiguration {
+		in {
 
-            <**
-                @description : The sourceID of the MainNotification to be changed
-            **>
-            am_sourceID_t sourceID
+			<**
+				@description : The sourceID of the MainNotification to be changed
+			**>
+			am_sourceID_t sourceID
 
-            <**
-                @description : The MainNotifiication that needs to be set
-            **>
-            am_NotificationConfiguration_s mainNotificationConfiguration
-        }
-        out {
-            am_Error_e ^error
-        }
-    }
+			<**
+				@description : The MainNotifiication that needs to be set
+			**>
+			am_NotificationConfiguration_s mainNotificationConfiguration
+		}
+		out {
+			am_Error_e ^error
+		}
+	}
 
-    <**
-        @description : Callback that is called when the number of connections change
-    **>
-    broadcast newMainConnection {
-        out {
-            am_MainConnectionType_s mainConnection
-        }
-    }
+	<**
+		@description : Callback that is called when the number of connections change
+	**>
+	broadcast newMainConnection {
+		out {
+			am_MainConnectionType_s mainConnection
+		}
+	}
 
-    <**
-        @description : Callback that is called when the number of connections change
-    **>
-    broadcast removedMainConnection {
-        out {
-            am_mainConnectionID_t mainConnection
-        }
-    }
+	<**
+		@description : Callback that is called when the number of connections change
+	**>
+	broadcast removedMainConnection {
+		out {
+			am_mainConnectionID_t mainConnection
+		}
+	}
 
-    <**
-        @description : Callback that is called when the number of sinks change
-    **>
-    broadcast newSink {
-        out {
-            am_SinkType_s sink
-        }
-    }
+	<**
+		@description : Callback that is called when the number of sinks change
+	**>
+	broadcast newSink {
+		out {
+			am_SinkType_s sink
+		}
+	}
 
-    <**
-        @description : Callback that is called when the number of sinks change
-    **>
-    broadcast removedSink {
-        out {
-            am_sinkID_t sinkID
-        }
-    }
+	<**
+		@description : Callback that is called when the number of sinks change
+	**>
+	broadcast removedSink {
+		out {
+			am_sinkID_t sinkID
+		}
+	}
 
-    <**
-        @description : Callback that is called when the number of sources change
-    **>
-    broadcast newSource {
-        out {
-            am_SourceType_s source
-        }
-    }
+	<**
+		@description : Callback that is called when the number of sources change
+	**>
+	broadcast newSource {
+		out {
+			am_SourceType_s source
+		}
+	}
 
-    <**
-        @description : Callback that is called when the number of sources change
-    **>
-    broadcast removedSource {
-        out {
-            am_sourceID_t source
-        }
-    }
+	<**
+		@description : Callback that is called when the number of sources change
+	**>
+	broadcast removedSource {
+		out {
+			am_sourceID_t source
+		}
+	}
 
-    <**
-        @description : this callback is fired if the number of sink classes changed
-    **>
-    broadcast numberOfSinkClassesChanged {
-    }
+	<**
+		@description : this callback is fired if the number of sink classes changed
+	**>
+	broadcast numberOfSinkClassesChanged {
+	}
 
-    <**
-        @description : this callback is fired if the number of source classes changed
-    **>
-    broadcast numberOfSourceClassesChanged {
-    }
+	<**
+		@description : this callback is fired if the number of source classes changed
+	**>
+	broadcast numberOfSourceClassesChanged {
+	}
 
-    <**
-        @description : This callback is called when the ConnectionState of a connection changed.
-    **>
-    broadcast mainConnectionStateChanged {
-        out {
-            am_mainConnectionID_t connectionID
-            am_ConnectionState_e connectionState
-        }
-    }
+	<**
+		@description : This callback is called when the ConnectionState of a connection changed.
+	**>
+	broadcast mainConnectionStateChanged {
+		out {
+			am_mainConnectionID_t connectionID
+			am_ConnectionState_e connectionState
+		}
+	}
 
-    <**
-        @description : this callback indicates that a sinkSoundProperty has changed.
-    **>
-    broadcast mainSinkSoundPropertyChanged {
-        out {
-            am_sinkID_t sinkID
-            am_MainSoundProperty_s soundProperty
-        }
-    }
+	<**
+		@description : this callback indicates that a sinkSoundProperty has changed.
+	**>
+	broadcast mainSinkSoundPropertyChanged {
+		out {
+			am_sinkID_t sinkID
+			am_MainSoundProperty_s soundProperty
+		}
+	}
 
-    <**
-        @description : this callback indicates that a sourceSoundProperty has changed.
-    **>
-    broadcast mainSourceSoundPropertyChanged {
-        out {
-            am_sourceID_t sourceID
-            am_MainSoundProperty_s soundProperty
-        }
-    }
+	<**
+		@description : this callback indicates that a sourceSoundProperty has changed.
+	**>
+	broadcast mainSourceSoundPropertyChanged {
+		out {
+			am_sourceID_t sourceID
+			am_MainSoundProperty_s soundProperty
+		}
+	}
 
-    <**
-        @description : this callback is called when the availability of a sink has changed
-    **>
-    broadcast sinkAvailabilityChanged {
-        out {
-            am_sinkID_t sinkID
-            am_Availability_s availability
-        }
-    }
+	<**
+		@description : this callback is called when the availability of a sink has changed
+	**>
+	broadcast sinkAvailabilityChanged {
+		out {
+			am_sinkID_t sinkID
+			am_Availability_s availability
+		}
+	}
 
-    <**
-        @description : this callback is called when the availability of source has changed.
-    **>
-    broadcast sourceAvailabilityChanged {
-        out {
-            am_sourceID_t sourceID
-            am_Availability_s availability
-        }
-    }
+	<**
+		@description : this callback is called when the availability of source has changed.
+	**>
+	broadcast sourceAvailabilityChanged {
+		out {
+			am_sourceID_t sourceID
+			am_Availability_s availability
+		}
+	}
 
-    <**
-        @description : this callback indicates a volume change on the indicated sink
-    **>
-    broadcast volumeChanged {
-        out {
-            am_sinkID_t sinkID
-            am_mainVolume_t volume
-        }
-    }
+	<**
+		@description : this callback indicates a volume change on the indicated sink
+	**>
+	broadcast volumeChanged {
+		out {
+			am_sinkID_t sinkID
+			am_mainVolume_t volume
+		}
+	}
 
-    <**
-        @description : this callback indicates a mute state change on a sink.
-    **>
-    broadcast sinkMuteStateChanged {
-        out {
-            am_sinkID_t sinkID
-            am_MuteState_e muteState
-        }
-    }
+	<**
+		@description : this callback indicates a mute state change on a sink.
+	**>
+	broadcast sinkMuteStateChanged {
+		out {
+			am_sinkID_t sinkID
+			am_MuteState_e muteState
+		}
+	}
 
-    <**
-        @description : is fired if a systemProperty changed
-    **>
-    broadcast systemPropertyChanged {
-        out {
-            am_SystemProperty_s systemProperty
-        }
-    }
+	<**
+		@description : is fired if a systemProperty changed
+	**>
+	broadcast systemPropertyChanged {
+		out {
+			am_SystemProperty_s systemProperty
+		}
+	}
 
-    <**
-        @description : This callback is fired if the timinginformation for a mainConnectionID changed
-    **>
-    broadcast timingInformationChanged {
-        out {
-            am_mainConnectionID_t mainConnectionID
-            am_timeSync_t time
-        }
-    }
+	<**
+		@description : This callback is fired if the timinginformation for a mainConnectionID changed
+	**>
+	broadcast timingInformationChanged {
+		out {
+			am_mainConnectionID_t mainConnectionID
+			am_timeSync_t time
+		}
+	}
 
-    <**
-        @description : This callback is called when a sink is updated.
-    **>
-    broadcast sinkUpdated {
-        out {
+	<**
+		@description : This callback is called when a sink is updated.
+	**>
+	broadcast sinkUpdated {
+		out {
 
-            <**
-                @description : The sinkID that is updated
-            **>
-            am_sinkID_t sinkID
+			<**
+				@description : The sinkID that is updated
+			**>
+			am_sinkID_t sinkID
 
-            <**
-                @description : The sinkClassID of the updated sink. gives the current value even if not updated
-            **>
-            am_sinkClass_t sinkClassID
+			<**
+				@description : The sinkClassID of the updated sink. gives the current value even if not updated
+			**>
+			am_sinkClass_t sinkClassID
 
-            <**
-                @description : The list of mainSoundProperties. Gives the actual list of MainSoundProperties even if not changed
-            **>
-            am_MainSoundProperty_L listMainSoundProperties
-        }
-    }
+			<**
+				@description : The list of mainSoundProperties. Gives the actual list of MainSoundProperties even if not changed
+			**>
+			am_MainSoundProperty_L listMainSoundProperties
+		}
+	}
 
-    <**
-        @description : This callback is called when a source is updated.
-    **>
-    broadcast sourceUpdated {
-        out {
+	<**
+		@description : This callback is called when a source is updated.
+	**>
+	broadcast sourceUpdated {
+		out {
 
-            <**
-                @description : The sourceID that is updated
-            **>
-            am_sourceID_t sourceID
+			<**
+				@description : The sourceID that is updated
+			**>
+			am_sourceID_t sourceID
 
-            <**
-                @description : The sourceClassID of the updated source. Gives the current value even if not updated
-            **>
-            am_sourceClass_t sourceClassID
+			<**
+				@description : The sourceClassID of the updated source. Gives the current value even if not updated
+			**>
+			am_sourceClass_t sourceClassID
 
-            <**
-                @description : The list of mainSoundProperties. Gives the actual list of MainSoundProperties even if not changed
-            **>
-            am_MainSoundProperty_L listMainSoundProperties
-        }
-    }
+			<**
+				@description : The list of mainSoundProperties. Gives the actual list of MainSoundProperties even if not changed
+			**>
+			am_MainSoundProperty_L listMainSoundProperties
+		}
+	}
 
-    <**
-        @description : This callback is called when a notificated value of a sink changes.
-    **>
-    broadcast sinkNotification {
-        out {
+	<**
+		@description : This callback is called when a notificated value of a sink changes.
+	**>
+	broadcast sinkNotification {
+		out {
 
-            <**
-                @description : The sinkID
-            **>
-            am_sinkID_t sinkID
+			<**
+				@description : The sinkID
+			**>
+			am_sinkID_t sinkID
 
-            <**
-                @description : The payload of the notification
-            **>
-            am_NotificationPayload_s notification
-        }
-    }
+			<**
+				@description : The payload of the notification
+			**>
+			am_NotificationPayload_s notification
+		}
+	}
 
-    <**
-        @description : This callback is called when a notifcated value of a source changes.
-    **>
-    broadcast sourceNotification {
-        out {
+	<**
+		@description : This callback is called when a notifcated value of a source changes.
+	**>
+	broadcast sourceNotification {
+		out {
 
-            <**
-                @description : The sourceID
-            **>
-            am_sourceID_t sourceID
+			<**
+				@description : The sourceID
+			**>
+			am_sourceID_t sourceID
 
-            <**
-                @description : The payload of the notification
-            **>
-            am_NotificationPayload_s notification
-        }
-    }
+			<**
+				@description : The payload of the notification
+			**>
+			am_NotificationPayload_s notification
+		}
+	}
 
-    <**
-        @description : This callback is triggered when a mainNotificationConfiguration is changed.
-    **>
-    broadcast mainSinkNotificationConfigurationChanged {
-        out {
-            am_sinkID_t sinkID
+	<**
+		@description : This callback is triggered when a mainNotificationConfiguration is changed.
+	**>
+	broadcast mainSinkNotificationConfigurationChanged {
+		out {
+			am_sinkID_t sinkID
 
-            <**
-                @description : The MainNotificationConfiguration that changed
-            **>
-            am_NotificationConfiguration_s mainNotificationConfiguration
-        }
-    }
+			<**
+				@description : The MainNotificationConfiguration that changed
+			**>
+			am_NotificationConfiguration_s mainNotificationConfiguration
+		}
+	}
 
-    <**
-        @description : This callback is triggered when a mainNotificationConfiguration is changed.
-    **>
-    broadcast mainSourceNotificationConfigurationChanged {
-        out {
-            am_sourceID_t sourceID
+	<**
+		@description : This callback is triggered when a mainNotificationConfiguration is changed.
+	**>
+	broadcast mainSourceNotificationConfigurationChanged {
+		out {
+			am_sourceID_t sourceID
 
-            <**
-                @description : The MainNotificationConfiguration that changed
-            **>
-            am_NotificationConfiguration_s mainNotificationConfiguration
-        }
-    }
+			<**
+				@description : The MainNotificationConfiguration that changed
+			**>
+			am_NotificationConfiguration_s mainNotificationConfiguration
+		}
+	}
 
 }
