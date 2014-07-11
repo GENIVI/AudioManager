@@ -32,7 +32,7 @@ interface RoutingControl {
 			am_connectionID_t connectionID
 			am_sourceID_t sourceID
 			am_sinkID_t sinkID
-			am_CConnectionFormat_t connectionFormat
+			am_CustomConnectionFormat_t connectionFormat
 		}
 	}
 
@@ -56,7 +56,7 @@ interface RoutingControl {
 			am_Handle_s handle
 			am_sinkID_t sinkID
 			am_volume_t volume
-			am_CRampType_t ramp
+			am_CustomRampType_t ramp
 			am_time_t time
 		}
 	}
@@ -71,7 +71,7 @@ triggers the acknowledge ackSourceVolumeChange
 			am_Handle_s handle
 			am_sourceID_t sourceID
 			am_volume_t volume
-			am_CRampType_t ramp
+			am_CustomRampType_t ramp
 			am_time_t time
 		}
 	}
@@ -145,7 +145,7 @@ triggers the acknowledge ackSourceVolumeChange
 			am_Handle_s handle
 			am_crossfaderID_t crossfaderID
 			am_HotSink_e hotSink
-			am_CRampType_t rampType
+			am_CustomRampType_t rampType
 			am_time_t time
 		}
 	}
