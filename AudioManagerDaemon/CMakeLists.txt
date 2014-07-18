@@ -285,7 +285,7 @@ ENDIF(WITH_DBUS_WRAPPER)
 # Additional Dev packet dependency
 SET(ADD_DEPEND_DEV_PROP "audiomanager-bin" ${ADD_DEPEND_BIN_PROP})
 
-set(CMAKE_CXX_FLAGS_RELEASE "-O2 -fno-common -fno-strict-aliasing -DNDEBUG")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -fno-common -fno-strict-aliasing -DNDEBUG")
 
 MESSAGE(STATUS "bin packet dependency: ${ADD_DEPEND_BIN_PROP}")
 MESSAGE(STATUS "dev dependency: ${ADD_DEPEND_DEV_PROP}")
