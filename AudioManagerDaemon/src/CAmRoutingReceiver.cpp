@@ -238,9 +238,19 @@ am_Error_e CAmRoutingReceiver::registerGateway(const am_Gateway_s & gatewayData,
     return (mpControlSender->hookSystemRegisterGateway(gatewayData, gatewayID));
 }
 
+am_Error_e  CAmRoutingReceiver::registerConverter(const am_Converter_s& converterData, am_converterID_t& converterID)
+{
+	return (mpControlSender->hookSystemRegisterConverter(converterData, converterID));
+}
+
 am_Error_e CAmRoutingReceiver::deregisterGateway(const am_gatewayID_t gatewayID)
 {
     return (mpControlSender->hookSystemDeregisterGateway(gatewayID));
+}
+
+am_Error_e  CAmRoutingReceiver::deregisterConverter(const am_converterID_t converterID)
+{
+	 return (mpControlSender->hookSystemDeregisterConverter(converterID));
 }
 
 am_Error_e CAmRoutingReceiver::peekSink(const std::string& name, am_sinkID_t & sinkID)
@@ -416,6 +426,11 @@ void CAmRoutingReceiver::ackSourceNotificationConfiguration(const am_Handle_s ha
 am_Error_e CAmRoutingReceiver::updateGateway(const am_gatewayID_t gatewayID, const std::vector<am_CustomConnectionFormat_t>& listSourceFormats, const std::vector<am_CustomConnectionFormat_t>& listSinkFormats, const std::vector<bool>& convertionMatrix)
 {
     return (mpControlSender->hookSystemUpdateGateway(gatewayID,listSourceFormats,listSinkFormats,convertionMatrix));
+}
+
+am_Error_e CAmRoutingReceiver::updateConverter(const am_converterID_t converterID, const std::vector<am_CustomConnectionFormat_t>& listSourceFormats, const std::vector<am_CustomConnectionFormat_t>& listSinkFormats, const std::vector<bool>& convertionMatrix)
+{
+	return (mpControlSender->hookSystemUpdateConverter(converterID,listSourceFormats,listSinkFormats,convertionMatrix));
 }
 
 am_Error_e CAmRoutingReceiver::updateSink(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_CustomConnectionFormat_t>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)

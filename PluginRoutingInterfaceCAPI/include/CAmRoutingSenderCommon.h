@@ -36,6 +36,7 @@ extern void CAmConvertCAPI2AM(const org::genivi::am::am_SoundProperty_s &, am::a
 extern void CAmConvertCAPI2AM(const org::genivi::am::am_MainSoundProperty_s &, am::am_MainSoundProperty_s & );
 extern void CAmConvertCAPI2AM(const org::genivi::am::am_NotificationConfiguration_s & , am::am_NotificationConfiguration_s & );
 extern void CAmConvertCAPI2AM(const org::genivi::am::am_Gateway_s & , am::am_Gateway_s & );
+extern void CAmConvertCAPI2AM(const org::genivi::am::am_Converter_s & , am::am_Converter_s & );
 extern void CAmConvertCAPI2AM(const org::genivi::am::am_Crossfader_s & , am::am_Crossfader_s & );
 extern void CAmConvertCAPI2AM(const org::genivi::am::am_EarlyData_s & , am::am_EarlyData_s & );
 extern void CAmConvertCAPI2AM(const org::genivi::am::am_EarlyData_u &, am::am_EarlyData_u & );

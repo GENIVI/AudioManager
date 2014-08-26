@@ -85,8 +85,17 @@
 		<arg name="gatewayID" type="q" direction="out" />
 		<arg name="error" type="q" direction="out" />
 	</method>
+	<method name="registerConverter">
+		<arg name="converterData" type="(qsqqqaiaiab)" direction="in" /> <!-- am_converterID_t converterID; std::string name; am_sinkID_t sinkID; am_sourceID_t sourceID; am_domainID_t domainID; std::vector<am_CustomAvailabilityReason_t> listSourceFormats; std::vector<am_CustomAvailabilityReason_t> listSinkFormats; std::vector<bool> convertionMatrix; -->
+		<arg name="converterID" type="q" direction="out" />
+		<arg name="error" type="q" direction="out" />
+	</method>
 	<method name="deregisterGateway">
 		<arg name="gatewayID" type="q" direction="in" />
+		<arg name="error" type="q" direction="out" />
+	</method>
+	<method name="deregisterConverter">
+		<arg name="converterID" type="q" direction="in" />
 		<arg name="error" type="q" direction="out" />
 	</method>
 	<method name="peekSink">
@@ -171,6 +180,12 @@
 	</method>
 	<method name="updateGateway"> 
  		<arg name="gatewayID" type="q" direction="in" />
+ 		<arg name="listSourceFormats" type="a(q)" direction="in" />
+		<arg name="listSinkFormats" type="a(q)" direction="in" />
+		<arg name="conversionMatrix" type="a(b)" direction="in" /> 
+	</method>
+	<method name="updateConverter"> 
+ 		<arg name="converterID" type="q" direction="in" />
  		<arg name="listSourceFormats" type="a(q)" direction="in" />
 		<arg name="listSinkFormats" type="a(q)" direction="in" />
 		<arg name="conversionMatrix" type="a(b)" direction="in" /> 

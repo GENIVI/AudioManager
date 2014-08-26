@@ -47,6 +47,8 @@ public:
     am_Error_e hookSystemRegisterSource(const am_Source_s& sourceData, am_sourceID_t& sourceID);
     am_Error_e hookSystemDeregisterSource(const am_sourceID_t sourceID);
     am_Error_e hookSystemRegisterGateway(const am_Gateway_s& gatewayData, am_gatewayID_t& gatewayID);
+	am_Error_e hookSystemRegisterConverter(const am_Converter_s& converterData, am_converterID_t& converterID);
+	am_Error_e hookSystemDeregisterConverter(const am_converterID_t converterID);
     am_Error_e hookSystemDeregisterGateway(const am_gatewayID_t gatewayID);
     am_Error_e hookSystemRegisterCrossfader(const am_Crossfader_s& crossfaderData, am_crossfaderID_t& crossfaderID);
     am_Error_e hookSystemDeregisterCrossfader(const am_crossfaderID_t crossfaderID);
@@ -78,6 +80,7 @@ public:
     am_Error_e hookSystemUpdateSink(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_CustomConnectionFormat_t>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties) ;
     am_Error_e hookSystemUpdateSource(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_CustomConnectionFormat_t>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties) ;
     am_Error_e hookSystemUpdateGateway(const am_gatewayID_t gatewayID, const std::vector<am_CustomConnectionFormat_t>& listSourceConnectionFormats, const std::vector<am_CustomConnectionFormat_t>& listSinkConnectionFormats, const std::vector<bool>& convertionMatrix) ;
+	am_Error_e hookSystemUpdateConverter(const am_converterID_t converterID, const std::vector<am_CustomConnectionFormat_t>& listSourceConnectionFormats, const std::vector<am_CustomConnectionFormat_t>& listSinkConnectionFormats, const std::vector<bool>& convertionMatrix);
     void cbAckSetVolumes(const am_Handle_s handle, const std::vector<am_Volumes_s>& listVolumes, const am_Error_e error) ;
     void cbAckSetSinkNotificationConfiguration(const am_Handle_s handle, const am_Error_e error) ;
     void cbAckSetSourceNotificationConfiguration(const am_Handle_s handle, const am_Error_e error) ;

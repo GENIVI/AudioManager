@@ -26,12 +26,12 @@
 #include <fstream>
 #include <sstream>
 #include <string>
-#include <algorithm>
 #include <limits>
 #include "CAmDatabaseHandlerMap.h"
 #include "CAmDatabaseObserver.h"
 #include "CAmRouter.h"
 #include "shared/CAmDltWrapper.h"
+
 
 namespace am
 {
@@ -428,6 +428,7 @@ bool CAmDatabaseHandlerMap::CAmMappedData::increaseConnectionID(int16_t & result
 CAmDatabaseHandlerMap::CAmDatabaseHandlerMap():	mFirstStaticSink(true), //
 														mFirstStaticSource(true), //
 														mFirstStaticGateway(true), //
+														mFirstStaticConverter(true), //
 														mFirstStaticSinkClass(true), //
 														mFirstStaticSourceClass(true), //
 														mFirstStaticCrossfader(true), //
@@ -665,7 +666,7 @@ am_Error_e CAmDatabaseHandlerMap::enterCrossfaderDB(const am_Crossfader_s & cros
     if (crossfaderData.crossfaderID != 0 || mFirstStaticCrossfader)
     {
         //check if the ID already exists
-        if (existcrossFader(crossfaderData.crossfaderID))
+        if (existCrossFader(crossfaderData.crossfaderID))
         {
         	crossfaderID = crossfaderData.crossfaderID;
             return (E_ALREADY_EXISTS);
@@ -755,6 +756,71 @@ am_Error_e CAmDatabaseHandlerMap::enterGatewayDB(const am_Gateway_s & gatewayDat
     logInfo("DatabaseHandler::enterGatewayDB entered new gateway with name", gatewayData.name, "sourceID:", gatewayData.sourceID, "sinkID:", gatewayData.sinkID, "assigned ID:", gatewayID);
     if (mpDatabaseObserver)
         mpDatabaseObserver->newGateway(mMappedData.mGatewayMap[temp_GatewayIndex]);
+    return (E_OK);
+}
+
+bool CAmDatabaseHandlerMap::insertConverterDB(const am_Converter_s & converteData, am_converterID_t & converterID)
+{
+    int16_t nextID = 0;
+	if(mMappedData.increaseID(nextID, mMappedData.mCurrentConverterID, converteData.converterID))
+	{
+		converterID = nextID;
+		mMappedData.mConverterMap[nextID] = converteData;
+		mMappedData.mConverterMap[nextID].converterID = nextID;
+		return (true);
+	}
+	else
+	{
+		converterID = 0;
+		logInfo(__PRETTY_FUNCTION__,"Max limit reached.");
+		return (false);
+	}
+}
+
+am_Error_e CAmDatabaseHandlerMap::enterConverterDB(const am_Converter_s & converterData, am_converterID_t & converterID)
+{
+    assert(converterData.converterID<DYNAMIC_ID_BOUNDARY);
+    assert(converterData.sinkID!=0);
+    assert(converterData.sourceID!=0);
+    assert(converterData.domainID!=0);
+    assert(!converterData.name.empty());
+    assert(!converterData.convertionMatrix.empty());
+    assert(!converterData.listSinkFormats.empty());
+    assert(!converterData.listSourceFormats.empty());
+
+    //might be that the sinks and sources are not there during registration time
+    //assert(existSink(gatewayData.sinkID));
+    //assert(existSource(gatewayData.sourceID));
+
+    am_converterID_t tempID = 0;
+    am_converterID_t tempIndex = 0;
+    //if gatewayData is zero and the first Static Sink was already entered, the ID is created
+    bool result;
+    if (converterData.converterID != 0 || mFirstStaticConverter)
+    {
+        //check if the ID already exists
+        if (existGateway(converterData.converterID))
+        {
+        	converterID = converterData.converterID;
+            return (E_ALREADY_EXISTS);
+        }
+    }
+    result = insertConverterDB(converterData, tempID);
+	if( false == result )
+		return (E_UNKNOWN);
+
+	tempIndex = tempID;
+    //if the ID is not created, we add it to the query
+    if (converterData.converterID == 0 && mFirstStaticConverter)
+    {
+    	mFirstStaticConverter = false;
+    }
+    mMappedData.mConverterMap[tempIndex].converterID = tempID;
+    converterID = tempID;
+
+    logInfo("DatabaseHandler::enterConverterDB entered new converter with name", converterData.name, "sourceID:", converterData.sourceID, "sinkID:", converterData.sinkID, "assigned ID:", converterID);
+    if (mpDatabaseObserver)
+        mpDatabaseObserver->newConverter(mMappedData.mConverterMap[tempIndex]);
     return (E_OK);
 }
 
@@ -1274,11 +1340,28 @@ am_Error_e CAmDatabaseHandlerMap::removeGatewayDB(const am_gatewayID_t gatewayID
     return (E_OK);
 }
 
+am_Error_e CAmDatabaseHandlerMap::removeConverterDB(const am_converterID_t converterID)
+{
+    assert(converterID!=0);
+
+    if (!existConverter(converterID))
+    {
+        return (E_NON_EXISTENT);
+    }
+
+    mMappedData.mConverterMap.erase(converterID);
+
+    logInfo("DatabaseHandler::removeConverterDB removed:", converterID);
+    if (mpDatabaseObserver)
+        mpDatabaseObserver->removeConverter(converterID);
+    return (E_OK);
+}
+
 am_Error_e CAmDatabaseHandlerMap::removeCrossfaderDB(const am_crossfaderID_t crossfaderID)
 {
     assert(crossfaderID!=0);
 
-    if (!existcrossFader(crossfaderID))
+    if (!existCrossFader(crossfaderID))
     {
         return (E_NON_EXISTENT);
     }
@@ -1480,10 +1563,24 @@ am_Error_e CAmDatabaseHandlerMap::getGatewayInfoDB(const am_gatewayID_t gatewayI
 
 }
 
+am_Error_e CAmDatabaseHandlerMap::getConverterInfoDB(const am_converterID_t converterID, am_Converter_s& converterData) const
+{
+    assert(converterID!=0);
+    if (!existConverter(converterID))
+    {
+        return (E_NON_EXISTENT);
+    }
+
+    converterData = mMappedData.mConverterMap.at(converterID);
+
+    return (E_OK);
+
+}
+
 am_Error_e CAmDatabaseHandlerMap::getCrossfaderInfoDB(const am_crossfaderID_t crossfaderID, am_Crossfader_s & crossfaderData) const
 {
     assert(crossfaderID!=0);
-    if (!existcrossFader(crossfaderID))
+    if (!existCrossFader(crossfaderID))
     {
         return (E_NON_EXISTENT);
     }
@@ -1570,6 +1667,24 @@ am_Error_e CAmDatabaseHandlerMap::getListGatewaysOfDomain(const am_domainID_t do
  	{
  		if (domainID==elementIterator->second.controlDomainID)
  			listGatewaysID.push_back(elementIterator->second.gatewayID);
+ 	}
+    return (E_OK);
+}
+
+am_Error_e CAmDatabaseHandlerMap::getListConvertersOfDomain(const am_domainID_t domainID, std::vector<am_converterID_t>& listConvertersID) const
+{
+    assert(domainID!=0);
+    listConvertersID.clear();
+    if (!existDomain(domainID))
+    {
+        return (E_NON_EXISTENT);
+    }
+
+    CAmMapConverter::const_iterator elementIterator = mMappedData.mConverterMap.begin();
+ 	for (;elementIterator != mMappedData.mConverterMap.end(); ++elementIterator)
+ 	{
+ 		if (domainID==elementIterator->second.domainID)
+ 			listConvertersID.push_back(elementIterator->second.converterID);
  	}
     return (E_OK);
 }
@@ -1669,6 +1784,17 @@ am_Error_e CAmDatabaseHandlerMap::getListGateways(std::vector<am_Gateway_s> & li
     std::for_each(mMappedData.mGatewayMap.begin(), mMappedData.mGatewayMap.end(), [&](const std::pair<am_gatewayID_t, am_Gateway_s>& ref) {
     	listGateways.push_back(ref.second);
        });
+
+    return (E_OK);
+}
+
+am_Error_e CAmDatabaseHandlerMap::getListConverters(std::vector<am_Converter_s> & listConverters) const
+{
+	listConverters.clear();
+
+    std::for_each(mMappedData.mConverterMap.begin(), mMappedData.mConverterMap.end(), [&](const std::pair<am_converterID_t, am_Converter_s>& ref) {
+    	listConverters.push_back(ref.second);
+    });
 
     return (E_OK);
 }
@@ -1959,6 +2085,11 @@ bool CAmDatabaseHandlerMap::existGateway(const am_gatewayID_t gatewayID) const
 	return existsObjectWithKeyInMap(gatewayID, mMappedData.mGatewayMap);
 }
 
+bool CAmDatabaseHandlerMap::existConverter(const am_converterID_t converterID) const
+{
+	return existsObjectWithKeyInMap(converterID, mMappedData.mConverterMap);
+}
+
 am_Error_e CAmDatabaseHandlerMap::getDomainOfSource(const am_sourceID_t sourceID, am_domainID_t & domainID) const
 {
     assert(sourceID!=0);
@@ -2141,7 +2272,7 @@ bool CAmDatabaseHandlerMap::existConnectionID(const am_connectionID_t connection
  * @param crossfaderID the ID of the crossfader to be checked
  * @return true if exists
  */
-bool CAmDatabaseHandlerMap::existcrossFader(const am_crossfaderID_t crossfaderID) const
+bool CAmDatabaseHandlerMap::existCrossFader(const am_crossfaderID_t crossfaderID) const
 {
      return existsObjectWithKeyInMap(crossfaderID, mMappedData.mCrossfaderMap);
 }
@@ -2421,7 +2552,7 @@ am_Error_e CAmDatabaseHandlerMap::changeCrossFaderHotSink(const am_crossfaderID_
     assert(crossfaderID!=0);
     assert(hotsink!=HS_UNKNOWN);
 
-    if (!existcrossFader(crossfaderID))
+    if (!existCrossFader(crossfaderID))
     {
         return (E_NON_EXISTENT);
     }
@@ -2430,54 +2561,16 @@ am_Error_e CAmDatabaseHandlerMap::changeCrossFaderHotSink(const am_crossfaderID_
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandlerMap::getRoutingTree(bool onlyfree, CAmRoutingTree& tree, std::vector<CAmRoutingTreeItem*>& flatTree)
+bool CAmDatabaseHandlerMap::isComponentConnected(const am_Gateway_s & gateway) const
 {
-    am_domainID_t rootID = tree.returnRootDomainID();
-    CAmRoutingTreeItem *parent = tree.returnRootItem();
-    size_t i = 0;
+	bool ret = isConnected(gateway);
+	return ret;
+}
 
-    do
-    {
-        if (i != 0)
-        {
-            parent = flatTree.at(i - 1);
-            rootID = parent->returnDomainID();
-        }
-		std::for_each(mMappedData.mGatewayMap.begin(),mMappedData.mGatewayMap.end(), [&](const std::pair<am_gatewayID_t, am_Gateway_s>& refGateway) {
-			if( rootID==refGateway.second.domainSinkID )
-			{
-				if(!onlyfree || std::find_if(mMappedData.mConnectionMap.begin(),
-											 mMappedData.mConnectionMap.end(),
-											 [&](const std::pair<am_connectionID_t, am_Connection_Database_s>& refConnection)
-											 {
-												return (refConnection.second.sinkID == refGateway.second.sinkID ||
-														refConnection.second.sourceID ==refGateway.second.sourceID);
-											 })==mMappedData.mConnectionMap.end() )
-				{
-				  // additional check to avoid cyclic routes
-					const am_domainID_t domainSourceID = refGateway.second.domainSourceID;
-					bool sourceDomainAlreadyHandledAsSink = false;
-					for (std::vector<CAmRoutingTreeItem*>::const_iterator iFT = flatTree.begin(); iFT != flatTree.end(); ++iFT)
-					{
-						if (domainSourceID == (*iFT)->returnParent()->returnDomainID())
-						{
-							sourceDomainAlreadyHandledAsSink = true;
-							break;
-						}
-					}
-
-					if (!sourceDomainAlreadyHandledAsSink)
-					{
-						// logInfo("DatabaseHandler::getRoutingTree ", rootID, ", ", domainSourceID, ", ", sqlite3_column_int(query, 1));
-						flatTree.push_back(tree.insertItem(domainSourceID, refGateway.second.gatewayID, parent));
-					}
-				}
-			}
-		});
-        i++;
-    } while (flatTree.size() > (i - 1));
-
-    return (E_OK);
+bool CAmDatabaseHandlerMap::isComponentConnected(const am_Converter_s & converter) const
+{
+	bool ret = isConnected(converter);
+	return ret;
 }
 
 am_Error_e am::CAmDatabaseHandlerMap::peekSinkClassID(const std::string & name, am_sinkClass_t & sinkClassID)
@@ -2731,6 +2824,37 @@ am_Error_e CAmDatabaseHandlerMap::changeGatewayDB(const am_gatewayID_t gatewayID
    return (E_OK);
 }
 
+am_Error_e CAmDatabaseHandlerMap::changeConverterDB(const am_converterID_t converterID, const std::vector<am_CustomConnectionFormat_t>& listSourceConnectionFormats, const std::vector<am_CustomConnectionFormat_t>& listSinkConnectionFormats, const std::vector<bool>& convertionMatrix)
+{
+    assert(converterID!=0);
+
+   if (!existConverter(converterID))
+   {
+       return (E_NON_EXISTENT);
+   }
+
+   if (!listSourceConnectionFormats.empty())
+   {
+	   mMappedData.mConverterMap.at(converterID).listSourceFormats = listSourceConnectionFormats;
+   }
+
+   if (!listSinkConnectionFormats.empty())
+   {
+	   mMappedData.mConverterMap.at(converterID).listSinkFormats = listSinkConnectionFormats;
+   }
+
+   if (!convertionMatrix.empty())
+   {
+       mListConnectionFormat.clear();
+       mListConnectionFormat.insert(std::make_pair(converterID, convertionMatrix));
+   }
+
+   logInfo("DatabaseHandler::changeConverterDB changed Gateway with ID", converterID);
+
+   //todo: check if observer needs to be adopted.
+   return (E_OK);
+}
+
 bool changeNotificationConfiguration(std::vector<am_NotificationConfiguration_s> & listNotificationConfigurations, const am_NotificationConfiguration_s & notificationConfiguration)
 {
 	bool changed = false;
@@ -2780,6 +2904,48 @@ am_Error_e CAmDatabaseHandlerMap::changeSourceNotificationConfigurationDB(const 
 
     //todo:: implement observer function
     return (E_NON_EXISTENT);
+}
+
+am_Error_e CAmDatabaseHandlerMap::enumerateSources(std::function<void(const am_Source_s & element)> cb) const
+{
+	for(auto it = mMappedData.mSourceMap.begin(); it!=mMappedData.mSourceMap.end(); it++)
+	{
+		const am_Source_Database_s *pObject = &it->second;
+		if( 0==pObject->reserved )
+			cb(*pObject);
+	}
+	return E_OK;
+}
+
+am_Error_e CAmDatabaseHandlerMap::enumerateSinks(std::function<void(const am_Sink_s & element)> cb) const
+{
+	for(auto it = mMappedData.mSinkMap.begin(); it!=mMappedData.mSinkMap.end(); it++)
+	{
+		const am_Sink_Database_s *pObject = &it->second;
+		if( 0==pObject->reserved )
+			cb(*pObject);
+	}
+	return E_OK;
+}
+
+am_Error_e CAmDatabaseHandlerMap::enumerateGateways(std::function<void(const am_Gateway_s & element)> cb) const
+{
+	for(auto it = mMappedData.mGatewayMap.begin(); it!=mMappedData.mGatewayMap.end(); it++)
+	{
+		const am_Gateway_s *pObject = &it->second;
+		cb(*pObject);
+	}
+	return E_OK;
+}
+
+am_Error_e CAmDatabaseHandlerMap::enumerateConverters(std::function<void(const am_Converter_s & element)> cb) const
+{
+	for(auto it = mMappedData.mConverterMap.begin(); it!=mMappedData.mConverterMap.end(); it++)
+	{
+		const am_Converter_s *pObject =  &it->second;
+		cb(*pObject);
+	}
+	return E_OK;
 }
 
 }

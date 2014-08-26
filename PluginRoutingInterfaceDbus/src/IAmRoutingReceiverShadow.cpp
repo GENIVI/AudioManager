@@ -142,6 +142,24 @@ void IAmRoutingReceiverShadowDbus::registerGateway(DBusConnection* conn, DBusMes
     }
 }
 
+void IAmRoutingReceiverShadowDbus::registerConverter(DBusConnection* conn, DBusMessage* msg)
+{
+    (void) ((conn));
+    assert(mRoutingReceiveInterface != NULL);
+    mDBUSMessageHandler.initReceive(msg);
+    am_Converter_s gatewayData(mDBUSMessageHandler.getConverterData());
+    am_Error_e returnCode = mRoutingReceiveInterface->registerConverter(gatewayData, gatewayData.converterID);
+    mDBUSMessageHandler.initReply(msg);
+    mDBUSMessageHandler.append(gatewayData.converterID);
+    mDBUSMessageHandler.append(returnCode);
+    mDBUSMessageHandler.sendMessage();
+    if (returnCode != E_OK)
+    {
+        log(&routingDbus, DLT_LOG_INFO, "error registering gateway");
+        return;
+    }
+}
+
 void IAmRoutingReceiverShadowDbus::hookDomainRegistrationComplete(DBusConnection* conn, DBusMessage* msg)
 {
     (void) ((conn));
@@ -401,6 +419,19 @@ void IAmRoutingReceiverShadowDbus::deregisterGateway(DBusConnection* conn, DBusM
     am_gatewayID_t gatewayID = mDBUSMessageHandler.getUInt();
     log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::deregisterGateway called, id", gatewayID);
     am_Error_e returnCode = mRoutingReceiveInterface->deregisterGateway(gatewayID);
+    mDBUSMessageHandler.initReply(msg);
+    mDBUSMessageHandler.append(returnCode);
+    mDBUSMessageHandler.sendMessage();
+}
+
+void IAmRoutingReceiverShadowDbus::deregisterConverter(DBusConnection* conn, DBusMessage* msg)
+{
+    (void) ((conn));
+    assert(mRoutingReceiveInterface != NULL);
+    mDBUSMessageHandler.initReceive(msg);
+    am_converterID_t converterID = mDBUSMessageHandler.getUInt();
+    log(&routingDbus, DLT_LOG_INFO, "IAmRoutingReceiverShadow::deregisterGateway called, id", converterID);
+    am_Error_e returnCode = mRoutingReceiveInterface->deregisterConverter(converterID);
     mDBUSMessageHandler.initReply(msg);
     mDBUSMessageHandler.append(returnCode);
     mDBUSMessageHandler.sendMessage();
@@ -748,6 +779,27 @@ void IAmRoutingReceiverShadowDbus::updateGateway(DBusConnection* conn, DBusMessa
     std::vector<bool> convertionMatrix(mDBUSMessageHandler.getListBool());
 
     am_Error_e returnCode = mRoutingReceiveInterface->updateGateway(gatewayID,listSourceConnectionFormats,listSinkConnectionFormats,convertionMatrix);
+    mDBUSMessageHandler.initReply(msg);
+    mDBUSMessageHandler.append(returnCode);
+    mDBUSMessageHandler.sendMessage();
+    if (returnCode != E_OK)
+    {
+        log(&routingDbus, DLT_LOG_INFO, "error updateGateway");
+        return;
+    }
+}
+
+void IAmRoutingReceiverShadowDbus::updateConverter(DBusConnection* conn, DBusMessage* msg)
+{
+    (void) ((conn));
+    assert(mRoutingReceiveInterface != NULL);
+    mDBUSMessageHandler.initReceive(msg);
+    am_converterID_t converterID(mDBUSMessageHandler.getInt());
+    std::vector<am_CustomAvailabilityReason_t> listSourceConnectionFormats(mDBUSMessageHandler.getListconnectionFormats());
+    std::vector<am_CustomAvailabilityReason_t> listSinkConnectionFormats(mDBUSMessageHandler.getListconnectionFormats());
+    std::vector<bool> convertionMatrix(mDBUSMessageHandler.getListBool());
+
+    am_Error_e returnCode = mRoutingReceiveInterface->updateConverter(converterID,listSourceConnectionFormats,listSinkConnectionFormats,convertionMatrix);
     mDBUSMessageHandler.initReply(msg);
     mDBUSMessageHandler.append(returnCode);
     mDBUSMessageHandler.sendMessage();

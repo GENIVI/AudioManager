@@ -55,6 +55,11 @@ typeCollection am {
 		@description : a gateway ID
 	**>
 	typedef am_gatewayID_t is UInt16
+	
+	<**
+		@description : a converter ID
+	**>
+	typedef am_converterID_t is UInt16
 
 	<**
 		@description : a connection ID 
@@ -616,6 +621,54 @@ It is in the responsibility of the product to make sure that the routing plugins
 			@description : This is the ID of the domain that registers the gateway.
 		**>
 		am_domainID_t controlDomainID
+
+		<**
+			@description : This is the list of available formats on the source side of the gateway. It is not defined during the gateway registration but copied from the source registration.
+		**>
+		am_ConnectionFormat_L listSourceFormats
+
+		<**
+			@description : This is the list of available formats on the sink side of the gateway. It is not defined during the gateway registration but copied from the sink registration.
+		**>
+		am_ConnectionFormat_L listSinkFormats
+
+		<**
+			@description : This is matrix holding information about the conversion capability of the gateway, it's length is defined by the length(listSinkFormats) x length(listSourceFormats).
+If a SinkFormat can be converted into a SourceFormat, the vector will hold a 1, if no conversion is possible, a 0.
+The data is stored row orientated, where the rows are related to the sinksFormats and the columns to the sourceFormats. The first value will hold the conversion information from the first sourceFormat to the first sinkFormat for example and the seventh value the information about the 3rd sinkFormat to the 1st sourceFormat in case we would have 3 sourceFormats.
+		**>
+		am_Convertion_L convertionMatrix
+	}
+
+<**
+		@description : This struct describes the attributes of a gateway.
+	**>
+	struct am_Converter_s {
+
+		<**
+			@description : This is the ID of the gateway, it is unique in the system. There are 2 ways, ID can be created: either it is assigned during the registration process (in a dynamic context, uniqueness will be ensured by the AudioManagerDaemon), or it is a fixed (the project has to ensure the uniqueness of the ID).
+		**>
+		am_converterID_t converterID
+
+		<**
+			@description : The name of the gateway. Must be unique in the whole system.
+		**>
+		String name
+
+		<**
+			@description : The sinkID of the gateway sink-end. The sink is a full blown sink with connectionFormats, sinkClassIDs etc... It makes sense to register the sinks of a gateway as non-visible. Care needs to be taken that the connectionsFormats match with the ones in the conversionMatrix. If the sink is located in the controllingDomain, the ID needs to be retrieved by registering the sink before registering the gateway. In case the sink is in a different domain, the ID needs to be retrieved via peeking.
+		**>
+		am_sinkID_t sinkID
+
+		<**
+			@description : The sourceID of the gateway sink-end. The sink is a full blown source with connectionFormats, sinkClassIDs etc... It makes sense to register the sources of a gateway as non-visible. Care needs to be taken that the connectionsFormats match with the ones in the conversionMatrix. If the source is located in the controllingDomain, the ID needs to be retrieved by registering the source before registering the gateway. In case the source is in a different domain, the ID needs to be retrieved via peeking.
+		**>
+		am_sourceID_t sourceID
+
+		<**
+			@description : The ID of the sink. If the domain is the same like the controlling domain, the ID is known due to registration. If the domain is different, the ID needs to be retrieved via peeking.
+		**>
+		am_domainID_t domainID
 
 		<**
 			@description : This is the list of available formats on the source side of the gateway. It is not defined during the gateway registration but copied from the source registration.

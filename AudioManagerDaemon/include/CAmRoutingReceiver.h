@@ -58,7 +58,9 @@ public:
     am_Error_e registerDomain(const am_Domain_s& domainData, am_domainID_t& domainID);
     am_Error_e deregisterDomain(const am_domainID_t domainID);
     am_Error_e registerGateway(const am_Gateway_s& gatewayData, am_gatewayID_t& gatewayID);
+    am_Error_e registerConverter(const am_Converter_s& converterData, am_converterID_t& converterID);
     am_Error_e deregisterGateway(const am_gatewayID_t gatewayID);
+    am_Error_e deregisterConverter(const am_converterID_t converterID);
     am_Error_e peekSink(const std::string& name, am_sinkID_t& sinkID);
     am_Error_e registerSink(const am_Sink_s& sinkData, am_sinkID_t& sinkID);
     am_Error_e deregisterSink(const am_sinkID_t sinkID);
@@ -82,6 +84,7 @@ public:
     void confirmRoutingReady(const uint16_t handle, const am_Error_e error);
     void confirmRoutingRundown(const uint16_t handle, const am_Error_e error);
     am_Error_e updateGateway(const am_gatewayID_t gatewayID, const std::vector<am_CustomConnectionFormat_t>& listSourceFormats, const std::vector<am_CustomConnectionFormat_t>& listSinkFormats, const std::vector<bool>& convertionMatrix) ;
+	am_Error_e updateConverter(const am_converterID_t converterID, const std::vector<am_CustomConnectionFormat_t>& listSourceFormats, const std::vector<am_CustomConnectionFormat_t>& listSinkFormats, const std::vector<bool>& convertionMatrix);
     am_Error_e updateSink(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_CustomConnectionFormat_t>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties) ;
     am_Error_e updateSource(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_CustomConnectionFormat_t>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties) ;
     void ackSetVolumes(const am_Handle_s handle, const std::vector<am_Volumes_s>& listvolumes, const am_Error_e error) ;

@@ -27,7 +27,9 @@
 #include <sstream>
 #include <iostream>
 #include <unordered_map>
+#include <algorithm>
 #include <assert.h>
+#include <vector>
 #include "IAmDatabaseHandler.h"
 
 namespace am
@@ -62,6 +64,7 @@ class CAmDatabaseHandlerMap : public IAmDatabaseHandler
     bool mFirstStaticSink; //!< bool for dynamic range handling
     bool mFirstStaticSource; //!< bool for dynamic range handling
     bool mFirstStaticGateway; //!< bool for dynamic range handling
+    bool mFirstStaticConverter; //!< bool for dynamic range handling
     bool mFirstStaticSinkClass; //!< bool for dynamic range handling
     bool mFirstStaticSourceClass; //!< bool for dynamic range handling
     bool mFirstStaticCrossfader; //!< bool for dynamic range handling
@@ -74,6 +77,7 @@ public:
     am_Error_e enterSinkDB(const am_Sink_s& sinkData, am_sinkID_t& sinkID);
     am_Error_e enterCrossfaderDB(const am_Crossfader_s& crossfaderData, am_crossfaderID_t& crossfaderID);
     am_Error_e enterGatewayDB(const am_Gateway_s& gatewayData, am_gatewayID_t& gatewayID);
+    am_Error_e enterConverterDB(const am_Converter_s & converterData, am_converterID_t & converterID);
     am_Error_e enterSourceDB(const am_Source_s& sourceData, am_sourceID_t& sourceID);
     am_Error_e enterConnectionDB(const am_Connection_s& connection, am_connectionID_t& connectionID);
     am_Error_e enterSinkClassDB(const am_SinkClass_s& sinkClass, am_sinkClass_t& sinkClassID);
@@ -104,6 +108,7 @@ public:
     am_Error_e removeSinkDB(const am_sinkID_t sinkID);
     am_Error_e removeSourceDB(const am_sourceID_t sourceID);
     am_Error_e removeGatewayDB(const am_gatewayID_t gatewayID);
+    am_Error_e removeConverterDB(const am_converterID_t converterID);
     am_Error_e removeCrossfaderDB(const am_crossfaderID_t crossfaderID);
     am_Error_e removeDomainDB(const am_domainID_t domainID);
     am_Error_e removeSinkClassDB(const am_sinkClass_t sinkClassID);
@@ -112,6 +117,7 @@ public:
     am_Error_e getSourceClassInfoDB(const am_sourceID_t sourceID, am_SourceClass_s& classInfo) const;
     am_Error_e getSinkClassInfoDB(const am_sinkID_t sinkID, am_SinkClass_s& sinkClass) const;
     am_Error_e getGatewayInfoDB(const am_gatewayID_t gatewayID, am_Gateway_s& gatewayData) const;
+    am_Error_e getConverterInfoDB(const am_converterID_t converterID, am_Converter_s& converterData) const;
     am_Error_e getSinkInfoDB(const am_sinkID_t sinkID, am_Sink_s& sinkData) const;
     am_Error_e getSourceInfoDB(const am_sourceID_t sourceID, am_Source_s& sourceData) const;
     am_Error_e getCrossfaderInfoDB(const am_crossfaderID_t crossfaderID, am_Crossfader_s& crossfaderData) const;
@@ -124,6 +130,7 @@ public:
     am_Error_e getListSourcesOfDomain(const am_domainID_t domainID, std::vector<am_sourceID_t>& listSourceID) const;
     am_Error_e getListCrossfadersOfDomain(const am_domainID_t domainID, std::vector<am_crossfaderID_t>& listGatewaysID) const;
     am_Error_e getListGatewaysOfDomain(const am_domainID_t domainID, std::vector<am_gatewayID_t>& listGatewaysID) const;
+    am_Error_e getListConvertersOfDomain(const am_domainID_t domainID, std::vector<am_converterID_t>& listConvertersID) const;
     am_Error_e getListMainConnections(std::vector<am_MainConnection_s>& listMainConnections) const;
     am_Error_e getListDomains(std::vector<am_Domain_s>& listDomains) const;
     am_Error_e getListConnections(std::vector<am_Connection_s>& listConnections) const;
@@ -132,6 +139,7 @@ public:
     am_Error_e getListSourceClasses(std::vector<am_SourceClass_s>& listSourceClasses) const;
     am_Error_e getListCrossfaders(std::vector<am_Crossfader_s>& listCrossfaders) const;
     am_Error_e getListGateways(std::vector<am_Gateway_s>& listGateways) const;
+    am_Error_e getListConverters(std::vector<am_Converter_s> & listConverters) const;
     am_Error_e getListSinkClasses(std::vector<am_SinkClass_s>& listSinkClasses) const;
     am_Error_e getListVisibleMainConnections(std::vector<am_MainConnectionType_s>& listConnections) const;
     am_Error_e getListMainSinks(std::vector<am_SinkType_s>& listMainSinks) const;
@@ -147,7 +155,6 @@ public:
     am_Error_e getDomainOfSink(const am_sinkID_t sinkID, am_domainID_t& domainID) const;
     am_Error_e getSoureState(const am_sourceID_t sourceID, am_SourceState_e& sourceState) const;
     am_Error_e getDomainState(const am_domainID_t domainID, am_DomainState_e& state) const;
-    am_Error_e getRoutingTree(bool onlyfree, CAmRoutingTree& tree, std::vector<CAmRoutingTreeItem*>& flatTree);
     am_Error_e peekDomain(const std::string& name, am_domainID_t& domainID);
     am_Error_e peekSink(const std::string& name, am_sinkID_t& sinkID);
     am_Error_e peekSource(const std::string& name, am_sourceID_t& sourceID);
@@ -160,11 +167,12 @@ public:
     am_Error_e changeMainSinkNotificationConfigurationDB(const am_sinkID_t sinkID, const am_NotificationConfiguration_s mainNotificationConfiguration);
     am_Error_e changeMainSourceNotificationConfigurationDB(const am_sourceID_t sourceID, const am_NotificationConfiguration_s mainNotificationConfiguration);
     am_Error_e changeGatewayDB(const am_gatewayID_t gatewayID, const std::vector<am_CustomAvailabilityReason_t>& listSourceConnectionFormats, const std::vector<am_CustomAvailabilityReason_t>& listSinkConnectionFormats, const std::vector<bool>& convertionMatrix);
+    am_Error_e changeConverterDB(const am_converterID_t converterID, const std::vector<am_CustomConnectionFormat_t>& listSourceConnectionFormats, const std::vector<am_CustomConnectionFormat_t>& listSinkConnectionFormats, const std::vector<bool>& convertionMatrix);
     am_Error_e changeSinkNotificationConfigurationDB(const am_sinkID_t sinkID,const am_NotificationConfiguration_s notificationConfiguration);
     am_Error_e changeSourceNotificationConfigurationDB(const am_sourceID_t sourceID,const am_NotificationConfiguration_s notificationConfiguration);
 
     bool existMainConnection(const am_mainConnectionID_t mainConnectionID) const;
-    bool existcrossFader(const am_crossfaderID_t crossfaderID) const;
+    bool existCrossFader(const am_crossfaderID_t crossfaderID) const;
     bool existConnection(const am_Connection_s & connection) const;
     bool existConnectionID(const am_connectionID_t connectionID) const;
     bool existSource(const am_sourceID_t sourceID) const;
@@ -175,13 +183,19 @@ public:
     bool existSinkName(const std::string& name) const;
     bool existDomain(const am_domainID_t domainID) const;
     bool existGateway(const am_gatewayID_t gatewayID) const;
+    bool existConverter(const am_converterID_t converterID) const;
     bool existSinkClass(const am_sinkClass_t sinkClassID) const;
     bool existSourceClass(const am_sourceClass_t sourceClassID) const;
     void registerObserver(CAmDatabaseObserver *iObserver);
     bool sourceVisible(const am_sourceID_t sourceID) const;
     bool sinkVisible(const am_sinkID_t sinkID) const;
-
+    bool isComponentConnected(const am_Gateway_s & gateway) const;
+    bool isComponentConnected(const am_Converter_s & converter) const;
     void dump( std::ostream & output ) const;
+    am_Error_e enumerateSources(std::function<void(const am_Source_s & element)> cb) const;
+    am_Error_e enumerateSinks(std::function<void(const am_Sink_s & element)> cb) const;
+    am_Error_e enumerateGateways(std::function<void(const am_Gateway_s & element)> cb) const;
+    am_Error_e enumerateConverters(std::function<void(const am_Converter_s & element)> cb) const;
     /**
      * The following structures extend the base structures with the field 'reserved'.
      */
@@ -260,6 +274,9 @@ public:
 	AM_TYPEDEF_SUBCLASS_BEGIN(am_Gateway_Database_s, am_Gateway_s)
 	AM_TYPEDEF_SUBCLASS_END(CAmGateway)
 
+	AM_TYPEDEF_SUBCLASS_BEGIN(am_Converter_Database_s, am_Converter_s)
+	AM_TYPEDEF_SUBCLASS_END(CAmConverter)
+
 	AM_TYPEDEF_SUBCLASS_BEGIN(am_Crossfader_Database_s, am_Crossfader_s)
 	AM_TYPEDEF_SUBCLASS_END(CAmCrossfader)
 
@@ -270,6 +287,7 @@ public:
     typedef std::unordered_map<am_sinkID_t, CAmSink> 			   				 CAmMapSink;
     typedef std::unordered_map<am_sourceID_t, CAmSource> 		 			 	 CAmMapSource;
     typedef std::unordered_map<am_gatewayID_t, CAmGateway> 			 	 		 CAmMapGateway;
+    typedef std::unordered_map<am_converterID_t, CAmConverter> 			 	 	 CAmMapConverter;
     typedef std::unordered_map<am_crossfaderID_t, CAmCrossfader> 		    	 CAmMapCrossfader;
     typedef std::unordered_map<am_connectionID_t, CAmConnection>				 CAmMapConnection;
     typedef std::unordered_map<am_mainConnectionID_t, CAmMainConnection> 	 	 CAmMapMainConnection;
@@ -303,6 +321,7 @@ public:
     	am_Identifier_s mCurrentSinkID;				//!< sink ID
     	am_Identifier_s mCurrentSourceID;			//!< source ID
     	am_Identifier_s mCurrentGatewayID;			//!< gateway ID
+    	am_Identifier_s mCurrentConverterID;		//!< converter ID
     	am_Identifier_s mCurrentCrossfaderID;		//!< crossfader ID
     	am_Identifier_s mCurrentConnectionID;		//!< connection ID
     	am_Identifier_s mCurrentMainConnectionID;	//!< mainconnection ID
@@ -314,6 +333,7 @@ public:
     	CAmMapSink mSinkMap;						 //!< map for sink structures
     	CAmMapSource mSourceMap;					 //!< map for source structures
     	CAmMapGateway mGatewayMap;					 //!< map for gateway structures
+    	CAmMapConverter mConverterMap;				 //!< map for converter structures
     	CAmMapCrossfader mCrossfaderMap;			 //!< map for crossfader structures
     	CAmMapConnection mConnectionMap;			 //!< map for connection structures
     	CAmMapMainConnection mMainConnectionMap;	 //!< map for main connection structures
@@ -325,13 +345,14 @@ public:
     		mCurrentSinkID(DYNAMIC_ID_BOUNDARY, SHRT_MAX),
     		mCurrentSourceID(DYNAMIC_ID_BOUNDARY, SHRT_MAX),
     		mCurrentGatewayID(DYNAMIC_ID_BOUNDARY, SHRT_MAX),
+    		mCurrentConverterID(DYNAMIC_ID_BOUNDARY, SHRT_MAX),
     		mCurrentCrossfaderID(DYNAMIC_ID_BOUNDARY, SHRT_MAX),
     		mCurrentConnectionID(1, AM_MAX_CONNECTIONS),
     		mCurrentMainConnectionID(1, AM_MAX_MAIN_CONNECTIONS),
 
     		mSystemProperties(),
 			mDomainMap(),mSourceClassesMap(), mSinkClassesMap(), mSinkMap(AM_MAP_CAPACITY), mSourceMap(AM_MAP_CAPACITY),
-			mGatewayMap(), mCrossfaderMap(), mConnectionMap(), mMainConnectionMap()
+			mGatewayMap(), mConverterMap(), mCrossfaderMap(), mConnectionMap(), mMainConnectionMap()
     	{};
     	/**
     	 * \brief Increases a given map ID.
@@ -386,11 +407,18 @@ public:
     bool insertSinkDB(const am_Sink_s & sinkData, am_sinkID_t & sinkID);
     bool insertCrossfaderDB(const am_Crossfader_s & crossfaderData, am_crossfaderID_t & crossfaderID);
     bool insertGatewayDB(const am_Gateway_s & gatewayData, am_gatewayID_t & gatewayID);
+    bool insertConverterDB(const am_Converter_s & converteData, am_converterID_t & converterID);
     bool insertSourceDB(const am_Source_s & sourceData, am_sourceID_t & sourceID);
     bool insertSinkClassDB(const am_SinkClass_s & sinkClass, am_sinkClass_t & sinkClassID);
     bool insertSourceClassDB(am_sourceClass_t & sourceClassID, const am_SourceClass_s & sourceClass);
     const am_Sink_Database_s * sinkWithNameOrID(const am_sinkID_t sinkID, const std::string & name) const;
     const am_Source_Database_s * sourceWithNameOrID(const am_sourceID_t sourceID, const std::string & name) const;
+    template <class Component> bool isConnected(const Component & comp) const
+    {
+    	return std::find_if(mMappedData.mConnectionMap.begin(), mMappedData.mConnectionMap.end(),[&](const std::pair<am_connectionID_t, am_Connection_Database_s>& rConnection){
+    						return (rConnection.second.sinkID == comp.sinkID ||rConnection.second.sourceID ==comp.sourceID);})!=mMappedData.mConnectionMap.end();
+    }
+
 
     CAmDatabaseObserver *mpDatabaseObserver; //!< pointer to the Observer
     ListConnectionFormat mListConnectionFormat; //!< list of connection formats

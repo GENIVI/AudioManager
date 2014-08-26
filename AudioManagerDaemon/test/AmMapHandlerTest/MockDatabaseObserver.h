@@ -47,6 +47,7 @@ public:
     virtual void newSource(const am_Source_s& source) = 0;
     virtual void newDomain(const am_Domain_s& domain) = 0;
     virtual void newGateway(const am_Gateway_s& gateway) = 0;
+    virtual void newConverter(const am_Converter_s& coverter) = 0;
     virtual void newCrossfader(const am_Crossfader_s& crossfader) = 0;
     virtual void newMainConnection(const am_MainConnectionType_s& mainConnection) = 0;
     virtual void removedMainConnection(const am_mainConnectionID_t mainConnection) = 0;
@@ -54,6 +55,7 @@ public:
     virtual void removedSource(const am_sourceID_t sourceID, const bool visible) = 0;
     virtual void removeDomain(const am_domainID_t domainID) = 0;
     virtual void removeGateway(const am_gatewayID_t gatewayID) = 0;
+    virtual void removeConverter(const am_converterID_t converterID) = 0;
     virtual void removeCrossfader(const am_crossfaderID_t crossfaderID) = 0;
     virtual void mainConnectionStateChanged(const am_mainConnectionID_t connectionID, const am_ConnectionState_e connectionState) = 0;
     virtual void mainSinkSoundPropertyChanged(const am_sinkID_t sinkID, const am_MainSoundProperty_s& SoundProperty) = 0;
@@ -79,6 +81,7 @@ class MockDatabaseObserver : public IAmDatabaseObserver{
 	MOCK_METHOD1(newSource, void(const am_Source_s& source));
 	MOCK_METHOD1(newDomain, void(const am_Domain_s& domain));
 	MOCK_METHOD1(newGateway, void(const am_Gateway_s& gateway));
+	MOCK_METHOD1(newConverter, void(const am_Converter_s& converter));
 	MOCK_METHOD1(newCrossfader, void(const am_Crossfader_s& crossfader));
 	MOCK_METHOD1(newMainConnection, void(const am_MainConnectionType_s & mainConnection));
 	MOCK_METHOD1(removedMainConnection, void(const am_mainConnectionID_t mainConnection));
@@ -86,6 +89,7 @@ class MockDatabaseObserver : public IAmDatabaseObserver{
 	MOCK_METHOD2(removedSource, void(const am_sourceID_t sourceID, const bool visible));
 	MOCK_METHOD1(removeDomain, void(const am_domainID_t domainID));
 	MOCK_METHOD1(removeGateway, void(const am_gatewayID_t gatewayID));
+	MOCK_METHOD1(removeConverter, void(const am_converterID_t converterID));
 	MOCK_METHOD1(removeCrossfader, void(const am_crossfaderID_t crossfaderID));
 	MOCK_METHOD2(mainConnectionStateChanged, void(const am_mainConnectionID_t connectionID, const am_ConnectionState_e connectionState));
 	MOCK_METHOD2(mainSinkSoundPropertyChanged, void(const am_sinkID_t sinkID, const am_MainSoundProperty_s& SoundProperty));

@@ -719,6 +719,69 @@ TEST_F(CAmRoutingInterfaceCAPITests, deregisterGateway)
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
 }
 
+MATCHER_P(IsConverterDataEqualTo, value, "") {
+	auto lh = arg;
+	return lh.converterID == value.converterID &&
+			lh.name == value.name &&
+			lh.sinkID == value.sinkID &&
+			lh.sourceID == value.sourceID &&
+			lh.domainID == value.domainID &&
+			lh.listSourceFormats == value.listSourceFormats &&
+			lh.listSinkFormats == value.listSinkFormats &&
+			lh.convertionMatrix == value.convertionMatrix;
+}
+
+TEST_F(CAmRoutingInterfaceCAPITests, registerConverter)
+{
+	ASSERT_TRUE(env->mIsServiceAvailable);
+	if(env->mIsServiceAvailable)
+	{
+		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
+		org::genivi::am::am_Error_e error = org::genivi::am::am_Error_e::E_UNKNOWN;
+
+		org::genivi::am::am_ConnectionFormat_L listSourceFormats;
+		listSourceFormats.push_back(static_cast<org::genivi::am::am_CustomConnectionFormat_t>(CF_GENIVI_ANALOG));
+		listSourceFormats.push_back(static_cast<org::genivi::am::am_CustomConnectionFormat_t>(CF_GENIVI_AUTO));
+		org::genivi::am::am_ConnectionFormat_L listSinkFormats;
+		listSinkFormats.push_back(static_cast<org::genivi::am::am_CustomConnectionFormat_t>(CF_GENIVI_AUTO));
+		listSinkFormats.push_back(static_cast<org::genivi::am::am_CustomConnectionFormat_t>(CF_GENIVI_ANALOG));
+		org::genivi::am::am_Convertion_L convertionMatrix;
+		convertionMatrix.push_back(1);
+		convertionMatrix.push_back(0);
+
+		org::genivi::am::am_converterID_t converterID = 0;
+		org::genivi::am::am_Converter_s gateway(converterID, "name", 103, 104, 105, listSourceFormats, listSinkFormats, convertionMatrix);
+		am_Converter_s amGateway;
+		CAmConvertCAPI2AM(gateway, amGateway);
+
+		ON_CALL(*env->mpRoutingReceive, registerConverter(_, _)).WillByDefault(Return(E_OK));
+		EXPECT_CALL(*env->mpRoutingReceive, registerConverter(IsConverterDataEqualTo(amGateway), _)).WillOnce(DoAll(actionRegisterGateway(), Return(E_OK)));
+		env->mProxy->registerConverter(gateway, callStatus, converterID, error);
+		ASSERT_EQ( converterID, TEST_ID_1 );
+		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
+		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
+	}
+	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+}
+
+TEST_F(CAmRoutingInterfaceCAPITests, deregisterConverter)
+{
+	ASSERT_TRUE(env->mIsServiceAvailable);
+	if(env->mIsServiceAvailable)
+	{
+		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
+		org::genivi::am::am_Error_e error = org::genivi::am::am_Error_e::E_UNKNOWN;
+		org::genivi::am::am_converterID_t converterID = TEST_ID_1;
+
+		ON_CALL(*env->mpRoutingReceive, deregisterConverter(_)).WillByDefault(Return(E_OK));
+		EXPECT_CALL(*env->mpRoutingReceive, deregisterConverter(converterID)).WillOnce(Return(E_OK));
+		env->mProxy->deregisterConverter(converterID, callStatus, error);
+		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
+		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
+	}
+	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+}
+
 ACTION(actionPeek){
 	arg1=TEST_ID_1;
 }
@@ -1276,6 +1339,48 @@ TEST_F(CAmRoutingInterfaceCAPITests, updateGateway)
 
 		org::genivi::am::am_Error_e CAPIError;
 		env->mProxy->updateGateway(testID, listSourceFormats, listSinkFormats, convertionMatrix, callStatus,CAPIError);
+		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
+	}
+	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+}
+
+TEST_F(CAmRoutingInterfaceCAPITests, updateConverter)
+{
+	ASSERT_TRUE(env->mIsServiceAvailable);
+	if(env->mIsServiceAvailable)
+	{
+		CallStatus callStatus = CallStatus::NOT_AVAILABLE;
+		am_Error_e error = E_OK;
+		org::genivi::am::am_converterID_t testID = TEST_ID_1;
+
+		org::genivi::am::am_ConnectionFormat_L listSourceFormats;
+		listSourceFormats.push_back(static_cast<org::genivi::am::am_CustomConnectionFormat_t>(CF_GENIVI_ANALOG));
+		listSourceFormats.push_back(static_cast<org::genivi::am::am_CustomConnectionFormat_t>(CF_GENIVI_AUTO));
+
+		org::genivi::am::am_ConnectionFormat_L listSinkFormats;
+		listSinkFormats.push_back(static_cast<org::genivi::am::am_CustomConnectionFormat_t>(CF_GENIVI_AUTO));
+		listSinkFormats.push_back(static_cast<org::genivi::am::am_CustomConnectionFormat_t>(CF_GENIVI_ANALOG));
+
+		org::genivi::am::am_Convertion_L convertionMatrix;
+		convertionMatrix.push_back(1);
+		convertionMatrix.push_back(0);
+
+		std::vector<am_CustomConnectionFormat_t> am_listSourceFormats;
+		am_listSourceFormats.push_back(CF_GENIVI_ANALOG);
+		am_listSourceFormats.push_back(CF_GENIVI_AUTO);
+
+		std::vector<am_CustomConnectionFormat_t> am_listSinkFormats;
+		am_listSinkFormats.push_back(CF_GENIVI_AUTO);
+		am_listSinkFormats.push_back(CF_GENIVI_ANALOG);
+
+		std::vector<bool> am_convertionMatrix;
+		am_convertionMatrix.push_back(1);
+		am_convertionMatrix.push_back(0);
+		ON_CALL(*env->mpRoutingReceive, updateConverter(_, _, _, _)).WillByDefault(Return(E_OK));
+		EXPECT_CALL(*env->mpRoutingReceive, updateConverter(testID, am_listSourceFormats, am_listSinkFormats, am_convertionMatrix)).Times(1);
+
+		org::genivi::am::am_Error_e CAPIError;
+		env->mProxy->updateConverter(testID, listSourceFormats, listSinkFormats, convertionMatrix, callStatus,CAPIError);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
 	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));

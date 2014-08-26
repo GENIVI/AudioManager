@@ -574,6 +574,51 @@ am_Gateway_s CAmRoutingDbusMessageHandler::getGatewayData()
     return (gatewayData);
 }
 
+am_Converter_s CAmRoutingDbusMessageHandler::getConverterData()
+{
+    am_Converter_s gatewayData;
+    DBusMessageIter gatewayDataIter, arrayIter;
+    am_CustomAvailabilityReason_t connectionFormat;
+    bool convertion;
+    if (DBUS_TYPE_STRUCT != dbus_message_iter_get_arg_type(&mDBusMessageIter))
+    {
+        log(&routingDbus, DLT_LOG_ERROR, "CAmRoutingDbusMessageHandler::getDomainData DBUS handler argument is no struct!");
+        mErrorName = std::string(DBUS_ERROR_INVALID_ARGS);
+        mErrorMsg = "DBus argument is no struct";
+    }
+    else
+    {
+        dbus_message_iter_recurse(&mDBusMessageIter, &gatewayDataIter);
+	gatewayData.converterID = static_cast<am_gatewayID_t>(getUInt(gatewayDataIter, true));
+	gatewayData.name = getString(gatewayDataIter, true);
+	gatewayData.sinkID = static_cast<am_sinkID_t>(getUInt(gatewayDataIter, true));
+	gatewayData.sourceID = static_cast<am_sourceID_t>(getUInt(gatewayDataIter, true));
+	gatewayData.domainID = static_cast<am_domainID_t>(getUInt(gatewayDataIter, true));
+    dbus_message_iter_recurse(&gatewayDataIter, &arrayIter);
+	do
+	{
+	    connectionFormat = static_cast<am_CustomAvailabilityReason_t>(getInt32(arrayIter, false));
+	    gatewayData.listSourceFormats.push_back(connectionFormat);
+	} while (dbus_message_iter_next(&arrayIter));
+	dbus_message_iter_next(&gatewayDataIter);
+    dbus_message_iter_recurse(&gatewayDataIter, &arrayIter);
+	do
+	{
+	    connectionFormat = static_cast<am_CustomAvailabilityReason_t>(getInt32(arrayIter, false));
+	    gatewayData.listSinkFormats.push_back(connectionFormat);
+	} while (dbus_message_iter_next(&arrayIter));
+	dbus_message_iter_next(&gatewayDataIter);
+    dbus_message_iter_recurse(&gatewayDataIter, &arrayIter);
+	do
+	{
+	    convertion = getBool(arrayIter, false);
+	    gatewayData.convertionMatrix.push_back(convertion);
+	} while (dbus_message_iter_next(&arrayIter));
+        dbus_message_iter_next(&mDBusMessageIter);
+    }
+    return (gatewayData);
+}
+
 am_Crossfader_s CAmRoutingDbusMessageHandler::getCrossfaderData()
 {
     am_Crossfader_s crossfaderData;

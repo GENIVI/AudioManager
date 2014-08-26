@@ -184,8 +184,19 @@ void CAmRoutingService::registerGateway(org::genivi::am::am_Gateway_s gatewayDat
 	error = static_cast<org::genivi::am::am_Error_e>(mpIAmRoutingReceive->registerGateway(converted, gatewayID));
 }
 
+void CAmRoutingService::registerConverter(org::genivi::am::am_Converter_s aData, org::genivi::am::am_converterID_t& converterID, org::genivi::am::am_Error_e& error) {
+	assert(mpIAmRoutingReceive);
+	am_Converter_s converted;
+	CAmConvertCAPI2AM(aData, converted);
+	error = static_cast<org::genivi::am::am_Error_e>(mpIAmRoutingReceive->registerConverter(converted, converterID));
+}
+
 void CAmRoutingService::deregisterGateway(org::genivi::am::am_gatewayID_t gatewayID, org::genivi::am::am_Error_e& returnError) {
 	returnError = static_cast<org::genivi::am::am_Error_e>(mpIAmRoutingReceive->deregisterGateway(gatewayID));
+}
+
+void CAmRoutingService::deregisterConverter(org::genivi::am::am_converterID_t converterID, org::genivi::am::am_Error_e& returnError) {
+	returnError = static_cast<org::genivi::am::am_Error_e>(mpIAmRoutingReceive->deregisterConverter(converterID));
 }
 
 void CAmRoutingService::peekSink(std::string name, org::genivi::am::am_sinkID_t& sinkID, org::genivi::am::am_Error_e& error) {
@@ -313,6 +324,18 @@ void CAmRoutingService::updateGateway(org::genivi::am::am_gatewayID_t gatewayID,
 	CAmConvertCAPIVector2AM(listSinkFormats, destinationSinkConnectionFormats);
 
 	error = (org::genivi::am::am_Error_e)mpIAmRoutingReceive->updateGateway(gatewayID, destinationSourceConnectionFormats, destinationSinkConnectionFormats, convertionMatrix);
+}
+
+void CAmRoutingService::updateConverter(org::genivi::am::am_converterID_t converterID, org::genivi::am::am_ConnectionFormat_L listSourceFormats, org::genivi::am::am_ConnectionFormat_L listSinkFormats, org::genivi::am::am_Convertion_L convertionMatrix, org::genivi::am::am_Error_e& error) {
+
+	assert(mpIAmRoutingReceive);
+	std::vector<am_CustomConnectionFormat_t> destinationSourceConnectionFormats;
+	CAmConvertCAPIVector2AM(listSourceFormats, destinationSourceConnectionFormats);
+
+	std::vector<am_CustomConnectionFormat_t> destinationSinkConnectionFormats;
+	CAmConvertCAPIVector2AM(listSinkFormats, destinationSinkConnectionFormats);
+
+	error = (org::genivi::am::am_Error_e)mpIAmRoutingReceive->updateConverter(converterID, destinationSourceConnectionFormats, destinationSinkConnectionFormats, convertionMatrix);
 }
 
 void CAmRoutingService::updateSink(org::genivi::am::am_sinkID_t sinkID, org::genivi::am::am_sinkClass_t sinkClassID, org::genivi::am::am_SoundProperty_L listSoundProperties, org::genivi::am::am_ConnectionFormat_L listConnectionFormats, org::genivi::am::am_MainSoundProperty_L listMainSoundProperties, org::genivi::am::am_Error_e& error) {

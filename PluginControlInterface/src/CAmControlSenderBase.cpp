@@ -360,10 +360,21 @@ am_Error_e CAmControlSenderBase::hookSystemRegisterGateway(const am_Gateway_s & 
     return mControlReceiveInterface->enterGatewayDB(gatewayData, gatewayID);
 }
 
+am_Error_e CAmControlSenderBase::hookSystemRegisterConverter(const am_Converter_s & converterData, am_converterID_t & converterID)
+{
+//this application does not do anything with it -> but some product might want to take influence here
+    return mControlReceiveInterface->enterConverterDB(converterData, converterID);
+}
+
 am_Error_e CAmControlSenderBase::hookSystemDeregisterGateway(const am_gatewayID_t gatewayID)
 {
 //this application does not do anything with it -> but some product might want to take influence here
     return mControlReceiveInterface->removeGatewayDB(gatewayID);
+}
+
+am_Error_e CAmControlSenderBase::hookSystemDeregisterConverter(const am_converterID_t converterID)
+{
+	return mControlReceiveInterface->removeConverterDB(converterID);
 }
 
 am_Error_e CAmControlSenderBase::hookSystemRegisterCrossfader(const am_Crossfader_s & crossfaderData, am_crossfaderID_t & crossfaderID)
@@ -835,6 +846,15 @@ am_Error_e CAmControlSenderBase::hookSystemUpdateSource(const am_sourceID_t sour
 am_Error_e CAmControlSenderBase::hookSystemUpdateGateway(const am_gatewayID_t gatewayID, const std::vector<am_CustomConnectionFormat_t>& listSourceConnectionFormats, const std::vector<am_CustomConnectionFormat_t>& listSinkConnectionFormats, const std::vector<bool>& convertionMatrix)
 {
     (void) gatewayID;
+    (void) listSourceConnectionFormats;
+    (void) listSinkConnectionFormats;
+    (void) convertionMatrix;
+    return (E_NOT_USED);
+}
+
+am_Error_e CAmControlSenderBase::hookSystemUpdateConverter(const am_converterID_t converterID, const std::vector<am_CustomConnectionFormat_t>& listSourceConnectionFormats, const std::vector<am_CustomConnectionFormat_t>& listSinkConnectionFormats, const std::vector<bool>& convertionMatrix)
+{
+    (void) converterID;
     (void) listSourceConnectionFormats;
     (void) listSinkConnectionFormats;
     (void) convertionMatrix;

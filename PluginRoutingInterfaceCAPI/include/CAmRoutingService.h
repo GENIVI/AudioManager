@@ -81,7 +81,11 @@ public:
 
 	void registerGateway(org::genivi::am::am_Gateway_s gatewayData, org::genivi::am::am_gatewayID_t& gatewayID, org::genivi::am::am_Error_e& error);
 
+	void registerConverter(org::genivi::am::am_Converter_s aData, org::genivi::am::am_converterID_t& converterID, org::genivi::am::am_Error_e& error);
+
 	void deregisterGateway(org::genivi::am::am_gatewayID_t gatewayID, org::genivi::am::am_Error_e& returnError);
+
+	void deregisterConverter(org::genivi::am::am_converterID_t converterID, org::genivi::am::am_Error_e& returnError);
 
 	void peekSink(std::string name, org::genivi::am::am_sinkID_t& sinkID, org::genivi::am::am_Error_e& error);
 
@@ -118,6 +122,8 @@ public:
 	void sendChangedData(org::genivi::am::am_EarlyData_L earlyData);
 
 	void updateGateway(org::genivi::am::am_gatewayID_t gatewayID, org::genivi::am::am_ConnectionFormat_L listSourceFormats, org::genivi::am::am_ConnectionFormat_L listSinkFormats, org::genivi::am::am_Convertion_L convertionMatrix, org::genivi::am::am_Error_e& error);
+
+	void updateConverter(org::genivi::am::am_converterID_t converterID, org::genivi::am::am_ConnectionFormat_L listSourceFormats, org::genivi::am::am_ConnectionFormat_L listSinkFormats, org::genivi::am::am_Convertion_L convertionMatrix, org::genivi::am::am_Error_e& error);
 
 	void updateSink(org::genivi::am::am_sinkID_t sinkID, org::genivi::am::am_sinkClass_t sinkClassID, org::genivi::am::am_SoundProperty_L listSoundProperties, org::genivi::am::am_ConnectionFormat_L listConnectionFormats, org::genivi::am::am_MainSoundProperty_L listMainSoundProperties, org::genivi::am::am_Error_e& error);
 

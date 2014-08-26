@@ -183,6 +183,18 @@ void CAmConvertCAPI2AM(const org::genivi::am::am_Gateway_s & source, am::am_Gate
 	destination.convertionMatrix = source.convertionMatrix;
 }
 
+void CAmConvertCAPI2AM(const org::genivi::am::am_Converter_s & source, am::am_Converter_s & destination)
+{
+	destination.sinkID = source.sinkID;
+	destination.converterID = source.converterID;
+	destination.name = source.name;
+	destination.sourceID = source.sourceID;
+	destination.domainID = source.domainID;
+	CAmConvertCAPIVector2AM(source.listSourceFormats, destination.listSourceFormats);
+	CAmConvertCAPIVector2AM(source.listSinkFormats, destination.listSinkFormats);
+	destination.convertionMatrix = source.convertionMatrix;
+}
+
 void CAmConvertCAPI2AM(const org::genivi::am::am_EarlyData_u & source, am::am_EarlyData_u & destination)
 {
 	if(source.isType<org::genivi::am::am_volume_t>())

@@ -455,6 +455,25 @@ A client should notify himself to this attribute in order to know the current st
 			am_Error_e ^error
 		}
 	}
+	
+		<**
+		@description : registers a converter. (at)return E_OK on succes, E_ALREADY_EXISTENT if already registered E_UNKOWN on error
+	**>
+	method registerConverter {
+		in {
+
+			<**
+				@description : In a fixed setup, the gatewayID must be below 100. In a dynamic setup, the gatewayID shall be 0. listSourceFormats and listSinkFormats are empty at registration time. Values are taken over when sources and sinks are registered.
+
+
+			**>
+			am_Converter_s converterData
+		}
+		out {
+			am_converterID_t converterID
+			am_Error_e ^error
+		}
+	}
 
 	<**
 		@description : deregisters a gateway. Also removes all sinks and sources of the controlling domain.
@@ -467,6 +486,22 @@ A client should notify himself to this attribute in order to know the current st
 				@description : domainID of the control domain
 			**>
 			am_gatewayID_t gatewayID
+		}
+		out {
+			am_Error_e ^error
+		}
+	}
+
+	<**
+		@description : deregisters a converter. Also removes all sinks and sources of the controlling domain.
+	**>
+	method deregisterConverter {
+		in {
+
+			<**
+				@description : domainID of the control domain
+			**>
+			am_converterID_t converterID
 		}
 		out {
 			am_Error_e ^error
@@ -717,7 +752,27 @@ Is used by the Controller to know when all expected domains are finally register
 	}
 
 	<**
-		@description : updates data of an gateway. (at)return E_OK on success, E_NON_EXISTENT if the sinkID is not valid.
+		@description : updates data of an converter. (at)return E_OK on success, E_NON_EXISTENT if the converterID is not valid. 
+	**>
+	method updateConverter {
+		in {
+
+			<**
+				@description : This is the new converter data that has been updated. Please note that changing source and sink IDs,
+
+			**>
+			am_converterID_t converterID
+			am_ConnectionFormat_L listSourceFormats
+			am_ConnectionFormat_L listSinkFormats
+			am_Convertion_L convertionMatrix
+		}
+		out {
+			am_Error_e ^error
+		}
+	}
+
+	<**
+		@description : updates data of an sink. (at)return E_OK on success, E_NON_EXISTENT if the sinkID is not valid.
 	**>
 	method updateSink {
 		in {

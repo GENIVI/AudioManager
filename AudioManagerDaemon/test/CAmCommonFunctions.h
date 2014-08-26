@@ -39,6 +39,8 @@ public:
     bool compareSink(std::vector<am_Sink_s>::iterator listIterator, const am_Sink_s& sinkData);
     bool compareGateway(std::vector<am_Gateway_s>::iterator listIterator, const am_Gateway_s& gatewayData);
     bool compareGateway1(const am_Gateway_s gateway1, const am_Gateway_s gatewayData);
+    bool compareConverter(std::vector<am_Converter_s>::iterator listIterator, const am_Converter_s& gatewayData);
+    bool compareConverter1(const am_Converter_s gateway1, const am_Converter_s gatewayData);
     bool compareSinkMainSink(std::vector<am_SinkType_s>::iterator listIterator, const std::vector<am_Sink_s>& sinkList);
     bool compareSinkMainSource(std::vector<am_SourceType_s>::iterator listIterator, const std::vector<am_Source_s>& sourceList);
     bool compareRoute(am_Route_s a, am_Route_s b);
@@ -47,6 +49,7 @@ public:
     void createDomain(am_Domain_s& domain) const;
     void createGateway(am_Gateway_s& gateway);
     void createConnection(am_Connection_s& connection) const;
+    void createConverter(am_Converter_s & converter) const;
     void connectionList2RoutingList(std::vector<am_RoutingElement_s>& routingList, const std::vector<am_Connection_s>& connectionList);
 
     struct sortBySinkID

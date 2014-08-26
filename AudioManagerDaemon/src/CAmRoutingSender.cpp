@@ -525,7 +525,11 @@ am_Error_e CAmRoutingSender::removeCrossfaderLookup(const am_crossfaderID_t cros
 am_Error_e CAmRoutingSender::removeHandle(const am_Handle_s& handle)
 {
     if (mlistActiveHandles.erase(handle))
+    {
+    	logInfo(__PRETTY_FUNCTION__,handle.handle,handle.handleType);
         return (E_OK);
+    }
+    logError(__PRETTY_FUNCTION__,"Could not remove handle",handle.handle);
     return (E_UNKNOWN);
 }
 
@@ -556,6 +560,7 @@ am_Handle_s CAmRoutingSender::createHandle(const am_handleData_c& handleData, co
     mlistActiveHandles.insert(std::make_pair(handle, handleData));
     if ((mlistActiveHandles.size()%100) == 0)
         logInfo("CAmRoutingSender::createHandle warning: too many open handles, number of handles: ", mlistActiveHandles.size());
+    logInfo(__PRETTY_FUNCTION__,handle.handle, handle.handleType);
     return (handle);
 }
 
@@ -570,9 +575,18 @@ CAmRoutingSender::am_handleData_c CAmRoutingSender::returnHandleData(const am_Ha
     HandlesMap::const_iterator it = mlistActiveHandles.begin();
     it = mlistActiveHandles.find(handle);
     if (it!=mlistActiveHandles.end())
-        return (it->second);
+    {
+    	const am_handleData_c & result = it->second;
+    	logInfo(__PRETTY_FUNCTION__, handle.handle, handle.handleType,
+    			"connectionID", result.connectionID,
+    			"sinkID", result.sinkID,
+    			"sourceID",result.sourceID,
+    			"sourceState", result.sourceState);
+        return result;
+    }
     am_handleData_c handleData;
     handleData.sinkID=0;
+    logError(__PRETTY_FUNCTION__,"could not find handle data for handle",handle.handle,handle.handleType);
     return (handleData);
 }
 

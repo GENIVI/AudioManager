@@ -111,6 +111,12 @@ void CAmDatabaseObserver::newGateway(const am_Gateway_s& gateway)
     //todo: implement something
 }
 
+void CAmDatabaseObserver::newConverter(const am_Converter_s& coverter)
+{
+    (void) coverter;
+    //todo: implement something
+}
+
 void CAmDatabaseObserver::newCrossfader(const am_Crossfader_s& crossfader)
 {
     mRoutingSender->addCrossfaderLookup(crossfader);
@@ -140,6 +146,12 @@ void CAmDatabaseObserver::removeDomain(const am_domainID_t domainID)
 void CAmDatabaseObserver::removeGateway(const am_gatewayID_t gatewayID)
 {
     (void) gatewayID;
+    //todo: implement something?
+}
+
+void CAmDatabaseObserver::removeConverter(const am_converterID_t converterID)
+{
+    (void) converterID;
     //todo: implement something?
 }
 

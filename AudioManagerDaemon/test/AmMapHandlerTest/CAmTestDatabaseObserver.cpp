@@ -46,6 +46,8 @@ void CAmDatabaseObserver::newDomain(const am_Domain_s& domain)
 { MockDatabaseObserver::getMockObserverObject()->newDomain(domain); }
 void CAmDatabaseObserver::newGateway(const am_Gateway_s& gateway)
 { MockDatabaseObserver::getMockObserverObject()->newGateway(gateway); }
+void CAmDatabaseObserver::newConverter(const am_Converter_s& coverter)
+{ MockDatabaseObserver::getMockObserverObject()->newConverter(coverter); }
 void CAmDatabaseObserver::newCrossfader(const am_Crossfader_s& crossfader)
 { MockDatabaseObserver::getMockObserverObject()->newCrossfader(crossfader); }
 void CAmDatabaseObserver::newMainConnection(const am_MainConnectionType_s& mainConnection)
@@ -60,6 +62,8 @@ void CAmDatabaseObserver::removeDomain(const am_domainID_t domainID)
 { MockDatabaseObserver::getMockObserverObject()->removeDomain(domainID); }
 void CAmDatabaseObserver::removeGateway(const am_gatewayID_t gatewayID)
 { MockDatabaseObserver::getMockObserverObject()->removeGateway(gatewayID); }
+void CAmDatabaseObserver::removeConverter(const am_converterID_t converterID)
+{ MockDatabaseObserver::getMockObserverObject()->removeConverter(converterID); }
 void CAmDatabaseObserver::removeCrossfader(const am_crossfaderID_t crossfaderID)
 { MockDatabaseObserver::getMockObserverObject()->removeCrossfader(crossfaderID); }
 void CAmDatabaseObserver::mainConnectionStateChanged(const am_mainConnectionID_t connectionID, const am_ConnectionState_e connectionState)

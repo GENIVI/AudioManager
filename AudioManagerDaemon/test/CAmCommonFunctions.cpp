@@ -157,9 +157,19 @@ bool CAmCommonFunctions::compareGateway(std::vector<am_Gateway_s>::iterator list
     return (listIterator->name.compare(gatewayData.name) == 0) && (listIterator->sinkID == gatewayData.sinkID) && (listIterator->sourceID == gatewayData.sourceID) && (listIterator->controlDomainID == gatewayData.controlDomainID) && (listIterator->domainSinkID == gatewayData.domainSinkID) && (listIterator->domainSourceID == gatewayData.domainSourceID) && std::equal(listIterator->convertionMatrix.begin(), listIterator->convertionMatrix.end(), gatewayData.convertionMatrix.begin()) && std::equal(listIterator->listSourceFormats.begin(), listIterator->listSourceFormats.end(), gatewayData.listSourceFormats.begin()) && std::equal(listIterator->listSinkFormats.begin(), listIterator->listSinkFormats.end(), gatewayData.listSinkFormats.begin());
 }
 
+bool CAmCommonFunctions::compareConverter(std::vector<am_Converter_s>::iterator listIterator, const am_Converter_s& gatewayData)
+{
+    return (listIterator->name.compare(gatewayData.name) == 0) && (listIterator->sinkID == gatewayData.sinkID) && (listIterator->sourceID == gatewayData.sourceID) && (listIterator->domainID == gatewayData.domainID) && std::equal(listIterator->convertionMatrix.begin(), listIterator->convertionMatrix.end(), gatewayData.convertionMatrix.begin()) && std::equal(listIterator->listSourceFormats.begin(), listIterator->listSourceFormats.end(), gatewayData.listSourceFormats.begin()) && std::equal(listIterator->listSinkFormats.begin(), listIterator->listSinkFormats.end(), gatewayData.listSinkFormats.begin());
+}
+
 bool CAmCommonFunctions::compareGateway1(const am_Gateway_s gateway1, const am_Gateway_s gatewayData)
 {
     return (gateway1.name.compare(gatewayData.name) == 0) && (gateway1.sinkID == gatewayData.sinkID) && (gateway1.sourceID == gatewayData.sourceID) && (gateway1.controlDomainID == gatewayData.controlDomainID) && (gateway1.domainSinkID == gatewayData.domainSinkID) && (gateway1.domainSourceID == gatewayData.domainSourceID) && std::equal(gateway1.convertionMatrix.begin(), gateway1.convertionMatrix.end(), gatewayData.convertionMatrix.begin()) && std::equal(gateway1.listSourceFormats.begin(), gateway1.listSourceFormats.end(), gatewayData.listSourceFormats.begin()) && std::equal(gateway1.listSinkFormats.begin(), gateway1.listSinkFormats.end(), gatewayData.listSinkFormats.begin());
+}
+
+bool CAmCommonFunctions::compareConverter1(const am_Converter_s gateway1, const am_Converter_s gatewayData)
+{
+    return (gateway1.name.compare(gatewayData.name) == 0) && (gateway1.sinkID == gatewayData.sinkID) && (gateway1.sourceID == gatewayData.sourceID) && (gateway1.domainID == gatewayData.domainID) && std::equal(gateway1.convertionMatrix.begin(), gateway1.convertionMatrix.end(), gatewayData.convertionMatrix.begin()) && std::equal(gateway1.listSourceFormats.begin(), gateway1.listSourceFormats.end(), gatewayData.listSourceFormats.begin()) && std::equal(gateway1.listSinkFormats.begin(), gateway1.listSinkFormats.end(), gatewayData.listSinkFormats.begin());
 }
 
 bool CAmCommonFunctions::compareSinkMainSink(std::vector<am_SinkType_s>::iterator listIterator, const std::vector<am_Sink_s>& sinkList)
@@ -301,6 +311,19 @@ void CAmCommonFunctions::createGateway(am_Gateway_s & gateway)
     gateway.listSourceFormats = getStandardConnectionFormatList();
     gateway.listSinkFormats = getStandardConnectionFormatList();
     gateway.gatewayID = 0;
+
+}
+
+void CAmCommonFunctions::createConverter(am_Converter_s & converter) const
+{
+	converter.name = "AnyConverter";
+	converter.sinkID = 1;
+	converter.sourceID = 2;
+	converter.domainID = 1;
+	converter.convertionMatrix = getStandardConvertionMatrix();
+	converter.listSourceFormats = getStandardConnectionFormatList();
+	converter.listSinkFormats = getStandardConnectionFormatList();
+	converter.converterID = 0;
 
 }
 

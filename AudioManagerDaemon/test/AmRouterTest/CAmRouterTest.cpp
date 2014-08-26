@@ -92,6 +92,7 @@ TEST_F(CAmRouterTest,simpleRoute2withDomainNoMatchFormats)
     source.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
+    source.sourceID=sourceID;
 
     am_Sink_s sink;
     am_sinkID_t sinkID;
@@ -104,6 +105,7 @@ TEST_F(CAmRouterTest,simpleRoute2withDomainNoMatchFormats)
     sink.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
+    sink.sinkID=sinkID;
 
     std::vector<am_Route_s> listRoutes;
     std::vector<am_RoutingElement_s> listRoutingElements;
@@ -191,8 +193,6 @@ TEST_F(CAmRouterTest,simpleRoute2withDomain)
 //test that checks just 2 domains, one sink one source with only one connection format each
 TEST_F(CAmRouterTest,simpleRoute2DomainsOnlyFree)
 {
-
-
     EXPECT_CALL(pMockControlInterface,getConnectionFormatChoice(_,_,_,_,_)).WillRepeatedly(DoAll(returnConnectionFormat(), Return(E_OK)));
 
     //initialize 2 domains
@@ -290,6 +290,9 @@ TEST_F(CAmRouterTest,simpleRoute2DomainsOnlyFree)
     compareRoute.sinkID = sinkID;
     compareRoute.sourceID = sourceID;
 
+    std::vector<am_Connection_s> listConnections;
+    pDatabaseHandler.getListConnections(listConnections);
+    ASSERT_EQ(0, listConnections.size());
     ASSERT_EQ(E_OK, pRouter.getRoute(true,sourceID,sinkID,listRoutes));
     ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
     ASSERT_TRUE(pCF.compareRoute(compareRoute,listRoutes[0]));

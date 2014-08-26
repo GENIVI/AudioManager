@@ -57,7 +57,7 @@ file(GLOB ROUTING_INTERFACE_SRCS_CXX
     "../../src/CAmRoutingReceiver.cpp"
     "../../src/CAmCommandReceiver.cpp"
     "../../src/CAmDbusWrapper.cpp"
-    "*.cpp"
+     "*.cpp"
 )
 
 IF(WITH_NSM)

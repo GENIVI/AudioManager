@@ -54,9 +54,11 @@ public:
     void registerSource(DBusConnection *conn, DBusMessage *msg);
     void registerSink(DBusConnection *conn, DBusMessage *msg);
     void registerGateway(DBusConnection *conn, DBusMessage *msg);
+    void registerConverter(DBusConnection *conn, DBusMessage *msg);
     void peekDomain(DBusConnection *conn, DBusMessage *msg);
     void deregisterDomain(DBusConnection *conn, DBusMessage *msg);
     void deregisterGateway(DBusConnection *conn, DBusMessage *msg);
+    void deregisterConverter(DBusConnection *conn, DBusMessage *msg);
     void peekSink(DBusConnection *conn, DBusMessage *msg);
     void deregisterSink(DBusConnection *conn, DBusMessage *msg);
     void peekSource(DBusConnection *conn, DBusMessage *msg);
@@ -75,6 +77,7 @@ public:
     void confirmRoutingReady(DBusConnection *conn, DBusMessage *msg);
     void confirmRoutingRundown(DBusConnection *conn, DBusMessage *msg);
     void updateGateway(DBusConnection *conn, DBusMessage *msg);
+    void updateConverter(DBusConnection *conn, DBusMessage *msg);
     void updateSink(DBusConnection *conn, DBusMessage *msg);
     void updateSource(DBusConnection *conn, DBusMessage *msg);
     void ackSetVolumes(DBusConnection *conn, DBusMessage *msg);

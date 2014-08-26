@@ -60,8 +60,12 @@ class MockIAmRoutingReceive : public IAmRoutingReceive {
     		am_Error_e(const am_domainID_t domainID));
     MOCK_METHOD2(registerGateway,
     		am_Error_e(const am_Gateway_s& gatewayData, am_gatewayID_t& gatewayID));
+    MOCK_METHOD2(registerConverter,
+     		am_Error_e(const am_Converter_s& converterData, am_converterID_t& converterID));
     MOCK_METHOD1(deregisterGateway,
     		am_Error_e(const am_gatewayID_t gatewayID));
+    MOCK_METHOD1(deregisterConverter,
+     		am_Error_e(const am_converterID_t converterID));
     MOCK_METHOD2(peekSink,
     		am_Error_e(const std::string& name, am_sinkID_t& sinkID));
     MOCK_METHOD2(registerSink,
@@ -106,6 +110,8 @@ class MockIAmRoutingReceive : public IAmRoutingReceive {
     		void(const uint16_t handle, const am_Error_e error));
     MOCK_METHOD4(updateGateway,
     		am_Error_e(const am_gatewayID_t gatewayID, const std::vector<am_CustomConnectionFormat_t>& listSourceFormats, const std::vector<am_CustomConnectionFormat_t>& listSinkFormats, const std::vector<bool>& convertionMatrix));
+    MOCK_METHOD4(updateConverter,
+       		am_Error_e(const am_converterID_t converterID, const std::vector<am_CustomConnectionFormat_t>& listSourceFormats, const std::vector<am_CustomConnectionFormat_t>& listSinkFormats, const std::vector<bool>& convertionMatrix));
     MOCK_METHOD5(updateSink,
        		am_Error_e(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_CustomConnectionFormat_t>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties));
     MOCK_METHOD5(updateSource,

@@ -76,4 +76,10 @@ For every gateway, a controlDomain is defined, this is the domain that registere
 the "other end" of the gateway might be unknown. To handle this situation, a domain can "peek" Domains, Sources and Sinks. When
 something is peeked, it means that an ID is reserved for a unique name without registering it.\n
 If a gateway is deregistered, the source or sink of the controlling domain is deregistered as well - not the one in the "other" domain.
+
+\section converter Converter
+
+Converters are very similar to gateways - the only difference is that they work inside a domain. The usage of gateways is analog to 
+gateways.
+
 */

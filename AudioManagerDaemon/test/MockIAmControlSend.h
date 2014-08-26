@@ -71,6 +71,10 @@ class MockIAmControlSend : public IAmControlSend {
         am_Error_e(const am_Gateway_s& gatewayData, am_gatewayID_t& gatewayID));
     MOCK_METHOD1(hookSystemDeregisterGateway,
         am_Error_e(const am_gatewayID_t gatewayID));
+    MOCK_METHOD2(hookSystemRegisterConverter,
+        am_Error_e(const am_Converter_s& converterData, am_converterID_t& converterID));
+    MOCK_METHOD1(hookSystemDeregisterConverter,
+        am_Error_e(const am_converterID_t converterID));
     MOCK_METHOD2(hookSystemRegisterCrossfader,
         am_Error_e(const am_Crossfader_s& crossfaderData, am_crossfaderID_t& crossfaderID));
     MOCK_METHOD1(hookSystemDeregisterCrossfader,
@@ -129,6 +133,8 @@ class MockIAmControlSend : public IAmControlSend {
         am_Error_e(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_CustomAvailabilityReason_t>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties));
     MOCK_METHOD4(hookSystemUpdateGateway,
         am_Error_e(const am_gatewayID_t gatewayID, const std::vector<am_CustomAvailabilityReason_t>& listSourceConnectionFormats, const std::vector<am_CustomAvailabilityReason_t>& listSinkConnectionFormats, const std::vector<bool>& convertionMatrix));
+    MOCK_METHOD4(hookSystemUpdateConverter,
+        am_Error_e(const am_converterID_t converterID, const std::vector<am_CustomAvailabilityReason_t>& listSourceConnectionFormats, const std::vector<am_CustomAvailabilityReason_t>& listSinkConnectionFormats, const std::vector<bool>& convertionMatrix));
     MOCK_METHOD3(cbAckSetVolumes,
         void(const am_Handle_s handle, const std::vector<am_Volumes_s>& listVolumes, const am_Error_e error));
     MOCK_METHOD2(cbAckSetSinkNotificationConfiguration,

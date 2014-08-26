@@ -193,10 +193,22 @@ am_Error_e CAmControlSender::hookSystemRegisterGateway(const am_Gateway_s & gate
     return (mController->hookSystemRegisterGateway(gatewayData, gatewayID));
 }
 
+am_Error_e CAmControlSender::hookSystemRegisterConverter(const am_Converter_s& converterData, am_converterID_t& converterID)
+{
+    assert(mController);
+    return (mController->hookSystemRegisterConverter(converterData, converterID));
+}
+
 am_Error_e CAmControlSender::hookSystemDeregisterGateway(const am_gatewayID_t gatewayID)
 {
     assert(mController);
     return (mController->hookSystemDeregisterGateway(gatewayID));
+}
+
+am_Error_e CAmControlSender::hookSystemDeregisterConverter(const am_converterID_t converterID)
+{
+    assert(mController);
+    return (mController->hookSystemDeregisterConverter(converterID));
 }
 
 am_Error_e CAmControlSender::hookSystemRegisterCrossfader(const am_Crossfader_s & crossfaderData, am_crossfaderID_t & crossfaderID)
@@ -412,6 +424,12 @@ am_Error_e CAmControlSender::hookSystemUpdateGateway(const am_gatewayID_t gatewa
 {
     assert(mController);
     return (mController->hookSystemUpdateGateway(gatewayID,listSourceConnectionFormats,listSinkConnectionFromats,convertionMatrix));
+}
+
+am_Error_e CAmControlSender::hookSystemUpdateConverter(const am_converterID_t converterID, const std::vector<am_CustomConnectionFormat_t>& listSourceConnectionFormats, const std::vector<am_CustomConnectionFormat_t>& listSinkConnectionFromats, const std::vector<bool>& convertionMatrix)
+{
+    assert(mController);
+    return (mController->hookSystemUpdateConverter(converterID,listSourceConnectionFormats,listSinkConnectionFromats,convertionMatrix));
 }
 
 void CAmControlSender::cbAckSetVolume(const am_Handle_s handle, const std::vector<am_Volumes_s>& listVolumes, const am_Error_e error)

@@ -1547,6 +1547,58 @@ TEST_F(CAmMapHandlerTest,getListGatewaysOfDomain)
     ASSERT_TRUE(std::equal(gatewayList.begin(),gatewayList.end(),gatewayCheckList.begin()) && !gatewayList.empty());
 }
 
+TEST_F(CAmMapHandlerTest,getListConvertersOfDomain)
+{
+    am_Converter_s converter, converter2;
+    am_converterID_t converterID1, converterID2;
+    am_domainID_t domainID;
+    am_Domain_s domain;
+    std::vector<am_converterID_t> converterList, converterCheckList;
+
+    pCF.createDomain(domain);
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
+
+    pCF.createConverter(converter);
+    converter.converterID = 1;
+    converter.name = "testGateway";
+    converter.sourceID = 1;
+    converter.sinkID = 1;
+    converter.domainID = domainID;
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterConverterDB(converter,converterID1))
+        << "ERROR: database error";
+    ASSERT_EQ(true, converterID1==1);
+
+    pCF.createConverter(converter2);
+    converter2.converterID = 2;
+    converter2.name = "testGateway2";
+    converter2.domainID = 4;
+    converter2.sourceID = 1;
+    converter2.sinkID = 1;
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterConverterDB(converter2,converterID2))
+        << "ERROR: database error";
+    ASSERT_EQ(true, converterID2==2);
+    converterCheckList.push_back(converterID1);
+
+    am_Sink_s sink;
+    am_Source_s source;
+    am_sinkID_t sinkID;
+    am_sourceID_t sourceID;
+    pCF.createSink(sink);
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
+    sink.sinkID = sinkID;
+
+    pCF.createSource(source);
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
+    source.sourceID = sourceID;
+
+    ASSERT_EQ(E_NON_EXISTENT,pDatabaseHandler.getListConvertersOfDomain(4,converterList))
+        << "ERROR: database error";
+    ASSERT_TRUE(converterList.empty());
+    ASSERT_EQ(E_OK,pDatabaseHandler.getListConvertersOfDomain(domainID,converterList))
+        << "ERROR: database error";
+    ASSERT_TRUE(std::equal(converterList.begin(),converterList.end(),converterCheckList.begin()) && !converterList.empty());
+}
+
 TEST_F(CAmMapHandlerTest,removeDomain)
 {
     am_Domain_s domain;
@@ -1564,8 +1616,6 @@ TEST_F(CAmMapHandlerTest,removeDomain)
 
 TEST_F(CAmMapHandlerTest,removeGateway)
 {
-
-
     am_Gateway_s gateway;
     am_gatewayID_t gatewayID;
     std::vector<am_Gateway_s> listGateways;
@@ -1587,6 +1637,31 @@ TEST_F(CAmMapHandlerTest,removeGateway)
     ASSERT_EQ(E_OK,pDatabaseHandler.getListGateways(listGateways))
         << "ERROR: database error";
     ASSERT_TRUE(listGateways.empty());
+}
+
+TEST_F(CAmMapHandlerTest,removeConverter)
+{
+    am_Converter_s converter;
+    am_converterID_t converterID;
+    std::vector<am_Converter_s> listConverters;
+    pCF.createConverter(converter);
+    am_Sink_s sink;
+    am_Source_s source;
+    am_sinkID_t sinkID;
+    am_sourceID_t sourceID;
+    pCF.createSink(sink);
+    pCF.createSource(source);
+    sink.sinkID = 1;
+    source.sourceID = 2;
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterConverterDB(converter,converterID))
+        << "ERROR: database error";
+    ASSERT_EQ(E_OK,pDatabaseHandler.removeConverterDB(converterID))
+        << "ERROR: database error";
+    ASSERT_EQ(E_OK,pDatabaseHandler.getListConverters(listConverters))
+        << "ERROR: database error";
+    ASSERT_TRUE(listConverters.empty());
 }
 
 TEST_F(CAmMapHandlerTest,removeSink)
@@ -1656,10 +1731,14 @@ TEST_F(CAmMapHandlerTest,removeNonexistentGateway)
         << "ERROR: database error";
 }
 
+TEST_F(CAmMapHandlerTest,removeNonexistentConverter)
+{
+    ASSERT_EQ(E_NON_EXISTENT,pDatabaseHandler.removeConverterDB(12))
+        << "ERROR: database error";
+}
+
 TEST_F(CAmMapHandlerTest,registerGatewayCorrect)
 {
-
-
     //initialize gateway
     std::vector<am_Gateway_s> returnList;
     am_Gateway_s gateway, gateway1, gateway2;
@@ -1714,6 +1793,68 @@ TEST_F(CAmMapHandlerTest,registerGatewayCorrect)
         if (listIterator->gatewayID == gatewayID2)
         {
             equal = equal && pCF.compareGateway(listIterator, gateway2);
+        }
+    }
+
+    ASSERT_EQ(true, equal);
+}
+
+TEST_F(CAmMapHandlerTest,registerConverterCorrect)
+{
+    //initialize gateway
+    std::vector<am_Converter_s> returnList;
+    am_Converter_s gateway, gateway1, gateway2;
+    am_converterID_t gatewayID = 0, gatewayID1 = 0, gatewayID2 = 0;
+
+    pCF.createConverter(gateway);
+    pCF.createConverter(gateway1);
+    gateway1.converterID = 20;
+    pCF.createConverter(gateway2);
+    am_Sink_s sink;
+    am_Source_s source;
+    am_sinkID_t sinkID;
+    am_sourceID_t sourceID;
+    pCF.createSink(sink);
+    pCF.createSource(source);
+    sink.sinkID = 1;
+    source.sourceID = 2;
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterConverterDB(gateway,gatewayID))
+        << "ERROR: database error";
+    ASSERT_EQ(100,gatewayID)
+        << "ERROR: domainID zero";
+
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterConverterDB(gateway1,gatewayID1))
+        << "ERROR: database error";
+    ASSERT_EQ(gateway1.converterID,gatewayID1)
+        << "ERROR: domainID zero";
+
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterConverterDB(gateway2,gatewayID2))
+        << "ERROR: database error";
+    ASSERT_EQ(101,gatewayID2)
+        << "ERROR: domainID zero";
+
+    //now check if we read out the correct values
+    ASSERT_EQ(E_OK, pDatabaseHandler.getListConverters(returnList));
+    bool equal = true;
+    std::vector<am_Converter_s>::iterator listIterator = returnList.begin();
+
+    for (; listIterator < returnList.end(); ++listIterator)
+    {
+        if (listIterator->converterID == gatewayID)
+        {
+            equal = equal && pCF.compareConverter(listIterator, gateway);
+        }
+
+        if (listIterator->converterID == gatewayID1)
+        {
+            equal = equal && pCF.compareConverter(listIterator, gateway1);
+        }
+
+        if (listIterator->converterID == gatewayID2)
+        {
+            equal = equal && pCF.compareConverter(listIterator, gateway2);
         }
     }
 
@@ -1786,6 +1927,73 @@ TEST_F(CAmMapHandlerTest,getGatewayInfo)
     am_Gateway_s gatewayInfo;
     ASSERT_EQ(E_OK, pDatabaseHandler.getGatewayInfoDB(20,gatewayInfo));
     ASSERT_TRUE(pCF.compareGateway1(gateway1,gatewayInfo));
+
+}
+
+TEST_F(CAmMapHandlerTest,getConverterInfo)
+{
+    //initialize gateway
+    std::vector<am_Converter_s> returnList;
+    am_Converter_s gateway, gateway1, gateway2;
+    am_converterID_t gatewayID = 0, gatewayID1 = 0, gatewayID2 = 0;
+
+    pCF.createConverter(gateway);
+    pCF.createConverter(gateway1);
+    gateway1.converterID = 20;
+    pCF.createConverter(gateway2);
+    am_Sink_s sink;
+    am_Source_s source;
+    am_sinkID_t sinkID;
+    am_sourceID_t sourceID;
+    pCF.createSink(sink);
+    pCF.createSource(source);
+    sink.sinkID = 1;
+    source.sourceID = 2;
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterConverterDB(gateway,gatewayID))
+        << "ERROR: database error";
+    ASSERT_EQ(100,gatewayID)
+        << "ERROR: domainID zero";
+
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterConverterDB(gateway1,gatewayID1))
+        << "ERROR: database error";
+    ASSERT_EQ(gateway1.converterID,gatewayID1)
+        << "ERROR: domainID zero";
+
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterConverterDB(gateway2,gatewayID2))
+        << "ERROR: database error";
+    ASSERT_EQ(101,gatewayID2)
+        << "ERROR: domainID zero";
+
+    //now check if we read out the correct values
+    ASSERT_EQ(E_OK, pDatabaseHandler.getListConverters(returnList));
+    bool equal = true;
+    std::vector<am_Converter_s>::iterator listIterator = returnList.begin();
+
+    for (; listIterator < returnList.end(); ++listIterator)
+    {
+        if (listIterator->converterID == gatewayID)
+        {
+            equal = equal && pCF.compareConverter(listIterator, gateway);
+        }
+
+        if (listIterator->converterID == gatewayID1)
+        {
+            equal = equal && pCF.compareConverter(listIterator, gateway1);
+        }
+
+        if (listIterator->converterID == gatewayID2)
+        {
+            equal = equal && pCF.compareConverter(listIterator, gateway2);
+        }
+    }
+
+    ASSERT_EQ(true, equal);
+
+    am_Converter_s gatewayInfo;
+    ASSERT_EQ(E_OK, pDatabaseHandler.getConverterInfoDB(20,gatewayInfo));
+    ASSERT_TRUE(pCF.compareConverter1(gateway1,gatewayInfo));
 
 }
 
@@ -2663,6 +2871,41 @@ TEST_F(CAmMapHandlerObserverCallbacksTest, enter_removeGateway)
     ASSERT_EQ(101,gatewayID2)<< "ERROR: domainID zero";
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), removeGateway(gatewayID2)).Times(1);
     ASSERT_EQ(E_OK,pDatabaseHandler.removeGatewayDB(gatewayID2))<< "ERROR: database error";
+}
+
+TEST_F(CAmMapHandlerObserverCallbacksTest, enter_removeConverter)
+{
+    //initialize gateway
+    std::vector<am_Converter_s> returnList;
+    am_Converter_s gateway, gateway1, gateway2;
+    am_converterID_t gatewayID = 0, gatewayID1 = 0, gatewayID2 = 0;
+    pCF.createConverter(gateway);
+    pCF.createConverter(gateway1);
+    gateway1.converterID = 20;
+    pCF.createConverter(gateway2);
+    am_Sink_s sink;
+    am_Source_s source;
+    am_sinkID_t sinkID;
+    am_sourceID_t sourceID;
+    pCF.createSink(sink);
+    pCF.createSource(source);
+    sink.sinkID = 1;
+    source.sourceID = 2;
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSink(_)).Times(1);
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSource(_)).Times(1);
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newConverter(Field(&am_Converter_s::converterID, 100))).Times(1);
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterConverterDB(gateway,gatewayID))<< "ERROR: database error";
+    ASSERT_EQ(100,gatewayID)<< "ERROR: domainID zero";
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newConverter(Field(&am_Converter_s::converterID, 20))).Times(1);
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterConverterDB(gateway1,gatewayID1))<< "ERROR: database error";
+    ASSERT_EQ(gateway1.converterID,gatewayID1)<< "ERROR: domainID zero";
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newConverter(Field(&am_Converter_s::converterID, 101))).Times(1);
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterConverterDB(gateway2,gatewayID2))<< "ERROR: database error";
+    ASSERT_EQ(101,gatewayID2)<< "ERROR: domainID zero";
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), removeConverter(gatewayID2)).Times(1);
+    ASSERT_EQ(E_OK,pDatabaseHandler.removeConverterDB(gatewayID2))<< "ERROR: database error";
 }
 
 TEST_F(CAmMapHandlerObserverCallbacksTest, enter_removeCrossfader)

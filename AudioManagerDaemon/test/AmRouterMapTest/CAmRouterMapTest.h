@@ -12,7 +12,7 @@
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *
-* \author Aleksandar Donchev, aleksander.donchev@partner.bmw.de BMW 2013
+* \author Aleksandar Donchev, aleksander.donchev@partner.bmw.de BMW 2013, 2014
  *
  * For further information see http://www.genivi.org/.
  *
@@ -72,6 +72,28 @@ public:
     void TearDown();
 
     void createMainConnectionSetup();
+
+    void enterDomainDB(const std::string & domainName, am_domainID_t & domainID);
+    void enterSourceDB(const std::string & sourceName, const am_domainID_t domainID, const std::vector<am_CustomConnectionFormat_t> & connectionFormats, am_sourceID_t & sourceID);
+    void enterSinkDB(const std::string & sinkName, const am_domainID_t domainID, const std::vector<am_CustomConnectionFormat_t> & connectionFormats, am_sinkID_t & sinkID);
+    void enterGatewayDB(const std::string & gwName,
+							const am_domainID_t domainSourceID,
+							const am_domainID_t domainSinkID,
+							const std::vector<am_CustomConnectionFormat_t> & sourceConnectionFormats,
+							const std::vector<am_CustomConnectionFormat_t> & sinkConnectionFormats,
+							const std::vector<bool> & matrix,
+							const am_sourceID_t & sourceID,
+							const am_sinkID_t & sinkID,
+							am_gatewayID_t & gatewayID);
+    void enterConverterDB(const std::string & gwName,
+							  const am_domainID_t domainID,
+							  const std::vector<am_CustomConnectionFormat_t> & sourceConnectionFormats,
+							  const std::vector<am_CustomConnectionFormat_t> & sinkConnectionFormats,
+							  const std::vector<bool> & matrix,
+							  const am_sourceID_t & sourceID,
+							  const am_sinkID_t & sinkID,
+							  am_converterID_t & converterID);
+
 };
 
 }

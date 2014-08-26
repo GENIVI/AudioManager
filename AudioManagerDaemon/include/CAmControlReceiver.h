@@ -61,6 +61,7 @@ public:
     am_Error_e enterSinkDB(const am_Sink_s& sinkData, am_sinkID_t& sinkID);
     am_Error_e enterCrossfaderDB(const am_Crossfader_s& crossfaderData, am_crossfaderID_t& crossfaderID);
     am_Error_e enterGatewayDB(const am_Gateway_s& gatewayData, am_gatewayID_t& gatewayID);
+    am_Error_e enterConverterDB(const am_Converter_s & converterData, am_converterID_t & converterID);
     am_Error_e enterSourceDB(const am_Source_s& sourceData, am_sourceID_t& sourceID);
     am_Error_e enterSinkClassDB(const am_SinkClass_s& sinkClass, am_sinkClass_t& sinkClassID);
     am_Error_e enterSourceClassDB(am_sourceClass_t& sourceClassID, const am_SourceClass_s& sourceClass);
@@ -81,6 +82,7 @@ public:
     am_Error_e removeSinkDB(const am_sinkID_t sinkID);
     am_Error_e removeSourceDB(const am_sourceID_t sourceID);
     am_Error_e removeGatewayDB(const am_gatewayID_t gatewayID);
+    am_Error_e removeConverterDB(const am_converterID_t converterID);
     am_Error_e removeCrossfaderDB(const am_crossfaderID_t crossfaderID);
     am_Error_e removeDomainDB(const am_domainID_t domainID);
     am_Error_e removeSinkClassDB(const am_sinkClass_t sinkClassID);
@@ -90,12 +92,14 @@ public:
     am_Error_e getSinkInfoDB(const am_sinkID_t sinkID, am_Sink_s& sinkData) const;
     am_Error_e getSourceInfoDB(const am_sourceID_t sourceID, am_Source_s& sourceData) const;
     am_Error_e getGatewayInfoDB(const am_gatewayID_t gatewayID, am_Gateway_s& gatewayData) const;
+    am_Error_e getConverterInfoDB(const am_converterID_t converterID, am_Converter_s& converterData) const;
     am_Error_e getCrossfaderInfoDB(const am_crossfaderID_t crossfaderID, am_Crossfader_s& crossfaderData) const;
     am_Error_e getMainConnectionInfoDB(const am_mainConnectionID_t mainConnectionID, am_MainConnection_s& mainConnectionData) const;
     am_Error_e getListSinksOfDomain(const am_domainID_t domainID, std::vector<am_sinkID_t>& listSinkID) const;
     am_Error_e getListSourcesOfDomain(const am_domainID_t domainID, std::vector<am_sourceID_t>& listSourceID) const;
     am_Error_e getListCrossfadersOfDomain(const am_domainID_t domainID, std::vector<am_crossfaderID_t>& listCrossfadersID) const;
     am_Error_e getListGatewaysOfDomain(const am_domainID_t domainID, std::vector<am_gatewayID_t>& listGatewaysID) const;
+    am_Error_e getListConvertersOfDomain(const am_domainID_t domainID, std::vector<am_converterID_t>& listConverterID) const;
     am_Error_e getListMainConnections(std::vector<am_MainConnection_s>& listMainConnections) const;
     am_Error_e getListDomains(std::vector<am_Domain_s>& listDomains) const;
     am_Error_e getListConnections(std::vector<am_Connection_s>& listConnections) const;
@@ -105,6 +109,7 @@ public:
     am_Error_e getListHandles(std::vector<am_Handle_s>& listHandles) const;
     am_Error_e getListCrossfaders(std::vector<am_Crossfader_s>& listCrossfaders) const;
     am_Error_e getListGateways(std::vector<am_Gateway_s>& listGateways) const;
+    am_Error_e getListConverters(std::vector<am_Converter_s>& listConverters) const;
     am_Error_e getListSinkClasses(std::vector<am_SinkClass_s>& listSinkClasses) const;
     am_Error_e getListSystemProperties(std::vector<am_SystemProperty_s>& listSystemProperties) const;
     void setCommandReady();
@@ -118,6 +123,7 @@ public:
     am_Error_e changeSourceDB(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_CustomConnectionFormat_t>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties) ;
     am_Error_e changeSinkDB(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_CustomConnectionFormat_t>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties) ;
     am_Error_e changeGatewayDB(const am_gatewayID_t gatewayID, const std::vector<am_CustomConnectionFormat_t>& listSourceConnectionFormats, const std::vector<am_CustomConnectionFormat_t>& listSinkConnectionFormats, const std::vector<bool>& convertionMatrix) ;
+	am_Error_e changeConverterDB(const am_converterID_t converterID, const std::vector<am_CustomConnectionFormat_t>& listSourceConnectionFormats, const std::vector<am_CustomConnectionFormat_t>& listSinkConnectionFormats, const std::vector<bool>& convertionMatrix);
     am_Error_e setVolumes(am_Handle_s& handle, const std::vector<am_Volumes_s>& listVolumes) ;
     am_Error_e setSinkNotificationConfiguration(am_Handle_s& handle, const am_sinkID_t sinkID, const am_NotificationConfiguration_s& notificationConfiguration) ;
     am_Error_e setSourceNotificationConfiguration(am_Handle_s& handle, const am_sourceID_t sourceID, const am_NotificationConfiguration_s& notificationConfiguration) ;

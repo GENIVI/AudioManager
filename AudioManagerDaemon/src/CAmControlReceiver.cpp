@@ -184,6 +184,11 @@ am_Error_e CAmControlReceiver::enterGatewayDB(const am_Gateway_s & gatewayData, 
     return (mDatabaseHandler->enterGatewayDB(gatewayData, gatewayID));
 }
 
+am_Error_e CAmControlReceiver::enterConverterDB(const am_Converter_s & converterData, am_converterID_t & converterID)
+{
+    return (mDatabaseHandler->enterConverterDB(converterData, converterID));
+}
+
 am_Error_e CAmControlReceiver::enterSourceDB(const am_Source_s & sourceData, am_sourceID_t & sourceID)
 {
     return (mDatabaseHandler->enterSourceDB(sourceData, sourceID));
@@ -274,6 +279,11 @@ am_Error_e CAmControlReceiver::removeGatewayDB(const am_gatewayID_t gatewayID)
     return (mDatabaseHandler->removeGatewayDB(gatewayID));
 }
 
+am_Error_e CAmControlReceiver::removeConverterDB(const am_converterID_t converterID)
+{
+    return (mDatabaseHandler->removeConverterDB(converterID));
+}
+
 am_Error_e CAmControlReceiver::removeCrossfaderDB(const am_crossfaderID_t crossfaderID)
 {
     return (mDatabaseHandler->removeCrossfaderDB(crossfaderID));
@@ -314,6 +324,12 @@ am_Error_e CAmControlReceiver::getGatewayInfoDB(const am_gatewayID_t gatewayID, 
     return (mDatabaseHandler->getGatewayInfoDB(gatewayID, gatewayData));
 }
 
+am_Error_e CAmControlReceiver::getConverterInfoDB(const am_converterID_t converterID, am_Converter_s & converterData) const
+{
+    return (mDatabaseHandler->getConverterInfoDB(converterID, converterData));
+}
+
+
 am_Error_e CAmControlReceiver::getCrossfaderInfoDB(const am_crossfaderID_t crossfaderID, am_Crossfader_s & crossfaderData) const
 {
     return (mDatabaseHandler->getCrossfaderInfoDB(crossfaderID, crossfaderData));
@@ -337,6 +353,11 @@ am_Error_e CAmControlReceiver::getListCrossfadersOfDomain(const am_domainID_t do
 am_Error_e CAmControlReceiver::getListGatewaysOfDomain(const am_domainID_t domainID, std::vector<am_gatewayID_t> & listGatewaysID) const
 {
     return (mDatabaseHandler->getListGatewaysOfDomain(domainID, listGatewaysID));
+}
+
+am_Error_e CAmControlReceiver::getListConvertersOfDomain(const am_domainID_t domainID,std::vector<am_converterID_t>& listConverterID) const
+{
+	return (mDatabaseHandler->getListConvertersOfDomain(domainID,listConverterID));
 }
 
 am_Error_e CAmControlReceiver::getListMainConnections(std::vector<am_MainConnection_s> & listMainConnections) const
@@ -382,6 +403,11 @@ am_Error_e CAmControlReceiver::getListCrossfaders(std::vector<am_Crossfader_s> &
 am_Error_e CAmControlReceiver::getListGateways(std::vector<am_Gateway_s> & listGateways) const
 {
     return (mDatabaseHandler->getListGateways(listGateways));
+}
+
+am_Error_e CAmControlReceiver::getListConverters(std::vector<am_Converter_s>& listConverters) const
+{
+    return (mDatabaseHandler->getListConverters(listConverters));
 }
 
 am_Error_e CAmControlReceiver::getListSinkClasses(std::vector<am_SinkClass_s> & listSinkClasses) const
@@ -487,6 +513,12 @@ am_Error_e CAmControlReceiver::changeGatewayDB(const am_gatewayID_t gatewayID, c
 {
     logInfo("CAmControlReceiver::changeGatewayDB was called with gatewayID", gatewayID);
     return (mDatabaseHandler->changeGatewayDB(gatewayID,listSourceConnectionFormats,listSinkConnectionFormats,convertionMatrix));
+}
+
+am_Error_e CAmControlReceiver::changeConverterDB(const am_converterID_t converterID, const std::vector<am_CustomConnectionFormat_t>& listSourceConnectionFormats, const std::vector<am_CustomConnectionFormat_t>& listSinkConnectionFormats, const std::vector<bool>& convertionMatrix)
+{
+    logInfo("CAmControlReceiver::changeConverterDB was called with converterID", converterID);
+    return (mDatabaseHandler->changeConverterDB(converterID,listSourceConnectionFormats,listSinkConnectionFormats,convertionMatrix));
 }
 
 am_Error_e CAmControlReceiver::setVolumes(am_Handle_s& handle, const std::vector<am_Volumes_s>& listVolumes)

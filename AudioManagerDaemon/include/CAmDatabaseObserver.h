@@ -49,6 +49,7 @@ public:
     void newSource(const am_Source_s& source);
     void newDomain(const am_Domain_s& domain);
     void newGateway(const am_Gateway_s& gateway);
+    void newConverter(const am_Converter_s& coverter);
     void newCrossfader(const am_Crossfader_s& crossfader);
     void newMainConnection(const am_MainConnectionType_s& mainConnection);
     void removedMainConnection(const am_mainConnectionID_t mainConnection);
@@ -56,6 +57,7 @@ public:
     void removedSource(const am_sourceID_t sourceID, const bool visible);
     void removeDomain(const am_domainID_t domainID);
     void removeGateway(const am_gatewayID_t gatewayID);
+    void removeConverter(const am_converterID_t converterID);
     void removeCrossfader(const am_crossfaderID_t crossfaderID);
     void mainConnectionStateChanged(const am_mainConnectionID_t connectionID, const am_ConnectionState_e connectionState);
     void mainSinkSoundPropertyChanged(const am_sinkID_t sinkID, const am_MainSoundProperty_s& SoundProperty);
