@@ -163,7 +163,7 @@ IF(WITH_NSM)
 # The ALT_DESTINATION is used as fall back if the DESTINATION directory dosen't contain the sources or you just don't want to use the generator.
 INCLUDE(CommonAPIGenerator)
 COMMON_API_GENERATE_SOUCRES(TARGET COMMON_API 
-                            FIDLS fidls/NodeStateManager.fdepl # a list with fidls
+                            FIDLS fidls/NodeStateManager.fidl # a list with fidls
                             DESTINATION src-gen  # a relative path to the build directory or an absolute path
                             ALT_DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/src-gen # an alternative relative/absolute path with common-api sources, usually in the source tree
                             DBUS)
