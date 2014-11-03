@@ -35,7 +35,7 @@ CAmControlInterfaceTest::CAmControlInterfaceTest() :
         pDBusWrapper((CAmDbusWrapper*) 1), //
         plistCommandPluginDirs(), //
         plistRoutingPluginDirs(), //
-        pDatabaseHandler(std::string(":memory:")), //
+        pDatabaseHandler(), //
         pRoutingSender(plistRoutingPluginDirs), //RoutingReceiver
         pCommandSender(plistCommandPluginDirs), //
         pMockControlInterface(), //

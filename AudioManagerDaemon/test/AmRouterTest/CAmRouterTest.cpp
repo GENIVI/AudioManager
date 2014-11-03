@@ -30,7 +30,7 @@ CAmRouterTest::CAmRouterTest() :
         plistCommandPluginDirs(), //
         pSocketHandler(), //
         pControlSender(), //
-		pDatabaseHandler(std::string(":memory:")),
+		pDatabaseHandler(),
         pRouter(&pDatabaseHandler, &pControlSender), //
         pRoutingSender(plistRoutingPluginDirs), //
         pCommandSender(plistCommandPluginDirs), //

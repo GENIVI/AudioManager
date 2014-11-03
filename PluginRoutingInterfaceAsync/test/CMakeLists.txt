@@ -30,7 +30,9 @@ IF(WITH_DLT)
     pkg_check_modules(DLT REQUIRED automotive-dlt)
 ENDIF(WITH_DLT)
 
-pkg_check_modules(SQLITE REQUIRED sqlite3)
+IF(WITH_DATABASE_STORAGE)
+	pkg_check_modules(SQLITE REQUIRED sqlite3)
+ENDIF(WITH_DATABASE_STORAGE)
 
 INCLUDE_DIRECTORIES(   
     ${STD_INCLUDE_DIRS}

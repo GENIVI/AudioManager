@@ -23,7 +23,6 @@ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -DUNIT_TEST=1 -DDLT_CONTEXT=AudioMan
 
 
 FIND_PACKAGE(PkgConfig)
-pkg_check_modules(SQLITE REQUIRED sqlite3)
 
 IF(WITH_DLT)    
     pkg_check_modules(DLT REQUIRED automotive-dlt>=2.2.0)   
@@ -44,7 +43,7 @@ INCLUDE_DIRECTORIES(
 )
 
 file(GLOB ROUTING_SRCS_CXX 
-    "../../src/CAmDatabaseHandlerSQLite.cpp"
+    "../../src/CAmDatabaseHandlerMap.cpp"
     "../../src/CAmDatabaseObserver.cpp"
     "../../src/CAmCommandSender.cpp"
     "../../src/CAmRoutingSender.cpp"

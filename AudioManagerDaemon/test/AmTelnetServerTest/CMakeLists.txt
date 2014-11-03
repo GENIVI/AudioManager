@@ -55,7 +55,6 @@ file(GLOB TELNET_SRCS_CXX
     "../../src/CAmControlReceiver.cpp"
     "../../src/CAmControlSender.cpp"
     "../../src/CAmDatabaseHandlerMap.cpp"
-    "../../src/CAmDatabaseHandlerSQLite.cpp"
     "../../src/CAmDatabaseObserver.cpp"
     "../../src/CAmRoutingReceiver.cpp"
     "../../src/CAmRoutingSender.cpp"

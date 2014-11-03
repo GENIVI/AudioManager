@@ -54,11 +54,7 @@ CAmEnvironment::CAmEnvironment()
 : mlistRoutingPluginDirs()
 , mlistCommandPluginDirs()
 , mSocketHandler()
-#ifdef WITH_DATABASE_STORAGE
-, mDatabasehandler(std::string(":memory:"))
-#else
 , mDatabasehandler()
-#endif
 , mRoutingSender(mlistRoutingPluginDirs)
 , mCommandSender(mlistRoutingPluginDirs)
 , mControlSender(controllerPlugin,&mSocketHandler)

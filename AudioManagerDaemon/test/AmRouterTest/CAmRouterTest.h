@@ -30,7 +30,7 @@
 #include <string>
 #include <vector>
 #include <set>
-#include "CAmDatabaseHandlerSQLite.h"
+#include "CAmDatabaseHandlerMap.h"
 #include "CAmControlReceiver.h"
 #include "CAmControlSender.h"
 #include "CAmDatabaseObserver.h"
@@ -56,7 +56,7 @@ public:
     std::vector<std::string> plistCommandPluginDirs;
     CAmSocketHandler pSocketHandler;
     CAmControlSender pControlSender;
-    CAmDatabaseHandlerSQLite pDatabaseHandler;
+    CAmDatabaseHandlerMap pDatabaseHandler;
     CAmRouter pRouter;
     CAmRoutingSender pRoutingSender;
     CAmCommandSender pCommandSender;

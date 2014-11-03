@@ -28,7 +28,7 @@ CAmRoutingInterfaceTest::CAmRoutingInterfaceTest() :
         plistRoutingPluginDirs(), //
         plistCommandPluginDirs(), //
         pSocketHandler(), //
-        pDatabaseHandler(std::string(":memory:")), //
+        pDatabaseHandler(), //
         pRoutingSender(plistRoutingPluginDirs), //
         pCommandSender(plistCommandPluginDirs), //
         pControlSender(), //

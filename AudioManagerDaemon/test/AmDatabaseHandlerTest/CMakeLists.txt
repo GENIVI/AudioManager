@@ -23,7 +23,8 @@ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -DUNIT_TEST=1 -DDLT_CONTEXT=AudioMan
 
 
 FIND_PACKAGE(PkgConfig)
-pkg_check_modules(SQLITE REQUIRED sqlite3)
+IF(WITH_DATABASE_STORAGE)
+	pkg_check_modules(SQLITE REQUIRED sqlite3)
 
 IF(WITH_DLT)    
     pkg_check_modules(DLT REQUIRED automotive-dlt>=2.2.0)   
@@ -88,4 +89,5 @@ INSTALL(TARGETS AmDatabaseHandlerTest
 
 SET(ADD_DEPEND "audiomanager-bin" "sqlite3(>=3.6.22)" "dlt" "libdbus-1-3(>=1.2.16)"  "libpthread-stubs0")
 set_property(GLOBAL APPEND PROPERTY tests_prop "${ADD_DEPEND}")
+ENDIF(WITH_DATABASE_STORAGE)
 
