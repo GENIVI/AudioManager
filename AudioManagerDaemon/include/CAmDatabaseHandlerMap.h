@@ -27,6 +27,7 @@
 #include <sstream>
 #include <iostream>
 #include <unordered_map>
+#include <assert.h>
 #include "IAmDatabaseHandler.h"
 
 namespace am
