@@ -2308,7 +2308,7 @@ TEST_F(CAmMapHandlerTest, connectionIDBoundary)
 	}
 	std::vector<am_Connection_s> connectionList;
 	ASSERT_EQ(E_OK, pDatabaseHandler.getListConnections(connectionList));
-	ASSERT_EQ(TEST_MAX_CONNECTION_ID-1, connectionList.size());
+	ASSERT_EQ(TEST_MAX_CONNECTION_ID-1, static_cast<int>(connectionList.size()));
 	ASSERT_EQ(E_UNKNOWN, pDatabaseHandler.enterConnectionDB(connection,connectionID));
 	logInfo("here");
 	ASSERT_EQ(0, connectionID);
@@ -2362,7 +2362,7 @@ TEST_F(CAmMapHandlerTest, mainConnectionIDBoundary)
 	}
 	std::vector<am_Connection_s> connectionList;
 	ASSERT_EQ(E_OK, pDatabaseHandler.getListConnections(connectionList));
-	ASSERT_EQ(TEST_MAX_CONNECTION_ID-1, connectionList.size());
+	ASSERT_EQ(TEST_MAX_CONNECTION_ID-1, static_cast<int>(connectionList.size()));
 
 	//create a mainConnection
 
