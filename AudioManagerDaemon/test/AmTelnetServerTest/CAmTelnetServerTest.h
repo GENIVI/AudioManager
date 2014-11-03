@@ -29,12 +29,8 @@
 #include "CAmControlSender.h"
 #include "CAmRouter.h"
 #include "config.h"
+#include "CAmDatabaseHandlerMap.h"
 
-#ifdef WITH_DATABASE_STORAGE
-  #include "CAmDatabaseHandlerSQLite.h"
-#else
-  #include "CAmDatabaseHandlerMap.h"
-#endif
 
 namespace am
 {

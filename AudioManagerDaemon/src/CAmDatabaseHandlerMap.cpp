@@ -399,7 +399,7 @@ template <typename TMapKey,class TMapObject> bool CAmDatabaseHandlerMap::CAmMapp
 			nextID = sourceID.mCurrentValue++;
 		}
 
-		if( nextID == lastID )
+		if( sourceID.mCurrentValue == lastID )
 		{
 			notFreeIDs = true;
 			break;
@@ -864,6 +864,7 @@ am_Error_e CAmDatabaseHandlerMap::enterConnectionDB(const am_Connection_s& conne
 		connectionID = nextID;
 		mMappedData.mConnectionMap[nextID] = connection;
 		mMappedData.mConnectionMap[nextID].connectionID = nextID;
+		mMappedData.mConnectionMap[nextID].reserved = true;
 	}
 	else
 	{

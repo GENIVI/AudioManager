@@ -2302,6 +2302,7 @@ TEST_F(CAmMapHandlerTest, connectionIDBoundary)
 		if( i < TEST_MAX_CONNECTION_ID )
 		{
 			ASSERT_EQ(E_OK, pDatabaseHandler.enterConnectionDB(connection,connectionID));
+			ASSERT_EQ(E_OK, pDatabaseHandler.changeConnectionFinal(connectionID));
 			ASSERT_EQ(i, connectionID);
 		}
 	}
@@ -2309,6 +2310,7 @@ TEST_F(CAmMapHandlerTest, connectionIDBoundary)
 	ASSERT_EQ(E_OK, pDatabaseHandler.getListConnections(connectionList));
 	ASSERT_EQ(TEST_MAX_CONNECTION_ID-1, connectionList.size());
 	ASSERT_EQ(E_UNKNOWN, pDatabaseHandler.enterConnectionDB(connection,connectionID));
+	logInfo("here");
 	ASSERT_EQ(0, connectionID);
 
 	ASSERT_EQ(E_OK, pDatabaseHandler.removeConnection(10));
@@ -2353,6 +2355,7 @@ TEST_F(CAmMapHandlerTest, mainConnectionIDBoundary)
 		if( i < TEST_MAX_CONNECTION_ID )
 		{
 			ASSERT_EQ(E_OK, pDatabaseHandler.enterConnectionDB(connection,connectionID));
+			ASSERT_EQ(E_OK, pDatabaseHandler.changeConnectionFinal(connectionID));
 			ASSERT_EQ(i, connectionID);
 			connectionIDList.push_back(i);
 		}
