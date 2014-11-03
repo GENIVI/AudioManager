@@ -57,6 +57,8 @@ IF(COMMON_API_FOUND AND COMMON_API_DBUS_FOUND)
     
     # generate common-api sources and retreive a list with them 
     macro(GENERATE_FILES)    
+
+
         # searching for common-api-generator executable ...
         FIND_PATH(COMMONAPI_GENERATOR_JAR
                       NAMES 
@@ -66,6 +68,17 @@ IF(COMMON_API_FOUND AND COMMON_API_DBUS_FOUND)
                       PATHS
                           "/usr/share" 
                           "/usr/local/share")
+       
+		FIND_PATH(COMMONAPI_GENERATOR_EXE
+                      NAMES 
+                          "commonapi_generator"
+                      PATH_SUFFIXES 
+                          CommonAPI-${COMMON_API_VERSION}	 
+                      PATHS
+						  "~"
+                          "/usr/share" 
+                          "/usr/local/share")
+
         if(COMMONAPI_GENERATOR_JAR)
             # load java runtime ...
             find_package(Java COMPONENTS Runtime REQUIRED QUIET)
@@ -91,6 +104,31 @@ IF(COMMON_API_FOUND AND COMMON_API_DBUS_FOUND)
                 message(FATAL_ERROR "Failed to generate files from FIDL:\n ${GENERATOR_OUTPUT}")
             endif()
             SET(TEMP_GEN_DST ${PARAMS_DESTINATION})
+		elseif(COMMONAPI_GENERATOR_EXE)
+            # load executable
+            function(mktmpdir OUTVAR)
+                while(NOT TEMP_DESTINATION OR EXISTS ${TEMP_DESTINATION})
+                    string(RANDOM LENGTH 16 TEMP_DESTINATION)
+                    set(TEMP_DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/${TEMP_DESTINATION}")
+                endwhile()
+    
+               file(MAKE_DIRECTORY ${TEMP_DESTINATION})
+    
+               set(${OUTVAR} ${TEMP_DESTINATION} PARENT_SCOPE)
+            endfunction()
+    
+            # execute the generate command ...
+            execute_process(COMMAND ${COMMONAPI_GENERATOR_EXE}/commonapi_generator -dest ${PARAMS_DESTINATION} ${ARGS} ${FIDLS}
+                            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                            RESULT_VARIABLE EXIT_CODE
+                            OUTPUT_VARIABLE GENERATOR_OUTPUT
+                            ERROR_VARIABLE GENERATOR_OUTPUT
+                            OUTPUT_STRIP_TRAILING_WHITESPACE
+                            ERROR_STRIP_TRAILING_WHITESPACE)
+            if(EXIT_CODE)
+                message(FATAL_ERROR "Failed to generate files from FIDL:\n ${GENERATOR_OUTPUT}")
+            endif()
+            SET(TEMP_GEN_DST ${PARAMS_DESTINATION})	
         else()
             # if the generator is not found, try to find the sources in the alternative folder
             SET(TEMP_GEN_DST ${PARAMS_ALT_DESTINATION})
