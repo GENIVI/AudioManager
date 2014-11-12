@@ -13,6 +13,7 @@
  *
  *
  * \author Christian Mueller, christian.ei.mueller@bmw.de BMW 2011,2012
+ *         Jens Lorenz, jlorenz@de.adit-jv.com ADIT 2014
  *
  * \file CAmDltWrapper.cpp
  * For further information see http://www.genivi.org/.
@@ -108,19 +109,23 @@ void CAmDltWrapper::registerContext(DltContext& handle, const char *contextid, c
 #endif
 }
 
-void CAmDltWrapper::init(DltLogLevelType loglevel, DltContext* context)
+bool CAmDltWrapper::init(DltLogLevelType loglevel, DltContext* context)
 {
     (void) loglevel;
     pthread_mutex_lock(&mMutex);
     if (!context)
         context = &mDltContext;
 #ifdef WITH_DLT
-    dlt_user_log_write_start(context, &mDltContextData, loglevel);
+    if (dlt_user_log_write_start(context, &mDltContextData, loglevel) <= 0)
+    {
+    	pthread_mutex_unlock(&mMutex);
+    	return false;
+    }
 #else
     if(mEnableNoDLTDebug)
         std::cout << "\e[0;34m[" << context->contextID << "]\e[0;30m\t";
 #endif
-
+    return true;
 }
 
 void CAmDltWrapper::send()

@@ -2,6 +2,7 @@
  *  Copyright (C) 2012, BMW AG
  *
  *  \author Christian Mueller, christian.ei.mueller@bmw.de BMW 2011,2012
+ *          Jens Lorenz, jlorenz@de.adit-jv.com ADIT 2014
  *
  *  \copyright
  *  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -95,7 +96,7 @@ public:
     void registerContext(DltContext& handle, const char *contextid, const char * description);
     void unregisterContext(DltContext& handle);
 
-    void init(DltLogLevelType loglevel, DltContext* context = NULL);
+    bool init(DltLogLevelType loglevel, DltContext* context = NULL);
     void deinit();
     void send();
     void append(const int8_t value);
@@ -143,7 +144,8 @@ inline CAmDltWrapper* getWrapper()
 template<typename T> void logInfo(T value)
 {
     CAmDltWrapper* inst(getWrapper());
-    inst->init(DLT_LOG_INFO);
+    if (!inst->init(DLT_LOG_INFO))
+        return;
     inst->append(value);
     inst->send();
 }
@@ -157,7 +159,8 @@ template<typename T, typename T1> void logInfo(T value, T1 value1)
 {
     CAmDltWrapper* inst(getWrapper());
 
-    inst->init(DLT_LOG_INFO);
+    if (!inst->init(DLT_LOG_INFO))
+        return;
     inst->append(value);
     inst->append(value1);
     inst->send();
@@ -174,7 +177,8 @@ template<typename T, typename T1, typename T2> void logInfo(T value, T1 value1, 
 {
     CAmDltWrapper* inst(getWrapper());
 
-    inst->init(DLT_LOG_INFO);
+    if (!inst->init(DLT_LOG_INFO))
+        return;
     inst->append(value);
     inst->append(value1);
     inst->append(value2);
@@ -193,7 +197,8 @@ template<typename T, typename T1, typename T2, typename T3> void logInfo(T value
 {
     CAmDltWrapper* inst(getWrapper());
 
-    inst->init(DLT_LOG_INFO);
+    if (!inst->init(DLT_LOG_INFO))
+        return;
     inst->append(value);
     inst->append(value1);
     inst->append(value2);
@@ -214,7 +219,8 @@ template<typename T, typename T1, typename T2, typename T3, typename T4> void lo
 {
     CAmDltWrapper* inst(getWrapper());
 
-    inst->init(DLT_LOG_INFO);
+    if (!inst->init(DLT_LOG_INFO))
+        return;
     inst->append(value);
     inst->append(value1);
     inst->append(value2);
@@ -237,7 +243,8 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
 {
     CAmDltWrapper* inst(getWrapper());
 
-    inst->init(DLT_LOG_INFO);
+    if (!inst->init(DLT_LOG_INFO))
+        return;
     inst->append(value);
     inst->append(value1);
     inst->append(value2);
@@ -262,7 +269,8 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
 {
     CAmDltWrapper* inst(getWrapper());
 
-    inst->init(DLT_LOG_INFO);
+    if (!inst->init(DLT_LOG_INFO))
+        return;
     inst->append(value);
     inst->append(value1);
     inst->append(value2);
@@ -289,7 +297,8 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
 {
     CAmDltWrapper* inst(getWrapper());
 
-    inst->init(DLT_LOG_INFO);
+    if (!inst->init(DLT_LOG_INFO))
+        return;
     inst->append(value);
     inst->append(value1);
     inst->append(value2);
@@ -318,7 +327,8 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
 {
     CAmDltWrapper* inst(getWrapper());
 
-    inst->init(DLT_LOG_INFO);
+    if (!inst->init(DLT_LOG_INFO))
+        return;
     inst->append(value);
     inst->append(value1);
     inst->append(value2);
@@ -349,7 +359,8 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
 {
     CAmDltWrapper* inst(getWrapper());
 
-    inst->init(DLT_LOG_INFO);
+    if (!inst->init(DLT_LOG_INFO))
+        return;
     inst->append(value);
     inst->append(value1);
     inst->append(value2);
@@ -382,7 +393,8 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
 {
     CAmDltWrapper* inst(getWrapper());
 
-    inst->init(DLT_LOG_INFO);
+    if (!inst->init(DLT_LOG_INFO))
+        return;
     inst->append(value);
     inst->append(value1);
     inst->append(value2);
@@ -406,7 +418,8 @@ template<typename T> void logError(T value)
 {
     CAmDltWrapper* inst(getWrapper());
 
-    inst->init(DLT_LOG_ERROR);
+    if (!inst->init(DLT_LOG_ERROR))
+        return;
     inst->append(value);
     inst->send();
 
@@ -421,7 +434,8 @@ template<typename T, typename T1> void logError(T value, T1 value1)
 {
     CAmDltWrapper* inst(getWrapper());
 
-    inst->init(DLT_LOG_ERROR);
+    if (!inst->init(DLT_LOG_ERROR))
+        return;
     inst->append(value);
     inst->append(value1);
     inst->send();
@@ -438,7 +452,8 @@ template<typename T, typename T1, typename T2> void logError(T value, T1 value1,
 {
     CAmDltWrapper* inst(getWrapper());
 
-    inst->init(DLT_LOG_ERROR);
+    if (!inst->init(DLT_LOG_ERROR))
+        return;
     inst->append(value);
     inst->append(value1);
     inst->append(value2);
@@ -457,7 +472,8 @@ template<typename T, typename T1, typename T2, typename T3> void logError(T valu
 {
     CAmDltWrapper* inst(getWrapper());
 
-    inst->init(DLT_LOG_ERROR);
+    if (!inst->init(DLT_LOG_ERROR))
+        return;
     inst->append(value);
     inst->append(value1);
     inst->append(value2);
@@ -478,7 +494,8 @@ template<typename T, typename T1, typename T2, typename T3, typename T4> void lo
 {
     CAmDltWrapper* inst(getWrapper());
 
-    inst->init(DLT_LOG_ERROR);
+    if (!inst->init(DLT_LOG_ERROR))
+        return;
     inst->append(value);
     inst->append(value1);
     inst->append(value2);
@@ -501,7 +518,8 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
 {
     CAmDltWrapper* inst(getWrapper());
 
-    inst->init(DLT_LOG_ERROR);
+    if (!inst->init(DLT_LOG_ERROR))
+        return;
     inst->append(value);
     inst->append(value1);
     inst->append(value2);
@@ -526,7 +544,8 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
 {
     CAmDltWrapper* inst(getWrapper());
 
-    inst->init(DLT_LOG_ERROR);
+    if (!inst->init(DLT_LOG_ERROR))
+        return;
     inst->append(value);
     inst->append(value1);
     inst->append(value2);
@@ -553,7 +572,8 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
 {
     CAmDltWrapper* inst(getWrapper());
 
-    inst->init(DLT_LOG_ERROR);
+    if (!inst->init(DLT_LOG_ERROR))
+        return;
     inst->append(value);
     inst->append(value1);
     inst->append(value2);
@@ -582,7 +602,8 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
 {
     CAmDltWrapper* inst(getWrapper());
 
-    inst->init(DLT_LOG_ERROR);
+    if (!inst->init(DLT_LOG_ERROR))
+        return;
     inst->append(value);
     inst->append(value1);
     inst->append(value2);
@@ -613,7 +634,8 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
 {
     CAmDltWrapper* inst(getWrapper());
 
-    inst->init(DLT_LOG_ERROR);
+    if (!inst->init(DLT_LOG_ERROR))
+        return;
     inst->append(value);
     inst->append(value1);
     inst->append(value2);
@@ -646,7 +668,8 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
 {
     CAmDltWrapper* inst(getWrapper());
 
-    inst->init(DLT_LOG_ERROR);
+    if (!inst->init(DLT_LOG_ERROR))
+        return;
     inst->append(value);
     inst->append(value1);
     inst->append(value2);
@@ -672,7 +695,8 @@ template<typename T> void log(DltContext* const context, DltLogLevelType logleve
 {
     CAmDltWrapper* inst(getWrapper());
 
-    inst->init(loglevel, context);
+    if (!inst->init(loglevel, context))
+        return;
     inst->append(value);
     inst->send();
 
@@ -689,7 +713,8 @@ template<typename T, typename T1> void log(DltContext* const context, DltLogLeve
 {
     CAmDltWrapper* inst(getWrapper());
 
-    inst->init(loglevel, context);
+    if (!inst->init(loglevel, context))
+        return;
     inst->append(value);
     inst->append(value1);
     inst->send();
@@ -708,7 +733,8 @@ template<typename T, typename T1, typename T2> void log(DltContext* const contex
 {
     CAmDltWrapper* inst(getWrapper());
 
-    inst->init(loglevel, context);
+    if (!inst->init(loglevel, context))
+        return;
     inst->append(value);
     inst->append(value1);
     inst->append(value2);
@@ -729,7 +755,8 @@ template<typename T, typename T1, typename T2, typename T3> void log(DltContext*
 {
     CAmDltWrapper* inst(getWrapper());
 
-    inst->init(loglevel, context);
+    if (!inst->init(loglevel, context))
+        return;
     inst->append(value);
     inst->append(value1);
     inst->append(value2);
@@ -752,7 +779,8 @@ template<typename T, typename T1, typename T2, typename T3, typename T4> void lo
 {
     CAmDltWrapper* inst(getWrapper());
 
-    inst->init(loglevel, context);
+    if (!inst->init(loglevel, context))
+        return;
     inst->append(value);
     inst->append(value1);
     inst->append(value2);
@@ -777,7 +805,8 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
 {
     CAmDltWrapper* inst(getWrapper());
 
-    inst->init(loglevel, context);
+    if (!inst->init(loglevel, context))
+        return;
     inst->append(value);
     inst->append(value1);
     inst->append(value2);
@@ -804,7 +833,8 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
 {
     CAmDltWrapper* inst(getWrapper());
 
-    inst->init(loglevel, context);
+    if (!inst->init(loglevel, context))
+        return;
     inst->append(value);
     inst->append(value1);
     inst->append(value2);
@@ -833,7 +863,8 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
 {
     CAmDltWrapper* inst(getWrapper());
 
-    inst->init(loglevel, context);
+    if (!inst->init(loglevel, context))
+        return;
     inst->append(value);
     inst->append(value1);
     inst->append(value2);
@@ -864,7 +895,8 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
 {
     CAmDltWrapper* inst(getWrapper());
 
-    inst->init(loglevel, context);
+    if (!inst->init(loglevel, context))
+        return;
     inst->append(value);
     inst->append(value1);
     inst->append(value2);
