@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="windows-1252"?>
+<RefData version="1.0" exporter="EA.25">
+	<DataSet name="C++_Code_Template" table="t_template" filter="TemplateType='#TemplateType#' and TemplateName='#TemplateName#' and Style='#Style#'" stoplist=";TemplateID;">
+		<DataRow>
+			<Column name="TemplateID" value="{D4AF302D-5FE1-4495-9514-0A42B22246BD}"/>
+			<Column name="TemplateType" value="C++_Code_Template"/>
+			<Column name="TemplateName" value="File Impl"/>
+		</DataRow>
+		<DataRow>
+			<Column name="TemplateID" value="{9132549E-3DB8-4f57-A4CE-6E058F4BFEF6}"/>
+			<Column name="TemplateType" value="C++_Code_Template"/>
+			<Column name="TemplateName" value="Class"/>
+			<Column name="Template" value="%list=&quot;Attribute&quot; @separator=&quot;\n&quot; @indent=&quot;&quot; classScope==&quot;Public&quot; and classStereotype == &quot;typedef&quot; and attStereotype==&quot;define&quot;%&#xA;%ClassNotes%&#xA;%ClassDeclaration%&#xA;%if classStereotype == &quot;typedef&quot;%&#xA;%list=&quot;Attribute&quot; @separator=&quot;\n&quot; @indent=&quot;&quot; classScope==&quot;Public&quot; and attConst==&quot;T&quot; and attStatic==&quot;T&quot; and attInitial != &quot;&quot;%&#xA;%endTemplate%&#xA;%ClassBody%"/>
+		</DataRow>
+		<DataRow>
+			<Column name="TemplateID" value="{126136FA-3C08-43f1-A9CF-8FF9F79220AA}"/>
+			<Column name="TemplateType" value="C++_Code_Template"/>
+			<Column name="TemplateName" value="Import Section"/>
+			<Column name="Template" value="$COMMENT=&quot;WARNING: THIS IS AN ADVANCED TEMPLATE&quot;&#xA;$COMMENT=&quot;DO NOT MODIFY UNLESS YOU ARE AN&quot;&#xA;$COMMENT=&quot;ADVANCED USER!&quot;&#xA;%fileImports%&#xA;%if classTag:&quot;versionName&quot;!=&quot;&quot;%&#xA;#define %classTag:&quot;versionName&quot; ? value% %classTag:&quot;version&quot; ?  value% "/>
+		</DataRow>
+		<DataRow>
+			<Column name="TemplateID" value="{16BF5D4D-A658-4823-ADBA-1BC01F5A94A0}"/>
+			<Column name="TemplateType" value="C++_Code_Template"/>
+			<Column name="TemplateName" value="Class Body"/>
+			<Column name="Template" value="%if classIsInstantiated==&quot;T&quot;%&#xA;%endTemplate%&#xA;&#xA;$pubFeatures = %list=&quot;InnerClass&quot; @separator=&quot;\n\n&quot; @indent=&quot;\t&quot; classScope==&quot;Public&quot; or classScope==&quot;Package&quot;% + &quot;\n\n&quot;&#xA;$protFeatures = %list=&quot;InnerClass&quot; @separator=&quot;\n\n&quot; @indent=&quot;\t&quot; classScope==&quot;Protected&quot;% + &quot;\n\n&quot;&#xA;$privFeatures = %list=&quot;InnerClass&quot; @separator=&quot;\n\n&quot; @indent=&quot;\t&quot; classScope==&quot;Private&quot;% + &quot;\n\n&quot;&#xA;$templateArgs=%list=&quot;ClassParameter&quot; @separator=&quot;, &quot;%&#xA;&#xA;&#xA;%if classStereotype != &quot;struct&quot; and classStereotype != &quot;union&quot;%&#xA;&#xA;%if genOptGenConstructor == &quot;T&quot; and classHasConstructor != &quot;T&quot;%&#xA;$cons = &quot;\n\t&quot; + %genOptGenConstructorInline == &quot;T&quot;?&quot;inline &quot;:&quot;&quot;%&#xA;$cons += %className%+&quot;()&quot;&#xA;%if genOptGenConstructorInline == &quot;T&quot; or elemType == &quot;Interface&quot; or $templateArgs!=&quot;&quot;%&#xA;$cons += &quot; {\n\n\t}\n&quot;&#xA;%else%&#xA;$cons += &quot;;&quot;&#xA;%endIf%&#xA;%if genOptDefaultConstructorScope == &quot;Public&quot; or genOptDefaultConstructorScope==&quot;Package&quot;%&#xA;$pubFeatures += $cons&#xA;%elseIf genOptDefaultConstructorScope == &quot;Protected&quot;%&#xA;$protFeatures += $cons&#xA;%else%&#xA;$privFeatures += $cons&#xA;%endIf%&#xA;%endIf%&#xA;&#xA;%if genOptGenDestructor == &quot;T&quot; and classHasDestructor != &quot;T&quot;%&#xA;$cons = &quot;\n\t&quot;&#xA;%if genOptGenDestructorVirtual==&quot;T&quot; or elemType == &quot;Interface&quot; or classStereotype == &quot;interface&quot;%&#xA;$cons += &quot;virtual &quot;&#xA;%endIf%&#xA;$cons += %genOptGenDestructorInline == &quot;T&quot;?&quot;inline &quot;:&quot;&quot;%&#xA;$cons += &quot;~&quot;+%className%+&quot;()&quot;&#xA;%if genOptGenDestructorInline == &quot;T&quot; or elemType == &quot;Interface&quot; or $templateArgs!=&quot;&quot;%&#xA;$cons += &quot; {\n\n\t}\n&quot;&#xA;%else%&#xA;$cons += &quot;;&quot;&#xA;%endIf%&#xA;%if genOptDefaultDestructorScope == &quot;Public&quot; or genOptDefaultDestructorScope==&quot;Package&quot;%&#xA;$pubFeatures += $cons&#xA;%elseIf genOptDefaultDestructorScope == &quot;Protected&quot;%&#xA;$protFeatures += $cons&#xA;%else%&#xA;$privFeatures += $cons&#xA;%endIf%&#xA;%endIf%&#xA;&#xA;&#xA;%if genOptGenCopyConstructor == &quot;T&quot; and classHasCopyConstructor != &quot;T&quot;%&#xA;$cons = &quot;\n\t&quot; + %genOptGenCopyConstructorInline == &quot;T&quot;?&quot;inline &quot;:&quot;&quot;%&#xA;$cons += %className%+&quot;(const &quot;+%className%+&quot;&amp; the&quot;+%className%+&quot;)&quot;&#xA;%if genOptGenCopyConstructorInline == &quot;T&quot; or elemType == &quot;Interface&quot; or $templateArgs!=&quot;&quot;%&#xA;$cons += &quot; {\n\n\t}\n&quot;&#xA;%else%&#xA;$cons += &quot;;&quot;&#xA;%endIf%&#xA;%if genOptDefaultCopyConstructorScope == &quot;Public&quot; or genOptDefaultCopyConstructorScope==&quot;Package&quot;%&#xA;$pubFeatures += $cons&#xA;%elseIf genOptDefaultCopyConstructorScope  == &quot;Protected&quot;%&#xA;$protFeatures += $cons&#xA;%else%&#xA;$privFeatures += $cons&#xA;%endIf%&#xA;%endIf%&#xA;&#xA;%endIf%&#xA;&#xA;%PI=&quot;\n\n&quot;%&#xA;{&#xA;$pubFeatures = %TRIM($pubFeatures, &quot;\n&quot;)%&#xA;$pubFeatures += &quot;\n&quot; + %list=&quot;Attribute&quot; @separator=&quot;\n&quot; @indent=&quot;\t&quot; attScope==&quot;Public&quot; or linkAttAccess==&quot;Public&quot; or  attScope==&quot;Package&quot; or linkAttAccess==&quot;Package&quot;%&#xA;$pubFeatures = %TRIM($pubFeatures, &quot;\n&quot;)%&#xA;$pubFeatures += &quot;\n&quot; + %list=&quot;Operation&quot; @separator=&quot;\n&quot; @indent=&quot;\t&quot; opScope==&quot;Public&quot; or opScope==&quot;Package&quot;%&#xA;$pubFeatures = %TRIM($pubFeatures, &quot;\n&quot;)%&#xA;%if $pubFeatures != &quot;&quot;%&#xA;public:\n$pubFeatures&#xA;%endIf%&#xA;&#xA;$protFeatures = %TRIM($protFeatures, &quot;\n&quot;)%&#xA;$protFeatures += &quot;\n&quot; + %list=&quot;Attribute&quot; @separator=&quot;\n&quot; @indent=&quot;\t&quot; attScope==&quot;Protected&quot; or linkAttAccess==&quot;Protected&quot;%&#xA;$protFeatures = %TRIM($protFeatures, &quot;\n&quot;)%&#xA;$protFeatures += &quot;\n&quot; + %list=&quot;Operation&quot; @separator=&quot;\n&quot; @indent=&quot;\t&quot; opScope==&quot;Protected&quot;%&#xA;$protFeatures = %TRIM($protFeatures, &quot;\n&quot;)%&#xA;%if $protFeatures != &quot;&quot;%&#xA;protected:\n$protFeatures&#xA;%endIf%&#xA;&#xA;$privFeatures = %TRIM($privFeatures, &quot;\n&quot;)%&#xA;$privFeatures += &quot;\n&quot; + %list=&quot;Attribute&quot; @separator=&quot;\n&quot; @indent=&quot;\t&quot; attScope==&quot;Private&quot; or linkAttAccess==&quot;Private&quot;%&#xA;$privFeatures = %TRIM($privFeatures, &quot;\n&quot;)%&#xA;$privFeatures += &quot;\n&quot; + %list=&quot;Operation&quot; @separator=&quot;\n&quot; @indent=&quot;\t&quot; opScope==&quot;Private&quot;%&#xA;$privFeatures = %TRIM($privFeatures, &quot;\n&quot;)%&#xA;%if $privFeatures != &quot;&quot;%&#xA;private:\n$privFeatures&#xA;%endIf%&#xA;%PI=&quot;&quot;%&#xA;}&#xA;%if classTag:&quot;anonymous&quot; == &quot;true&quot;%&#xA; %className%&#xA;%classTag:&quot;typeSynonyms&quot;? &quot;,&quot;%&#xA;%endIf%&#xA;%classTag:&quot;typeSynonyms&quot;==&quot;&quot; ? &quot;&quot; : &quot; &quot; value%&#xA;;"/>
+		</DataRow>
+		<DataRow>
+			<Column name="TemplateID" value="{33CF5224-DA22-4c3e-B3EE-22C196E5A3BA}"/>
+			<Column name="TemplateType" value="C++_Code_Template"/>
+			<Column name="TemplateName" value="Attribute Notes"/>
+			<Column name="Template" value="%if genOptGenComments != &quot;T&quot;%&#xA;%endTemplate%&#xA;&#xA;%PI=&quot;&quot;%&#xA;$wrapLen = %genOptWrapComment%&#xA;$style = %genOptCPPCommentStyle%&#xA;&#xA;%if $style == &quot;XML.NET&quot;%&#xA;%XML_COMMENT($wrapLen)%&#xA;%elseIf $style == &quot;JavaDoc&quot;%&#xA;%JAVADOC_COMMENT($wrapLen)%&#xA;%elseIf classStereotype == &quot;typedef&quot;%&#xA;%if attNotes != &quot;&quot;%&#xA;$line = &quot;/** &quot; + %attNotes% + &quot; */&quot;&#xA;%WRAP_LINES($line, $wrapLen, &quot;&quot;)%&#xA;%endIf%&#xA;%else%&#xA;%CSTYLE_COMMENT($wrapLen)%&#xA;%endIf%"/>
+		</DataRow>
+		<DataRow>
+			<Column name="TemplateID" value="{508D1A79-7C13-4ea3-AA6C-592F51E6FBE2}"/>
+			<Column name="TemplateType" value="C++_Code_Template"/>
+			<Column name="TemplateName" value="Attribute"/>
+			<Column name="Template" value="%if classStereotype == &quot;typedef&quot; and attStereotype == &quot;define&quot;%&#xA;$wrapLen = %genOptWrapComment%&#xA;$line = %AttributeDeclaration%&#xA;%if attNotes != &quot;&quot;%&#xA;$line += &quot;\t// &quot; + %attNotes%&#xA;%endIf%&#xA;%WRAP_LINES($line, $wrapLen, &quot;&quot;)%&#xA;%else%&#xA;%AttributeNotes%&#xA;%AttributeDeclaration%&#xA;%endTemplate%"/>
+		</DataRow>
+		<DataRow>
+			<Column name="TemplateID" value="{A715E4AD-F3B8-416b-9A9A-14187198C2CC}"/>
+			<Column name="TemplateType" value="C++_Code_Template"/>
+			<Column name="TemplateName" value="Operation"/>
+			<Column name="Template" value="%OperationNotes%&#xA;%PI=&quot;&quot;%&#xA;%OperationDeclaration%&#xA;%if opPure==&quot;T&quot;%&#xA;%endTemplate%&#xA;&#xA;$classParams = %list=&quot;ClassParameter&quot; @separator=&quot;, &quot;%&#xA;$bodyLoc = %opTag:&quot;bodyLocation&quot;%&#xA;%if opTag:&quot;inline&quot; == &quot;true&quot; or $bodyLoc == &quot;header&quot; or $bodyLoc == &quot;classDec&quot; or $classParams!=&quot;&quot;%&#xA;%OperationBody%&#xA;%endIf%"/>
+		</DataRow>
+		<DataRow>
+			<Column name="TemplateID" value="{3DBBFDE6-71E8-4ac9-B42C-9231E97C614C}"/>
+			<Column name="TemplateType" value="C++_Code_Template"/>
+			<Column name="TemplateName" value="Operation Notes"/>
+			<Column name="Template" value="%if genOptGenComments != &quot;T&quot; or genOptCPPGenMethodNotesInHeader != &quot;T&quot;%&#xA;%endTemplate%&#xA;&#xA;%PI=&quot;&quot;%&#xA;$wrapLen = %genOptWrapComment%&#xA;$style = %genOptCPPCommentStyle%&#xA;&#xA;%if $style == &quot;XML.NET&quot;%&#xA;%XML_COMMENT($wrapLen)%&#xA;%elseIf $style == &quot;JavaDoc&quot;%&#xA;%JAVADOC_COMMENT($wrapLen)%&#xA;%else%&#xA;%CSTYLE_COMMENT($wrapLen)%&#xA;%endIf%"/>
+		</DataRow>
+		<DataRow>
+			<Column name="TemplateID" value="{A94EB6AE-865B-43a3-9658-300711A61B88}"/>
+			<Column name="TemplateType" value="C++_Code_Template"/>
+			<Column name="TemplateName" value="File"/>
+			<Column name="Template" value="%synchNewClassNotesSpace=&quot;\n&quot;%&#xA;%synchNewOperationNotesSpace=&quot;\n&quot;%&#xA;%synchNewOperationBodySpace=&quot;\n&quot;%&#xA;%synchNewAttributeNotesSpace=&quot;\n&quot;%&#xA;&#xA;/**&#xA; * Copyright (C) 2012 - 2014, BMW AG&#xA; *&#xA; * This file is part of GENIVI Project AudioManager.&#xA; *&#xA; * Contributions are licensed to the GENIVI Alliance under one or more&#xA; * Contribution License Agreements.&#xA; *&#xA; * \copyright&#xA; * This Source Code Form is subject to the terms of the&#xA; * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with&#xA; * this file, You can obtain one at http://mozilla.org/MPL/2.0/.&#xA; *&#xA; *&#xA; * \author Christian Linke, christian.linke@bmw.de BMW 2011 - 2014&#xA; *&#xA; * \file&#xA; * For further information see http://projects.genivi.org/audio-manager&#xA; *&#xA; * THIS CODE HAS BEEN GENERATED BY ENTERPRISE ARCHITECT GENIVI MODEL. &#xA; * PLEASE CHANGE ONLY IN ENTERPRISE ARCHITECT AND GENERATE AGAIN.&#xA; */&#xA;&#xA;$COMMENT=&quot;WARNING: DO NOT MODIFY THIS TEMPLATE BELOW THIS POINT&quot;&#xA;$guid = &quot;EA_&quot; + %TRIM(eaGUID,&quot;{}&quot;)%&#xA;$guid = %REPLACE($guid,&quot;-&quot;,&quot;_&quot;)%&#xA;$guid += &quot;__INCLUDED_&quot;&#xA;#if !defined($guid)&#xA;#define $guid\n&#xA;%ImportSection%&#xA;namespace am {\n&#xA;%list=&quot;Namespace&quot; @separator=&quot;\n\n&quot; @indent=&quot;&quot;%&#xA;}&#xA;#endif // !defined($guid)\n"/>
+		</DataRow>
+		<DataRow>
+			<Column name="TemplateID" value="{0BA5ABF5-6E2B-4884-831A-79061BA7F559}"/>
+			<Column name="TemplateType" value="C++_Code_Template"/>
+			<Column name="TemplateName" value="Parameter"/>
+			<Column name="Template" value="%PI=&quot; &quot;%&#xA;%paramFixed==&quot;T&quot; ? &quot;const&quot; : &quot;&quot;%&#xA;%paramIsEnum==&quot;T&quot; ? &quot;enum&quot; : &quot;&quot; %&#xA;%if paramKind ==&quot;out&quot; or paramKind==&quot;inout&quot; or paramTag:&quot;byRef&quot;==&quot;true&quot;%&#xA;%PI=&quot;&quot;%&#xA;%endIf%&#xA;%RESOLVE_QUALIFIED_TYPE(&quot;::&quot;, &quot;int&quot;)%&#xA;%if paramKind ==&quot;out&quot;%&#xA;%PI=&quot; &quot;%&#xA;&amp;&#xA;%endIf%&#xA;%PI=&quot;&quot;%&#xA;%if paramKind ==&quot;inout&quot;%&#xA;%PI=&quot; &quot;%&#xA;*&#xA;%endIf%&#xA;%if paramKind ==&quot;in&quot; and paramTag:&quot;byRef&quot;==&quot;true&quot;%&#xA;%PI=&quot; &quot;%&#xA;&amp;&#xA;%endIf%&#xA;%if paramType != &quot;void&quot;%&#xA;%paramName%&#xA;%endIf%&#xA;%PI=&quot;&quot;%&#xA;%if paramDefault != &quot;&quot; and paramDefault != &quot;&lt;none&gt;&quot;%&#xA; = %paramDefault%&#xA;%endIf%"/>
+		</DataRow>
+		<DataRow>
+			<Column name="TemplateID" value="{A8583536-013F-4e3d-8EFF-38D2B36A8C66}"/>
+			<Column name="TemplateType" value="C++_Code_Template"/>
+			<Column name="TemplateName" value="Operation Declaration Impl"/>
+			<Column name="Template" value="$templateArgs=%list=&quot;ClassParameter&quot; @separator=&quot;, &quot;%&#xA;%if $templateArgs != &quot;&quot;%&#xA;$templateArgs=&quot;&lt;&quot; + $templateArgs + &quot;&gt;&quot;&#xA;template$templateArgs&#xA;%endIf%&#xA;%PI=&quot; &quot;%&#xA;%opConst==&quot;T&quot; ? &quot;const&quot; : &quot;&quot;%&#xA;%RESOLVE_QUALIFIED_TYPE(&quot;::&quot;)%&#xA;%opTag:&quot;callback&quot;==&quot;true&quot; ? &quot;CALLBACK&quot; : &quot;&quot;%&#xA;%opImplMacros%&#xA;%PI=&quot;&quot;%&#xA;%classQualName%::&#xA;%opName%(%list=&quot;ParameterImpl&quot; @separator=&quot;, &quot;%)&#xA;%if opIsQuery==&quot;T&quot; or opStereotype==&quot;const&quot;%&#xA; const &#xA;%endIf%&#xA;%opTag:&quot;throws&quot;==&quot;&quot; ? &quot;&quot; : &quot; throw &quot; value%&#xA;%opTag:&quot;initializer&quot; == &quot;&quot;? &quot;&quot; : &quot;\n    : &quot; value%"/>
+		</DataRow>
+		<DataRow>
+			<Column name="TemplateID" value="{39F77F91-1C8B-48b0-9B39-1A30CCD4DEC4}"/>
+			<Column name="TemplateType" value="C++_Code_Template"/>
+			<Column name="TemplateName" value="Namespace Declaration"/>
+			<Column name="Template" value="%if packagePath == &quot;&quot; or genOptCPPGenNamespace != &quot;T&quot;%&#xA;%endTemplate%&#xA;&#xA;namespace %packageName%"/>
+		</DataRow>
+		<DataRow>
+			<Column name="TemplateID" value="{56DD0500-1B96-4f75-8440-6DA68E5E8340}"/>
+			<Column name="TemplateType" value="C++_Code_Template"/>
+			<Column name="TemplateName" value="Attribute Declaration"/>
+			<Column name="Template" value="%if classStereotype == &quot;enumeration&quot;%&#xA;%PI=&quot; = &quot;%&#xA;%attName%&#xA;%attInitial ? value%&#xA;%endTemplate%&#xA;&#xA;%if classStereotype == &quot;typedef&quot; and attStereotype == &quot;define&quot;%&#xA;%PI=&quot; &quot;%&#xA;#define %attName%&#xA;%attInitial ? value%&#xA;%endTemplate%&#xA;&#xA;%PI=&quot; &quot;%&#xA;%attStatic==&quot;T&quot; ? &quot;static&quot; : &quot;&quot;%&#xA;%attConst==&quot;T&quot; ? &quot;const&quot; : &quot;&quot;%&#xA;%attVolatile==&quot;T&quot; ? &quot;volatile&quot; : &quot;&quot;%&#xA;%attTag:&quot;mutable&quot;==&quot;true&quot; ? &quot;mutable&quot; : &quot;&quot;%&#xA;%attStereotype==&quot;struct&quot; ? &quot;struct&quot; : &quot;&quot;%&#xA;$ptr = %attContainment==&quot;By Reference&quot; ? &quot;*&quot; : &quot;&quot;%&#xA;%RESOLVE_QUALIFIED_TYPE(&quot;::&quot;, &quot;int&quot;)%$ptr&#xA;%PI=&quot;&quot;%&#xA;%attName%&#xA;%if attCollection == &quot;T&quot; and attContainerType != &quot;&quot;%&#xA;%attContainerType%&#xA;%endIf%&#xA;%attTag:&quot;bitfield&quot; ? &quot;:&quot; value%&#xA;%if attStatic==&quot;T&quot; and attConst==&quot;T&quot; and attInitial != &quot;&quot;%&#xA; = %attInitial%&#xA;%endIf%&#xA;;"/>
+		</DataRow>
+		<DataRow>
+			<Column name="TemplateID" value="{B9BF98C9-C0B9-4f1e-986D-710ED8425EF9}"/>
+			<Column name="TemplateType" value="C++_Code_Template"/>
+			<Column name="TemplateName" value="Namespace Body"/>
+			<Column name="Template" value="%if packagePath == &quot;&quot; or genOptCPPGenNamespace != &quot;T&quot;%&#xA;%PI=&quot;\n\n&quot;%&#xA;%list=&quot;Namespace&quot; @separator=&quot;\n\n&quot; @indent=&quot;&quot;%&#xA;%list=&quot;Class&quot; @separator=&quot;\n\n&quot; @indent=&quot;&quot;%&#xA;%endTemplate%&#xA;{&#xA;%PI=&quot;\n\n&quot;%&#xA;%list=&quot;Namespace&quot; @separator=&quot;\n\n&quot; @indent=&quot;&quot;%&#xA;%list=&quot;Class&quot; @separator=&quot;\n\n&quot; @indent=&quot;&quot;%&#xA;}"/>
+		</DataRow>
+		<DataRow>
+			<Column name="TemplateID" value="{7E7AACEC-3B6A-42fa-B9BD-E2DC251949C2}"/>
+			<Column name="TemplateType" value="C++_Code_Template"/>
+			<Column name="TemplateName" value="Namespace Body Impl"/>
+			<Column name="Template" value="$COMMENT=&quot;WARNING: THIS IS AN ADVANCED TEMPLATE&quot;&#xA;$COMMENT=&quot;DO NOT MODIFY UNLESS YOU ARE AN&quot;&#xA;$COMMENT=&quot;ADVANCED USER!&quot;&#xA;%list=&quot;NamespaceImpl&quot; @separator=&quot;\n\n\n&quot;%&#xA;%list=&quot;ClassImpl&quot; @separator=&quot;\n\n\n&quot;%"/>
+		</DataRow>
+		<DataRow>
+			<Column name="TemplateID" value="{72D98AD2-8DC9-407f-BB74-E8DBFFD76791}"/>
+			<Column name="TemplateType" value="C++_Code_Template"/>
+			<Column name="TemplateName" value="Namespace Impl"/>
+			<Column name="Template" value="$COMMENT=&quot;WARNING: THIS IS AN ADVANCED TEMPLATE&quot;&#xA;$COMMENT=&quot;DO NOT MODIFY UNLESS YOU ARE AN&quot;&#xA;$COMMENT=&quot;ADVANCED USER!&quot;&#xA;"/>
+		</DataRow>
+		<DataRow>
+			<Column name="TemplateID" value="{FB2A096A-5AEC-40c6-B787-A40D4294AE82}"/>
+			<Column name="TemplateType" value="C++_Code_Template"/>
+			<Column name="TemplateName" value="Operation Declaration"/>
+			<Column name="Template" value="%PI=&quot; &quot;%&#xA;%opTag:&quot;afx_msg&quot;==&quot;true&quot; ? &quot;afx_msg&quot; : &quot;&quot;%&#xA;%opTag:&quot;inline&quot;==&quot;true&quot; ? &quot;inline&quot; : &quot;&quot;%&#xA;%opTag:&quot;explicit&quot;==&quot;true&quot; ? &quot;explicit&quot; : &quot;&quot;%&#xA;%opStereotype==&quot;friend&quot; ? &quot;friend&quot; : &quot;&quot;%&#xA;%opAbstract==&quot;T&quot; ? &quot;virtual&quot; : &quot;&quot;%&#xA;%opStatic==&quot;T&quot; ? &quot;static&quot; : &quot;&quot;%&#xA;%opConst==&quot;T&quot; ? &quot;const&quot; : &quot;&quot;%&#xA;%RESOLVE_QUALIFIED_TYPE(&quot;::&quot;)%&#xA;%opTag:&quot;callback&quot;==&quot;true&quot; ? &quot;CALLBACK&quot; : &quot;&quot;%&#xA;%opMacros%&#xA;%PI=&quot;&quot;%&#xA;%opName%(%list=&quot;Parameter&quot; @separator=&quot;, &quot;%)&#xA;%if opIsQuery==&quot;T&quot; or opStereotype==&quot;const&quot;%&#xA; const&#xA;%endIf%&#xA;%opTag:&quot;volatile&quot;==&quot;true&quot; ? &quot; volatile&quot; : &quot;&quot;%&#xA;%opTag:&quot;throws&quot;==&quot;&quot; ? &quot;&quot; : &quot; throw &quot; value%&#xA;%if opTag:&quot;ObjectConst&quot;==&quot;true&quot;%&#xA; const&#xA;%endIf%&#xA;%if opPure==&quot;T&quot;%&#xA; =0;&#xA;%endTemplate%&#xA;&#xA;$classParams = %list=&quot;ClassParameter&quot; @separator=&quot;, &quot;%&#xA;%if opTag:&quot;inline&quot; != &quot;true&quot; and opTag:&quot;bodyLocation&quot; != &quot;classDec&quot; and $classParams==&quot;&quot;%&#xA;;&#xA;%elseIf opTag:&quot;initializer&quot; != &quot;&quot;%&#xA;\n    : %opTag:&quot;initializer&quot;%\n&#xA;%endIf%"/>
+		</DataRow>
+		<DataRow>
+			<Column name="TemplateID" value="{C56F7CAF-41B4-4c5e-ACA1-A9B0951F338F}"/>
+			<Column name="TemplateType" value="C++_Code_Template"/>
+			<Column name="TemplateName" value="Class Impl"/>
+			<Column name="Template" value="$COMMENT=&quot;WARNING: THIS IS AN ADVANCED TEMPLATE&quot;&#xA;$COMMENT=&quot;DO NOT MODIFY UNLESS YOU ARE AN&quot;&#xA;$COMMENT=&quot;ADVANCED USER!&quot;&#xA;%fileImports%&#xA;%if classTag:&quot;versionName&quot;!=&quot;&quot;%&#xA;#define %classTag:&quot;versionName&quot; ? value% %classTag:&quot;version&quot; ? &quot;value%&quot;"/>
+		</DataRow>
+	</DataSet>
+</RefData>
