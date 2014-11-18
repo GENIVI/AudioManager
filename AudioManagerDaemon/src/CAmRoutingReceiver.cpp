@@ -479,6 +479,16 @@ void CAmRoutingReceiver::hookSourceNotificationDataChange(const am_sourceID_t so
     mpControlSender->hookSourceNotificationDataChanged(sourceID,payload);
 }
 
+am_Error_e CAmRoutingReceiver::getDomainOfSink(const am_sinkID_t sinkID, am_domainID_t& domainID)
+{
+	return  mpDatabaseHandler->getDomainOfSink(sinkID,domainID);
+}
+
+am_Error_e CAmRoutingReceiver::getDomainOfSource(const am_sourceID_t sourceID, am_domainID_t& domainID)
+{
+	return  mpDatabaseHandler->getDomainOfSource(sourceID,domainID);
+}
+
 void am::CAmRoutingReceiver::waitOnRundown(bool rundown)
 {
     mWaitRundown = rundown;

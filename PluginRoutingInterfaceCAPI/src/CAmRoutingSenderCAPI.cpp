@@ -137,9 +137,30 @@ void CAmRoutingSenderCAPI::setRoutingRundown(const uint16_t handle)
 	mService->gotRundown(mLookupData.numberOfDomains(),handle);
 }
 
+void CAmRoutingSenderCAPI::checkSourceLookup(const am_sourceID_t id)
+{
+	am_domainID_t domainID;
+	am_Error_e result = mpIAmRoutingReceive->getDomainOfSource(id, domainID);
+	if(E_OK==result)
+		mLookupData.addSourceLookup(id, domainID);
+	else
+		logError("checkSinkLookup addSourceLookup error:", result);
+}
+
+void CAmRoutingSenderCAPI::checkSinkLookup(const am_sinkID_t id)
+{
+	am_domainID_t domainID;
+	am_Error_e result = mpIAmRoutingReceive->getDomainOfSink(id, domainID);
+	if(E_OK==result)
+		mLookupData.addSinkLookup(id, domainID);
+	else
+		logError("checkSinkLookup addSinkLookup error:", result);
+}
+
 am_Error_e CAmRoutingSenderCAPI::asyncAbort(const am_Handle_s handle)
 {
     log(&ctxCommandCAPI, DLT_LOG_INFO, "CAmRoutingSenderCAPI::asyncAbort called");
+
    	return mLookupData.asyncAbort(handle,[](const CommonAPI::CallStatus& callStatus){
 		log(&ctxCommandCAPI, DLT_LOG_INFO, __PRETTY_FUNCTION__, "Response with call status:", static_cast<int16_t>(callStatus));
 	});
@@ -148,6 +169,8 @@ am_Error_e CAmRoutingSenderCAPI::asyncAbort(const am_Handle_s handle)
 am_Error_e CAmRoutingSenderCAPI::asyncConnect(const am_Handle_s handle, const am_connectionID_t connectionID, const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_CustomConnectionFormat_t connectionFormat)
 {
     log(&ctxCommandCAPI, DLT_LOG_INFO, "CAmRoutingSenderCAPI::asyncConnect called");
+    checkSourceLookup(sourceID);
+    checkSinkLookup(sinkID);
    	return mLookupData.asyncConnect(handle,connectionID, sourceID, sinkID, connectionFormat, [&,handle,connectionID](const CommonAPI::CallStatus& callStatus){
 		log(&ctxCommandCAPI, DLT_LOG_INFO, __PRETTY_FUNCTION__, "Response with call status:", static_cast<int16_t>(callStatus));
 		if (callStatus != CommonAPI::CallStatus::SUCCESS)
@@ -176,6 +199,7 @@ am_Error_e CAmRoutingSenderCAPI::asyncDisconnect(const am_Handle_s handle, const
 am_Error_e CAmRoutingSenderCAPI::asyncSetSinkVolume(const am_Handle_s handle, const am_sinkID_t sinkID, const am_volume_t volume, const am_CustomRampType_t ramp, const am_time_t time)
 {
     log(&ctxCommandCAPI, DLT_LOG_INFO, "CAmRoutingSenderCAPI::asyncSetSinkVolume called");
+	checkSinkLookup(sinkID);
 	return mLookupData.asyncSetSinkVolume(handle,sinkID, volume, ramp, time, [&, handle, volume](const CommonAPI::CallStatus& callStatus){
 		log(&ctxCommandCAPI, DLT_LOG_INFO, __PRETTY_FUNCTION__, "Response with call status:", static_cast<int16_t>(callStatus));
 		if (callStatus != CommonAPI::CallStatus::SUCCESS)
@@ -190,6 +214,7 @@ am_Error_e CAmRoutingSenderCAPI::asyncSetSinkVolume(const am_Handle_s handle, co
 am_Error_e CAmRoutingSenderCAPI::asyncSetSourceVolume(const am_Handle_s handle, const am_sourceID_t sourceID, const am_volume_t volume, const am_CustomRampType_t ramp, const am_time_t time)
 {
     log(&ctxCommandCAPI, DLT_LOG_INFO, "CAmRoutingSenderCAPI::asyncSetSourceVolume called");
+	checkSourceLookup(sourceID);
 	return mLookupData.asyncSetSourceVolume(handle,sourceID, volume, ramp, time, [&, handle, volume](const CommonAPI::CallStatus& callStatus){
 		log(&ctxCommandCAPI, DLT_LOG_INFO, __PRETTY_FUNCTION__, "Response with call status:", static_cast<int16_t>(callStatus));
 		if (callStatus != CommonAPI::CallStatus::SUCCESS)
@@ -204,6 +229,7 @@ am_Error_e CAmRoutingSenderCAPI::asyncSetSourceVolume(const am_Handle_s handle, 
 am_Error_e CAmRoutingSenderCAPI::asyncSetSourceState(const am_Handle_s handle, const am_sourceID_t sourceID, const am_SourceState_e state)
 {
     log(&ctxCommandCAPI, DLT_LOG_INFO, "CAmRoutingSenderCAPI::asyncSetSourceState called");
+	checkSourceLookup(sourceID);
 	return mLookupData.asyncSetSourceState(handle,sourceID, state,[&, handle](const CommonAPI::CallStatus& callStatus){
 		log(&ctxCommandCAPI, DLT_LOG_INFO, __PRETTY_FUNCTION__, "Response with call status:", static_cast<int16_t>(callStatus));
 		if (callStatus != CommonAPI::CallStatus::SUCCESS)
@@ -218,6 +244,7 @@ am_Error_e CAmRoutingSenderCAPI::asyncSetSourceState(const am_Handle_s handle, c
 am_Error_e CAmRoutingSenderCAPI::asyncSetSinkSoundProperties(const am_Handle_s handle, const am_sinkID_t sinkID, const std::vector<am_SoundProperty_s>& listSoundProperties)
 {
     log(&ctxCommandCAPI, DLT_LOG_INFO, "CAmRoutingSenderCAPI::asyncSetSinkSoundProperties called");
+	checkSinkLookup(sinkID);
 	return mLookupData.asyncSetSinkSoundProperties(handle,sinkID, listSoundProperties, [&, handle](const CommonAPI::CallStatus& callStatus){
 		log(&ctxCommandCAPI, DLT_LOG_INFO, __PRETTY_FUNCTION__, "Response with call status:", static_cast<int16_t>(callStatus));
 		if (callStatus != CommonAPI::CallStatus::SUCCESS)
@@ -232,6 +259,7 @@ am_Error_e CAmRoutingSenderCAPI::asyncSetSinkSoundProperties(const am_Handle_s h
 am_Error_e CAmRoutingSenderCAPI::asyncSetSinkSoundProperty(const am_Handle_s handle, const am_sinkID_t sinkID, const am_SoundProperty_s& soundProperty)
 {
     log(&ctxCommandCAPI, DLT_LOG_INFO, "CAmRoutingSenderCAPI::asyncSetSinkSoundProperty called");
+	checkSinkLookup(sinkID);
 	return mLookupData.asyncSetSinkSoundProperty(handle, sinkID, soundProperty, [&, handle](const CommonAPI::CallStatus& callStatus){
 		log(&ctxCommandCAPI, DLT_LOG_INFO, __PRETTY_FUNCTION__, "Response with call status:", static_cast<int16_t>(callStatus));
 		if (callStatus != CommonAPI::CallStatus::SUCCESS)
@@ -246,6 +274,7 @@ am_Error_e CAmRoutingSenderCAPI::asyncSetSinkSoundProperty(const am_Handle_s han
 am_Error_e CAmRoutingSenderCAPI::asyncSetSourceSoundProperties(const am_Handle_s handle, const am_sourceID_t sourceID, const std::vector<am_SoundProperty_s>& listSoundProperties)
 {
     log(&ctxCommandCAPI, DLT_LOG_INFO, "CAmRoutingSenderCAPI::asyncSetSourceSoundProperties called");
+	checkSourceLookup(sourceID);
 	return mLookupData.asyncSetSourceSoundProperties(handle, sourceID, listSoundProperties, [&, handle](const CommonAPI::CallStatus& callStatus){
 		log(&ctxCommandCAPI, DLT_LOG_INFO, __PRETTY_FUNCTION__, "Response with call status:", static_cast<int16_t>(callStatus));
 		if (callStatus != CommonAPI::CallStatus::SUCCESS)
@@ -260,6 +289,7 @@ am_Error_e CAmRoutingSenderCAPI::asyncSetSourceSoundProperties(const am_Handle_s
 am_Error_e CAmRoutingSenderCAPI::asyncSetSourceSoundProperty(const am_Handle_s handle, const am_sourceID_t sourceID, const am_SoundProperty_s& soundProperty)
 {
     log(&ctxCommandCAPI, DLT_LOG_INFO, "CAmRoutingSenderCAPI::asyncSetSourceSoundProperty called");
+	checkSourceLookup(sourceID);
 	return mLookupData.asyncSetSourceSoundProperty(handle, sourceID, soundProperty, [&, handle](const CommonAPI::CallStatus& callStatus){
 		log(&ctxCommandCAPI, DLT_LOG_INFO, __PRETTY_FUNCTION__, "Response with call status:", static_cast<int16_t>(callStatus));
 		if (callStatus != CommonAPI::CallStatus::SUCCESS)
@@ -317,6 +347,7 @@ am_Error_e CAmRoutingSenderCAPI::asyncSetVolumes(const am_Handle_s handle, const
 am_Error_e CAmRoutingSenderCAPI::asyncSetSinkNotificationConfiguration(const am_Handle_s handle, const am_sinkID_t sinkID, const am_NotificationConfiguration_s& nc)
 {
 	log(&ctxCommandCAPI, DLT_LOG_INFO, "CAmRoutingSenderCAPI::asyncSetSinkNotificationConfiguration called");
+	checkSinkLookup(sinkID);
 	return mLookupData.asyncSetSinkNotificationConfiguration(handle, sinkID, nc, [&, handle](const CommonAPI::CallStatus& callStatus){
 		log(&ctxCommandCAPI, DLT_LOG_INFO, __PRETTY_FUNCTION__, "Response with call status:", static_cast<int16_t>(callStatus));
 		if (callStatus != CommonAPI::CallStatus::SUCCESS)
@@ -331,6 +362,7 @@ am_Error_e CAmRoutingSenderCAPI::asyncSetSinkNotificationConfiguration(const am_
 am_Error_e CAmRoutingSenderCAPI::asyncSetSourceNotificationConfiguration(const am_Handle_s handle, const am_sourceID_t sourceID, const am_NotificationConfiguration_s& nc)
 {
 	log(&ctxCommandCAPI, DLT_LOG_INFO, "CAmRoutingSenderCAPI::asyncSetSourceNotificationConfiguration called");
+	checkSourceLookup(sourceID);
 	return mLookupData.asyncSetSourceNotificationConfiguration(handle, sourceID, nc, [&, handle](const CommonAPI::CallStatus& callStatus){
 		log(&ctxCommandCAPI, DLT_LOG_INFO, __PRETTY_FUNCTION__, "Response with call status:", static_cast<int16_t>(callStatus));
 		if (callStatus != CommonAPI::CallStatus::SUCCESS)

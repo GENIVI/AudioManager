@@ -41,6 +41,8 @@ class CAmRoutingSenderCAPI: public IAmRoutingSend
     IAmRoutingReceive *mpIAmRoutingReceive; ///<  pointer to the routing receive interface
     std::shared_ptr<CAmRoutingService> mService; ///< shared pointer to the routing service implementation
 	CAmRoutingSenderCAPI();
+    void checkSourceLookup(const am_sourceID_t id);
+    void checkSinkLookup(const am_sinkID_t id);
 public:
     CAmRoutingSenderCAPI(CAmCommonAPIWrapper *aWrapper) ;
     virtual ~CAmRoutingSenderCAPI();

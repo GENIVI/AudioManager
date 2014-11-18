@@ -124,6 +124,10 @@ public:
    		void(const am_sinkID_t sinkID, const am_NotificationPayload_s& payload));
    MOCK_METHOD2(hookSourceNotificationDataChange,
    		void(const am_sourceID_t sourceID, const am_NotificationPayload_s& payload));
+   MOCK_METHOD2(getDomainOfSource,
+		am_Error_e(const am_sourceID_t sourceID, am_domainID_t& domainID));
+   MOCK_METHOD2(getDomainOfSink,
+      	am_Error_e(const am_sinkID_t sinkID, am_domainID_t& domainID));
 };
 
 }  // namespace am
