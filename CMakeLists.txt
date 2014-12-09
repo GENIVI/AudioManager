@@ -166,6 +166,8 @@ IF(NOT DEFINED NSM_INTERFACE)
 	SET( NSM_INTERFACE "org.genivi.NodeStateManager.Consumer")
 ENDIF(NOT DEFINED NSM_INTERFACE)
 
+SET(DYNAMIC_ID_BOUNDARY 100 CACHE INTEGER "The ID boundary between static and dynamic ID ranges")
+
 SET(PLUGINS_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin/plugins)
 SET(LIB_INSTALL_SUFFIX "audioManager")
 
@@ -195,6 +197,8 @@ IF(EXISTS "ProjectSpecific/")
     SET(PROJECT_INCLUDE_FOLDER ${CMAKE_SOURCE_DIR}/ProjectSpecific/include)
 endif(EXISTS "ProjectSpecific/")
 
+SET(PROJECT_INCLUDE_FOLDER ${PROJECT_INCLUDE_FOLDER} ${CMAKE_BINARY_DIR}/include)
+
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 SET(AUDIO_INCLUDE_FOLDER ${CMAKE_SOURCE_DIR}/include)
 SET(DOC_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/doc)
@@ -215,20 +219,13 @@ IF(WITH_TESTS)
 	set(GOOGLE_TEST_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/googleMock/gtest/include")
 ENDIF(WITH_TESTS)
 
-IF(WITH_DOCUMENTATION)
-	find_package(Doxygen)
-	configure_file(${DOXY_FILE}  ${DOC_OUTPUT_PATH}/Doxyfile  @ONLY IMMEDIATE)
-	configure_file("README.html" ${DOC_OUTPUT_PATH}/html/README.html)
-  	add_custom_target (AudioManangerDoku ALL 
-  		COMMAND ${DOXYGEN_EXECUTABLE} ${DOC_OUTPUT_PATH}/Doxyfile WORKING_DIRECTORY ${DOC_OUTPUT_PATH}
-  		SOURCES ${CMAKE_SOURCE_DIR} ${DOC_OUTPUT_PATH}/Doxyfile
-	)
-ENDIF(WITH_DOCUMENTATION)
-
 ##global build flags set(CPACK_RPM_COMPONENT_INSTALL ON)
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Wextra -std=gnu++0x -D_GNU_SOURCE -pedantic -Wno-variadic-macros -Wno-long-long -Wno-unused-parameter")
 #set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Wextra -std=c++98 -D_GNU_SOURCE")
 
+IF(EXISTS "${CMAKE_SOURCE_DIR}/ProjectSpecific/")
+    add_subdirectory (ProjectSpecific)
+endif(EXISTS "${CMAKE_SOURCE_DIR}/ProjectSpecific/")
 
 if(WITH_PLUGIN_COMMAND)
     if(WITH_DBUS_WRAPPER)
@@ -253,11 +250,6 @@ endif(WITH_PLUGIN_CONTROL)
 
 add_subdirectory (AudioManagerDaemon)
 
-
-IF(EXISTS "${CMAKE_SOURCE_DIR}/ProjectSpecific/")
-    add_subdirectory (ProjectSpecific)
-endif(EXISTS "${CMAKE_SOURCE_DIR}/ProjectSpecific/")
-
 # uninstall target
 configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
@@ -266,6 +258,16 @@ configure_file(
 
 add_custom_target(uninstall
     COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+    
+ IF(WITH_DOCUMENTATION)
+	find_package(Doxygen)
+	configure_file(${DOXY_FILE}  ${DOC_OUTPUT_PATH}/Doxyfile  @ONLY IMMEDIATE)
+	configure_file("README.html" ${DOC_OUTPUT_PATH}/html/README.html)
+  	add_custom_target (AudioManangerDoku ALL 
+  		COMMAND ${DOXYGEN_EXECUTABLE} ${DOC_OUTPUT_PATH}/Doxyfile WORKING_DIRECTORY ${DOC_OUTPUT_PATH}
+  		SOURCES ${CMAKE_SOURCE_DIR} ${DOC_OUTPUT_PATH}/Doxyfile
+	)
+ENDIF(WITH_DOCUMENTATION)
 
 # Here starts package creation
 SET(CPACK_SET_DESTDIR ON)

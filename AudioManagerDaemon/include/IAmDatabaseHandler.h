@@ -28,6 +28,7 @@
 #include <string>
 #include <iostream>
 #include <functional>
+#include "config.h"
 
 namespace am
 {
@@ -37,7 +38,7 @@ class CAmRoutingTree;
 class CAmRoutingTreeItem;
 
 
-enum { DYNAMIC_ID_BOUNDARY = 100 }; //!< the value below is reserved for staticIDs, the value above will be assigned to dynamically registered items
+//enum { DYNAMIC_ID_BOUNDARY = 100 }; //!< the value below is reserved for staticIDs, the value above will be assigned to dynamically registered items
 
 //todo: check the enum values before entering & changing in the database.
 //todo: change asserts for dynamic boundary checks into failure answers.#
