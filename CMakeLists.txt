@@ -248,6 +248,8 @@ if(WITH_PLUGIN_CONTROL)
 	add_subdirectory (PluginControlInterface)
 endif(WITH_PLUGIN_CONTROL)
 
+SET(AM_SHARE_FOLDER ${CMAKE_INSTALL_PREFIX}/share/audiomanager)
+
 add_subdirectory (AudioManagerDaemon)
 
 # uninstall target

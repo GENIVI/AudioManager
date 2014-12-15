@@ -256,7 +256,7 @@ IF(WITH_NSM)
     	    COMMAND cp "${CMAKE_SOURCE_DIR}/cmake/LifecycleConsumer.xml" ${NSM_INTROSPECTION_FILE}
     	    COMMAND cp "${CMAKE_BINARY_DIR}/AudioManager_dbus.conf" ${EXECUTABLE_OUTPUT_PATH})
     ELSE(USE_BUILD_LIBS) 
-        SET(NSM_INTROSPECTION_FILE ${CMAKE_INSTALL_PREFIX}/share/audiomanager/LifecycleConsumer.xml)
+        SET(NSM_INTROSPECTION_FILE ${AM_SHARE_FOLDER}/LifecycleConsumer.xml)
         INSTALL(
             FILES ${CMAKE_SOURCE_DIR}/cmake/LifecycleConsumer.xml #${CMAKE_BINARY_DIR}/AudioManager_dbus.conf
             DESTINATION "${NSM_INTROSPECTION_FILE}"
