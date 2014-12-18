@@ -26,7 +26,7 @@
 #include "audiomanagertypes.h"
 
 #ifdef WITH_DLT
-#include <dlt/dlt.h>
+#include <dlt.h>
 namespace am
 {
 #else

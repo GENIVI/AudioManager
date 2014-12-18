@@ -210,7 +210,10 @@ SET(DOXY_FILE ${CMAKE_CURRENT_BINARY_DIR}/DoxyFile)
 CONFIGURE_FILE( ${CMAKE_SOURCE_DIR}/AudioManagerDaemon/docx/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/DoxyFile )
 
 IF(WITH_DLT)    
-    pkg_check_modules(DLT REQUIRED automotive-dlt>=2.2.0)   
+    pkg_check_modules(DLT REQUIRED automotive-dlt>=2.2.0)
+    add_definitions(${DLT_CFLAGS_OTHER})
+    include_directories(${DLT_INCLUDE_DIRS})
+    link_directories(${DLT_LIBRARY_DIRS})
 ENDIF(WITH_DLT)
 
 IF(WITH_TESTS)	
