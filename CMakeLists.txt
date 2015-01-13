@@ -223,6 +223,8 @@ ENDIF(WITH_TESTS)
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Wextra -std=gnu++0x -D_GNU_SOURCE -pedantic -Wno-variadic-macros -Wno-long-long -Wno-unused-parameter")
 #set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Wextra -std=c++98 -D_GNU_SOURCE")
 
+SET(AM_SHARE_FOLDER ${CMAKE_INSTALL_PREFIX}/share/audiomanager)
+
 IF(EXISTS "${CMAKE_SOURCE_DIR}/ProjectSpecific/")
     add_subdirectory (ProjectSpecific)
 endif(EXISTS "${CMAKE_SOURCE_DIR}/ProjectSpecific/")
@@ -248,7 +250,6 @@ if(WITH_PLUGIN_CONTROL)
 	add_subdirectory (PluginControlInterface)
 endif(WITH_PLUGIN_CONTROL)
 
-SET(AM_SHARE_FOLDER ${CMAKE_INSTALL_PREFIX}/share/audiomanager)
 
 add_subdirectory (AudioManagerDaemon)
 
