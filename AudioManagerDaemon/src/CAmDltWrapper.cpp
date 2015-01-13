@@ -108,21 +108,19 @@ void CAmDltWrapper::registerContext(DltContext& handle, const char *contextid, c
 #endif
 }
 
-int CAmDltWrapper::init(DltLogLevelType loglevel, DltContext* context)
+void CAmDltWrapper::init(DltLogLevelType loglevel, DltContext* context)
 {
     (void) loglevel;
     pthread_mutex_lock(&mMutex);
     if (!context)
         context = &mDltContext;
-    int result;
 #ifdef WITH_DLT
-    result = dlt_user_log_write_start(context, &mDltContextData, loglevel);
+    dlt_user_log_write_start(context, &mDltContextData, loglevel);
 #else
-    result = -1;
     if(mEnableNoDLTDebug)
         std::cout << "\e[0;34m[" << context->contextID << "]\e[0;30m\t";
 #endif
-    return result;
+
 }
 
 void CAmDltWrapper::send()
