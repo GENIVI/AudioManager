@@ -339,7 +339,7 @@ public:
     	CAmMapMainConnection mMainConnectionMap;	 //!< map for main connection structures
 
     	CAmMappedData(): //For Domain, MainConnections, Connections we don't have static IDs.
-    		mCurrentDomainID(1, SHRT_MAX),
+    		mCurrentDomainID(DYNAMIC_ID_BOUNDARY, SHRT_MAX),
     		mCurrentSourceClassesID(DYNAMIC_ID_BOUNDARY, SHRT_MAX),
     		mCurrentSinkClassesID(DYNAMIC_ID_BOUNDARY, SHRT_MAX),
     		mCurrentSinkID(DYNAMIC_ID_BOUNDARY, SHRT_MAX),

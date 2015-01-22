@@ -447,7 +447,6 @@ CAmDatabaseHandlerMap::~CAmDatabaseHandlerMap()
 
 am_Error_e CAmDatabaseHandlerMap::enterDomainDB(const am_Domain_s & domainData, am_domainID_t & domainID)
 {
-    assert(domainData.domainID==0);
     assert(!domainData.name.empty());
     assert(!domainData.busname.empty());
     assert(domainData.state>=DS_UNKNOWN && domainData.state<=DS_MAX);
@@ -471,7 +470,7 @@ am_Error_e CAmDatabaseHandlerMap::enterDomainDB(const am_Domain_s & domainData, 
     }
     else
     {
-		if(mMappedData.increaseID(nextID, mMappedData.mCurrentDomainID))
+		if(mMappedData.increaseID(nextID, mMappedData.mCurrentDomainID,  domainData.domainID))
 		{
 			domainID = nextID;
 			mMappedData.mDomainMap[nextID] = domainData;
@@ -579,8 +578,6 @@ am_Error_e CAmDatabaseHandlerMap::enterSinkDB(const am_Sink_s & sinkData, am_sin
     assert(sinkData.domainID!=0);
     assert(!sinkData.name.empty());
     assert(sinkData.sinkClassID!=0);
-    //todo: need to check if class exists?,
-    assert(!sinkData.listConnectionFormats.empty());
     assert(sinkData.muteState>=MS_UNKNOWN && sinkData.muteState<=MS_MAX);
 
     am_sinkID_t temp_SinkID = 0;
@@ -626,8 +623,10 @@ am_Error_e CAmDatabaseHandlerMap::enterSinkDB(const am_Sink_s & sinkData, am_sin
     logInfo("DatabaseHandler::enterSinkDB entered new sink with name", sink.name, "domainID:", sink.domainID, "classID:", sink.sinkClassID, "volume:", sink.volume, "assigned ID:", sink.sinkID);
 
     if (mpDatabaseObserver != NULL)
+    {
         sink.sinkID=sinkID;
         mpDatabaseObserver->newSink(sink);
+    }
     return (E_OK);
 }
 
@@ -719,9 +718,6 @@ am_Error_e CAmDatabaseHandlerMap::enterGatewayDB(const am_Gateway_s & gatewayDat
     assert(gatewayData.domainSinkID!=0);
     assert(gatewayData.domainSourceID!=0);
     assert(!gatewayData.name.empty());
-    assert(!gatewayData.convertionMatrix.empty());
-    assert(!gatewayData.listSinkFormats.empty());
-    assert(!gatewayData.listSourceFormats.empty());
 
     //might be that the sinks and sources are not there during registration time
     //assert(existSink(gatewayData.sinkID));
@@ -784,9 +780,6 @@ am_Error_e CAmDatabaseHandlerMap::enterConverterDB(const am_Converter_s & conver
     assert(converterData.sourceID!=0);
     assert(converterData.domainID!=0);
     assert(!converterData.name.empty());
-    assert(!converterData.convertionMatrix.empty());
-    assert(!converterData.listSinkFormats.empty());
-    assert(!converterData.listSourceFormats.empty());
 
     //might be that the sinks and sources are not there during registration time
     //assert(existSink(gatewayData.sinkID));
@@ -867,8 +860,6 @@ am_Error_e CAmDatabaseHandlerMap::enterSourceDB(const am_Source_s & sourceData, 
     assert(sourceData.domainID!=0);
     assert(!sourceData.name.empty());
     assert(sourceData.sourceClassID!=0);
-    // \todo: need to check if class exists?
-    assert(!sourceData.listConnectionFormats.empty());
     assert(sourceData.sourceState>=SS_UNKNNOWN && sourceData.sourceState<=SS_MAX);
 
     bool isFirstStatic = sourceData.sourceID == 0 && mFirstStaticSource;
