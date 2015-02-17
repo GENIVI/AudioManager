@@ -17,7 +17,12 @@
  
  /*!
 \page ver Versioning
-\section ver_graph The versioning scheme
+\section new_ver New versioning scheme
+Due to the unclearness in the versioning scheme, the versioning scheme changed with release 7.0.
+Beginning with the 7.0 version, the versioning changed to the semantic versioning described here: <a href="http://semver.org/">http://semver.org/</a>.
+For every version that released for GENIVI (independent  from the compliance), a stable branch will be created which will start with a minor number increase. On the masterbranch, no minor number increases are foreseen.
+\image html versioning_new.png
+\section ver_graph The versioning scheme until 7.0
 The versioning scheme was decided in the February face2face 2012.
 \image html versioning.png
 For the daemon the third number (for example 1.0.X) describes the patch version. The versions are automatically created by git during the build process.
