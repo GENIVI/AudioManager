@@ -494,7 +494,7 @@ namespace am
 		void trace(std::function<void(const CAmNode<T> &, const std::vector<CAmVertex<T,V>*> &)> cb)
 		{
 			std::for_each(mPointersNodes.begin(), mPointersNodes.end(), [&](CAmNode<T> * refNode){
-				CAmListVertices * vertices = mPointersAdjList[refNode->getIndex()];
+				CAmListVertices * vertices = this->mPointersAdjList[refNode->getIndex()];
 				std::vector<CAmVertex<T,V>*> list;
 				std::for_each(vertices->begin(), vertices->end(), [&list](CAmVertex<T,V> & refVertex){
 						list.push_back(&refVertex);
