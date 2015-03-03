@@ -46,11 +46,30 @@ INCLUDE_DIRECTORIES(
    
 file(GLOB CONTROL_RECEIVER_PLUGIN_INTERFACE_SRCS_CXX 
      "../../AudioManagerDaemon/src/CAmSocketHandler.cpp"
-     "../../AudioManagerDaemon/src/CAmDltWrapper.cpp"     
+     "../../AudioManagerDaemon/src/CAmDltWrapper.cpp"  
+     "../../AudioManagerDaemon/src/CAmDatabaseObserver.cpp"  
+     "../../AudioManagerDaemon/src/CAmCommandSender.cpp"
+     "../../AudioManagerDaemon/src/CAmTelnetServer.cpp" 
+     "../../AudioManagerDaemon/src/CAmTelnetMenuHelper.cpp"
+     "../../AudioManagerDaemon/src/CAmRoutingSender.cpp"
+     "../../AudioManagerDaemon/src/CAmRoutingReceiver.cpp"
+     "../../AudioManagerDaemon/src/CAmCommandReceiver.cpp"
+     "../../AudioManagerDaemon/src/CAmControlSender.cpp"
+     "../../AudioManagerDaemon/src/CAmControlReceiver.cpp"
+     "../../AudioManagerDaemon/src/CAmRouter.cpp"
      "../src/IAmControlReceiverShadow.cpp"  
      "CAmControlReceiverShadowTest.cpp" 
 )
 
+IF(WITH_DATABASE_STORAGE)
+    SET (CONTROL_RECEIVER_PLUGIN_INTERFACE_SRCS_CXX
+		${CONTROL_RECEIVER_PLUGIN_INTERFACE_SRCS_CXX}
+		"../../AudioManagerDaemon/src/CAmDatabaseHandlerSQLite.cpp")
+ELSE(WITH_DATABASE_STORAGE)
+    SET (CONTROL_RECEIVER_PLUGIN_INTERFACE_SRCS_CXX
+		${CONTROL_RECEIVER_PLUGIN_INTERFACE_SRCS_CXX}
+		"../../AudioManagerDaemon/src/CAmDatabaseHandlerMap.cpp")
+ENDIF(WITH_DATABASE_STORAGE)
 
 ADD_EXECUTABLE(AmControlReceiverShadowTest ${CONTROL_RECEIVER_PLUGIN_INTERFACE_SRCS_CXX})
 

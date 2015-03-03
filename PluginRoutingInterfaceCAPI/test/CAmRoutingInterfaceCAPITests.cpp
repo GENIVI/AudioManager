@@ -58,8 +58,8 @@ pthread_cond_t      condSer 	= PTHREAD_COND_INITIALIZER;
 pthread_mutex_t     mutexSer    = PTHREAD_MUTEX_INITIALIZER;
 
 
-#define TEST_ID_1 102
-#define TEST_ID_2 103
+#define TEST_ID_1 DYNAMIC_ID_BOUNDARY+2
+#define TEST_ID_2 DYNAMIC_ID_BOUNDARY+3
 
 /**
  * Initialize common-api and am sinks
@@ -304,6 +304,7 @@ void CAmTestsEnvironment::SetUp()
 
 void CAmTestsEnvironment::TearDown()
 {
+	EXPECT_TRUE(Mock::VerifyAndClearExpectations(mpRoutingReceive));
 	if(mSocketHandlerClient)
 		mSocketHandlerClient->exit_mainloop();
     pthread_join(mClientPThread, NULL);
@@ -330,7 +331,7 @@ void CAmTestsEnvironment::onServiceStatusEvent(const CommonAPI::AvailabilityStat
 TEST_F(CAmRoutingInterfaceCAPITests, ClientStartupTest)
 {
 	ASSERT_TRUE(env->mIsServiceAvailable);
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 MATCHER_P(IsHandleEqual, value, "") {
@@ -353,7 +354,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, ackConnect)
 		env->mProxy->ackConnect(CAPIHandle, connectionID, static_cast<org::genivi::am::am_Error_e>(error), callStatus);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingInterfaceCAPITests, ackDisconnect)
@@ -371,7 +372,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, ackDisconnect)
 		env->mProxy->ackDisconnect(CAPIHandle, connectionID, static_cast<org::genivi::am::am_Error_e>(error), callStatus);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingInterfaceCAPITests, ackSetSinkVolumeChange)
@@ -389,7 +390,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, ackSetSinkVolumeChange)
 		env->mProxy->ackSetSinkVolumeChange(CAPIHandle, static_cast<org::genivi::am::am_volume_t>(volume), static_cast<org::genivi::am::am_Error_e>(error), callStatus);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingInterfaceCAPITests, ackSetSourceVolumeChange)
@@ -408,7 +409,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, ackSetSourceVolumeChange)
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
 
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingInterfaceCAPITests, ackSetSourceState)
@@ -427,7 +428,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, ackSetSourceState)
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
 
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingInterfaceCAPITests, ackSetSinkSoundProperties)
@@ -446,7 +447,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, ackSetSinkSoundProperties)
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
 
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingInterfaceCAPITests, ackSetSinkSoundProperty)
@@ -465,7 +466,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, ackSetSinkSoundProperty)
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
 
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingInterfaceCAPITests, ackSetSourceSoundProperties)
@@ -484,7 +485,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, ackSetSourceSoundProperties)
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
 
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingInterfaceCAPITests, ackSetSourceSoundProperty)
@@ -502,7 +503,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, ackSetSourceSoundProperty)
 		env->mProxy->ackSetSourceSoundProperty(CAPIHandle, static_cast<org::genivi::am::am_Error_e>(error), callStatus);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingInterfaceCAPITests, ackCrossFading)
@@ -520,7 +521,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, ackCrossFading)
 		env->mProxy->ackCrossFading(CAPIHandle, static_cast<org::genivi::am::am_HotSink_e>(hotSink), static_cast<org::genivi::am::am_Error_e>(error), callStatus);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingInterfaceCAPITests, ackSourceVolumeTick)
@@ -539,7 +540,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, ackSourceVolumeTick)
 		env->mProxy->ackSourceVolumeTick(CAPIHandle, sourceID, static_cast<org::genivi::am::am_volume_t>(volume), callStatus);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingInterfaceCAPITests, ackSinkVolumeTick)
@@ -558,7 +559,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, ackSinkVolumeTick)
 		env->mProxy->ackSinkVolumeTick(CAPIHandle, sID,static_cast<org::genivi::am::am_volume_t>(volume), callStatus);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 ACTION(actionRegister){
@@ -585,7 +586,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, peekDomain)
 		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 MATCHER_P(IsDomainDataEqualTo, value, "") {
@@ -630,7 +631,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, registerDomain)
 		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_ABORTED );
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingInterfaceCAPITests, deregisterDomain)
@@ -648,7 +649,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, deregisterDomain)
 		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 ACTION(actionRegisterGateway){
@@ -698,7 +699,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, registerGateway)
 		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingInterfaceCAPITests, deregisterGateway)
@@ -716,7 +717,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, deregisterGateway)
 		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 MATCHER_P(IsConverterDataEqualTo, value, "") {
@@ -761,7 +762,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, registerConverter)
 		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingInterfaceCAPITests, deregisterConverter)
@@ -779,7 +780,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, deregisterConverter)
 		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 ACTION(actionPeek){
@@ -802,7 +803,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, peekSink)
 		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 
@@ -876,7 +877,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, registerSink)
 		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingInterfaceCAPITests, deregisterSink)
@@ -894,7 +895,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, deregisterSink)
 		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingInterfaceCAPITests, peekSource)
@@ -913,7 +914,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, peekSource)
 		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 ACTION(actionRegisterSource){
@@ -989,7 +990,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, registerSource)
 		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingInterfaceCAPITests, deregisterSource)
@@ -1007,7 +1008,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, deregisterSource)
 		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 ACTION(actionRegisterCrossfader){
@@ -1045,7 +1046,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, registerCrossfader)
 		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingInterfaceCAPITests, deregisterCrossfader)
@@ -1063,7 +1064,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, deregisterCrossfader)
 		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingInterfaceCAPITests, peekSourceClassID)
@@ -1082,7 +1083,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, peekSourceClassID)
 		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingInterfaceCAPITests, peekSinkClassID)
@@ -1101,7 +1102,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, peekSinkClassID)
 		ASSERT_EQ( error, org::genivi::am::am_Error_e::E_OK );
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingInterfaceCAPITests, hookInterruptStatusChange)
@@ -1118,7 +1119,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, hookInterruptStatusChange)
 		env->mProxy->hookInterruptStatusChange(sourceID, CAPIInterruptState, callStatus);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingInterfaceCAPITests, hookDomainRegistrationComplete)
@@ -1133,7 +1134,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, hookDomainRegistrationComplete)
 		env->mProxy->hookDomainRegistrationComplete(testID, callStatus);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 MATCHER_P(IsAvailabilityEqualTo, value, "") {
@@ -1159,7 +1160,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, hookSinkAvailablityStatusChange)
 		env->mProxy->hookSinkAvailablityStatusChange(testID, available, callStatus);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingInterfaceCAPITests, hookSourceAvailablityStatusChange)
@@ -1179,7 +1180,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, hookSourceAvailablityStatusChange)
 		env->mProxy->hookSourceAvailablityStatusChange(testID, available, callStatus);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingInterfaceCAPITests, hookDomainStateChange)
@@ -1195,7 +1196,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, hookDomainStateChange)
 		env->mProxy->hookDomainStateChange(testID, domainState, callStatus);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingInterfaceCAPITests, hookTimingInformationChanged)
@@ -1212,7 +1213,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, hookTimingInformationChanged)
 		env->mProxy->hookTimingInformationChanged(testID, delay, callStatus);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 MATCHER_P(IsEarlyDataEqualTo, value, "") {
@@ -1299,7 +1300,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, sendChangedData)
 
 		env->mProxy->sendChangedData(earlyData, callStatus);
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingInterfaceCAPITests, updateGateway)
@@ -1341,7 +1342,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, updateGateway)
 		env->mProxy->updateGateway(testID, listSourceFormats, listSinkFormats, convertionMatrix, callStatus,CAPIError);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingInterfaceCAPITests, updateConverter)
@@ -1383,7 +1384,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, updateConverter)
 		env->mProxy->updateConverter(testID, listSourceFormats, listSinkFormats, convertionMatrix, callStatus,CAPIError);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 MATCHER_P(IsSoundPropertiesArrayEqualTo, value, "") {
@@ -1447,7 +1448,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, updateSink)
 		env->mProxy->updateSink(testID, TEST_ID_2, listSoundProperties, listSinkFormats, listMainSoundProperties, callStatus,CAPIError);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingInterfaceCAPITests, updateSource)
@@ -1473,7 +1474,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, updateSource)
 		env->mProxy->updateSource(testID, TEST_ID_2, listSoundProperties, listSinkFormats, listMainSoundProperties, callStatus,CAPIError);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 
@@ -1532,7 +1533,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, ackSetVolumes)
 		env->mProxy->ackSetVolumes(handle, listVolumes, genError, callStatus);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingInterfaceCAPITests, ackSinkNotificationConfiguration)
@@ -1553,7 +1554,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, ackSinkNotificationConfiguration)
 		env->mProxy->ackSinkNotificationConfiguration(CAPIHandle, genError, callStatus);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingInterfaceCAPITests, ackSourceNotificationConfiguration)
@@ -1574,7 +1575,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, ackSourceNotificationConfiguration)
 		env->mProxy->ackSourceNotificationConfiguration(CAPIHandle, genError, callStatus);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 MATCHER_P(IsPayloadEqualTo, value,  "") {
@@ -1600,7 +1601,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, hookSinkNotificationDataChange)
 		env->mProxy->hookSinkNotificationDataChange(testID, payload, callStatus);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingInterfaceCAPITests, hookSourceNotificationDataChange)
@@ -1619,7 +1620,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, hookSourceNotificationDataChange)
 		env->mProxy->hookSourceNotificationDataChange(testID, payload, callStatus);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 ACTION(actionRegister2){
@@ -1650,7 +1651,7 @@ TEST_F(CAmRoutingInterfaceCAPITests, confirmRoutingRundown)
 		env->mProxy->deregisterDomain(domainID,domainstatus,CAPIError);
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 /** CAmRoutingSenderCAPITests
@@ -1718,7 +1719,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_registerDomain)
 		ASSERT_TRUE( backdoor.containsDomainWithID( (const am_domainID_t)TEST_ID_2) );
 		ASSERT_FALSE( backdoor.containsDomainWithID( (const am_domainID_t)10000) );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingSenderCAPITests, TestDomain_registerSource)
@@ -1757,7 +1758,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_registerSource)
 		ASSERT_TRUE( backdoor.containsSourceWithID( (const am_sourceID_t)TEST_ID_2) );
 		ASSERT_TRUE( backdoor.sourcesCount()==2 );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 
@@ -1800,7 +1801,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_registerSink)
 		ASSERT_TRUE( backdoor.containsSinkWithID( (const am_sourceID_t)TEST_ID_2) );
 		ASSERT_TRUE( backdoor.sinksCount()==2 );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingSenderCAPITests, TestDomain_setDomainState)
@@ -1823,13 +1824,14 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetSourceState)
 		am_Handle_s handle = {H_SETSOURCESTATE, 20};
 		am_SourceState_e state = am_SourceState_e::SS_MAX;
 		EXPECT_CALL(*env->mpRoutingReceive, ackSetSourceState(IsHandleEqual(handle), E_OK)).Times(1);
+		EXPECT_CALL(*env->mpRoutingReceive, getDomainOfSource(TEST_ID_1, _)).WillOnce(Return(E_OK));
 		am_Error_e error = env->mpPlugin->asyncSetSourceState(handle, sID, state);
 		usleep(50000);
 		ASSERT_EQ( error, E_OK );
 		ASSERT_FALSE( backdoor.containsHandle( handle.handle) );
 	}
 
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetSourceVolume)
@@ -1849,13 +1851,14 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetSourceVolume)
 		am_Handle_s handle = {H_SETSOURCEVOLUME, 20};
 		am_SourceState_e state = am_SourceState_e::SS_MAX;
 		EXPECT_CALL(*env->mpRoutingReceive, ackSetSourceVolumeChange(IsHandleEqual(handle), volume, E_OK)).Times(1);
+		EXPECT_CALL(*env->mpRoutingReceive, getDomainOfSource(TEST_ID_1, _)).WillOnce(Return(E_OK));
 		am_Error_e error = env->mpPlugin->asyncSetSourceVolume(handle, sID, volume, ramp, time);
 		usleep(50000);
 		ASSERT_EQ( error, E_OK );
 		ASSERT_FALSE( backdoor.containsHandle( handle.handle) );
 	}
 
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingSenderCAPITests, TestDomain_registerCrossfader)
@@ -1885,7 +1888,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_registerCrossfader)
 		ASSERT_EQ( crossfaderID, TEST_ID_1 );
 		ASSERT_TRUE( backdoor.containsCrossfader( TEST_ID_1) );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetSinkVolume)
@@ -1905,13 +1908,14 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetSinkVolume)
 		am_Handle_s handle = {H_SETSINKVOLUME, 20};
 		am_SourceState_e state = am_SourceState_e::SS_MAX;
 		EXPECT_CALL(*env->mpRoutingReceive, ackSetSinkVolumeChange(IsHandleEqual(handle), volume, E_OK)).Times(1);
+		EXPECT_CALL(*env->mpRoutingReceive, getDomainOfSink(TEST_ID_1, _)).WillOnce(Return(E_OK));
 		am_Error_e error = env->mpPlugin->asyncSetSinkVolume(handle, sID, volume, ramp, time);
 		usleep(50000);
 		ASSERT_EQ( error, E_OK );
 		ASSERT_FALSE( backdoor.containsHandle( handle.handle) );
 	}
 
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncConnect)
@@ -1929,13 +1933,15 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncConnect)
 		am_Handle_s handle = {H_CONNECT, 20};
 		am_CustomConnectionFormat_t cf = CF_GENIVI_STEREO;
 		EXPECT_CALL(*env->mpRoutingReceive, ackConnect(IsHandleEqual(handle), connectionID, E_OK)).Times(1);
+		EXPECT_CALL(*env->mpRoutingReceive, getDomainOfSource(TEST_ID_1, _)).WillOnce(Return(E_OK));
+		EXPECT_CALL(*env->mpRoutingReceive, getDomainOfSink(TEST_ID_1, _)).WillOnce(Return(E_OK));
 		am_Error_e error = env->mpPlugin->asyncConnect(handle, connectionID, TEST_ID_1, TEST_ID_1, cf);
 		usleep(50000);
 		ASSERT_EQ( error, E_OK );
 		ASSERT_FALSE( backdoor.containsHandle( handle.handle ) );
 		ASSERT_EQ( backdoor.connectionsCount( ) , 1 );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncDisconnect)
@@ -1957,7 +1963,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncDisconnect)
 		ASSERT_FALSE( backdoor.containsHandle( handle.handle ) );
 		ASSERT_FALSE( backdoor.containsConnection( TEST_ID_1 ) );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncAbort)
@@ -1980,7 +1986,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncAbort)
 
 		//we set an abort handle in order to test the return status
 		env->mDomainService->setAbortHandle(CAPIHandle);
-
+		EXPECT_CALL(*env->mpRoutingReceive, getDomainOfSource(TEST_ID_1, _)).WillOnce(Return(E_OK));
 		EXPECT_CALL(*env->mpRoutingReceive, ackSetSourceState(IsHandleEqual(handle), E_ABORTED)).Times(1);
 		am_Error_e error = env->mpPlugin->asyncSetSourceState(handle, sID, state);
 		usleep(50000);
@@ -1988,7 +1994,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncAbort)
 		ASSERT_FALSE( backdoor.containsHandle( handle.handle) );
 	}
 
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 MATCHER_P(IsListMainSoundPropertiesEqualTo, value, "") {
@@ -2021,7 +2027,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetSinkSoundProperties)
 		listSoundProperties.push_back((am_SoundProperty_s){SP_GENIVI_MID, 100});
 		listSoundProperties.push_back((am_SoundProperty_s){SP_UNKNOWN, 101});
 		listSoundProperties.push_back((am_SoundProperty_s){SP_GENIVI_TREBLE, 100});
-
+		EXPECT_CALL(*env->mpRoutingReceive, getDomainOfSink(TEST_ID_1, _)).WillOnce(Return(E_OK));
 		EXPECT_CALL(*env->mpRoutingReceive, ackSetSinkSoundProperties(IsHandleEqual(handle), E_OK)).Times(1);
 		am_Error_e error = env->mpPlugin->asyncSetSinkSoundProperties(handle, sID, listSoundProperties);
 		usleep(50000);
@@ -2029,7 +2035,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetSinkSoundProperties)
 		ASSERT_FALSE( backdoor.containsHandle( handle.handle) );
 	}
 
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetSinkSoundProperty)
@@ -2045,7 +2051,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetSinkSoundProperty)
 
 		am_Handle_s handle = {H_SETSINKSOUNDPROPERTY, 200};
 		am_SourceState_e state = am_SourceState_e::SS_MAX;
-
+		EXPECT_CALL(*env->mpRoutingReceive, getDomainOfSink(TEST_ID_1, _)).WillOnce(Return(E_OK));
 		EXPECT_CALL(*env->mpRoutingReceive, ackSetSinkSoundProperty(IsHandleEqual(handle), E_OK)).Times(1);
 		am_Error_e error = env->mpPlugin->asyncSetSinkSoundProperty(handle, sID, (am_SoundProperty_s){SP_GENIVI_MID, 100});
 		usleep(50000);
@@ -2053,7 +2059,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetSinkSoundProperty)
 		ASSERT_FALSE( backdoor.containsHandle( handle.handle) );
 	}
 
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetSourceSoundProperties)
@@ -2074,7 +2080,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetSourceSoundProperties)
 		listSoundProperties.push_back((am_SoundProperty_s){SP_GENIVI_MID, 100});
 		listSoundProperties.push_back((am_SoundProperty_s){SP_UNKNOWN, 101});
 		listSoundProperties.push_back((am_SoundProperty_s){SP_GENIVI_TREBLE, 100});
-
+		EXPECT_CALL(*env->mpRoutingReceive, getDomainOfSource(TEST_ID_1, _)).WillOnce(Return(E_OK));
 		EXPECT_CALL(*env->mpRoutingReceive, ackSetSourceSoundProperties(IsHandleEqual(handle), E_OK)).Times(1);
 		am_Error_e error = env->mpPlugin->asyncSetSourceSoundProperties(handle, sID, listSoundProperties);
 		usleep(50000);
@@ -2082,7 +2088,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetSourceSoundProperties)
 		ASSERT_FALSE( backdoor.containsHandle( handle.handle) );
 	}
 
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetSourceSoundProperty)
@@ -2098,7 +2104,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetSourceSoundProperty)
 
 		am_Handle_s handle = {H_SETSOURCESOUNDPROPERTY, 200};
 		am_SourceState_e state = am_SourceState_e::SS_MAX;
-
+		EXPECT_CALL(*env->mpRoutingReceive, getDomainOfSource(TEST_ID_1, _)).WillOnce(Return(E_OK));
 		EXPECT_CALL(*env->mpRoutingReceive, ackSetSourceSoundProperty(IsHandleEqual(handle), E_OK)).Times(1);
 		am_Error_e error = env->mpPlugin->asyncSetSourceSoundProperty(handle, sID, (am_SoundProperty_s){SP_GENIVI_MID, 100});
 		usleep(50000);
@@ -2106,7 +2112,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetSourceSoundProperty)
 		ASSERT_FALSE( backdoor.containsHandle( handle.handle) );
 	}
 
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncCrossFade)
@@ -2130,7 +2136,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncCrossFade)
 		ASSERT_FALSE( backdoor.containsHandle( handle.handle) );
 	}
 
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetSinkNotificationConfiguration)
@@ -2144,6 +2150,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetSinkNotificationConfigurati
 
 		am_Handle_s handle = {H_CONNECT, 200};
 		am_NotificationConfiguration_s nc = (am_NotificationConfiguration_s){NT_UNKNOWN, am_NotificationStatus_e::NS_MAX};
+		EXPECT_CALL(*env->mpRoutingReceive, getDomainOfSink(TEST_ID_1, _)).WillOnce(Return(E_OK));
 		EXPECT_CALL(*env->mpRoutingReceive, ackSinkNotificationConfiguration(IsHandleStructEqualTo(handle), E_OK)).Times(1);
 		am_Error_e error = env->mpPlugin->asyncSetSinkNotificationConfiguration(handle, TEST_ID_1, nc);
 		usleep(50000);
@@ -2151,7 +2158,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetSinkNotificationConfigurati
 		ASSERT_FALSE( backdoor.containsHandle( handle.handle) );
 	}
 
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetSourceNotificationConfiguration)
@@ -2165,6 +2172,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetSourceNotificationConfigura
 
 		am_Handle_s handle = {H_CONNECT, 200};
 		am_NotificationConfiguration_s nc = (am_NotificationConfiguration_s){NT_UNKNOWN, am_NotificationStatus_e::NS_MAX};
+		EXPECT_CALL(*env->mpRoutingReceive, getDomainOfSource(TEST_ID_1, _)).WillOnce(Return(E_OK));
 		EXPECT_CALL(*env->mpRoutingReceive, ackSourceNotificationConfiguration(IsHandleStructEqualTo(handle), E_OK)).Times(1);
 		am_Error_e error = env->mpPlugin->asyncSetSourceNotificationConfiguration(handle, TEST_ID_1, nc);
 		usleep(50000);
@@ -2172,7 +2180,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetSourceNotificationConfigura
 		ASSERT_FALSE( backdoor.containsHandle( handle.handle) );
 	}
 
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetVolumes)
@@ -2210,7 +2218,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_asyncSetVolumes)
 		ASSERT_FALSE( backdoor.containsHandle( handle.handle) );
 
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingSenderCAPITests, TestDomain_deregisterSink)
@@ -2233,7 +2241,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_deregisterSink)
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 		ASSERT_FALSE( backdoor.containsSinkWithID( sinkID ));
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingSenderCAPITests, TestDomain_deregisterSource)
@@ -2256,7 +2264,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_deregisterSource)
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 		ASSERT_FALSE( backdoor.containsSourceWithID( sID ));
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingSenderCAPITests, TestDomain_deregisterCrossfader)
@@ -2279,7 +2287,7 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_deregisterCrossfader)
 		ASSERT_EQ( callStatus, CallStatus::SUCCESS );
 		ASSERT_FALSE( backdoor.containsCrossfader( sID ));
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 
 TEST_F(CAmRoutingSenderCAPITests, TestDomain_deregisterDomain)
@@ -2313,6 +2321,6 @@ TEST_F(CAmRoutingSenderCAPITests, TestDomain_deregisterDomain)
 		ASSERT_EQ( backdoor.crossfadersCount(), 0 );
 		ASSERT_EQ( backdoor.connectionsCount(), 0 );
 	}
-	EXPECT_TRUE(Mock::VerifyAndClearExpectations(env->mpRoutingReceive));
+
 }
 

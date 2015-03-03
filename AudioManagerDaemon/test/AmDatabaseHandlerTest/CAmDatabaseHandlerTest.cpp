@@ -444,7 +444,7 @@ TEST_F(CAmDatabaseHandlerTest,crossfaders)
     ASSERT_EQ(crossfader.sinkID_B, listCrossfaders[0].sinkID_B);
     ASSERT_EQ(crossfader.sourceID, listCrossfaders[0].sourceID);
     ASSERT_EQ(crossfader.hotSink, listCrossfaders[0].hotSink);
-    ASSERT_EQ(100, listCrossfaders[0].crossfaderID);
+    ASSERT_EQ(DYNAMIC_ID_BOUNDARY, listCrossfaders[0].crossfaderID);
     ASSERT_EQ(crossfader.name.compare(listCrossfaders[0].name), 0);
 }
 
@@ -487,7 +487,7 @@ TEST_F(CAmDatabaseHandlerTest,crossfadersGetFromDomain)
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterCrossfaderDB(crossfader,crossfaderID));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListCrossfadersOfDomain(source.domainID,listCrossfaders));
-    ASSERT_EQ(100, listCrossfaders[0]);
+    ASSERT_EQ(DYNAMIC_ID_BOUNDARY, listCrossfaders[0]);
 
 }
 
@@ -561,7 +561,7 @@ TEST_F(CAmDatabaseHandlerTest, peekSource)
     //make sure it is not in the list
     ASSERT_EQ(E_OK, pDatabaseHandler.getListSources(listSources));
     ASSERT_TRUE(listSources.empty());
-    ASSERT_EQ(sourceID, 100);
+    ASSERT_EQ(sourceID, DYNAMIC_ID_BOUNDARY);
 
     //now enter the source with the same name and make sure it does not get a new ID
     source.name = "newsource";
@@ -598,7 +598,7 @@ TEST_F(CAmDatabaseHandlerTest, peekSourceDouble)
     //make sure they are is not in the list
     ASSERT_EQ(E_OK, pDatabaseHandler.getListSources(listSources));
     ASSERT_TRUE(listSources.empty());
-    ASSERT_EQ(sourceID, 100);
+    ASSERT_EQ(sourceID, DYNAMIC_ID_BOUNDARY);
     source.name = "newsource";
 
     //now enter the source with the same name than the first peek and make sure it does not get a new ID
@@ -623,7 +623,7 @@ TEST_F(CAmDatabaseHandlerTest, peekSink)
     //make sure it is not in the list
     ASSERT_EQ(E_OK, pDatabaseHandler.getListSinks(listSinks));
     ASSERT_TRUE(listSinks.empty());
-    ASSERT_EQ(sinkID, 100);
+    ASSERT_EQ(sinkID, DYNAMIC_ID_BOUNDARY);
     sink.name = "newsink";
 
     //now enter the source with the same name and make sure it does not get a new ID
@@ -660,7 +660,7 @@ TEST_F(CAmDatabaseHandlerTest, peekSinkDouble)
     //make sure they are is not in the list
     ASSERT_EQ(E_OK, pDatabaseHandler.getListSinks(listSinks));
     ASSERT_TRUE(listSinks.empty());
-    ASSERT_EQ(sinkID, 100);
+    ASSERT_EQ(sinkID, DYNAMIC_ID_BOUNDARY);
     sink.name = "newsink";
 
     //now enter the sink with the same name than the first peek and make sure it does not get a new ID
@@ -837,12 +837,12 @@ TEST_F(CAmDatabaseHandlerTest,updateSourceClass)
     changedClass.sourceClassID = sourceClassID;
     ASSERT_EQ(E_OK, pDatabaseHandler.getListSourceClasses(sourceClassList));
     ASSERT_EQ(sourceClassList[0].name, sourceClass.name);
-    ASSERT_EQ(sourceClassList[0].sourceClassID, 100);
+    ASSERT_EQ(sourceClassList[0].sourceClassID, DYNAMIC_ID_BOUNDARY);
     ASSERT_TRUE(std::equal(sourceClassList[0].listClassProperties.begin(),sourceClassList[0].listClassProperties.end(),classPropertyList.begin(),equalClassProperties));
     ASSERT_EQ(E_OK, pDatabaseHandler.changeSourceClassInfoDB(changedClass));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListSourceClasses(sourceClassList));
     ASSERT_EQ(sourceClassList[0].name, sourceClass.name);
-    ASSERT_EQ(sourceClassList[0].sourceClassID, 100);
+    ASSERT_EQ(sourceClassList[0].sourceClassID, DYNAMIC_ID_BOUNDARY);
     ASSERT_TRUE(std::equal(sourceClassList[0].listClassProperties.begin(),sourceClassList[0].listClassProperties.end(),changedPropertyList.begin(),equalClassProperties));
 }
 
@@ -867,7 +867,7 @@ TEST_F(CAmDatabaseHandlerTest,enterSourceClass)
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceClassDB(sourceClassID,sourceClass));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListSourceClasses(sourceClassList));
     ASSERT_EQ(sourceClassList[0].name, sourceClass.name);
-    ASSERT_EQ(sourceClassList[0].sourceClassID, 100);
+    ASSERT_EQ(sourceClassList[0].sourceClassID, DYNAMIC_ID_BOUNDARY);
     ASSERT_TRUE(std::equal(sourceClassList[0].listClassProperties.begin(),sourceClassList[0].listClassProperties.end(),classPropertyList.begin(),equalClassProperties));
 }
 
@@ -917,7 +917,7 @@ TEST_F(CAmDatabaseHandlerTest,removeSinkClass)
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkClassDB(sinkClass,sinkClassID));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListSinkClasses(sinkClassList));
     ASSERT_EQ(sinkClassList[0].name, sinkClass.name);
-    ASSERT_EQ(sinkClassList[0].sinkClassID, 100);
+    ASSERT_EQ(sinkClassList[0].sinkClassID, DYNAMIC_ID_BOUNDARY);
     ASSERT_TRUE(std::equal(sinkClassList[0].listClassProperties.begin(),sinkClassList[0].listClassProperties.end(),classPropertyList.begin(),equalClassProperties));
     ASSERT_EQ(E_OK, pDatabaseHandler.removeSinkClassDB(sinkClassID));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListSinkClasses(sinkClassList));
@@ -948,12 +948,12 @@ TEST_F(CAmDatabaseHandlerTest,updateSinkClass)
     changedClass.sinkClassID = sinkClassID;
     ASSERT_EQ(E_OK, pDatabaseHandler.getListSinkClasses(sinkClassList));
     ASSERT_EQ(sinkClassList[0].name, sinkClass.name);
-    ASSERT_EQ(sinkClassList[0].sinkClassID, 100);
+    ASSERT_EQ(sinkClassList[0].sinkClassID, DYNAMIC_ID_BOUNDARY);
     ASSERT_TRUE(std::equal(sinkClassList[0].listClassProperties.begin(),sinkClassList[0].listClassProperties.end(),classPropertyList.begin(),equalClassProperties));
     ASSERT_EQ(E_OK, pDatabaseHandler.changeSinkClassInfoDB(changedClass));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListSinkClasses(sinkClassList));
     ASSERT_EQ(sinkClassList[0].name, sinkClass.name);
-    ASSERT_EQ(sinkClassList[0].sinkClassID, 100);
+    ASSERT_EQ(sinkClassList[0].sinkClassID, DYNAMIC_ID_BOUNDARY);
     ASSERT_TRUE(std::equal(sinkClassList[0].listClassProperties.begin(),sinkClassList[0].listClassProperties.end(),changedPropertyList.begin(),equalClassProperties));
 }
 
@@ -978,7 +978,7 @@ TEST_F(CAmDatabaseHandlerTest,enterSinkClass)
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkClassDB(sinkClass,sinkClassID));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListSinkClasses(sinkClassList));
     ASSERT_EQ(sinkClassList[0].name, sinkClass.name);
-    ASSERT_EQ(sinkClassList[0].sinkClassID, 100);
+    ASSERT_EQ(sinkClassList[0].sinkClassID, DYNAMIC_ID_BOUNDARY);
     ASSERT_TRUE(std::equal(sinkClassList[0].listClassProperties.begin(),sinkClassList[0].listClassProperties.end(),classPropertyList.begin(),equalClassProperties));
 }
 
@@ -1738,7 +1738,7 @@ TEST_F(CAmDatabaseHandlerTest,registerGatewayCorrect)
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     ASSERT_EQ(E_OK,pDatabaseHandler.enterGatewayDB(gateway,gatewayID))
         << "ERROR: database error";
-    ASSERT_EQ(100,gatewayID)
+    ASSERT_EQ(DYNAMIC_ID_BOUNDARY,gatewayID)
         << "ERROR: domainID zero";
 
     ASSERT_EQ(E_OK,pDatabaseHandler.enterGatewayDB(gateway1,gatewayID1))
@@ -1748,7 +1748,7 @@ TEST_F(CAmDatabaseHandlerTest,registerGatewayCorrect)
 
     ASSERT_EQ(E_OK,pDatabaseHandler.enterGatewayDB(gateway2,gatewayID2))
         << "ERROR: database error";
-    ASSERT_EQ(101,gatewayID2)
+    ASSERT_EQ(DYNAMIC_ID_BOUNDARY+1,gatewayID2)
         << "ERROR: domainID zero";
 
     //now check if we read out the correct values
@@ -1800,7 +1800,7 @@ TEST_F(CAmDatabaseHandlerTest,registerConverterCorrect)
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     ASSERT_EQ(E_OK,pDatabaseHandler.enterConverterDB(gateway,converterID))
         << "ERROR: database error";
-    ASSERT_EQ(100,converterID)
+    ASSERT_EQ(DYNAMIC_ID_BOUNDARY,converterID)
         << "ERROR: domainID zero";
 
     ASSERT_EQ(E_OK,pDatabaseHandler.enterConverterDB(gateway1,converterID1))
@@ -1810,7 +1810,7 @@ TEST_F(CAmDatabaseHandlerTest,registerConverterCorrect)
 
     ASSERT_EQ(E_OK,pDatabaseHandler.enterConverterDB(gateway2,converterID2))
         << "ERROR: database error";
-    ASSERT_EQ(101,converterID2)
+    ASSERT_EQ(DYNAMIC_ID_BOUNDARY+1,converterID2)
         << "ERROR: domainID zero";
 
     //now check if we read out the correct values
@@ -1862,7 +1862,7 @@ TEST_F(CAmDatabaseHandlerTest,getGatewayInfo)
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     ASSERT_EQ(E_OK,pDatabaseHandler.enterGatewayDB(gateway,gatewayID))
         << "ERROR: database error";
-    ASSERT_EQ(100,gatewayID)
+    ASSERT_EQ(DYNAMIC_ID_BOUNDARY,gatewayID)
         << "ERROR: domainID zero";
 
     ASSERT_EQ(E_OK,pDatabaseHandler.enterGatewayDB(gateway1,gatewayID1))
@@ -1872,7 +1872,7 @@ TEST_F(CAmDatabaseHandlerTest,getGatewayInfo)
 
     ASSERT_EQ(E_OK,pDatabaseHandler.enterGatewayDB(gateway2,gatewayID2))
         << "ERROR: database error";
-    ASSERT_EQ(101,gatewayID2)
+    ASSERT_EQ(DYNAMIC_ID_BOUNDARY+1,gatewayID2)
         << "ERROR: domainID zero";
 
     //now check if we read out the correct values
@@ -1929,7 +1929,7 @@ TEST_F(CAmDatabaseHandlerTest,getConverterInfo)
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     ASSERT_EQ(E_OK,pDatabaseHandler.enterConverterDB(gateway,converterID))
         << "ERROR: database error";
-    ASSERT_EQ(100,converterID)
+    ASSERT_EQ(DYNAMIC_ID_BOUNDARY,converterID)
         << "ERROR: domainID zero";
 
     ASSERT_EQ(E_OK,pDatabaseHandler.enterConverterDB(gateway1,converterID1))
@@ -1939,7 +1939,7 @@ TEST_F(CAmDatabaseHandlerTest,getConverterInfo)
 
     ASSERT_EQ(E_OK,pDatabaseHandler.enterConverterDB(gateway2,converterID2))
         << "ERROR: database error";
-    ASSERT_EQ(101,converterID2)
+    ASSERT_EQ(DYNAMIC_ID_BOUNDARY+1,converterID2)
         << "ERROR: domainID zero";
 
     //now check if we read out the correct values

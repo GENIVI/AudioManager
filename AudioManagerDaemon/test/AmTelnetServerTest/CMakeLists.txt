@@ -54,7 +54,6 @@ file(GLOB TELNET_SRCS_CXX
     "../../src/CAmCommandSender.cpp"
     "../../src/CAmControlReceiver.cpp"
     "../../src/CAmControlSender.cpp"
-    "../../src/CAmDatabaseHandlerMap.cpp"
     "../../src/CAmDatabaseObserver.cpp"
     "../../src/CAmRoutingReceiver.cpp"
     "../../src/CAmRoutingSender.cpp"
@@ -66,6 +65,12 @@ file(GLOB TELNET_SRCS_CXX
     "../../src/CAmDbusWrapper.cpp"
     "*.cpp"    
 )
+
+IF(WITH_DATABASE_STORAGE)
+    SET (TELNET_SRCS_CXX ${TELNET_SRCS_CXX} "../../src/CAmDatabaseHandlerSQLite.cpp")
+ELSE(WITH_DATABASE_STORAGE)
+    SET (TELNET_SRCS_CXX ${TELNET_SRCS_CXX} "../../src/CAmDatabaseHandlerMap.cpp")
+ENDIF(WITH_DATABASE_STORAGE)
 
 IF(WITH_NSM)
     SET (DATABASE_SRCS_CXX
