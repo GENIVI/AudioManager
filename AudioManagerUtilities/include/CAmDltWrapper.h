@@ -112,6 +112,7 @@ public:
     void append(const std::string& value);
     void append(const bool value);
     void append(const am_Error_e value);
+    void append(const std::vector<uint8_t> & data);
 #ifndef WITH_DLT
     void enableNoDLTDebug(const bool enableNoDLTDebug = true);
 #endif
@@ -910,6 +911,7 @@ template<typename T, typename T1, typename T2, typename T3, typename T4, typenam
     inst->send();
 
 }
+
 }
 
 #endif /* DLTWRAPPER_H_ */

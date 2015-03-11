@@ -325,6 +325,15 @@ void CAmDltWrapper::append(const am_Error_e value)
 	}
 }
 
+void CAmDltWrapper::append(const std::vector<uint8_t> & data)
+{
+#ifdef WITH_DLT
+	dlt_user_log_write_raw(&mDltContextData,(void*)data.data(),data.size());
+#else
+	mDltContextData.buffer << data.data();
+#endif
+}
+
 #ifndef WITH_DLT
 template<class T> void CAmDltWrapper::appendNoDLT(T value)
 {
