@@ -240,7 +240,7 @@ std::vector<am_MainSoundProperty_s> CAmCommonFunctions::getStandardMainSoundProp
 {
     std::vector<am_MainSoundProperty_s> mainSoundPropertyList;
     am_MainSoundProperty_s mainSoundProperty;
-    mainSoundProperty.type = MSP_UNKNOWN;
+    mainSoundProperty.type = MSP_GENIVI_BASS;
     mainSoundProperty.value = 23;
     mainSoundPropertyList.push_back(mainSoundProperty);
     mainSoundProperty.type = MSP_UNKNOWN;

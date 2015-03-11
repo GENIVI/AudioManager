@@ -1177,12 +1177,17 @@ am_Error_e CAmDatabaseHandlerMap::changeMainSinkSoundPropertyDB(const am_MainSou
     {
         return (E_NON_EXISTENT);
     }
-
-    std::vector<am_MainSoundProperty_s>::iterator elementIterator = mMappedData.mSinkMap[sinkID].listMainSoundProperties.begin();
-	for (;elementIterator != mMappedData.mSinkMap[sinkID].listMainSoundProperties.end(); ++elementIterator)
+    am_Sink_Database_s & sink = mMappedData.mSinkMap[sinkID];
+    std::vector<am_MainSoundProperty_s>::iterator elementIterator = sink.listMainSoundProperties.begin();
+	for (;elementIterator != sink.listMainSoundProperties.end(); ++elementIterator)
 	{
 		if (elementIterator->type == soundProperty.type)
+		{
 			elementIterator->value = soundProperty.value;
+			if(sink.cacheMainSoundProperties.size())
+				sink.cacheMainSoundProperties[soundProperty.type] = soundProperty.value;
+			break;
+		}
 	}
 
     logInfo("DatabaseHandler::changeMainSinkSoundPropertyDB changed MainSinkSoundProperty of sink:", sinkID, "type:", soundProperty.type, "to:", soundProperty.value);
@@ -1199,12 +1204,17 @@ am_Error_e CAmDatabaseHandlerMap::changeMainSourceSoundPropertyDB(const am_MainS
     {
         return (E_NON_EXISTENT);
     }
-
-    std::vector<am_MainSoundProperty_s>::iterator elementIterator = mMappedData.mSourceMap[sourceID].listMainSoundProperties.begin();
-	for (;elementIterator != mMappedData.mSourceMap[sourceID].listMainSoundProperties.end(); ++elementIterator)
+    am_Source_Database_s & source = mMappedData.mSourceMap.at(sourceID);
+    std::vector<am_MainSoundProperty_s>::iterator elementIterator = source.listMainSoundProperties.begin();
+	for (;elementIterator != source.listMainSoundProperties.end(); ++elementIterator)
 	{
 		if (elementIterator->type == soundProperty.type)
+		{
 			elementIterator->value = soundProperty.value;
+			if(source.cacheMainSoundProperties.size())
+				source.cacheMainSoundProperties[soundProperty.type] = soundProperty.value;
+			break;
+		}
 	}
 
     logInfo("DatabaseHandler::changeMainSourceSoundPropertyDB changed MainSinkSoundProperty of source:", sourceID, "type:", soundProperty.type, "to:", soundProperty.value);
@@ -1867,6 +1877,30 @@ am_Error_e CAmDatabaseHandlerMap::getListMainSourceSoundProperties(const am_sour
     return (E_OK);
 }
 
+am_Error_e CAmDatabaseHandlerMap::getListSinkSoundProperties(const am_sinkID_t sinkID, std::vector<am_SoundProperty_s>& listSoundproperties) const
+{
+    assert(sinkID!=0);
+    if (!existSink(sinkID))
+    	return E_NON_EXISTENT;
+
+    am_Sink_Database_s sink = mMappedData.mSinkMap.at(sinkID);
+    listSoundproperties = sink.listSoundProperties;
+
+    return (E_OK);
+}
+
+am_Error_e CAmDatabaseHandlerMap::getListSourceSoundProperties(const am_sourceID_t sourceID, std::vector<am_SoundProperty_s>& listSoundproperties) const
+{
+	assert(sourceID!=0);
+	if (!existSource(sourceID))
+		return E_NON_EXISTENT;
+
+	am_Source_Database_s source = mMappedData.mSourceMap.at(sourceID);
+	listSoundproperties = source.listSoundProperties;
+
+	return (E_OK);
+}
+
 am_Error_e CAmDatabaseHandlerMap::getListSystemProperties(std::vector<am_SystemProperty_s> & listSystemProperties) const
 {
      listSystemProperties = mMappedData.mSystemProperties;
@@ -2326,17 +2360,20 @@ am_Error_e CAmDatabaseHandlerMap::getSinkSoundPropertyValue(const am_sinkID_t si
 {
     assert(sinkID!=0);
 
-	am_Sink_Database_s const * source = objectForKeyIfExistsInMap(sinkID, mMappedData.mSinkMap);
-	if( NULL!=source )
+	am_Sink_Database_s * pObject = (am_Sink_Database_s *)objectForKeyIfExistsInMap(sinkID, mMappedData.mSinkMap);
+	if( NULL!=pObject )
 	{
-		std::vector<am_SoundProperty_s>::const_iterator iter = source->listSoundProperties.begin();
-		for(; iter<source->listSoundProperties.end(); ++iter)
+		if(pObject->listSoundProperties.size()>0 && 0==pObject->cacheSoundProperties.size())
 		{
-			if( propertyType == iter->type )
-			{
-				value = iter->value;
-				return (E_OK);
-			}
+			std::vector<am_SoundProperty_s>::const_iterator iter = pObject->listSoundProperties.begin();
+			for(; iter<pObject->listSoundProperties.end(); ++iter)
+				pObject->cacheSoundProperties[iter->type] = iter->value;
+		}
+		auto it = pObject->cacheSoundProperties.find(propertyType);
+		if(it!=pObject->cacheSoundProperties.end())
+		{
+			value = it->second;
+			return (E_OK);
 		}
 	}
 	value = -1;
@@ -2347,19 +2384,71 @@ am_Error_e CAmDatabaseHandlerMap::getSourceSoundPropertyValue(const am_sourceID_
 {
     assert(sourceID!=0);
 
-	am_Source_Database_s const * source = objectForKeyIfExistsInMap(sourceID, mMappedData.mSourceMap);
-	if( NULL!=source )
+	am_Source_Database_s * pObject = (am_Source_Database_s *)objectForKeyIfExistsInMap(sourceID, mMappedData.mSourceMap);
+	if( NULL!=pObject )
 	{
-		std::vector<am_SoundProperty_s>::const_iterator iter = source->listSoundProperties.begin();
-		for(; iter<source->listSoundProperties.end(); ++iter)
+		if(pObject->listSoundProperties.size()>0 && 0==pObject->cacheSoundProperties.size())
 		{
-			if( propertyType == iter->type )
-			{
-				value = iter->value;
-				return (E_OK);
-			}
+			std::vector<am_SoundProperty_s>::const_iterator iter = pObject->listSoundProperties.begin();
+			for(; iter<pObject->listSoundProperties.end(); ++iter)
+				pObject->cacheSoundProperties[iter->type] = iter->value;
+		}
+		auto it = pObject->cacheSoundProperties.find(propertyType);
+		if(it!=pObject->cacheSoundProperties.end())
+		{
+			value = it->second;
+			return (E_OK);
 		}
 	}
+	value = -1;
+	return (E_NON_EXISTENT);
+}
+
+am_Error_e CAmDatabaseHandlerMap::getMainSinkSoundPropertyValue(const am_sinkID_t sinkID, const am_CustomMainSoundPropertyType_t propertyType, int16_t& value) const
+{
+    assert(sinkID!=0);
+
+	am_Sink_Database_s * pObject = (am_Sink_Database_s *)objectForKeyIfExistsInMap(sinkID, mMappedData.mSinkMap);
+	if( NULL!=pObject )
+	{
+		if(pObject->listMainSoundProperties.size()>0 && 0==pObject->cacheMainSoundProperties.size())
+		{
+			std::vector<am_MainSoundProperty_s>::const_iterator iter = pObject->listMainSoundProperties.begin();
+			for(; iter<pObject->listMainSoundProperties.end(); ++iter)
+				pObject->cacheMainSoundProperties[iter->type] = iter->value;
+		}
+		auto it = pObject->cacheMainSoundProperties.find(propertyType);
+		if(it!=pObject->cacheMainSoundProperties.end())
+		{
+			value = it->second;
+			return (E_OK);
+		}
+	}
+	value = -1;
+	return (E_NON_EXISTENT);
+}
+
+am_Error_e CAmDatabaseHandlerMap::getMainSourceSoundPropertyValue(const am_sourceID_t sourceID, const am_CustomMainSoundPropertyType_t propertyType, int16_t& value) const
+{
+    assert(sourceID!=0);
+
+	am_Source_Database_s * pObject = (am_Source_Database_s *)objectForKeyIfExistsInMap(sourceID, mMappedData.mSourceMap);
+	if( NULL!=pObject )
+	{
+		if(pObject->listMainSoundProperties.size()>0 && 0==pObject->cacheMainSoundProperties.size())
+		{
+			std::vector<am_MainSoundProperty_s>::const_iterator iter = pObject->listMainSoundProperties.begin();
+			for(; iter<pObject->listMainSoundProperties.end(); ++iter)
+				pObject->cacheMainSoundProperties[iter->type] = iter->value;
+		}
+		auto it = pObject->cacheMainSoundProperties.find(propertyType);
+		if(it!=pObject->cacheMainSoundProperties.end())
+		{
+			value = it->second;
+			return (E_OK);
+		}
+	}
+
 	value = -1;
 	return (E_NON_EXISTENT);
 }
@@ -2505,12 +2594,15 @@ am_Error_e CAmDatabaseHandlerMap::changeSourceSoundPropertyDB(const am_SoundProp
         return (E_NON_EXISTENT);
     }
 
-    std::vector<am_SoundProperty_s>::iterator iter = mMappedData.mSourceMap[sourceID].listSoundProperties.begin();
-	for(; iter<mMappedData.mSourceMap[sourceID].listSoundProperties.end(); ++iter)
+    am_Source_Database_s & source = mMappedData.mSourceMap[sourceID];
+    std::vector<am_SoundProperty_s>::iterator iter = source.listSoundProperties.begin();
+	for(; iter<source.listSoundProperties.end(); ++iter)
 	{
 		if( soundProperty.type == iter->type )
 		{
 			iter->value = soundProperty.value;
+			if(source.cacheSoundProperties.size())
+				source.cacheSoundProperties[soundProperty.type] = soundProperty.value;
 			return (E_OK);
 		}
 	}
@@ -2525,13 +2617,15 @@ am_Error_e CAmDatabaseHandlerMap::changeSinkSoundPropertyDB(const am_SoundProper
     {
         return (E_NON_EXISTENT);
     }
-
-    std::vector<am_SoundProperty_s>::iterator iter = mMappedData.mSinkMap[sinkID].listSoundProperties.begin();
- 	for(; iter<mMappedData.mSinkMap[sinkID].listSoundProperties.end(); ++iter)
+    am_Sink_Database_s & sink = mMappedData.mSinkMap[sinkID];
+    std::vector<am_SoundProperty_s>::iterator iter = sink.listSoundProperties.begin();
+ 	for(; iter<sink.listSoundProperties.end(); ++iter)
  	{
  		if( soundProperty.type == iter->type )
  		{
  			iter->value = soundProperty.value;
+ 			if(sink.cacheSoundProperties.size())
+ 				sink.cacheSoundProperties[soundProperty.type] = soundProperty.value;
  			return (E_OK);
  		}
  	}
@@ -2621,6 +2715,7 @@ am_Error_e CAmDatabaseHandlerMap::changeSourceDB(const am_sourceID_t sourceID, c
     if (!listSoundProperties.empty())
     {
     	mMappedData.mSourceMap.at(sourceID).listSoundProperties = listSoundProperties;
+    	mMappedData.mSourceMap.at(sourceID).cacheSoundProperties.clear();
     }
 
     //check if we have to update the list of connectionformats
@@ -2634,6 +2729,7 @@ am_Error_e CAmDatabaseHandlerMap::changeSourceDB(const am_sourceID_t sourceID, c
     {
 
     	mMappedData.mSourceMap.at(sourceID).listMainSoundProperties = listMainSoundProperties;
+    	mMappedData.mSourceMap.at(sourceID).cacheMainSoundProperties.clear();
     }
     else //read out the properties
     {
@@ -2679,6 +2775,7 @@ am_Error_e CAmDatabaseHandlerMap::changeSinkDB(const am_sinkID_t sinkID, const a
     if (!listSoundProperties.empty())
     {
     	mMappedData.mSinkMap.at(sinkID).listSoundProperties = listSoundProperties;
+    	mMappedData.mSinkMap.at(sinkID).cacheSoundProperties.clear();
     }
 
     //check if we have to update the list of connectionformats
@@ -2691,6 +2788,7 @@ am_Error_e CAmDatabaseHandlerMap::changeSinkDB(const am_sinkID_t sinkID, const a
     if (!listMainSoundProperties.empty() && sinkVisible(sinkID))
     {
     	mMappedData.mSinkMap.at(sinkID).listMainSoundProperties = listMainSoundProperties;
+    	mMappedData.mSinkMap.at(sinkID).cacheSoundProperties.clear();
     }
     else //read out the properties
     {

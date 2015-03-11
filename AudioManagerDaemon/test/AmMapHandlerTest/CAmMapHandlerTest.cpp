@@ -1106,6 +1106,21 @@ TEST_F(CAmMapHandlerTest,enterSourcesCorrect)
     ASSERT_EQ(true, equal);
 }
 
+TEST_F(CAmMapHandlerTest, changeSinkMuteState)
+{
+    std::vector<am_Sink_s> listSinks;
+    am_Sink_s sink;
+    am_sinkID_t sinkID;
+    pCF.createSink(sink);
+    am_MuteState_e muteState = MS_MUTED;
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.changeSinkMuteStateDB(muteState,sinkID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.getListSinks(listSinks));
+    ASSERT_EQ(muteState, listSinks[0].muteState);
+}
+
 TEST_F(CAmMapHandlerTest, changeSourceMainSoundProperty)
 {
     std::vector<am_Source_s> listSources;
@@ -1120,29 +1135,21 @@ TEST_F(CAmMapHandlerTest, changeSourceMainSoundProperty)
 
     ASSERT_EQ(E_OK, pDatabaseHandler.changeMainSourceSoundPropertyDB(property,sourceID));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListSources(listSources));
+
     std::vector<am_MainSoundProperty_s>::iterator listIterator = listSources[0].listMainSoundProperties.begin();
     for (; listIterator < listSources[0].listMainSoundProperties.end(); ++listIterator)
     {
         if (listIterator->type == property.type)
-        {
             ASSERT_EQ(listIterator->value, property.value);
-        }
     }
-}
+    int16_t value;
+    ASSERT_EQ(E_OK, pDatabaseHandler.getMainSourceSoundPropertyValue(sourceID, property.type, value));
+    ASSERT_EQ(value, property.value);
 
-TEST_F(CAmMapHandlerTest, changeSinkMuteState)
-{
-    std::vector<am_Sink_s> listSinks;
-    am_Sink_s sink;
-    am_sinkID_t sinkID;
-    pCF.createSink(sink);
-    am_MuteState_e muteState = MS_MUTED;
-
-    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
-
-    ASSERT_EQ(E_OK, pDatabaseHandler.changeSinkMuteStateDB(muteState,sinkID));
-    ASSERT_EQ(E_OK, pDatabaseHandler.getListSinks(listSinks));
-    ASSERT_EQ(muteState, listSinks[0].muteState);
+    ASSERT_EQ(E_OK, pDatabaseHandler.changeMainSourceSoundPropertyDB({property.type, 34},sourceID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.getMainSourceSoundPropertyValue(sourceID, property.type, value));
+    ASSERT_EQ(value, 34);
+    ASSERT_EQ(E_NON_EXISTENT, pDatabaseHandler.getMainSourceSoundPropertyValue(sourceID, 1000, value));
 }
 
 TEST_F(CAmMapHandlerTest, changeSinkMainSoundProperty)
@@ -1164,10 +1171,80 @@ TEST_F(CAmMapHandlerTest, changeSinkMainSoundProperty)
     for (; listIterator < listSinks[0].listMainSoundProperties.end(); ++listIterator)
     {
         if (listIterator->type == property.type)
-        {
             ASSERT_EQ(listIterator->value, property.value);
-        }
     }
+
+    int16_t value;
+    ASSERT_EQ(E_OK, pDatabaseHandler.getMainSinkSoundPropertyValue(sinkID, property.type, value));
+    ASSERT_EQ(value, property.value);
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.changeMainSinkSoundPropertyDB({property.type, 34},sinkID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.getMainSinkSoundPropertyValue(sinkID, property.type, value));
+    ASSERT_EQ(value, 34);
+    ASSERT_EQ(E_NON_EXISTENT, pDatabaseHandler.getMainSinkSoundPropertyValue(sinkID, 1000, value));
+}
+
+TEST_F(CAmMapHandlerTest, changeSourceSoundProperty)
+{
+    std::vector<am_Source_s> listSources;
+    am_Source_s source;
+    am_sourceID_t sourceID;
+    pCF.createSource(source);
+    am_SoundProperty_s property;
+    property.type = SP_GENIVI_MID;
+    property.value = 33;
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.changeSourceSoundPropertyDB(property,sourceID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.getListSources(listSources));
+
+    std::vector<am_SoundProperty_s>::iterator listIterator = listSources[0].listSoundProperties.begin();
+    for (; listIterator < listSources[0].listSoundProperties.end(); ++listIterator)
+    {
+        if (listIterator->type == property.type)
+            ASSERT_EQ(listIterator->value, property.value);
+    }
+    int16_t value;
+    ASSERT_EQ(E_OK, pDatabaseHandler.getSourceSoundPropertyValue(sourceID, property.type, value));
+    ASSERT_EQ(value, property.value);
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.changeSourceSoundPropertyDB({property.type, 34},sourceID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.getSourceSoundPropertyValue(sourceID, property.type, value));
+    ASSERT_EQ(value, 34);
+    ASSERT_EQ(E_NON_EXISTENT, pDatabaseHandler.getSourceSoundPropertyValue(sourceID, 1000, value));
+}
+
+TEST_F(CAmMapHandlerTest, changeSinkSoundProperty)
+{
+    std::vector<am_Sink_s> listSinks;
+    am_Sink_s sink;
+    am_sinkID_t sinkID;
+    pCF.createSink(sink);
+    am_SoundProperty_s property;
+    property.type = SP_GENIVI_MID;
+    property.value = 33;
+
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.changeSinkSoundPropertyDB(property,sinkID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.getListSinks(listSinks));
+    std::vector<am_SoundProperty_s>::iterator listIterator = listSinks[0].listSoundProperties.begin();
+    for (; listIterator < listSinks[0].listSoundProperties.end(); ++listIterator)
+    {
+        if (listIterator->type == property.type)
+            ASSERT_EQ(listIterator->value, property.value);
+    }
+
+    int16_t value;
+    ASSERT_EQ(E_OK, pDatabaseHandler.getSinkSoundPropertyValue(sinkID, property.type, value));
+    ASSERT_EQ(value, property.value);
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.changeSinkSoundPropertyDB({property.type, 34},sinkID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.getSinkSoundPropertyValue(sinkID, property.type, value));
+    ASSERT_EQ(value, 34);
+    ASSERT_EQ(E_NON_EXISTENT, pDatabaseHandler.getSinkSoundPropertyValue(sinkID, 1000, value));
 }
 
 TEST_F(CAmMapHandlerTest, peekDomain)

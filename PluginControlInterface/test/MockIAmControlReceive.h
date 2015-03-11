@@ -221,8 +221,24 @@ class MockIAmControlReceive : public IAmControlReceive {
       am_Error_e(uint32_t& version));
   MOCK_METHOD2(sendLifecycleRequestCompleteNSM,
       NsmErrorStatus_e(const uint32_t RequestId, const NsmErrorStatus_e status));
+  MOCK_CONST_METHOD2(getListMainSinkSoundProperties,
+      am_Error_e(const am_sinkID_t sinkID, std::vector<am_MainSoundProperty_s>& listSoundproperties));
+  MOCK_CONST_METHOD2(getListMainSourceSoundProperties,
+      am_Error_e(const am_sourceID_t sourceID, std::vector<am_MainSoundProperty_s>& listSoundproperties));
+  MOCK_CONST_METHOD2(getListSinkSoundProperties,
+      am_Error_e(const am_sinkID_t sinkID, std::vector<am_SoundProperty_s>& listSoundproperties));
+  MOCK_CONST_METHOD2(getListSourceSoundProperties,
+      am_Error_e(const am_sourceID_t sourceID, std::vector<am_SoundProperty_s>& listSoundproperties));
+  MOCK_CONST_METHOD3(getMainSinkSoundPropertyValue,
+      am_Error_e(const am_sinkID_t sinkID, const am_CustomMainSoundPropertyType_t propertyType, int16_t& value));
+  MOCK_CONST_METHOD3(getSinkSoundPropertyValue,
+      am_Error_e(const am_sinkID_t sinkID, const am_CustomSoundPropertyType_t propertyType, int16_t& value));
+  MOCK_CONST_METHOD3(getMainSourceSoundPropertyValue,
+      am_Error_e(const am_sourceID_t sourceID, const am_CustomMainSoundPropertyType_t propertyType, int16_t& value));
+  MOCK_CONST_METHOD3(getSourceSoundPropertyValue,
+      am_Error_e(const am_sourceID_t sourceID, const am_CustomSoundPropertyType_t propertyType, int16_t& value));
 };
 
+}  // namespace am
 
-} // namespace am
 #endif

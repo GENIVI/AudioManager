@@ -2880,7 +2880,71 @@ am_Error_e CAmDatabaseHandlerSQLite::getListMainSourceSoundProperties(const am_s
 
     if (eCode != SQLITE_DONE)
     {
-        logError("DatabaseHandler::getListMainSinkSoundProperties SQLITE error code:", eCode);
+        logError("DatabaseHandler::getListMainSourceSoundProperties SQLITE error code:", eCode);
+        MY_SQLITE_FINALIZE(query)
+        return (E_DATABASE_ERROR);
+    }
+
+    MY_SQLITE_FINALIZE(query)
+
+    return (E_OK);
+}
+
+am_Error_e CAmDatabaseHandlerSQLite::getListSinkSoundProperties(const am_sinkID_t sinkID, std::vector<am_SoundProperty_s>& listSoundproperties) const
+{
+    assert(sinkID!=0);
+    if (!existSink(sinkID))
+        return (E_DATABASE_ERROR); // todo: here we could change to non existen, but not shown in sequences
+    listSoundproperties.clear();
+
+    sqlite3_stmt* query = NULL;
+    int eCode = 0;
+    am_SoundProperty_s temp;
+    std::string command = "SELECT soundPropertyType, value FROM SinkSoundProperty" + i2s(sinkID);
+    MY_SQLITE_PREPARE_V2(mpDatabase, command.c_str(), -1, &query, NULL)
+
+    while ((eCode = sqlite3_step(query)) == SQLITE_ROW)
+    {
+        temp.type = (am_CustomMainSoundPropertyType_t) sqlite3_column_int(query, 0);
+        temp.value = sqlite3_column_int(query, 1);
+        listSoundproperties.push_back(temp);
+    }
+
+    if (eCode != SQLITE_DONE)
+    {
+        logError("DatabaseHandler::getListSinkSoundProperties SQLITE error code:", eCode);
+        MY_SQLITE_FINALIZE(query)
+        return (E_DATABASE_ERROR);
+    }
+
+    MY_SQLITE_FINALIZE(query)
+
+    return (E_OK);
+}
+
+am_Error_e CAmDatabaseHandlerSQLite::getListSourceSoundProperties(const am_sourceID_t sourceID, std::vector<am_SoundProperty_s>& listSoundproperties) const
+{
+    assert(sourceID!=0);
+    if (!existSource(sourceID))
+        return (E_DATABASE_ERROR); // todo: here we could change to non existen, but not shown in sequences
+    listSoundproperties.clear();
+
+    sqlite3_stmt* query = NULL;
+    int eCode = 0;
+    am_SoundProperty_s temp;
+    std::string command = "SELECT soundPropertyType, value FROM SourceSoundProperty" + i2s(sourceID);
+    MY_SQLITE_PREPARE_V2(mpDatabase, command.c_str(), -1, &query, NULL)
+
+    while ((eCode = sqlite3_step(query)) == SQLITE_ROW)
+    {
+        temp.type = (am_CustomMainSoundPropertyType_t) sqlite3_column_int(query, 0);
+        temp.value = sqlite3_column_int(query, 1);
+        listSoundproperties.push_back(temp);
+    }
+
+    if (eCode != SQLITE_DONE)
+    {
+        logError("DatabaseHandler::getListSourceSoundProperties SQLITE error code:", eCode);
         MY_SQLITE_FINALIZE(query)
         return (E_DATABASE_ERROR);
     }
@@ -4039,6 +4103,61 @@ am_Error_e CAmDatabaseHandlerSQLite::getSourceVolume(const am_sourceID_t sourceI
         logError("DatabaseHandler::getSourceVolume database error!:", eCode);
     }
     MY_SQLITE_FINALIZE(query)
+    return (E_OK);
+}
+
+am_Error_e CAmDatabaseHandlerSQLite::getMainSinkSoundPropertyValue(const am_sinkID_t sinkID, const am_CustomMainSoundPropertyType_t propertyType, int16_t& value) const
+{
+    assert(sinkID!=0);
+    if (!existSink(sinkID))
+        return (E_DATABASE_ERROR); // todo: here we could change to non existent, but not shown in sequences
+
+    sqlite3_stmt* query = NULL;
+    int eCode = 0;
+    std::string command = "SELECT value FROM SinkMainSoundProperty" + i2s(sinkID) + " WHERE soundPropertyType=" + i2s(propertyType);
+    MY_SQLITE_PREPARE_V2(mpDatabase, command.c_str(), -1, &query, NULL)
+
+    if ((eCode = sqlite3_step(query)) == SQLITE_ROW)
+    {
+        value = sqlite3_column_int(query, 0);
+    }
+    else
+    {
+        logError("DatabaseHandler::getDomainState database error!:", eCode);
+        MY_SQLITE_FINALIZE(query)
+        return (E_DATABASE_ERROR);
+    }
+
+    MY_SQLITE_FINALIZE(query)
+
+    return (E_OK);
+}
+
+am_Error_e CAmDatabaseHandlerSQLite::getMainSourceSoundPropertyValue(const am_sourceID_t sourceID, const am_CustomMainSoundPropertyType_t propertyType, int16_t& value) const
+{
+    assert(sourceID!=0);
+    if (!existSource(sourceID))
+        return (E_DATABASE_ERROR); // todo: here we could change to non existent, but not shown in sequences
+
+    sqlite3_stmt* query = NULL;
+    int eCode = 0;
+    std::string command = "SELECT value FROM SourceMainSoundProperty" + i2s(sourceID) + " WHERE soundPropertyType=" + i2s(propertyType);
+    MY_SQLITE_PREPARE_V2(mpDatabase, command.c_str(), -1, &query, NULL)
+
+    while ((eCode = sqlite3_step(query)) == SQLITE_ROW)
+    {
+        value = sqlite3_column_int(query, 0);
+    }
+
+    if (eCode != SQLITE_DONE)
+    {
+        logError("DatabaseHandler::getSinkSoundPropertyValue SQLITE error code:", eCode);
+        MY_SQLITE_FINALIZE(query)
+        return (E_DATABASE_ERROR);
+    }
+
+    MY_SQLITE_FINALIZE(query)
+
     return (E_OK);
 }
 

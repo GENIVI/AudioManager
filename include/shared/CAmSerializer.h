@@ -745,6 +745,48 @@ private:
     };
 
     /**
+	* template for synchronous const calls with three arguments
+	*/
+    template<class TClass, typename TretVal, typename TargCall, typename TargCall1, typename TargCall2, typename Targ, typename Targ1, typename Targ2> class CAmSyncThreeArgConstDelegate: public CAmDelegate
+        {
+        private:
+            TClass* mInstance;
+            TretVal (TClass::*mFunction)(TargCall argument, TargCall1 argument1, TargCall2 argument2) const;
+            Targ mArgument;
+            Targ1 mArgument1;
+            Targ2 mArgument2;
+            TretVal mRetval;
+
+        public:
+            CAmSyncThreeArgConstDelegate(TClass* instance, TretVal (TClass::*function)(TargCall argument, TargCall1 argument1, TargCall2 argument2) const, Targ argument, Targ1 argument1, Targ2 argument2) :
+                    mInstance(instance), //
+                    mFunction(function), //
+                    mArgument(argument), //
+                    mArgument1(argument1), //
+                    mArgument2(argument2), //
+                    mRetval()
+            {
+            }
+            ;
+
+            bool call(int* pipe)
+            {
+                mRetval = (*mInstance.*mFunction)(mArgument, mArgument1, mArgument2);
+                write(pipe[1], this, sizeof(this));
+                return (false);
+            }
+            ;
+
+            TretVal returnResults(Targ& argument, Targ1& argument1, Targ2& argument2)
+            {
+                argument = mArgument;
+                argument1 = mArgument1;
+                argument2 = mArgument2;
+                return (mRetval);
+            }
+        };
+
+    /**
      * template for synchronous calls with four arguments
      */
     template<class TClass, typename TretVal, typename TargCAll, typename TargCall1, typename TargCall2, typename TargCall3, typename Targ, typename Targ1, typename Targ2, typename Targ3> class CAmSyncFourArgDelegate: public CAmDelegate
@@ -1299,6 +1341,26 @@ public:
         retVal = p->returnResults(argument, argument1, argument2);
         delete p;
     }
+
+    /**
+	* calls a const function with three arguments synchronously threadsafe. for more see syncCall with one argument
+	*/
+   template<class TClass1, class TretVal, class TargCall, class TargCall1, class TargCall2, class Targ, class Targ1, class Targ2>
+   void syncCall(TClass1* instance, TretVal (TClass1::*function)(TargCall, TargCall1, TargCall2) const, TretVal& retVal, Targ& argument, Targ1& argument1, Targ2& argument2)
+   {
+	   CAmSyncThreeArgConstDelegate<TClass1, TretVal, TargCall, TargCall1, TargCall2, Targ, Targ1, Targ2>* p(new CAmSyncThreeArgConstDelegate<TClass1, TretVal, TargCall, TargCall1, TargCall2, Targ, Targ1, Targ2>(instance, function, argument, argument1, argument2));
+	   send(static_cast<CAmDelegagePtr>(p));
+	   int numReads;
+	   CAmDelegagePtr ptr;
+	   if ((numReads = read(mReturnPipe[0], &ptr, sizeof(ptr))) == -1)
+	   {
+		   logError("CAmSerializer::receiverCallback could not read pipe!");
+		   throw std::runtime_error("CAmSerializer Could not read pipe!");
+	   }
+	   //working with friend class here is not the finest of all programming stiles but it worCAmTwoArgDelegateks...
+	   retVal = p->returnResults(argument, argument1, argument2);
+	   delete p;
+   }
 
     /**
      * calls a function with four arguments synchronously threadsafe. for more see syncCall with one argument

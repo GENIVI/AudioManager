@@ -695,5 +695,53 @@ NsmErrorStatus_e CAmControlReceiver::sendLifecycleRequestCompleteNSM(const uint3
 
 }
 
+am_Error_e CAmControlReceiver::getListMainSinkSoundProperties(const am_sinkID_t sinkID, std::vector<am_MainSoundProperty_s>& listSoundproperties) const
+{
+	logInfo("CAmControlReceiver::getListMainSinkSoundProperties was called, sinkID", sinkID);
+	return (mDatabaseHandler->getListMainSinkSoundProperties(sinkID,listSoundproperties));
+}
+
+am_Error_e CAmControlReceiver::getListMainSourceSoundProperties(const am_sourceID_t sourceID, std::vector<am_MainSoundProperty_s>& listSoundproperties) const
+{
+	 logInfo("CAmControlReceiver::getListMainSourceSoundProperties was called, sourceID", sourceID);
+	 return (mDatabaseHandler->getListMainSourceSoundProperties(sourceID, listSoundproperties));
+}
+
+am_Error_e CAmControlReceiver::getListSinkSoundProperties(const am_sinkID_t sinkID, std::vector<am_SoundProperty_s>& listSoundproperties) const
+{
+	logInfo("CAmControlReceiver::getListSinkSoundProperties was called, sinkID", sinkID);
+	return (mDatabaseHandler->getListSinkSoundProperties(sinkID,listSoundproperties));
+}
+
+am_Error_e CAmControlReceiver::getListSourceSoundProperties(const am_sourceID_t sourceID, std::vector<am_SoundProperty_s>& listSoundproperties) const
+{
+	 logInfo("CAmControlReceiver::getListSourceSoundProperties was called, sourceID", sourceID);
+	 return (mDatabaseHandler->getListSourceSoundProperties(sourceID, listSoundproperties));
+}
+
+am_Error_e CAmControlReceiver::getMainSinkSoundPropertyValue(const am_sinkID_t sinkID, const am_CustomMainSoundPropertyType_t propertyType, int16_t& value) const
+{
+	logInfo("CAmControlReceiver::getMainSinkSoundPropertyValue was called, sinkID", sinkID);
+	return (mDatabaseHandler->getMainSinkSoundPropertyValue(sinkID,propertyType,value));
+}
+
+am_Error_e CAmControlReceiver::getSinkSoundPropertyValue(const am_sinkID_t sinkID, const am_CustomSoundPropertyType_t propertyType, int16_t& value) const
+{
+	logInfo("CAmControlReceiver::getSinkSoundPropertyValue was called, sinkID", sinkID);
+	return (mDatabaseHandler->getSinkSoundPropertyValue(sinkID,propertyType,value));
+}
+
+am_Error_e CAmControlReceiver::getMainSourceSoundPropertyValue(const am_sourceID_t sourceID, const am_CustomMainSoundPropertyType_t propertyType, int16_t& value) const
+{
+	logInfo("CAmControlReceiver::getMainSourceSoundPropertyValue was called, sourceID", sourceID);
+	return (mDatabaseHandler->getMainSourceSoundPropertyValue(sourceID,propertyType,value));
+}
+
+am_Error_e CAmControlReceiver::getSourceSoundPropertyValue(const am_sourceID_t sourceID, const am_CustomSoundPropertyType_t propertyType, int16_t& value) const
+{
+	 logInfo("CAmControlReceiver::getSourceSoundPropertyValue was called, sourceID", sourceID);
+	 return (mDatabaseHandler->getSourceSoundPropertyValue(sourceID,propertyType,value));
+}
+
 }
 
