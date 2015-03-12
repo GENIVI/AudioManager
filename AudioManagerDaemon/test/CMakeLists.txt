@@ -10,12 +10,12 @@
 # Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
 # this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # 
-# author Christian Mueller, christian.ei.mueller@bmw.de BMW 2011,2012
+# author Christian Linke, christian.linke@bmw.de BMW 2011,2012
 #
 # For further information see http://www.genivi.org/.
 #
 
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8.8)
 
 
 set(EXECUTABLE_OUTPUT_PATH ${TEST_EXECUTABLE_OUTPUT_PATH})

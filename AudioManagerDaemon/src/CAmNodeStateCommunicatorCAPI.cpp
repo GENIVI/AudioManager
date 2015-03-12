@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012, BMW AG
+Von mir aus gerne. * Copyright (C) 2012, BMW AG
  *
  * This file is part of GENIVI Project AudioManager.
  *
@@ -28,8 +28,8 @@
 #include <memory>
 #include <CommonAPI/CommonAPI.h>
 #include "config.h"
-#include "shared/CAmCommonAPIWrapper.h"
-#include "shared/CAmDltWrapper.h"
+#include "CAmCommonAPIWrapper.h"
+#include "CAmDltWrapper.h"
 #include "CAmNodeStateCommunicatorCAPI.h"
 #include "CAmControlSender.h"
 #include <org/genivi/NodeStateManager/LifeCycleConsumerProxy.h>

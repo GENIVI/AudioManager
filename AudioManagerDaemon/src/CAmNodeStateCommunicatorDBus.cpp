@@ -26,7 +26,7 @@
 #include <sstream>
 #include <stdexcept>
 #include "CAmControlSender.h"
-#include "shared/CAmDltWrapper.h"
+#include "CAmDltWrapper.h"
 #include "config.h"
 
 namespace am

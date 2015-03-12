@@ -21,7 +21,7 @@
 #ifndef CAMNODESTATECOMMUNICATORDBUS_H_
 #define CAMNODESTATECOMMUNICATORDBUS_H_
 
-#include "shared/CAmDbusWrapper.h"
+#include "CAmDbusWrapper.h"
 #include "CAmNodeStateCommunicator.h"
 
 namespace am

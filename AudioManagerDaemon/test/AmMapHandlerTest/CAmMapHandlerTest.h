@@ -12,7 +12,7 @@
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *
- * \author Christian Mueller, christian.ei.mueller@bmw.de BMW 2011,2012
+ * \author Christian Linke, christian.linke@bmw.de BMW 2011,2012
  * \author Aleksandar Donchev, aleksander.donchev@partner.bmw.de BMW 2013
  *
  * For further information see http://www.genivi.org/.
@@ -27,7 +27,7 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
-#include "shared/CAmSocketHandler.h"
+#include "CAmSocketHandler.h"
 #include "CAmDatabaseHandlerMap.h"
 #include "CAmControlReceiver.h"
 #include "CAmControlSender.h"

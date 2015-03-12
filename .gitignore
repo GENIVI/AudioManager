@@ -1,13 +1,5 @@
 CHANGELOG
-config.h
-bin/
 build/
-doc/
-packages/
 .*
-/packages
 /patch
-ProjectSpecific/
-
-/AudioManagerDaemon/fidls/AudioManager_dbus.conf
-/AudioManagerDaemon/fidls/AudioManager_dbus.conf.in
+Plugins/

@@ -12,7 +12,7 @@
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *
- * \author Christian Mueller, christian.ei.mueller@bmw.de BMW 2011,2012
+ * \author Christian Linke, christian.linke@bmw.de BMW 2011,2012
  *
  * For further information see http://www.genivi.org/.
  *
@@ -38,8 +38,7 @@
 #include "../CAmCommonFunctions.h"
 #include "../MockIAmRoutingSend.h"
 #include "../MockIAmControlSend.h"
-#include "shared/CAmSocketHandler.h"
-#include "shared/CAmDbusWrapper.h"
+#include "CAmSocketHandler.h"
 
 namespace am
 {
@@ -50,7 +49,6 @@ public:
     CAmControlInterfaceTest();
     ~CAmControlInterfaceTest();
     CAmSocketHandler pSocketHandler;
-    CAmDbusWrapper* pDBusWrapper;
     std::vector<std::string> plistCommandPluginDirs;
     std::vector<std::string> plistRoutingPluginDirs;
     CAmDatabaseHandlerMap pDatabaseHandler;

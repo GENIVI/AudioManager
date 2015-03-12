@@ -12,7 +12,7 @@
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *
- * \author Christian Mueller, christian.ei.mueller@bmw.de BMW 2011,2012
+ * \author Christian Linke, christian.linke@bmw.de BMW 2011,2012
  *
  * \file CAmCommandSender.cpp
  * For further information see http://www.genivi.org/.
@@ -29,7 +29,7 @@
 #include <cstring>
 #include "CAmCommandReceiver.h"
 #include "TAmPluginTemplate.h"
-#include "shared/CAmDltWrapper.h"
+#include "CAmDltWrapper.h"
 
 namespace am
 {

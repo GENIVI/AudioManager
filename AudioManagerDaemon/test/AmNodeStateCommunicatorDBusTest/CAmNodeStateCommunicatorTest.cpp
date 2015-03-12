@@ -20,9 +20,9 @@
  */
 
 #include "CAmNodeStateCommunicatorTest.h"
-#include "shared/CAmDltWrapper.h"
-#include "shared/CAmSocketHandler.h"
-#include "shared/CAmDbusWrapper.h"
+#include "CAmDltWrapper.h"
+#include "CAmSocketHandler.h"
+#include "CAmDbusWrapper.h"
 
 #include <unistd.h>
 

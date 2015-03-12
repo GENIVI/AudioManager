@@ -12,7 +12,7 @@
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *
- * \author Christian Mueller, christian.ei.mueller@bmw.de BMW 2011,2012
+ * \author Christian Linke, christian.linke@bmw.de BMW 2011,2012
  * \author Frank Herchet, frank.fh.herchet@bmw.de BMW 2012
  *
  * \file CAmTelnetMenuHelper.cpp
@@ -32,7 +32,7 @@
 #include "CAmRoutingReceiver.h"
 #include "CAmCommandReceiver.h"
 #include "CAmControlReceiver.h"
-#include "shared/CAmDltWrapper.h"
+#include "CAmDltWrapper.h"
 
 static const std::string COLOR_WELCOME("\033[1;33m\033[44m");
 static const std::string COLOR_HEAD("\033[1m\033[42m");

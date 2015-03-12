@@ -1,4 +1,0 @@
-#ifndef _COMMANDCAPI_CONFIG_H
-#define _COMMANDCAPI_CONFIG_H
-
-#endif /* _COMMANDCAPI_CONFIG_H */

@@ -12,7 +12,7 @@
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *
- * \author Christian Mueller, christian.ei.mueller@bmw.de BMW 2011,2012
+ * \author Christian Linke, christian.linke@bmw.de BMW 2011,2012
  * \author Frank Herchet, frank.fh.herchet@bmw.de BMW 2012
  *
  * \file main.cpp
@@ -34,10 +34,10 @@
 #endif
 
 #ifdef WITH_CAPI_WRAPPER
-    #include "shared/CAmCommonAPIWrapper.h"
+    #include "CAmCommonAPIWrapper.h"
 #else
 	#ifdef WITH_DBUS_WRAPPER
-		#include "shared/CAmDbusWrapper.h"
+		#include "CAmDbusWrapper.h"
 	#endif
 #endif
 
@@ -79,8 +79,8 @@
 #include "CAmCommandReceiver.h"
 #include "CAmControlReceiver.h"
 #include "CAmDatabaseObserver.h"
-#include "shared/CAmDltWrapper.h"
-#include "shared/CAmSocketHandler.h"
+#include "CAmDltWrapper.h"
+#include "CAmSocketHandler.h"
 
 
 using namespace am;

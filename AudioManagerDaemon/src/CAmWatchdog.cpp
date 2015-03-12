@@ -12,7 +12,7 @@
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *
- * \author Christian Mueller, christian.ei.mueller@bmw.de BMW 2011,2012
+ * \author Christian Linke, christian.linke@bmw.de BMW 2011,2012
  *
  * \file CAmWatchdog.cpp
  * For further information see http://www.genivi.org/.
@@ -24,7 +24,7 @@
 #include <cstdlib>
 #include <stdexcept>
 #include "config.h"
-#include "shared/CAmDltWrapper.h"
+#include "CAmDltWrapper.h"
 
 #ifdef SYSTEMD_FOUND
     #include <systemd/sd-daemon.h>

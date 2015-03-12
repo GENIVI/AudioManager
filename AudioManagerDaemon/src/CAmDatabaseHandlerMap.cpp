@@ -30,7 +30,7 @@
 #include "CAmDatabaseHandlerMap.h"
 #include "CAmDatabaseObserver.h"
 #include "CAmRouter.h"
-#include "shared/CAmDltWrapper.h"
+#include "CAmDltWrapper.h"
 
 
 namespace am

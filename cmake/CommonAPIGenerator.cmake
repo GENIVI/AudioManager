@@ -119,7 +119,7 @@ IF(COMMON_API_FOUND AND COMMON_API_DBUS_FOUND)
     
             # execute the generate command ...
             execute_process(COMMAND ${COMMONAPI_GENERATOR_EXE}/commonapi_generator -dest ${PARAMS_DESTINATION} ${ARGS} ${FIDLS}
-                            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
                             RESULT_VARIABLE EXIT_CODE
                             OUTPUT_VARIABLE GENERATOR_OUTPUT
                             ERROR_VARIABLE GENERATOR_OUTPUT

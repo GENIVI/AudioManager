@@ -751,16 +751,23 @@ Contribution License Agreements or MPL 2.0 .</p></div>
 This Source Code Form is subject to the terms of the
 Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
 this file, You can obtain one at <a href="http://mozilla.org/MPL/2.0/">http://mozilla.org/MPL/2.0/</a>.</p></div>
-<div class="paragraph"><p>author Christian Mueller, <a href="mailto:christian.linke@bmw.de">christian.linke@bmw.de</a> BMW 2011,2012</p></div>
+<div class="paragraph"><p>author Christian Linke = Christian Linke <a href="mailto:christian.linke@bmw.de">christian.linke@bmw.de</a> BMW 2011-2015</p></div>
 <div class="paragraph"><p>For further information see <a href="http://projects.genivi.org/audio-manager/">http://projects.genivi.org/audio-manager/</a>.</p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_repositories">Repositories</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>The main repository is <a href="http://git.projects.genivi.org-AudioManager.git">http://git.projects.genivi.org-AudioManager.git</a></p></div>
+<div class="paragraph"><p>The repository for example plugins can be found here: <a href="http://git.projects.genivi.org/AudioManagerPlugins.git">http://git.projects.genivi.org/AudioManagerPlugins.git</a></p></div>
 </div>
 </div>
 <div class="sect1">
 <h2 id="_license">License</h2>
 <div class="sectionbody">
-<div class="paragraph"><p>The licenses of this project are split into two parts:
-1) the AudioManagerDaemon, licensed under MPL 2.0
-2) all other parts that serve as example code that can be taken to build up an own project with it -
+<div class="paragraph"><p>The licenses of this project are split into two parts:</p></div>
+<div class="paragraph"><p>1) the AudioManagerDaemon, licensed under MPL 2.0</p></div>
+<div class="paragraph"><p>2) the plugins that serve as example code that can be taken to build up an own project with it -
     these parts are licensed with the MIT license</p></div>
 <div class="paragraph"><p>Contribution is done under GENIVI CLA or MPL2.0.</p></div>
 </div>
@@ -780,6 +787,7 @@ The next commit on the master branch gets then the new first numner (3) and star
 <div class="paragraph"><p>For the daemon the third number (for example 1.0.X) describes the patch version. The versions are automatically created by git during the build process.
 The versioning scheme is used for the AudioManager daemon itself and for each of it&#8217;s interfaces. The versioning of the Interfaces in EA is defined via the tag "version" and the name of the interfaceversion versionName, for example "CommandReceiveVersion". This information is generated into the interface header files and is used then by cmake to set the interface versions.
 Whenever changes are done, the minor version of the interface needs to be incremented.</p></div>
+<div class="paragraph"><p>Since 7.0, the AudioManager follows a new versioning scheme. Please check the documentation for that.</p></div>
 </div>
 </div>
 </div>
@@ -790,7 +798,9 @@ Whenever changes are done, the minor version of the interface needs to be increm
 <div class="listingblock">
 <div class="content">
 <pre><tt>cmake -DWITH_DOCUMENTATION=ON
-make</tt></pre>
+make
+
+The README is compiled into README.html with asciidoc</tt></pre>
 </div></div>
 </div>
 </div>
@@ -802,31 +812,38 @@ make</tt></pre>
 <div class="paragraph"><p>These are the compile options with default values:</p></div>
 <div class="literalblock">
 <div class="content">
-<pre><tt>BUILD_SHARED_LIBS                OFF
+<pre><tt>AM_MAP_CAPACITY                  10
+AM_MAX_CONNECTIONS               0x1000
+AM_SHARE_FOLDER                  /usr/local/share/audiomanager
+BUILD_SHARED_LIBS                OFF
 CMAKE_BUILD_TYPE
 CMAKE_INSTALL_PREFIX             /usr/local
 COMMON_API_DBUS_LIBRARY          /usr/local/lib/libCommonAPI-DBus.so
 COMMON_API_LIBRARY               /usr/local/lib/libCommonAPI.so
+DBUS_SERVICE_OBJECT_PATH         /org/genivi/audiomanager
+DBUS_SERVICE_PREFIX              org.genivi.audiomanager
+DEFAULT_TELNETPORT               6080
+DOC_OUTPUT_PATH                  XXX/build/doc
+DYNAMIC_ID_BOUNDARY              100
+EXECUTABLE_OUTPUT_PATH           XXX/build/bin
 GLIB_DBUS_TYPES_TOLERANT         ON
+LIB_INSTALL_SUFFIX               audiomanager
+MAX_TELNETCONNECTIONS            3
+NSM_BUS_INTERFACE                org.genivi.NodeStateManager
+NSM_INTERFACE                    org.genivi.NodeStateManager.Consumer
+NSM_PATH                         /org/genivi/NodeStateManager
+PLUGINS_OUTPUT_PATH              XXX/build/plugins
+TEST_EXECUTABLE_INSTALL_PATH     ~/tests
+TEST_EXECUTABLE_OUTPUT_PATH      XXX/build/bin/tests
 USE_BUILD_LIBS                   ON
-WITH_COMMAND_INTERFACE_COMMON_   ON
 WITH_DATABASE_STORAGE            OFF
 WITH_DLT                         ON
-WITH_DOCUMENTATION               ON
+WITH_DOCUMENTATION               OFF
 WITH_ENABLED_IPC                 CAPI
-WITH_LOGSTATE                    ON
-WITH_NSM                         ON
-WITH_OXF_ANIMATION               OFF
-WITH_OXF_TRACE                   OFF
-WITH_PLUGIN_COMMAND              ON
-WITH_PLUGIN_CONTROL              ON
-WITH_PLUGIN_ROUTING              ON
-WITH_ROUTING_INTERFACE_ASYNC     OFF
-WITH_ROUTING_INTERFACE_CAPI      ON
+WITH_NSM                         OFF
 WITH_SYSTEMD_WATCHDOG            OFF
 WITH_TELNET                      ON
 WITH_TESTS                       ON
-WITH_TEST_CONTROLLER             OFF
 gmock_build_tests                OFF
 gtest_build_samples              OFF
 gtest_build_tests                OFF
@@ -836,15 +853,8 @@ gtest_force_shared_crt           OFF</tt></pre>
 </div>
 <div class="sect2">
 <h3 id="_passing_options_to_cmake">Passing options to cmake:</h3>
-<div class="paragraph"><div class="title">-DVERSION="XXX"</div><p>When building the AudioManager without taking it from the git (and thus having a .git folder), you can set the version via passing <em>-DVERSION="XXX"</em> to cmake.</p></div>
-<div class="paragraph"><div class="title">-DDBUS_SERVICE_PREFIX="XXX"</div><p>sets the service prefix for Dbus, default "org.genivi.audiomanager\0"</p></div>
-<div class="paragraph"><div class="title">-DDBUS_SERVICE_OBJECT_PATH="XXX"</div><p>sets the object path for Dbus, default "/org/genivi/audiomanager\0"</p></div>
-<div class="paragraph"><div class="title">-DDEFAULT_TELNETPORT="XXX"</div><p>sets the default telnetport, default 6060. Can be overwriten by command line parameter</p></div>
-<div class="paragraph"><div class="title">-DMAX_TELNETCONNECTIONS="XXX"</div><p>sets the default maximum number of telnetconnections, default is 3</p></div>
-<div class="paragraph"><div class="title">-DNSM_PATH="XXX"</div><p>sets the path of the NSM DBUS interface</p></div>
-<div class="paragraph"><div class="title">-DNSM_INTERFACE="XXX"</div><p>sets the interface to the NSM DBUS interface</p></div>
-<div class="paragraph"><p>In order to change these options, you can modify this values with ccmake, do the appropriate changes in
-CmakeList.txt or via the commandline for cmake or (when installed via ccmake)</p></div>
+<div class="paragraph"><p>Standard CMake can be used to configure these options. Tools like ccmake can be used to visually change the values.
+For each option, some hints are given.</p></div>
 </div>
 <div class="sect2">
 <h3 id="_build_dependencies">Build dependencies</h3>
@@ -885,14 +895,24 @@ commonAPI [version &gt; 2.1] (only with WITH_ENABLED_IPC CAPI), more information
 </div></div>
 </div>
 <div class="sect2">
+<h3 id="_audiomanagerutilities">AudioManagerUtilities</h3>
+<div class="paragraph"><p>In the AudioManagerUtilites you can find hany helper functions that can be reused by other projects as well.</p></div>
+</div>
+<div class="sect2">
 <h3 id="_the_nodestatemanager">The NodeStateManager</h3>
 <div class="paragraph"><p>The nodestatemanager headers are needed to compile the audiomanager. If the nodestatemanagerincludes are not found,
 the headers shipped with the audiomanager are used.
-The nodestatemanager can be retrieved from projects.genivi.org . You can install the headers on you system by</p></div>
-<div class="listingblock">
-<div class="content">
-<pre><tt>sudo make install-includeHEADERS</tt></pre>
-</div></div>
+The nodestatemanager can be retrieved from projects.genivi.org .</p></div>
+<div class="paragraph"><p>Please note that the NSM interface must be compatible with Dbus properties. This requires for CommonAPI to use the commonAPI fdepl.
+It used to work, but currently with CommmonAPI 2.6.1 the generation does not work anymore.</p></div>
+</div>
+<div class="sect2">
+<h3 id="_commonapi_file_generation">CommonAPI File generation</h3>
+<div class="paragraph"><p>The audiomanager will search in /usr/share or /usr/local/share for a generator. He will generate all neccessary files with this generator into the build tree.</p></div>
+<div class="paragraph"><p>The adresses used for commonAPI are fixed. If you need to change them, you can use a central or local configure file. More information on CommonAPI documentation: <a href="http://projects.genivi.org/commonapi/">http://projects.genivi.org/commonapi/</a></p></div>
+</div>
+<div class="sect2">
+<h3 id="_tests">Tests</h3>
 <div class="paragraph"><p>For building the tests, you will need the following packages:</p></div>
 <div class="ulist"><ul>
 <li>
@@ -924,101 +944,150 @@ cd build
 cmake ..
 make</tt></pre>
 </div></div>
-<div class="paragraph"><p>After the script finished, you should have:</p></div>
-<div class="ulist"><ul>
-<li>
-<p>
-a bin/ folder which contains all executables and the libraries:
-</p>
-</li>
-<li>
-<p>
-a build/ folder which has all build objects (erase that if you need a clean build)
-</p>
-</li>
-<li>
-<p>
-a doc/ folder in case you turned the documentation on
-</p>
-</li>
-</ul></div>
+<div class="paragraph"><p>The AudioManager executable will be placed in the bin folder of your build folder, tests in a subfolder below.-</p></div>
 <div class="paragraph"><p>In order to install the AudioManager, you can do</p></div>
 <div class="listingblock">
 <div class="content">
 <pre><tt>sudo make install</tt></pre>
 </div></div>
-<div class="paragraph"><p>Package generation is supported via CPack. To build packages, you have to</p></div>
-<div class="listingblock">
-<div class="content">
-<pre><tt>make genivi_package</tt></pre>
-</div></div>
-<div class="paragraph"><p>This will create one package if your CMake version is &lt; 2.8.5 (all binaries stripped):</p></div>
-<div class="listingblock">
-<div class="content">
-<pre><tt>AudioManager-&lt;git verison&gt;-Linux.deb</tt></pre>
-</div></div>
-<div class="paragraph"><p>If your version is above 2.8.5, you will get 4 packages (all binaries stripped) :</p></div>
-<div class="ulist"><ul>
-<li>
-<p>
-AudioManager-&lt;git verison&gt;-Linux-bin.deb              [AudioManager binary]
-</p>
-</li>
-<li>
-<p>
-AudioManager-&lt;git verison&gt;-Linux-dev.deb              [header files needed to compile plugins]
-</p>
-</li>
-<li>
-<p>
-AudioManager-&lt;git verison&gt;-Linux-sampleplugins.deb    [sample plugins]
-</p>
-</li>
-<li>
-<p>
-AudioManager-&lt;git verison&gt;-Linux-tests.deb            [tests including tests for sample plugins, installed in the ~/AudioMAnagerTests]
-</p>
-</li>
-</ul></div>
-<div class="paragraph"><p>In order to create a tar.gz file of all sources (not including .git, build and bin folder,config files), you can do:</p></div>
-<div class="listingblock">
-<div class="content">
-<pre><tt>make package_source</tt></pre>
-</div></div>
-<div class="paragraph"><p>This will create the following package:
-<em>AudioManager-&lt;git verison&gt;-Source.tar.gz</em></p></div>
-<div class="paragraph"><p>All packages will be placed in a folder called packages</p></div>
+<div class="paragraph"><p>this installs everything.</p></div>
 </div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_build_targets">Build targets</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>Several install targets exists:</p></div>
+<div class="paragraph"><p>just install the audiomanager</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt>sudo make bin-install</tt></pre>
+</div></div>
+<div class="paragraph"><p>just install the dev package with all headers and cmake file, needed to compile plugins out of source</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt>sudo make dev-install</tt></pre>
+</div></div>
+<div class="paragraph"><p>just install the tests</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt>sudo make test-install</tt></pre>
+</div></div>
+<div class="paragraph"><p>just install the plugins (only available if plugins are compiled)</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt>sudo make plugins-install</tt></pre>
+</div></div>
+<div class="paragraph"><p>just install the test for the plugins (only available if plugins are compiled)</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><tt>sudo make plugin-test-install</tt></pre>
+</div></div>
+<div class="paragraph"><p>If you want to compile the Audiomanager together with the plugins, simply clone the plugins into a folder
+Plugins on the mainlevel. The Plugins will be then compiled together with the AudioManager.</p></div>
+<div class="paragraph"><p>If the plugins are compiled seperatly, the AudioManager needs to be installed on the system. The plugins will find and read the important CMake variables and use them.</p></div>
 <div class="sect2">
 <h3 id="_adding_own_plugins">Adding own plugins</h3>
-<div class="paragraph"><p>Since the AudioManager needs to be completed with on plugins before it can be used, it provides a mechanism to keep the own sources away from the GENIVI code but compile them together.</p></div>
-<div class="admonitionblock">
-<table><tr>
-<td class="icon">
-<div class="title">Tip</div>
-</td>
-<td class="content">Using this feature is simple:<br />
-Just add a folder with the name <em>ProjectSpecific</em> (be sure to name it excactly like this!) on the main level of the AudioManager folder. CMake will look for CMakeLists.txt in this folder and add all files that it finds in /include to the include path. You can use this to add subfolders with your own plugins and includes, and overwrite productspecific.h for example.</td>
-</tr></table>
-</div>
+<div class="paragraph"><p>To keep the own sources away from the GENIVI code the project specific elements can be reconfigured with own type definitions.
+You can copy paste the CMake scripts from the example plugins for example.</p></div>
 <div class="listingblock">
-<div class="title">Here is a sample CMakeLists.txt that can be placed in ProjectSpecific folder:</div>
+<div class="title">The are already examples given in audiomanagertypes.h:</div>
 <div class="content">
-<pre><tt>cmake_minimum_required(VERSION 2.6)
+<pre><tt>/**
+ * This type gives the information about reason for Source/Sink change
+ */
+typedef uint16_t am_CustomAvailabilityReason_t;
+static const am_CustomAvailabilityReason_t AR_UNKNOWN = 0;
+/** new media was entered  */
+static const am_CustomAvailabilityReason_t AR_GENIVI_NEWMEDIA = 1;
+/** same media was entered */
+static const am_CustomAvailabilityReason_t AR_GENIVI_SAMEMEDIA = 2;
+/** there is no media or media is removed */
+static const am_CustomAvailabilityReason_t AR_GENIVI_NOMEDIA = 3;
+/** there was a temperature event */
+static const am_CustomAvailabilityReason_t AR_GENIVI_TEMPERATURE = 4;
+/** there was a voltage event */
+static const am_CustomAvailabilityReason_t AR_GENIVI_VOLTAGE = 5;
+/** fatal errors on reading or accessing media */
+static const am_CustomAvailabilityReason_t AR_GENIVI_ERRORMEDIA = 6;
 
-### set your own buildflags:
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Wextra -std=c++98 -D_GNU_SOURCE -pedantic -Wno-variadic-macros")
+/**
+ * This is a custom specific identifier of property. It can be used to
+ * differentiate between interrupt source/sink, main source/sink, etc.
+ */
+typedef uint16_t am_CustomClassProperty_t;
+static const am_CustomClassProperty_t CP_UNKNOWN = 0;
+static const am_CustomClassProperty_t CP_GENIVI_SOURCE_TYPE = 1;
+static const am_CustomClassProperty_t CP_GENIVI_SINK_TYPE = 2;
 
-##overwrite priojecttypes.h:
-CONFIGURE_FILE( ${CMAKE_SOURCE_DIR}/ProjectSpecific/overwrite/projecttypes.h ${CMAKE_SOURCE_DIR}/include/projecttypes.h COPYONLY)
+/**
+ * This type classifies the format in which data is exchanged within a connection.
+ * The type itself is project specific although there are some standard formats
+ * defined.
+ */
+typedef uint16_t am_CustomConnectionFormat_t;
+static const am_CustomConnectionFormat_t CF_UNKNOWN = 0;
+/** plain mono */
+static const am_CustomConnectionFormat_t CF_GENIVI_MONO = 1;
+/** stereo connection */
+static const am_CustomConnectionFormat_t CF_GENIVI_STEREO = 2;
+/** analog connection */
+static const am_CustomConnectionFormat_t CF_GENIVI_ANALOG = 3;
+/** automatic connection.  */
+static const am_CustomConnectionFormat_t CF_GENIVI_AUTO = 4;
 
-if(WITH_PLUGIN_ROUTING)
-        add_subdirectory (../PluginRoutingInterfaceMyRoutingPlugin ${CMAKE_CURRENT_BINARY_DIR}/PluginRoutingInterfaceMyRoutingPlugin )
-endif(WITH_PLUGIN_ROUTING)
+/**
+ * Here are all SoundProperties that can be set via the CommandInterface.
+ * This type is product specific and can be changed or extended.
+ */
+typedef uint16_t am_CustomMainSoundPropertyType_t;
+static const am_CustomMainSoundPropertyType_t MSP_UNKNOWN = 0;
+/** example value between -10 and +10  */
+static const am_CustomMainSoundPropertyType_t MSP_GENIVI_TREBLE = 1;
+/** example value between -10 and +10  */
+static const am_CustomMainSoundPropertyType_t MSP_GENIVI_MID = 2;
+/** example value between -10 and +10  */
+static const am_CustomMainSoundPropertyType_t MSP_GENIVI_BASS = 3;
 
-if(WITH_PLUGIN_CONTROL)
-        add_subdirectory ( ../PluginControlInterfaceMyControlPlugin ${CMAKE_CURRENT_BINARY_DIR}/PluginControlInterfaceMyControlPlugin)
-endif(WITH_PLUGIN_CONTROL)</tt></pre>
+/**
+ * The notification types are project specific.
+ */
+typedef uint16_t am_CustomNotificationType_t;
+static const am_CustomNotificationType_t NT_UNKNOWN = 0;
+
+/**
+ * The given ramp types here are just examples. For products, different ramp types
+ * can be defined here. It is in the responsibility of the product to make sure
+ * that the routing plugins are aware of the ramp types used.
+ */
+typedef uint16_t am_CustomRampType_t;
+static const am_CustomRampType_t RAMP_UNKNOWN = 0;
+/** sets directly the value without a ramp */
+static const am_CustomRampType_t RAMP_GENIVI_DIRECT = 1;
+/** Sets the volume as fast as possible */
+static const am_CustomRampType_t RAMP_GENIVI_NO_PLOP = 2;
+static const am_CustomRampType_t RAMP_GENIVI_EXP_INV = 3;
+static const am_CustomRampType_t RAMP_GENIVI_LINEAR = 4;
+static const am_CustomRampType_t RAMP_GENIVI_EXP = 5;
+
+/**
+ * Within genivi only the some example properties are defined.
+ * For products these should be changed or extended.
+ */
+typedef uint16_t am_CustomSoundPropertyType_t;
+static const am_CustomSoundPropertyType_t SP_UNKNOWN = 0;
+/** example treble value min =-10 max =10 */
+static const am_CustomSoundPropertyType_t SP_GENIVI_TREBLE = 1;
+/** example mid value min =-10 max =10 */
+static const am_CustomSoundPropertyType_t SP_GENIVI_MID = 2;
+/** example bass value min =-10 max =10 */
+static const am_CustomSoundPropertyType_t SP_GENIVI_BASS = 3;
+
+/**
+ * Describes the different system properties which are project specific.
+ */
+typedef uint16_t am_CustomSystemPropertyType_t;
+static const am_CustomSystemPropertyType_t SYP_UNKNOWN = 0;</tt></pre>
 </div></div>
 </div>
 <div class="sect2">
@@ -1054,7 +1123,7 @@ If you compile your AudioManager with TelnetServer support (cmake -DWITH_TELNET=
 set with commandline argument -t the port number and with -m the maximum supported connections.
 The default telnet port is 6060.</p></div>
 <div class="literalblock">
-<div class="title">For example, launch a telnet session on port 6060:</div>
+<div class="title">For example, launch a telnet session on port 6080:</div>
 <div class="content">
 <pre><tt>telnet localhost 6060</tt></pre>
 </div></div>
@@ -1126,7 +1195,7 @@ The default telnet port is 6060.</p></div>
 <div class="sect1">
 <h2 id="_code_formatting">Code Formatting</h2>
 <div class="sectionbody">
-<div class="paragraph"><p>The source code if formatted with eclipse, the style sheet used can be found in the cmake folder:</p></div>
+<div class="paragraph"><p>The source code if formatted with eclipse, the style sheet used can be found in the Foo folder:</p></div>
 <div class="listingblock">
 <div class="content">
 <pre><tt>cmake/AudioManager_Codestyle.xml</tt></pre>
@@ -1220,7 +1289,7 @@ handle later on.</p></div>
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2013-09-12 10:26:35 CEST
+Last updated 2015-03-11 15:31:03 CET
 </div>
 </div>
 </body>

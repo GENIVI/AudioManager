@@ -12,7 +12,7 @@
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *
- * \author Christian Mueller, christian.ei.mueller@bmw.de BMW 2011,2012
+ * \author Christian Linke, christian.linke@bmw.de BMW 2011,2012
  * \author Aleksandar Donchev, aleksander.donchev@partner.bmw.de BMW 2013
  *
  * For further information see http://www.genivi.org/.
@@ -25,7 +25,7 @@
 #include <vector>
 #include <set>
 #include <ios>
-#include "shared/CAmDltWrapper.h"
+#include "CAmDltWrapper.h"
 
 using namespace am;
 using namespace testing;

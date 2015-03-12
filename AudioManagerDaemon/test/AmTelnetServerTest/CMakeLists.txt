@@ -10,95 +10,74 @@
 # Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
 # this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # 
-# author Christian Mueller, christian.ei.mueller@bmw.de BMW 2011,2012
+# author Christian Linke, christian.linke@bmw.de BMW 2011,2012
 #
 # For further information see http://www.genivi.org/.
 #
 
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8.8)
 
 PROJECT(AmTelnetServerTest)
 
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
+set (AM_LINK_LIBS 
+    ${CMAKE_DL_LIBS}
+    rt)
+
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -DUNIT_TEST=1 -DDLT_CONTEXT=AudioManager")
 
-set(STD_INCLUDE_DIRS "/usr/include")
-set(DBUS_FOLDER ${CMAKE_SOURCE_DIR}/../../../dbusInterfaces)
-set(AUDIO_INCLUDE_FOLDER ${CMAKE_SOURCE_DIR}/../../../include)
-set(DBUS_INCLUDE_FOLDER ${CMAKE_SOURCE_DIR}/../../../../dbusinclude)
-set(INCLUDE_FOLDER ${CMAKE_SOURCE_DIR}/../../include)
 
-
-FIND_PACKAGE(PkgConfig)
-
-IF(WITH_DLT)    
+if(WITH_DLT)    
     pkg_check_modules(DLT REQUIRED automotive-dlt>=2.2.0)   
-ENDIF(WITH_DLT)
+    set (AM_LINK_LIBS
+        ${AM_LINK_LIBS}
+        ${DLT_LIBRARIES})
+endif(WITH_DLT)
 
 INCLUDE_DIRECTORIES(   
     ${CMAKE_CURRENT_BINARY_DIR}
     ${AUDIO_INCLUDE_FOLDER}
-    ${DBUS_ARCH_INCLUDE_DIR}
-    ${DBUS_INCLUDE_FOLDER} 
     ${CMAKE_SOURCE_DIR} 
-    ${STD_INCLUDE_DIRS}
-    ${DLT_INCLUDE_DIRS}
-    ${DBUS_INCLUDE_DIR}
     ${INCLUDE_FOLDER}
     ${GOOGLE_TEST_INCLUDE_DIR}
     ${GMOCK_INCLUDE_DIR}
 )
+
+if(WITH_DLT)    
+INCLUDE_DIRECTORIES(
+    ${INCLUDE_DIRECTORIES} 
+    ${DLT_INCLUDE_DIRS})
+endif(WITH_DLT)    
  
 file(GLOB TELNET_SRCS_CXX 
-    "../../src/CAmCommandReceiver.cpp"
-    "../../src/CAmCommandSender.cpp"
-    "../../src/CAmControlReceiver.cpp"
-    "../../src/CAmControlSender.cpp"
-    "../../src/CAmDatabaseObserver.cpp"
-    "../../src/CAmRoutingReceiver.cpp"
-    "../../src/CAmRoutingSender.cpp"
-    "../../src/CAmSocketHandler.cpp"
-    "../../src/CAmTelnetServer.cpp"
-    "../../src/CAmRouter.cpp"
-    "../../src/CAmDltWrapper.cpp"
-    "../../src/CAmTelnetMenuHelper.cpp"
-    "../../src/CAmDbusWrapper.cpp"
+    "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmCommandReceiver.cpp"
+    "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmCommandSender.cpp"
+    "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmControlReceiver.cpp"
+    "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmControlSender.cpp"
+    "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmDatabaseObserver.cpp"
+    "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmRoutingReceiver.cpp"
+    "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmRoutingSender.cpp"
+    "${AUDIOMANAGER_UTILITIES_SRC}/CAmSocketHandler.cpp"
+    "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmTelnetServer.cpp"
+    "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmRouter.cpp"
+    "${AUDIOMANAGER_UTILITIES_SRC}/CAmDltWrapper.cpp"
+    "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmTelnetMenuHelper.cpp"
+    "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmDatabaseHandlerMap.cpp"
     "*.cpp"    
 )
-
-IF(WITH_DATABASE_STORAGE)
-    SET (TELNET_SRCS_CXX ${TELNET_SRCS_CXX} "../../src/CAmDatabaseHandlerSQLite.cpp")
-ELSE(WITH_DATABASE_STORAGE)
-    SET (TELNET_SRCS_CXX ${TELNET_SRCS_CXX} "../../src/CAmDatabaseHandlerMap.cpp")
-ENDIF(WITH_DATABASE_STORAGE)
-
-IF(WITH_NSM)
-    SET (DATABASE_SRCS_CXX
-        ${DATABASE_SRCS_CXX}
-    "../../src/CAmNodeStateCommunicatorDBus.cpp")
-ENDIF(WITH_NSM)
 
 ADD_EXECUTABLE(AmTelnetServerTest ${TELNET_SRCS_CXX})
 
 TARGET_LINK_LIBRARIES(AmTelnetServerTest 
-    ${SQLITE_LIBRARIES}
-    ${DLT_LIBRARIES}
-    ${DBUS_LIBRARY}    
-    ${CMAKE_THREAD_LIBS_INIT}
-    ${CMAKE_DL_LIBS}
+    ${AM_LINK_LIBS}
     gtest
-    gmock
-)
+    gmock)
 
 ADD_DEPENDENCIES(AmTelnetServerTest gtest gmock)
 
 INSTALL(TARGETS AmTelnetServerTest 
-        DESTINATION "~/AudioManagerTest/"
+        DESTINATION ${TEST_EXECUTABLE_INSTALL_PATH}
         PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
         COMPONENT tests
 )
-
-SET(ADD_DEPEND "sqlite3(>=3.6.22)" "dlt" "libdbus-1-3(>=1.2.16)"  "libpthread-stubs0")
-set_property(GLOBAL APPEND PROPERTY tests_prop "${ADD_DEPEND}")
 
 

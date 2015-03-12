@@ -18,14 +18,21 @@ This Source Code Form is subject to the terms of the
 Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
 this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  
-author Christian Mueller, christian.linke@bmw.de BMW 2011,2012
+author Christian Linke = Christian Linke christian.linke@bmw.de BMW 2011-2015
 
 For further information see http://projects.genivi.org/audio-manager/.
 
+== Repositories
+The main repository is http://git.projects.genivi.org-AudioManager.git
+
+The repository for example plugins can be found here: http://git.projects.genivi.org/AudioManagerPlugins.git
+
 == License
 The licenses of this project are split into two parts:
+
 1) the AudioManagerDaemon, licensed under MPL 2.0
-2) all other parts that serve as example code that can be taken to build up an own project with it -
+
+2) the plugins that serve as example code that can be taken to build up an own project with it -
     these parts are licensed with the MIT license
     
 Contribution is done under GENIVI CLA or MPL2.0. 
@@ -45,11 +52,15 @@ For the daemon the third number (for example 1.0.X) describes the patch version.
 The versioning scheme is used for the AudioManager daemon itself and for each of it's interfaces. The versioning of the Interfaces in EA is defined via the tag "version" and the name of the interfaceversion versionName, for example "CommandReceiveVersion". This information is generated into the interface header files and is used then by cmake to set the interface versions.
 Whenever changes are done, the minor version of the interface needs to be incremented.
 
+Since 7.0, the AudioManager follows a new versioning scheme. Please check the documentation for that.
+
 == Documentation
 A very detailed documentation is provided by doxygen. In order to use this, please compile the AudioManager with
 ----
 cmake -DWITH_DOCUMENTATION=ON
 make
+
+The README is compiled into README.html with asciidoc
 ----
 
 == COMPILE PROGRAMS
@@ -57,62 +68,48 @@ make
 === Compile Options
 These are the compile options with default values:
 
- BUILD_SHARED_LIBS                OFF                                                                                                                                                                             
- CMAKE_BUILD_TYPE                                                                                                                                                                                                 
- CMAKE_INSTALL_PREFIX             /usr/local                                                                                                                                                                      
- COMMON_API_DBUS_LIBRARY          /usr/local/lib/libCommonAPI-DBus.so                                                                                                                                             
- COMMON_API_LIBRARY               /usr/local/lib/libCommonAPI.so                                                                                                                                                  
- GLIB_DBUS_TYPES_TOLERANT         ON                                                                                                                                                                              
- USE_BUILD_LIBS                   ON                                                                                                                                                                              
- WITH_COMMAND_INTERFACE_COMMON_   ON                                                                                                                                                                              
- WITH_DATABASE_STORAGE            OFF                                                                                                                                                                             
- WITH_DLT                         ON                                                                                                                                                                              
- WITH_DOCUMENTATION               ON                                                                                                                                                                              
- WITH_ENABLED_IPC                 CAPI                                                                                                                                                                            
- WITH_LOGSTATE                    ON                                                                                                                                                                              
- WITH_NSM                         ON                                                                                                                                                                              
- WITH_OXF_ANIMATION               OFF                                                                                                                                                                             
- WITH_OXF_TRACE                   OFF                                                                                                                                                                             
- WITH_PLUGIN_COMMAND              ON                                                                                                                                                                              
- WITH_PLUGIN_CONTROL              ON                                                                                                                                                                              
- WITH_PLUGIN_ROUTING              ON                                                                                                                                                                              
- WITH_ROUTING_INTERFACE_ASYNC     OFF                                                                                                                                                                             
- WITH_ROUTING_INTERFACE_CAPI      ON                                                                                                                                                                              
- WITH_SYSTEMD_WATCHDOG            OFF                                                                                                                                                                             
- WITH_TELNET                      ON                                                                                                                                                                              
- WITH_TESTS                       ON                                                                                                                                                                              
- WITH_TEST_CONTROLLER             OFF                                                                                                                                                                             
- gmock_build_tests                OFF                                                                                                                                                                             
- gtest_build_samples              OFF                                                                                                                                                                             
- gtest_build_tests                OFF                                                                                                                                                                             
- gtest_disable_pthreads           OFF                                                                                                                                                                             
- gtest_force_shared_crt           OFF 
+ AM_MAP_CAPACITY                  10                                                                                                                                                                               
+ AM_MAX_CONNECTIONS               0x1000                                                                                                                                                                           
+ AM_SHARE_FOLDER                  /usr/local/share/audiomanager                                                                                                                                                    
+ BUILD_SHARED_LIBS                OFF                                                                                                                                                                              
+ CMAKE_BUILD_TYPE                                                                                                                                                                                                  
+ CMAKE_INSTALL_PREFIX             /usr/local                                                                                                                                                                       
+ COMMON_API_DBUS_LIBRARY          /usr/local/lib/libCommonAPI-DBus.so                                                                                                                                              
+ COMMON_API_LIBRARY               /usr/local/lib/libCommonAPI.so                                                                                                                                                   
+ DBUS_SERVICE_OBJECT_PATH         /org/genivi/audiomanager                                                                                                                                                         
+ DBUS_SERVICE_PREFIX              org.genivi.audiomanager                                                                                                                                                          
+ DEFAULT_TELNETPORT               6080                                                                                                                                                                             
+ DOC_OUTPUT_PATH                  XXX/build/doc                                                                                                                          
+ DYNAMIC_ID_BOUNDARY              100                                                                                                                                                                              
+ EXECUTABLE_OUTPUT_PATH           XXX/build/bin                                                                                                                          
+ GLIB_DBUS_TYPES_TOLERANT         ON                                                                                                                                                                               
+ LIB_INSTALL_SUFFIX               audiomanager                                                                                                                                                                     
+ MAX_TELNETCONNECTIONS            3                                                                                                                                                                                
+ NSM_BUS_INTERFACE                org.genivi.NodeStateManager                                                                                                                                                      
+ NSM_INTERFACE                    org.genivi.NodeStateManager.Consumer                                                                                                                                             
+ NSM_PATH                         /org/genivi/NodeStateManager                                                                                                                                                     
+ PLUGINS_OUTPUT_PATH              XXX/build/plugins                                                                                                                      
+ TEST_EXECUTABLE_INSTALL_PATH     ~/tests                                                                                                                                                                          
+ TEST_EXECUTABLE_OUTPUT_PATH      XXX/build/bin/tests                                                                                                                    
+ USE_BUILD_LIBS                   ON                                                                                                                                                                               
+ WITH_DATABASE_STORAGE            OFF                                                                                                                                                                              
+ WITH_DLT                         ON                                                                                                                                                                               
+ WITH_DOCUMENTATION               OFF                                                                                                                                                                              
+ WITH_ENABLED_IPC                 CAPI                                                                                                                                                                             
+ WITH_NSM                         OFF                                                                                                                                                                              
+ WITH_SYSTEMD_WATCHDOG            OFF                                                                                                                                                                              
+ WITH_TELNET                      ON                                                                                                                                                                               
+ WITH_TESTS                       ON                                                                                                                                                                               
+ gmock_build_tests                OFF                                                                                                                                                                              
+ gtest_build_samples              OFF                                                                                                                                                                              
+ gtest_build_tests                OFF                                                                                                                                                                              
+ gtest_disable_pthreads           OFF                                                                                                                                                                              
+ gtest_force_shared_crt           OFF   
     
 === Passing options to cmake:
 
-.-DVERSION="XXX"
-When building the AudioManager without taking it from the git (and thus having a .git folder), you can set the version via passing _-DVERSION="XXX"_ to cmake.
-
-.-DDBUS_SERVICE_PREFIX="XXX"
-sets the service prefix for Dbus, default "org.genivi.audiomanager\0"
-
-.-DDBUS_SERVICE_OBJECT_PATH="XXX"
-sets the object path for Dbus, default "/org/genivi/audiomanager\0"
-
-.-DDEFAULT_TELNETPORT="XXX"
-sets the default telnetport, default 6060. Can be overwriten by command line parameter
-
-.-DMAX_TELNETCONNECTIONS="XXX"
-sets the default maximum number of telnetconnections, default is 3
-
-.-DNSM_PATH="XXX"
-sets the path of the NSM DBUS interface
-
-.-DNSM_INTERFACE="XXX"
-sets the interface to the NSM DBUS interface
-
-In order to change these options, you can modify this values with ccmake, do the appropriate changes in 
-CmakeList.txt or via the commandline for cmake or (when installed via ccmake)
+Standard CMake can be used to configure these options. Tools like ccmake can be used to visually change the values.
+For each option, some hints are given.
 
 === Build dependencies
 Basically, all build dependencies are optional- but you might need to use some if you want to have support for Dbus,
@@ -131,15 +128,26 @@ To install them in a build environment like Ubuntu you can use:
 sudo apt-get install libdbus-1-dev libsqlite3-dev doxygen git cmake build-essential
 ----
 
+=== AudioManagerUtilities
+
+In the AudioManagerUtilites you can find hany helper functions that can be reused by other projects as well.
+
 === The NodeStateManager
 
 The nodestatemanager headers are needed to compile the audiomanager. If the nodestatemanagerincludes are not found, 
 the headers shipped with the audiomanager are used.
-The nodestatemanager can be retrieved from projects.genivi.org . You can install the headers on you system by
+The nodestatemanager can be retrieved from projects.genivi.org .
 
-----
-sudo make install-includeHEADERS
-----
+Please note that the NSM interface must be compatible with Dbus properties. This requires for CommonAPI to use the commonAPI fdepl. 
+It used to work, but currently with CommmonAPI 2.6.1 the generation does not work anymore.
+
+=== CommonAPI File generation
+
+The audiomanager will search in /usr/share or /usr/local/share for a generator. He will generate all neccessary files with this generator into the build tree.
+
+The adresses used for commonAPI are fixed. If you need to change them, you can use a central or local configure file. More information on CommonAPI documentation: http://projects.genivi.org/commonapi/
+
+=== Tests
 
 For building the tests, you will need the following packages:
 
@@ -167,50 +175,53 @@ cmake ..
 make
 ----
 
-After the script finished, you should have:
-
-* a bin/ folder which contains all executables and the libraries: 
-* a build/ folder which has all build objects (erase that if you need a clean build)
-* a doc/ folder in case you turned the documentation on
+The AudioManager executable will be placed in the bin folder of your build folder, tests in a subfolder below.-
 
 In order to install the AudioManager, you can do
 ----
 sudo make install
 ----
 
-Package generation is supported via CPack. To build packages, you have to 
+this installs everything.
+
+== Build targets
+
+Several install targets exists:
+
+just install the audiomanager
 ----
-make genivi_package
+sudo make bin-install
 ----
 
-This will create one package if your CMake version is < 2.8.5 (all binaries stripped):
+just install the dev package with all headers and cmake file, needed to compile plugins out of source
 ----
-AudioManager-<git verison>-Linux.deb 
-----
-
-If your version is above 2.8.5, you will get 4 packages (all binaries stripped) :
-	
-* AudioManager-<git verison>-Linux-bin.deb   		[AudioManager binary]
-* AudioManager-<git verison>-Linux-dev.deb   		[header files needed to compile plugins]
-* AudioManager-<git verison>-Linux-sampleplugins.deb 	[sample plugins]
-* AudioManager-<git verison>-Linux-tests.deb		[tests including tests for sample plugins, installed in the ~/AudioMAnagerTests]
-
-In order to create a tar.gz file of all sources (not including .git, build and bin folder,config files), you can do:
-----
-make package_source			
+sudo make dev-install
 ----
 
-This will create the following package:
-'AudioManager-<git verison>-Source.tar.gz'
+just install the tests
+----
+sudo make test-install
+----
 
-All packages will be placed in a folder called packages
+just install the plugins (only available if plugins are compiled)
+----
+sudo make plugins-install
+----
+
+just install the test for the plugins (only available if plugins are compiled)
+----
+sudo make plugin-test-install
+----
+
+If you want to compile the Audiomanager together with the plugins, simply clone the plugins into a folder
+Plugins on the mainlevel. The Plugins will be then compiled together with the AudioManager.
+
+If the plugins are compiled seperatly, the AudioManager needs to be installed on the system. The plugins will find and read the important CMake variables and use them.
 
 === Adding own plugins
-The AudioManager needs to be completed with on plugins. To keep the own sources away from the GENIVI code the project specific elements can be reconfigured with own type definitions.
+To keep the own sources away from the GENIVI code the project specific elements can be reconfigured with own type definitions.
+You can copy paste the CMake scripts from the example plugins for example.
 
-TIP: Using this feature is simple: +
-Create in your projects an own projecttypes.h. The name is no naming convention given. The file is your project specific type definition which will be only referenced by the HMI, Routing Adapters and the Controller Plug-in.
- 
 .The are already examples given in audiomanagertypes.h:
 ----
 /**
@@ -339,7 +350,7 @@ If you compile your AudioManager with TelnetServer support (cmake -DWITH_TELNET=
 set with commandline argument -t the port number and with -m the maximum supported connections. 
 The default telnet port is 6060. 
    
-.For example, launch a telnet session on port 6060:
+.For example, launch a telnet session on port 6080:
       telnet localhost 6060
    
       #>Welcome to GENIVI AudioManager ver-0.0.1-37-ga004215
@@ -403,7 +414,7 @@ The default telnet port is 6060.
 
 
 == Code Formatting
-The source code if formatted with eclipse, the style sheet used can be found in the cmake folder:
+The source code if formatted with eclipse, the style sheet used can be found in the Foo folder:
 ----
 cmake/AudioManager_Codestyle.xml
 ----

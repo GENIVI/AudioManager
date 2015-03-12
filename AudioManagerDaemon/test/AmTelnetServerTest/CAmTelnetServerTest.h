@@ -12,7 +12,7 @@
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *
- * \author Christian Mueller, christian.ei.mueller@bmw.de BMW 2011,2012
+ * \author Christian Linke, christian.linke@bmw.de BMW 2011,2012
  * \author Frank Herchet, frank.fh.herchet@bmw.de BMW 2012
  *
  * For further information see http://www.genivi.org/.
@@ -29,11 +29,7 @@
 #include "CAmControlSender.h"
 #include "CAmRouter.h"
 #include "config.h"
-#ifdef WITH_DATABASE_STORAGE
-	#include "CAmDatabaseHandlerSQLite.h"
-#else
-	#include "CAmDatabaseHandlerMap.h"
-#endif
+#include "CAmDatabaseHandlerMap.h"
 
 
 
@@ -72,11 +68,7 @@ class CAmEnvironment : public ::testing::Environment
   std::vector<std::string> mlistCommandPluginDirs;
 
   CAmSocketHandler     mSocketHandler;
-#ifdef WITH_DATABASE_STORAGE
-  CAmDatabaseHandlerSQLite   mDatabasehandler;
-#else
   CAmDatabaseHandlerMap		 mDatabasehandler;
-#endif
   CAmRoutingSender     mRoutingSender;
   CAmCommandSender     mCommandSender;
   CAmControlSender     mControlSender;

@@ -36,7 +36,7 @@
 #include "CAmDatabaseObserver.h"
 #include "CAmRoutingSender.h"
 #include "CAmRouter.h"
-#include "shared/CAmSocketHandler.h"
+#include "CAmSocketHandler.h"
 #include "../IAmControlBackdoor.h"
 #include "../IAmCommandBackdoor.h"
 #include "../CAmCommonFunctions.h"

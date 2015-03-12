@@ -7,73 +7,67 @@
 # 
 # copyright
 # This Source Code Form is subject to the terms of the
-# Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
+# Mozilla Public License, v. 2.0. if a  copy of the MPL was not distributed with
 # this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # 
-# author Christian Mueller, christian.ei.mueller@bmw.de BMW 2011,2012
+# author Christian Linke, christian.linke@bmw.de BMW 2011,2012
 #
 # For further information see http://www.genivi.org/.
 #
 
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8.8)
 
-PROJECT(AmMapHandlerTest)
+project(AmMapHandlerTest)
 
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -DUNIT_TEST=1 -DDLT_CONTEXT=AudioManager")
 
-
-FIND_PACKAGE(PkgConfig)
-#pkg_check_modules(SQLITE REQUIRED sqlite3)
-
-IF(WITH_DLT)    
+set (AM_LINK_LIBS 
+    ${CMAKE_DL_LIBS}
+    rt)
+        
+if(WITH_DLT)    
     pkg_check_modules(DLT REQUIRED automotive-dlt>=2.2.0)   
-ENDIF(WITH_DLT)
+    set (AM_LINK_LIBS
+        ${AM_LINK_LIBS}
+        ${DLT_LIBRARIES})
+endif(WITH_DLT)
 
 INCLUDE_DIRECTORIES(   
     ${CMAKE_CURRENT_BINARY_DIR}
     ${AUDIO_INCLUDE_FOLDER}
-    ${DBUS_ARCH_INCLUDE_DIR}
-    ${DBUS_INCLUDE_FOLDER} 
     ${CMAKE_SOURCE_DIR} 
     ${STD_INCLUDE_DIRS}
-    ${DLT_INCLUDE_DIRS}
-    ${DBUS_INCLUDE_DIR}
     ${INCLUDE_FOLDER}
     ${GOOGLE_TEST_INCLUDE_DIR}
     ${GMOCK_INCLUDE_DIR}
 )
 
+if(WITH_DLT)    
+    INCLUDE_DIRECTORIES(
+        ${INCLUDE_DIRECTORIES} 
+        ${DLT_INCLUDE_DIRS})
+endif(WITH_DLT)
+
 file(GLOB DATABASE_SRCS_CXX 
-    "../../src/CAmDatabaseHandlerMap.cpp"
-     "../../src/CAmCommandSender.cpp"
-    "../../src/CAmRoutingSender.cpp"
-    "../../src/CAmControlReceiver.cpp"
-    "../../src/CAmControlSender.cpp"
-    "../../src/CAmRouter.cpp"
-    "../../src/CAmDltWrapper.cpp"
-    "../../src/CAmSocketHandler.cpp"
-    "../../src/CAmCommandReceiver.cpp"
-    "../../src/CAmRoutingReceiver.cpp"
-    "../../src/CAmDbusWrapper.cpp"
+    "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmDatabaseHandlerMap.cpp"
+    "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmCommandSender.cpp"
+    "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmRoutingSender.cpp"
+    "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmControlReceiver.cpp"
+    "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmControlSender.cpp"
+    "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmRouter.cpp"
+    "${AUDIOMANAGER_UTILITIES_SRC}/CAmSocketHandler.cpp"
+    "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmCommandReceiver.cpp"
+    "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmRoutingReceiver.cpp"
+    "${AUDIOMANAGER_UTILITIES_SRC}/CAmDltWrapper.cpp"    
     "../CAmCommonFunctions.cpp" 
     "CAmTestDatabaseObserver.cpp"
     "*.cpp"
     )
     
-IF(WITH_NSM)
-    IF(WITH_DBUS_WRAPPER)
-        SET (DATABASE_SRCS_CXX
-            ${DATABASE_SRCS_CXX}
-            "../../src/CAmNodeStateCommunicatorDBus.cpp")
-    ENDIF()
-ENDIF(WITH_NSM)
-
 ADD_EXECUTABLE( AmMapHandlerTest ${DATABASE_SRCS_CXX})
 
 TARGET_LINK_LIBRARIES( AmMapHandlerTest 
-	${SQLITE_LIBRARIES}
-	${DLT_LIBRARIES}
-	${DBUS_LIBRARY}
+	${AM_LINK_LIBS}
 	${CMAKE_THREAD_LIBS_INIT}
 	${CMAKE_DL_LIBS}
     gtest
@@ -83,11 +77,8 @@ TARGET_LINK_LIBRARIES( AmMapHandlerTest
 ADD_DEPENDENCIES(AmMapHandlerTest gtest gmock)
 
 INSTALL(TARGETS AmMapHandlerTest 
-        DESTINATION "~/AudioManagerTest/"
+        DESTINATION ${TEST_EXECUTABLE_INSTALL_PATH}
         PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
         COMPONENT tests
 )
-
-SET(ADD_DEPEND "audiomanager-bin" "dlt" "libdbus-1-3(>=1.2.16)"  "libpthread-stubs0")
-set_property(GLOBAL APPEND PROPERTY tests_prop "${ADD_DEPEND}")
 

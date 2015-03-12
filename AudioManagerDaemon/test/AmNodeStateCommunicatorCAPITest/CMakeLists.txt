@@ -15,71 +15,66 @@
 # For further information see http://www.genivi.org/.
 #
 
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8.8)
 
-PROJECT(AmNodeStateCommunicatorCAPITest)
+project(AmNodeStateCommunicatorCAPITest)
 
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -DUNIT_TEST=1")
 
-set(STD_INCLUDE_DIRS "/usr/include")
+find_package(Threads)
+find_package(CommonAPI REQUIRED)
+find_package(PythonLibs REQUIRED)
 
-set(EXECUTABLE_OUTPUT_PATH ${TEST_EXECUTABLE_OUTPUT_PATH})
+set (AM_LINK_LIBS 
+    ${CMAKE_DL_LIBS}
+    rt)
 
-FIND_PACKAGE(Threads)
-FIND_PACKAGE(PkgConfig)
-FIND_PACKAGE(CommonAPI REQUIRED)
-IF(WITH_DATABASE_STORAGE)
-	pkg_check_modules(SQLITE REQUIRED sqlite3)
-ENDIF(WITH_DATABASE_STORAGE)
-
-IF(WITH_DLT)    
-    pkg_check_modules(DLT REQUIRED automotive-dlt>=2.2.0)   
-ENDIF(WITH_DLT)
+if(WITH_DLT)    
+    pkg_check_modules(DLT REQUIRED automotive-dlt>=2.2.0)  
+    set (AM_LINK_LIBS
+        ${AM_LINK_LIBS}
+        ${DLT_LIBRARIES}) 
+endif(WITH_DLT)
 
 INCLUDE_DIRECTORIES(   
-    ${STD_INCLUDE_DIRS}
     ${CMAKE_SOURCE_DIR} 
     ${CMAKE_CURRENT_BINARY_DIR}
     ${AUDIO_INCLUDE_FOLDER}
-    ${CMAKE_SOURCE_DIR} 
-    ${DLT_INCLUDE_DIRS}
-    ${INCLUDE_FOLDER}
     ${PYTHON_INCLUDE_DIRS}
     ${GOOGLE_TEST_INCLUDE_DIR}
     ${GMOCK_INCLUDE_DIR}
-    "../../include"
     ${COMMON_API_INCLUDE_DIRS}
 	${COMMON_API_DBUS_INCLUDE_DIRS}
 	${COMMON_API_GEN_INCLUDE_DIR}
 )
 
+if(WITH_DLT)    
+INCLUDE_DIRECTORIES(
+    ${INCLUDE_DIRECTORIES} 
+    ${DLT_INCLUDE_DIRS})
+endif(WITH_DLT) 
+
   
-file(GLOB NODESTATECOMMUNICATORCAPI 
-    "../../src/CAmDatabaseHandler.cpp"
-    "../../src/CAmDatabaseObserver.cpp"
-    "../../src/CAmRoutingSender.cpp"
-    "../../src/CAmRoutingReceiver.cpp"    
-     "../../src/CAmCommonAPIWrapper.cpp"
-     "../../src/CAmDltWrapper.cpp"
-     "../../src/CAmSocketHandler.cpp"
-     "../../src/CAmNodeStateCommunicatorCAPI.cpp"
-     "../../src/CAmControlSender.cpp"
-     "../../src/CAmCommandSender.cpp"  
-     "../../src/CAmCommandReceiver.cpp"
-     "../CAmCommonFunctions.cpp" 
-    "../../src/CAmRouter.cpp"     
-     "*.cpp"  
-     ${COMMON_API_GEN_SOURCES}
-     )
+file(GLOB NODESTATECOMMUNICATORCAPI_SRCS_CXX 
+    "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmDatabaseHandler.cpp"
+    "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmDatabaseObserver.cpp"
+    "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmRoutingSender.cpp"
+    "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmRoutingReceiver.cpp"    
+    "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmNodeStateCommunicatorCAPI.cpp"
+    "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmControlSender.cpp"
+    "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmCommandSender.cpp"  
+    "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmCommandReceiver.cpp"
+    "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmRouter.cpp"   
+     "${AUDIOMANAGER_UTILITIES_SRC}/CAmCommonAPIWrapper.cpp"
+    "${AUDIOMANAGER_UTILITIES_SRC}/CAmDltWrapper.cpp"
+    "${AUDIOMANAGER_UTILITIES_SRC}/CAmSocketHandler.cpp"
+    "../CAmCommonFunctions.cpp"     
+    "*.cpp")
 
-CONFIGURE_FILE( ${CMAKE_SOURCE_DIR}/AudioManagerDaemon/fidls/AudioManager_dbus.conf.in ${CMAKE_BINARY_DIR}/AmNodeStateCommunicatorCAPITest_dbus.conf)
-
-ADD_EXECUTABLE(AmNodeStateCommunicatorCAPITest ${NODESTATECOMMUNICATORCAPI} ${COMMON_API_GEN_SOURCES})
+ADD_EXECUTABLE(AmNodeStateCommunicatorCAPITest ${NODESTATECOMMUNICATORCAPI_SRCS_CXX} ${COMMON_API_GEN_SOURCES})
 
 TARGET_LINK_LIBRARIES(AmNodeStateCommunicatorCAPITest 
-    ${SQLITE_LIBRARIES}
-    ${DLT_LIBRARIES}
-    ${CMAKE_DL_LIBS}
+    ${AM_LINK_LIBS}
     ${CMAKE_THREAD_LIBS_INIT}
     ${PYTHON_LIBRARY}
     ${COMMON_API_LIBRARIES}
@@ -91,7 +86,7 @@ TARGET_LINK_LIBRARIES(AmNodeStateCommunicatorCAPITest
 ADD_DEPENDENCIES(AmNodeStateCommunicatorCAPITest gtest gmock)
 
 INSTALL(TARGETS AmNodeStateCommunicatorCAPITest 
-        DESTINATION "~/AudioManagerTest/"
+        DESTINATION ${TEST_EXECUTABLE_INSTALL_PATH}
         PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
         COMPONENT tests
 )
@@ -100,20 +95,17 @@ INSTALL(FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/org.genivi.NodeStateManager.Consumer.xml 
         ${CMAKE_CURRENT_SOURCE_DIR}/nsm.py
         ${CMAKE_CURRENT_SOURCE_DIR}/send2nsm.py
-        DESTINATION "~/AudioManagerTest/"
+        DESTINATION ${TEST_EXECUTABLE_INSTALL_PATH}
         PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
         COMPONENT tests
 )
 
-IF(USE_BUILD_LIBS) 
+if(USE_BUILD_LIBS) 
         execute_process(
 	    COMMAND mkdir -p ${EXECUTABLE_OUTPUT_PATH}
 	    COMMAND cp "${CMAKE_CURRENT_SOURCE_DIR}/org.genivi.NodeStateManager.Consumer.xml" ${EXECUTABLE_OUTPUT_PATH}/org.genivi.NodeStateManager.Consumer.xml
 	    COMMAND cp "${CMAKE_CURRENT_SOURCE_DIR}/nsm.py" ${EXECUTABLE_OUTPUT_PATH}/nsm.py
 	    COMMAND cp "${CMAKE_CURRENT_SOURCE_DIR}/send2nsm.py" ${EXECUTABLE_OUTPUT_PATH}/send2nsm.py
-	    COMMAND cp "${CMAKE_BINARY_DIR}/AmNodeStateCommunicatorCAPITest_dbus.conf" ${EXECUTABLE_OUTPUT_PATH})
-ENDIF(USE_BUILD_LIBS) 
-
-SET(ADD_DEPEND "audiomanager-bin" "sqlite3(>=3.6.22)" "dlt" "gtest"  "libpthread-stubs0")
-set_property(GLOBAL APPEND PROPERTY tests_prop "${ADD_DEPEND}")
+	    COMMAND cp "${AUDIOMANAGER_DAEMON_FOLDER}/fidls/NodeStateManager_dbus.conf" ${EXECUTABLE_OUTPUT_PATH}/AmNodeStateCommunicatorCAPITest_dbus.conf)
+endif(USE_BUILD_LIBS) 
 

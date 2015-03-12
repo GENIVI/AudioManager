@@ -20,8 +20,8 @@
  */
 
 #include "CAmNodeStateCommunicatorTest.h"
-#include "shared/CAmDltWrapper.h"
-#include "shared/CAmSocketHandler.h"
+#include "CAmDltWrapper.h"
+#include "CAmSocketHandler.h"
 
 #include <unistd.h>
 

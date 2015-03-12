@@ -16,17 +16,19 @@
 #
 
 FIND_PATH (NSM_INCLUDE_DIR NodeStateManager.h
-           DOC "The nodestatemanager include directory"
-)
+             PATHS
+             ${CMAKE_INSTALL_PATH}
+             "/usr/include"
+             "/usr/local/include"
+             DOC "The nodestatemanager include directory")
 
-IF(NSM_INCLUDE_DIR)
+if(NSM_INCLUDE_DIR)
+    set (NSM_FOUND "YES")
     message(STATUS "Found NSM include: ${NSM_INCLUDE_DIR}")
-ELSE(NSM_INCLUDE_DIR)
-    SET(NSM_FOUND "YES")
-    SET (NSM_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/nodeStateManagerIncludes")
+else(NSM_INCLUDE_DIR)
+    set (NSM_FOUND "YES")
+    set (NSM_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/nodeStateManagerIncludes")
     message(STATUS "Did not find NSM include, using own include dir: ${NSM_INCLUDE_DIR}")
-ENDIF(NSM_INCLUDE_DIR)
+endif(NSM_INCLUDE_DIR)
 
-MARK_AS_ADVANCED(
-  NSM_INCLUDE_DIR
-)
+    mark_as_advanced(NSM_INCLUDE_DIR)

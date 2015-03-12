@@ -12,7 +12,7 @@
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *
- * \author Christian Mueller, christian.ei.mueller@bmw.de BMW 2011,2012
+ * \author Christian Linke, christian.linke@bmw.de BMW 2011,2012
  * \author Frank Herchet, frank.fh.herchet@bmw.de BMW 2012
  *
  * For further information see http://www.genivi.org/.
@@ -57,7 +57,6 @@ CAmEnvironment::CAmEnvironment()
 , mDatabasehandler()
 , mRoutingSender(mlistRoutingPluginDirs)
 , mCommandSender(mlistRoutingPluginDirs)
-, mControlSender(controllerPlugin,&mSocketHandler)
 , mRouter(&mDatabasehandler,&mControlSender)
 , mpCommandReceiver(NULL)
 , mpRoutingReceiver(NULL)
@@ -102,12 +101,12 @@ void CAmEnvironment::setSocketHandler(CAmSocketHandler* pSocketHandler)
         mpControlReceiver = new CAmControlReceiver(&mDatabasehandler,&mRoutingSender,&mCommandSender,mpSocketHandler,&mRouter);
 
         //startup all the Plugins and Interfaces
-        mControlSender.startupController(mpControlReceiver);
-        mCommandSender.startupInterfaces(mpCommandReceiver);
-        mRoutingSender.startupInterfaces(mpRoutingReceiver);
+        //mControlSender.startupController(mpControlReceiver);
+        //mCommandSender.startupInterfaces(mpCommandReceiver);
+        //mRoutingSender.startupInterfaces(mpRoutingReceiver);
 
         //when the routingInterface is done, all plugins are loaded:
-        mControlSender.setControllerReady();
+        //mControlSender.setControllerReady();
 
         // Starting TelnetServer
         mpTelnetServer = new CAmTelnetServer(mpSocketHandler,&mCommandSender,mpCommandReceiver,&mRoutingSender,mpRoutingReceiver,&mControlSender,mpControlReceiver,&mDatabasehandler,&mRouter,servPort,3);

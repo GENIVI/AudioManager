@@ -12,7 +12,7 @@
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *
- * \author Christian Mueller, christian.ei.mueller@bmw.de BMW 2011,2012
+ * \author Christian Linke, christian.linke@bmw.de BMW 2011,2012
  *
  * \file CAmWatchdog.h
  * For further information see http://www.genivi.org/.
@@ -22,7 +22,7 @@
 #ifndef CAMWATCHDOG_H_
 #define CAMWATCHDOG_H_
 
-#include "shared/CAmSocketHandler.h"
+#include "CAmSocketHandler.h"
 
 namespace am
 {

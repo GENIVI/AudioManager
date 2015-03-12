@@ -20,7 +20,7 @@
 
 #include "CAmRouterTest.h"
 #include <string.h>
-#include "shared/CAmDltWrapper.h"
+#include "CAmDltWrapper.h"
 
 using namespace am;
 using namespace testing;

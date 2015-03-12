@@ -1,8 +1,0 @@
-##################################### Routing Test Domain Interface configuration ################################
-#	 									RoutingSender_dbus.conf									 # 
-# If you change something make sure you re-configure with 'ccmake..' which generates the *_dbus.conf file again. #
-##################################################################################################################
-[local:@CAPI_SENDER_INTERFACE@:@CAPI_SENDER_INSTANCE@]
-dbus_connection=@CAPI_SENDER_INSTANCE@
-dbus_object=@CAPI_SENDER_PATH@
-dbus_interface=@CAPI_SENDER_INTERFACE@

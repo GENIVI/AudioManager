@@ -6,7 +6,7 @@
 DOXYFILE_ENCODING      = UTF-8
 PROJECT_NAME           = AudioManager
 PROJECT_NUMBER         = @DAEMONVERSION@
-OUTPUT_DIRECTORY       = @CMAKE_SOURCE_DIR@/doc
+OUTPUT_DIRECTORY       = @DOC_OUTPUT_PATH@
 CREATE_SUBDIRS         = NO
 OUTPUT_LANGUAGE        = English
 BRIEF_MEMBER_DESC      = YES
@@ -93,7 +93,7 @@ FILE_PATTERNS          = *.h *.cpp *.dox
 RECURSIVE              = YES
 EXCLUDE                = 
 EXCLUDE_SYMLINKS       = NO
-EXCLUDE_PATTERNS       = */test/* */Plugin*DBus*/* */PluginControl*/* */build*/* */cmake/* */exampleCode/* */googleMock/* */ProjectSpecific/*
+EXCLUDE_PATTERNS       = */test/* */build*/* */cmake/* */googleMock/* 
 EXCLUDE_SYMBOLS        =
 EXAMPLE_PATH           = @CMAKE_SOURCE_DIR@
 EXAMPLE_PATTERNS       = 

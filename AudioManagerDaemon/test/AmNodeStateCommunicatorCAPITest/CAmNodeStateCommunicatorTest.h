@@ -29,7 +29,7 @@
 #include "gmock/gmock.h"
 #include "../IAmControlBackdoor.h"
 #include "../MockIAmControlSend.h"
-#include "shared/CAmCommonAPIWrapper.h"
+#include "CAmCommonAPIWrapper.h"
 
 using namespace testing;
 using namespace am;
