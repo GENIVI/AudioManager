@@ -1235,7 +1235,6 @@ void CAmTelnetMenuHelper::setSinkVolumeExec(std::queue<std::string>& CmdQueue, i
     {
         am_volume_t volume = 0;
         am_sinkID_t sinkID = 0;
-        am_Handle_s handle;
         bool error = false;
         std::istringstream istream_sinkID(CmdQueue.front());
         CmdQueue.pop();

@@ -330,6 +330,7 @@ am_Error_e CAmRoutingReceiver::getDBusConnectionWrapper(CAmDbusWrapper *& dbusCo
     dbusConnectionWrapper = mpDBusWrapper;
     return (E_OK);
 #else
+    dbusConnectionWrapper = NULL;
     return (E_UNKNOWN);
 #endif
 }
