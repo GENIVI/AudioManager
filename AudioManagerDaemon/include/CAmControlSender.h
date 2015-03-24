@@ -26,7 +26,7 @@
 #include "../test/IAmControlBackdoor.h"
 #endif
 
-#include "control/IAmControlSend.h"
+#include "IAmControl.h"
 #include "CAmSocketHandler.h"
 #include "unistd.h"
 
@@ -106,6 +106,7 @@ public:
     void hookSystemNodeApplicationModeChanged(const NsmApplicationMode_e ApplicationModeId) ;
     void hookSystemSessionStateChanged(const std::string& sessionName, const NsmSeat_e seatID, const NsmSessionState_e sessionStateID) ;
     NsmErrorStatus_e hookSystemLifecycleRequest(const uint32_t Request, const uint32_t RequestId) ;
+    void hookSystemSingleTimingInformationChanged(const am_connectionID_t connectionID, const am_timeSync_t time);
 
     void receiverCallback(const pollfd pollfd, const sh_pollHandle_t handle, void* userData);
     bool checkerCallback(const sh_pollHandle_t handle, void* userData);

@@ -22,7 +22,7 @@
 #ifndef ROUTINGSENDER_H_
 #define ROUTINGSENDER_H_
 
-#include "routing/IAmRoutingSend.h"
+#include "IAmRouting.h"
 #include <map>
 
 #ifdef UNIT_TEST //this is needed to test RoutingSender

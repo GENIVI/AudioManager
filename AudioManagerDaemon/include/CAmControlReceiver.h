@@ -22,7 +22,7 @@
 #ifndef CONTRONLRECEIVER_H_
 #define CONTRONLRECEIVER_H_
 
-#include "control/IAmControlReceive.h"
+#include "IAmControl.h"
 
 namespace am
 {

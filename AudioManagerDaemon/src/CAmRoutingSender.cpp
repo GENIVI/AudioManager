@@ -729,6 +729,6 @@ am_Error_e CAmRoutingSender::getListPlugins(std::vector<std::string>& interfaces
 
 void CAmRoutingSender::getInterfaceVersion(std::string & version) const
 {
-    version = RoutingSendVersion;
+    version = RoutingVersion;
 }
 }

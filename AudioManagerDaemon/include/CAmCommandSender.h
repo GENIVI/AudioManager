@@ -26,7 +26,7 @@
 #include "../test/IAmCommandBackdoor.h" //we need this for the unit test
 #endif
 
-#include "command/IAmCommandSend.h"
+#include "IAmCommand.h"
 
 namespace am
 {

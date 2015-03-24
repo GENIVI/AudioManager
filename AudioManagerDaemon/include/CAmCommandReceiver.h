@@ -22,7 +22,7 @@
 #ifndef COMMANDRECEIVER_H_
 #define COMMANDRECEIVER_H_
 
-#include "command/IAmCommandReceive.h"
+#include "IAmCommand.h"
 
 namespace am
 {

@@ -494,7 +494,7 @@ void CAmControlReceiver::setRoutingRundown()
 
 void CAmControlReceiver::getInterfaceVersion(std::string & version) const
 {
-    version = ControlReceiveVersion;
+    version = ControlVersion;
 }
 
 am_Error_e CAmControlReceiver::changeSourceDB(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_CustomConnectionFormat_t>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)

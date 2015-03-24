@@ -21,7 +21,7 @@
 #ifndef CONTROLINTERFACEBACKDOOR_H_
 #define CONTROLINTERFACEBACKDOOR_H_
 
-#include "control/IAmControlSend.h"
+#include "IAmControl.h"
 #include "CAmControlSender.h"
 
 namespace am

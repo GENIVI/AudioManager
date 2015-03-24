@@ -321,6 +321,7 @@ void CAmRoutingReceiver::hookDomainStateChange(const am_domainID_t domainID, con
 void CAmRoutingReceiver::hookTimingInformationChanged(const am_connectionID_t connectionID, const am_timeSync_t delay)
 {
     mpDatabaseHandler->changeConnectionTimingInformation(connectionID, delay);
+    mpControlSender->hookSystemSingleTimingInformationChanged(connectionID,delay);
 }
 
 void CAmRoutingReceiver::sendChangedData(const std::vector<am_EarlyData_s> & earlyData)
@@ -358,7 +359,7 @@ am_Error_e CAmRoutingReceiver::getSocketHandler(CAmSocketHandler *& socketHandle
 
 void CAmRoutingReceiver::getInterfaceVersion(std::string & version) const
 {
-    version = RoutingReceiveVersion;
+    version = RoutingVersion;
 }
 
 void CAmRoutingReceiver::confirmRoutingReady(const uint16_t handle,	const am_Error_e error)
@@ -489,7 +490,7 @@ am_Error_e CAmRoutingReceiver::getDomainOfSource(const am_sourceID_t sourceID, a
 	return  mpDatabaseHandler->getDomainOfSource(sourceID,domainID);
 }
 
-void am::CAmRoutingReceiver::waitOnRundown(bool rundown)
+void CAmRoutingReceiver::waitOnRundown(bool rundown)
 {
     mWaitRundown = rundown;
     mLastRundownError=E_OK;

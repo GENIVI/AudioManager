@@ -305,7 +305,7 @@ void CAmCommandSender::setCommandRundown()
 
 void CAmCommandSender::getInterfaceVersion(std::string & version) const
 {
-    version = CommandSendVersion;
+    version = CommandVersion;
 }
 
 am_Error_e am::CAmCommandSender::getListPlugins(std::vector<std::string> & interfaces) const

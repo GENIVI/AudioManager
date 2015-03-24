@@ -369,7 +369,7 @@ am_Error_e am::CAmControlSender::getConnectionFormatChoice(const am_sourceID_t s
 
 void CAmControlSender::getInterfaceVersion(std::string & version) const
 {
-    version = ControlSendVersion;
+    version = ControlVersion;
 }
 
 void CAmControlSender::confirmCommandReady(const am_Error_e error)
@@ -501,6 +501,12 @@ NsmErrorStatus_e CAmControlSender::hookSystemLifecycleRequest(const uint32_t Req
     return (mController->hookSystemLifecycleRequest(Request,RequestId));
 }
 
+void CAmControlSender::hookSystemSingleTimingInformationChanged(const am_connectionID_t connectionID, const am_timeSync_t time)
+{
+    assert(mController);
+    mController->hookSystemSingleTimingInformationChanged(connectionID,time);
+}
+
 /**for testing only contructor - do not use !
  *
  */
@@ -525,3 +531,5 @@ bool CAmControlSender::dispatcherCallback(const sh_pollHandle_t handle, void* us
 }
 
 }
+
+

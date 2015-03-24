@@ -22,7 +22,7 @@
 #ifndef ROUTINGRECEIVER_H_
 #define ROUTINGRECEIVER_H_
 
-#include "routing/IAmRoutingReceive.h"
+#include "IAmRouting.h"
 
 namespace am
 {

@@ -21,7 +21,7 @@
 #ifndef MOCKCOMMANDINTERFACE_H_
 #define MOCKCOMMANDINTERFACE_H_
 
-#include "command/IAmCommandSend.h"
+#include "IAmCommand.h"
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 

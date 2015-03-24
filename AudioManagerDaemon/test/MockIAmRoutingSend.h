@@ -21,7 +21,7 @@
 #ifndef MOCKROUTINGINTERFACE_H_
 #define MOCKROUTINGINTERFACE_H_
 
-#include "routing/IAmRoutingSend.h"
+#include "IAmRouting.h"
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 

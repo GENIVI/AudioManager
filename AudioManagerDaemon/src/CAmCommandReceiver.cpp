@@ -185,7 +185,7 @@ am_Error_e CAmCommandReceiver::getSocketHandler(CAmSocketHandler *& socketHandle
 
 void CAmCommandReceiver::getInterfaceVersion(std::string & version) const
 {
-    version = CommandReceiveVersion;
+    version = CommandVersion;
 }
 
 void CAmCommandReceiver::confirmCommandReady(const uint16_t handle, const am_Error_e error)

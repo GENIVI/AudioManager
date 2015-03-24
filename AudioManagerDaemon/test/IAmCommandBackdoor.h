@@ -21,7 +21,7 @@
 #ifndef COMMANDINTERFACEBACKDOOR_H_
 #define COMMANDINTERFACEBACKDOOR_H_
 
-#include <command/IAmCommandSend.h>
+#include <IAmCommand.h>
 #include "CAmCommandSender.h"
 
 namespace am
