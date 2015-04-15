@@ -81,40 +81,30 @@
 #include "CAmDatabaseObserver.h"
 #include "CAmDltWrapper.h"
 #include "CAmSocketHandler.h"
+#include "CAmCommandLineSingleton.h"
 
 
 using namespace am;
 DLT_DECLARE_CONTEXT(AudioManager)
 
-const char* USAGE_DESCRIPTION = "Usage:\tAudioManagerDaemon [options]\n"
-        "options:\t\n"
-        "\t-h: print this message\t\n"
-        "\t-i: info about current settings \t\n"
-        "\t-v: print version\t\n"
-#ifndef WITH_DLT
-        "\t-V: print DLT logs to stdout\t\n"
-#endif
-        "\t-d: daemonize AudioManager \t\n"
-#ifdef WITH_DBUS_WRAPPER
-        "\t-T: DbusType to be used by CAmDbusWrapper (0=DBUS_SESSION[default], 1=DBUS_SYSTEM)\t\n"
-#endif
-        "\t-p<path> path for sqlite database (default is in memory)\t\n"
-        "\t-t<port> port for telnetconnection\t\n"
-        "\t-m<max> number of max telnetconnections\t\n"
-        "\t-c<Name> use controllerPlugin <Name> (full path with .so ending)\t\n"
-        "\t-l<Name> replace command plugin directory with <Name> (full path)\t\n"
-        "\t-r<Name> replace routing plugin directory with <Name> (full path)\t\n"
-        "\t-L<Name> add command plugin directory with <Name> (full path)\t\n"
-        "\t-R<Name> add routing plugin directory with <Name> (full path)\t\n";
-
+//we need these because we parse them beforehand.
 std::string controllerPlugin = std::string(CONTROLLER_PLUGIN);
 std::vector<std::string> listCommandPluginDirs;
 std::vector<std::string> listRoutingPluginDirs;
-std::string databasePath = std::string(":memory:");
-unsigned int telnetport = DEFAULT_TELNETPORT;
-unsigned int maxConnections = MAX_TELNETCONNECTIONS;
+
+//commandline options used by the Audiomanager itself
+TCLAP::ValueArg<std::string> controllerPlugin_("c","controllerPlugin","use controllerPlugin full path with .so ending",false,CONTROLLER_PLUGIN,"string");
+TCLAP::ValueArg<std::string> additionalCommandPluginDirs("L","additionalCommandPluginDirs","additional path for looking for command plugins, can be used after -l option",false," ","string");
+TCLAP::ValueArg<std::string> additionalRoutingPluginDirs("R","additionalRoutingPluginDirs","additional path for looking for routing plugins, can be used after -r option ",false," ","string");
+TCLAP::ValueArg<std::string> routingPluginDir("r","RoutingPluginDir","path for looking for routing plugins",false," ","string");
+TCLAP::ValueArg<std::string> commandPluginDir("l","CommandPluginDir","path for looking for command plugins",false," ","string");
+TCLAP::ValueArg<std::string> databasePath ("p","databasePath","path for sqlite database (default is in memory)",false,":memory:","string");
+TCLAP::ValueArg<unsigned int> telnetPort ("t","telnetport","The port that is used for telnet",false,DEFAULT_TELNETPORT,"int");
+TCLAP::ValueArg<unsigned int> maxConnections ("m","maxConnections","Maximal number of connections for telnet",false,MAX_TELNETCONNECTIONS,"int");
+TCLAP::SwitchArg dbusWrapperTypeBool ("t","dbusType","DbusType to be used by CAmDbusWrapper: if option is selected, DBUS_SYSTEM is used otherwise DBUS_SESSION",false);
+TCLAP::SwitchArg enableNoDLTDebug ("V","logDlt","print DLT logs to stdout",false);
+TCLAP::SwitchArg currentSettings("i","currentSettings","print current settings and exit",false);
 int fd0, fd1, fd2;
-bool enableNoDLTDebug = false;
 
 #ifdef WITH_DBUS_WRAPPER
     DBusBusType dbusWrapperType=DBUS_BUS_SESSION;
@@ -182,95 +172,39 @@ void daemonize()
 }
 
 /**
- * parses the command line
+ * parses the command line just for the arguments we need before starting the plugins.
  * @param argc
  * @param argv
  */
-void parseCommandLine(int argc, char **argv)
+void parseCommandLine(int argc, char** argv)
 {
-    while (optind < argc)
+	for (int i = 1; i < argc; ++i)
     {
-#ifdef WITH_DLT
-    #ifdef WITH_DBUS_WRAPPER
-            int option = getopt(argc, argv, "h::v::c::l::r::L::R::d::t::m::i::p::T::");
-    #else
-            int option = getopt(argc, argv, "h::v::c::l::r::L::R::d::t::m::i::p::");
-    #endif //WITH_DBUS_WRAPPER
-#else
-    #ifdef WITH_DBUS_WRAPPER
-            int option = getopt(argc, argv, "h::v::V::c::l::r::L::R::d::t::m::i::p::T::");
-    #else
-            int option = getopt(argc, argv, "h::v::V::c::l::r::L::R::d::t::m::i::p::");
-    #endif //WITH_DBUS_WRAPPER
-#endif
+		std::string arg = argv[i];
 
-        switch (option)
+        if (arg=="-c")
         {
-        case 'i':
-            printf("Current settings:\n");
-            printf("\tAudioManagerDaemon Version:\t\t%s\n", DAEMONVERSION);
-            printf("\tTelnet portNumber:\t\t\t%i\n", telnetport);
-            printf("\tTelnet maxConnections:\t\t\t%i\n", maxConnections);
-            printf("\tSqlite Database path:\t\t\t%s\n", databasePath.c_str());
-            printf("\tControllerPlugin: \t\t\t%s\n", controllerPlugin.c_str());
-            printf("\tDirectory of CommandPlugins: \t\t%s\n", listCommandPluginDirs.front().c_str());
-            printf("\tDirectory of RoutingPlugins: \t\t%s\n", listRoutingPluginDirs.front().c_str());
-            exit(0);
-            break;
-        case 't':
-            assert(atoi(optarg)!=0);
-            telnetport = atoi(optarg);
-            break;
-        case 'm':
-            assert(atoi(optarg)!=0);
-            maxConnections = atoi(optarg);
-            break;
-        case 'p':
-            assert(!controllerPlugin.empty());
-            databasePath = std::string(optarg);
-            break;
-        case 'd':
-            daemonize();
-            break;
-        case 'l':
+        	controllerPlugin = std::string(argv[++i]);
+			assert(!controllerPlugin.empty());
+			assert(controllerPlugin.find(".so")!=std::string::npos);
+        }
+        else if (arg=="-l")
+        {
             listCommandPluginDirs.clear();
-            listCommandPluginDirs.push_back(std::string(optarg));
-            break;
-        case 'r':
-            listRoutingPluginDirs.clear();
-            listRoutingPluginDirs.push_back(std::string(optarg));
-            break;
-        case 'L':
-            listCommandPluginDirs.push_back(std::string(optarg));
-            break;
-        case 'R':
-            listRoutingPluginDirs.push_back(std::string(optarg));
-            break;
-        case 'c':
-            controllerPlugin = std::string(optarg);
-            assert(!controllerPlugin.empty());
-            assert(controllerPlugin.find(".so")!=std::string::npos);
-            break;
-        case 'v':
-            printf("AudioManagerDaemon Version: %s\n", DAEMONVERSION);
-            exit(-1);
-            break;
-#ifndef WITH_DLT
-            case 'V':
-            printf("\e[0;34m[DLT]\e[0;30m\tDebug output to stdout enabled\n");
-            enableNoDLTDebug = true;
-            break;
-#endif
-#ifdef WITH_DBUS_WRAPPER
-            case 'T':
-            dbusWrapperType=static_cast<DBusBusType>(atoi(optarg));
-            break;
-#endif
-        case 'h':
-        default:
-            printf("AudioManagerDaemon Version: %s\n", DAEMONVERSION);
-            puts(USAGE_DESCRIPTION);
-            exit(-1);
+            listCommandPluginDirs.push_back(std::string(argv[++i]));
+        }
+        else if (arg=="-L")
+        {
+            listCommandPluginDirs.push_back(std::string(argv[++i]));
+        }
+        else if (arg=="-r")
+        {
+        	listRoutingPluginDirs.clear();
+        	listRoutingPluginDirs.push_back(std::string(argv[++i]));
+        }
+        else if (arg=="-R")
+        {
+        	listRoutingPluginDirs.push_back(std::string(argv[++i]));
         }
     }
 }
@@ -315,10 +249,86 @@ static void signalHandler(int sig, siginfo_t *siginfo, void *context)
     }
 }
 
-void mainProgram()
+void mainProgram(int argc, char *argv[])
 {
+
+	//initialize the commandline parser, and add all neccessary commands
+    try
+    {
+    	TCLAP::CmdLine* cmd(CAmCommandLineSingleton::instanciateOnce("AudioManager CommandLine Options",' ',DAEMONVERSION,true));
+
+    	cmd->add(controllerPlugin_);
+    	cmd->add(additionalCommandPluginDirs);
+    	cmd->add(commandPluginDir);
+    	cmd->add(additionalRoutingPluginDirs);
+    	cmd->add(routingPluginDir);
+    	cmd->add(currentSettings);
+#ifndef WITH_DLT
+    	cmd->add(enableNoDLTDebug);
+#endif
+#ifdef WITH_DBUS_WRAPPER
+    	cmd->add(dbusWrapperTypeBool);
+#endif
+#ifdef WITH_TELNET
+    	cmd->add(telnetPort);
+    	cmd->add(maxConnections);
+#endif
+#ifdef WITH_DATABASE_STORAGE
+    	cmd->add(databasePath);
+#endif
+    }
+    catch (TCLAP::ArgException &e)  // catch any exceptions
+    { std::cerr << "error: " << e.error() << " for arg " << e.argId() << std::endl; }
+
+
+    //hen and egg. We need to parse a part of the commandline options to get the paths of the controller and the plugins.
+    //So we do some little parsing first and the real parsing later so that the plugins can profit from that.
+    parseCommandLine(argc, (char**) argv);
+
     //Instantiate all classes. Keep in same order !
     CAmSocketHandler iSocketHandler;
+
+    //in this place, the plugins can get the gloval commandlineparser via CAmCommandLineSingleton::instance() and add their options to the commandline
+    //this must be done in the constructor.
+    //later when the plugins are started, the commandline is already parsed and the objects defined before can be used to get the neccesary information
+
+    CAmRoutingSender iRoutingSender(listRoutingPluginDirs);
+    CAmCommandSender iCommandSender(listCommandPluginDirs);
+    CAmControlSender iControlSender(controllerPlugin,&iSocketHandler);
+
+    try
+    {
+    	//parse the commandline options
+    	CAmCommandLineSingleton::instance()->parse(argc,argv);
+    	if (currentSettings.getValue())
+    	{
+    		printf("Current settings:\n");
+			printf("\tAudioManagerDaemon Version:\t\t%s\n", DAEMONVERSION);
+#ifdef WITH_TELNET
+			printf("\tTelnet portNumber:\t\t\t%i\n", telnetPort.getValue());
+			printf("\tTelnet maxConnections:\t\t\t%i\n", maxConnections.getValue());
+#endif
+#ifdef WITH_DATABASE_STORAGE
+			printf("\tSqlite Database path:\t\t\t%s\n", databasePath.getValue().c_str());
+#endif
+#ifndef WITH_DLT
+			printf("\tDlt Command Line Output: \t\t%s\n", enableNoDLTDebug.getValue()?"enabled":"not enabled");
+#endif
+			printf("\tControllerPlugin: \t\t\t%s\n", controllerPlugin.c_str());
+			printf("\tDirectory of CommandPlugins: \t\t%s\n", listCommandPluginDirs.front().c_str());
+			printf("\tDirectory of RoutingPlugins: \t\t%s\n", listRoutingPluginDirs.front().c_str());
+			exit(0);
+    	}
+    }
+    catch (TCLAP::ArgException &e)  // catch any exceptions
+    { std::cerr << "error: " << e.error() << " for arg " << e.argId() << std::endl; }
+
+    CAmDltWrapper::instance(enableNoDLTDebug.getValue())->registerApp("AudioManagerDeamon", "AudioManagerDeamon");
+    CAmDltWrapper::instance()->registerContext(AudioManager, "Main", "Main Context");
+    logInfo("The Audiomanager is started");
+    logInfo("The version of the Audiomanager", DAEMONVERSION);
+
+
 
 #ifdef WITH_CAPI_WRAPPER
     //We instantiate a singleton with the current socket handler, which loads the common-api runtime.
@@ -330,6 +340,8 @@ void mainProgram()
 #endif /*WITH_CAPI_WRAPPER */
 
 #ifdef WITH_DBUS_WRAPPER
+    if (dbusWrapperTypeBool)
+    	dbusWrapperType=DBUS_BUS_SYSTEM;
     CAmDbusWrapper iDBusWrapper(&iSocketHandler,dbusWrapperType);
 #ifdef WITH_NSM
     CAmNodeStateCommunicatorDBus iNodeStateCommunicator(&iDBusWrapper);
@@ -341,15 +353,11 @@ void mainProgram()
 #endif /*WITH_SYSTEMD_WATCHDOG*/
 
 #ifdef WITH_DATABASE_STORAGE
-    CAmDatabaseHandlerSQLite iDatabaseHandler(databasePath);
+    CAmDatabaseHandlerSQLite iDatabaseHandler(databasePath.getValue());
 #else
     CAmDatabaseHandlerMap iDatabaseHandler;
 #endif /*WITH_DATABASE_STORAGE*/
     IAmDatabaseHandler *pDatabaseHandler = dynamic_cast<IAmDatabaseHandler*>( &iDatabaseHandler );
-
-    CAmRoutingSender iRoutingSender(listRoutingPluginDirs);
-    CAmCommandSender iCommandSender(listCommandPluginDirs);
-    CAmControlSender iControlSender(controllerPlugin,&iSocketHandler);
     CAmRouter iRouter(pDatabaseHandler, &iControlSender);
 
 #ifdef WITH_DBUS_WRAPPER
@@ -368,7 +376,7 @@ void mainProgram()
 #endif /*WITH_NSM*/
 
 #ifdef WITH_TELNET
-    CAmTelnetServer iTelnetServer(&iSocketHandler, &iCommandSender, &iCommandReceiver, &iRoutingSender, &iRoutingReceiver, &iControlSender, &iControlReceiver, pDatabaseHandler, &iRouter, telnetport, maxConnections);
+    CAmTelnetServer iTelnetServer(&iSocketHandler, &iCommandSender, &iCommandReceiver, &iRoutingSender, &iRoutingReceiver, &iControlSender, &iControlReceiver, pDatabaseHandler, &iRouter, telnetPort.getValue(), maxConnections.getValue());
     CAmDatabaseObserver iObserver(&iCommandSender, &iRoutingSender, &iSocketHandler, &iTelnetServer);
 #else /*WITH_TELNET*/
     CAmDatabaseObserver iObserver(&iCommandSender,&iRoutingSender, &iSocketHandler);
@@ -377,6 +385,7 @@ void mainProgram()
     iDatabaseHandler.registerObserver(&iObserver);
 
     //startup all the Plugins and Interfaces
+    //at this point, commandline arguments can be parsed
     iControlSender.startupController(&iControlReceiver);
     iCommandSender.startupInterfaces(&iCommandReceiver);
     iRoutingSender.startupInterfaces(&iRoutingReceiver);
@@ -404,14 +413,6 @@ int main(int argc, char *argv[], char** envp)
     listCommandPluginDirs.push_back(std::string(DEFAULT_PLUGIN_COMMAND_DIR));
     listRoutingPluginDirs.push_back(std::string(DEFAULT_PLUGIN_ROUTING_DIR));
 
-    //parse the commandline options
-    parseCommandLine(argc, (char**) argv);
-
-    CAmDltWrapper::instance(enableNoDLTDebug)->registerApp("AudioManagerDeamon", "AudioManagerDeamon");
-    CAmDltWrapper::instance()->registerContext(AudioManager, "Main", "Main Context");
-    logInfo("The Audiomanager is started");
-    logInfo("The version of the Audiomanager", DAEMONVERSION);
-
     //now the signal handler:
     struct sigaction signalAction;
     memset(&signalAction, '\0', sizeof(signalAction));
@@ -433,7 +434,7 @@ int main(int argc, char *argv[], char** envp)
     try
     {
         //we do this to catch all exceptions and have a graceful ending just in case
-        mainProgram();
+        mainProgram(argc,argv);
     }
 
     catch (std::exception& exc)
