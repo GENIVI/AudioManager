@@ -255,7 +255,7 @@ void mainProgram(int argc, char *argv[])
 	//initialize the commandline parser, and add all neccessary commands
     try
     {
-    	TCLAP::CmdLine* cmd(CAmCommandLineSingleton::instanciateOnce("AudioManager CommandLine Options",' ',DAEMONVERSION,true));
+    	TCLAP::CmdLine* cmd(CAmCommandLineSingleton::instanciateOnce("The team of the AudioManager wishes you a nice day!",' ',DAEMONVERSION,true));
 
     	cmd->add(controllerPlugin_);
     	cmd->add(additionalCommandPluginDirs);
@@ -410,6 +410,7 @@ void mainProgram(int argc, char *argv[])
 int main(int argc, char *argv[], char** envp)
 {
     (void) envp;
+    printf("bla %s",DEFAULT_PLUGIN_COMMAND_DIR);
     listCommandPluginDirs.push_back(std::string(DEFAULT_PLUGIN_COMMAND_DIR));
     listRoutingPluginDirs.push_back(std::string(DEFAULT_PLUGIN_ROUTING_DIR));
 

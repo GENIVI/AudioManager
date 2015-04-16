@@ -1095,23 +1095,57 @@ static const am_CustomSystemPropertyType_t SYP_UNKNOWN = 0;</tt></pre>
 <div class="paragraph"><p>The commandline options of the AudioManager:</p></div>
 <div class="listingblock">
 <div class="content">
-<pre><tt>AudioManagerDaemon Version: 3.0.11
-Usage:  AudioManagerDaemon [options]
-options:
-        -h: print this message
-        -i: info about current settings
-        -v: print version
-        -d: daemonize AudioManager
-        -T: DbusType to be used by CAmDbusWrapper (0=DBUS_SESSION[default], 1=DBUS_SYSTEM)
-        -p&lt;path&gt; path for sqlite database (default is in memory)
-        -t&lt;port&gt; port for telnetconnection
-        -m&lt;max&gt; number of max telnetconnections
-        -c&lt;Name&gt; use controllerPlugin &lt;Name&gt; (full path with .so ending)
-        -l&lt;Name&gt; replace command plugin directory with &lt;Name&gt; (full path)
-        -r&lt;Name&gt; replace routing plugin directory with &lt;Name&gt; (full path)
-        -L&lt;Name&gt; add command plugin directory with &lt;Name&gt; (full path)
-        -R&lt;Name&gt; add routing plugin directory with &lt;Name&gt; (full path)</tt></pre>
+<pre><tt>USAGE:
+
+   ./AudioManager  [-K &lt;string&gt;] [-m &lt;int&gt;] [-t &lt;int&gt;] [-i] [-r &lt;string&gt;]
+                   [-R &lt;string&gt;] [-l &lt;string&gt;] [-L &lt;string&gt;] [-c &lt;string&gt;]
+                   [--] [--version] [-h]
+
+
+Where:
+
+   -K &lt;string&gt;,  --controllerPluginArg &lt;string&gt;
+     a test argument for the controller
+
+   -m &lt;int&gt;,  --maxConnections &lt;int&gt;
+     Maximal number of connections for telnet
+
+   -t &lt;int&gt;,  --telnetport &lt;int&gt;
+     The port that is used for telnet
+
+   -i,  --currentSettings
+     print current settings and exit
+
+   -r &lt;string&gt;,  --RoutingPluginDir &lt;string&gt;
+     path for looking for routing plugins
+
+   -R &lt;string&gt;,  --additionalRoutingPluginDirs &lt;string&gt;
+     additional path for looking for routing plugins, can be used after -r
+     option
+
+   -l &lt;string&gt;,  --CommandPluginDir &lt;string&gt;
+     path for looking for command plugins
+
+   -L &lt;string&gt;,  --additionalCommandPluginDirs &lt;string&gt;
+     additional path for looking for command plugins, can be used after -l
+     option
+
+   -c &lt;string&gt;,  --controllerPlugin &lt;string&gt;
+     use controllerPlugin full path with .so ending
+
+   --,  --ignore_rest
+     Ignores the rest of the labeled arguments following this flag.
+
+   --version
+     Displays version information and exits.
+
+   -h,  --help
+     Displays usage information and exits.
+
+
+   The team of the AudioManager wishes you a nice day!</tt></pre>
 </div></div>
+<div class="paragraph"><p>To learn more about the commandline options, check the doxygen documentation.</p></div>
 </div>
 </div>
 </div>
@@ -1289,7 +1323,7 @@ handle later on.</p></div>
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2015-03-11 15:31:03 CET
+Last updated 2015-04-16 10:44:06 CEST
 </div>
 </div>
 </body>

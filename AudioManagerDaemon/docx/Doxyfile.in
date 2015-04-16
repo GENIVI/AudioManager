@@ -93,9 +93,9 @@ FILE_PATTERNS          = *.h *.cpp *.dox
 RECURSIVE              = YES
 EXCLUDE                = 
 EXCLUDE_SYMLINKS       = NO
-EXCLUDE_PATTERNS       = */test/* */build*/* */cmake/* */googleMock/* 
+EXCLUDE_PATTERNS       = */test/* */build*/* */cmake/* */googleMock/* */tclap*/*
 EXCLUDE_SYMBOLS        =
-EXAMPLE_PATH           = @CMAKE_SOURCE_DIR@
+EXAMPLE_PATH           = 
 EXAMPLE_PATTERNS       = 
 EXAMPLE_RECURSIVE      = NO
 IMAGE_PATH             = @CMAKE_SOURCE_DIR@/AudioManagerDaemon/docx/images
@@ -231,8 +231,8 @@ SKIP_FUNCTION_MACROS   = YES
 #---------------------------------------------------------------------------
 # Configuration::additions related to external references
 #---------------------------------------------------------------------------
-TAGFILES               = qtools_docs/qtools.tag=../../qtools_docs/html
-GENERATE_TAGFILE       =
+TAGFILES               = 
+GENERATE_TAGFILE       = NO
 ALLEXTERNALS           = NO
 EXTERNAL_GROUPS        = YES
 PERL_PATH              = /usr/bin/perl

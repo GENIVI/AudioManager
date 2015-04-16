@@ -1,0 +1,45 @@
+ /*
+ * Copyright (C) 2012, BMW AG
+ *
+ * This file is part of GENIVI Project AudioManager.
+ *
+ * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contribution License Agreements.
+ *
+ * \copyright
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
+ * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ * \\author Christian Linke (christian.linke@bmw.de)
+ *
+ */
+ /*!
+\page cmdline CommandLineParsing 
+\section tclap TCLAP
+Commandline parsing is accomplished via a template library that is added to the source tree of the Audiomanager: TCLAP.
+The license of this libraty is MIT.
+It manages commandline parsing in a handy way. More information can be found here: 
+http://tclap.sourceforge.net
+\section cmdplugins CommandLine Parsing in the Plugins
+The commandline Class that parses the commandline can be accessed via am::CAmCommandLineSingleton . This factory creates
+a commandline object that can be accessed everywhere in the Audiomanager.
+In the constructor of a plugin, the plugins can add commandline arguments they hold as member. 
+Here the member, in this case of type TCLAP::ValueArg<std::string> mCommandLineArg;
+
+\code
+mCommandLineArg("K","controllerPluginArg","a test argument for the controller",false,"bla","string")
+\endcode
+
+In the constructor, add the argument to the commandline like this
+\code
+CAmCommandLineSingleton::instance()->add(mCommandLineArg);
+\endcode
+And then in the startup controller routine (or later) you can get the value of the argument, like
+\code
+mCommandLineArg.getValue()
+\endcode
+
+An example can be found in the plugins repository in the test controller.
+
+*/

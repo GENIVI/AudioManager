@@ -325,24 +325,57 @@ static const am_CustomSystemPropertyType_t SYP_UNKNOWN = 0;
 The commandline options of the AudioManager:
 
 ----
-AudioManagerDaemon Version: 3.0.11
-Usage:	AudioManagerDaemon [options]
-options:	
-	-h: print this message	
-	-i: info about current settings 	
-	-v: print version	
-	-d: daemonize AudioManager 	
-	-T: DbusType to be used by CAmDbusWrapper (0=DBUS_SESSION[default], 1=DBUS_SYSTEM)	
-	-p<path> path for sqlite database (default is in memory)	
-	-t<port> port for telnetconnection	
-	-m<max> number of max telnetconnections	
-	-c<Name> use controllerPlugin <Name> (full path with .so ending)	
-	-l<Name> replace command plugin directory with <Name> (full path)	
-	-r<Name> replace routing plugin directory with <Name> (full path)	
-	-L<Name> add command plugin directory with <Name> (full path)	
-	-R<Name> add routing plugin directory with <Name> (full path)	
-----  	
+USAGE: 
 
+   ./AudioManager  [-K <string>] [-m <int>] [-t <int>] [-i] [-r <string>]
+                   [-R <string>] [-l <string>] [-L <string>] [-c <string>]
+                   [--] [--version] [-h]
+
+
+Where: 
+
+   -K <string>,  --controllerPluginArg <string>
+     a test argument for the controller
+
+   -m <int>,  --maxConnections <int>
+     Maximal number of connections for telnet
+
+   -t <int>,  --telnetport <int>
+     The port that is used for telnet
+
+   -i,  --currentSettings
+     print current settings and exit
+
+   -r <string>,  --RoutingPluginDir <string>
+     path for looking for routing plugins
+
+   -R <string>,  --additionalRoutingPluginDirs <string>
+     additional path for looking for routing plugins, can be used after -r
+     option 
+
+   -l <string>,  --CommandPluginDir <string>
+     path for looking for command plugins
+
+   -L <string>,  --additionalCommandPluginDirs <string>
+     additional path for looking for command plugins, can be used after -l
+     option
+
+   -c <string>,  --controllerPlugin <string>
+     use controllerPlugin full path with .so ending
+
+   --,  --ignore_rest
+     Ignores the rest of the labeled arguments following this flag.
+
+   --version
+     Displays version information and exits.
+
+   -h,  --help
+     Displays usage information and exits.
+
+
+   The team of the AudioManager wishes you a nice day!
+----  	
+To learn more about the commandline options, check the doxygen documentation.
 
 == Telnet Server
 The audiomanager has a build- in telnetserver that serves for debuggin purposes.
