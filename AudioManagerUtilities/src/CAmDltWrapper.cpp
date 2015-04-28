@@ -1,4 +1,6 @@
 /**
+ *  SPDX license identifier: MPL-2.0
+ *
  * Copyright (C) 2012, BMW AG
  *
  * This file is part of GENIVI Project AudioManager.
@@ -13,7 +15,7 @@
  *
  *
  * \author Christian Linke, christian.linke@bmw.de BMW 2011,2012
- *         Jens Lorenz, jlorenz@de.adit-jv.com ADIT 2014
+ * \author Jens Lorenz, jlorenz@de.adit-jv.com ADIT 2014
  *
  * \file CAmDltWrapper.cpp
  * For further information see http://www.genivi.org/.

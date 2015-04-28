@@ -3,6 +3,8 @@
 
 /**********************************************************************************************************************
 *
+* SPDX license identifier: MPL-2.0
+*
 * Copyright (C) 2012 Continental Automotive Systems, Inc.
 *
 * Author: Jean-Pierre.Bogler@continental-corporation.com

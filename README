@@ -35,7 +35,7 @@ The licenses of this project are split into two parts:
 2) the plugins that serve as example code that can be taken to build up an own project with it -
     these parts are licensed with the MIT license
     
-Contribution is done under GENIVI CLA or MPL2.0. 
+Contribution is done under MPL2.0 or MIT License, depending on the location of the code. 
 
 == Version
 The current version can be taken out of the git. The version 1.0.0 is the first GENIVI compliant code,in the compliance statement of discovery (2.0). 

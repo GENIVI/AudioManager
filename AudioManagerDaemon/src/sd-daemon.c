@@ -1,3 +1,7 @@
+/**
+ * SPDX license identifier: MIT
+ */
+
 /*-*- Mode: C; c-basic-offset: 8; indent-tabs-mode: nil -*-*/
 
 /***

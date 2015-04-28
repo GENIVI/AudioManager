@@ -1,5 +1,7 @@
 /**
-Von mir aus gerne. * Copyright (C) 2012, BMW AG
+ * SPDX license identifier: MPL-2.0
+ *
+ * Copyright (C) 2012, BMW AG
  *
  * This file is part of GENIVI Project AudioManager.
  *
