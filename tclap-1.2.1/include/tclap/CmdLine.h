@@ -242,6 +242,20 @@ private:
 		void parse(int argc, const char * const * argv);
 
 		/**
+		 * Parses the command line but does not process help.
+		 * \param args - A vector of strings representing the args.
+		 * args[0] is still the program name.
+		 */
+		void preparse(std::vector<std::string>& args);
+
+		/**
+		 * Parses the command line but does not process help.
+		 * \param argc - Number of arguments.
+		 * \param argv - Array of arguments.
+		 */
+		void preparse(int argc, const char * const * argv);
+
+		/**
 		 * Parses the command line.
 		 * \param args - A vector of strings representing the args.
 		 * args[0] is still the program name.
@@ -439,6 +453,49 @@ inline void CmdLine::parse(int argc, const char * const * argv)
 			args.push_back(argv[i]);
 
 		parse(args);
+}
+
+inline void CmdLine::preparse(int argc, const char * const * argv)
+{
+		// this step is necessary so that we have easy access to
+		// mutable strings.
+		std::vector<std::string> args;
+		for (int i = 0; i < argc; i++)
+			args.push_back(argv[i]);
+
+		preparse(args);
+}
+
+inline void CmdLine::preparse(std::vector<std::string>& args)
+{
+	bool shouldExit = false;
+	int estat = 0;
+
+	try {
+
+		_progName = args.front();
+		args.erase(args.begin());
+
+		int requiredCount = 0;
+
+		for (int i = 0; static_cast<unsigned int>(i) < args.size(); i++)
+		{
+			bool matched = false;
+			for (ArgListIterator it = _argList.begin();
+				 it != _argList.end(); it++) {
+				if ( (*it)->processArg( &i, args ) )
+				{
+					requiredCount += _xorHandler.check( *it );
+					matched = true;
+					break;
+				}
+			}
+		}
+	} catch ( ArgException& e ) {
+	try {
+		_output->failure(*this,e);
+		} catch ( ExitException &ee ) {}
+	} catch (ExitException &ee) {}
 }
 
 inline void CmdLine::parse(std::vector<std::string>& args)

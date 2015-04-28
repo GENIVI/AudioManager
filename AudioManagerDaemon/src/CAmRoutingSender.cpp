@@ -29,6 +29,7 @@
 #include <cassert>
 #include <iostream>
 #include <sstream>
+#include <stdexcept>
 #include "CAmRoutingReceiver.h"
 #include "TAmPluginTemplate.h"
 #include "CAmDltWrapper.h"
@@ -51,6 +52,13 @@ CAmRoutingSender::CAmRoutingSender(const std::vector<std::string>& listOfPluginD
         mMapHandleInterface(), //
         mpRoutingReceiver()
 {
+
+    if (listOfPluginDirectories.empty())
+    {
+        logError("CAmRoutingSender::CAmRoutingSender: List of routingplugins is empty");
+        throw std::runtime_error("List of routingplugins is empty!");
+    }
+
     std::vector<std::string> sharedLibraryNameList;
     std::vector<std::string>::const_iterator dirIter = listOfPluginDirectories.begin();
     std::vector<std::string>::const_iterator dirIterEnd = listOfPluginDirectories.end();

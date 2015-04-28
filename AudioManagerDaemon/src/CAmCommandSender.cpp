@@ -27,6 +27,7 @@
 #include <sstream>
 #include <string>
 #include <cstring>
+#include <stdexcept>
 #include "CAmCommandReceiver.h"
 #include "TAmPluginTemplate.h"
 #include "CAmDltWrapper.h"
@@ -53,6 +54,12 @@ CAmCommandSender::CAmCommandSender(const std::vector<std::string>& listOfPluginD
         mListLibraryNames(), //
         mCommandReceiver()
 {
+    if (listOfPluginDirectories.empty())
+    {
+        logError("CAmCommandSender::CAmCommandSender: List of commandplugins is empty");
+        throw std::runtime_error("List of commandplugins is empty!");
+    }
+
     std::vector<std::string> sharedLibraryNameList;
     std::vector<std::string>::const_iterator dirIter = listOfPluginDirectories.begin();
     std::vector<std::string>::const_iterator dirIterEnd = listOfPluginDirectories.end();
