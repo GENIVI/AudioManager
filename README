@@ -11,14 +11,14 @@ Copyright (C) 2012, BMW AG
 This file is part of GENIVI Project AudioManager.
  
 Contributions are licensed to the GENIVI Alliance under one or more
-Contribution License Agreements or MPL 2.0 .
+Contribution License Agreements or MPL 2.0.
  
 (C) Copyright
 This Source Code Form is subject to the terms of the
 Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
 this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  
-author Christian Linke = Christian Linke christian.linke@bmw.de BMW 2011-2015
+Author Christian Linke = Christian Linke christian.linke@bmw.de BMW 2011-2015
 
 For further information see http://projects.genivi.org/audio-manager/.
 
@@ -38,15 +38,15 @@ The licenses of this project are split into two parts:
 Contribution is done under MPL2.0 or MIT License, depending on the location of the code. 
 
 == Version
-The current version can be taken out of the git. The version 1.0.0 is the first GENIVI compliant code,in the compliance statement of discovery (2.0). 
-For every GENIVI release, there is a release of the AudioManager, each of the releases have an own bugfix branch that will get the most important fixes.
+The current version can be taken out of the git. The version 1.0.0 is the first GENIVI compliant code, in the compliance statement of Discovery (2.0). 
+For every GENIVI release, there is a release of the AudioManager, each of the releases have their own bug fix branch that will get the most important fixes.
 Development is done on the master branch.
 
 === Versioning Scheme
 The versioning scheme was decided in the February face2face 2012.
-The firs number describes the release branch. This is 1 for discovery, 2 for excalibur and 3 for photon. For major features or release, the second number will be increased.
-Each new GENIVI version (releases are every half year, around april and october) will get the current HEAD (for example 2.0.34 for excalibur) and release with the increase of the second number (2.1).
-The next commit on the master branch gets then the new first numner (3) and starts from zero.
+The first number describes the release branch. This is 1 for Discovery, 2 for Excalibur and 3 for Foton. For major features or release, the second number will be increased.
+Each new GENIVI version (releases are every half year, around April and October) will get the current HEAD (for example 2.0.34 for Excalibur) and release with the increase of the second number (2.1).
+The next commit on the master branch gets then the new first number (3) and starts from zero.
 
 For the daemon the third number (for example 1.0.X) describes the patch version. The versions are automatically created by git during the build process.
 The versioning scheme is used for the AudioManager daemon itself and for each of it's interfaces. The versioning of the Interfaces in EA is defined via the tag "version" and the name of the interfaceversion versionName, for example "CommandReceiveVersion". This information is generated into the interface header files and is used then by cmake to set the interface versions.
@@ -115,7 +115,7 @@ For each option, some hints are given.
 Basically, all build dependencies are optional- but you might need to use some if you want to have support for Dbus,
 for example...
 
-You will need optionally fullfill some dependencies in order to comile the GENIVI AudioManager Daemon, these are:
+You will need optionally fulfill some dependencies in order to compile the GENIVI AudioManager Daemon, these are:
 
 * dbus (only when DBUS_WRAPPER==ON) [tested on version 1.2.16]
 * sqlite3 [tested on version 3.6.22] (only when WITH_DATABASE_STORAGE==ON)
@@ -130,11 +130,11 @@ sudo apt-get install libdbus-1-dev libsqlite3-dev doxygen git cmake build-essent
 
 === AudioManagerUtilities
 
-In the AudioManagerUtilites you can find hany helper functions that can be reused by other projects as well.
+In the AudioManagerUtilites you can find helper functions that can be reused by other projects as well.
 
 === The NodeStateManager
 
-The nodestatemanager headers are needed to compile the audiomanager. If the nodestatemanagerincludes are not found, 
+The nodestatemanager headers are needed to compile the audiomanager. If the nodestatemanager includes are not found, 
 the headers shipped with the audiomanager are used.
 The nodestatemanager can be retrieved from projects.genivi.org .
 
@@ -143,9 +143,9 @@ It used to work, but currently with CommmonAPI 2.6.1 the generation does not wor
 
 === CommonAPI File generation
 
-The audiomanager will search in /usr/share or /usr/local/share for a generator. He will generate all neccessary files with this generator into the build tree.
+The audiomanager will search in /usr/share or /usr/local/share for a generator. He will generate all necessary files with this generator into the build tree.
 
-The adresses used for commonAPI are fixed. If you need to change them, you can use a central or local configure file. More information on CommonAPI documentation: http://projects.genivi.org/commonapi/
+The addresses used for commonAPI are fixed. If you need to change them, you can use a central or local configure file. More information on CommonAPI documentation: http://projects.genivi.org/commonapi/
 
 === Tests
 
@@ -153,13 +153,13 @@ For building the tests, you will need the following packages:
 
 * python [tested on version 2.6, should work on higher versions as well]
 
-GoogleMock and GoogleTest are as source code integrated in the sourcetree
+GoogleMock and GoogleTest are as source code integrated in the source tree
 To install them in a build environment like Ubuntu you can use:
 ----
 sudo apt-get install python2.6-dev
 ----
 
-For compiling, you will need a compiler, linker etc. On most linux systems you will get this via
+For compiling, you will need a compiler, linker etc. On most Linux systems you will get this via
 ----
 sudo apt-get install build-essential
 ----
@@ -175,7 +175,7 @@ cmake ..
 make
 ----
 
-The AudioManager executable will be placed in the bin folder of your build folder, tests in a subfolder below.-
+The AudioManager executable will be placed in the bin folder of your build folder, tests in a sub folder below.-
 
 In order to install the AudioManager, you can do
 ----
@@ -214,9 +214,9 @@ sudo make plugin-test-install
 ----
 
 If you want to compile the Audiomanager together with the plugins, simply clone the plugins into a folder
-Plugins on the mainlevel. The Plugins will be then compiled together with the AudioManager.
+Plugins on the main level. The Plugins will be then compiled together with the AudioManager.
 
-If the plugins are compiled seperatly, the AudioManager needs to be installed on the system. The plugins will find and read the important CMake variables and use them.
+If the plugins are compiled separately, the AudioManager needs to be installed on the system. The plugins will find and read the important CMake variables and use them.
 
 === Adding own plugins
 To keep the own sources away from the GENIVI code the project specific elements can be reconfigured with own type definitions.
@@ -302,7 +302,7 @@ static const am_CustomRampType_t RAMP_GENIVI_LINEAR = 4;
 static const am_CustomRampType_t RAMP_GENIVI_EXP = 5;
 
 /**
- * Within genivi only the some example properties are defined.
+ * Within GENIVI only the some example properties are defined.
  * For products these should be changed or extended.
  */
 typedef uint16_t am_CustomSoundPropertyType_t;
@@ -378,8 +378,8 @@ Where:
 To learn more about the commandline options, check the doxygen documentation.
 
 == Telnet Server
-The audiomanager has a build- in telnetserver that serves for debuggin purposes.
-If you compile your AudioManager with TelnetServer support (cmake -DWITH_TELNET=ON), you will be able to 
+The audiomanager has a build- in telnet server that serves for debugging purposes.
+If you compile your AudioManager with Telnet Server support (cmake -DWITH_TELNET=ON), you will be able to 
 set with commandline argument -t the port number and with -m the maximum supported connections. 
 The default telnet port is 6060. 
    
@@ -460,14 +460,14 @@ cmake/AudioManager_Codestyle.xml
 .Get an overview of all branches:
         git branch
 
-.Switch to the branch you want to work on (see versioning schmeme, the master is the feature branch) and verify that it has switched (* changed)
+.Switch to the branch you want to work on (see versioning scheme, the master is the feature branch) and verify that it has switched (* changed)
         git checkout <your branch>
         git branch
 
 .Best practice is to create a local branch based on the current branch:
         git branch working_branch
 
-Start working, best practice is to commit smaller, compilable peaced during the work that makes it easier to 
+Start working, best practice is to commit smaller, buildable peices during the work that makes it easier to 
 handle later on.
 
 .If you want to commit you changes, send them to the audiomanager-dev list, you can create a patch like this:
