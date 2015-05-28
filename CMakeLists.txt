@@ -82,10 +82,10 @@ elseif(WITH_ENABLED_IPC STREQUAL "NONE")
     set (WITH_DBUS_WRAPPER OFF CACHE INTERNAL "hide this!" FORCE)
 endif ()
 
-set(DBUS_SERVICE_PREFIX "org.genivi.audiomanager\0" 
+set(DBUS_SERVICE_PREFIX "org.genivi.audiomanager" 
     CACHE PROPERTY "The dbus service prefix for the AM - only changable for legacy dbus")
 
-set(DBUS_SERVICE_OBJECT_PATH "/org/genivi/audiomanager\0" 
+set(DBUS_SERVICE_OBJECT_PATH "/org/genivi/audiomanager" 
     CACHE PROPERTY "The service object path of the AM - only changable for legacy dbus")
 
 set(DEFAULT_TELNETPORT 6080 
@@ -124,7 +124,7 @@ set(TEST_EXECUTABLE_INSTALL_PATH "~/tests"
 set(DOC_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/doc
     CACHE STRINGS "The doxygen documentation will be placed here")  
     
-set(AM_SHARE_FOLDER ${CMAKE_INSTALL_PREFIX}/share
+set(AM_SHARE_FOLDER ${CMAKE_INSTALL_PREFIX}/share/audiomanager
     CACHE STRINGS "The share folder for the AM. Some DBus xmls will be placed here and so on")   
     
 set(AUDIOMANAGER_INCLUDE_FOLDER  ${CMAKE_BINARY_DIR}/include)
@@ -178,12 +178,15 @@ if (NOT WITH_DBUS_WRAPPER AND NOT WITH_CAPI_WRAPPER)
     set (WITH_NSM OFF)
 endif (NOT WITH_DBUS_WRAPPER AND NOT WITH_CAPI_WRAPPER)
 
+
+if(USE_BUILD_LIBS) 
+     execute_process(COMMAND mkdir -p "${CMAKE_CURRENT_BINARY_DIR}/bin")
+endif(USE_BUILD_LIBS)
+
 if(WITH_NSM AND WITH_DBUS_WRAPPER)
     if(USE_BUILD_LIBS) 
         set(NSM_INTROSPECTION_FILE ${EXECUTABLE_OUTPUT_PATH}/bin/LifeCycleConsumer.xml)
-            execute_process(
-    	    COMMAND mkdir -p "${CMAKE_CURRENT_BINARY_DIR}/bin"
-    	    COMMAND cp "${CMAKE_SOURCE_DIR}/Foo/LifecycleConsumer.xml" ${NSM_INTROSPECTION_FILE})
+            execute_process(COMMAND cp "${CMAKE_SOURCE_DIR}/Foo/LifecycleConsumer.xml" ${NSM_INTROSPECTION_FILE})
     else(USE_BUILD_LIBS) 
         set(NSM_INTROSPECTION_FILE ${AM_SHARE_FOLDER}/LifecycleConsumer.xml)
             INSTALL(
