@@ -24,79 +24,31 @@
 #include <map>
 #include <queue>
 #include <memory>
-#include <CommonAPI/CommonAPI.h>
+#include <cassert>
+#include <CommonAPI/CommonAPI.hpp>
+#ifndef COMMONAPI_INTERNAL_COMPILATION
+#define COMMONAPI_INTERNAL_COMPILATION
+#include <CommonAPI/MainLoopContext.hpp>
+#undef COMMONAPI_INTERNAL_COMPILATION
+#endif
+#include <CommonAPI/Utils.hpp>
 #include "config.h"
 #include "CAmSocketHandler.h"
 
 
 /**
- * A Common-API wrapper class, that loads the common-api runtime and instantiates all necessary other objects. Works with the CAmSocketHandler.
- * It is implemented as singleton and usually once instantiated at the beginning with CAmSocketHandler.
+ * A Common-API wrapper class, which loads the common-api runtime and instantiates all necessary objects.
+ * It is implemented as singleton and usually instantiated at the beginning with CAmSocketHandler as parameter.
  * Example: CAmCommonAPIWrapper *pCAPIWrapper = CAmCommonAPIWrapper::instantiateOnce( aSocketHandlerPointer );
  */
 
 namespace am
 {
-using namespace CommonAPI;
 
 class CAmSocketHandler;
 
 class CAmCommonAPIWrapper
 {
-public:
-
-    virtual ~CAmCommonAPIWrapper();
-	/**
-	* \brief Returns an already instantiated object.
-	*
-	* This method should be called after the instantiateOnce(...) has been called with non null socket handler parameter.
-	*
-	* @return The common-api wrapper object.
-	*/
-	static CAmCommonAPIWrapper* getInstance();
-	/**
-	* \brief Creates a singleton instance attached to the provided socket handler object.
-	*
-	* This method should be called only once because it instantiates a single object.
-	* Otherwise it will throw an exception.
-	* The first call of this method with non null parameter loads the common-api and attaches it to the main loop.
-	*
-	* @param socketHandler: A pointer to socket handler or NULL
-	*
-	* @return The common-api wrapper object.
-	*/
-	static CAmCommonAPIWrapper* instantiateOnce(CAmSocketHandler* socketHandler);
-
-	void registerDispatchSource(DispatchSource* dispatchSource, const DispatchPriority dispatchPriority);
-	void deregisterDispatchSource(DispatchSource* dispatchSource);
-	void registerWatch(Watch* watch, const DispatchPriority dispatchPriority);
-	void deregisterWatch(Watch* watch);
-	void registerTimeout(Timeout* timeout, const DispatchPriority dispatchPriority);
-	void deregisterTimeout(Timeout* timeout);
-	void wakeup();
-
-	std::shared_ptr<CommonAPI::Factory> factory() const;
-	std::shared_ptr<CommonAPI::Runtime> runtime() const;
-	//Wraps the invitation to the service publisher
-	template <class TStubImp> bool registerStub(const std::shared_ptr<TStubImp> & shStub, const std::string & aCommonAPIAddress)
-	{
-		return runtime()->getServicePublisher()->registerService(shStub, aCommonAPIAddress, factory());
-	}
-	bool unregisterStub(const std::string & aCommonAPIAddress)
-	{
-		(void)aCommonAPIAddress;
-		/** Not implemented yet
-			todo: Check whether the appropriate method is available and uncomment...
-
-			return runtime()->getServicePublisher()->unregisterService(aCommonAPIAddress);
-		*/
-		return true;
-	}
-
-
-protected:
-	CAmCommonAPIWrapper(CAmSocketHandler* socketHandler) ;
-private:
     void commonPrepareCallback(const sh_pollHandle_t handle, void* userData);
 	TAmShPollPrepare<CAmCommonAPIWrapper> pCommonPrepareCallback;
 
@@ -115,26 +67,197 @@ private:
      struct timerHandles
     {
         sh_timerHandle_t handle;
-        Timeout* timeout;
+        CommonAPI::Timeout* timeout;
     };
-     //!< reference to the dbus instance
+
     CAmSocketHandler *mpSocketHandler; //!< pointer to the sockethandler
 
-    std::shared_ptr<CommonAPI::Factory> mFactory;
+    std::shared_ptr<CommonAPI::Runtime> mRuntime;
     std::shared_ptr<CommonAPI::MainLoopContext> mContext;
 
-    DispatchSourceListenerSubscription mDispatchSourceListenerSubscription;
-    WatchListenerSubscription mWatchListenerSubscription;
-    TimeoutSourceListenerSubscription mTimeoutSourceListenerSubscription;
-    WakeupListenerSubscription mWakeupListenerSubscription;
-    std::multimap<DispatchPriority, DispatchSource*> mRegisteredDispatchSources;
-    std::map<int,Watch*> mMapWatches;
-    Watch* mWatchToCheck;
-    std::list<DispatchSource*> mSourcesToDispatch;
+    CommonAPI::DispatchSourceListenerSubscription mDispatchSourceListenerSubscription;
+    CommonAPI::WatchListenerSubscription mWatchListenerSubscription;
+    CommonAPI::TimeoutSourceListenerSubscription mTimeoutSourceListenerSubscription;
+    CommonAPI::WakeupListenerSubscription mWakeupListenerSubscription;
+    std::multimap<CommonAPI::DispatchPriority, CommonAPI::DispatchSource*> mRegisteredDispatchSources;
+    std::map<int,CommonAPI::Watch*> mMapWatches;
+    CommonAPI::Watch* mWatchToCheck;
+    std::list<CommonAPI::DispatchSource*> mSourcesToDispatch;
     std::vector<timerHandles> mpListTimerhandles;
+
+	void registerDispatchSource(CommonAPI::DispatchSource* dispatchSource, const CommonAPI::DispatchPriority dispatchPriority);
+	void deregisterDispatchSource(CommonAPI::DispatchSource* dispatchSource);
+	void registerWatch(CommonAPI::Watch* watch, const CommonAPI::DispatchPriority dispatchPriority);
+	void deregisterWatch(CommonAPI::Watch* watch);
+	void registerTimeout(CommonAPI::Timeout* timeout, const CommonAPI::DispatchPriority dispatchPriority);
+	void deregisterTimeout(CommonAPI::Timeout* timeout);
+	void wakeup();
+
+protected:
+    CAmCommonAPIWrapper(CAmSocketHandler* socketHandler) ;
+
+public:
+
+    virtual ~CAmCommonAPIWrapper();
+
+	/**
+	* \brief Returns an already instantiated object.
+	*
+	* This method should be called after the instantiateOnce(...) has been called with non null socket handler parameter.
+	*
+	* @return The common-api wrapper object.
+	*/
+	static CAmCommonAPIWrapper* getInstance();
+
+	/**
+	* \brief Creates a singleton instance attached to the provided socket handler object.
+	*
+	* This method should be called only once because it instantiates a single object.
+	* Otherwise it will throw an exception.
+	* The first call of this method with non null parameter loads the common-api and attaches it to the main loop.
+	*
+	* @param socketHandler: A pointer to socket handler or NULL
+	*
+	* @return The common-api wrapper object.
+	*/
+	static CAmCommonAPIWrapper* instantiateOnce(CAmSocketHandler* socketHandler);
+
+
+	/**
+	* \brief Getter for the socket handler.
+	*
+	* @return Pointer to the socket handler.
+	*/
+	CAmSocketHandler *getSocketHandler() const { return mpSocketHandler; }
+
+	/**
+	* \brief Register stub objects.
+	*
+	* Example: std::shared_ptr<ConcreteStubClass> aStub;
+	* 		   registerService(	aStub, "local", "com.your_company.instance_name");
+	*
+	* @param shStub: Shared pointer to a stub instance
+	* @param domain: A string with the domain name, usually "local"
+	* @param instance: Common-api instance string as example "com.your_company.instance_name"
+	*
+	*/
+	template <class TStubImp> bool registerService(const std::shared_ptr<TStubImp> & shStub, const std::string & domain, const std::string & instance)
+	{
+		return mRuntime->registerService(domain, instance, shStub, mContext);
+	}
+
+	/**
+	* \brief Unregister stub objects.
+	*
+	* @param domain: A string with the domain name, usually "local"
+	* @param interface: Common-api interface string as example "com.your_company.interface_name"
+	* @param instance: Common-api instance string as example "com.your_company.instance_name"
+	*
+	*/
+	bool unregisterService(const std::string &domain, const std::string &interface, const std::string &instance)
+	{
+		return mRuntime->unregisterService(domain, interface, instance);
+	}
+
+	/**
+	* \brief Deprecated method. Instead you should use bool registerService(const std::shared_ptr<TStubImp> & shStub, const std::string & domain, const std::string & instance).
+	*
+	* Register stub objects.
+	*
+	* Example: std::shared_ptr<ConcreteStubClass> aStub;
+	* 		   registerService(	aStub, "local:com.your_company.interface_name:com.your_company.instance_name");
+	*
+	* @param shStub: Shared pointer to a stub instance
+	* @param address: Complete common-api address as example "local:com.your_company.interface_name:com.your_company.instance_name"
+	*
+	*/
+	template <class TStubImp> bool __attribute__((deprecated)) registerStub(const std::shared_ptr<TStubImp> & shStub, const std::string & address)
+ 	{
+		std::vector<std::string> parts = CommonAPI::split(address, ':');
+		assert(parts.size()==3);
+
+		return registerService(shStub, parts[0], parts[2]);
+ 	}
+
+	/**
+	* \brief Deprecated method. Instead you should use bool unregisterService(const std::string &domain, const std::string &interface, const std::string &instance).
+	*
+	* Unregister stub objects.
+	*
+	* @param address: Complete common-api address as example "local:com.your_company.interface_name:com.your_company.instance_name"
+	*
+	*/
+	bool __attribute__((deprecated)) unregisterStub(const std::string & address)
+	{
+		std::vector<std::string> parts = CommonAPI::split(address, ':');
+		assert(parts.size()==3);
+
+		return unregisterService(parts[0], parts[1], parts[2]);
+ 	}
+
+
+	/**
+	* \brief Build proxy objects.
+	*
+	* Example: std::shared_ptr<AProxyClass<>> aProxy = buildProxy<AProxyClass>("local", "com.your_company.instance_name");
+	*
+	* @param domain: A string with the domain name, usually "local"
+	* @param instance: Common-api instance string as example "com.your_company.instance_name"
+	*
+	* @return A proxy object.
+	*/
+	template<template<typename ...> class ProxyClass, typename ... AttributeExtensions>
+	std::shared_ptr<ProxyClass<AttributeExtensions...>> buildProxy(const std::string &domain, const std::string &instance)
+	{
+		return mRuntime->buildProxy<ProxyClass>(domain, instance, mContext);
+	}
+
+
+	/**
+	* \brief  Deprecated method. Instead you should use buildProxy(const std::string &domain, const std::string &instance).
+	*
+	* Build proxy objects.
+	* Example: std::shared_ptr<AProxyClass<>> aProxy = buildProxy<AProxyClass>("local:com.your_company.interface_name:com.your_company.instance_name");
+	*
+	* @param address: Complete common-api address as example "local:com.your_company.interface_name:com.your_company.instance_name"
+	*
+	* @return A proxy object.
+	*/
+	template<template<typename ...> class ProxyClass, typename ... AttributeExtensions>
+	std::shared_ptr<ProxyClass<AttributeExtensions...>> __attribute__((deprecated)) buildProxy(const std::string & address)
+	{
+		std::vector<std::string> parts=CommonAPI::split(address, ':');
+		assert(parts.size()==3);
+
+		return buildProxy<ProxyClass>(parts[0], parts[2]);
+	}
+
+	/**The following code is deprecated and it might be unavailable in future versions!
+	 * Compatibility to versions prior 3.0.0
+	 */
+private:
+	std::shared_ptr<CommonAPI::Factory> mFactory;
+public:
+	std::shared_ptr<CommonAPI::Factory> __attribute__((deprecated)) factory() const { return mFactory; };
+	std::shared_ptr<CommonAPI::Runtime> __attribute__((deprecated)) runtime() const { return mRuntime; };
 };
 
-#define Am_CAPI CAmCommonAPIWrapper::getInstance()
+
+//Alias
+extern CAmCommonAPIWrapper* (*getCAPI)();
+
+#ifndef AMCAPI
+	#define AMCAPI getCAPI()
+#endif
+
+#ifndef AM_CAPI
+	#define AM_CAPI getCAPI()
+#endif
+
+#ifndef CAPI
+	#define CAPI getCAPI()
+#endif
+
 
 }
 

@@ -49,7 +49,8 @@ CAmNodeStateCommunicatorTest::~CAmNodeStateCommunicatorTest()
  */
 void* nsmThread (void*)
 {
-   system("python nsm.py");
+   if(-1 == system("python nsm.py"))
+	   logError("Something went wrong with nsm.py!");
    return (NULL);
 }
 

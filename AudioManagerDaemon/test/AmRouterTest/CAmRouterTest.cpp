@@ -1253,8 +1253,8 @@ TEST_F(CAmRouterTest,simpleRoute4Domains2Routes)
 
     ASSERT_EQ(E_OK, pRouter.getRoute(false,sourceID,sinkID,listRoutes));
     ASSERT_EQ(static_cast<uint>(2), listRoutes.size());
-    ASSERT_TRUE(pCF.compareRoute(compareRoute,listRoutes[0]));
-    ASSERT_TRUE(pCF.compareRoute(compareRoute1,listRoutes[1]));
+    ASSERT_TRUE(pCF.compareRoute(compareRoute,listRoutes[0]) || pCF.compareRoute(compareRoute,listRoutes[1]) );
+    ASSERT_TRUE(pCF.compareRoute(compareRoute1,listRoutes[1]) || pCF.compareRoute(compareRoute1,listRoutes[0]) );
 }
 
 //test that checks 3 domains, one sink one source but the connectionformat of third domains do not fit.

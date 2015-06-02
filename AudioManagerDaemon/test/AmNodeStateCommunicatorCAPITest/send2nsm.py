@@ -27,31 +27,31 @@ import dbus.service
 
 def nodeState (nodeState):
 	bus = dbus.SessionBus()
-	remote_object = bus.get_object('org.genivi.NodeStateManager','/org/genivi/NodeStateManager')
+	remote_object = bus.get_object('org.genivi.NodeStateManager.Consumer_org.genivi.NodeStateManager','/org/genivi/NodeStateManager')
 	iface = dbus.Interface(remote_object, 'org.genivi.NodeStateManager.Control')
 	iface.sendNodeState(int(nodeState))
 	
 def appMode (appMode):
 	bus = dbus.SessionBus()
-	remote_object = bus.get_object('org.genivi.NodeStateManager','/org/genivi/NodeStateManager')
+	remote_object = bus.get_object('org.genivi.NodeStateManager.Consumer_org.genivi.NodeStateManager','/org/genivi/NodeStateManager')
 	iface = dbus.Interface(remote_object, 'org.genivi.NodeStateManager.Control')
 	iface.sendNodeApplicationMode(int(appMode))
 	
 def sessionState (SessionStateName,SeatID,SessionState):
 	bus = dbus.SessionBus()
-	remote_object = bus.get_object('org.genivi.NodeStateManager','/org/genivi/NodeStateManager')
+	remote_object = bus.get_object('org.genivi.NodeStateManager.Consumer_org.genivi.NodeStateManager','/org/genivi/NodeStateManager')
 	iface = dbus.Interface(remote_object, 'org.genivi.NodeStateManager.Control')
 	iface.sendSessionState(SessionStateName,int(SeatID),int(SessionState))
 	
 def finish():
 	bus = dbus.SessionBus()
-	remote_object = bus.get_object('org.genivi.NodeStateManager','/org/genivi/NodeStateManager')
+	remote_object = bus.get_object('org.genivi.NodeStateManager.Consumer_org.genivi.NodeStateManager','/org/genivi/NodeStateManager')
 	iface = dbus.Interface(remote_object, 'org.genivi.NodeStateManager.Control')
 	iface.finish()
 
 def LifecycleRequest(Request,RequestID):
 	bus = dbus.SessionBus()
-	remote_object = bus.get_object('org.genivi.NodeStateManager','/org/genivi/NodeStateManager')
+	remote_object = bus.get_object('org.genivi.NodeStateManager.Consumer_org.genivi.NodeStateManager','/org/genivi/NodeStateManager')
 	iface = dbus.Interface(remote_object, 'org.genivi.NodeStateManager.Control')
 	iface.sendLifeCycleRequest(dbus.UInt32(Request),dbus.UInt32(RequestID))
 

@@ -2347,13 +2347,13 @@ TEST_F(CAmRouterMapTest,route1Domain1Source3Converters1Sink)
 
 	ASSERT_EQ(E_OK, pRouter.getRoute(false, source, sink, listRoutes));
 	ASSERT_EQ(static_cast<uint>(2), listRoutes.size());
-	ASSERT_TRUE(pCF.compareRoute(compareRoute1,listRoutes[0]));
+	ASSERT_TRUE(pCF.compareRoute(compareRoute1,listRoutes[0])||pCF.compareRoute(compareRoute1,listRoutes[1]));
 
 	am_Route_s compareRoute2;
 	compareRoute2.route = listRoutingElements2;
 	compareRoute2.sinkID = sinkID;
 	compareRoute2.sourceID = sourceID;
-	ASSERT_TRUE(pCF.compareRoute(compareRoute2,listRoutes[1]));
+	ASSERT_TRUE(pCF.compareRoute(compareRoute2,listRoutes[1])||pCF.compareRoute(compareRoute2,listRoutes[0]));
 }
 
 TEST_F(CAmRouterMapTest,route2Domains1Source1Sink)
@@ -2559,7 +2559,6 @@ TEST_F(CAmRouterMapTest,route3Domains1Source3Gateways3Convertres1Sink)
 	compareRoute1.route.push_back({gwSourceID21, gwSinkID3, domainID3, CF_GENIVI_AUTO});
 	compareRoute1.route.push_back({gwSourceID3, gwSinkID4, domainID3, CF_GENIVI_ANALOG});
 	compareRoute1.route.push_back({gwSourceID4, sinkID, domainID3, CF_GENIVI_STEREO});
-	ASSERT_TRUE(pCF.compareRoute(compareRoute1,listRoutes[0]));
 
  	am_Route_s compareRoute2;
 	compareRoute2.sinkID = sinkID;
@@ -2569,8 +2568,6 @@ TEST_F(CAmRouterMapTest,route3Domains1Source3Gateways3Convertres1Sink)
 	compareRoute2.route.push_back({gwSourceID21, gwSinkID3, domainID3, CF_GENIVI_AUTO});
 	compareRoute2.route.push_back({gwSourceID3, gwSinkID5, domainID3, CF_GENIVI_ANALOG});
 	compareRoute2.route.push_back({gwSourceID5, sinkID, domainID3, CF_GENIVI_STEREO});
-	ASSERT_TRUE(pCF.compareRoute(compareRoute2,listRoutes[1]));
-
 
  	am_Route_s compareRoute3;
 	compareRoute3.sinkID = sinkID;
@@ -2580,7 +2577,6 @@ TEST_F(CAmRouterMapTest,route3Domains1Source3Gateways3Convertres1Sink)
 	compareRoute3.route.push_back({gwSourceID22, gwSinkID3, domainID3, CF_GENIVI_AUTO});
 	compareRoute3.route.push_back({gwSourceID3, gwSinkID4, domainID3, CF_GENIVI_ANALOG});
 	compareRoute3.route.push_back({gwSourceID4, sinkID, domainID3, CF_GENIVI_STEREO});
-	ASSERT_TRUE(pCF.compareRoute(compareRoute3,listRoutes[2]));
 
  	am_Route_s compareRoute4;
 	compareRoute4.sinkID = sinkID;
@@ -2590,7 +2586,23 @@ TEST_F(CAmRouterMapTest,route3Domains1Source3Gateways3Convertres1Sink)
 	compareRoute4.route.push_back({gwSourceID22, gwSinkID3, domainID3, CF_GENIVI_AUTO});
 	compareRoute4.route.push_back({gwSourceID3, gwSinkID5, domainID3, CF_GENIVI_ANALOG});
 	compareRoute4.route.push_back({gwSourceID5, sinkID, domainID3, CF_GENIVI_STEREO});
-	ASSERT_TRUE(pCF.compareRoute(compareRoute4,listRoutes[3]));
+
+	ASSERT_TRUE(pCF.compareRoute(compareRoute1,listRoutes[0])||
+				pCF.compareRoute(compareRoute1,listRoutes[1])||
+				pCF.compareRoute(compareRoute1,listRoutes[2])||
+				pCF.compareRoute(compareRoute1,listRoutes[3]));
+	ASSERT_TRUE(pCF.compareRoute(compareRoute2,listRoutes[0])||
+				pCF.compareRoute(compareRoute2,listRoutes[1])||
+				pCF.compareRoute(compareRoute2,listRoutes[2])||
+				pCF.compareRoute(compareRoute2,listRoutes[3]));
+	ASSERT_TRUE(pCF.compareRoute(compareRoute3,listRoutes[0])||
+				pCF.compareRoute(compareRoute3,listRoutes[1])||
+				pCF.compareRoute(compareRoute3,listRoutes[2])||
+				pCF.compareRoute(compareRoute3,listRoutes[3]));
+	ASSERT_TRUE(pCF.compareRoute(compareRoute4,listRoutes[0])||
+				pCF.compareRoute(compareRoute4,listRoutes[1])||
+				pCF.compareRoute(compareRoute4,listRoutes[2])||
+				pCF.compareRoute(compareRoute4,listRoutes[3]));
 }
 
 TEST_F(CAmRouterMapTest,routeSource1Sink2PathThroughConv1Gate1)
@@ -2893,17 +2905,19 @@ TEST_F(CAmRouterMapTest, routeSource1Sink1PathThroughConv1Gate1Conv2Gate2)
 	compareRoute1.route.push_back({gwSourceID21, coSinkID21, domainID2, CF_GENIVI_ANALOG});
 	compareRoute1.route.push_back({coSourceID21, gwSinkID21, domainID2, CF_GENIVI_STEREO});
 	compareRoute1.route.push_back({gwSourceID12, sinkID, domainID1, CF_GENIVI_AUTO});
-	ASSERT_TRUE(pCF.compareRoute(compareRoute1,listRoutes[0]));
 
  	am_Route_s compareRoute2;
 	compareRoute2.sinkID = sinkID;
 	compareRoute2.sourceID = sourceID;
 	compareRoute2.route.push_back({sourceID, coSinkID12, domainID1, CF_GENIVI_STEREO});
 	compareRoute2.route.push_back({coSourceID12, coSinkID13, domainID1, 6});
-	compareRoute2.route.push_back({coSourceID13, gwSinkID21, domainID1, 5});
+	compareRoute2.route.push_back({coSourceID13, gwSinkID11, domainID1, 5});
 	compareRoute2.route.push_back({gwSourceID21, coSinkID21, domainID2, CF_GENIVI_ANALOG});
+	compareRoute2.route.push_back({coSourceID21, gwSinkID21, domainID2, CF_GENIVI_STEREO});
 	compareRoute2.route.push_back({gwSourceID12, sinkID, domainID1, CF_GENIVI_AUTO});
-	ASSERT_TRUE(pCF.compareRoute(compareRoute1,listRoutes[0]));
+
+	ASSERT_TRUE(pCF.compareRoute(compareRoute1,listRoutes[1])||pCF.compareRoute(compareRoute1,listRoutes[0]));
+	ASSERT_TRUE(pCF.compareRoute(compareRoute2,listRoutes[0])||pCF.compareRoute(compareRoute2,listRoutes[1]));
 }
 
 int main(int argc, char **argv)

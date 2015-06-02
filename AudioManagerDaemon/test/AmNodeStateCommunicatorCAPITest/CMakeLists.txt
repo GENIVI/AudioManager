@@ -22,7 +22,6 @@ project(AmNodeStateCommunicatorCAPITest)
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -DUNIT_TEST=1")
 
 find_package(Threads)
-find_package(CommonAPI REQUIRED)
 find_package(PythonLibs REQUIRED)
 
 set (AM_LINK_LIBS 
@@ -43,9 +42,11 @@ INCLUDE_DIRECTORIES(
     ${PYTHON_INCLUDE_DIRS}
     ${GOOGLE_TEST_INCLUDE_DIR}
     ${GMOCK_INCLUDE_DIR}
-    ${COMMON_API_INCLUDE_DIRS}
-	${COMMON_API_DBUS_INCLUDE_DIRS}
+    ${COMMONAPI_DBUS_INCLUDE_DIRS}
+    ${COMMONAPI_INCLUDE_DIRS}
 	${COMMON_API_GEN_INCLUDE_DIR}
+	${DBUS_ARCH_INCLUDE_DIR}
+    ${DBUS_INCLUDE_DIR}
 )
 
 if(WITH_DLT)    
@@ -77,8 +78,9 @@ TARGET_LINK_LIBRARIES(AmNodeStateCommunicatorCAPITest
     ${AM_LINK_LIBS}
     ${CMAKE_THREAD_LIBS_INIT}
     ${PYTHON_LIBRARY}
-    ${COMMON_API_LIBRARIES}
-    ${COMMON_API_DBUS_LIBRARIES}
+    ${CommonAPI-DBus_LIBRARY}
+    ${CommonAPI_LIBRARY}
+    ${DBUS_LIBRARY}
     gtest
     gmock
 )
@@ -106,6 +108,7 @@ if(USE_BUILD_LIBS)
 	    COMMAND cp "${CMAKE_CURRENT_SOURCE_DIR}/org.genivi.NodeStateManager.Consumer.xml" ${EXECUTABLE_OUTPUT_PATH}/org.genivi.NodeStateManager.Consumer.xml
 	    COMMAND cp "${CMAKE_CURRENT_SOURCE_DIR}/nsm.py" ${EXECUTABLE_OUTPUT_PATH}/nsm.py
 	    COMMAND cp "${CMAKE_CURRENT_SOURCE_DIR}/send2nsm.py" ${EXECUTABLE_OUTPUT_PATH}/send2nsm.py
-	    COMMAND cp "${AUDIOMANAGER_DAEMON_FOLDER}/fidls/NodeStateManager_dbus.conf" ${EXECUTABLE_OUTPUT_PATH}/AmNodeStateCommunicatorCAPITest_dbus.conf)
+#	    COMMAND cp "${AUDIOMANAGER_DAEMON_FOLDER}/fidls/NodeStateManager_dbus.conf" ${EXECUTABLE_OUTPUT_PATH}/AmNodeStateCommunicatorCAPITest_dbus.conf
+        )
 endif(USE_BUILD_LIBS) 
 

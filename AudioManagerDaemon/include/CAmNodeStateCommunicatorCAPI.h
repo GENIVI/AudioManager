@@ -23,27 +23,37 @@
 #ifndef CAMNODESTATECOMMUNICATORCAPI_H_
 #define CAMNODESTATECOMMUNICATORCAPI_H_
 
-#include <org/genivi/NodeStateManager/ConsumerProxy.h>
 #include "CAmNodeStateCommunicator.h"
-#include <org/genivi/NodeStateManager/LifeCycleConsumerStubDefault.h>
+#include "CAmCommonAPIWrapper.h"
+#include <v1_0/org/genivi/NodeStateManager/ConsumerProxy.hpp>
+#include <v1_0/org/genivi/NodeStateManager/LifeCycleConsumerStubDefault.hpp>
+
 
 namespace am
 {
-using namespace CommonAPI;
-using namespace org::genivi::NodeStateManager;
+
+#define am_nodestatemanager v1_0::org::genivi::NodeStateManager
 
 
 class CAmCommonAPIWrapper;
 /** communicates with the NSM
- *  The CAmNodeStateCommunicator communicates with the NodeStateManager via Dbus Common-API's wrapping mechanism. Only works, if CAmCommonAPIWrapper is enabled.
+ *  The CAmNodeStateCommunicator communicates with the NodeStateManager via Common-API wrapping mechanism. It works only, if CAmCommonAPIWrapper is enabled.
  */
 class CAmNodeStateCommunicatorCAPI : public CAmNodeStateCommunicator
 {
+    static const char * DEFAULT_DOMAIN_STRING;
+    static const char * CLIENT_INSTANCE_STRING;
+    static const char * CLIENT_INTERFACE_STRING;
+    static const char * LIFECYCLE_SERVICE_INSTANCE_STRING;
+    static const char * LIFECYCLE_SERVICE_INTERFACE_STRING;
+    static const char * OBJECT_NAME;
+    static const char * BUS_NAME;
+
 	/* A concrete implementation of the life cycle stub.
 	 * An object from this class is instantiated from the common-api factory.
 	 * It forwards the invocations to its delegate CAmNodeStateCommunicatorCAPI.
 	*/
-	class CAmNodeStateCommunicatorServiceImpl : public LifeCycleConsumerStubDefault
+	class CAmNodeStateCommunicatorServiceImpl : public am_nodestatemanager::LifeCycleConsumerStubDefault
 	{
 		CAmNodeStateCommunicatorCAPI *mpDelegate;
 	public:
@@ -58,11 +68,29 @@ class CAmNodeStateCommunicatorCAPI : public CAmNodeStateCommunicator
 		   if(mpDelegate)
 			   mpDelegate->cbReceivedLifecycleRequest(Request, RequestId, ErrorCode);
 		}
+
+		void LifecycleRequest(const std::shared_ptr<CommonAPI::ClientId> client, uint32_t Request, uint32_t RequestId, LifecycleRequestReply_t reply){
+			int32_t ErrorCode;
+			LifecycleRequest(Request, RequestId, ErrorCode);
+			reply(ErrorCode);
+		}
 	};
 
 	CAmCommonAPIWrapper *mpCAPIWrapper;
-	std::shared_ptr<ConsumerProxy<> > mNSMProxy;
+	std::shared_ptr<am_nodestatemanager::ConsumerProxy<> > mNSMProxy;
 	std::shared_ptr<CAmNodeStateCommunicatorCAPI::CAmNodeStateCommunicatorServiceImpl> mNSMStub;
+
+    /* Client events */
+    void onNodeStateEvent(const int32_t nodeState);
+    void onNodeApplicationModeEvent(const int32_t nodeApplicationMode);
+    void onSessionStateChangedEvent(const std::string & sessionName, const int32_t seatID, const int32_t sessionState);
+    void onServiceStatusEvent(const CommonAPI::AvailabilityStatus& serviceStatus);
+    /* Service callbacks */
+    void cbReceivedLifecycleRequest(uint32_t Request, uint32_t RequestId, int32_t& ErrorCode);
+
+protected:
+    bool mIsServiceAvailable;
+
 public:
 	CAmNodeStateCommunicatorCAPI(CAmCommonAPIWrapper* iCAPIWrapper);
     virtual ~CAmNodeStateCommunicatorCAPI();
@@ -77,24 +105,7 @@ public:
     NsmErrorStatus_e nsmUnRegisterShutdownClient(const uint32_t shutdownMode) ;
     am_Error_e nsmGetInterfaceVersion(uint32_t& version) ;
     NsmErrorStatus_e nsmSendLifecycleRequestComplete(const uint32_t RequestId, const NsmErrorStatus_e status) ;
-
     bool isServiceAvailable();
-
-    static const char * CLIENT_STRING;
-    static const char * SERVER_STRING;
-    static const char * OBJECT_NAME;
-    static const char * BUS_NAME;
-
-private:
-    /* Client events */
-    void onNodeStateEvent(const int32_t nodeState);
-    void onNodeApplicationModeEvent(const int32_t nodeApplicationMode);
-    void onSessionStateChangedEvent(const std::string & sessionName, const int32_t seatID, const int32_t sessionState);
-    void onServiceStatusEvent(const CommonAPI::AvailabilityStatus& serviceStatus);
-    /* Service callbacks */
-    void cbReceivedLifecycleRequest(uint32_t Request, uint32_t RequestId, int32_t& ErrorCode);
-protected:
-    bool mIsServiceAvailable;
 };
 
 }

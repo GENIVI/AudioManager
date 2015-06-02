@@ -1,43 +1,47 @@
 /**
- *  SPDX license identifier: MPL-2.0
+ * SPDX license identifier: MPL-2.0
  *
- *  Copyright (C) 2012, BMW AG
+ * Copyright (C) 2012, BMW AG
  *
- *  \author Christian Linke, christian.linke@bmw.de BMW 2011,2012
- *  \author Aleksandar Donchev, aleksander.donchev@partner.bmw.de BMW 2013
- *
+ * \author Christian Linke, christian.linke@bmw.de BMW 2011,2012
+ * \author Aleksandar Donchev, aleksander.donchev@partner.bmw.de BMW 2013
  *
  * \copyright
  * This Source Code Form is subject to the terms of the
  * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
- *  \file CAmCommonAPIWrapper.cpp
- *  For further information see http://www.genivi.org/.
+ * \file CAmCommonAPIWrapper.cpp
+ * For further information see http://www.genivi.org/.
  */
 
 #include <config.h>
 #include <fstream>
 #include <sstream>
-#include <string>
 #include <algorithm>
-#include <cassert>
 #include <cstdlib>
 #include <stdexcept>
 #include <poll.h>
 #include <tuple>
+#include <sstream>
+#include <vector>
 #include "audiomanagertypes.h"
 #include "CAmSocketHandler.h"
 #include "CAmDltWrapper.h"
 #include "CAmCommonAPIWrapper.h"
+
+#ifndef COMMONAPI_INTERNAL_COMPILATION
+#define COMMONAPI_INTERNAL_COMPILATION
+#include <CommonAPI/DBus/DBusFactory.hpp>
+#undef COMMONAPI_INTERNAL_COMPILATION
+#endif
+
 
 
 namespace am
 {
 static CAmCommonAPIWrapper* pSingleCommonAPIInstance = NULL;
 
-
-using namespace CommonAPI;
 
 CAmCommonAPIWrapper::CAmCommonAPIWrapper(CAmSocketHandler* socketHandler):
 				pCommonPrepareCallback(this,&CAmCommonAPIWrapper::commonPrepareCallback), //
@@ -49,12 +53,29 @@ CAmCommonAPIWrapper::CAmCommonAPIWrapper(CAmSocketHandler* socketHandler):
 		        mWatchToCheck(NULL)
 {
 	assert(NULL!=socketHandler);
-//1. Load the runtime
-	std::shared_ptr<CommonAPI::Runtime> runtime = CommonAPI::Runtime::load();
-//2. Get the context and store a pointer to it
-	mContext = runtime->getNewMainLoopContext();
-//3. Make subscriptions
-   mDispatchSourceListenerSubscription = mContext->subscribeForDispatchSources(
+//Get the runtime
+#if COMMONAPI_VERSION_NUMBER < 300
+	mRuntime = CommonAPI::Runtime::load();
+#else
+	mRuntime = CommonAPI::Runtime::get();
+#endif
+	assert(NULL!=mRuntime);
+
+//Create the context
+	mContext = std::make_shared<CommonAPI::MainLoopContext>();
+	assert(NULL!=mContext);
+
+#if COMMONAPI_VERSION_NUMBER < 300
+	mFactory = runtime->createFactory(mContext);
+	assert(mFactory);
+#else
+	mFactory = CommonAPI::DBus::Factory::get();
+	assert(mFactory);
+	mRuntime->registerFactory("dbus", mFactory);
+#endif
+
+//Make subscriptions
+	mDispatchSourceListenerSubscription = mContext->subscribeForDispatchSources(
 			std::bind(&CAmCommonAPIWrapper::registerDispatchSource, this, std::placeholders::_1, std::placeholders::_2),
 			std::bind(&CAmCommonAPIWrapper::deregisterDispatchSource, this, std::placeholders::_1));
 	mWatchListenerSubscription = mContext->subscribeForWatches(
@@ -63,20 +84,6 @@ CAmCommonAPIWrapper::CAmCommonAPIWrapper(CAmSocketHandler* socketHandler):
 	mTimeoutSourceListenerSubscription = mContext->subscribeForTimeouts(
 			std::bind(&CAmCommonAPIWrapper::registerTimeout, this, std::placeholders::_1, std::placeholders::_2),
 			std::bind(&CAmCommonAPIWrapper::deregisterTimeout, this, std::placeholders::_1));
-//4. Create the factory
-	std::shared_ptr<CommonAPI::Factory> factory = runtime->createFactory(mContext);
-	assert(factory);
-	logInfo(__PRETTY_FUNCTION__,"CommonAPI -> Factory created");
-	mFactory = factory;
-//5. Get the publisher V.2.1
-//	std::shared_ptr<CommonAPI::ServicePublisher> servicePublisher = runtime->getServicePublisher();
-//	assert(servicePublisher);
-//	logInfo(__PRETTY_FUNCTION__,"CommonAPI -> Publisher available");
-//6. Instantiate your concrete stub implementations
-//	std::shared_ptr<StubImpl> theStub = std::make_shared<StubImpl>(1);
-//7. Register the services
-//	std::string capiAddress("local:org.genivi.audiomanager.sourcestate:de.bmw.infotainment.broadcast.ta");
-//	registerStub(theStub, capiAddress);
 }
 
 CAmCommonAPIWrapper::~CAmCommonAPIWrapper()
@@ -84,10 +91,9 @@ CAmCommonAPIWrapper::~CAmCommonAPIWrapper()
 	mContext->unsubscribeForDispatchSources(mDispatchSourceListenerSubscription);
 	mContext->unsubscribeForWatches(mWatchListenerSubscription);
 	mContext->unsubscribeForTimeouts(mTimeoutSourceListenerSubscription);
-//The following objects must be released in the given order.
 	mFactory.reset();
 	mContext.reset();
-
+	mRuntime.reset();
 	mpSocketHandler = NULL;
 	mWatchToCheck = NULL;
 }
@@ -112,26 +118,15 @@ CAmCommonAPIWrapper* CAmCommonAPIWrapper::getInstance()
 	return pSingleCommonAPIInstance;
 }
 
-std::shared_ptr<CommonAPI::Factory> CAmCommonAPIWrapper::factory() const
-{
-	return mFactory;
-}
-
-
-std::shared_ptr<CommonAPI::Runtime> CAmCommonAPIWrapper::runtime() const
-{
-	return  mFactory->getRuntime();
-}
-
 bool CAmCommonAPIWrapper::commonDispatchCallback(const sh_pollHandle_t handle, void *userData)
 {
     (void) handle;
     (void) userData;
 
-    std::list<DispatchSource*>::iterator iterator(mSourcesToDispatch.begin());
+    std::list<CommonAPI::DispatchSource*>::iterator iterator(mSourcesToDispatch.begin());
     for(;iterator!=mSourcesToDispatch.end();)
     {
-        DispatchSource* source = *iterator;
+    	CommonAPI::DispatchSource* source = *iterator;
         if (!source->dispatch()) {
             iterator=mSourcesToDispatch.erase(iterator);
         }
@@ -146,7 +141,7 @@ bool CAmCommonAPIWrapper::commonDispatchCallback(const sh_pollHandle_t handle, v
 
 bool CAmCommonAPIWrapper::commonCheckCallback(const sh_pollHandle_t, void *)
 {
-    std::vector<DispatchSource*> vecDispatch=mWatchToCheck->getDependentDispatchSources();
+    std::vector<CommonAPI::DispatchSource*> vecDispatch=mWatchToCheck->getDependentDispatchSources();
     mSourcesToDispatch.insert(mSourcesToDispatch.end(), vecDispatch.begin(), vecDispatch.end());
 
     return (mWatchToCheck || !mSourcesToDispatch.empty());
@@ -173,7 +168,7 @@ void CAmCommonAPIWrapper::commonPrepareCallback(const sh_pollHandle_t, void*)
                             dispatchSourceIterator != mRegisteredDispatchSources.end();
                             dispatchSourceIterator++)
     {
-        int64_t dispatchTimeout(TIMEOUT_INFINITE);
+        int64_t dispatchTimeout(CommonAPI::TIMEOUT_INFINITE);
         if(dispatchSourceIterator->second->prepare(dispatchTimeout))
         {
             while (dispatchSourceIterator->second->dispatch());
@@ -181,12 +176,12 @@ void CAmCommonAPIWrapper::commonPrepareCallback(const sh_pollHandle_t, void*)
     }
 }
 
-void CAmCommonAPIWrapper::registerDispatchSource(DispatchSource* dispatchSource, const DispatchPriority dispatchPriority)
+void CAmCommonAPIWrapper::registerDispatchSource(CommonAPI::DispatchSource* dispatchSource, const CommonAPI::DispatchPriority dispatchPriority)
 {
     mRegisteredDispatchSources.insert({dispatchPriority, dispatchSource});
 }
 
-void CAmCommonAPIWrapper::deregisterDispatchSource(DispatchSource* dispatchSource)
+void CAmCommonAPIWrapper::deregisterDispatchSource(CommonAPI::DispatchSource* dispatchSource)
 {
     for(auto dispatchSourceIterator = mRegisteredDispatchSources.begin();
             dispatchSourceIterator != mRegisteredDispatchSources.end();
@@ -199,10 +194,9 @@ void CAmCommonAPIWrapper::deregisterDispatchSource(DispatchSource* dispatchSourc
     }
 }
 
-void CAmCommonAPIWrapper::deregisterWatch(Watch* watch)
+void CAmCommonAPIWrapper::deregisterWatch(CommonAPI::Watch* watch)
 {
-    logInfo(__PRETTY_FUNCTION__);
-    for(std::map<int,Watch*>::iterator iter(mMapWatches.begin());iter!=mMapWatches.end();iter++)
+    for(std::map<int,CommonAPI::Watch*>::iterator iter(mMapWatches.begin());iter!=mMapWatches.end();iter++)
     {
         if (iter->second == watch)
         {
@@ -212,9 +206,8 @@ void CAmCommonAPIWrapper::deregisterWatch(Watch* watch)
     }
 }
 
-void CAmCommonAPIWrapper::registerTimeout(Timeout* timeout, const DispatchPriority)
+void CAmCommonAPIWrapper::registerTimeout(CommonAPI::Timeout* timeout, const CommonAPI::DispatchPriority)
 {
-    logInfo(__PRETTY_FUNCTION__);
     timespec pollTimeout;
     int64_t localTimeout = timeout->getTimeoutInterval();
 
@@ -233,9 +226,8 @@ void CAmCommonAPIWrapper::registerTimeout(Timeout* timeout, const DispatchPriori
     return;
 }
 
-void CAmCommonAPIWrapper::deregisterTimeout(Timeout* timeout)
+void CAmCommonAPIWrapper::deregisterTimeout(CommonAPI::Timeout* timeout)
 {
-    logInfo(__PRETTY_FUNCTION__);
     for( std::vector<timerHandles>::iterator iter(mpListTimerhandles.begin());iter!=mpListTimerhandles.end();iter++)
     {
         if(iter->timeout==timeout)
@@ -245,7 +237,7 @@ void CAmCommonAPIWrapper::deregisterTimeout(Timeout* timeout)
     }
 }
 
-void CAmCommonAPIWrapper::registerWatch(Watch* watch, const DispatchPriority)
+void CAmCommonAPIWrapper::registerWatch(CommonAPI::Watch* watch, const CommonAPI::DispatchPriority)
 {
     logInfo(__PRETTY_FUNCTION__);
     pollfd pollfd_ (watch->getAssociatedFileDescriptor());
@@ -270,5 +262,7 @@ void CAmCommonAPIWrapper::commonTimerCallback(sh_timerHandle_t handle, void *)
         }
     }
 }
+
+CAmCommonAPIWrapper* (*getCAPI)()  = CAmCommonAPIWrapper::getInstance;
 
 }

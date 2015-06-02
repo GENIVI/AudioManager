@@ -28,23 +28,28 @@
 #include <stdexcept>
 #include <functional>
 #include <memory>
-#include <CommonAPI/CommonAPI.h>
 #include "config.h"
-#include "CAmCommonAPIWrapper.h"
 #include "CAmDltWrapper.h"
 #include "CAmNodeStateCommunicatorCAPI.h"
 #include "CAmControlSender.h"
-#include <org/genivi/NodeStateManager/LifeCycleConsumerProxy.h>
+#include <v1_0/org/genivi/NodeStateManager/LifeCycleConsumerProxy.hpp>
 
 
 namespace am
 {
 
-const char * CAmNodeStateCommunicatorCAPI::CLIENT_STRING = "local:org.genivi.NodeStateManager.Consumer:org.genivi.NodeStateManager";
-const char * CAmNodeStateCommunicatorCAPI::SERVER_STRING = "local:org.genivi.NodeStateManager.LifeCycleConsumer:org.genivi.audiomanager";
+#define LIFECYCLE_SERVICE_INTERFACE NSM_BUS_INTERFACE ".LifeCycleConsumer"
 
-const char * CAmNodeStateCommunicatorCAPI::OBJECT_NAME = "/org/genivi/audiomanager/LifeCycleConsumer";
-const char * CAmNodeStateCommunicatorCAPI::BUS_NAME = "org.genivi.audiomanager";
+const char * CAmNodeStateCommunicatorCAPI::DEFAULT_DOMAIN_STRING = "local";
+
+const char * CAmNodeStateCommunicatorCAPI::CLIENT_INSTANCE_STRING = NSM_BUS_INTERFACE;
+const char * CAmNodeStateCommunicatorCAPI::CLIENT_INTERFACE_STRING = NSM_INTERFACE;
+
+const char * CAmNodeStateCommunicatorCAPI::LIFECYCLE_SERVICE_INSTANCE_STRING = DBUS_SERVICE_PREFIX;
+const char * CAmNodeStateCommunicatorCAPI::LIFECYCLE_SERVICE_INTERFACE_STRING = LIFECYCLE_SERVICE_INTERFACE;
+
+const char * CAmNodeStateCommunicatorCAPI::OBJECT_NAME = DBUS_SERVICE_OBJECT_PATH;
+const char * CAmNodeStateCommunicatorCAPI::BUS_NAME = LIFECYCLE_SERVICE_INTERFACE "_" DBUS_SERVICE_PREFIX;
 
 
 #define IF_NOT_AVAILABLE_RETURN(error) \
@@ -53,13 +58,13 @@ if(!mIsServiceAvailable) { logError(__PRETTY_FUNCTION__, "Node State Manager not
 /**
  * Retrieves the value from given attribute wrapper.
  */
-template <typename TValueReturnType, class TValueClass> am_Error_e getAttributeValue(Attribute<TValueClass>* attribute, TValueReturnType & resultValue)
+template <typename TValueReturnType, class TValueClass> am_Error_e getAttributeValue(CommonAPI::Attribute<TValueClass>* attribute, TValueReturnType & resultValue)
 {
-	CallStatus status;
-	typename Attribute<TValueClass>::ValueType value;
+	CommonAPI::CallStatus status;
+	typename CommonAPI::Attribute<TValueClass>::ValueType value;
 	attribute->getValue(status, value);
 	std::cout << std::endl << "CallStatus : " << static_cast<int>(status) << std::endl;
-	if( CallStatus::SUCCESS == status)
+	if( CommonAPI::CallStatus::SUCCESS == status)
 	{
 		resultValue = static_cast<TValueReturnType>(value);
 		return E_OK;
@@ -77,9 +82,8 @@ CAmNodeStateCommunicatorCAPI::CAmNodeStateCommunicatorCAPI(CAmCommonAPIWrapper* 
     logInfo("CAmNodeStateCommunicatorCAPI::CAmNodeStateCommunicatorCAPI started");
 
     //Gets the factory pointer and build a proxy object
-    std::shared_ptr<CommonAPI::Factory> factory = iCAPIWrapper->factory();
-    mNSMProxy = factory->buildProxy<ConsumerProxy>(CAmNodeStateCommunicatorCAPI::CLIENT_STRING);
-
+    mNSMProxy = iCAPIWrapper->buildProxy<am_nodestatemanager::ConsumerProxy>( CAmNodeStateCommunicatorCAPI::DEFAULT_DOMAIN_STRING,
+			   	   	   	   	   	   	   	   	   	   	   	 	 	 	 	 	  CAmNodeStateCommunicatorCAPI::CLIENT_INSTANCE_STRING);
     //Makes subscriptions to the following 3 events
     mNSMProxy->getNodeStateEvent().subscribe(
     		std::bind(&CAmNodeStateCommunicatorCAPI::onNodeStateEvent, this, std::placeholders::_1)
@@ -95,13 +99,16 @@ CAmNodeStateCommunicatorCAPI::CAmNodeStateCommunicatorCAPI(CAmCommonAPIWrapper* 
     mNSMStub = std::make_shared<CAmNodeStateCommunicatorCAPI::CAmNodeStateCommunicatorServiceImpl>(this);
 
     //Registers the service
-    iCAPIWrapper->registerStub(mNSMStub, CAmNodeStateCommunicatorCAPI::SERVER_STRING);
+    if(!iCAPIWrapper->registerService(mNSMStub,CAmNodeStateCommunicatorCAPI::DEFAULT_DOMAIN_STRING,CAmNodeStateCommunicatorCAPI::LIFECYCLE_SERVICE_INSTANCE_STRING))
+    	logError("AudioManager can't register service");
 }
 
 CAmNodeStateCommunicatorCAPI::~CAmNodeStateCommunicatorCAPI()
 {
 	mNSMProxy.reset();
-	mpCAPIWrapper->unregisterStub(CAmNodeStateCommunicatorCAPI::SERVER_STRING);
+	mpCAPIWrapper->unregisterService(CAmNodeStateCommunicatorCAPI::DEFAULT_DOMAIN_STRING,
+									 CAmNodeStateCommunicatorCAPI::LIFECYCLE_SERVICE_INTERFACE_STRING,
+									 CAmNodeStateCommunicatorCAPI::LIFECYCLE_SERVICE_INSTANCE_STRING);
 	mNSMStub->setDelegate(NULL);
 	mNSMStub.reset();
 	mpCAPIWrapper = NULL;
@@ -179,10 +186,10 @@ NsmErrorStatus_e CAmNodeStateCommunicatorCAPI::nsmGetNodeState(NsmNodeState_e& n
 	//Check the service via the proxy object is available
 	IF_NOT_AVAILABLE_RETURN(NsmErrorStatus_Error)
 
-	CallStatus callStatus;
+	CommonAPI::CallStatus callStatus;
 	int32_t tmpNodeState = 0, errorCode = 0;
 	mNSMProxy->GetNodeState(callStatus, tmpNodeState, errorCode);
-	if( CallStatus::SUCCESS == callStatus )
+	if( CommonAPI::CallStatus::SUCCESS == callStatus )
 	{
 		nsmNodeState = static_cast<NsmNodeState_e>(tmpNodeState);
 		return (static_cast<NsmErrorStatus_e>(errorCode));
@@ -202,11 +209,11 @@ NsmErrorStatus_e CAmNodeStateCommunicatorCAPI::nsmGetSessionState(const std::str
 	//Check the service via the proxy object is available
 	IF_NOT_AVAILABLE_RETURN(NsmErrorStatus_Error)
 
-	CallStatus callStatus;
+	CommonAPI::CallStatus callStatus;
 	int32_t tmpSessionState = 0 , errorCode = 0;
 	mNSMProxy->GetSessionState(sessionName,seatID,callStatus, tmpSessionState, errorCode);
 
-	if( CallStatus::SUCCESS == callStatus)
+	if( CommonAPI::CallStatus::SUCCESS == callStatus)
 	{
 		sessionState = static_cast<NsmSessionState_e>(tmpSessionState);
 		return (static_cast<NsmErrorStatus_e>(errorCode));
@@ -224,10 +231,10 @@ NsmErrorStatus_e CAmNodeStateCommunicatorCAPI::nsmGetApplicationMode(NsmApplicat
 	//Check the service via the proxy object is available
 	IF_NOT_AVAILABLE_RETURN(NsmErrorStatus_Error)
 
-	CallStatus callStatus;
+	CommonAPI::CallStatus callStatus;
 	int32_t tmpAppMode = 0 , errorCode = 0;
 	mNSMProxy->GetApplicationMode(callStatus, tmpAppMode, errorCode);
-	if( CallStatus::SUCCESS == callStatus)
+	if( CommonAPI::CallStatus::SUCCESS == callStatus)
 	{
 		applicationMode = static_cast<NsmApplicationMode_e>(tmpAppMode);
 		return (static_cast<NsmErrorStatus_e>(errorCode));
@@ -246,12 +253,12 @@ NsmErrorStatus_e CAmNodeStateCommunicatorCAPI::nsmRegisterShutdownClient(const u
 	//Check the service via the proxy object is available
 	IF_NOT_AVAILABLE_RETURN(NsmErrorStatus_Error)
 
-	CallStatus callStatus;
+	CommonAPI::CallStatus callStatus;
 	int32_t errorCode = 0;
 	std::string objName = std::string(CAmNodeStateCommunicatorCAPI::OBJECT_NAME);
 	std::string busName = std::string(CAmNodeStateCommunicatorCAPI::BUS_NAME);
 	mNSMProxy->RegisterShutdownClient(busName, objName, shutdownMode, timeoutMs, callStatus, errorCode);
-	if( CallStatus::SUCCESS == callStatus)
+	if( CommonAPI::CallStatus::SUCCESS == callStatus)
 		return (static_cast<NsmErrorStatus_e>(errorCode));
 	return NsmErrorStatus_Dbus;
 
@@ -267,12 +274,12 @@ NsmErrorStatus_e CAmNodeStateCommunicatorCAPI::nsmUnRegisterShutdownClient(const
 	//Check the service via the proxy object is available
 	IF_NOT_AVAILABLE_RETURN(NsmErrorStatus_Error)
 
-	CallStatus callStatus;
+	CommonAPI::CallStatus callStatus;
 	int32_t errorCode = 0;
 	std::string objName = std::string(CAmNodeStateCommunicatorCAPI::OBJECT_NAME);
 	std::string busName = std::string(CAmNodeStateCommunicatorCAPI::BUS_NAME);
 	mNSMProxy->UnRegisterShutdownClient(busName, objName, shutdownMode, callStatus, errorCode);
-	if( CallStatus::SUCCESS == callStatus)
+	if( CommonAPI::CallStatus::SUCCESS == callStatus)
 		return (static_cast<NsmErrorStatus_e>(errorCode));
 	return NsmErrorStatus_Dbus;
 }
@@ -287,9 +294,9 @@ am_Error_e CAmNodeStateCommunicatorCAPI::nsmGetInterfaceVersion(uint32_t& versio
 	//Check the service via the proxy object is available
 	IF_NOT_AVAILABLE_RETURN(E_NOT_POSSIBLE)
 
-	CallStatus callStatus;
+	CommonAPI::CallStatus callStatus;
 	mNSMProxy->GetInterfaceVersion(callStatus, version);
-	if( CallStatus::SUCCESS == callStatus)
+	if( CommonAPI::CallStatus::SUCCESS == callStatus)
 		return E_OK;
 	return E_UNKNOWN;
 }
@@ -305,10 +312,10 @@ NsmErrorStatus_e CAmNodeStateCommunicatorCAPI::nsmSendLifecycleRequestComplete(c
 	//Check the service via the proxy object is available
 	IF_NOT_AVAILABLE_RETURN(NsmErrorStatus_Error)
 
-	CallStatus callStatus;
+	CommonAPI::CallStatus callStatus;
 	int32_t errorCode = 0;
 	mNSMProxy->LifecycleRequestComplete(RequestId, status, callStatus, errorCode);
-	if( CallStatus::SUCCESS == callStatus)
+	if( CommonAPI::CallStatus::SUCCESS == callStatus)
 	{
 		return (static_cast<NsmErrorStatus_e>(errorCode));
 	}

@@ -125,7 +125,7 @@ set(DOC_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/doc
     CACHE STRINGS "The doxygen documentation will be placed here")  
     
 set(AM_SHARE_FOLDER ${CMAKE_INSTALL_PREFIX}/share
-    CACHE STRINGS "The share folder for the AM. Some DBus xmls will be placed here and so on")      
+    CACHE STRINGS "The share folder for the AM. Some DBus xmls will be placed here and so on")   
     
 set(AUDIOMANAGER_INCLUDE_FOLDER  ${CMAKE_BINARY_DIR}/include)
 set(AUDIO_INCLUDE_FOLDER ${CMAKE_SOURCE_DIR}/include)
@@ -167,8 +167,6 @@ else(USE_BUILD_LIBS)
 	endif(NOT DEFINED CONTROLLER_PLUGIN)
 endif(USE_BUILD_LIBS)
 
-configure_file( ${CMAKE_SOURCE_DIR}/AudioManagerDaemon/docx/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/DoxyFile )
-configure_file( ${CMAKE_SOURCE_DIR}/cmake/config.cmake.in ${CMAKE_BINARY_DIR}/include/config.h )
 
 if (WITH_ENABLED_IPC STREQUAL "NONE")
    set (ENABLE_NSM OFF)
@@ -269,3 +267,6 @@ add_custom_target(test-install
      "${CMAKE_COMMAND}" -DCMAKE_INSTALL_COMPONENT=tests
      -P "${CMAKE_BINARY_DIR}/cmake_install.cmake"
 )
+
+configure_file( ${CMAKE_SOURCE_DIR}/AudioManagerDaemon/docx/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/DoxyFile )
+configure_file( ${CMAKE_SOURCE_DIR}/cmake/config.cmake.in ${CMAKE_BINARY_DIR}/include/config.h )
