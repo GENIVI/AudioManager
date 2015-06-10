@@ -58,7 +58,6 @@ CAmRoutingSender::CAmRoutingSender(const std::vector<std::string>& listOfPluginD
     if (listOfPluginDirectories.empty())
     {
         logError("CAmRoutingSender::CAmRoutingSender: List of routingplugins is empty");
-        throw std::runtime_error("List of routingplugins is empty!");
     }
 
     std::vector<std::string> sharedLibraryNameList;

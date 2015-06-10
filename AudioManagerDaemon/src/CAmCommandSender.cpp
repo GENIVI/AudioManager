@@ -59,7 +59,6 @@ CAmCommandSender::CAmCommandSender(const std::vector<std::string>& listOfPluginD
     if (listOfPluginDirectories.empty())
     {
         logError("CAmCommandSender::CAmCommandSender: List of commandplugins is empty");
-        throw std::runtime_error("List of commandplugins is empty!");
     }
 
     std::vector<std::string> sharedLibraryNameList;
