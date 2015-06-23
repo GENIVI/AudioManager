@@ -18,14 +18,14 @@
 
 cmake_minimum_required(VERSION 2.8.8)
 
+project(AudioManagerDeamon)
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 
 include ( CMakeDependentOption )
 include ( MacroVersionFromGit )
 include ( MacroInterfaceVersions )
 include ( CMakePackageConfigHelpers )
-
-project(AudioManagerDeamon)
 
 if (NOT ${CMAKE_TOOLCHAIN_FILE} EQUAL "")
     message(STATUS "Using CMAKE_TOOLCHAIN_FILE='${CMAKE_TOOLCHAIN_FILE}'" )
@@ -227,7 +227,7 @@ set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g -Wall -Wextra -std=gnu++0x -D_
 set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O2 -fno-common -rdynamic -std=gnu++0x -fno-strict-aliasing -DNDEBUG")
 
 configure_package_config_file ( 
-    ${CMAKE_MODULE_PATH}/audiomanagerConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/audiomanagerConfig.cmake
+    ${CMAKE_SOURCE_DIR}/cmake/audiomanagerConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/audiomanagerConfig.cmake
     INSTALL_DESTINATION lib/${LIB_INSTALL_SUFFIX}/cmake
     PATH_VARS AUDIO_INCLUDE_FOLDER )
                               

@@ -86,7 +86,7 @@ if(WITH_SYSTEMD_WATCHDOG)
 		src/CAmWatchdog.cpp)
     set (AM_LINK_LIBS
         ${AM_LINK_LIBS}
-        ${SYSTEMD_LIBRARIES) 
+        ${SYSTEMD_LIBRARIES})
 endif(WITH_SYSTEMD_WATCHDOG)
 
 if (NOT SYSTEMD_FOUND)
