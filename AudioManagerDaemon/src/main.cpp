@@ -343,7 +343,7 @@ void mainProgram(int argc, char *argv[])
 #endif /*WITH_CAPI_WRAPPER */
 
 #ifdef WITH_DBUS_WRAPPER
-    if (dbusWrapperTypeBool)
+    if (dbusWrapperTypeBool.getValue())
     	dbusWrapperType=DBUS_BUS_SYSTEM;
     CAmDbusWrapper iDBusWrapper(&iSocketHandler,dbusWrapperType);
 #ifdef WITH_NSM
