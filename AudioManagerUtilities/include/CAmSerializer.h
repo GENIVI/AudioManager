@@ -4,6 +4,7 @@
  * Copyright (C) 2012, BMW AG
  *
  * \author Christian Linke, christian.linke@bmw.de BMW 2011,2012
+ * \author Alesksandar Donchev, aleksander.donchev@partner.bmw.de BMW 2015
  *
  * \copyright
  * This Source Code Form is subject to the terms of the
@@ -49,882 +50,187 @@ class CAmSerializer
 {
 private:
 
-    /**
-     * Prototype for a delegate
-     */
-    class CAmDelegate
-    {
-    public:
-        virtual ~CAmDelegate()
-        {};
-        virtual bool call(int* pipe)=0;
+	/**
+	 * Prototype for a delegate
+	 */
+	class CAmDelegate
+	{
+	public:
 
-    };
+		typedef enum:bool {
+			SyncCallType = false,
+			AsyncCallType = true
+		} CallType;
+
+		virtual ~CAmDelegate()
+		{};
+		virtual CallType call(int* pipe)=0;
+
+	};
+
+	/**
+	 * Prototype for a delegate with variadic template arguments in conjunction with the following class.
+	 */
+	template <class Class, typename Method, typename Tuple, bool Done, int Total, int... N>
+	class CAmDelegateAsyncImpl : public CAmDelegate
+	{
+		Class mInstance;
+		Method mMethod;
+		Tuple mArguments;
+	public:
+		friend class CAmSerializer;
+		static void call(Class instance, Method method, Tuple && arguments)
+		{
+			CAmDelegateAsyncImpl<Class, Method, Tuple, Total == 1 + sizeof...(N), Total, N..., sizeof...(N)>::call(instance, method, std::forward<Tuple>(arguments));
+		}
+
+		CAmDelegateAsyncImpl(Class instance, Method method,  Tuple && arguments)
+		{
+			mInstance = instance;
+			mMethod = method;
+			mArguments = std::move(arguments);
+		}
+
+		CallType call(int* pipe)
+		{
+			(void) pipe;
+			call(mInstance, mMethod, std::forward<Tuple>(mArguments));
+			return (AsyncCallType);
+		};
+	};
+
+	/**
+	 * Prototype for a delegate with variadic template arguments.
+	 */
+	template <class Class, typename Method, typename Tuple, int Total, int... N>
+	class CAmDelegateAsyncImpl<Class, Method, Tuple, true, Total, N...> : public CAmDelegate
+	{
+		Class mInstance;
+		Method mMethod;
+		Tuple mArguments;
+	public:
+		friend class CAmSerializer;
+		static void call(Class instance, Method method, Tuple && t)
+		{
+			(*instance.*method)(std::get<N>(std::forward<Tuple>(t))...);
+		}
+
+		CAmDelegateAsyncImpl(Class instance, Method method,  Tuple && arguments)
+		{
+			mInstance = instance;
+			mMethod = method;
+			mArguments = std::move(arguments);
+		}
+
+		CallType call(int* pipe)
+		{
+			(void) pipe;
+			call(mInstance, mMethod, std::forward<Tuple>(mArguments));
+			return (AsyncCallType);
+		};
+	};
+
+	/**
+	 * Prototype for a delegate with variadic template arguments in conjunction with the following class.
+	 */
+	template <class Class, typename Method, typename Return, typename Tuple, bool Done, int Total, int... N>
+	class CAmDelegateSyncImpl : public CAmDelegate
+	{
+		Class mInstance;
+		Method mMethod;
+		Tuple mArguments;
+		Return mReturn;
+	public:
+		friend class CAmSerializer;
+		static void call(Class instance,Method method, Return & result, Tuple && arguments)
+		{
+			CAmDelegateSyncImpl<Class, Method, Return, Tuple, Total == 1 + sizeof...(N), Total, N..., sizeof...(N)>::call(instance, method, result, std::forward<Tuple>(arguments));
+		}
+
+		CAmDelegateSyncImpl(Class instance, Method method,  Tuple && arguments)
+		{
+			mInstance = instance;
+			mMethod = method;
+			mArguments = std::move(arguments);
+		}
+
+		CallType call(int* pipe)
+		{
+			call(mInstance, mMethod, mReturn, std::forward<Tuple>(mArguments));
+			write(pipe[1], this, sizeof(this));
+			return (SyncCallType);
+		};
+	};
+
+	/**
+	 * Prototype for a delegate with variadic template arguments.
+	 */
+	template <class Class, typename Method, typename Return, typename Tuple, int Total, int... N>
+	class CAmDelegateSyncImpl<Class, Method, Return, Tuple, true, Total, N...> : public CAmDelegate
+	{
+		Class mInstance;
+		Method mMethod;
+		Tuple mArguments;
+		Return mReturn;
+	public:
+		friend class CAmSerializer;
+		static void call(Class instance, Method method, Return & result, Tuple && t)
+		{
+			result = (*instance.*method)(std::get<N>(t)...);
+		}
+
+		CAmDelegateSyncImpl(Class instance, Method method,  Tuple && arguments)
+		{
+			mInstance = instance;
+			mMethod = method;
+			mArguments = std::move(arguments);
+		}
+
+		CallType call(int* pipe)
+		{
+			call(mInstance, mMethod, mReturn, std::forward<Tuple>(mArguments));
+			write(pipe[1], this, sizeof(this));
+			return (SyncCallType);
+		};
+	};
 
     typedef CAmDelegate* CAmDelegagePtr; //!< pointer to a delegate
 
-    /**
-     * delegate template for no argument
-     */
-    template<class TClass> class CAmNoArgDelegate: public CAmDelegate
-    {
-    private:
-        TClass* mInstance;
-        void (TClass::*mFunction)();
-
-    public:
-        CAmNoArgDelegate(TClass* instance, void (TClass::*function)()) :
-                mInstance(instance), //
-                mFunction(function)
-        {};
-
-        bool call(int* pipe)
-        {
-            (void) pipe;
-            (*mInstance.*mFunction)();
-            return (true);
-        };
-    };
-
-    /**
-     * delegate template for one argument
-     */
-    template<class TClass, typename Targ> class CAmOneArgDelegate: public CAmDelegate
-    {
-    private:
-        TClass* mInstance;
-        void (TClass::*mFunction)(Targ);
-        Targ mArgument;
-
-    public:
-        CAmOneArgDelegate(TClass* instance, void (TClass::*function)(Targ), Targ argument) :
-                mInstance(instance), //
-                mFunction(function), //
-                mArgument(argument)
-        {};
-
-        bool call(int* pipe)
-        {
-            (void) pipe;
-            (*mInstance.*mFunction)(mArgument);
-            return (true);
-        };
-    };
-
-    /**
-	* delegate template for one argument
-	*/
-   template<class TClass, typename Targ> class CAmOneArgDelegateRef: public CAmDelegate
-   {
-   private:
-	   TClass* mInstance;
-	   void (TClass::*mFunction)(Targ&);
-	   Targ mArgument;
-
-   public:
-	   CAmOneArgDelegateRef(TClass* instance, void (TClass::*function)(Targ&), Targ& argument) :
-			   mInstance(instance), //
-			   mFunction(function), //
-			   mArgument(argument)
-	   {};
-
-	   bool call(int* pipe)
-	   {
-		   (void) pipe;
-		   (*mInstance.*mFunction)(mArgument);
-		   return (true);
-	   };
-   };
-
-    /**
-     * delegate template for two arguments
-     */
-    template<class TClass, typename Targ, typename Targ1> class CAmTwoArgDelegate: public CAmDelegate
-    {
-    private:
-        TClass* mInstance;
-        void (TClass::*mFunction)(Targ argument, Targ1 argument1);
-        Targ mArgument;
-        Targ1 mArgument1;
-
-    public:
-        CAmTwoArgDelegate(TClass* instance, void (TClass::*function)(Targ argument, Targ1 argument1), Targ argument, Targ1 argument1) :
-                mInstance(instance), //
-                mFunction(function), //
-                mArgument(argument), //
-                mArgument1(argument1)
-        { };
-
-        bool call(int* pipe)
-        {
-            (void) pipe;
-            (*mInstance.*mFunction)(mArgument, mArgument1);
-            return (true);
-        };
-    };
-
-    /**
-     * delegate template for two arguments
-     */
-    template<class TClass, typename Targ, typename Targ1> class CAmTwoArgDelegateFirstRef: public CAmDelegate
-    {
-    private:
-        TClass* mInstance;
-        void (TClass::*mFunction)(Targ& argument, Targ1 argument1);
-        Targ mArgument;
-        Targ1 mArgument1;
-
-    public:
-        CAmTwoArgDelegateFirstRef(TClass* instance, void (TClass::*function)(Targ& argument, Targ1 argument1), Targ& argument, Targ1 argument1) :
-                mInstance(instance), //
-                mFunction(function), //
-                mArgument(argument), //
-                mArgument1(argument1)
-        { };
-
-        bool call(int* pipe)
-        {
-            (void) pipe;
-            (*mInstance.*mFunction)(mArgument, mArgument1);
-            return (true);
-        };
-    };
-
-
-    template<class TClass, typename Targ, typename Targ1> class CAmTwoArgDelegateSecondRef: public CAmDelegate
-    {
-    private:
-        TClass* mInstance;
-        void (TClass::*mFunction)(Targ argument, Targ1& argument1);
-        Targ mArgument;
-        Targ1 mArgument1;
-
-    public:
-        CAmTwoArgDelegateSecondRef(TClass* instance, void (TClass::*function)(Targ argument, Targ1& argument1), Targ argument, Targ1& argument1) :
-                mInstance(instance), //
-                mFunction(function), //
-                mArgument(argument), //
-                mArgument1(argument1)
-        {};
-
-        bool call(int* pipe)
-        {
-            (void) pipe;
-            (*mInstance.*mFunction)(mArgument, mArgument1);
-            return (true);
-        };
-    };
-
-    /**
-     * delegate template for two arguments
-     */
-    template<class TClass, typename Targ, typename Targ1> class CAmTwoArgDelegateAllRef: public CAmDelegate
-    {
-    private:
-        TClass* mInstance;
-        void (TClass::*mFunction)(Targ& argument, Targ1& argument1);
-        Targ mArgument;
-        Targ1 mArgument1;
-
-    public:
-        CAmTwoArgDelegateAllRef(TClass* instance, void (TClass::*function)(Targ& argument, Targ1& argument1), Targ& argument, Targ1& argument1) :
-                mInstance(instance), //
-                mFunction(function), //
-                mArgument(argument), //
-                mArgument1(argument1)
-        { };
-
-        bool call(int* pipe)
-        {
-            (void) pipe;
-            (*mInstance.*mFunction)(mArgument, mArgument1);
-            return (true);
-        };
-    };
-
-
-    /**
-     * delegate template for three arguments
-     */
-    template<class TClass, typename Targ, typename Targ1, typename Targ2> class CAmThreeArgDelegate: public CAmDelegate
-    {
-    private:
-        TClass* mInstance;
-        void (TClass::*mFunction)(Targ argument, Targ1 argument1, Targ2 argument2);
-        Targ mArgument;
-        Targ1 mArgument1;
-        Targ2 mArgument2;
-
-    public:
-        CAmThreeArgDelegate(TClass* instance, void (TClass::*function)(Targ argument, Targ1 argument1, Targ2 argument2), Targ argument, Targ1 argument1, Targ2 argument2) :
-                mInstance(instance), //
-                mFunction(function), //
-                mArgument(argument), //
-                mArgument1(argument1), //
-                mArgument2(argument2)
-        {
-        }
-        ;
-
-        bool call(int* pipe)
-        {
-            (void) pipe;
-            (*mInstance.*mFunction)(mArgument, mArgument1, mArgument2);
-            return (true);
-        }
-        ;
-    };
-
-    /**
-      * delegate template for three arguments
-      */
-     template<class TClass, typename Targ, typename Targ1, typename Targ2> class CAmThreeArgDelegateFirstRef: public CAmDelegate
-     {
-     private:
-         TClass* mInstance;
-         void (TClass::*mFunction)(Targ& argument, Targ1 argument1, Targ2 argument2);
-         Targ mArgument;
-         Targ1 mArgument1;
-         Targ2 mArgument2;
-
-     public:
-         CAmThreeArgDelegateFirstRef(TClass* instance, void (TClass::*function)(Targ& argument, Targ1 argument1, Targ2 argument2), Targ& argument, Targ1 argument1, Targ2 argument2) :
-                 mInstance(instance), //
-                 mFunction(function), //
-                 mArgument(argument), //
-                 mArgument1(argument1), //
-                 mArgument2(argument2)
-         {};
-
-         bool call(int* pipe)
-         {
-             (void) pipe;
-             (*mInstance.*mFunction)(mArgument, mArgument1, mArgument2);
-             return (true);
-         };
-     };
-
-     /**
-       * delegate template for three arguments
-       */
-      template<class TClass, typename Targ, typename Targ1, typename Targ2> class CAmThreeArgDelegateSecondRef: public CAmDelegate
-      {
-      private:
-          TClass* mInstance;
-          void (TClass::*mFunction)(Targ argument, Targ1& argument1, Targ2 argument2);
-          Targ mArgument;
-          Targ1 mArgument1;
-          Targ2 mArgument2;
-
-      public:
-          CAmThreeArgDelegateSecondRef(TClass* instance, void (TClass::*function)(Targ argument, Targ1& argument1, Targ2 argument2), Targ argument, Targ1& argument1, Targ2 argument2) :
-                  mInstance(instance), //
-                  mFunction(function), //
-                  mArgument(argument), //
-                  mArgument1(argument1), //
-                  mArgument2(argument2)
-          {};
-
-          bool call(int* pipe)
-          {
-              (void) pipe;
-              (*mInstance.*mFunction)(mArgument, mArgument1, mArgument2);
-              return (true);
-          };
-      };
-
-      /**
-        * delegate template for three arguments
-        */
-       template<class TClass, typename Targ, typename Targ1, typename Targ2> class CAmThreeArgDelegateThirdRef: public CAmDelegate
-       {
-       private:
-           TClass* mInstance;
-           void (TClass::*mFunction)(Targ argument, Targ1 argument1, Targ2& argument2);
-           Targ mArgument;
-           Targ1 mArgument1;
-           Targ2 mArgument2;
-
-       public:
-           CAmThreeArgDelegateThirdRef(TClass* instance, void (TClass::*function)(Targ argument, Targ1 argument1, Targ2& argument2), Targ argument, Targ1 argument1, Targ2& argument2) :
-                   mInstance(instance), //
-                   mFunction(function), //
-                   mArgument(argument), //
-                   mArgument1(argument1), //
-                   mArgument2(argument2)
-           {};
-
-           bool call(int* pipe)
-           {
-               (void) pipe;
-               (*mInstance.*mFunction)(mArgument, mArgument1, mArgument2);
-               return (true);
-           };
-       };
-
-       /**
-         * delegate template for three arguments
-         */
-        template<class TClass, typename Targ, typename Targ1, typename Targ2> class CAmThreeArgDelegateFirstSecondRef: public CAmDelegate
-        {
-        private:
-            TClass* mInstance;
-            void (TClass::*mFunction)(Targ& argument, Targ1& argument1, Targ2 argument2);
-            Targ mArgument;
-            Targ1 mArgument1;
-            Targ2 mArgument2;
-
-        public:
-            CAmThreeArgDelegateFirstSecondRef(TClass* instance, void (TClass::*function)(Targ& argument, Targ1& argument1, Targ2 argument2), Targ& argument, Targ1& argument1, Targ2 argument2) :
-                    mInstance(instance), //
-                    mFunction(function), //
-                    mArgument(argument), //
-                    mArgument1(argument1), //
-                    mArgument2(argument2)
-            {};
-
-            bool call(int* pipe)
-            {
-                (void) pipe;
-                (*mInstance.*mFunction)(mArgument, mArgument1, mArgument2);
-                return (true);
-            };
-        };
-
-        /**
-          * delegate template for three arguments
-          */
-         template<class TClass, typename Targ, typename Targ1, typename Targ2> class CAmThreeArgDelegateFirstThirdRef: public CAmDelegate
-         {
-         private:
-             TClass* mInstance;
-             void (TClass::*mFunction)(Targ& argument, Targ1 argument1, Targ2& argument2);
-             Targ mArgument;
-             Targ1 mArgument1;
-             Targ2 mArgument2;
-
-         public:
-             CAmThreeArgDelegateFirstThirdRef(TClass* instance, void (TClass::*function)(Targ& argument, Targ1 argument1, Targ2& argument2), Targ& argument, Targ1 argument1, Targ2& argument2) :
-                     mInstance(instance), //
-                     mFunction(function), //
-                     mArgument(argument), //
-                     mArgument1(argument1), //
-                     mArgument2(argument2)
-             {};
-
-             bool call(int* pipe)
-             {
-                 (void) pipe;
-                 (*mInstance.*mFunction)(mArgument, mArgument1, mArgument2);
-                 return (true);
-             };
-         };
-
-         /**
-           * delegate template for three arguments
-           */
-          template<class TClass, typename Targ, typename Targ1, typename Targ2> class CAmThreeArgDelegateSecondThirdRef: public CAmDelegate
-          {
-          private:
-              TClass* mInstance;
-              void (TClass::*mFunction)(Targ argument, Targ1& argument1, Targ2& argument2);
-              Targ mArgument;
-              Targ1 mArgument1;
-              Targ2 mArgument2;
-
-          public:
-              CAmThreeArgDelegateSecondThirdRef(TClass* instance, void (TClass::*function)(Targ argument, Targ1& argument1, Targ2& argument2), Targ argument, Targ1& argument1, Targ2& argument2) :
-                      mInstance(instance), //
-                      mFunction(function), //
-                      mArgument(argument), //
-                      mArgument1(argument1), //
-                      mArgument2(argument2)
-              {};
-
-              bool call(int* pipe)
-              {
-                  (void) pipe;
-                  (*mInstance.*mFunction)(mArgument, mArgument1, mArgument2);
-                  return (true);
-              };
-          };
-
-          /**
-            * delegate template for three arguments
-            */
-           template<class TClass, typename Targ, typename Targ1, typename Targ2> class CAmThreeArgDelegateAllRef: public CAmDelegate
-           {
-           private:
-               TClass* mInstance;
-               void (TClass::*mFunction)(Targ& argument, Targ1& argument1, Targ2& argument2);
-               Targ mArgument;
-               Targ1 mArgument1;
-               Targ2 mArgument2;
-
-           public:
-               CAmThreeArgDelegateAllRef(TClass* instance, void (TClass::*function)(Targ& argument, Targ1& argument1, Targ2& argument2), Targ& argument, Targ1& argument1, Targ2& argument2) :
-                       mInstance(instance), //
-                       mFunction(function), //
-                       mArgument(argument), //
-                       mArgument1(argument1), //
-                       mArgument2(argument2)
-               {};
-
-               bool call(int* pipe)
-               {
-                   (void) pipe;
-                   (*mInstance.*mFunction)(mArgument, mArgument1, mArgument2);
-                   return (true);
-               };
-           };
-
-    /**
-     * delegate template for four arguments
-     */
-    template<class TClass, typename Targ, typename Targ1, typename Targ2, typename Targ3> class CAmFourArgDelegate: public CAmDelegate
-    {
-    private:
-        TClass* mInstance;
-        void (TClass::*mFunction)(Targ argument, Targ1 argument1, Targ2 argument2, Targ3 argument3);
-        Targ mArgument;
-        Targ1 mArgument1;
-        Targ2 mArgument2;
-        Targ3 mArgument3;
-
-    public:
-        CAmFourArgDelegate(TClass* instance, void (TClass::*function)(Targ argument, Targ1 argument1, Targ2 argument2, Targ3 argument3), Targ argument, Targ1 argument1, Targ2 argument2, Targ3 argument3) :
-                mInstance(instance), //
-                mFunction(function), //
-                mArgument(argument), //
-                mArgument1(argument1), //
-                mArgument2(argument2), //
-                mArgument3(argument3)
-        {
-        }
-        ;
-
-        bool call(int* pipe)
-        {
-            (void) pipe;
-            (*mInstance.*mFunction)(mArgument, mArgument1, mArgument2, mArgument3);
-            return (true);
-        }
-        ;
-    };
-
-    /**
-     * Template for synchronous calls with no argument
-     */
-    template<class TClass, typename TretVal> class CAmSyncNoArgDelegate: public CAmDelegate
-    {
-    private:
-        TClass* mInstance;
-        TretVal (TClass::*mFunction)();
-        TretVal mRetval;
-
-    public:
-        friend class CAmSerializer;
-        CAmSyncNoArgDelegate(TClass* instance, TretVal (TClass::*function)()) :
-                mInstance(instance), //
-                mFunction(function), //
-                mRetval()
-        {
-        }
-        ;
-
-        bool call(int* pipe)
-        {
-            mRetval = (*mInstance.*mFunction)();
-            write(pipe[1], this, sizeof(this));
-            return (false);
-        }
-        ;
-
-        TretVal returnResults()
-        {
-            return (mRetval);
-        }
-    };
-
-    /**
-     * template for synchronous calls with one argument
-     */
-    template<class TClass, typename TretVal, typename TargCall, typename Targ> class CAmSyncOneArgDelegate: public CAmDelegate
-    {
-    private:
-        TClass* mInstance;
-        TretVal (TClass::*mFunction)(TargCall argument);
-        Targ mArgument;
-        TretVal mRetval;
-
-    public:
-        friend class CAmSerializer;
-        CAmSyncOneArgDelegate(TClass* instance, TretVal (TClass::*function)(TargCall argument), Targ argument) :
-                mInstance(instance), //
-                mFunction(function), //
-                mArgument(argument), //
-                mRetval()
-        {
-        }
-        ;
-
-        bool call(int* pipe)
-        {
-            mRetval = (*mInstance.*mFunction)(mArgument);
-            write(pipe[1], this, sizeof(this));
-            return (false);
-        }
-        ;
-
-        TretVal returnResults(Targ& argument)
-        {
-            argument = mArgument;
-            return (mRetval);
-        }
-    };
-
-    /**
-     * template for synchronous calls with one argument on a const function
-     */
-    template<class TClass, typename TretVal, typename TargCall, typename Targ> class CAmSyncOneArgConstDelegate: public CAmDelegate
-    {
-    private:
-        TClass* mInstance;
-        TretVal (TClass::*mFunction)(TargCall argument) const;
-        Targ mArgument;
-        TretVal mRetval;
-
-    public:
-        friend class CAmSerializer;
-        CAmSyncOneArgConstDelegate(TClass* instance, TretVal (TClass::*function)(TargCall argument) const, Targ argument) :
-                mInstance(instance), //
-                mFunction(function), //
-                mArgument(argument), //
-                mRetval()
-        {
-        }
-        ;
-
-        bool call(int* pipe)
-        {
-            mRetval = (*mInstance.*mFunction)(mArgument);
-            write(pipe[1], this, sizeof(this));
-            return (false);
-        }
-        ;
-
-        TretVal returnResults(Targ& argument)
-        {
-            argument = mArgument;
-            return (mRetval);
-        }
-    };
-
-    /**
-     * template for synchronous calls with two arguments
-     */
-    template<class TClass, typename TretVal, typename TargCall, typename TargCall1, typename Targ, typename Targ1> class CAmSyncTwoArgDelegate: public CAmDelegate
-    {
-    private:
-        TClass* mInstance;
-        TretVal (TClass::*mFunction)(TargCall, TargCall1);
-        Targ mArgument;
-        Targ1 mArgument1;
-        TretVal mRetval;
-
-    public:
-        friend class CAmSerializer;
-        CAmSyncTwoArgDelegate(TClass* instance, TretVal (TClass::*function)(TargCall, TargCall1), Targ& argument, Targ1& argument1) :
-                mInstance(instance), //
-                mFunction(function), //
-                mArgument(argument), //
-                mArgument1(argument1), //
-                mRetval()
-        {
-        }
-        ;
-
-        bool call(int* pipe)
-        {
-            mRetval = (*mInstance.*mFunction)(mArgument, mArgument1);
-            write(pipe[1], this, sizeof(this));
-            return (false);
-        }
-        ;
-
-        TretVal returnResults(Targ& argument, Targ1& argument1)
-        {
-            argument = mArgument;
-            argument1 = mArgument1;
-            return (mRetval);
-        }
-    };
-
-    /**
-     * template for synchronous calls with two arguments on a const function
-     */
-    template<class TClass, typename TretVal, typename TargCall, typename TargCall1, typename Targ, typename Targ1> class CAmSyncTwoArgConstDelegate: public CAmDelegate
-    {
-    private:
-        TClass* mInstance;
-        TretVal (TClass::*mFunction)(TargCall, TargCall1) const;
-        Targ mArgument;
-        Targ1 mArgument1;
-        TretVal mRetval;
-
-    public:
-        friend class CAmSerializer;
-        CAmSyncTwoArgConstDelegate(TClass* instance, TretVal (TClass::*function)(TargCall, TargCall1) const, Targ& argument, Targ1& argument1) :
-                mInstance(instance), //
-                mFunction(function), //
-                mArgument(argument), //
-                mArgument1(argument1), //
-                mRetval()
-        {
-        }
-        ;
-
-        bool call(int* pipe)
-        {
-            mRetval = (*mInstance.*mFunction)(mArgument, mArgument1);
-            write(pipe[1], this, sizeof(this));
-            return (false);
-        }
-        ;
-
-        TretVal returnResults(Targ& argument, Targ1& argument1)
-        {
-            argument = mArgument;
-            argument1 = mArgument1;
-            return (mRetval);
-        }
-    };
-
-    /**
-     * template for synchronous calls with three arguments
-     */
-    template<class TClass, typename TretVal, typename TargCall, typename TargCall1, typename TargCall2, typename Targ, typename Targ1, typename Targ2> class CAmSyncThreeArgDelegate: public CAmDelegate
-    {
-    private:
-        TClass* mInstance;
-        TretVal (TClass::*mFunction)(TargCall argument, TargCall1 argument1, TargCall2 argument2);
-        Targ mArgument;
-        Targ1 mArgument1;
-        Targ2 mArgument2;
-        TretVal mRetval;
-
-    public:
-        CAmSyncThreeArgDelegate(TClass* instance, TretVal (TClass::*function)(TargCall argument, TargCall1 argument1, TargCall2 argument2), Targ argument, Targ1 argument1, Targ2 argument2) :
-                mInstance(instance), //
-                mFunction(function), //
-                mArgument(argument), //
-                mArgument1(argument1), //
-                mArgument2(argument2), //
-                mRetval()
-        {
-        }
-        ;
-
-        bool call(int* pipe)
-        {
-            mRetval = (*mInstance.*mFunction)(mArgument, mArgument1, mArgument2);
-            write(pipe[1], this, sizeof(this));
-            return (false);
-        }
-        ;
-
-        TretVal returnResults(Targ& argument, Targ1& argument1, Targ2& argument2)
-        {
-            argument = mArgument;
-            argument1 = mArgument1;
-            argument2 = mArgument2;
-            return (mRetval);
-        }
-    };
-
-    /**
-	* template for synchronous const calls with three arguments
-	*/
-    template<class TClass, typename TretVal, typename TargCall, typename TargCall1, typename TargCall2, typename Targ, typename Targ1, typename Targ2> class CAmSyncThreeArgConstDelegate: public CAmDelegate
-        {
-        private:
-            TClass* mInstance;
-            TretVal (TClass::*mFunction)(TargCall argument, TargCall1 argument1, TargCall2 argument2) const;
-            Targ mArgument;
-            Targ1 mArgument1;
-            Targ2 mArgument2;
-            TretVal mRetval;
-
-        public:
-            CAmSyncThreeArgConstDelegate(TClass* instance, TretVal (TClass::*function)(TargCall argument, TargCall1 argument1, TargCall2 argument2) const, Targ argument, Targ1 argument1, Targ2 argument2) :
-                    mInstance(instance), //
-                    mFunction(function), //
-                    mArgument(argument), //
-                    mArgument1(argument1), //
-                    mArgument2(argument2), //
-                    mRetval()
-            {
-            }
-            ;
-
-            bool call(int* pipe)
-            {
-                mRetval = (*mInstance.*mFunction)(mArgument, mArgument1, mArgument2);
-                write(pipe[1], this, sizeof(this));
-                return (false);
-            }
-            ;
-
-            TretVal returnResults(Targ& argument, Targ1& argument1, Targ2& argument2)
-            {
-                argument = mArgument;
-                argument1 = mArgument1;
-                argument2 = mArgument2;
-                return (mRetval);
-            }
-        };
-
-    /**
-     * template for synchronous calls with four arguments
-     */
-    template<class TClass, typename TretVal, typename TargCAll, typename TargCall1, typename TargCall2, typename TargCall3, typename Targ, typename Targ1, typename Targ2, typename Targ3> class CAmSyncFourArgDelegate: public CAmDelegate
-    {
-    private:
-        TClass* mInstance;
-        TretVal (TClass::*mFunction)(TargCAll argument, TargCall1 argument1, TargCall2 argument2, TargCall3 argument3);
-        Targ mArgument;
-        Targ1 mArgument1;
-        Targ2 mArgument2;
-        Targ3 mArgument3;
-        TretVal mRetval;
-    public:
-        CAmSyncFourArgDelegate(TClass* instance, TretVal (TClass::*function)(TargCAll argument, TargCall1 argument1, TargCall2 argument2, TargCall3 argument3), Targ argument, Targ1 argument1, Targ2 argument2, Targ3 argument3) :
-                mInstance(instance), //
-                mFunction(function), //
-                mArgument(argument), //
-                mArgument1(argument1), //
-                mArgument2(argument2), //
-                mArgument3(argument3), //
-                mRetval()
-        {
-        }
-        ;
-
-        bool call(int* pipe)
-        {
-            mRetval = (*mInstance.*mFunction)(mArgument, mArgument1, mArgument2, mArgument3);
-            write(pipe[1], this, sizeof(this));
-            return (false);
-        }
-        ;
-
-        TretVal returnResults(Targ& argument, Targ1& argument1, Targ2& argument2, Targ3& argument3)
-        {
-            argument = mArgument;
-            argument1 = mArgument1;
-            argument2 = mArgument2;
-            argument3 = mArgument3;
-            return (mRetval);
-        }
-    };
-
-    /**
-     * delegate template for five arguments
-     */
-    template<class TClass, typename TretVal, typename TargCAll, typename TargCall1, typename TargCall2, typename TargCall3, typename TargCall4, typename Targ, typename Targ1, typename Targ2, typename Targ3, typename Targ4> class CAmSyncFiveArgDelegate: public CAmDelegate
-    {
-    private:
-        TClass* mInstance;
-        TretVal (TClass::*mFunction)(TargCAll argument, TargCall1 argument1, TargCall2 argument2, TargCall3 argument3, TargCall4);
-        Targ mArgument;
-        Targ1 mArgument1;
-        Targ2 mArgument2;
-        Targ3 mArgument3;
-        Targ4 mArgument4;
-        TretVal mRetval;
-    public:
-
-        CAmSyncFiveArgDelegate(TClass* instance, TretVal (TClass::*function)(TargCAll argument, TargCall1 argument1, TargCall2 argument2, TargCall3 argument3, TargCall4 argument4), Targ argument, Targ1 argument1, Targ2 argument2, Targ3 argument3, Targ4 argument4) :
-                mInstance(instance), //
-                mFunction(function), //
-                mArgument(argument), //
-                mArgument1(argument1), //
-                mArgument2(argument2), //
-                mArgument3(argument3), //
-                mArgument4(argument4), //
-                mRetval()
-        {
-        }
-        ;
-
-        bool call(int* pipe)
-        {
-            mRetval = (*mInstance.*mFunction)(mArgument, mArgument1, mArgument2, mArgument3, mArgument4);
-            write(pipe[1], this, sizeof(this));
-            return (false);
-        }
-        ;
-
-        TretVal returnResults(Targ& argument, Targ1& argument1, Targ2& argument2, Targ3& argument3, Targ4& argument4)
-        {
-            argument = mArgument;
-            argument1 = mArgument1;
-            argument2 = mArgument2;
-            argument3 = mArgument3;
-            argument4 = mArgument4;
-            return (mRetval);
-        }
-    };
-
-    /**
-     * template for synchronous calls with six arguments
-     */
-    template<class TClass, typename TretVal, typename TargCAll, typename TargCall1, typename TargCall2, typename TargCall3, typename TargCall4, typename TargCall5, typename Targ, typename Targ1, typename Targ2, typename Targ3, typename Targ4, typename Targ5> class CAmSyncSixArgDelegate: public CAmDelegate
-    {
-    private:
-        TClass* mInstance;
-        TretVal (TClass::*mFunction)(TargCAll argument, TargCall1 argument1, TargCall2 argument2, TargCall3 argument3, TargCall4, TargCall5);
-        Targ mArgument;
-        Targ1 mArgument1;
-        Targ2 mArgument2;
-        Targ3 mArgument3;
-        Targ4 mArgument4;
-        Targ5 mArgument5;
-        TretVal mRetval;
-
-        CAmSyncSixArgDelegate(TClass* instance, TretVal (TClass::*function)(TargCAll, TargCall1, TargCall2, TargCall3, TargCall4, TargCall5), Targ argument, Targ1 argument1, Targ2 argument2, Targ3 argument3, Targ4 argument4, Targ5 argument5) :
-                mInstance(instance), //
-                mFunction(function), //
-                mArgument(argument), //
-                mArgument1(argument1), //
-                mArgument2(argument2), //
-                mArgument3(argument3), //
-                mArgument4(argument4), //
-                mArgument5(argument5), //
-                mRetval()
-        {
-        }
-        ;
-
-        bool call(int* pipe)
-        {
-            mRetval = (*mInstance.*mFunction)(mArgument, mArgument1, mArgument2, mArgument3, mArgument4, mArgument5);
-            write(pipe[1], this, sizeof(this));
-            return (false);
-        }
-        ;
-
-        TretVal returnResults(Targ& argument, Targ1& argument1, Targ2& argument2, Targ3& argument3, Targ4& argument4, Targ5& argument5)
-        {
-            argument = mArgument;
-            argument1 = mArgument1;
-            argument2 = mArgument2;
-            argument3 = mArgument3;
-            argument4 = mArgument4;
-            argument5 = mArgument5;
-            return (mRetval);
-        }
-    };
+	/**
+	 * instantiates a async delegate with given arguments and sends the delegate pointer over the pipe
+	 */
+	template <typename Class, typename Method, typename Tuple>
+	void doAsyncCall(Class intsance, Method method, Tuple & arguments)
+	{
+	    typedef typename std::decay<Tuple>::type ttype;
+	    typedef CAmDelegateAsyncImpl<Class, Method, Tuple, 0 == std::tuple_size<ttype>::value, std::tuple_size<ttype>::value> AsyncDelegate;
+	    AsyncDelegate *pImp = new AsyncDelegate(intsance, method, std::forward<Tuple>(arguments));
+	    send(pImp);
+	    //Do not delete the pointer. It will be deleted automatically later.
+	}
+
+	/**
+	 * instantiates a sync delegate with given arguments and sends the delegate pointer over the pipe
+	 */
+	template <typename Class, typename Method, typename Return, typename Tuple>
+	void doSyncCall(Class intsance, Method method, Return & result, Tuple & arguments)
+	{
+		typedef typename std::decay<Tuple>::type ttype;
+		typedef CAmDelegateSyncImpl<Class, Method, Return, Tuple, 0 == std::tuple_size<ttype>::value, std::tuple_size<ttype>::value> SyncDelegate;
+		SyncDelegate *pImp = new SyncDelegate(intsance, method, std::forward<Tuple>(arguments));
+		send(pImp);
+		int numReads;
+		SyncDelegate *p = NULL;
+		if ((numReads = read(mReturnPipe[0], &p, sizeof(p))) == -1)
+		{
+			logError("CAmSerializer::doSyncCall could not read pipe!");
+			throw std::runtime_error("CAmSerializer Could not read pipe!");
+		}
+		result = std::move(pImp->mReturn);
+		arguments = std::move(pImp->mArguments);
+		//Delete the pointer.
+		delete pImp;
+	}
 
     /**
      * rings the line of the pipe and adds the delegate pointer to the queue
@@ -945,6 +251,61 @@ private:
 public:
 
     /**
+	  * calls a function with variadic arguments threadsafe
+	  * @param instance the instance of the class that shall be called
+	  * @param function the function that shall be called as member function pointer.
+	  * @param output variable.
+	  * @tparam TClass the type of the Class to be called
+	  * @tparam TRet the type of the result
+	  * @tparam TArgs argument list
+	  * \section ex Example:
+	  * @code
+	  * class MyGreatClass
+	  * {
+	  * public:
+	  *      int AGreatMethod(int x);
+	  * }
+	  * CAmSerializer serial(&Sockethandler);
+	  * MyGreatClass anInstance;
+	  * int result;
+	  * serial.syncCall<MyGreatClass, int, int>(&anInstance,&MyGreatClass::AGreatMethod, result, 100);
+	  * @endcode
+	  */
+     template<class TClass, class TRet, class ... TArgs>
+ 	 void syncCall(TClass* instance, TRet (TClass::*method)(TArgs ...), TRet & result,  TArgs & ... arguments)
+ 	 {
+ 		auto t = std::make_tuple(arguments...);
+		doSyncCall(instance, method, result, t);
+		std::tie(arguments...) = t;
+ 	 }
+
+     /**
+	  * calls a function with variadic arguments threadsafe
+	  * @param instance the instance of the class that shall be called
+	  * @param function the function that shall be called as member function pointer.
+	  * @tparam TClass the type of the Class to be called
+	  * @tparam TRet the type of the result
+	  * @tparam TArgs argument list
+	  * \section ex Example:
+	  * @code
+	  * class MyGreatClass
+	  * {
+	  * public:
+	  *      int AGreatMethod(int x);
+	  * }
+	  * CAmSerializer serial(&Sockethandler);
+	  * MyGreatClass anInstance;
+	  * serial.asyncCall<MyGreatClass, void, int>(&anInstance,&MyGreatClass::AGreatMethod, 100);
+	  * @endcode
+	  */
+    template<class TClass, class TRet, class ... TArgs>
+	void asyncCall(TClass* instance, TRet (TClass::*method)(TArgs ...),  TArgs & ... arguments)
+	{
+		auto t = std::make_tuple(arguments...);
+		doAsyncCall(instance, method, t);
+	}
+
+    /**
      * calls a function with no arguments threadsafe
      * @param instance the instance of the class that shall be called
      * @param function the function that shall be called as memberfunction pointer.
@@ -962,10 +323,10 @@ public:
      * @endcode
      */
     template<class TClass>
-    void asyncCall(TClass* instance, void (TClass::*function)())
+    void  asyncCall(TClass* instance, void (TClass::*function)())
     {
-        CAmDelegagePtr p(new CAmNoArgDelegate<TClass>(instance, function));
-        send(p);
+    	auto t = std::make_tuple();
+		doAsyncCall(instance, function, t);
     }
 
     /**
@@ -989,10 +350,10 @@ public:
      *
      */
     template<class TClass1, class Targ>
-    void asyncCall(TClass1* instance, void (TClass1::*function)(Targ), Targ argument)
+    void  asyncCall(TClass1* instance, void (TClass1::*function)(Targ), Targ argument)
     {
-        CAmDelegagePtr p(new CAmOneArgDelegate<TClass1, Targ>(instance, function, argument));
-        send(p);
+    	auto t = std::make_tuple(argument);
+		doAsyncCall(instance, function, t);
     }
 
     /**
@@ -1016,10 +377,10 @@ public:
      *
      */
     template<class TClass1, class Targ>
-    void asyncCall(TClass1* instance, void (TClass1::*function)(Targ&), Targ& argument)
+    void  asyncCall(TClass1* instance, void (TClass1::*function)(Targ&), Targ& argument)
     {
-        CAmDelegagePtr p(new CAmOneArgDelegateRef<TClass1, Targ>(instance, function, argument));
-        send(p);
+    	auto t = std::make_tuple(argument);
+		doAsyncCall(instance, function, t);
     }
 
     /**
@@ -1033,10 +394,10 @@ public:
      * @tparam Targ1 the type of the first argument to be called
      */
     template<class TClass1, class Targ, class Targ1>
-    void asyncCall(TClass1* instance, void (TClass1::*function)(Targ argument, Targ1 argument1), Targ argument, Targ1 argument1)
+    void  asyncCall(TClass1* instance, void (TClass1::*function)(Targ argument, Targ1 argument1), Targ argument, Targ1 argument1)
     {
-        CAmDelegagePtr p(new CAmTwoArgDelegate<TClass1, Targ, Targ1>(instance, function, argument, argument1));
-        send(p);
+    	auto t = std::make_tuple(argument,argument1);
+		doAsyncCall(instance, function, t);
     }
 
     /**
@@ -1050,10 +411,10 @@ public:
      * @tparam Targ1 the type of the first argument to be called
      */
     template<class TClass1, class Targ, class Targ1>
-    void asyncCall(TClass1* instance, void (TClass1::*function)(Targ& argument, Targ1 argument1), Targ& argument, Targ1 argument1)
+    void  asyncCall(TClass1* instance, void (TClass1::*function)(Targ& argument, Targ1 argument1), Targ& argument, Targ1 argument1)
     {
-        CAmDelegagePtr p(new CAmTwoArgDelegateFirstRef<TClass1, Targ, Targ1>(instance, function, argument, argument1));
-        send(p);
+    	auto t = std::make_tuple(argument,argument1);
+		doAsyncCall(instance, function, t);
     }
 
     /**
@@ -1067,10 +428,10 @@ public:
      * @tparam Targ1 the type of the first argument to be called
      */
     template<class TClass1, class Targ, class Targ1>
-    void asyncCall(TClass1* instance, void (TClass1::*function)(Targ argument, Targ1& argument1), Targ argument, Targ1& argument1)
+    void  asyncCall(TClass1* instance, void (TClass1::*function)(Targ argument, Targ1& argument1), Targ argument, Targ1& argument1)
     {
-        CAmDelegagePtr p(new CAmTwoArgDelegateSecondRef<TClass1, Targ, Targ1>(instance, function, argument, argument1));
-        send(p);
+    	auto t = std::make_tuple(argument,argument1);
+		doAsyncCall(instance, function, t);
     }
 
     /**
@@ -1084,30 +445,30 @@ public:
      * @tparam Targ1 the type of the first argument to be called
      */
     template<class TClass1, class Targ, class Targ1>
-    void asyncCall(TClass1* instance, void (TClass1::*function)(Targ& argument, Targ1& argument1), Targ& argument, Targ1& argument1)
+    void  asyncCall(TClass1* instance, void (TClass1::*function)(Targ& argument, Targ1& argument1), Targ& argument, Targ1& argument1)
     {
-        CAmDelegagePtr p(new CAmTwoArgDelegateAllRef<TClass1, Targ, Targ1>(instance, function, argument, argument1));
-        send(p);
+    	auto t = std::make_tuple(argument,argument1);
+		doAsyncCall(instance, function, t);
     }
 
     /**
      * calls a function with three arguments asynchronously threadsafe. for more see other asycCall
      */
     template<class TClass1, class Targ, class Targ1, class Targ2>
-    void asyncCall(TClass1* instance, void (TClass1::*function)(Targ argument, Targ1 argument1, Targ2 argument2), Targ argument, Targ1 argument1, Targ2 argument2)
+    void  asyncCall(TClass1* instance, void (TClass1::*function)(Targ argument, Targ1 argument1, Targ2 argument2), Targ argument, Targ1 argument1, Targ2 argument2)
     {
-        CAmDelegagePtr p(new CAmThreeArgDelegate<TClass1, Targ, Targ1, Targ2>(instance, function, argument, argument1, argument2));
-        send(p);
+    	auto t = std::make_tuple(argument,argument1, argument2);
+		doAsyncCall(instance, function, t);
     }
 
     /**
      * calls a function with three arguments asynchronously threadsafe. for more see other asycCall
      */
     template<class TClass1, class Targ, class Targ1, class Targ2>
-    void asyncCall(TClass1* instance, void (TClass1::*function)(Targ& argument, Targ1 argument1, Targ2 argument2), Targ& argument, Targ1 argument1, Targ2 argument2)
+    void  asyncCall(TClass1* instance, void (TClass1::*function)(Targ& argument, Targ1 argument1, Targ2 argument2), Targ& argument, Targ1 argument1, Targ2 argument2)
     {
-        CAmDelegagePtr p(new CAmThreeArgDelegateFirstRef<TClass1, Targ, Targ1, Targ2>(instance, function, argument, argument1, argument2));
-        send(p);
+    	auto t = std::make_tuple(argument,argument1, argument2);
+		doAsyncCall(instance, function, t);
     }
 
 
@@ -1115,70 +476,70 @@ public:
      * calls a function with three arguments asynchronously threadsafe. for more see other asycCall
      */
     template<class TClass1, class Targ, class Targ1, class Targ2>
-    void asyncCall(TClass1* instance, void (TClass1::*function)(Targ argument, Targ1& argument1, Targ2 argument2), Targ argument, Targ1& argument1, Targ2 argument2)
+    void  asyncCall(TClass1* instance, void (TClass1::*function)(Targ argument, Targ1& argument1, Targ2 argument2), Targ argument, Targ1& argument1, Targ2 argument2)
     {
-        CAmDelegagePtr p(new CAmThreeArgDelegateSecondRef<TClass1, Targ, Targ1, Targ2>(instance, function, argument, argument1, argument2));
-        send(p);
+    	auto t = std::make_tuple(argument,argument1, argument2);
+		doAsyncCall(instance, function, t);
     }
 
     /**
      * calls a function with three arguments asynchronously threadsafe. for more see other asycCall
      */
     template<class TClass1, class Targ, class Targ1, class Targ2>
-    void asyncCall(TClass1* instance, void (TClass1::*function)(Targ argument, Targ1 argument1, Targ2& argument2), Targ argument, Targ1 argument1, Targ2& argument2)
+    void  asyncCall(TClass1* instance, void (TClass1::*function)(Targ argument, Targ1 argument1, Targ2& argument2), Targ argument, Targ1 argument1, Targ2& argument2)
     {
-        CAmDelegagePtr p(new CAmThreeArgDelegateThirdRef<TClass1, Targ, Targ1, Targ2>(instance, function, argument, argument1, argument2));
-        send(p);
+    	auto t = std::make_tuple(argument,argument1, argument2);
+		doAsyncCall(instance, function, t);
     }
 
     /**
      * calls a function with three arguments asynchronously threadsafe. for more see other asycCall
      */
     template<class TClass1, class Targ, class Targ1, class Targ2>
-    void asyncCall(TClass1* instance, void (TClass1::*function)(Targ argument, Targ1& argument1, Targ2& argument2), Targ argument, Targ1& argument1, Targ2& argument2)
+    void  asyncCall(TClass1* instance, void (TClass1::*function)(Targ argument, Targ1& argument1, Targ2& argument2), Targ argument, Targ1& argument1, Targ2& argument2)
     {
-        CAmDelegagePtr p(new CAmThreeArgDelegateSecondThirdRef<TClass1, Targ, Targ1, Targ2>(instance, function, argument, argument1, argument2));
-        send(p);
+    	auto t = std::make_tuple(argument,argument1, argument2);
+		doAsyncCall(instance, function, t);
     }
 
     /**
      * calls a function with three arguments asynchronously threadsafe. for more see other asycCall
      */
     template<class TClass1, class Targ, class Targ1, class Targ2>
-    void asyncCall(TClass1* instance, void (TClass1::*function)(Targ& argument, Targ1& argument1, Targ2& argument2), Targ& argument, Targ1& argument1, Targ2& argument2)
+    void  asyncCall(TClass1* instance, void (TClass1::*function)(Targ& argument, Targ1& argument1, Targ2& argument2), Targ& argument, Targ1& argument1, Targ2& argument2)
     {
-        CAmDelegagePtr p(new CAmThreeArgDelegateAllRef<TClass1, Targ, Targ1, Targ2>(instance, function, argument, argument1, argument2));
-        send(p);
+    	auto t = std::make_tuple(argument,argument1, argument2);
+		doAsyncCall(instance, function, t);
     }
 
     /**
      * calls a function with three arguments asynchronously threadsafe. for more see other asycCall
      */
     template<class TClass1, class Targ, class Targ1, class Targ2>
-    void asyncCall(TClass1* instance, void (TClass1::*function)(Targ& argument, Targ1& argument1, Targ2 argument2), Targ& argument, Targ1& argument1, Targ2 argument2)
+    void  asyncCall(TClass1* instance, void (TClass1::*function)(Targ& argument, Targ1& argument1, Targ2 argument2), Targ& argument, Targ1& argument1, Targ2 argument2)
     {
-        CAmDelegagePtr p(new CAmThreeArgDelegateFirstSecondRef<TClass1, Targ, Targ1, Targ2>(instance, function, argument, argument1, argument2));
-        send(p);
+    	auto t = std::make_tuple(argument,argument1, argument2);
+		doAsyncCall(instance, function, t);
     }
 
     /**
      * calls a function with three arguments asynchronously threadsafe. for more see other asycCall
      */
     template<class TClass1, class Targ, class Targ1, class Targ2>
-    void asyncCall(TClass1* instance, void (TClass1::*function)(Targ& argument, Targ1 argument1, Targ2& argument2), Targ& argument, Targ1 argument1, Targ2& argument2)
+    void  asyncCall(TClass1* instance, void (TClass1::*function)(Targ& argument, Targ1 argument1, Targ2& argument2), Targ& argument, Targ1 argument1, Targ2& argument2)
     {
-        CAmDelegagePtr p(new CAmThreeArgDelegateFirstThirdRef<TClass1, Targ, Targ1, Targ2>(instance, function, argument, argument1, argument2));
-        send(p);
+    	auto t = std::make_tuple(argument,argument1, argument2);
+		doAsyncCall(instance, function, t);
     }
 
     /**
      * calls a function with four arguments asynchronously threadsafe. for more see other asycCall
      */
     template<class TClass1, class Targ, class Targ1, class Targ2, class Targ3>
-    void asyncCall(TClass1* instance, void (TClass1::*function)(Targ argument, Targ1 argument1, Targ2 argument2, Targ3 argument3), Targ argument, Targ1 argument1, Targ2 argument2, Targ3 argument3)
+    void  asyncCall(TClass1* instance, void (TClass1::*function)(Targ argument, Targ1 argument1, Targ2 argument2, Targ3 argument3), Targ argument, Targ1 argument1, Targ2 argument2, Targ3 argument3)
     {
-        CAmDelegagePtr p(new CAmFourArgDelegate<TClass1, Targ, Targ1, Targ2, Targ3>(instance, function, argument, argument1, argument2, argument3));
-        send(p);
+    	auto t = std::make_tuple(argument,argument1, argument2,argument3);
+		doAsyncCall(instance, function, t);
     }
 
     /**
@@ -1204,20 +565,10 @@ public:
      *
      */
     template<class TClass1, class TretVal>
-    void syncCall(TClass1* instance, TretVal (TClass1::*function)(), TretVal& retVal)
+    void  syncCall(TClass1* instance, TretVal (TClass1::*function)(), TretVal& retVal)
     {
-        CAmSyncNoArgDelegate<TClass1, TretVal>* p(new CAmSyncNoArgDelegate<TClass1, TretVal>(instance, function));
-        send(static_cast<CAmDelegagePtr>(p));
-        int numReads;
-        CAmDelegagePtr ptr;
-        if ((numReads = read(mReturnPipe[0], &ptr, sizeof(ptr))) == -1)
-        {
-            logError("CAmSerializer::receiverCallback could not read pipe!");
-            throw std::runtime_error("CAmSerializer Could not read pipe!");
-        }
-        //working with friend class here is not the finest of all programming stiles but it works...
-        retVal = p->returnResults();
-        delete p;
+    	auto t = std::make_tuple();
+		doSyncCall(instance, function, retVal, t);
     }
 
     /**
@@ -1247,177 +598,98 @@ public:
      * All arguments given to synchronous functions must be non-const since the results of the operations will be written back to the arguments.
      */
     template<class TClass1, class TretVal, class TargCall, class Targ>
-    void syncCall(TClass1* instance, TretVal (TClass1::*function)(TargCall), TretVal& retVal, Targ& argument)
+    void  syncCall(TClass1* instance, TretVal (TClass1::*function)(TargCall), TretVal& retVal, Targ& argument)
     {
-        CAmSyncOneArgDelegate<TClass1, TretVal, TargCall, Targ>* p(new CAmSyncOneArgDelegate<TClass1, TretVal, TargCall, Targ>(instance, function, argument));
-        send(static_cast<CAmDelegagePtr>(p));
-        int numReads;
-        CAmDelegagePtr ptr;
-        if ((numReads = read(mReturnPipe[0], &ptr, sizeof(ptr))) == -1)
-        {
-            logError("CAmSerializer::receiverCallback could not read pipe!");
-            throw std::runtime_error("CAmSerializer Could not read pipe!");
-        }
-        //working with friend class here is not the finest of all programming stiles but it works...
-        retVal = p->returnResults(argument);
-        delete p;
+    	auto t = std::make_tuple(argument);
+    	doSyncCall(instance, function, retVal, t);
+    	std::tie(argument) = t;
     }
 
     /**
      * calls a function with one argument synchronous threadsafe for const functions. For more see syncCall with one argument
      */
     template<class TClass1, class TretVal, class TargCall, class Targ>
-    void syncCall(TClass1* instance, TretVal (TClass1::*function)(TargCall) const, TretVal& retVal, Targ& argument)
+    void  syncCall(TClass1* instance, TretVal (TClass1::*function)(TargCall) const, TretVal& retVal, Targ& argument)
     {
-        CAmSyncOneArgConstDelegate<TClass1, TretVal, TargCall, Targ>* p(new CAmSyncOneArgConstDelegate<TClass1, TretVal, TargCall, Targ>(instance, function, argument));
-        send(static_cast<CAmDelegagePtr>(p));
-        int numReads;
-        CAmDelegagePtr ptr;
-        if ((numReads = read(mReturnPipe[0], &ptr, sizeof(ptr))) == -1)
-        {
-            logError("CAmSerializer::receiverCallback could not read pipe!");
-            throw std::runtime_error("CAmSerializer Could not read pipe!");
-        }
-        //working with friend class here is not the finest of all programming stiles but it works...
-        retVal = p->returnResults(argument);
-        delete p;
+    	auto t = std::make_tuple(argument);
+    	doSyncCall(instance, function, retVal, t);
+    	std::tie(argument) = t;
     }
 
     /**
      * calls a function with two arguments synchronously threadsafe. For more see syncCall with one argument
      */
     template<class TClass1, class TretVal, class TargCall, class Targ1Call, class Targ, class Targ1>
-    void syncCall(TClass1* instance, TretVal (TClass1::*function)(TargCall, Targ1Call), TretVal& retVal, Targ& argument, Targ1& argument1)
+    void  syncCall(TClass1* instance, TretVal (TClass1::*function)(TargCall, Targ1Call), TretVal& retVal, Targ& argument, Targ1& argument1)
     {
-        CAmSyncTwoArgDelegate<TClass1, TretVal, TargCall, Targ1Call, Targ, Targ1>* p(new CAmSyncTwoArgDelegate<TClass1, TretVal, TargCall, Targ1Call, Targ, Targ1>(instance, function, argument, argument1));
-        send(dynamic_cast<CAmDelegagePtr>(p));
-
-        CAmDelegagePtr ptr;
-        if (read(mReturnPipe[0], &ptr, sizeof(ptr)) == -1)
-        {
-            logError("CAmSerializer::receiverCallback could not read pipe!");
-            throw std::runtime_error("CAmSerializer Could not read pipe!");
-        }
-        retVal = p->returnResults(argument, argument1);
-        delete p;
+    	auto t = std::make_tuple(argument, argument1);
+    	doSyncCall(instance, function, retVal, t);
+    	std::tie(argument, argument1) = t;
     }
     /**
      * calls a function with two arguments synchronously threadsafe const. For more see syncCall with one argument
      */
     template<class TClass1, class TretVal, class TargCall, class Targ1Call, class Targ, class Targ1>
-    void syncCall(TClass1* instance, TretVal (TClass1::*function)(TargCall, Targ1Call) const, TretVal& retVal, Targ& argument, Targ1& argument1)
+    void  syncCall(TClass1* instance, TretVal (TClass1::*function)(TargCall, Targ1Call) const, TretVal& retVal, Targ& argument, Targ1& argument1)
     {
-        CAmSyncTwoArgConstDelegate<TClass1, TretVal, TargCall, Targ1Call, Targ, Targ1>* p(new CAmSyncTwoArgConstDelegate<TClass1, TretVal, TargCall, Targ1Call, Targ, Targ1>(instance, function, argument, argument1));
-        send(dynamic_cast<CAmDelegagePtr>(p));
-
-        CAmDelegagePtr ptr;
-        if (read(mReturnPipe[0], &ptr, sizeof(ptr)) == -1)
-        {
-            logError("CAmSerializer::receiverCallback could not read pipe!");
-            throw std::runtime_error("CAmSerializer Could not read pipe!");
-        }
-        retVal = p->returnResults(argument, argument1);
-        delete p;
+    	auto t = std::make_tuple(argument, argument1);
+    	doSyncCall(instance, function, retVal, t);
+    	std::tie(argument, argument1) = t;
     }
 
     /**
      * calls a function with three arguments synchronously threadsafe. for more see syncCall with one argument
      */
     template<class TClass1, class TretVal, class TargCall, class TargCall1, class TargCall2, class Targ, class Targ1, class Targ2>
-    void syncCall(TClass1* instance, TretVal (TClass1::*function)(TargCall, TargCall1, TargCall2), TretVal& retVal, Targ& argument, Targ1& argument1, Targ2& argument2)
+    void  syncCall(TClass1* instance, TretVal (TClass1::*function)(TargCall, TargCall1, TargCall2), TretVal& retVal, Targ& argument, Targ1& argument1, Targ2& argument2)
     {
-        CAmSyncThreeArgDelegate<TClass1, TretVal, TargCall, TargCall1, TargCall2, Targ, Targ1, Targ2>* p(new CAmSyncThreeArgDelegate<TClass1, TretVal, TargCall, TargCall1, TargCall2, Targ, Targ1, Targ2>(instance, function, argument, argument1, argument2));
-        send(static_cast<CAmDelegagePtr>(p));
-        int numReads;
-        CAmDelegagePtr ptr;
-        if ((numReads = read(mReturnPipe[0], &ptr, sizeof(ptr))) == -1)
-        {
-            logError("CAmSerializer::receiverCallback could not read pipe!");
-            throw std::runtime_error("CAmSerializer Could not read pipe!");
-        }
-        //working with friend class here is not the finest of all programming stiles but it worCAmTwoArgDelegateks...
-        retVal = p->returnResults(argument, argument1, argument2);
-        delete p;
+    	auto t = std::make_tuple(argument, argument1, argument2);
+    	doSyncCall(instance, function, retVal, t);
+    	std::tie(argument, argument1,argument2) = t;
     }
 
     /**
 	* calls a const function with three arguments synchronously threadsafe. for more see syncCall with one argument
 	*/
    template<class TClass1, class TretVal, class TargCall, class TargCall1, class TargCall2, class Targ, class Targ1, class Targ2>
-   void syncCall(TClass1* instance, TretVal (TClass1::*function)(TargCall, TargCall1, TargCall2) const, TretVal& retVal, Targ& argument, Targ1& argument1, Targ2& argument2)
+   void  syncCall(TClass1* instance, TretVal (TClass1::*function)(TargCall, TargCall1, TargCall2) const, TretVal& retVal, Targ& argument, Targ1& argument1, Targ2& argument2)
    {
-	   CAmSyncThreeArgConstDelegate<TClass1, TretVal, TargCall, TargCall1, TargCall2, Targ, Targ1, Targ2>* p(new CAmSyncThreeArgConstDelegate<TClass1, TretVal, TargCall, TargCall1, TargCall2, Targ, Targ1, Targ2>(instance, function, argument, argument1, argument2));
-	   send(static_cast<CAmDelegagePtr>(p));
-	   int numReads;
-	   CAmDelegagePtr ptr;
-	   if ((numReads = read(mReturnPipe[0], &ptr, sizeof(ptr))) == -1)
-	   {
-		   logError("CAmSerializer::receiverCallback could not read pipe!");
-		   throw std::runtime_error("CAmSerializer Could not read pipe!");
-	   }
-	   //working with friend class here is not the finest of all programming stiles but it worCAmTwoArgDelegateks...
-	   retVal = p->returnResults(argument, argument1, argument2);
-	   delete p;
+	   auto t = std::make_tuple(argument, argument1, argument2);
+	   doSyncCall(instance, function, retVal, t);
+	   std::tie(argument, argument1,argument2) = t;
    }
 
     /**
      * calls a function with four arguments synchronously threadsafe. for more see syncCall with one argument
      */
     template<class TClass1, class TretVal, class TargCall, class TargCall1, class TargCall2, class TargCall3, class Targ, class Targ1, class Targ2, class Targ3>
-    void syncCall(TClass1* instance, TretVal (TClass1::*function)(TargCall, TargCall1, TargCall2, TargCall3), TretVal& retVal, Targ& argument, Targ1& argument1, Targ2& argument2, Targ3& argument3)
+    void  syncCall(TClass1* instance, TretVal (TClass1::*function)(TargCall, TargCall1, TargCall2, TargCall3), TretVal& retVal, Targ& argument, Targ1& argument1, Targ2& argument2, Targ3& argument3)
     {
-        CAmSyncFourArgDelegate<TClass1, TretVal, TargCall, TargCall1, TargCall2, TargCall3, Targ, Targ1, Targ2, Targ3>* p(new CAmSyncFourArgDelegate<TClass1, TretVal, TargCall, TargCall1, TargCall2, TargCall3, Targ, Targ1, Targ2, Targ3>(instance, function, argument, argument1, argument2, argument3));
-        send(static_cast<CAmDelegagePtr>(p));
-        int numReads;
-        CAmDelegagePtr ptr;
-        if ((numReads = read(mReturnPipe[0], &ptr, sizeof(ptr))) == -1)
-        {
-            logError("CAmSerializer::receiverCallback could not read pipe!");
-            throw std::runtime_error("CAmSerializer Could not read pipe!");
-        }
-        //working with friend class here is not the finest of all programming stiles but it works...
-        retVal = p->returnResults(argument, argument1, argument2, argument3);
-        delete p;
+ 	   auto t = std::make_tuple(argument, argument1, argument2, argument3);
+ 	   doSyncCall(instance, function, retVal, t);
+ 	   std::tie(argument, argument1,argument2, argument3) = t;
     }
 
     /**
      * calls a function with five arguments synchronously threadsafe. for more see syncCall with one argument
      */
     template<class TClass1, class TretVal, class TargCall, class TargCall1, class TargCall2, class TargCall3, class TargCall4, class Targ, class Targ1, class Targ2, class Targ3, class Targ4>
-    void syncCall(TClass1* instance, TretVal (TClass1::*function)(TargCall, TargCall1, TargCall2, TargCall3, TargCall4), TretVal& retVal, Targ& argument, Targ1& argument1, Targ2& argument2, Targ3& argument3, Targ4& argument4)
+    void  syncCall(TClass1* instance, TretVal (TClass1::*function)(TargCall, TargCall1, TargCall2, TargCall3, TargCall4), TretVal& retVal, Targ& argument, Targ1& argument1, Targ2& argument2, Targ3& argument3, Targ4& argument4)
     {
-        CAmSyncFiveArgDelegate<TClass1, TretVal, TargCall, TargCall1, TargCall2, TargCall3, TargCall4, Targ, Targ1, Targ2, Targ3, Targ4>* p(new CAmSyncFiveArgDelegate<TClass1, TretVal, TargCall, TargCall1, TargCall2, TargCall3, TargCall4, Targ, Targ1, Targ2, Targ3, Targ4>(instance, function, argument, argument1, argument2, argument3, argument4));
-        send(static_cast<CAmDelegagePtr>(p));
-        int numReads;
-        CAmDelegagePtr ptr;
-        if ((numReads = read(mReturnPipe[0], &ptr, sizeof(ptr))) == -1)
-        {
-            logError("CAmSerializer::receiverCallback could not read pipe!");
-            throw std::runtime_error("CAmSerializer Could not read pipe!");
-        }
-        //working with friend class here is not the finest of all programming stiles but it works...
-        retVal = p->returnResults(argument, argument1, argument2, argument3, argument4);
-        delete p;
+		auto t = std::make_tuple(argument, argument1, argument2, argument3, argument4);
+		doSyncCall(instance, function, retVal, t);
+		std::tie(argument, argument1,argument2, argument3, argument4) = t;
     }
 
     /**
      * calls a function with six arguments synchronously threadsafe. for more see syncCall with one argument
      */
     template<class TClass1, class TretVal, class TargCall, class TargCall1, class TargCall2, class TargCall3, class TargCall4, class TargCall5, class Targ, class Targ1, class Targ2, class Targ3, class Targ4, class Targ5>
-    void syncCall(TClass1* instance, TretVal (TClass1::*function)(TargCall, TargCall1, TargCall2, TargCall3, TargCall4, TargCall5), TretVal& retVal, Targ& argument, Targ1& argument1, Targ2& argument2, Targ3& argument3, Targ4& argument4, Targ5& argument5)
+    void  syncCall(TClass1* instance, TretVal (TClass1::*function)(TargCall, TargCall1, TargCall2, TargCall3, TargCall4, TargCall5), TretVal& retVal, Targ& argument, Targ1& argument1, Targ2& argument2, Targ3& argument3, Targ4& argument4, Targ5& argument5)
     {
-        CAmSyncSixArgDelegate<TClass1, TretVal, TargCall, TargCall1, TargCall2, TargCall3, TargCall4, TargCall5, Targ, Targ1, Targ2, Targ3, Targ4, Targ5>* p(new CAmSyncSixArgDelegate<TClass1, TretVal, TargCall, TargCall1, TargCall2, TargCall3, TargCall4, TargCall5, Targ, Targ1, Targ2, Targ3, Targ4, Targ5>(instance, function, argument, argument1, argument2, argument3, argument4, argument5));
-        send(static_cast<CAmDelegagePtr>(p));
-        int numReads;
-        CAmDelegagePtr ptr;
-        if ((numReads = read(mReturnPipe[0], &ptr, sizeof(ptr))) == -1)
-        {
-            logError("CAmSerializer::receiverCallback could not read pipe!");
-            throw std::runtime_error("CAmSerializer Could not read pipe!");
-        }
-        //working with friend class here is not the finest of all programming stiles but it works...
-        retVal = p->returnResults(argument, argument1, argument2, argument3, argument4, argument5);
-        delete p;
+		auto t = std::make_tuple(argument, argument1, argument2, argument3, argument4, argument5);
+		doSyncCall(instance, function, retVal, t);
+		std::tie(argument, argument1,argument2, argument3, argument4, argument5) = t;
     }
 
     /**
