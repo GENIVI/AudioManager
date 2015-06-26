@@ -68,19 +68,31 @@ option( WITH_NSM
   
  option ( WITH_DATABASE_STORAGE
     "Build with sqlite as in memory storage" OFF)
-
+    
 set (WITH_COMMON_API_GEN ON CACHE INTERNAL "hide this!" FORCE)
  
 if (WITH_ENABLED_IPC STREQUAL "DBUS")
     set (WITH_DBUS_WRAPPER ON CACHE INTERNAL "hide this!" FORCE)
     set (WITH_CAPI_WRAPPER OFF CACHE INTERNAL "hide this!" FORCE)
+    unset(USE_CAPI_BINDING CACHE)
 elseif(WITH_ENABLED_IPC STREQUAL "CAPI")
     set (WITH_CAPI_WRAPPER ON CACHE INTERNAL "hide this!" FORCE)
-    set (WITH_DBUS_WRAPPER OFF CACHE INTERNAL "hide this!" FORCE)   
+    set (WITH_DBUS_WRAPPER OFF CACHE INTERNAL "hide this!" FORCE)
+    set (USE_CAPI_BINDING "DBUS" CACHE STRING "Select prefered binding for common-api 'DBUS' or 'SOMEIP'")
+    set_property(CACHE USE_CAPI_BINDING PROPERTY STRINGS "DBUS" "SOMEIP") 
 elseif(WITH_ENABLED_IPC STREQUAL "NONE")   
     set (WITH_CAPI_WRAPPER OFF CACHE INTERNAL "hide this!" FORCE)
     set (WITH_DBUS_WRAPPER OFF CACHE INTERNAL "hide this!" FORCE)
+    unset(USE_CAPI_BINDING CACHE)
 endif ()
+
+if (USE_CAPI_BINDING STREQUAL "SOMEIP")
+    set(COMMONAPI_USED_BINDING 1 CACHE INTERNAL "hide this!" FORCE)
+elseif (USE_CAPI_BINDING STREQUAL "DBUS")
+    set(COMMONAPI_USED_BINDING 0 CACHE INTERNAL "hide this!" FORCE)
+else()
+    unset(COMMONAPI_USED_BINDING CACHE)
+endif()
 
 set(DBUS_SERVICE_PREFIX "org.genivi.audiomanager" 
     CACHE PROPERTY "The dbus service prefix for the AM - only changable for legacy dbus")
@@ -273,3 +285,4 @@ add_custom_target(test-install
 
 configure_file( ${CMAKE_SOURCE_DIR}/AudioManagerDaemon/docx/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/DoxyFile )
 configure_file( ${CMAKE_SOURCE_DIR}/cmake/config.cmake.in ${CMAKE_BINARY_DIR}/include/config.h )
+

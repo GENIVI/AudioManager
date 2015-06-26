@@ -11,7 +11,7 @@
 #     A list with include directories
 
 include(CMakeParseArguments)
-include(TargetArch)
+
 
 MACRO(LOAD_COMMONAPI)
     #parse the input parameters
@@ -20,14 +20,12 @@ MACRO(LOAD_COMMONAPI)
     set(multiValueArgs "")
     cmake_parse_arguments(PARAMS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
     
-    # check the binding parameter ...
     if(PARAMS_DBUS)
         SET(COMMONAPI_USED_BINDING 0 CACHE INTERNAL "hide this!" FORCE)
     elseif(PARAMS_SOMEIP)
         SET(COMMONAPI_USED_BINDING 1 CACHE INTERNAL "hide this!" FORCE)
-    else()
-        SET(COMMONAPI_USED_BINDING 0 CACHE INTERNAL "hide this!" FORCE)
     endif()
+    
     # load the proper libs ...
 	IF(NOT CommonAPI_FOUND)
 		FIND_PACKAGE(CommonAPI REQUIRED)
@@ -47,6 +45,7 @@ MACRO(LOAD_COMMONAPI)
 
     IF(${COMMONAPI_USED_BINDING} EQUAL 1)
     	IF(NOT CommonAPI-SomeIP_FOUND)
+    	    FIND_PACKAGE (vsomeip REQUIRED)
 	        FIND_PACKAGE(CommonAPI-SomeIP REQUIRED CONFIG NO_CMAKE_PACKAGE_REGISTRY)
 	        FIND_LIBRARY(CommonAPI-SomeIP_LIBRARY 
 	                     REQUIRED
@@ -82,15 +81,12 @@ MACRO(LOAD_COMMONAPI)
 ENDMACRO()
 
 # helper function giving a string with the current architecture
-function(GET_TARGET_ARCH OUT_ARCH)
-    target_architecture(TARGET_ARCH)
-    IF("${TARGET_ARCH}" STREQUAL "i386")
+function(GET_TARGET_ARCH OUT_ARCH)  
+    IF(CMAKE_SIZEOF_VOID_P EQUAL 8) 
+        SET(${OUT_ARCH} "x86_64" PARENT_SCOPE)
+    ELSE() 
         SET(${OUT_ARCH} "x86" PARENT_SCOPE)
-    ELSEIF("${TARGET_ARCH}" STREQUAL "x86_64")
-        SET(${OUT_ARCH} "x86_64" PARENT_SCOPE)
-    ELSE()       
-        SET(${OUT_ARCH} "x86_64" PARENT_SCOPE)
-    ENDIF()    
+    ENDIF()  
 endfunction()
 
 # helper function giving a string with the current host
@@ -138,13 +134,12 @@ macro(GET_GENERATED_FILES GEN_DESTINATION)
         LIST(REMOVE_DUPLICATES CAPI_SOURCES)
                            
         set(${PARAMS_TARGET}_GEN_HEADERS ${CAPI_HEADERS} PARENT_SCOPE)
-        set(${PARAMS_TARGET}_GEN_SOURCES ${CAPI_SOURCES} PARENT_SCOPE)
-                
+        set(${PARAMS_TARGET}_GEN_SOURCES ${CAPI_SOURCES} PARENT_SCOPE)        
         #add base path src-gen
         SET(${PARAMS_TARGET}_GEN_INCLUDE_DIR ${CAPI_INCLUDES} ${GEN_DESTINATION} PARENT_SCOPE)   
 endmacro(GET_GENERATED_FILES)
 
-macro(FIND_AND_EXEC_GENERATOR GENERATOR_EXECUTABLE SHOULD_GENERATE_STUB_DEFAULT)
+macro(FIND_AND_EXEC_GENERATOR GENERATOR_EXECUTABLE SHOULD_GENERATE_STUB_DEFAULT FIDLS)
     MESSAGE(STATUS "Searching for common-api generator executable ${GENERATOR_EXECUTABLE} ...")
     # find the generator binary ...
     execute_process(COMMAND find "/usr/local/share/CommonAPI-${CommonAPI_VERSION}" -name ${GENERATOR_EXECUTABLE}
@@ -164,7 +159,7 @@ macro(FIND_AND_EXEC_GENERATOR GENERATOR_EXECUTABLE SHOULD_GENERATE_STUB_DEFAULT)
         message(STATUS "Common-api generator can't be found. Will try the alternative folder!")
     ELSE()
         # the generator binary is found
-        MESSAGE(STATUS "Will execute common-api generator at path ${OUT_RESULT}")
+        MESSAGE(STATUS "Will execute common-api generator at path ${OUT_RESULT} with ${FIDLS}")
         function(mktmpdir OUTVAR)
             while(NOT TEMP_DESTINATION OR EXISTS ${TEMP_DESTINATION})
                 string(RANDOM LENGTH 16 TEMP_DESTINATION)
@@ -175,9 +170,9 @@ macro(FIND_AND_EXEC_GENERATOR GENERATOR_EXECUTABLE SHOULD_GENERATE_STUB_DEFAULT)
 
            set(${OUTVAR} ${TEMP_DESTINATION} PARENT_SCOPE)
         endfunction()
-        # execute the generate command ...      
+        # execute the generate command ...     
         IF(${SHOULD_GENERATE_STUB_DEFAULT} EQUAL 1)  
-	        execute_process(COMMAND ${OUT_RESULT} -sk Default -d ${PARAMS_DESTINATION} ${FIDLS}
+            execute_process(COMMAND ${OUT_RESULT} -sk Default -d ${PARAMS_DESTINATION} ${FIDLS}
 	                        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 	                        RESULT_VARIABLE EXIT_CODE
 	                        OUTPUT_VARIABLE GENERATOR_OUTPUT
@@ -185,13 +180,13 @@ macro(FIND_AND_EXEC_GENERATOR GENERATOR_EXECUTABLE SHOULD_GENERATE_STUB_DEFAULT)
 	                        OUTPUT_STRIP_TRAILING_WHITESPACE
 	                        ERROR_STRIP_TRAILING_WHITESPACE)
         ELSE()
-       		execute_process(COMMAND ${OUT_RESULT} -d ${PARAMS_DESTINATION} ${FIDLS}
-                        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-                        RESULT_VARIABLE EXIT_CODE
-                        OUTPUT_VARIABLE GENERATOR_OUTPUT
-                        ERROR_VARIABLE GENERATOR_ERR_OUTPUT
-                        OUTPUT_STRIP_TRAILING_WHITESPACE
-                        ERROR_STRIP_TRAILING_WHITESPACE)
+      		execute_process(COMMAND ${OUT_RESULT} -d ${PARAMS_DESTINATION} ${FIDLS}
+	                        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+	                        RESULT_VARIABLE EXIT_CODE
+	                        OUTPUT_VARIABLE GENERATOR_OUTPUT
+	                        ERROR_VARIABLE GENERATOR_ERR_OUTPUT
+	                        OUTPUT_STRIP_TRAILING_WHITESPACE
+	                        ERROR_STRIP_TRAILING_WHITESPACE)
         ENDIF()                
         if(EXIT_CODE)
             message(FATAL_ERROR "Failed to generate files from FIDL:${GENERATOR_OUTPUT}")
@@ -200,7 +195,7 @@ macro(FIND_AND_EXEC_GENERATOR GENERATOR_EXECUTABLE SHOULD_GENERATE_STUB_DEFAULT)
         endif()
         SET(TEMP_GEN_DST ${PARAMS_DESTINATION})   
     ENDIF()
-endmacro(FIND_AND_EXEC_GENERATOR GENERATOR_EXECUTABLE ADDITIONAL_ARGS)
+endmacro(FIND_AND_EXEC_GENERATOR GENERATOR_EXECUTABLE SHOULD_GENERATE_STUB_DEFAULT FIDLS)
 
 # generate common-api sources and retreive a list with them 
 MACRO(EXECUTE_GENERATOR)    
@@ -222,22 +217,37 @@ MACRO(EXECUTE_GENERATOR)
     	SET(GENERATE_STUB 0) 
     ENDIF()
     # searching for common-api-generator executable ...
-    FIND_AND_EXEC_GENERATOR(${COMMONAPI_GENERATOR_EXECUTABLE} ${GENERATE_STUB})
-    FIND_AND_EXEC_GENERATOR(${COMMONAPI_BINDING_GENERATOR_EXECUTABLE} FALSE)
+    FOREACH(FIDL ${IN_FIDLS_GENERIC})
+    	FIND_AND_EXEC_GENERATOR(${COMMONAPI_GENERATOR_EXECUTABLE} ${GENERATE_STUB} ${FIDL})
+    ENDFOREACH()
+    FOREACH(FIDL ${IN_FIDLS_BINDING})
+    	FIND_AND_EXEC_GENERATOR(${COMMONAPI_BINDING_GENERATOR_EXECUTABLE} FALSE ${FIDL})
+    ENDFOREACH()
     # get the lists with the sources and headers
     message(STATUS "Looking for generated common-api files...")
     GET_GENERATED_FILES(${TEMP_GEN_DST})
 ENDMACRO(EXECUTE_GENERATOR)
 
+# Function COMMON_API_GENERATE_SOUCRES 
+#
+# TARGET COMMON_API 
+# FIDLS_GENERIC a list with fidls for the generic generator.
+# FIDLS_BINDING a list with fidls for the binding generator.
+# DESTINATION a relative path to the build directory or an absolute path.                                
+# ALT_DESTINATION an alternative relative/absolute path with common-api sources, usually in the source tree.
 FUNCTION(COMMON_API_GENERATE_SOUCRES)
     #parse the input parameters
     set(options "")
     set(oneValueArgs TARGET DESTINATION ALT_DESTINATION HEADER_TEMPLATE)
-    set(multiValueArgs FIDLS FIDL_DEPENDS)
+    set(multiValueArgs FIDLS_GENERIC FIDLS_BINDING)
 
     cmake_parse_arguments(PARAMS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
     
-     if(NOT IS_ABSOLUTE ${PARAMS_DESTINATION})
+    if(NOT PARAMS_TARGET)
+           message(FATAL_ERROR "TARGET must be specified")
+    endif()
+    
+    if(NOT IS_ABSOLUTE ${PARAMS_DESTINATION})
          set(PARAMS_DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${PARAMS_DESTINATION})
     endif()
     
@@ -254,38 +264,35 @@ FUNCTION(COMMON_API_GENERATE_SOUCRES)
             GET_GENERATED_FILES(${PARAMS_ALT_DESTINATION})
         ENDIF()    
     ELSE()
-        
-        if(NOT PARAMS_FIDLS)
+        if(NOT PARAMS_FIDLS_GENERIC)
             message(FATAL_ERROR "FIDLS must be specified")
-        endif()
-    
-        if(NOT PARAMS_TARGET)
-            message(FATAL_ERROR "TARGET must be specified")
         endif()
     
         if(PARAMS_HEADER_TEMPLATE)
             list(APPEND ARGS -pref ${PARAMS_HEADER_TEMPLATE})
         endif()
         
-        foreach(FIDL ${PARAMS_FIDLS})
+        # Run configure_file on each .fidl which forces cmake to reexecute its configure phase if the input file changes.
+        foreach(FIDL ${PARAMS_FIDLS_GENERIC})
             get_filename_component(FIDL_PATH ${FIDL} ABSOLUTE)
-        
-            # Run configure_file on the .fidl - this forces cmake to reexecute its
-            # configure phase if the input file changes.
             string(MD5 ${FIDL_PATH} FIDL_CHECKSUM)
             configure_file(${FIDL_PATH} ${CMAKE_CURRENT_BINARY_DIR}/${FIDL_CHECKSUM}.fidl.done)
-        
-            list(APPEND FIDLS ${FIDL_PATH})
+            list(APPEND IN_FIDLS_GENERIC ${FIDL_PATH})
         endforeach()
+
+        if(PARAMS_FIDLS_BINDING)
+            foreach(FIDL ${PARAMS_FIDLS_BINDING})
+                get_filename_component(FIDL_PATH ${FIDL} ABSOLUTE)
+                string(MD5 ${FIDL_PATH} FIDL_CHECKSUM)
+                configure_file(${FIDL_PATH} ${CMAKE_CURRENT_BINARY_DIR}/${FIDL_CHECKSUM}.fidl.done)
+                list(APPEND IN_FIDLS_BINDING ${FIDL_PATH})
+            endforeach()
+        else()
+            SET(IN_FIDLS_BINDING ${IN_FIDLS_GENERIC})
+        endif()
         
-        message(STATUS "Will generate common-api files for ${PARAMS_FIDLS} ...")
-         
-        foreach(FIDL_DEPEND ${PARAMS_FIDL_DEPENDS})
-            string(MD5 ${FIDL_PATH} FIDL_CHECKSUM)
-            configure_file(${FIDL_PATH} ${CMAKE_CURRENT_BINARY_DIR}/${FIDL_CHECKSUM}.fidl.done)
-        endforeach()
         # run the generator ...
         EXECUTE_GENERATOR()
-     ENDIF()
+    ENDIF()
 ENDFUNCTION()
 

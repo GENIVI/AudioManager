@@ -1,6 +1,6 @@
-import "platform:/plugin/org.genivi.commonapi.dbus/deployment/CommonAPI-DBus_deployment.fdepl"
+import "platform:/plugin/org.genivi.commonapi.dbus/deployment/CommonAPI-DBus_deployment_spec.fdepl"
 import "NodeStateManager.fidl"
-
+ 
 define org.genivi.commonapi.dbus.deployment for interface org.genivi.NodeStateManager.Consumer {
-	 PropertiesType=freedesktop
+                DBusDefaultAttributeType=freedesktop
 }

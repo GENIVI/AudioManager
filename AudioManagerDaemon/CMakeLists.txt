@@ -51,7 +51,7 @@ endif(WITH_DBUS_WRAPPER)
 
 if(WITH_CAPI_WRAPPER)
     INCLUDE (CommonAPI)
-    LOAD_COMMONAPI(DBUS)
+    LOAD_COMMONAPI()
 endif(WITH_CAPI_WRAPPER)
 
 set (AM_LINK_LIBS 
@@ -99,23 +99,23 @@ if(WITH_DBUS_WRAPPER)
     set (AUDIOMAN_SRCS_CXX
         ${AUDIOMAN_SRCS_CXX}
         "${AUDIOMANAGER_UTILITIES_SRC}/CAmDbusWrapper.cpp")
-    set (AM_LINK_LIBS
-        ${AM_LINK_LIBS}
-        ${DBUS_LIBRARY})
+    set (AM_LINK_LIBS ${AM_LINK_LIBS} ${DBUS_LIBRARY})
 endif(WITH_DBUS_WRAPPER)
 
-set (AM_LINK_LIBS
-        ${AM_LINK_LIBS}
-        ${DBUS_LIBRARY})
-
 if(WITH_CAPI_WRAPPER)
-    set (AUDIOMAN_SRCS_CXX
-        ${AUDIOMAN_SRCS_CXX}
-        "${AUDIOMANAGER_UTILITIES_SRC}/CAmCommonAPIWrapper.cpp")
-    set (AM_LINK_LIBS
-        ${AM_LINK_LIBS} 
-        ${CommonAPI-DBus_LIBRARY}
-        ${CommonAPI_LIBRARY})
+    set (AUDIOMAN_SRCS_CXX ${AUDIOMAN_SRCS_CXX} "${AUDIOMANAGER_UTILITIES_SRC}/CAmCommonAPIWrapper.cpp")
+    set (AM_LINK_LIBS ${AM_LINK_LIBS} ${CommonAPI_LIBRARY})
+    if(${COMMONAPI_USED_BINDING} EQUAL 0)
+       set (AM_LINK_LIBS ${AM_LINK_LIBS} 
+                        ${CommonAPI-DBus_LIBRARY}
+                        ${DBUS_LIBRARY}
+                        ${CommonAPI_LIBRARY})
+   else()
+       set (AM_LINK_LIBS ${AM_LINK_LIBS} 
+                        ${CommonAPI-SomeIP_LIBRARY}
+                        ${CommonAPI_LIBRARY})
+   endif()
+   
 endif(WITH_CAPI_WRAPPER)
 
 if(WITH_NSM)
@@ -156,21 +156,37 @@ INCLUDE_DIRECTORIES(
 
 if(WITH_CAPI_WRAPPER)
     if(WITH_NSM)
-        COMMON_API_GENERATE_SOUCRES(TARGET COMMON_API 
-                            FIDLS fidls/NodeStateManager.fdepl                  # a list with fidls
-                            DESTINATION src-gen                                 # a relative path to the build directory or an absolute path
-                            ALT_DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/src-gen # an alternative relative/absolute path with common-api sources, usually in the source tree
+        COMMON_API_GENERATE_SOUCRES(
+                            TARGET COMMON_API
+                            # A list with fidls for the generic generator.
+                            FIDLS_GENERIC fidls/NodeStateManager.fdepl          
+                            # A list with fidls for the binding generator.
+                            FIDLS_BINDING fidls/NodeStateManager.fdepl          
+                            # A relative path to the build directory or an absolute path.
+                            DESTINATION src-gen                                 
+                            # An alternative relative/absolute path with common-api sources, usually in the source tree.
+                            ALT_DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/src-gen 
                             )                                               
                             
         set(AUDIOMAN_SRCS_CXX 
             ${AUDIOMAN_SRCS_CXX} 
             ${COMMON_API_GEN_SOURCES})
     endif(WITH_NSM)
-
-    INCLUDE_DIRECTORIES(${INCLUDE_DIRECTORIES}
-            ${COMMONAPI_DBUS_INCLUDE_DIRS}
-            ${COMMONAPI_INCLUDE_DIRS}
-            ${COMMON_API_GEN_INCLUDE_DIR})	 
+    
+    if(${COMMONAPI_USED_BINDING} EQUAL 0)
+        INCLUDE_DIRECTORIES(${INCLUDE_DIRECTORIES}
+                ${COMMONAPI_DBUS_INCLUDE_DIRS}
+                ${COMMONAPI_INCLUDE_DIRS}
+                ${COMMON_API_GEN_INCLUDE_DIR}
+                ${DBUS_ARCH_INCLUDE_DIR}
+                ${DBUS_INCLUDE_DIR})	
+   else()
+       INCLUDE_DIRECTORIES(${INCLUDE_DIRECTORIES}
+               ${VSOMEIP_INCLUDE_DIRS}
+               ${COMMONAPI_INCLUDE_DIRS}
+               ${COMMONAPI_SOMEIP_INCLUDE_DIRS}
+               ${COMMON_API_GEN_INCLUDE_DIR})
+   endif()
 endif(WITH_CAPI_WRAPPER)
 
 if(WITH_DLT)
@@ -181,11 +197,11 @@ if(WITH_DLT)
         ${DLT_LIBRARIES})
 endif(WITH_DLT)
 
-#if(WITH_DBUS_WRAPPER)
+if(WITH_DBUS_WRAPPER)
     INCLUDE_DIRECTORIES(${INCLUDE_DIRECTORIES}
-    ${DBUS_ARCH_INCLUDE_DIR}
-    ${DBUS_INCLUDE_DIR})
-#endif(WITH_DBUS_WRAPPER)
+                            ${DBUS_ARCH_INCLUDE_DIR}
+                            ${DBUS_INCLUDE_DIR})
+endif(WITH_DBUS_WRAPPER)
 
 ADD_EXECUTABLE(AudioManager ${AUDIOMAN_SRCS_CXX})
 

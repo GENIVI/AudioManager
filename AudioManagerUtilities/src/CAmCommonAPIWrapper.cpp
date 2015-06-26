@@ -32,7 +32,12 @@
 
 #ifndef COMMONAPI_INTERNAL_COMPILATION
 #define COMMONAPI_INTERNAL_COMPILATION
+#if COMMONAPI_USED_BINDING > 0
+#include <CommonAPI/SomeIP/Factory.hpp>
+#else
 #include <CommonAPI/DBus/DBusFactory.hpp>
+#endif
+
 #undef COMMONAPI_INTERNAL_COMPILATION
 #endif
 
@@ -69,9 +74,15 @@ CAmCommonAPIWrapper::CAmCommonAPIWrapper(CAmSocketHandler* socketHandler):
 	mFactory = runtime->createFactory(mContext);
 	assert(mFactory);
 #else
-	mFactory = CommonAPI::DBus::Factory::get();
-	assert(mFactory);
-	mRuntime->registerFactory("dbus", mFactory);
+	#if COMMONAPI_USED_BINDING > 0
+		mFactory = CommonAPI::SomeIP::Factory::get();
+		assert(mFactory);
+		mRuntime->registerFactory("someip", mFactory);
+	#else
+		mFactory = CommonAPI::DBus::Factory::get();
+		assert(mFactory);
+		mRuntime->registerFactory("dbus", mFactory);
+	#endif
 #endif
 
 //Make subscriptions
