@@ -2148,6 +2148,33 @@ TEST_F(CAmMapHandlerTest,registerDomainCorrect)
     ASSERT_EQ(true, equal);
 }
 
+TEST_F(CAmMapHandlerTest,registerDomainPredefined)
+{
+    //initialize domain
+    std::vector<am_Domain_s> returnList;
+    am_Domain_s domain;
+    am_domainID_t domainID = 10;
+    pCF.createDomain(domain);
+
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterDomainDB(domain,domainID))
+        << "ERROR: database error";
+    ASSERT_NE(10,domainID)
+        << "ERROR: domainID not predefined one";
+
+    //now check if we read out the correct values
+    ASSERT_EQ(E_OK, pDatabaseHandler.getListDomains(returnList));
+    bool equal = true;
+    std::vector<am_Domain_s>::iterator listIterator = returnList.begin();
+    for (; listIterator < returnList.end(); ++listIterator)
+    {
+        if (listIterator->domainID == domainID)
+        {
+            equal = equal && (listIterator->name.compare(domain.name) == 0) && (listIterator->busname.compare(domain.busname) == 0) && (listIterator->complete == domain.complete) && (listIterator->early == domain.early) && (listIterator->state == domain.state);
+        }
+    }
+    ASSERT_EQ(true, equal);
+}
+
 TEST_F(CAmMapHandlerTest,registerConnectionCorrect)
 {
     am_Connection_s connection;

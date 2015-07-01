@@ -38,6 +38,7 @@ extern bool equalNotificationConfiguration(const am_NotificationConfiguration_s 
 extern bool equalClassProperties(const am_ClassProperty_s a, const am_ClassProperty_s b);
 extern std::string int2string(int i);
 
+
 CAmDatabaseHandlerTest::CAmDatabaseHandlerTest() :
         plistRoutingPluginDirs(), //
         plistCommandPluginDirs(), //
