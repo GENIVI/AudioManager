@@ -153,10 +153,6 @@ class CAmRouter
 	std::vector<CAmNode<am_RoutingNodeData_s>*> mNodeListSinks;		//!< vector with pointers to nodes with sinks, used for quick access
 	std::vector<CAmNode<am_RoutingNodeData_s>*> mNodeListGateways;	//!< vector with pointers to nodes with gateways, used for quick access
 	std::vector<CAmNode<am_RoutingNodeData_s>*> mNodeListConverters;//!< vector with pointers to nodes with converters, used for quick access
-	std::map<am_sourceID_t, bool> mNodeListSourceStatus;			//!< vector with flags preventing going through group of nodes during the path search
-	std::map<am_sinkID_t, bool> mNodeListSinkStatus;				//!< vector with flags preventing going through group of nodes during the path search
-	std::map<am_converterID_t, bool> mNodeListConverterStatus;		//!< vector with flags preventing going through group of nodes during the path search
-	std::map<am_gatewayID_t, bool> mNodeListGatewayStatus;			//!< vector with flags preventing going through group of nodes during the path search
 #ifdef EXTENDED_ROUTING_GRAPH
 	am_Source_s *mpRootSource;										//!< pointer to source
 	am_Sink_s *mpRootSink;											//!< pointer to sink

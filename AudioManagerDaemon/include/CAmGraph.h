@@ -300,7 +300,6 @@ namespace am
 				visited.erase(last);
 				vertex.getNode()->setStatus(GES_NOT_VISITED);
 			}
-			reset();
 		}
 
 	public:
@@ -615,7 +614,9 @@ namespace am
 		{
 			CAmNodeReferenceList visited;
 			visited.push_back((CAmNode<T>*)&src);
+			((CAmNode<T>*)&src)->setStatus(GES_VISITED);
 			goThroughAllPaths(dst, visited, cb);
+			reset();
 		}
 	};
 

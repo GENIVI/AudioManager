@@ -2470,6 +2470,7 @@ TEST_F(CAmRouterMapTest,route3Domains1Source1Sink)
 	ASSERT_TRUE(pCF.compareRoute(compareRoute1,listRoutes[0]));
 }
 
+
 TEST_F(CAmRouterMapTest,route3Domains1Source3Gateways3Convertres1Sink)
 {
 	EXPECT_CALL(pMockControlInterface,getConnectionFormatChoice(_,_,_,_,_)).WillRepeatedly(DoAll(returnConnectionFormat(), Return(E_OK)));
@@ -2918,6 +2919,173 @@ TEST_F(CAmRouterMapTest, routeSource1Sink1PathThroughConv1Gate1Conv2Gate2)
 
 	ASSERT_TRUE(pCF.compareRoute(compareRoute1,listRoutes[1])||pCF.compareRoute(compareRoute1,listRoutes[0]));
 	ASSERT_TRUE(pCF.compareRoute(compareRoute2,listRoutes[0])||pCF.compareRoute(compareRoute2,listRoutes[1]));
+}
+
+
+TEST_F(CAmRouterMapTest,route3Domains1Source1SinkGwCycles)
+{
+	EXPECT_CALL(pMockControlInterface,getConnectionFormatChoice(_,_,_,_,_)).WillRepeatedly(DoAll(returnConnectionFormat(), Return(E_OK)));
+
+	am_domainID_t domain1ID, domain2ID, domain3ID;
+	enterDomainDB("domain1", domain1ID);
+	enterDomainDB("domain2", domain2ID);
+	enterDomainDB("domain3", domain3ID);
+
+	//just make so many cycles as possible
+	std::vector<am_CustomConnectionFormat_t> cfStereo;
+	cfStereo.push_back(CF_GENIVI_STEREO);
+	std::vector<am_CustomConnectionFormat_t> cfAnalog = cfStereo;
+	std::vector<am_CustomConnectionFormat_t> cfMono = cfStereo;
+	std::vector<am_CustomConnectionFormat_t> cfAuto;
+	cfAuto.push_back(CF_GENIVI_AUTO);
+
+	am_sourceID_t source1ID;
+	enterSourceDB("source1", domain1ID, cfStereo, source1ID);
+
+	am_sinkID_t gw1SinkID;
+	enterSinkDB("gw1Sink", domain1ID, cfStereo, gw1SinkID);
+
+	am_sourceID_t gw1SourceID;
+	enterSourceDB("gw1Source", domain2ID, cfMono, gw1SourceID);
+
+	am_sinkID_t gw2SinkID;
+	enterSinkDB("gw2Sink", domain1ID, cfStereo, gw2SinkID);
+
+	am_sourceID_t gw2SourceID;
+	enterSourceDB("gw2Source", domain2ID, cfMono, gw2SourceID);
+
+	std::vector<bool> matrixT;
+	matrixT.push_back(true);
+	std::vector<bool> matrixF;
+	matrixF.push_back(false);
+
+    am_gatewayID_t gateway1ID;
+    enterGatewayDB("gateway1", domain2ID, domain1ID, cfMono, cfStereo, matrixT, gw1SourceID, gw1SinkID, gateway1ID);
+
+    am_gatewayID_t gateway2ID;
+    enterGatewayDB("gateway2", domain2ID, domain1ID, cfMono, cfStereo, matrixT, gw2SourceID, gw2SinkID, gateway2ID);
+
+
+	am_sinkID_t gw3SinkID;
+	enterSinkDB("gw3Sink", domain2ID, cfMono, gw3SinkID);
+
+	am_sourceID_t gw3SourceID;
+	enterSourceDB("gw3Source", domain1ID, cfAnalog, gw3SourceID);
+
+    am_gatewayID_t gateway3ID;
+    enterGatewayDB("gateway3", domain1ID, domain2ID, cfAnalog, cfMono, matrixT, gw3SourceID, gw3SinkID, gateway3ID);
+
+	am_sinkID_t gw4SinkID;
+	enterSinkDB("gw4Sink", domain1ID, cfMono, gw4SinkID);
+
+	am_sourceID_t gw4SourceID;
+	enterSourceDB("gw4Source", domain1ID, cfAnalog, gw4SourceID);
+
+    am_gatewayID_t gateway4ID;
+    enterGatewayDB("gateway4", domain1ID, domain2ID, cfAnalog, cfMono, matrixT, gw4SourceID, gw4SinkID, gateway4ID);
+
+
+    am_sourceID_t gw5SourceID;
+    enterSourceDB("gw5Source", domain3ID, cfStereo, gw5SourceID);
+
+    am_sinkID_t gw5SinkID;
+    enterSinkDB("gw5Sink", domain1ID, cfAnalog, gw5SinkID);
+
+	am_sinkID_t sink1ID;
+	enterSinkDB("sink1", domain3ID, cfStereo, sink1ID);
+
+    am_gatewayID_t gateway5ID;
+    enterGatewayDB("gateway5", domain3ID, domain1ID, cfStereo, cfAnalog, matrixT, gw5SourceID, gw5SinkID, gateway5ID);
+
+    am::am_Source_s source;
+    am::am_Sink_s sink;
+
+    pDatabaseHandler.getSinkInfoDB(sink1ID, sink);
+    pDatabaseHandler.getSourceInfoDB(source1ID, source);
+
+    std::vector<am_Route_s> listRoutes;
+
+	ASSERT_EQ(E_OK, pRouter.getRoute(false, source, sink, listRoutes));
+	ASSERT_EQ(static_cast<uint>(9), listRoutes.size());
+
+#define DO_ASSERT()	 \
+	{\
+		bool didMatch = false; \
+		for(auto it = listRoutes.begin(); it!=listRoutes.end(); it++) \
+			didMatch|=pCF.compareRoute(compareRoute1,*it); \
+		ASSERT_TRUE(didMatch); \
+	}
+
+	am_Route_s compareRoute1;
+	compareRoute1.sinkID = sink1ID;
+	compareRoute1.sourceID = source1ID;
+	compareRoute1.route.push_back({source1ID, gw5SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw5SourceID, sink1ID, domain3ID, CF_GENIVI_STEREO});
+	DO_ASSERT()
+
+	compareRoute1.route.clear();
+	compareRoute1.route.push_back({source1ID, gw2SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw2SourceID, gw4SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw4SourceID, gw5SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw5SourceID, sink1ID, domain3ID, CF_GENIVI_STEREO});
+	DO_ASSERT()
+
+	compareRoute1.route.clear();
+	compareRoute1.route.push_back({source1ID, gw2SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw2SourceID, gw4SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw4SourceID, gw1SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw1SourceID, gw3SinkID, domain2ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw3SourceID, gw5SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw5SourceID, sink1ID, domain3ID, CF_GENIVI_STEREO});
+	DO_ASSERT()
+
+	compareRoute1.route.clear();
+	compareRoute1.route.push_back({source1ID, gw2SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw2SourceID, gw3SinkID, domain2ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw3SourceID, gw5SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw5SourceID, sink1ID, domain3ID, CF_GENIVI_STEREO});
+	DO_ASSERT()
+
+	compareRoute1.route.clear();
+	compareRoute1.route.push_back({source1ID, gw2SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw2SourceID, gw3SinkID, domain2ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw3SourceID, gw1SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw1SourceID, gw4SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw4SourceID, gw5SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw5SourceID, sink1ID, domain3ID, CF_GENIVI_STEREO});
+	DO_ASSERT()
+
+	compareRoute1.route.clear();
+	compareRoute1.route.push_back({source1ID, gw1SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw1SourceID, gw3SinkID, domain2ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw3SourceID, gw5SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw5SourceID, sink1ID, domain3ID, CF_GENIVI_STEREO});
+	DO_ASSERT()
+
+	compareRoute1.route.clear();
+	compareRoute1.route.push_back({source1ID, gw1SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw1SourceID, gw3SinkID, domain2ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw3SourceID, gw2SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw2SourceID, gw4SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw4SourceID, gw5SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw5SourceID, sink1ID, domain3ID, CF_GENIVI_STEREO});
+	DO_ASSERT()
+
+	compareRoute1.route.clear();
+	compareRoute1.route.push_back({source1ID, gw1SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw1SourceID, gw4SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw4SourceID, gw5SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw5SourceID, sink1ID, domain3ID, CF_GENIVI_STEREO});
+	DO_ASSERT()
+
+	compareRoute1.route.clear();
+	compareRoute1.route.push_back({source1ID, gw1SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw1SourceID, gw4SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw4SourceID, gw2SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw2SourceID, gw3SinkID, domain2ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw3SourceID, gw5SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw5SourceID, sink1ID, domain3ID, CF_GENIVI_STEREO});
+	DO_ASSERT()
 }
 
 int main(int argc, char **argv)
