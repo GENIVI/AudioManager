@@ -75,7 +75,7 @@ TEST_F(CAmRoutingInterfaceTest,abort)
     domain.name = "mock";
     domain.busname = "mock";
     sink.sinkID = 2;
-    sink.domainID = 1;
+    sink.domainID = DYNAMIC_ID_BOUNDARY;
 
     //prepare the stage
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
@@ -123,7 +123,7 @@ TEST_F(CAmRoutingInterfaceTest,alreadyConnected)
     domain.name = "mock";
     domain.busname = "mock";
     sink.sinkID = 2;
-    sink.domainID = 1;
+    sink.domainID = DYNAMIC_ID_BOUNDARY;
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
     EXPECT_CALL(pMockInterface,asyncConnect(_,_,1,sinkID,CF_GENIVI_ANALOG)).WillOnce(Return(E_OK));
@@ -152,7 +152,7 @@ TEST_F(CAmRoutingInterfaceTest,setSinkSoundPropertyNoChange)
     domain.name = "mock";
     domain.busname = "mock";
     sink.sinkID = 2;
-    sink.domainID = 1;
+    sink.domainID = DYNAMIC_ID_BOUNDARY;
     sink.listSoundProperties.push_back(soundProperty);
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
@@ -173,7 +173,7 @@ TEST_F(CAmRoutingInterfaceTest,setSourceState)
     pCF.createDomain(domain);
     domain.name = "mock";
     domain.busname = "mock";
-    source.domainID = 1;
+    source.domainID = DYNAMIC_ID_BOUNDARY;
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     EXPECT_CALL(pMockInterface,asyncSetSourceState(_,sourceID,state)).WillOnce(Return(E_OK));
@@ -196,7 +196,7 @@ TEST_F(CAmRoutingInterfaceTest,setSourceSoundProperty)
     domain.name = "mock";
     domain.busname = "mock";
     source.sourceID = 2;
-    source.domainID = 1;
+    source.domainID = DYNAMIC_ID_BOUNDARY;
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     EXPECT_CALL(pMockInterface,asyncSetSourceSoundProperty(_,sourceID,_)).WillOnce(Return(E_OK));
@@ -224,7 +224,7 @@ TEST_F(CAmRoutingInterfaceTest,setSinkSoundProperty)
     domain.name = "mock";
     domain.busname = "mock";
     sink.sinkID = 2;
-    sink.domainID = 1;
+    sink.domainID = DYNAMIC_ID_BOUNDARY;
     sink.listSoundProperties.push_back(soundProperty);
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
@@ -254,7 +254,7 @@ TEST_F(CAmRoutingInterfaceTest,setSourceVolumeNoChange)
     domain.name = "mock";
     domain.busname = "mock";
     source.sourceID = 2;
-    source.domainID = 1;
+    source.domainID = DYNAMIC_ID_BOUNDARY;
     source.volume = volume;
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
@@ -280,7 +280,7 @@ TEST_F(CAmRoutingInterfaceTest,setSourceVolume)
     domain.name = "mock";
     domain.busname = "mock";
     source.sourceID = 2;
-    source.domainID = 1;
+    source.domainID = DYNAMIC_ID_BOUNDARY;
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     EXPECT_CALL(pMockInterface,asyncSetSourceVolume(_,2,volume,rampType,rampTime)).WillOnce(Return(E_OK));
@@ -308,7 +308,7 @@ TEST_F(CAmRoutingInterfaceTest,setSinkVolumeNoChange)
     domain.name = "mock";
     domain.busname = "mock";
     sink.sinkID = 2;
-    sink.domainID = 1;
+    sink.domainID = DYNAMIC_ID_BOUNDARY;
     sink.volume = volume;
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
@@ -334,7 +334,7 @@ TEST_F(CAmRoutingInterfaceTest,setSinkVolume)
     domain.name = "mock";
     domain.busname = "mock";
     sink.sinkID = 2;
-    sink.domainID = 1;
+    sink.domainID = DYNAMIC_ID_BOUNDARY;
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
     EXPECT_CALL(pMockInterface,asyncSetSinkVolume(_,2,volume,rampType,rampTime)).WillOnce(Return(E_OK));
@@ -360,7 +360,7 @@ TEST_F(CAmRoutingInterfaceTest,connect)
     domain.name = "mock";
     domain.busname = "mock";
     sink.sinkID = 2;
-    sink.domainID = 1;
+    sink.domainID = DYNAMIC_ID_BOUNDARY;
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
     EXPECT_CALL(pMockInterface,asyncConnect(_,_,1,sinkID,CF_GENIVI_ANALOG)).WillOnce(Return(E_OK));
@@ -386,7 +386,7 @@ TEST_F(CAmRoutingInterfaceTest,disconnect)
     domain.name = "mock";
     domain.busname = "mock";
     sink.sinkID = 2;
-    sink.domainID = 1;
+    sink.domainID = DYNAMIC_ID_BOUNDARY;
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
     EXPECT_CALL(pMockInterface,asyncConnect(_,_,1,sinkID,CF_GENIVI_ANALOG)).WillOnce(Return(E_OK));
@@ -425,7 +425,7 @@ TEST_F(CAmRoutingInterfaceTest,setSourceStateNoChange)
     pCF.createDomain(domain);
     domain.name = "mock";
     domain.busname = "mock";
-    source.domainID = 1;
+    source.domainID = DYNAMIC_ID_BOUNDARY;
     source.sourceState = state;
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));

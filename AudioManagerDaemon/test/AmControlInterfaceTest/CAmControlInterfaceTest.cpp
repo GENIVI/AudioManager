@@ -172,7 +172,7 @@ TEST_F(CAmControlInterfaceTest,ackConnect)
     domain.name = "mock";
     domain.busname = "mock";
     sink.sinkID = 2;
-    sink.domainID = 1;
+    sink.domainID = DYNAMIC_ID_BOUNDARY;
 
     //prepare the stage
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
@@ -228,7 +228,7 @@ TEST_F(CAmControlInterfaceTest,ackDisconnect)
     domain.name = "mock";
     domain.busname = "mock";
     sink.sinkID = 2;
-    sink.domainID = 1;
+    sink.domainID = DYNAMIC_ID_BOUNDARY;
 
     //prepare the stage
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
@@ -282,7 +282,7 @@ TEST_F(CAmControlInterfaceTest,ackDisconnectFailAndRetry)
     domain.name = "mock";
     domain.busname = "mock";
     sink.sinkID = 2;
-    sink.domainID = 1;
+    sink.domainID = DYNAMIC_ID_BOUNDARY;
 
     //prepare the stage
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
@@ -339,7 +339,7 @@ TEST_F(CAmControlInterfaceTest,setSourceState)
     domain.name = "mock";
     domain.busname = "mock";
     source.sourceID = 2;
-    source.domainID = 1;
+    source.domainID = DYNAMIC_ID_BOUNDARY;
 
     //prepare the stage
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
@@ -389,7 +389,7 @@ TEST_F(CAmControlInterfaceTest,SetSinkVolumeChange)
     domain.name = "mock";
     domain.busname = "mock";
     sink.sinkID = 2;
-    sink.domainID = 1;
+    sink.domainID = DYNAMIC_ID_BOUNDARY;
     sink.volume = 10;
 
     //setup environment, we need a domain and a sink
@@ -440,7 +440,7 @@ TEST_F(CAmControlInterfaceTest,ackSetSourceVolumeChange)
     domain.name = "mock";
     domain.busname = "mock";
     source.sourceID = 2;
-    source.domainID = 1;
+    source.domainID = DYNAMIC_ID_BOUNDARY;
     source.volume = 12;
 
     //prepare the scene
@@ -492,7 +492,7 @@ TEST_F(CAmControlInterfaceTest,ackSetSinkSoundProperty)
     domain.name = "mock";
     domain.busname = "mock";
     sink.sinkID = 2;
-    sink.domainID = 1;
+    sink.domainID = DYNAMIC_ID_BOUNDARY;
     soundProperty.type = SP_GENIVI_BASS;
     soundProperty.value = 244;
 
@@ -545,7 +545,7 @@ TEST_F(CAmControlInterfaceTest,ackSetSourceSoundProperty)
     domain.name = "mock";
     domain.busname = "mock";
     source.sourceID = 2;
-    source.domainID = 1;
+    source.domainID = DYNAMIC_ID_BOUNDARY;
     soundProperty.type = SP_GENIVI_BASS;
     soundProperty.value = 244;
 
