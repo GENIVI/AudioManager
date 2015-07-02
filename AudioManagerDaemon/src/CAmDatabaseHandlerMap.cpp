@@ -470,15 +470,6 @@ am_Error_e CAmDatabaseHandlerMap::enterDomainDB(const am_Domain_s & domainData, 
             mpDatabaseObserver->newDomain(mMappedData.mDomainMap[nextID]);
     	return (E_OK);
     }
-    else if (domainData.domainID!=0 && !existDomain(domainData.domainID))
-    {
-    	domainID = domainData.domainID;
-    	mMappedData.mDomainMap[domainData.domainID] = domainData;
-    	logInfo("DatabaseHandler::enterDomainDB entered predefined domain with name=", domainData.name, "busname=", domainData.busname, "nodename=", domainData.nodename, "predefined ID:", domainID);
-        if (mpDatabaseObserver)
-            mpDatabaseObserver->newDomain(mMappedData.mDomainMap[domainData.domainID]);
-    	return (E_OK);
-    }
     else
     {
 		if(mMappedData.increaseID(nextID, mMappedData.mCurrentDomainID,  domainData.domainID))

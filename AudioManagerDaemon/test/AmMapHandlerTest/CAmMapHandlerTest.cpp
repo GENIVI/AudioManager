@@ -1259,7 +1259,7 @@ TEST_F(CAmMapHandlerTest, peekDomain)
     ASSERT_EQ(E_OK, pDatabaseHandler.peekDomain(std::string("newdomain"),domainID));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListDomains(listDomains));
     ASSERT_TRUE(listDomains.empty());
-    ASSERT_EQ(domainID, 1);
+    ASSERT_EQ(domainID, DYNAMIC_ID_BOUNDARY);
     domain.name = "newdomain";
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domain2ID));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListDomains(listDomains));
@@ -1520,7 +1520,7 @@ TEST_F(CAmMapHandlerTest,getListSourcesOfDomain)
     pCF.createSource(source);
     source.sourceID = 1;
     source.name = "testSource";
-    source.domainID = 1;
+    source.domainID = DYNAMIC_ID_BOUNDARY;
     pCF.createSource(source2);
     source2.sourceID = 0;
     source2.name = "testSource2";
@@ -1536,7 +1536,7 @@ TEST_F(CAmMapHandlerTest,getListSourcesOfDomain)
         << "ERROR: database error";
     ASSERT_EQ(E_NON_EXISTENT,pDatabaseHandler.getListSourcesOfDomain(2,sourceList))
         << "ERROR: database error";ASSERT_TRUE(sourceList.empty());
-    ASSERT_EQ(E_OK,pDatabaseHandler.getListSourcesOfDomain(1,sourceList))
+    ASSERT_EQ(E_OK,pDatabaseHandler.getListSourcesOfDomain(DYNAMIC_ID_BOUNDARY,sourceList))
         << "ERROR: database error";
     ASSERT_TRUE(std::equal(sourceList.begin(),sourceList.end(),sourceCheckList.begin()) && !sourceList.empty());
 }
@@ -1550,7 +1550,7 @@ TEST_F(CAmMapHandlerTest,getListSinksOfDomain)
     std::vector<am_sinkID_t> sinkList, sinkCheckList;
     pCF.createSink(sink);
     sink.sinkID = 1;
-    sink.domainID = 1;
+    sink.domainID = DYNAMIC_ID_BOUNDARY;
     pCF.createSink(sink2);
     sink2.domainID = 5;
     sink2.name = "sink2";
@@ -1563,9 +1563,9 @@ TEST_F(CAmMapHandlerTest,getListSinksOfDomain)
         << "ERROR: database error";
     ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(sink2,sinkID))
         << "ERROR: database error";
-    ASSERT_EQ(E_NON_EXISTENT,pDatabaseHandler.getListSinksOfDomain(2,sinkList))
+    ASSERT_EQ(E_NON_EXISTENT,pDatabaseHandler.getListSinksOfDomain(DYNAMIC_ID_BOUNDARY+1,sinkList))
         << "ERROR: database error";ASSERT_TRUE(sinkList.empty());
-    ASSERT_EQ(E_OK,pDatabaseHandler.getListSinksOfDomain(1,sinkList))
+    ASSERT_EQ(E_OK,pDatabaseHandler.getListSinksOfDomain(DYNAMIC_ID_BOUNDARY,sinkList))
         << "ERROR: database error";
     ASSERT_TRUE(std::equal(sinkList.begin(),sinkList.end(),sinkCheckList.begin()) && !sinkList.empty());
 }
@@ -2571,12 +2571,12 @@ TEST_F(CAmMapHandlerTest, peekDomain_2)
     ASSERT_EQ(E_OK,pDatabaseHandler.peekDomain(std::string("newdomain"),domainID));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListDomains(listDomains));
     ASSERT_TRUE(listDomains.empty());
-    ASSERT_EQ(domainID, 1);
+    ASSERT_EQ(domainID, DYNAMIC_ID_BOUNDARY);
 
     domain.name = "anotherdomain";
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domain2ID));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListDomains(listDomains));
-    ASSERT_EQ(domain2ID, 2);
+    ASSERT_EQ(domain2ID, DYNAMIC_ID_BOUNDARY+1);
 
     domain.name = "newdomain";
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domain2ID));
@@ -2780,17 +2780,17 @@ TEST_F(CAmMapHandlerObserverCallbacksTest, peek_enter_removeDomain)
     ASSERT_EQ(E_OK,pDatabaseHandler.peekDomain(std::string("newdomain"), domainID));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListDomains(listDomains));
     ASSERT_TRUE(listDomains.empty());
-    ASSERT_EQ(domainID, 1);
+    ASSERT_EQ(domainID, DYNAMIC_ID_BOUNDARY);
 
     domain.name = "anotherdomain";
-    const am_Domain_s expDomain1 = {2, domain.name, domain.busname, domain.nodename, domain.early, domain.complete, domain.state};
+    const am_Domain_s expDomain1 = {DYNAMIC_ID_BOUNDARY+1, domain.name, domain.busname, domain.nodename, domain.early, domain.complete, domain.state};
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newDomain(IsDomainDataEqualTo(expDomain1))).Times(1);
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domain2ID));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListDomains(listDomains));
-    ASSERT_EQ(domain2ID, 2);
+    ASSERT_EQ(domain2ID, DYNAMIC_ID_BOUNDARY+1);
     EXPECT_TRUE(Mock::VerifyAndClearExpectations(MockDatabaseObserver::getMockObserverObject()));
     domain.name = "newdomain";
-    const am_Domain_s expDomain2 = {1, domain.name, domain.busname, domain.nodename, domain.early, domain.complete, domain.state};
+    const am_Domain_s expDomain2 = {DYNAMIC_ID_BOUNDARY, domain.name, domain.busname, domain.nodename, domain.early, domain.complete, domain.state};
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newDomain(IsDomainDataEqualTo(expDomain2))).Times(1);
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domain2ID));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListDomains(listDomains));
