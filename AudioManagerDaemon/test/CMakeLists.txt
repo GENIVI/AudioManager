@@ -20,6 +20,11 @@ cmake_minimum_required(VERSION 2.8.8)
 
 set(EXECUTABLE_OUTPUT_PATH ${TEST_EXECUTABLE_OUTPUT_PATH})
 
+
+if(USE_BUILD_LIBS) 
+     execute_process(COMMAND mkdir -p "${EXECUTABLE_OUTPUT_PATH}")
+endif(USE_BUILD_LIBS)
+
 add_subdirectory (AmControlInterfaceTest)
 add_subdirectory (AmDatabaseHandlerTest)
 add_subdirectory (AmMapHandlerTest)

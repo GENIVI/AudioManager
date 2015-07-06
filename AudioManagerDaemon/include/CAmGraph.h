@@ -323,6 +323,11 @@ namespace am
 			return mStoreNodes;
 		}
 
+		const CAmVertexReferenceList & getVertexList() const
+		{
+			return mPointersAdjList;
+		}
+
 		/**
 		 * Returns pointer to a node which data is equal to the given.
 		 * @return pointer to a node or NULL.

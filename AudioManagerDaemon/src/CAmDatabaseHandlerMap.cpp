@@ -794,7 +794,7 @@ am_Error_e CAmDatabaseHandlerMap::enterConverterDB(const am_Converter_s & conver
     if (converterData.converterID != 0 || mFirstStaticConverter)
     {
         //check if the ID already exists
-        if (existGateway(converterData.converterID))
+        if (existConverter(converterData.converterID))
         {
         	converterID = converterData.converterID;
             return (E_ALREADY_EXISTS);

@@ -20,34 +20,38 @@
  *
  */
 
+#include <ctime>
+#include <chrono>
 #include "CAmRouterMapTest.h"
 #include <string.h>
 #include "CAmDltWrapper.h"
+
+
 
 
 using namespace am;
 using namespace testing;
 
 CAmRouterMapTest::CAmRouterMapTest() :
-        plistRoutingPluginDirs(), //
-        plistCommandPluginDirs(), //
-        pSocketHandler(), //
-        pControlSender(), //
-		pDatabaseHandler(),
-        pRouter(&pDatabaseHandler, &pControlSender), //
-        pRoutingSender(plistRoutingPluginDirs), //
-        pCommandSender(plistCommandPluginDirs), //
-        pMockInterface(), //
-        pMockControlInterface(), //
-        pRoutingInterfaceBackdoor(), //
-        pCommandInterfaceBackdoor(), //
-        pControlInterfaceBackdoor(), //
-        pControlReceiver(&pDatabaseHandler, &pRoutingSender, &pCommandSender,&pSocketHandler, &pRouter), //
-        pObserver(&pCommandSender, &pRoutingSender, &pSocketHandler)
+        		plistRoutingPluginDirs(), //
+				plistCommandPluginDirs(), //
+				pSocketHandler(), //
+				pControlSender(), //
+				pDatabaseHandler(),
+				pRouter(&pDatabaseHandler, &pControlSender), //
+				pRoutingSender(plistRoutingPluginDirs), //
+				pCommandSender(plistCommandPluginDirs), //
+				pMockInterface(), //
+				pMockControlInterface(), //
+				pRoutingInterfaceBackdoor(), //
+				pCommandInterfaceBackdoor(), //
+				pControlInterfaceBackdoor(), //
+				pControlReceiver(&pDatabaseHandler, &pRoutingSender, &pCommandSender,&pSocketHandler, &pRouter), //
+				pObserver(&pCommandSender, &pRoutingSender, &pSocketHandler)
 {
-    pDatabaseHandler.registerObserver(&pObserver);
-    pCommandInterfaceBackdoor.injectInterface(&pCommandSender, &pMockInterface);
-    pControlInterfaceBackdoor.replaceController(&pControlSender, &pMockControlInterface);
+	pDatabaseHandler.registerObserver(&pObserver);
+	pCommandInterfaceBackdoor.injectInterface(&pCommandSender, &pMockInterface);
+	pControlInterfaceBackdoor.replaceController(&pControlSender, &pMockControlInterface);
 }
 
 CAmRouterMapTest::~CAmRouterMapTest()
@@ -57,7 +61,7 @@ CAmRouterMapTest::~CAmRouterMapTest()
 
 void CAmRouterMapTest::SetUp()
 {
-    logInfo("Routing Test started ");
+	logInfo("Routing Test started ");
 }
 
 void CAmRouterMapTest::TearDown()
@@ -65,7 +69,7 @@ void CAmRouterMapTest::TearDown()
 }
 
 ACTION(returnConnectionFormat){
-arg4=arg3;
+	arg4=arg3;
 }
 
 void CAmRouterMapTest::enterDomainDB(const std::string & domainName, am_domainID_t & domainID)
@@ -103,48 +107,114 @@ void CAmRouterMapTest::enterSinkDB(const std::string & sinkName, const am_domain
 }
 
 void CAmRouterMapTest::enterGatewayDB(const std::string & gwName,
-											const am_domainID_t domainSourceID,
-											const am_domainID_t domainSinkID,
-											const std::vector<am_CustomConnectionFormat_t> & sourceConnectionFormats,
-											const std::vector<am_CustomConnectionFormat_t> & sinkConnectionFormats,
-											const std::vector<bool> & matrix,
-											const am_sourceID_t & sourceID,
-											const am_sinkID_t & sinkID,
-											am_gatewayID_t & gatewayID)
+		const am_domainID_t domainSourceID,
+		const am_domainID_t domainSinkID,
+		const std::vector<am_CustomConnectionFormat_t> & sourceConnectionFormats,
+		const std::vector<am_CustomConnectionFormat_t> & sinkConnectionFormats,
+		const std::vector<bool> & matrix,
+		const am_sourceID_t & sourceID,
+		const am_sinkID_t & sinkID,
+		am_gatewayID_t & gatewayID)
 {
-    am_Gateway_s gateway;
-    gateway.controlDomainID = domainSourceID;
-    gateway.gatewayID = 0;
-    gateway.sinkID = sinkID;
-    gateway.sourceID = sourceID;
-    gateway.domainSourceID = domainSourceID;
-    gateway.domainSinkID = domainSinkID;
-    gateway.listSinkFormats = sinkConnectionFormats;
-    gateway.listSourceFormats = sourceConnectionFormats;
-    gateway.convertionMatrix = matrix;
-    gateway.name = gwName;
-    ASSERT_EQ(E_OK, pDatabaseHandler.enterGatewayDB(gateway,gatewayID));
+	am_Gateway_s gateway;
+	gateway.controlDomainID = domainSourceID;
+	gateway.gatewayID = 0;
+	gateway.sinkID = sinkID;
+	gateway.sourceID = sourceID;
+	gateway.domainSourceID = domainSourceID;
+	gateway.domainSinkID = domainSinkID;
+	gateway.listSinkFormats = sinkConnectionFormats;
+	gateway.listSourceFormats = sourceConnectionFormats;
+	gateway.convertionMatrix = matrix;
+	gateway.name = gwName;
+	ASSERT_EQ(E_OK, pDatabaseHandler.enterGatewayDB(gateway,gatewayID));
 }
 
 void CAmRouterMapTest::enterConverterDB(const std::string & gwName,
-											  const am_domainID_t domainID,
-											  const std::vector<am_CustomConnectionFormat_t> & sourceConnectionFormats,
-											  const std::vector<am_CustomConnectionFormat_t> & sinkConnectionFormats,
-											  const std::vector<bool> & matrix,
-											  const am_sourceID_t & sourceID,
-											  const am_sinkID_t & sinkID,
-											  am_converterID_t & converterID)
+		const am_domainID_t domainID,
+		const std::vector<am_CustomConnectionFormat_t> & sourceConnectionFormats,
+		const std::vector<am_CustomConnectionFormat_t> & sinkConnectionFormats,
+		const std::vector<bool> & matrix,
+		const am_sourceID_t & sourceID,
+		const am_sinkID_t & sinkID,
+		am_converterID_t & converterID)
 {
-    am_Converter_s converter;
-    converter.converterID = 0;
-    converter.sinkID = sinkID;
-    converter.sourceID = sourceID;
-    converter.domainID = domainID;
-    converter.listSinkFormats = sinkConnectionFormats;
-    converter.listSourceFormats = sourceConnectionFormats;
-    converter.convertionMatrix = matrix;
-    converter.name = gwName;
-    ASSERT_EQ(E_OK, pDatabaseHandler.enterConverterDB(converter,converterID));
+	am_Converter_s converter;
+	converter.converterID = 0;
+	converter.sinkID = sinkID;
+	converter.sourceID = sourceID;
+	converter.domainID = domainID;
+	converter.listSinkFormats = sinkConnectionFormats;
+	converter.listSourceFormats = sourceConnectionFormats;
+	converter.convertionMatrix = matrix;
+	converter.name = gwName;
+	ASSERT_EQ(E_OK, pDatabaseHandler.enterConverterDB(converter,converterID));
+}
+
+void CAmRouterMapTest::getRoute(const bool onlyfree, const am_Source_s & aSource, const am_Sink_s & aSink, std::vector<am_Route_s> & listRoutes)
+{
+	std::ios_base::fmtflags oldflags = std::cout.flags();
+	std::streamsize oldprecision = std::cout.precision();
+	auto t_start = std::chrono::high_resolution_clock::now();
+	ASSERT_EQ(E_OK, pRouter.getRoute(onlyfree, aSource, aSink, listRoutes));
+	auto t_end = std::chrono::high_resolution_clock::now();
+	std::cout << std::fixed << std::setprecision(2);
+	std::cout << "getRoute did find " << listRoutes.size() <<" routes from " << aSource.sourceID << " to " << aSink.sinkID;
+	std::cout << " in " << std::chrono::duration<double, std::milli>(t_end-t_start).count() << " ms\n";
+	std::cout.flags (oldflags);
+	std::cout.precision (oldprecision);
+}
+
+void CAmRouterMapTest::getRoute(const bool onlyfree, const am_sourceID_t sourceID, const am_sinkID_t sinkID, std::vector<am_Route_s>& returnList)
+{
+	std::ios_base::fmtflags oldflags = std::cout.flags();
+	std::streamsize oldprecision = std::cout.precision();
+	auto t_start = std::chrono::high_resolution_clock::now();
+	ASSERT_EQ(E_OK, pRouter.getRoute(onlyfree, sourceID, sinkID, returnList));
+	auto t_end = std::chrono::high_resolution_clock::now();
+	std::cout << std::fixed << std::setprecision(2);
+	std::cout << "getRoute by id did find " << returnList.size() <<" routes from " << sourceID << " to " << sinkID;
+	std::cout << " in " << std::chrono::duration<double, std::milli>(t_end-t_start).count() << " ms\n";
+	std::cout.flags (oldflags);
+	std::cout.precision (oldprecision);
+}
+
+void CAmRouterMapTest::getAllPaths(CAmRoutingNode & aSource,
+										 CAmRoutingNode & aSink,
+										 std::vector<am_Route_s> & resultPath,
+										 std::vector<std::vector<CAmRoutingNode*>> & resultNodesPath,
+										 const bool includeCycles)
+{
+	std::ios_base::fmtflags oldflags = std::cout.flags();
+	std::streamsize oldprecision = std::cout.precision();
+	auto t_start = std::chrono::high_resolution_clock::now();
+	ASSERT_EQ(E_OK, pRouter.getAllPaths(aSource, aSink, resultPath, resultNodesPath, includeCycles));
+	auto t_end = std::chrono::high_resolution_clock::now();
+	std::cout << std::fixed << std::setprecision(2);
+	std::cout << "getAllPaths did find " << resultPath.size()
+			  << " routes from " << aSource.getData().data.source->sourceID
+			  << " to " << aSink.getData().data.sink->sinkID;
+	std::cout << " in " << std::chrono::duration<double, std::milli>(t_end-t_start).count() << " ms\n";
+	std::cout.flags (oldflags);
+	std::cout.precision (oldprecision);
+}
+
+TEST_F(CAmRouterMapTest,checkInsertedDomain)
+{
+	std::vector<am_domainID_t> domains;
+	ASSERT_TRUE(CAmRouter::shouldGoInDomain(domains, 22));
+	domains.push_back(22);
+	ASSERT_TRUE(CAmRouter::shouldGoInDomain(domains, 22));
+	domains.push_back(22);
+	ASSERT_TRUE(CAmRouter::shouldGoInDomain(domains, 22));
+	ASSERT_TRUE(CAmRouter::shouldGoInDomain(domains, 50));
+	domains.push_back(30);
+	ASSERT_TRUE(CAmRouter::shouldGoInDomain(domains, 30));
+	ASSERT_FALSE(CAmRouter::shouldGoInDomain(domains, 22));
+	domains.push_back(30);
+	ASSERT_TRUE(CAmRouter::shouldGoInDomain(domains, 30));
+	ASSERT_FALSE(CAmRouter::shouldGoInDomain(domains, 22));
+	ASSERT_TRUE(CAmRouter::shouldGoInDomain(domains, 60));
 }
 
 //test that checks just sinks and source in a domain but connectionformats do not match
@@ -208,7 +278,7 @@ TEST_F(CAmRouterMapTest,simpleRoute2withDomainNoMatchFormats)
 	pDatabaseHandler.getSinkInfoDB(sinkID, sinkDb);
 	pDatabaseHandler.getSourceInfoDB(sourceID, sourceDb);
 	listRoutes.clear();
-	ASSERT_EQ(E_OK, pRouter.getRoute(true, sourceDb, sinkDb, listRoutes));
+	getRoute(true, sourceDb, sinkDb, listRoutes);
 	ASSERT_EQ(static_cast<uint>(0), listRoutes.size());
 }
 
@@ -273,7 +343,7 @@ TEST_F(CAmRouterMapTest,simpleRoute2withDomain)
 	pDatabaseHandler.getSinkInfoDB(sinkID, sinkDb);
 	pDatabaseHandler.getSourceInfoDB(sourceID, sourceDb);
 	listRoutes.clear();
-	ASSERT_EQ(E_OK, pRouter.getRoute(true, sourceDb, sinkDb, listRoutes));
+	getRoute(true, sourceDb, sinkDb, listRoutes);
 	ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
 	ASSERT_TRUE(pCF.compareRoute(compareRoute,listRoutes[0]));
 }
@@ -383,7 +453,7 @@ TEST_F(CAmRouterMapTest,simpleRoute2DomainsOnlyFree)
     pDatabaseHandler.getSinkInfoDB(sinkID, sinkDb);
     pDatabaseHandler.getSourceInfoDB(sourceID, sourceDb);
 
-    ASSERT_EQ(E_OK, pRouter.getRoute(true,sourceID,sinkID,listRoutes));
+    getRoute(true,sourceID,sinkID,listRoutes);
     ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
     ASSERT_TRUE(pCF.compareRoute(compareRoute,listRoutes[0]));
 }
@@ -508,11 +578,11 @@ TEST_F(CAmRouterMapTest,simpleRoute2DomainsOnlyFreeNotFree)
 	pDatabaseHandler.getSinkInfoDB(sinkID, sinkDb);
 	pDatabaseHandler.getSourceInfoDB(sourceID, sourceDb);
 	listRoutes.clear();
-	ASSERT_EQ(E_OK, pRouter.getRoute(true, sourceDb, sinkDb, listRoutes));
+	getRoute(true, sourceDb, sinkDb, listRoutes);
 	ASSERT_EQ(static_cast<uint>(0), listRoutes.size());
 
 	listRoutes.clear();
-	ASSERT_EQ(E_OK, pRouter.getRoute(false, sourceDb, sinkDb, listRoutes));
+	getRoute(false, sourceDb, sinkDb, listRoutes);
 	ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
 	ASSERT_TRUE(pCF.compareRoute(compareRoute,listRoutes[0]));
 }
@@ -650,7 +720,7 @@ TEST_F(CAmRouterMapTest,simpleRoute2DomainsCircularGWOnlyFree)
 	pDatabaseHandler.getSinkInfoDB(sinkID, sinkDb);
 	pDatabaseHandler.getSourceInfoDB(sourceID, sourceDb);
 	listRoutes.clear();
-	ASSERT_EQ(E_OK, pRouter.getRoute(true, sourceDb, sinkDb, listRoutes));
+	getRoute(true, sourceDb, sinkDb, listRoutes);
 	ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
 	ASSERT_TRUE(pCF.compareRoute(compareRoute,listRoutes[0]));
 }
@@ -813,7 +883,7 @@ TEST_F(CAmRouterMapTest,simpleRoute3DomainsListConnectionFormats_2)
 	am::am_Sink_s sinkDb;
 	pDatabaseHandler.getSinkInfoDB(sinkID, sinkDb);
 	pDatabaseHandler.getSourceInfoDB(sourceID, sourceDb);
-	ASSERT_EQ(E_OK, pRouter.getRoute(false, sourceDb, sinkDb, listRoutes));
+	getRoute(false, sourceDb, sinkDb, listRoutes);
 	ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
 	ASSERT_TRUE(pCF.compareRoute(compareRoute,listRoutes[0]));
 }
@@ -971,7 +1041,7 @@ TEST_F(CAmRouterMapTest,simpleRoute3DomainsListConnectionFormats_1)
 	am::am_Sink_s sinkDb;
 	pDatabaseHandler.getSinkInfoDB(sinkID, sinkDb);
 	pDatabaseHandler.getSourceInfoDB(sourceID, sourceDb);
-	ASSERT_EQ(E_OK, pRouter.getRoute(false, sourceDb, sinkDb, listRoutes));
+	getRoute(false, sourceDb, sinkDb, listRoutes);
 	ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
 	ASSERT_TRUE(pCF.compareRoute(compareRoute,listRoutes[0]));
 }
@@ -1124,7 +1194,7 @@ TEST_F(CAmRouterMapTest,simpleRoute3DomainsListConnectionFormats)
 	am::am_Sink_s sinkDb;
 	pDatabaseHandler.getSinkInfoDB(sinkID, sinkDb);
 	pDatabaseHandler.getSourceInfoDB(sourceID, sourceDb);
-	ASSERT_EQ(E_OK, pRouter.getRoute(false, sourceDb, sinkDb, listRoutes));
+	getRoute(false, sourceDb, sinkDb, listRoutes);
 	ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
 	ASSERT_TRUE(pCF.compareRoute(compareRoute,listRoutes[0]));
 }
@@ -1362,7 +1432,7 @@ TEST_F(CAmRouterMapTest,simpleRoute4Domains2Routes)
 	am::am_Sink_s sinkDb;
 	pDatabaseHandler.getSinkInfoDB(sinkID, sinkDb);
 	pDatabaseHandler.getSourceInfoDB(sourceID, sourceDb);
-	ASSERT_EQ(E_OK, pRouter.getRoute(false, sourceDb, sinkDb, listRoutes));
+	getRoute(false, sourceDb, sinkDb, listRoutes);
 	ASSERT_EQ(static_cast<uint>(2), listRoutes.size());
 
     bool containsRoute1 = std::find_if(listRoutes.begin(), listRoutes.end(), [&](const am_Route_s & ref) {
@@ -1521,7 +1591,7 @@ TEST_F(CAmRouterMapTest,simpleRoute3DomainsNoConnection)
  	pDatabaseHandler.getSinkInfoDB(sinkID, sinkDb);
  	pDatabaseHandler.getSourceInfoDB(sourceID, sourceDb);
  	listRoutes.clear();
- 	ASSERT_EQ(E_OK, pRouter.getRoute(false, sourceDb, sinkDb, listRoutes));
+ 	getRoute(false, sourceDb, sinkDb, listRoutes);
  	ASSERT_EQ(static_cast<uint>(0), listRoutes.size());
 }
 //test that checks just 2 domains, one sink one source with only one connection format each
@@ -1628,7 +1698,7 @@ TEST_F(CAmRouterMapTest,simpleRoute2Domains)
  	am::am_Sink_s sinkDb;
  	pDatabaseHandler.getSinkInfoDB(sinkID, sinkDb);
  	pDatabaseHandler.getSourceInfoDB(sourceID, sourceDb);
- 	ASSERT_EQ(E_OK, pRouter.getRoute(false, sourceDb, sinkDb, listRoutes));
+ 	getRoute(false, sourceDb, sinkDb, listRoutes);
  	ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
  	ASSERT_TRUE(pCF.compareRoute(compareRoute,listRoutes[0]));
 }
@@ -1716,7 +1786,7 @@ TEST_F(CAmRouterMapTest,simpleRoute2DomainsNoMatchConnectionFormats)
  	am::am_Sink_s sinkDb;
  	pDatabaseHandler.getSinkInfoDB(sinkID, sinkDb);
  	pDatabaseHandler.getSourceInfoDB(sourceID, sourceDb);
- 	ASSERT_EQ(E_OK, pRouter.getRoute(false, sourceDb, sinkDb, listRoutes));
+ 	getRoute(false, sourceDb, sinkDb, listRoutes);
  	ASSERT_EQ(static_cast<uint>(0), listRoutes.size());
  }
 
@@ -1865,7 +1935,7 @@ TEST_F(CAmRouterMapTest,simpleRoute3Domains)
    	pDatabaseHandler.getSinkInfoDB(sinkID, sinkDb);
    	pDatabaseHandler.getSourceInfoDB(sourceID, sourceDb);
    	listRoutes.clear();
-   	ASSERT_EQ(E_OK, pRouter.getRoute(false, sourceDb, sinkDb, listRoutes));
+   	getRoute(false, sourceDb, sinkDb, listRoutes);
    	ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
    	ASSERT_TRUE(pCF.compareRoute(compareRoute,listRoutes[0]));
 }
@@ -2055,7 +2125,7 @@ TEST_F(CAmRouterMapTest,simpleRoute4Domains)
    	pDatabaseHandler.getSinkInfoDB(sinkID, sinkDb);
    	pDatabaseHandler.getSourceInfoDB(sourceID, sourceDb);
    	listRoutes.clear();
-   	ASSERT_EQ(E_OK, pRouter.getRoute(false, sourceDb, sinkDb, listRoutes));
+   	getRoute(false, sourceDb, sinkDb, listRoutes);
    	ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
    	ASSERT_TRUE(pCF.compareRoute(compareRoute,listRoutes[0]));
 }
@@ -2171,7 +2241,7 @@ TEST_F(CAmRouterMapTest,route1Domain1Source1Sink)
 	compareRoute.sinkID = sinkID;
 	compareRoute.sourceID = sourceID;
 
-   	ASSERT_EQ(E_OK, pRouter.getRoute(false, source, sink, listRoutes));
+   	getRoute(false, source, sink, listRoutes);
    	ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
    	ASSERT_TRUE(pCF.compareRoute(compareRoute,listRoutes[0]));
 }
@@ -2244,7 +2314,7 @@ TEST_F(CAmRouterMapTest,route1Domain1Source1Converter1Sink)
 	compareRoute.sinkID = sinkID1;
 	compareRoute.sourceID = sourceID;
 
-   	ASSERT_EQ(E_OK, pRouter.getRoute(false, source, sink, listRoutes));
+   	getRoute(false, source, sink, listRoutes);
    	ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
    	ASSERT_TRUE(pCF.compareRoute(compareRoute,listRoutes[0]));
 }
@@ -2345,7 +2415,7 @@ TEST_F(CAmRouterMapTest,route1Domain1Source3Converters1Sink)
 	compareRoute1.sinkID = sinkID;
 	compareRoute1.sourceID = sourceID;
 
-	ASSERT_EQ(E_OK, pRouter.getRoute(false, source, sink, listRoutes));
+	getRoute(false, source, sink, listRoutes);
 	ASSERT_EQ(static_cast<uint>(2), listRoutes.size());
 	ASSERT_TRUE(pCF.compareRoute(compareRoute1,listRoutes[0])||pCF.compareRoute(compareRoute1,listRoutes[1]));
 
@@ -2396,7 +2466,7 @@ TEST_F(CAmRouterMapTest,route2Domains1Source1Sink)
     pDatabaseHandler.getSourceInfoDB(sourceID, source);
     std::vector<am_Route_s> listRoutes;
 
-	ASSERT_EQ(E_OK, pRouter.getRoute(false, source, sink, listRoutes));
+	getRoute(false, source, sink, listRoutes);
 	ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
 
 	am_Route_s compareRoute1;
@@ -2458,7 +2528,7 @@ TEST_F(CAmRouterMapTest,route3Domains1Source1Sink)
 
     std::vector<am_Route_s> listRoutes;
 
-	ASSERT_EQ(E_OK, pRouter.getRoute(false, source, sink, listRoutes));
+	getRoute(false, source, sink, listRoutes);
 	ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
 
 	am_Route_s compareRoute1;
@@ -2468,142 +2538,6 @@ TEST_F(CAmRouterMapTest,route3Domains1Source1Sink)
 	compareRoute1.route.push_back({gwSourceID1, gwSinkID2, domainID2, CF_GENIVI_MONO});
 	compareRoute1.route.push_back({gwSourceID2, sinkID, domainID3, CF_GENIVI_STEREO});
 	ASSERT_TRUE(pCF.compareRoute(compareRoute1,listRoutes[0]));
-}
-
-
-TEST_F(CAmRouterMapTest,route3Domains1Source3Gateways3Convertres1Sink)
-{
-	EXPECT_CALL(pMockControlInterface,getConnectionFormatChoice(_,_,_,_,_)).WillRepeatedly(DoAll(returnConnectionFormat(), Return(E_OK)));
-
-	am_domainID_t domainID1, domainID2, domainID3;
-	enterDomainDB("domain1", domainID1);
-	enterDomainDB("domain2", domainID2);
-	enterDomainDB("domain3", domainID3);
-
-	std::vector<am_CustomConnectionFormat_t> cfStereo;
-	cfStereo.push_back(CF_GENIVI_STEREO);
-	std::vector<am_CustomConnectionFormat_t> cfAnalog;
-	cfAnalog.push_back(CF_GENIVI_ANALOG);
-	std::vector<am_CustomConnectionFormat_t> cfMono;
-	cfMono.push_back(CF_GENIVI_MONO);
-	std::vector<am_CustomConnectionFormat_t> cfAuto;
-	cfAuto.push_back(CF_GENIVI_AUTO);
-
-	am_sourceID_t sourceID;
-	enterSourceDB("source1", domainID1, cfStereo, sourceID);
-
-	am_sinkID_t gwSinkID1;
-	enterSinkDB("gwSink1", domainID1, cfStereo, gwSinkID1);
-
-	am_sourceID_t gwSourceID1;
-	enterSourceDB("gwSource1", domainID2, cfMono, gwSourceID1);
-	std::vector<bool> matrix;
-	matrix.push_back(true);
-    am_gatewayID_t gatewayID;
-    enterGatewayDB("gateway1", domainID2, domainID1, cfMono, cfStereo, matrix, gwSourceID1, gwSinkID1, gatewayID);
-
-
-    am_sourceID_t gwSourceID21;
-    enterSourceDB("gwSource21", domainID3, cfAuto, gwSourceID21);
-    am_sinkID_t gwSinkID21;
-    enterSinkDB("gwSink21", domainID1, cfMono, gwSinkID21);
-    am_gatewayID_t gatewayID21;
-    enterGatewayDB("gateway21", domainID3, domainID2, cfAuto, cfMono, matrix, gwSourceID21, gwSinkID21, gatewayID21);
-
-    am_sourceID_t gwSourceID22;
-    enterSourceDB("gwSource22", domainID3, cfAuto, gwSourceID22);
-    am_sinkID_t gwSinkID22;
-    enterSinkDB("gwSink22", domainID2, cfMono, gwSinkID22);
-    am_gatewayID_t gatewayID22;
-    enterGatewayDB("gateway22", domainID3, domainID2, cfAuto, cfMono, matrix, gwSourceID22, gwSinkID22, gatewayID22);
-
-    am_sourceID_t gwSourceID3;
-	enterSourceDB("gwSource3", domainID3, cfAnalog, gwSourceID3);
-	am_sinkID_t gwSinkID3;
-	enterSinkDB("gwSink3", domainID3, cfAuto, gwSinkID3);
-	am_converterID_t converterID1;
-	enterConverterDB("converter1", domainID3, cfAnalog, cfAuto, matrix, gwSourceID3, gwSinkID3, converterID1);
-
-	am_sourceID_t gwSourceID4;
-	enterSourceDB("gwSource4", domainID3, cfStereo, gwSourceID4);
-	am_sinkID_t gwSinkID4;
-	enterSinkDB("gwSink4", domainID3, cfAnalog, gwSinkID4);
-	am_converterID_t converterID2;
-	enterConverterDB("converter2", domainID3, cfStereo, cfAnalog, matrix, gwSourceID4, gwSinkID4, converterID2);
-
-	am_sourceID_t gwSourceID5;
-	enterSourceDB("gwSource5", domainID3, cfStereo, gwSourceID5);
-	am_sinkID_t gwSinkID5;
-	enterSinkDB("gwSink5", domainID3, cfAnalog, gwSinkID5);
-	am_converterID_t converterID3;
-	enterConverterDB("converter3", domainID3, cfStereo, cfAnalog, matrix, gwSourceID5, gwSinkID5, converterID3);
-
-	am_sinkID_t sinkID;
-	enterSinkDB("sink1", domainID3, cfStereo, sinkID);
-
-    am::am_Source_s source;
-    am::am_Sink_s sink;
-
-    pDatabaseHandler.getSinkInfoDB(sinkID, sink);
-    pDatabaseHandler.getSourceInfoDB(sourceID, source);
-
-    std::vector<am_Route_s> listRoutes;
-
-	ASSERT_EQ(E_OK, pRouter.getRoute(false, source, sink, listRoutes));
-	ASSERT_EQ(static_cast<uint>(4), listRoutes.size());
-
- 	am_Route_s compareRoute1;
-	compareRoute1.sinkID = sinkID;
-	compareRoute1.sourceID = sourceID;
-	compareRoute1.route.push_back({sourceID, gwSinkID1, domainID1, CF_GENIVI_STEREO});
-	compareRoute1.route.push_back({gwSourceID1, gwSinkID21, domainID1, CF_GENIVI_MONO});
-	compareRoute1.route.push_back({gwSourceID21, gwSinkID3, domainID3, CF_GENIVI_AUTO});
-	compareRoute1.route.push_back({gwSourceID3, gwSinkID4, domainID3, CF_GENIVI_ANALOG});
-	compareRoute1.route.push_back({gwSourceID4, sinkID, domainID3, CF_GENIVI_STEREO});
-
- 	am_Route_s compareRoute2;
-	compareRoute2.sinkID = sinkID;
-	compareRoute2.sourceID = sourceID;
-	compareRoute2.route.push_back({sourceID, gwSinkID1, domainID1, CF_GENIVI_STEREO});
-	compareRoute2.route.push_back({gwSourceID1, gwSinkID21, domainID1, CF_GENIVI_MONO});
-	compareRoute2.route.push_back({gwSourceID21, gwSinkID3, domainID3, CF_GENIVI_AUTO});
-	compareRoute2.route.push_back({gwSourceID3, gwSinkID5, domainID3, CF_GENIVI_ANALOG});
-	compareRoute2.route.push_back({gwSourceID5, sinkID, domainID3, CF_GENIVI_STEREO});
-
- 	am_Route_s compareRoute3;
-	compareRoute3.sinkID = sinkID;
-	compareRoute3.sourceID = sourceID;
-	compareRoute3.route.push_back({sourceID, gwSinkID1, domainID1, CF_GENIVI_STEREO});
-	compareRoute3.route.push_back({gwSourceID1, gwSinkID22, domainID2, CF_GENIVI_MONO});
-	compareRoute3.route.push_back({gwSourceID22, gwSinkID3, domainID3, CF_GENIVI_AUTO});
-	compareRoute3.route.push_back({gwSourceID3, gwSinkID4, domainID3, CF_GENIVI_ANALOG});
-	compareRoute3.route.push_back({gwSourceID4, sinkID, domainID3, CF_GENIVI_STEREO});
-
- 	am_Route_s compareRoute4;
-	compareRoute4.sinkID = sinkID;
-	compareRoute4.sourceID = sourceID;
-	compareRoute4.route.push_back({sourceID, gwSinkID1, domainID1, CF_GENIVI_STEREO});
-	compareRoute4.route.push_back({gwSourceID1, gwSinkID22, domainID2, CF_GENIVI_MONO});
-	compareRoute4.route.push_back({gwSourceID22, gwSinkID3, domainID3, CF_GENIVI_AUTO});
-	compareRoute4.route.push_back({gwSourceID3, gwSinkID5, domainID3, CF_GENIVI_ANALOG});
-	compareRoute4.route.push_back({gwSourceID5, sinkID, domainID3, CF_GENIVI_STEREO});
-
-	ASSERT_TRUE(pCF.compareRoute(compareRoute1,listRoutes[0])||
-				pCF.compareRoute(compareRoute1,listRoutes[1])||
-				pCF.compareRoute(compareRoute1,listRoutes[2])||
-				pCF.compareRoute(compareRoute1,listRoutes[3]));
-	ASSERT_TRUE(pCF.compareRoute(compareRoute2,listRoutes[0])||
-				pCF.compareRoute(compareRoute2,listRoutes[1])||
-				pCF.compareRoute(compareRoute2,listRoutes[2])||
-				pCF.compareRoute(compareRoute2,listRoutes[3]));
-	ASSERT_TRUE(pCF.compareRoute(compareRoute3,listRoutes[0])||
-				pCF.compareRoute(compareRoute3,listRoutes[1])||
-				pCF.compareRoute(compareRoute3,listRoutes[2])||
-				pCF.compareRoute(compareRoute3,listRoutes[3]));
-	ASSERT_TRUE(pCF.compareRoute(compareRoute4,listRoutes[0])||
-				pCF.compareRoute(compareRoute4,listRoutes[1])||
-				pCF.compareRoute(compareRoute4,listRoutes[2])||
-				pCF.compareRoute(compareRoute4,listRoutes[3]));
 }
 
 TEST_F(CAmRouterMapTest,routeSource1Sink2PathThroughConv1Gate1)
@@ -2661,7 +2595,7 @@ TEST_F(CAmRouterMapTest,routeSource1Sink2PathThroughConv1Gate1)
 
     std::vector<am_Route_s> listRoutes;
 
-	ASSERT_EQ(E_OK, pRouter.getRoute(false, source, sink1, listRoutes));
+	getRoute(false, source, sink1, listRoutes);
 	ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
 
  	am_Route_s compareRoute1;
@@ -2673,7 +2607,7 @@ TEST_F(CAmRouterMapTest,routeSource1Sink2PathThroughConv1Gate1)
 	ASSERT_TRUE(pCF.compareRoute(compareRoute1,listRoutes[0]));
 
 	listRoutes.clear();
-	ASSERT_EQ(E_OK, pRouter.getRoute(false, source, sink2, listRoutes));
+	getRoute(false, source, sink2, listRoutes);
 	ASSERT_EQ(static_cast<uint>(0), listRoutes.size());
 }
 
@@ -2713,26 +2647,32 @@ TEST_F(CAmRouterMapTest, routeSource1Sink1PathThroughDomain2)
     am_gatewayID_t gatewayID2;
     enterGatewayDB("gateway2", domainID1, domainID2, cfAuto, cfAnalog, matrix, gwSourceID12, gwSinkID21, gatewayID2);
 
-	am_sinkID_t sinkID;
-	enterSinkDB("sink1", domainID1, cfAuto, sinkID);
-
-    am::am_Source_s source;
-    am::am_Sink_s sink;
-
-    pDatabaseHandler.getSinkInfoDB(sinkID, sink);
-    pDatabaseHandler.getSourceInfoDB(sourceID, source);
+	am_sinkID_t sink1ID;
+	enterSinkDB("sink1", domainID1, cfAuto, sink1ID);
+	am_sinkID_t sink2ID;
+	enterSinkDB("sink2", domainID2, cfAnalog, sink2ID);
 
     std::vector<am_Route_s> listRoutes;
 
-	ASSERT_EQ(E_OK, pRouter.getRoute(false, source, sink, listRoutes));
+    am::am_Source_s source;
+    am::am_Sink_s sink1;
+    pDatabaseHandler.getSinkInfoDB(sink1ID, sink1);
+    pDatabaseHandler.getSourceInfoDB(sourceID, source);
+
+	getRoute(false, source, sink1, listRoutes);
+	ASSERT_EQ(static_cast<uint>(0), listRoutes.size());
+
+    am::am_Sink_s sink2;
+    pDatabaseHandler.getSinkInfoDB(sink2ID, sink2);
+
+	getRoute(false, source, sink2, listRoutes);
 	ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
 
  	am_Route_s compareRoute1;
-	compareRoute1.sinkID = sinkID;
+	compareRoute1.sinkID = sink2ID;
 	compareRoute1.sourceID = sourceID;
 	compareRoute1.route.push_back({sourceID, gwSinkID11, domainID1, CF_GENIVI_STEREO});
-	compareRoute1.route.push_back({gwSourceID11, gwSinkID21, domainID2, CF_GENIVI_ANALOG});
-	compareRoute1.route.push_back({gwSourceID12, sinkID, domainID1, CF_GENIVI_AUTO});
+	compareRoute1.route.push_back({gwSourceID11, sink2ID, domainID2, CF_GENIVI_ANALOG});
 	ASSERT_TRUE(pCF.compareRoute(compareRoute1,listRoutes[0]));
 }
 
@@ -2782,31 +2722,36 @@ TEST_F(CAmRouterMapTest, routeSource1Sink1PathThroughGate1Conv2Gate2)
 	am_converterID_t converterID2;
 	enterConverterDB("converter2", domainID2, cfStereo, cfAnalog, matrix, coSourceID21, coSinkID21, converterID2);
 
-
     am_gatewayID_t gatewayID2;
     enterGatewayDB("gateway2", domainID1, domainID2, cfAuto, cfStereo, matrix, gwSourceID12, gwSinkID21, gatewayID2);
 
-	am_sinkID_t sinkID;
-	enterSinkDB("sink1", domainID1, cfAuto, sinkID);
+	am_sinkID_t sink1ID;
+	enterSinkDB("sink1", domainID1, cfAuto, sink1ID);
+	am_sinkID_t sink2ID;
+	enterSinkDB("sink2", domainID2, cfStereo, sink2ID);
 
     am::am_Source_s source;
     am::am_Sink_s sink;
 
-    pDatabaseHandler.getSinkInfoDB(sinkID, sink);
+    pDatabaseHandler.getSinkInfoDB(sink1ID, sink);
     pDatabaseHandler.getSourceInfoDB(sourceID, source);
 
     std::vector<am_Route_s> listRoutes;
 
-	ASSERT_EQ(E_OK, pRouter.getRoute(false, source, sink, listRoutes));
-	ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
+	getRoute(false, source, sink, listRoutes);
+	ASSERT_EQ(static_cast<uint>(0), listRoutes.size());
 
+    am::am_Sink_s sink1;
+    pDatabaseHandler.getSinkInfoDB(sink2ID, sink1);
+	getRoute(false, source, sink1, listRoutes);
+
+	ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
  	am_Route_s compareRoute1;
-	compareRoute1.sinkID = sinkID;
+	compareRoute1.sinkID = sink2ID;
 	compareRoute1.sourceID = sourceID;
 	compareRoute1.route.push_back({sourceID, gwSinkID11, domainID1, CF_GENIVI_STEREO});
 	compareRoute1.route.push_back({gwSourceID21, coSinkID21, domainID2, CF_GENIVI_ANALOG});
-	compareRoute1.route.push_back({coSourceID21, gwSinkID21, domainID2, CF_GENIVI_STEREO});
-	compareRoute1.route.push_back({gwSourceID12, sinkID, domainID1, CF_GENIVI_AUTO});
+	compareRoute1.route.push_back({coSourceID21, sink2ID, domainID2, CF_GENIVI_STEREO});
 	ASSERT_TRUE(pCF.compareRoute(compareRoute1,listRoutes[0]));
 }
 
@@ -2888,39 +2833,37 @@ TEST_F(CAmRouterMapTest, routeSource1Sink1PathThroughConv1Gate1Conv2Gate2)
 
     am::am_Source_s source;
     am::am_Sink_s sink;
-
     pDatabaseHandler.getSinkInfoDB(sinkID, sink);
     pDatabaseHandler.getSourceInfoDB(sourceID, source);
 
     std::vector<am_Route_s> listRoutes;
 
-	ASSERT_EQ(E_OK, pRouter.getRoute(false, source, sink, listRoutes));
+	getRoute(false, source, sink, listRoutes);
+	ASSERT_EQ(static_cast<uint>(0), listRoutes.size());
 
+    am::am_Sink_s sink2;
+    pDatabaseHandler.getSinkInfoDB(coSinkID21, sink2);
+	pRouter.getRoute(false, source, sink2, listRoutes);
 	ASSERT_EQ(static_cast<uint>(2), listRoutes.size());
 
  	am_Route_s compareRoute1;
-	compareRoute1.sinkID = sinkID;
+	compareRoute1.sinkID = coSinkID21;
 	compareRoute1.sourceID = sourceID;
 	compareRoute1.route.push_back({sourceID, coSinkID11, domainID1, CF_GENIVI_STEREO});
 	compareRoute1.route.push_back({coSourceID11, gwSinkID11, domainID1, 5});
 	compareRoute1.route.push_back({gwSourceID21, coSinkID21, domainID2, CF_GENIVI_ANALOG});
-	compareRoute1.route.push_back({coSourceID21, gwSinkID21, domainID2, CF_GENIVI_STEREO});
-	compareRoute1.route.push_back({gwSourceID12, sinkID, domainID1, CF_GENIVI_AUTO});
 
  	am_Route_s compareRoute2;
-	compareRoute2.sinkID = sinkID;
+	compareRoute2.sinkID = coSinkID21;
 	compareRoute2.sourceID = sourceID;
 	compareRoute2.route.push_back({sourceID, coSinkID12, domainID1, CF_GENIVI_STEREO});
 	compareRoute2.route.push_back({coSourceID12, coSinkID13, domainID1, 6});
 	compareRoute2.route.push_back({coSourceID13, gwSinkID11, domainID1, 5});
 	compareRoute2.route.push_back({gwSourceID21, coSinkID21, domainID2, CF_GENIVI_ANALOG});
-	compareRoute2.route.push_back({coSourceID21, gwSinkID21, domainID2, CF_GENIVI_STEREO});
-	compareRoute2.route.push_back({gwSourceID12, sinkID, domainID1, CF_GENIVI_AUTO});
 
 	ASSERT_TRUE(pCF.compareRoute(compareRoute1,listRoutes[1])||pCF.compareRoute(compareRoute1,listRoutes[0]));
 	ASSERT_TRUE(pCF.compareRoute(compareRoute2,listRoutes[0])||pCF.compareRoute(compareRoute2,listRoutes[1]));
 }
-
 
 TEST_F(CAmRouterMapTest,route3Domains1Source1SinkGwCycles)
 {
@@ -2941,98 +2884,105 @@ TEST_F(CAmRouterMapTest,route3Domains1Source1SinkGwCycles)
 
 	am_sourceID_t source1ID;
 	enterSourceDB("source1", domain1ID, cfStereo, source1ID);
-
 	am_sinkID_t gw1SinkID;
 	enterSinkDB("gw1Sink", domain1ID, cfStereo, gw1SinkID);
+	am_sinkID_t gw2SinkID;
+	enterSinkDB("gw2Sink", domain1ID, cfStereo, gw2SinkID);
+	am_sourceID_t gw3SourceID;
+	enterSourceDB("gw3Source", domain1ID, cfAnalog, gw3SourceID);
+	am_sourceID_t gw4SourceID;
+	enterSourceDB("gw4Source", domain1ID, cfAnalog, gw4SourceID);
+	am_sinkID_t gw5SinkID;
+	enterSinkDB("gw5Sink", domain1ID, cfAnalog, gw5SinkID);
 
 	am_sourceID_t gw1SourceID;
 	enterSourceDB("gw1Source", domain2ID, cfMono, gw1SourceID);
-
-	am_sinkID_t gw2SinkID;
-	enterSinkDB("gw2Sink", domain1ID, cfStereo, gw2SinkID);
-
 	am_sourceID_t gw2SourceID;
 	enterSourceDB("gw2Source", domain2ID, cfMono, gw2SourceID);
+	am_sinkID_t gw3SinkID;
+	enterSinkDB("gw3Sink", domain2ID, cfMono, gw3SinkID);
+	am_sinkID_t gw4SinkID;
+	enterSinkDB("gw4Sink", domain2ID, cfMono, gw4SinkID);
+
+	am_sourceID_t gw5SourceID;
+	enterSourceDB("gw5Source", domain3ID, cfStereo, gw5SourceID);
+	am_sinkID_t sink1ID;
+	enterSinkDB("sink1", domain3ID, cfStereo, sink1ID);
 
 	std::vector<bool> matrixT;
 	matrixT.push_back(true);
 	std::vector<bool> matrixF;
 	matrixF.push_back(false);
 
-    am_gatewayID_t gateway1ID;
-    enterGatewayDB("gateway1", domain2ID, domain1ID, cfMono, cfStereo, matrixT, gw1SourceID, gw1SinkID, gateway1ID);
+	am_gatewayID_t gateway1ID;
+	enterGatewayDB("gateway1", domain2ID, domain1ID, cfMono, cfStereo, matrixT, gw1SourceID, gw1SinkID, gateway1ID);
+	am_gatewayID_t gateway2ID;
+	enterGatewayDB("gateway2", domain2ID, domain1ID, cfMono, cfStereo, matrixT, gw2SourceID, gw2SinkID, gateway2ID);
+	am_gatewayID_t gateway3ID;
+	enterGatewayDB("gateway3", domain1ID, domain2ID, cfAnalog, cfMono, matrixT, gw3SourceID, gw3SinkID, gateway3ID);
+	am_gatewayID_t gateway4ID;
+	enterGatewayDB("gateway4", domain1ID, domain2ID, cfAnalog, cfMono, matrixT, gw4SourceID, gw4SinkID, gateway4ID);
+	am_gatewayID_t gateway5ID;
+	enterGatewayDB("gateway5", domain3ID, domain1ID, cfStereo, cfAnalog, matrixT, gw5SourceID, gw5SinkID, gateway5ID);
 
-    am_gatewayID_t gateway2ID;
-    enterGatewayDB("gateway2", domain2ID, domain1ID, cfMono, cfStereo, matrixT, gw2SourceID, gw2SinkID, gateway2ID);
+	pRouter.load(false);
 
+	CAmRoutingNode* sourceNode = pRouter.sourceNodeWithID(source1ID);
+	CAmRoutingNode* sinkNode = pRouter.sinkNodeWithID(sink1ID);
 
-	am_sinkID_t gw3SinkID;
-	enterSinkDB("gw3Sink", domain2ID, cfMono, gw3SinkID);
+	ASSERT_TRUE(sourceNode);
+	ASSERT_TRUE(sinkNode);
 
-	am_sourceID_t gw3SourceID;
-	enterSourceDB("gw3Source", domain1ID, cfAnalog, gw3SourceID);
-
-    am_gatewayID_t gateway3ID;
-    enterGatewayDB("gateway3", domain1ID, domain2ID, cfAnalog, cfMono, matrixT, gw3SourceID, gw3SinkID, gateway3ID);
-
-	am_sinkID_t gw4SinkID;
-	enterSinkDB("gw4Sink", domain1ID, cfMono, gw4SinkID);
-
-	am_sourceID_t gw4SourceID;
-	enterSourceDB("gw4Source", domain1ID, cfAnalog, gw4SourceID);
-
-    am_gatewayID_t gateway4ID;
-    enterGatewayDB("gateway4", domain1ID, domain2ID, cfAnalog, cfMono, matrixT, gw4SourceID, gw4SinkID, gateway4ID);
-
-
-    am_sourceID_t gw5SourceID;
-    enterSourceDB("gw5Source", domain3ID, cfStereo, gw5SourceID);
-
-    am_sinkID_t gw5SinkID;
-    enterSinkDB("gw5Sink", domain1ID, cfAnalog, gw5SinkID);
-
-	am_sinkID_t sink1ID;
-	enterSinkDB("sink1", domain3ID, cfStereo, sink1ID);
-
-    am_gatewayID_t gateway5ID;
-    enterGatewayDB("gateway5", domain3ID, domain1ID, cfStereo, cfAnalog, matrixT, gw5SourceID, gw5SinkID, gateway5ID);
-
-    am::am_Source_s source;
-    am::am_Sink_s sink;
-
-    pDatabaseHandler.getSinkInfoDB(sink1ID, sink);
-    pDatabaseHandler.getSourceInfoDB(source1ID, source);
-
-    std::vector<am_Route_s> listRoutes;
-
-	ASSERT_EQ(E_OK, pRouter.getRoute(false, source, sink, listRoutes));
-	ASSERT_EQ(static_cast<uint>(9), listRoutes.size());
-
-#define DO_ASSERT()	 \
-	{\
-		bool didMatch = false; \
-		for(auto it = listRoutes.begin(); it!=listRoutes.end(); it++) \
-			didMatch|=pCF.compareRoute(compareRoute1,*it); \
-		ASSERT_TRUE(didMatch); \
-	}
+	std::vector<am_Route_s> listRoutes;
+	std::vector<std::vector<CAmRoutingNode*>> resultNodesPath;
 
 	am_Route_s compareRoute1;
 	compareRoute1.sinkID = sink1ID;
 	compareRoute1.sourceID = source1ID;
-	compareRoute1.route.push_back({source1ID, gw5SinkID, domain1ID, CF_GENIVI_STEREO});
+
+#define DO_ASSERT()	 \
+		{\
+	bool didMatch = false; \
+	for(auto it = listRoutes.begin(); it!=listRoutes.end(); it++) \
+	didMatch|=pCF.compareRoute(compareRoute1,*it); \
+	ASSERT_TRUE(didMatch); \
+		}
+
+#ifdef ROUTING_BUILD_CONNECTIONS
+	getAllPaths(*sourceNode, *sinkNode, listRoutes, resultNodesPath, true);
+	ASSERT_EQ(static_cast<uint>(9), listRoutes.size());
+
+	compareRoute1.route.clear();
+	compareRoute1.route.push_back({source1ID, gw2SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw2SourceID, gw4SinkID, domain2ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw4SourceID, gw5SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw5SourceID, sink1ID, domain3ID, CF_GENIVI_STEREO});
+	DO_ASSERT()
+
+	compareRoute1.route.clear();
+	compareRoute1.route.push_back({source1ID, gw1SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw1SourceID, gw3SinkID, domain2ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw3SourceID, gw5SinkID, domain1ID, CF_GENIVI_STEREO});
 	compareRoute1.route.push_back({gw5SourceID, sink1ID, domain3ID, CF_GENIVI_STEREO});
 	DO_ASSERT()
 
 	compareRoute1.route.clear();
 	compareRoute1.route.push_back({source1ID, gw2SinkID, domain1ID, CF_GENIVI_STEREO});
-	compareRoute1.route.push_back({gw2SourceID, gw4SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw2SourceID, gw3SinkID, domain2ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw3SourceID, gw5SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw5SourceID, sink1ID, domain3ID, CF_GENIVI_STEREO});
+	DO_ASSERT()
+
+	compareRoute1.route.clear();
+	compareRoute1.route.push_back({source1ID, gw1SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw1SourceID, gw4SinkID, domain2ID, CF_GENIVI_STEREO});
 	compareRoute1.route.push_back({gw4SourceID, gw5SinkID, domain1ID, CF_GENIVI_STEREO});
 	compareRoute1.route.push_back({gw5SourceID, sink1ID, domain3ID, CF_GENIVI_STEREO});
 	DO_ASSERT()
 
 	compareRoute1.route.clear();
 	compareRoute1.route.push_back({source1ID, gw2SinkID, domain1ID, CF_GENIVI_STEREO});
-	compareRoute1.route.push_back({gw2SourceID, gw4SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw2SourceID, gw4SinkID, domain2ID, CF_GENIVI_STEREO});
 	compareRoute1.route.push_back({gw4SourceID, gw1SinkID, domain1ID, CF_GENIVI_STEREO});
 	compareRoute1.route.push_back({gw1SourceID, gw3SinkID, domain2ID, CF_GENIVI_STEREO});
 	compareRoute1.route.push_back({gw3SourceID, gw5SinkID, domain1ID, CF_GENIVI_STEREO});
@@ -3042,23 +2992,9 @@ TEST_F(CAmRouterMapTest,route3Domains1Source1SinkGwCycles)
 	compareRoute1.route.clear();
 	compareRoute1.route.push_back({source1ID, gw2SinkID, domain1ID, CF_GENIVI_STEREO});
 	compareRoute1.route.push_back({gw2SourceID, gw3SinkID, domain2ID, CF_GENIVI_STEREO});
-	compareRoute1.route.push_back({gw3SourceID, gw5SinkID, domain1ID, CF_GENIVI_STEREO});
-	compareRoute1.route.push_back({gw5SourceID, sink1ID, domain3ID, CF_GENIVI_STEREO});
-	DO_ASSERT()
-
-	compareRoute1.route.clear();
-	compareRoute1.route.push_back({source1ID, gw2SinkID, domain1ID, CF_GENIVI_STEREO});
-	compareRoute1.route.push_back({gw2SourceID, gw3SinkID, domain2ID, CF_GENIVI_STEREO});
 	compareRoute1.route.push_back({gw3SourceID, gw1SinkID, domain1ID, CF_GENIVI_STEREO});
-	compareRoute1.route.push_back({gw1SourceID, gw4SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw1SourceID, gw4SinkID, domain2ID, CF_GENIVI_STEREO});
 	compareRoute1.route.push_back({gw4SourceID, gw5SinkID, domain1ID, CF_GENIVI_STEREO});
-	compareRoute1.route.push_back({gw5SourceID, sink1ID, domain3ID, CF_GENIVI_STEREO});
-	DO_ASSERT()
-
-	compareRoute1.route.clear();
-	compareRoute1.route.push_back({source1ID, gw1SinkID, domain1ID, CF_GENIVI_STEREO});
-	compareRoute1.route.push_back({gw1SourceID, gw3SinkID, domain2ID, CF_GENIVI_STEREO});
-	compareRoute1.route.push_back({gw3SourceID, gw5SinkID, domain1ID, CF_GENIVI_STEREO});
 	compareRoute1.route.push_back({gw5SourceID, sink1ID, domain3ID, CF_GENIVI_STEREO});
 	DO_ASSERT()
 
@@ -3066,37 +3002,177 @@ TEST_F(CAmRouterMapTest,route3Domains1Source1SinkGwCycles)
 	compareRoute1.route.push_back({source1ID, gw1SinkID, domain1ID, CF_GENIVI_STEREO});
 	compareRoute1.route.push_back({gw1SourceID, gw3SinkID, domain2ID, CF_GENIVI_STEREO});
 	compareRoute1.route.push_back({gw3SourceID, gw2SinkID, domain1ID, CF_GENIVI_STEREO});
-	compareRoute1.route.push_back({gw2SourceID, gw4SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw2SourceID, gw4SinkID, domain2ID, CF_GENIVI_STEREO});
 	compareRoute1.route.push_back({gw4SourceID, gw5SinkID, domain1ID, CF_GENIVI_STEREO});
 	compareRoute1.route.push_back({gw5SourceID, sink1ID, domain3ID, CF_GENIVI_STEREO});
 	DO_ASSERT()
 
 	compareRoute1.route.clear();
 	compareRoute1.route.push_back({source1ID, gw1SinkID, domain1ID, CF_GENIVI_STEREO});
-	compareRoute1.route.push_back({gw1SourceID, gw4SinkID, domain1ID, CF_GENIVI_STEREO});
-	compareRoute1.route.push_back({gw4SourceID, gw5SinkID, domain1ID, CF_GENIVI_STEREO});
-	compareRoute1.route.push_back({gw5SourceID, sink1ID, domain3ID, CF_GENIVI_STEREO});
-	DO_ASSERT()
-
-	compareRoute1.route.clear();
-	compareRoute1.route.push_back({source1ID, gw1SinkID, domain1ID, CF_GENIVI_STEREO});
-	compareRoute1.route.push_back({gw1SourceID, gw4SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw1SourceID, gw4SinkID, domain2ID, CF_GENIVI_STEREO});
 	compareRoute1.route.push_back({gw4SourceID, gw2SinkID, domain1ID, CF_GENIVI_STEREO});
 	compareRoute1.route.push_back({gw2SourceID, gw3SinkID, domain2ID, CF_GENIVI_STEREO});
 	compareRoute1.route.push_back({gw3SourceID, gw5SinkID, domain1ID, CF_GENIVI_STEREO});
 	compareRoute1.route.push_back({gw5SourceID, sink1ID, domain3ID, CF_GENIVI_STEREO});
 	DO_ASSERT()
+
+	compareRoute1.route.clear();
+	compareRoute1.route.push_back({source1ID, gw5SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw5SourceID, sink1ID, domain3ID, CF_GENIVI_STEREO});
+	DO_ASSERT()
+#else
+	compareRoute1.route.clear();
+	compareRoute1.route.push_back({source1ID, gw5SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw5SourceID, sink1ID, domain3ID, CF_GENIVI_STEREO});
+#endif
+
+	listRoutes.clear();
+	resultNodesPath.clear();
+	getAllPaths(*sourceNode, *sinkNode, listRoutes, resultNodesPath, false);
+	ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
+	DO_ASSERT()
+}
+
+TEST_F(CAmRouterMapTest,route3Domains1Source3Gateways3Convertres1Sink)
+{
+	EXPECT_CALL(pMockControlInterface,getConnectionFormatChoice(_,_,_,_,_)).WillRepeatedly(DoAll(returnConnectionFormat(), Return(E_OK)));
+
+	am_domainID_t domainID1, domainID2, domainID3;
+	enterDomainDB("domain1", domainID1);
+	enterDomainDB("domain2", domainID2);
+	enterDomainDB("domain3", domainID3);
+
+	std::vector<am_CustomConnectionFormat_t> cfStereo;
+	cfStereo.push_back(CF_GENIVI_STEREO);
+	std::vector<am_CustomConnectionFormat_t> cfAnalog;
+	cfAnalog.push_back(CF_GENIVI_ANALOG);
+	std::vector<am_CustomConnectionFormat_t> cfMono;
+	cfMono.push_back(CF_GENIVI_MONO);
+	std::vector<am_CustomConnectionFormat_t> cfAuto;
+	cfAuto.push_back(CF_GENIVI_AUTO);
+
+	am_sourceID_t sourceID;
+	enterSourceDB("source1", domainID1, cfStereo, sourceID);
+	am_sinkID_t gwSinkID1;
+	enterSinkDB("gwSink1", domainID1, cfStereo, gwSinkID1);
+    am_sinkID_t gwSinkID21;
+    enterSinkDB("gwSink21", domainID1, cfStereo, gwSinkID21);
+
+	am_sourceID_t gwSourceID1;
+	enterSourceDB("gwSource1", domainID2, cfMono, gwSourceID1);
+    am_sinkID_t gwSinkID22;
+    enterSinkDB("gwSink22", domainID2, cfMono, gwSinkID22);
+
+    am_sourceID_t gwSourceID21;
+    enterSourceDB("gwSource21", domainID3, cfAuto, gwSourceID21);
+
+    am_sourceID_t gwSourceID22;
+    enterSourceDB("gwSource22", domainID3, cfAuto, gwSourceID22);
+	am_sourceID_t gwSourceID5;
+	enterSourceDB("gwSource5", domainID3, cfStereo, gwSourceID5);
+	am_sinkID_t gwSinkID5;
+	enterSinkDB("gwSink5", domainID3, cfAnalog, gwSinkID5);
+    am_sourceID_t gwSourceID3;
+	enterSourceDB("gwSource3", domainID3, cfAnalog, gwSourceID3);
+	am_sinkID_t gwSinkID3;
+	enterSinkDB("gwSink3", domainID3, cfAuto, gwSinkID3);
+	am_sourceID_t gwSourceID4;
+	enterSourceDB("gwSource4", domainID3, cfStereo, gwSourceID4);
+	am_sinkID_t gwSinkID4;
+	enterSinkDB("gwSink4", domainID3, cfAnalog, gwSinkID4);
+	am_sinkID_t sinkID;
+	enterSinkDB("sink1", domainID3, cfStereo, sinkID);
+
+	std::vector<bool> matrix;
+	matrix.push_back(true);
+    am_gatewayID_t gatewayID;
+    enterGatewayDB("gateway1", domainID2, domainID1, cfMono, cfStereo, matrix, gwSourceID1, gwSinkID1, gatewayID);
+    am_gatewayID_t gatewayID22;
+    enterGatewayDB("gateway22", domainID3, domainID2, cfAuto, cfMono, matrix, gwSourceID22, gwSinkID22, gatewayID22);
+    am_gatewayID_t gatewayID21;
+    enterGatewayDB("gateway21", domainID3, domainID1, cfAuto, cfStereo, matrix, gwSourceID21, gwSinkID21, gatewayID21);
+	am_converterID_t converterID1;
+	enterConverterDB("converter1", domainID3, cfAnalog, cfAuto, matrix, gwSourceID3, gwSinkID3, converterID1);
+	am_converterID_t converterID2;
+	enterConverterDB("converter2", domainID3, cfStereo, cfAnalog, matrix, gwSourceID4, gwSinkID4, converterID2);
+	am_converterID_t converterID3;
+	enterConverterDB("converter3", domainID3, cfStereo, cfAnalog, matrix, gwSourceID5, gwSinkID5, converterID3);
+
+    am::am_Source_s source;
+    am::am_Sink_s sink;
+
+    pDatabaseHandler.getSinkInfoDB(sinkID, sink);
+    pDatabaseHandler.getSourceInfoDB(sourceID, source);
+
+    std::vector<am_Route_s> listRoutes;
+
+	getRoute(false, source, sink, listRoutes);
+	ASSERT_EQ(static_cast<uint>(4), listRoutes.size());
+
+ 	am_Route_s compareRoute1;
+	compareRoute1.sinkID = sinkID;
+	compareRoute1.sourceID = sourceID;
+	compareRoute1.route.push_back({sourceID, gwSinkID1, domainID1, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gwSourceID1, gwSinkID22, domainID2, CF_GENIVI_MONO});
+	compareRoute1.route.push_back({gwSourceID22, gwSinkID3, domainID3, CF_GENIVI_AUTO});
+	compareRoute1.route.push_back({gwSourceID3, gwSinkID4, domainID3, CF_GENIVI_ANALOG});
+	compareRoute1.route.push_back({gwSourceID4, sinkID, domainID3, CF_GENIVI_STEREO});
+
+ 	am_Route_s compareRoute2;
+	compareRoute2.sinkID = sinkID;
+	compareRoute2.sourceID = sourceID;
+	compareRoute2.route.push_back({sourceID, gwSinkID1, domainID1, CF_GENIVI_STEREO});
+	compareRoute2.route.push_back({gwSourceID1, gwSinkID22, domainID2, CF_GENIVI_MONO});
+	compareRoute2.route.push_back({gwSourceID22, gwSinkID3, domainID3, CF_GENIVI_AUTO});
+	compareRoute2.route.push_back({gwSourceID3, gwSinkID5, domainID3, CF_GENIVI_ANALOG});
+	compareRoute2.route.push_back({gwSourceID5, sinkID, domainID3, CF_GENIVI_STEREO});
+
+ 	am_Route_s compareRoute3;
+	compareRoute3.sinkID = sinkID;
+	compareRoute3.sourceID = sourceID;
+	compareRoute3.route.push_back({sourceID, gwSinkID21, domainID1, CF_GENIVI_STEREO});
+	compareRoute3.route.push_back({gwSourceID21, gwSinkID3, domainID3, CF_GENIVI_AUTO});
+	compareRoute3.route.push_back({gwSourceID3, gwSinkID4, domainID3, CF_GENIVI_ANALOG});
+	compareRoute3.route.push_back({gwSourceID4, sinkID, domainID3, CF_GENIVI_STEREO});
+
+ 	am_Route_s compareRoute4;
+	compareRoute4.sinkID = sinkID;
+	compareRoute4.sourceID = sourceID;
+	compareRoute4.route.push_back({sourceID, gwSinkID21, domainID1, CF_GENIVI_STEREO});
+	compareRoute4.route.push_back({gwSourceID21, gwSinkID3, domainID3, CF_GENIVI_AUTO});
+	compareRoute4.route.push_back({gwSourceID3, gwSinkID5, domainID3, CF_GENIVI_ANALOG});
+	compareRoute4.route.push_back({gwSourceID5, sinkID, domainID3, CF_GENIVI_STEREO});
+
+	ASSERT_TRUE(pCF.compareRoute(compareRoute1,listRoutes[0])||
+				pCF.compareRoute(compareRoute1,listRoutes[1])||
+				pCF.compareRoute(compareRoute1,listRoutes[2])||
+				pCF.compareRoute(compareRoute1,listRoutes[3]));
+
+	ASSERT_TRUE(pCF.compareRoute(compareRoute2,listRoutes[0])||
+				pCF.compareRoute(compareRoute2,listRoutes[1])||
+				pCF.compareRoute(compareRoute2,listRoutes[2])||
+				pCF.compareRoute(compareRoute2,listRoutes[3]));
+
+	ASSERT_TRUE(pCF.compareRoute(compareRoute3,listRoutes[0])||
+				pCF.compareRoute(compareRoute3,listRoutes[1])||
+				pCF.compareRoute(compareRoute3,listRoutes[2])||
+				pCF.compareRoute(compareRoute3,listRoutes[3]));
+
+	ASSERT_TRUE(pCF.compareRoute(compareRoute4,listRoutes[0])||
+				pCF.compareRoute(compareRoute4,listRoutes[1])||
+				pCF.compareRoute(compareRoute4,listRoutes[2])||
+				pCF.compareRoute(compareRoute4,listRoutes[3]));
 }
 
 int main(int argc, char **argv)
 {
 #ifdef WITH_DLT
-    CAmDltWrapper::instance()->registerApp("routing", "CAmRouterMapTest");
+	CAmDltWrapper::instance()->registerApp("routing", "CAmRouterMapTest");
 #else
-    CAmDltWrapper::instance(true)->registerApp("routing", "CAmRouterMapTest");
+	CAmDltWrapper::instance(true)->registerApp("routing", "CAmRouterMapTest");
 #endif
-    logInfo("Routing Test started ");
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+	logInfo("Routing Test started ");
+	::testing::InitGoogleTest(&argc, argv);
+	return RUN_ALL_TESTS();
 }
 

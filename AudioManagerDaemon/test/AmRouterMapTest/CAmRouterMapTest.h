@@ -27,7 +27,6 @@
 
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
-
 #include <algorithm>
 #include <string>
 #include <vector>
@@ -95,7 +94,13 @@ public:
 							  const am_sourceID_t & sourceID,
 							  const am_sinkID_t & sinkID,
 							  am_converterID_t & converterID);
-
+	void getRoute(const bool onlyfree, const am_sourceID_t sourceID, const am_sinkID_t sinkID, std::vector<am_Route_s>& returnList);
+	void getRoute(const bool onlyfree, const am_Source_s & aSource, const am_Sink_s & aSink, std::vector<am_Route_s> & listRoutes);
+	void getAllPaths(CAmRoutingNode & aSource,
+					 CAmRoutingNode & aSink,
+					 std::vector<am_Route_s> & resultPath,
+					 std::vector<std::vector<CAmRoutingNode*>> & resultNodesPath,
+					 const bool includeCycles);
 };
 
 }

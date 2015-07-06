@@ -36,21 +36,6 @@
 namespace am {
 
 
-void getSourceSinkPossibleConnectionFormats(std::vector<CAmNode<am_RoutingNodeData_s>*>::iterator iteratorSource,
-		 	 	 	 	 	 	 	 	 	 std::vector<CAmNode<am_RoutingNodeData_s>*>::iterator iteratorSink,
-		 	 	 	 	 	 	 	 	 	 std::vector<am_CustomConnectionFormat_t> & outConnectionFormats)
-{
-	CAmNode<am_RoutingNodeData_s> * nodeSink = *iteratorSink;
-	assert(nodeSink->getData().type==am_RoutingNodeData_s::am_NodeDataType_e::SINK);
-
-	CAmNode<am_RoutingNodeData_s> * nodeSource = *iteratorSource;
-	assert(nodeSource->getData().type==am_RoutingNodeData_s::am_NodeDataType_e::SOURCE);
-
-	am_Source_s *source = nodeSource->getData().data.source;
-	am_Sink_s *sink = nodeSink->getData().data.sink;
-	CAmRouter::listPossibleConnectionFormats(source->listConnectionFormats, sink->listConnectionFormats, outConnectionFormats);
-}
-
 template <class X> void getMergeConnectionFormats(const X * element,
 							 const am_CustomConnectionFormat_t connectionFormat,
 							 const std::vector<am_CustomConnectionFormat_t> & listConnectionFormats,
@@ -76,9 +61,7 @@ CAmRouter::CAmRouter(IAmDatabaseHandler* iDatabaseHandler, CAmControlSender* iSe
 		mNodeListSources(),
 		mNodeListSinks(),
 		mNodeListGateways(),
-		mNodeListConverters(),
-		mpRootSource(0),
-		mpRootSink(0)
+		mNodeListConverters()
 {
     assert(mpDatabaseHandler);
     assert(mpControlSender);
@@ -101,9 +84,713 @@ am_Error_e CAmRouter::getRoute(const bool onlyfree, const am_sourceID_t sourceID
     returnList.clear();
     am_Source_s source;
     am_Sink_s sink;
-    mpDatabaseHandler->getSourceInfoDB(sourceID, source);
-    mpDatabaseHandler->getSinkInfoDB(sinkID, sink);
-    return getRoute(onlyfree, source, sink, returnList);
+    am_Error_e error = mpDatabaseHandler->getSourceInfoDB(sourceID, source);
+    if(error!=E_OK)
+    	return error;
+    error = mpDatabaseHandler->getSinkInfoDB(sinkID, sink);
+    if(error!=E_OK)
+        return error;
+    error = getRoute(onlyfree, source, sink, returnList);
+    return error;
+}
+
+
+am_Error_e CAmRouter::getRoute(const bool onlyfree, const am_Source_s & aSource, const am_Sink_s & aSink, std::vector<am_Route_s> & listRoutes)
+{
+	am_Error_e error;
+	load(onlyfree);
+
+	CAmRoutingNode* pRootSource = sourceNodeWithID(aSource.sourceID);
+	CAmRoutingNode* pRootSink = sinkNodeWithID(aSink.sinkID);
+
+	assert(pRootSource);
+	assert(pRootSink);
+
+#ifdef TRACE_GRAPH
+	mRoutingGraph.trace([&](const CAmRoutingNode & node, const std::vector<CAmVertex<am_RoutingNodeData_s,uint16_t>*> & list) {
+				std::cout << "Node " << node.getIndex() << " :";
+				((CAmRoutingNode &)node).getData().trace();
+				std::cout << "-->";
+				std::for_each(list.begin(), list.end(), [&](const CAmVertex<am_RoutingNodeData_s,uint16_t>* refVertex){
+					am::CAmNode<am::am_RoutingNodeData_s>* data = refVertex->getNode();
+					std::cout << "Node " << data->getIndex() << " :";
+					data->getData().trace();
+				});
+				std::cout << std::endl;
+			});
+#endif
+
+	std::vector<std::vector<CAmRoutingNode*>> pathNodes;
+	error = getAllPaths(*pRootSource, *pRootSink, listRoutes, pathNodes);
+	return error;
+}
+
+void CAmRouter::load(const bool onlyFree)
+{
+	clear();
+	mOnlyFreeConversionNodes = onlyFree;
+
+#if defined (WITH_DATABASE_STORAGE)
+	std::deque<am_Source_s> listSources;
+	std::deque<am_Sink_s> listSinks;
+	std::deque<am_Gateway_s> listGateways;
+	std::deque<am_Converter_s> listConverters;
+#endif
+	am_RoutingNodeData_s nodeDataSrc;
+	nodeDataSrc.type = CAmNodeDataType::SOURCE;
+	mpDatabaseHandler->enumerateSources([&](const am_Source_s & obj){
+#if defined (WITH_DATABASE_STORAGE)
+		listSources.push_back(obj);
+		nodeDataSrc.data.source = &listSources.back();
+#else
+		nodeDataSrc.data.source = (am_Source_s*)&obj;
+#endif
+		mNodeListSources[nodeDataSrc.data.source->domainID].push_back(&mRoutingGraph.addNode(nodeDataSrc));
+	});
+	am_RoutingNodeData_s nodeDataSink;
+	nodeDataSink.type = CAmNodeDataType::SINK;
+	mpDatabaseHandler->enumerateSinks([&](const am_Sink_s & obj){
+#if defined (WITH_DATABASE_STORAGE)
+		listSinks.push_back(obj);
+		nodeDataSrc.data.sink = &listSinks.back();
+#else
+		nodeDataSink.data.sink = (am_Sink_s*)&obj;
+#endif
+		mNodeListSinks[nodeDataSink.data.sink->domainID].push_back(&mRoutingGraph.addNode(nodeDataSink));
+	});
+	am_RoutingNodeData_s nodeDataGateway;
+	nodeDataGateway.type = CAmNodeDataType::GATEWAY;
+	mpDatabaseHandler->enumerateGateways([&](const am_Gateway_s & obj){
+#if defined (WITH_DATABASE_STORAGE)
+		listGateways.push_back(obj);
+		nodeDataSrc.data.gateway = &listGateways.back();
+#else
+		nodeDataGateway.data.gateway = (am_Gateway_s*)&obj;
+#endif
+		mNodeListGateways[nodeDataGateway.data.gateway->controlDomainID].push_back(&mRoutingGraph.addNode(nodeDataGateway));
+	});
+	am_RoutingNodeData_s nodeDataConverter;
+	nodeDataConverter.type = CAmNodeDataType::CONVERTER;
+	mpDatabaseHandler->enumerateConverters([&](const am_Converter_s & obj){
+#if defined (WITH_DATABASE_STORAGE)
+		listConverters.push_back(obj);
+		nodeDataSrc.data.converter = &listConverters.back();
+#else
+		nodeDataConverter.data.converter = (am_Converter_s*)&obj;
+#endif
+		mNodeListConverters[nodeDataConverter.data.converter->domainID].push_back(&mRoutingGraph.addNode(nodeDataConverter));
+	});
+
+#ifdef ROUTING_BUILD_CONNECTIONS
+	constructConverterConnections();
+	constructGatewayConnections();
+	constructSourceSinkConnections();
+#endif
+}
+
+void CAmRouter::clear()
+{
+	mRoutingGraph.clear();
+	mNodeListSources.clear();
+	mNodeListSinks.clear();
+	mNodeListGateways.clear();
+	mNodeListConverters.clear();
+}
+
+CAmRoutingNode* CAmRouter::sinkNodeWithID(const am_sinkID_t sinkID)
+{
+	CAmRoutingNode* result = NULL;
+	for(auto it = mNodeListSinks.begin(); it!=mNodeListSinks.end(); it++)
+	{
+		result = sinkNodeWithID(sinkID, it->first);
+		if(result)
+			return result;
+	}
+	return result;
+}
+
+CAmRoutingNode* CAmRouter::sinkNodeWithID(const am_sinkID_t sinkID, const am_domainID_t domainID)
+{
+	CAmRoutingNode* result = NULL;
+	std::vector<CAmRoutingNode*> & value = mNodeListSinks[domainID];
+	auto iter = std::find_if(value.begin(), value.end(), [sinkID](CAmRoutingNode* node){
+		return node->getData().data.sink->sinkID==sinkID;
+	});
+	if(iter!=value.end())
+		result = *iter;
+	return result;
+}
+
+CAmRoutingNode* CAmRouter::sourceNodeWithID(const am_sourceID_t sourceID)
+{
+	CAmRoutingNode* result = NULL;
+	for(auto it = mNodeListSources.begin(); it!=mNodeListSources.end(); it++)
+	{
+		result = sourceNodeWithID(sourceID, it->first);
+		if(result)
+			return result;
+	}
+	return result;
+}
+
+CAmRoutingNode* CAmRouter::sourceNodeWithID(const am_sourceID_t sourceID, const am_domainID_t domainID)
+{
+	CAmRoutingNode* result = NULL;
+	std::vector<CAmRoutingNode*> & value = mNodeListSources[domainID];
+	auto iter = std::find_if(value.begin(), value.end(), [sourceID](CAmRoutingNode* node){
+		return node->getData().data.source->sourceID==sourceID;
+	});
+	if(iter!=value.end())
+		result = *iter;
+	return result;
+}
+
+CAmRoutingNode* CAmRouter::converterNodeWithSinkID(const am_sinkID_t sinkID, const am_domainID_t domainID)
+{
+	CAmRoutingNode* result = NULL;
+	std::vector<CAmRoutingNode*> & value = mNodeListConverters[domainID];
+	auto iter = std::find_if(value.begin(), value.end(), [sinkID](CAmRoutingNode* node){
+		return node->getData().data.converter->sinkID==sinkID;
+	});
+	if(iter!=value.end())
+		result = *iter;
+	return result;
+}
+
+CAmRoutingNode* CAmRouter::gatewayNodeWithSinkID(const am_sinkID_t sinkID)
+{
+	for(auto it = mNodeListGateways.begin(); it!=mNodeListGateways.end(); it++)
+	{
+		std::vector<CAmRoutingNode*> & value = it->second;
+		auto iter = std::find_if(value.begin(), value.end(), [sinkID](CAmRoutingNode* node){
+			return node->getData().data.gateway->sinkID==sinkID;
+		});
+		if(iter!=value.end())
+			return *iter;
+	}
+	return NULL;
+}
+
+#ifdef ROUTING_BUILD_CONNECTIONS
+
+void CAmRouter::constructSourceSinkConnections()
+{
+	std::vector<am_CustomConnectionFormat_t> intersection;
+	for(auto itSrc = mNodeListSources.begin(); itSrc!=mNodeListSources.end(); itSrc++)
+	{
+		for(auto it = itSrc->second.begin(); it!=itSrc->second.end(); it++)
+		{
+			CAmRoutingNode* srcNode = *it;
+			am_RoutingNodeData_s & srcNodeData = srcNode->getData();
+			am_Source_s * source = srcNodeData.data.source;
+			for(auto itSink = mNodeListSinks[itSrc->first].begin(); itSink!=mNodeListSinks[itSrc->first].end(); itSink++)
+			{
+				CAmRoutingNode* sinkNode = *itSink;
+				am_RoutingNodeData_s & sinkNodeData = sinkNode->getData();
+				am_Sink_s * sink = sinkNodeData.data.sink;
+
+				intersection.clear();
+				//Check whether the hidden sink formats match the source formats...
+				listPossibleConnectionFormats(source->listConnectionFormats, sink->listConnectionFormats, intersection);
+				if(intersection.size()>0)//OK  match source -> sink
+				{
+					mRoutingGraph.connectNodes(*srcNode, *sinkNode, CF_UNKNOWN, 1);
+				}
+			}
+		}
+	}
+}
+
+void CAmRouter::constructGatewayConnections()
+{
+	std::vector<am_CustomConnectionFormat_t> sourceFormats, sinkFormats;
+	for(auto iter = mNodeListGateways.begin(); iter!=mNodeListGateways.end(); iter++)
+	{
+		for(auto it = iter->second.begin(); it!=iter->second.end(); it++)
+		{
+			CAmRoutingNode* gatewayNode = *it;
+			am_RoutingNodeData_s & gatewayNodeData = gatewayNode->getData();
+			am_Gateway_s * gateway = gatewayNodeData.data.gateway;
+			//Get only gateways with end point in current source domain
+			if(!mOnlyFreeConversionNodes || !isComponentConnected(*gateway))
+			{
+				//Get the sink connected to the gateway...
+				CAmRoutingNode *gatewaySinkNode = this->sinkNodeWithID(gateway->sinkID, gateway->domainSinkID);
+				if(gatewaySinkNode)
+				{
+					am_RoutingNodeData_s & gatewaySinkData = gatewaySinkNode->getData();
+					//Check whether the hidden sink formats match the source formats...
+					sourceFormats.clear();
+					sinkFormats.clear();
+					if(getAllowedFormatsFromConvMatrix(gateway->convertionMatrix, gateway->listSourceFormats, gateway->listSinkFormats, sourceFormats, sinkFormats))
+					{
+						CAmRoutingNode *gatewaySourceNode = this->sourceNodeWithID(gateway->sourceID, gateway->domainSourceID);
+						if(gatewaySourceNode)
+						{
+							//Connections hidden_sink->gateway->hidden_source
+							mRoutingGraph.connectNodes(*gatewaySinkNode, *gatewayNode, CF_UNKNOWN, 1);
+							mRoutingGraph.connectNodes(*gatewayNode, *gatewaySourceNode, CF_UNKNOWN, 1);
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+void CAmRouter::constructConverterConnections()
+{
+	std::vector<am_CustomConnectionFormat_t> sourceFormats, sinkFormats;
+
+	for(auto iter = mNodeListConverters.begin(); iter!=mNodeListConverters.end(); iter++)
+	{
+		for(auto it = iter->second.begin(); it!=iter->second.end(); it++)
+		{
+			CAmRoutingNode* converterNode = *it;
+			am_RoutingNodeData_s & converterNodeData = converterNode->getData();
+			am_Converter_s * converter = converterNodeData.data.converter;
+			//Get only converters with end point in current source domain
+			if(!mOnlyFreeConversionNodes || !isComponentConnected(*converter))
+			{
+				//Get the sink connected to the converter...
+				CAmRoutingNode *converterSinkNode = this->sinkNodeWithID(converter->sinkID, converter->domainID);
+				if(converterSinkNode)
+				{
+					am_RoutingNodeData_s & converterSinkData = converterSinkNode->getData();
+					//Check whether the hidden sink formats match the source formats...
+					sourceFormats.clear();
+					sinkFormats.clear();
+					if(getAllowedFormatsFromConvMatrix(converter->convertionMatrix, converter->listSourceFormats, converter->listSinkFormats, sourceFormats, sinkFormats))
+					{
+						CAmRoutingNode *converterSourceNode = this->sourceNodeWithID(converter->sourceID, converter->domainID);
+						if(converterSourceNode)
+						{
+							//Connections hidden_sink->converter->hidden_source
+							mRoutingGraph.connectNodes(*converterSinkNode, *converterNode, CF_UNKNOWN, 1);
+							mRoutingGraph.connectNodes(*converterNode, *converterSourceNode, CF_UNKNOWN, 1);
+						}
+					}
+				}
+			}
+		}
+	}
+}
+#else
+
+void CAmRouter::getVerticesForSource(const CAmRoutingNode & node, CAmRoutingListVertices & list)
+{
+	am_RoutingNodeData_s & srcNodeData = ((CAmRoutingNode*)&node)->getData();
+	std::vector<am_CustomConnectionFormat_t> intersection;
+	am_Source_s * source = srcNodeData.data.source;
+	std::vector<CAmRoutingNode*> & sinks = mNodeListSinks[source->domainID];
+	for(auto itSink = sinks.begin(); itSink!=sinks.end(); itSink++)
+	{
+		CAmRoutingNode* sinkNode = *itSink;
+		am_RoutingNodeData_s & sinkNodeData = sinkNode->getData();
+		am_Sink_s * sink = sinkNodeData.data.sink;
+
+		intersection.clear();
+		//Check whether the hidden sink formats match the source formats...
+		listPossibleConnectionFormats(source->listConnectionFormats, sink->listConnectionFormats, intersection);
+		if(intersection.size()>0)//OK  match source -> sink
+		{
+			list.emplace_back(sinkNode, CF_UNKNOWN, 1);
+		}
+	}
+}
+
+void CAmRouter::getVerticesForSink(const CAmRoutingNode & node, CAmRoutingListVertices & list)
+{
+	am_RoutingNodeData_s & sinkNodeData = ((CAmRoutingNode*)&node)->getData();
+	std::vector<am_CustomConnectionFormat_t> intersection;
+	am_Sink_s * sink = sinkNodeData.data.sink;
+
+	CAmRoutingNode *converterNode = converterNodeWithSinkID(sink->sinkID, sink->domainID);
+	if(converterNode)
+	{
+		std::vector<am_CustomConnectionFormat_t> sourceFormats, sinkFormats;
+		am_RoutingNodeData_s & converterData = converterNode->getData();
+		am_Converter_s * converter = converterData.data.converter;
+		if(!mOnlyFreeConversionNodes || !isComponentConnected(*converter))
+		{
+			if(getAllowedFormatsFromConvMatrix(converter->convertionMatrix, converter->listSourceFormats, converter->listSinkFormats, sourceFormats, sinkFormats))
+				list.emplace_back(converterNode, CF_UNKNOWN, 1);
+		}
+	}
+	else
+	{
+		std::vector<am_CustomConnectionFormat_t> sourceFormats, sinkFormats;
+		CAmRoutingNode *gatewayNode = gatewayNodeWithSinkID(sink->sinkID);
+		if(gatewayNode)
+		{
+			std::vector<am_CustomConnectionFormat_t> sourceFormats, sinkFormats;
+			am_RoutingNodeData_s & gatewayData = gatewayNode->getData();
+			am_Gateway_s * gateway = gatewayData.data.gateway;
+			if(!mOnlyFreeConversionNodes || !isComponentConnected(*gateway))
+			{
+				if(getAllowedFormatsFromConvMatrix(gateway->convertionMatrix, gateway->listSourceFormats, gateway->listSinkFormats, sourceFormats, sinkFormats))
+					list.emplace_back(gatewayNode, CF_UNKNOWN, 1);
+			}
+		}
+	}
+
+}
+
+void CAmRouter::getVerticesForConverter(const CAmRoutingNode & node, CAmRoutingListVertices & list)
+{
+	std::vector<am_CustomConnectionFormat_t> sourceFormats, sinkFormats;
+	am_RoutingNodeData_s & converterNodeData = ((CAmRoutingNode*)&node)->getData();
+	am_Converter_s * converter = converterNodeData.data.converter;
+	//Get only converters with end point in current source domain
+	if(getAllowedFormatsFromConvMatrix(converter->convertionMatrix, converter->listSourceFormats, converter->listSinkFormats, sourceFormats, sinkFormats))
+	{
+		CAmRoutingNode *converterSourceNode = this->sourceNodeWithID(converter->sourceID, converter->domainID);
+		if(converterSourceNode)
+		{
+			list.emplace_back(converterSourceNode, CF_UNKNOWN, 1);
+		}
+	}
+}
+
+void CAmRouter::getVerticesForGateway(const CAmRoutingNode & node, CAmRoutingListVertices & list)
+{
+	am_RoutingNodeData_s & gatewayNodeData = ((CAmRoutingNode*)&node)->getData();
+	std::vector<am_CustomConnectionFormat_t> sourceFormats, sinkFormats;
+	am_Gateway_s * gateway = gatewayNodeData.data.gateway;
+	if(getAllowedFormatsFromConvMatrix(gateway->convertionMatrix, gateway->listSourceFormats, gateway->listSinkFormats, sourceFormats, sinkFormats))
+	{
+		CAmRoutingNode *gatewaySourceNode = this->sourceNodeWithID(gateway->sourceID, gateway->domainSourceID);
+		if(gatewaySourceNode)
+		{
+			//Connections hidden_sink->gateway->hidden_source
+			list.emplace_back(gatewaySourceNode, CF_UNKNOWN, 1);
+		}
+	}
+}
+
+void CAmRouter::getVerticesForNode(
+		const CAmRoutingNode & node,
+		CAmRoutingListVertices & list
+		)
+{
+	am_RoutingNodeData_s & nodeData = ((CAmRoutingNode*)&node)->getData();
+	if(nodeData.type==CAmNodeDataType::SOURCE)
+	{
+		getVerticesForSource(node, list);
+	}
+	else if(nodeData.type==CAmNodeDataType::SINK)
+	{
+		getVerticesForSink(node, list);
+	}
+	else if(nodeData.type==CAmNodeDataType::CONVERTER)
+	{
+		getVerticesForConverter(node, list);
+	}
+	else if(nodeData.type==CAmNodeDataType::GATEWAY)
+	{
+		getVerticesForGateway(node, list);
+	}
+}
+
+#endif
+
+am_Error_e CAmRouter::determineConnectionFormatsForPath(am_Route_s & routeObjects, std::vector<CAmRoutingNode*> & nodes)
+{
+	std::vector<am_RoutingElement_s>::iterator routingElementIterator = routeObjects.route.begin();
+	std::vector<CAmRoutingNode*>::iterator nodeIterator = nodes.begin();
+	if( routingElementIterator!= routeObjects.route.end() && nodeIterator!=nodes.end() )
+		return doConnectionFormatsForPath(routeObjects, nodes, routingElementIterator, nodeIterator);
+	return E_OK;
+}
+
+am_Error_e CAmRouter::doConnectionFormatsForPath(am_Route_s & routeObjects,
+													 std::vector<CAmRoutingNode*> & nodes,
+													 std::vector<am_RoutingElement_s>::iterator routingElementIterator,
+													 std::vector<CAmRoutingNode*>::iterator nodeIterator)
+{
+    am_Error_e returnError = E_NOT_POSSIBLE;
+    std::vector<am_CustomConnectionFormat_t> listConnectionFormats;
+    std::vector<am_CustomConnectionFormat_t> listMergeConnectionFormats;
+
+    std::vector<CAmRoutingNode*>::iterator  currentNodeIterator = nodeIterator;
+    std::vector<am_RoutingElement_s>::iterator  currentRoutingElementIterator = routingElementIterator;
+
+    if (currentRoutingElementIterator!=routeObjects.route.begin())
+    {
+    	std::vector<am_CustomConnectionFormat_t> listConnectionFormats;
+    	std::vector<am_RoutingElement_s>::iterator tempIterator = (currentRoutingElementIterator-1);
+      	CAmRoutingNode * currentNode = *currentNodeIterator;
+      	getSourceSinkPossibleConnectionFormats(currentNodeIterator+1, currentNodeIterator+2, listConnectionFormats);
+
+		if(currentNode->getData().type==CAmNodeDataType::GATEWAY)
+		{
+			am_Gateway_s *gateway = currentNode->getData().data.gateway;
+			getMergeConnectionFormats(gateway, tempIterator->connectionFormat, listConnectionFormats, listMergeConnectionFormats);
+		}
+		else if(currentNode->getData().type==CAmNodeDataType::CONVERTER)
+		{
+			am_Converter_s *converter = currentNode->getData().data.converter;
+			getMergeConnectionFormats(converter, tempIterator->connectionFormat, listConnectionFormats, listMergeConnectionFormats);
+		}
+		currentNodeIterator+=3;
+    }
+    else
+    {
+    	CAmRoutingNode * currentNode = *currentNodeIterator;
+    	assert(currentNode->getData().type==CAmNodeDataType::SOURCE);
+
+    	currentNodeIterator++;
+		assert(currentNodeIterator!=nodes.end());
+
+		CAmRoutingNode * nodeSink = *currentNodeIterator;
+		assert(nodeSink->getData().type==CAmNodeDataType::SINK);
+
+		am_Source_s *source = currentNode->getData().data.source;
+		am_Sink_s *sink = nodeSink->getData().data.sink;
+		listPossibleConnectionFormats(source->listConnectionFormats, sink->listConnectionFormats, listMergeConnectionFormats);
+		currentNodeIterator+=1; //now we are on the next converter/gateway
+    }
+
+    //let the controller decide:
+    std::vector<am_CustomConnectionFormat_t> listPriorityConnectionFormats;
+    mpControlSender->getConnectionFormatChoice(currentRoutingElementIterator->sourceID, currentRoutingElementIterator->sinkID, routeObjects,
+    										  listMergeConnectionFormats, listPriorityConnectionFormats);
+
+    //we have the list sorted after priors - now we try one after the other with the next part of the route
+	std::vector<am_CustomConnectionFormat_t>::iterator connectionFormatIterator = listPriorityConnectionFormats.begin();
+	//here we need to check if we are at the end and stop
+	 std::vector<am_RoutingElement_s>::iterator nextIterator = currentRoutingElementIterator + 1;//next pair source and sink
+	if (nextIterator == routeObjects.route.end())
+	{
+		if (!listPriorityConnectionFormats.empty())
+		{
+			currentRoutingElementIterator->connectionFormat = listPriorityConnectionFormats.front();
+			return (E_OK);
+		}
+		else
+			return (E_NOT_POSSIBLE);
+	}
+
+	for (; connectionFormatIterator != listPriorityConnectionFormats.end(); ++connectionFormatIterator)
+	{
+		currentRoutingElementIterator->connectionFormat = *connectionFormatIterator;
+		if ((returnError = doConnectionFormatsForPath(routeObjects, nodes, nextIterator, currentNodeIterator)) == E_OK)
+		{
+			break;
+		}
+	}
+    return (returnError);
+}
+
+#ifdef ROUTING_BUILD_CONNECTIONS
+
+void CAmRouter::getShortestPath(const CAmRoutingNode & source,
+											   const CAmRoutingNode & destination,
+											   std::vector<CAmRoutingNode*> & resultPath)
+{
+	mRoutingGraph.getShortestPath(source, destination, resultPath);
+}
+
+void CAmRouter::getShortestPath(CAmRoutingNode & aSource, CAmRoutingNode & aSink,
+									am_Route_s & resultPath, std::vector<CAmRoutingNode*> & resultNodesPath)
+{
+	am_RoutingElement_s * element;
+	am_RoutingNodeData_s & sinkNodeData = aSink.getData();
+	am_RoutingNodeData_s & sourceNodeData = aSource.getData();
+	resultPath.sinkID = sinkNodeData.data.sink->sinkID;
+	resultPath.sourceID = sourceNodeData.data.source->sourceID;
+
+	std::function<void(const am_GraphPathPosition_e, CAmRoutingNode &)> cb = [&](const am_GraphPathPosition_e, CAmRoutingNode & object)
+	{
+		resultNodesPath.insert(resultNodesPath.begin(), (CAmRoutingNode*)&object);
+		am_RoutingNodeData_s & routingData =  object.getData();
+		if(routingData.type==CAmNodeDataType::SINK)
+		{
+			auto iter = resultPath.route.emplace(resultPath.route.begin());
+			element = &(*iter);
+			element->domainID = routingData.data.sink->domainID;
+			element->sinkID = routingData.data.sink->sinkID;
+			element->connectionFormat = CF_UNKNOWN;
+		}
+		else if(routingData.type==CAmNodeDataType::SOURCE)
+		{
+			element->domainID = routingData.data.source->domainID;
+			element->sourceID = routingData.data.source->sourceID;
+			element->connectionFormat = CF_UNKNOWN;
+		}
+	};
+	mRoutingGraph.getShortestPath(aSource, aSink, cb);
+}
+
+#endif
+
+am_Error_e CAmRouter::getAllPaths(CAmRoutingNode & aSource,
+									 CAmRoutingNode & aSink,
+									 std::vector<am_Route_s> & resultPath,
+									 std::vector<std::vector<CAmRoutingNode*>> & resultNodesPath,
+									 const bool includeCycles)
+{
+#ifndef ROUTING_BUILD_CONNECTIONS
+	bool cycles = false;
+#else
+	bool cycles = includeCycles;
+#endif
+	if(((CAmRoutingNode*)&aSource)->getData().type!=CAmNodeDataType::SOURCE ||
+		((CAmRoutingNode*)&aSink)->getData().type!=CAmNodeDataType::SINK)
+		return E_NOT_POSSIBLE;
+
+	uint8_t errorsCount = 0, successCount = 0;
+	generateAllPaths(aSource, aSink, cycles, [&](const std::vector<CAmRoutingNode*> & path) {
+		resultNodesPath.push_back(path);
+		resultPath.emplace_back();
+		am_Route_s & nextRoute = resultPath.back();
+		nextRoute.sinkID = aSink.getData().data.sink->sinkID;
+		nextRoute.sourceID = aSource.getData().data.source->sourceID;
+		am_RoutingElement_s * element;
+		for(auto it = path.begin(); it!=path.end(); it++)
+		{
+			am_RoutingNodeData_s & routingData =  (*it)->getData();
+			if(routingData.type==CAmNodeDataType::SOURCE)
+			{
+				auto iter = nextRoute.route.emplace(nextRoute.route.end());
+				element = &(*iter);
+				element->domainID = routingData.data.source->domainID;
+				element->sourceID = routingData.data.source->sourceID;
+				element->connectionFormat = CF_UNKNOWN;
+			}
+			else if(routingData.type==CAmNodeDataType::SINK)
+			{
+				element->domainID = routingData.data.sink->domainID;
+				element->sinkID = routingData.data.sink->sinkID;
+				element->connectionFormat = CF_UNKNOWN;
+			}
+		}
+
+		am_Error_e err = determineConnectionFormatsForPath(nextRoute, (std::vector<CAmRoutingNode*> &)path);
+		if(err!=E_OK)
+		{
+			errorsCount++;
+			auto last = resultPath.end()-1;
+			resultPath.erase(last);
+#ifdef TRACE_GRAPH
+			std::cout<<"Error by determining connection formats for path from source:"<<nextRoute.sourceID<<" to sink:"<<nextRoute.sinkID<<"\n";
+#endif
+		}
+		else
+		{
+#ifdef TRACE_GRAPH
+			std::cout<<"\nSuccessfully determined connection formats for path from source:"<<nextRoute.sourceID<<" to sink:"<<nextRoute.sinkID<<"\n";
+			for(auto it = nextRoute.route.begin(); it!=nextRoute.route.end(); it++)
+			{
+				am_RoutingElement_s & routingElement =  *it;
+				std::cout<<"["
+						 <<routingElement.sourceID
+						 <<"->"
+						 <<routingElement.sinkID
+						 <<" cf:"
+						 <<routingElement.connectionFormat
+						 <<" d:"
+						 <<routingElement.domainID
+						 <<"]";
+			}
+			std::cout<<"\n";
+#endif
+			successCount++;
+		}
+	});
+	if(successCount)
+		return E_OK;
+	if(errorsCount)
+		return E_NOT_POSSIBLE;
+	return E_OK;
+}
+
+bool CAmRouter::shouldGoInDomain(const std::vector<am_domainID_t> & visitedDomains, const am_domainID_t nodeDomainID)
+{
+	if(visitedDomains.size())
+	{
+		if(visitedDomains.back()==nodeDomainID)
+			return true;
+
+		for(auto it=visitedDomains.begin();it!=visitedDomains.end()-1; it++)
+		{
+			if(nodeDomainID==*it)
+				return false;
+		}
+	}
+	return true;
+}
+
+void CAmRouter::generateAllPaths(const CAmRoutingNode & src,
+									  const CAmRoutingNode & dst,
+									  const bool includeCycles,
+									  std::function<void(const std::vector<CAmRoutingNode*> & path)> cb)
+{
+	if(!includeCycles)
+	{
+		std::vector<CAmRoutingNode*> visited;
+		std::vector<am_domainID_t> visitedDomains;
+		visited.push_back((CAmRoutingNode*)&src);
+		visitedDomains.push_back(((CAmRoutingNode*)&src)->getData().domainID());
+		((CAmRoutingNode*)&src)->setStatus(GES_VISITED);
+		goThroughAllPaths(dst, visited, visitedDomains, cb);
+	}
+	else
+		mRoutingGraph.getAllPaths(src, dst, cb);
+}
+
+void CAmRouter::goThroughAllPaths(const CAmRoutingNode & dst,
+									  std::vector<CAmRoutingNode*> & visited,
+									  std::vector<am_domainID_t> & visitedDomains,
+									  std::function<void(const std::vector<CAmRoutingNode*> & path)> cb)
+{
+#ifndef ROUTING_BUILD_CONNECTIONS
+	CAmRoutingListVertices vertices;
+	getVerticesForNode(*visited.back(), vertices);
+	const CAmRoutingListVertices * nodes = &vertices;
+#else
+	const CAmRoutingListVertices * nodes = mRoutingGraph.getVertexList()[visited.back()->getIndex()];
+#endif
+	CAmRoutingListVertices::const_iterator vItr(nodes->begin());
+	for (; vItr != nodes->end(); ++vItr)
+	{
+		const CAmRoutingVertex & vertex = (*vItr);
+		if(vertex.getNode()->getStatus()!=GES_NOT_VISITED || !shouldGoInDomain(visitedDomains, vertex.getNode()->getData().domainID()))
+			continue;
+		if (vertex.getNode()==&dst)
+		{
+			vertex.getNode()->setStatus(GES_IN_PROGRESS);
+			visited.push_back(vertex.getNode());
+			visitedDomains.push_back(vertex.getNode()->getData().domainID());
+			//notify observer
+			cb(visited);
+			//remove last node from the list
+			auto last = visited.end()-1;
+			visited.erase(last);
+			visitedDomains.erase(visitedDomains.end()-1);
+			vertex.getNode()->setStatus(GES_NOT_VISITED);
+			break;
+		}
+	}
+	vItr = nodes->begin();
+	//bfs like loop
+	for (; vItr != nodes->end(); ++vItr)
+	{
+		const CAmRoutingVertex & vertex = (*vItr);
+		if(vertex.getNode()->getStatus()!=GES_NOT_VISITED
+			||vertex.getNode()==&dst ||
+			!shouldGoInDomain(visitedDomains, vertex.getNode()->getData().domainID()))
+			continue;
+		vertex.getNode()->setStatus(GES_IN_PROGRESS);
+		visited.push_back(vertex.getNode());
+		visitedDomains.push_back(vertex.getNode()->getData().domainID());
+		goThroughAllPaths(dst, visited, visitedDomains, cb);
+		//remove last node from the list
+		auto last = visited.end()-1;
+		visited.erase(last);
+		visitedDomains.erase(visitedDomains.end()-1);
+		vertex.getNode()->setStatus(GES_NOT_VISITED);
+	}
 }
 
 bool  CAmRouter::getAllowedFormatsFromConvMatrix(	const std::vector<bool> & convertionMatrix,
@@ -177,829 +864,20 @@ bool CAmRouter::getRestrictedOutputFormats(const std::vector<bool> & convertionM
     return listFormats.size();
 }
 
-#ifdef EXTENDED_ROUTING_GRAPH
-void appendNodes(CAmGraph<am_RoutingNodeData_s, uint16_t> & routingGraph,
-					const std::vector<am_CustomConnectionFormat_t> & listConnectionFormats,
-					am_RoutingNodeData_s & nodeData,
-					std::vector<CAmNode<am_RoutingNodeData_s>*> & nodeList)
+
+void CAmRouter::getSourceSinkPossibleConnectionFormats(std::vector<CAmRoutingNode*>::iterator iteratorSource,
+		 	 	 	 	 	 	 	 	 	 std::vector<CAmRoutingNode*>::iterator iteratorSink,
+		 	 	 	 	 	 	 	 	 	 std::vector<am_CustomConnectionFormat_t> & outConnectionFormats)
 {
-	std::for_each(listConnectionFormats.begin(), listConnectionFormats.end(), [&](const am_CustomConnectionFormat_t cf){
-		nodeData.inConnectionFormat = cf;
-		nodeList.push_back(&routingGraph.addNode(nodeData));
-	});
-}
+	CAmRoutingNode * nodeSink = *iteratorSink;
+	assert(nodeSink->getData().type==CAmNodeDataType::SINK);
 
-void appendNodes(CAmGraph<am_RoutingNodeData_s, uint16_t> & routingGraph,
-					const std::vector<am_CustomConnectionFormat_t> & sourceConnectionFormats,
-					const std::vector<am_CustomConnectionFormat_t> & sinkConnectionFormats,
-					const std::vector<bool> & convertionMatrix,
-					am_RoutingNodeData_s & nodeData,
-					std::vector<CAmNode<am_RoutingNodeData_s>*> & nodeList)
-{
+	CAmRoutingNode * nodeSource = *iteratorSource;
+	assert(nodeSource->getData().type==CAmNodeDataType::SOURCE);
 
-	std::vector<am_CustomConnectionFormat_t> sourceFormats, sinkFormats;
-	if(CAmRouter::getAllowedFormatsFromConvMatrix(convertionMatrix, sourceConnectionFormats, sinkConnectionFormats, sourceFormats, sinkFormats))
-	{
-		for(size_t i = 0; i < sourceFormats.size(); i++)
-		{
-			nodeData.inConnectionFormat = sinkFormats[i];
-			nodeData.outConnectionFormat = sourceFormats[i];
-			nodeList.push_back(&routingGraph.addNode(nodeData));
-		}
-	}
-}
-#endif
-
-am_Error_e CAmRouter::getRoute(const bool onlyfree, const am_Source_s & aSource, const am_Sink_s & aSink, std::vector<am_Route_s> & listRoutes)
-{
-	clear();
-	mOnlyFreeConversionNodes = onlyfree;
-	// We need to copy the sinks, sources, converters, gateways for SQLite data store.
-#if defined (WITH_DATABASE_STORAGE)
-	std::deque<am_Source_s> listSources;
-	std::deque<am_Sink_s> listSinks;
-	std::deque<am_Gateway_s> listGateways;
-	std::deque<am_Converter_s> listConverters;
-#endif
-	am_Error_e error = E_OK;
-
-	am_RoutingNodeData_s nodeDataSrc;
-	nodeDataSrc.type = NodeDataType::SOURCE;
-	mpDatabaseHandler->enumerateSources([&](const am_Source_s & obj){
-#if defined (WITH_DATABASE_STORAGE)
-		listSources.push_back(obj);
-		nodeDataSrc.data.source = &listSources.back();
-#else
-		nodeDataSrc.data.source = (am_Source_s*)&obj;
-#endif
-#ifdef EXTENDED_ROUTING_GRAPH
-		appendNodes(mRoutingGraph, obj.listConnectionFormats, nodeDataSrc, mNodeListSources);
-#else
-		mNodeListSources.push_back(&mRoutingGraph.addNode(nodeDataSrc));
-#endif
-	});
-	am_RoutingNodeData_s nodeDataSink;
-	nodeDataSink.type = NodeDataType::SINK;
-	mpDatabaseHandler->enumerateSinks([&](const am_Sink_s & obj){
-#if defined (WITH_DATABASE_STORAGE)
-		listSinks.push_back(obj);
-		nodeDataSrc.data.sink = &listSinks.back();
-#else
-		nodeDataSink.data.sink = (am_Sink_s*)&obj;
-#endif
-#ifdef EXTENDED_ROUTING_GRAPH
-		appendNodes(mRoutingGraph, obj.listConnectionFormats, nodeDataSink, mNodeListSinks);
-#else
-		mNodeListSinks.push_back(&mRoutingGraph.addNode(nodeDataSink));
-#endif
-	});
-	am_RoutingNodeData_s nodeDataGateway;
-	nodeDataGateway.type = NodeDataType::GATEWAY;
-	mpDatabaseHandler->enumerateGateways([&](const am_Gateway_s & obj){
-#if defined (WITH_DATABASE_STORAGE)
-		listGateways.push_back(obj);
-		nodeDataSrc.data.gateway = &listGateways.back();
-#else
-		nodeDataGateway.data.gateway = (am_Gateway_s*)&obj;
-#endif
-#ifdef EXTENDED_ROUTING_GRAPH
-		appendNodes(mRoutingGraph, obj.listSourceFormats, obj.listSinkFormats, obj.convertionMatrix, nodeDataGateway, mNodeListGateways);
-#else
-		mNodeListGateways.push_back(&mRoutingGraph.addNode(nodeDataGateway));
-#endif
-	});
-	am_RoutingNodeData_s nodeDataConverter;
-	nodeDataConverter.type = NodeDataType::CONVERTER;
-	mpDatabaseHandler->enumerateConverters([&](const am_Converter_s & obj){
-#if defined (WITH_DATABASE_STORAGE)
-		listConverters.push_back(obj);
-		nodeDataSrc.data.converter = &listConverters.back();
-#else
-		nodeDataConverter.data.converter = (am_Converter_s*)&obj;
-#endif
-#ifdef EXTENDED_ROUTING_GRAPH
-		appendNodes(mRoutingGraph, obj.listSourceFormats, obj.listSinkFormats, obj.convertionMatrix, nodeDataConverter, mNodeListConverters);
-#else
-		mNodeListConverters.push_back(&mRoutingGraph.addNode(nodeDataConverter));
-#endif
-	});
-
-	buildGraph(aSource, aSink);
-
-#ifdef EXTENDED_ROUTING_GRAPH
-	std::vector<std::vector<CAmNode<am_RoutingNodeData_s>*>> pathNodes;
-	getShortestPath(listRoutes, pathNodes);
-#else
-	std::vector<std::vector<CAmNode<am_RoutingNodeData_s>*>> pathNodes;
-	error = getAllPaths(listRoutes, pathNodes);
-#endif
-	return error;
-}
-
-void CAmRouter::buildGraph(	const am_Source_s & aSource, const am_Sink_s & aSink)
-{
-	//build up a topological sorted graph
-#ifdef EXTENDED_ROUTING_GRAPH
-	mpRootSource = (am_Source_s*)&aSource;
-	mpRootSink = (am_Sink_s*)&aSink;
-	for(auto it1=aSource.listConnectionFormats.begin(); it1!=aSource.listConnectionFormats.end(); it1++)
-	{
-		am::CAmNode<am::am_RoutingNodeData_s>* pRootNodeSource = sourceNodeWithID(aSource.sourceID, *it1);
-		for(auto it2=aSink.listConnectionFormats.begin(); it2!=aSink.listConnectionFormats.end(); it2++)
-		{
-			am::CAmNode<am::am_RoutingNodeData_s>* pRootNodeSink = sinkNodeWithID(aSink.sinkID, *it2);
-			if(pRootNodeSource && pRootNodeSink)
-			{
-				if(aSource.domainID==aSink.domainID)
-					routeInSameDomain(*pRootNodeSource, *pRootNodeSink);
-				else
-					routeInAnotherDomain(*pRootNodeSource, *pRootNodeSink);
-			}
-		}
-	}
-#else
-	mpRootSource = sourceNodeWithID(aSource.sourceID);
-	mpRootSink = sinkNodeWithID(aSink.sinkID);
-
-	assert(mpRootSource);
-	assert(mpRootSink);
-
-	if(aSource.domainID==aSink.domainID)
-	{
-		routeInSameDomain(*mpRootSource, *mpRootSink);
-	}
-	else
-	{
-		routeInAnotherDomain(*mpRootSource, *mpRootSink);
-	}
-#endif
-#ifdef TRACE_GRAPH
-	mRoutingGraph.trace([&](const CAmNode<am_RoutingNodeData_s> & node, const std::vector<CAmVertex<am_RoutingNodeData_s,uint16_t>*> & list) {
-				std::cout << "Node " << node.getIndex() << " :";
-				((CAmNode<am_RoutingNodeData_s> &)node).getData().trace();
-				std::cout << "-->";
-				std::for_each(list.begin(), list.end(), [&](const CAmVertex<am_RoutingNodeData_s,uint16_t>* refVertex){
-					am::CAmNode<am::am_RoutingNodeData_s>* data = refVertex->getNode();
-					std::cout << "Node " << data->getIndex() << " :";
-					data->getData().trace();
-				});
-				std::cout << std::endl;
-			});
-#endif
-}
-#ifdef EXTENDED_ROUTING_GRAPH
-
-CAmNode<am_RoutingNodeData_s>* CAmRouter::sinkNodeWithID(const am_sinkID_t sinkID, const am_CustomConnectionFormat_t connectionFormat)
-{
-	auto iter = std::find_if(mNodeListSinks.begin(), mNodeListSinks.end(), [sinkID, connectionFormat](CAmNode<am_RoutingNodeData_s>* node){
-		return node->getData().data.sink->sinkID==sinkID && node->getData().inConnectionFormat==connectionFormat;
-	});
-	if(iter!=mNodeListSinks.end())
-		return *iter;
-	return NULL;
-}
-
-CAmNode<am_RoutingNodeData_s>* CAmRouter::sourceNodeWithID(const am_sourceID_t sourceID, const am_CustomConnectionFormat_t connectionFormat)
-{
-	auto iter = std::find_if(mNodeListSources.begin(), mNodeListSources.end(), [sourceID, connectionFormat](CAmNode<am_RoutingNodeData_s>* node){
-		return node->getData().data.source->sourceID==sourceID && node->getData().inConnectionFormat==connectionFormat;
-	});
-	if(iter!=mNodeListSources.end())
-		return *iter;
-	return NULL;
-}
-#else
-CAmNode<am_RoutingNodeData_s>* CAmRouter::sinkNodeWithID(const am_sinkID_t sinkID)
-{
-	auto iter = std::find_if(mNodeListSinks.begin(), mNodeListSinks.end(), [sinkID](CAmNode<am_RoutingNodeData_s>* node){
-		return node->getData().data.sink->sinkID==sinkID;
-	});
-	if(iter!=mNodeListSinks.end())
-		return *iter;
-	return NULL;
-}
-
-CAmNode<am_RoutingNodeData_s>* CAmRouter::sourceNodeWithID(const am_sourceID_t sourceID)
-{
-	auto iter = std::find_if(mNodeListSources.begin(), mNodeListSources.end(), [sourceID](CAmNode<am_RoutingNodeData_s>* node){
-		return node->getData().data.source->sourceID==sourceID;
-	});
-	if(iter!=mNodeListSources.end())
-		return *iter;
-	return NULL;
-}
-#endif
-
-void CAmRouter::connectNodes(const CAmNode<am_RoutingNodeData_s> & node1,
-											const CAmNode<am_RoutingNodeData_s> & node2,
-											const am_CustomConnectionFormat_t vertexData,
-											const int16_t weight)
-{
-	if( !mRoutingGraph.isAnyVertex(node1, node2) )
-		mRoutingGraph.connectNodes(node1, node2, vertexData, weight);
-}
-
-bool CAmRouter::routeInSameDomain(CAmNode<am_RoutingNodeData_s> & aSource, CAmNode<am_RoutingNodeData_s> & aSink)
-{
-	am_RoutingNodeData_s & sourceData = aSource.getData();
-	am_RoutingNodeData_s & sinkData = aSink.getData();
-	am_Source_s * source = sourceData.data.source;
-	//If exists connection return
-	if( mRoutingGraph.isAnyVertex(aSource, aSink))
-		return true;
-	if( aSource.getStatus()!=GES_NOT_VISITED )
-		return false;
-	bool result = false;
-	aSource.setStatus(GES_IN_PROGRESS);
-#ifdef EXTENDED_ROUTING_GRAPH
-	if(sourceData.inConnectionFormat!=sinkData.inConnectionFormat) // it is not possible to connect them directly
-	{
-#else
-	am_Sink_s * sink = sinkData.data.sink;
-	std::vector<am_CustomConnectionFormat_t> listFormats;
-	CAmRouter::listPossibleConnectionFormats(source->listConnectionFormats, sink->listConnectionFormats, listFormats);
-	if(listFormats.size()==0) // it is not possible to connect them directly
-	{
-#endif
-		bool availableConverter = false;
-		for(auto iter = mNodeListConverters.begin(); iter!=mNodeListConverters.end(); iter++)
-		{
-			CAmNode<am_RoutingNodeData_s>* converterNode = *iter;
-			am_RoutingNodeData_s & converterNodeData = converterNode->getData();
-			am_Converter_s * converter = converterNodeData.data.converter;
-			//Get only converters with end point in current source domain
-			if( converterNode->getStatus()==GES_NOT_VISITED && converter->domainID==source->domainID && (!mOnlyFreeConversionNodes || !isComponentConnected(*converter)))
-			{
-				//Get the sink connected to the converter...
-				converterNode->setStatus(GES_IN_PROGRESS);
-#ifdef EXTENDED_ROUTING_GRAPH
-				CAmNode<am_RoutingNodeData_s> *converterSinkNode = this->sinkNodeWithID(converter->sinkID, converterNodeData.inConnectionFormat);
-#else
-				CAmNode<am_RoutingNodeData_s> *converterSinkNode = this->sinkNodeWithID(converter->sinkID);
-#endif
-				if(converterSinkNode)
-				{
-					am_RoutingNodeData_s & converterSinkData = converterSinkNode->getData();
-					//Check whether the hidden sink formats match the source formats...
-#ifdef EXTENDED_ROUTING_GRAPH
-					if(sourceData.inConnectionFormat==converterSinkData.inConnectionFormat)
-					{
-						CAmNode<am_RoutingNodeData_s> *converterSourceNode = this->sourceNodeWithID(converter->sourceID, converterNodeData.outConnectionFormat);
-						if(converterSourceNode)
-						{
-							am_RoutingNodeData_s & converterSourceData = converterSourceNode->getData();
-							if(converterSourceData.inConnectionFormat==converterSinkData.outConnectionFormat)
-							{
-								availableConverter=true;
-								// Connection source->conv_sink->converter->conv_source
-								this->connectNodes(aSource, *converterSinkNode, converterNodeData.inConnectionFormat, 1);
-								this->connectNodes(*converterSinkNode, *converterNode, converterNodeData.inConnectionFormat, 1);
-								this->connectNodes(*converterNode, *converterSourceNode, converterNodeData.outConnectionFormat, 1);
-								result|=this->routeInSameDomain(*converterSourceNode, aSink);
-							}
-						}
-					}
-					else
-					{
-							//the converter is not suitable, lets try to find paths through another domains
-							bool alternResult = this->routeInAnotherDomain(aSource, *converterSinkNode);
-							if(alternResult)
-							{
-								CAmNode<am_RoutingNodeData_s> *converterSourceNode = this->sourceNodeWithID(converter->sourceID, converterNodeData.outConnectionFormat);
-								if(converterSourceNode)
-								{
-									am_RoutingNodeData_s & converterSourceData = converterSourceNode->getData();
-									if(converterSourceData.inConnectionFormat==converterSinkData.outConnectionFormat)
-									{
-										// Connection source->conv_sink->converter->conv_source
-										this->connectNodes(*converterSinkNode, *converterNode, converterNodeData.inConnectionFormat, 1);
-										this->connectNodes(*converterNode, *converterSourceNode, converterNodeData.outConnectionFormat, 1);
-										result|=this->routeInSameDomain(*converterSourceNode, aSink);
-									}
-								}
-							}
-					}
-#else
-					am_Sink_s * nextSink = converterSinkData.data.sink;
-					std::vector<am_CustomConnectionFormat_t> sourceFormats, sinkFormats, intersection;
-					//Check whether the hidden sink formats match the source formats...
-					CAmRouter::listPossibleConnectionFormats(source->listConnectionFormats, nextSink->listConnectionFormats, intersection);
-					if(intersection.size()>0)//OK  match source -> conv_sink
-					{
-						//Are there convertible formats or not
-						if(CAmRouter::getAllowedFormatsFromConvMatrix(converter->convertionMatrix, converter->listSourceFormats, converter->listSinkFormats, sourceFormats, sinkFormats))
-						{
-							availableConverter=true;
-							CAmNode<am_RoutingNodeData_s> *nextSourceNode = this->sourceNodeWithID(converter->sourceID);
-							assert(nextSourceNode);
-							//Connections source->hidden_sink->converter->hidden_source
-							this->connectNodes(aSource, *converterSinkNode, CF_UNKNOWN, 1);
-							this->connectNodes(*converterSinkNode, *converterNode, CF_UNKNOWN, 1);
-							this->connectNodes(*converterNode, *nextSourceNode, CF_UNKNOWN, 1);
-							//Go ahead with hidden_source and sink
-							result|=this->routeInSameDomain(*nextSourceNode, aSink);
-						}
-					}
-					else
-					{
-						//the converter is not suitable, lets try to find paths through another domains
-						bool alternResult = this->routeInAnotherDomain(aSource, *converterSinkNode);
-						if(alternResult)
-						{
-							if(CAmRouter::getAllowedFormatsFromConvMatrix(converter->convertionMatrix, converter->listSourceFormats, converter->listSinkFormats, sourceFormats, sinkFormats))
-							{
-								CAmNode<am_RoutingNodeData_s> *nextSourceNode = this->sourceNodeWithID(converter->sourceID);
-								assert(nextSourceNode);
-								//Connections source->hidden_sink->converter->hidden_source
-								this->connectNodes(*converterSinkNode, *converterNode, CF_UNKNOWN, 1);
-								this->connectNodes(*converterNode, *nextSourceNode, CF_UNKNOWN, 1);
-								//Go ahead with hidden_source and sink
-								result|=this->routeInSameDomain(*nextSourceNode, aSink);
-							}
-						}
-					}
-#endif
-				}
-				converterNode->setStatus(GES_NOT_VISITED);
-			}
-		}
-		if(!availableConverter)
-		{
-			aSource.setStatus(GES_NOT_VISITED);
-			result|=this->routeInAnotherDomain(aSource, aSink);
-		}
-	}
-	else
-	{
-		//success only if the source can be connected with the sink
-#ifdef EXTENDED_ROUTING_GRAPH
-		this->connectNodes(aSource, aSink, sourceData.inConnectionFormat, 1);
-#else
-		this->connectNodes(aSource, aSink, CF_UNKNOWN, 1);
-#endif
-		result=true;
-	}
-	aSource.setStatus(GES_NOT_VISITED);
-	return result;
-}
-
-bool CAmRouter::routeInAnotherDomain(CAmNode<am_RoutingNodeData_s> & aSource, CAmNode<am_RoutingNodeData_s> & aSink)
-{
-	am_RoutingNodeData_s & sourceData = aSource.getData();
-	am_RoutingNodeData_s & sinkData = aSink.getData();
-	am_Source_s * source = sourceData.data.source;
-	am_Sink_s * sink = sinkData.data.sink;
-
-	if( mRoutingGraph.isAnyVertex(aSource, aSink))
-		return true;
-	if( aSource.getStatus()!=GES_NOT_VISITED )
-		return false;
-	aSource.setStatus(GES_IN_PROGRESS);
-#ifndef EXTENDED_ROUTING_GRAPH
-	std::vector<am_CustomConnectionFormat_t> sourceFormats, sinkFormats, intersection;
-#endif
-	bool result = false;
-	for(auto iter = mNodeListGateways.begin(); iter!=mNodeListGateways.end(); iter++)
-	{
-		CAmNode<am_RoutingNodeData_s>* gatewayNode = *iter;
-		am_RoutingNodeData_s & gatewayNodeData = gatewayNode->getData();
-		am_Gateway_s * gateway = gatewayNodeData.data.gateway;
-		//Get only gateways with end point in current source domain
-		if(
-			gatewayNode->getStatus()==GES_NOT_VISITED &&
-			gateway->domainSinkID==source->domainID &&
-			(!mOnlyFreeConversionNodes || !isComponentConnected(*gateway)) )
-		{
-			//Get the sink connected to the gateway...
-			gatewayNode->setStatus(GES_IN_PROGRESS);
-#ifdef EXTENDED_ROUTING_GRAPH
-			CAmNode<am_RoutingNodeData_s> *gatewaySinkNode = this->sinkNodeWithID(gateway->sinkID, gatewayNodeData.inConnectionFormat);
-#else
-			CAmNode<am_RoutingNodeData_s> *gatewaySinkNode = this->sinkNodeWithID(gateway->sinkID);
-#endif
-
-			if(gatewaySinkNode)
-			{
-				am_RoutingNodeData_s & gatewaySinkData = gatewaySinkNode->getData();
-					//Check whether the hidden sink formats match the source formats...
-
-#ifdef EXTENDED_ROUTING_GRAPH
-				if(sourceData.inConnectionFormat==gatewaySinkData.inConnectionFormat)
-				{
-					//Check if the gateway is able to convert any formats...
-					CAmNode<am_RoutingNodeData_s> *gatewaySourceNode = this->sourceNodeWithID(gateway->sourceID, gatewayNodeData.outConnectionFormat);
-					if(gatewaySourceNode)
-					{
-						am_RoutingNodeData_s & gatewaySourceData = gatewaySourceNode->getData();
-						if(gatewaySourceData.inConnectionFormat==gatewayNodeData.outConnectionFormat)
-						{
-							am_Source_s * gatewaySource = gatewaySourceData.data.source;
-							//Connections source->hidden_sink->gateway->hidden_source
-							this->connectNodes(aSource, *gatewaySinkNode, gatewayNodeData.inConnectionFormat, 1);
-							this->connectNodes(*gatewaySinkNode, *gatewayNode, gatewayNodeData.inConnectionFormat, 1);
-							this->connectNodes(*gatewayNode, *gatewaySourceNode, gatewayNodeData.outConnectionFormat, 1);
-							//Go ahead with hidden_source and sink
-							if(gatewaySource->domainID==sink->domainID)
-								result|=this->routeInSameDomain(*gatewaySourceNode, aSink);
-							else
-								result|=this->routeInAnotherDomain(*gatewaySourceNode, aSink);
-						}
-					}
-				}
-				else
-				{
-					//the gateway is not suitable, lets try to find paths within this domains
-					bool alternResult = this->routeInSameDomain(aSource, *gatewaySinkNode);
-					if(alternResult)
-					{
-						CAmNode<am_RoutingNodeData_s> *gatewaySourceNode = this->sourceNodeWithID(gateway->sourceID, gatewayNodeData.outConnectionFormat);
-						if(gatewaySourceNode)
-						{
-							am_RoutingNodeData_s & gatewaySourceData = gatewaySourceNode->getData();
-							if(gatewaySourceData.inConnectionFormat==gatewayNodeData.outConnectionFormat)
-							{
-								am_Source_s * gatewaySource = gatewaySourceData.data.source;
-								//Connections source->hidden_sink->gateway->hidden_source
-								this->connectNodes(aSource, *gatewaySinkNode, gatewayNodeData.inConnectionFormat, 1);
-								this->connectNodes(*gatewaySinkNode, *gatewayNode, gatewayNodeData.inConnectionFormat, 1);
-								this->connectNodes(*gatewayNode, *gatewaySourceNode, gatewayNodeData.outConnectionFormat, 1);
-								//Go ahead with hidden_source and sink
-								if(gatewaySource->domainID==sink->domainID)
-									result|=this->routeInSameDomain(*gatewaySourceNode, aSink);
-								else
-									result|=this->routeInAnotherDomain(*gatewaySourceNode, aSink);
-							}
-						}
-					}
-				}
-#else
-				am_Sink_s * nextSink = gatewaySinkData.data.sink;
-				std::vector<am_CustomConnectionFormat_t> sourceFormats, sinkFormats, intersection;
-				CAmRouter::listPossibleConnectionFormats(source->listConnectionFormats, nextSink->listConnectionFormats, intersection);
-				if(intersection.size()>0)//OK  match source -> conv_sink
-				{
-					//Check if the gateway is able to convert any formats...
-					if(CAmRouter::getAllowedFormatsFromConvMatrix(gateway->convertionMatrix, gateway->listSourceFormats, gateway->listSinkFormats, sourceFormats, sinkFormats))
-					{
-						CAmNode<am_RoutingNodeData_s> *nextSourceNode = this->sourceNodeWithID(gateway->sourceID);
-						assert(nextSourceNode);
-						am_Source_s * nextSource = nextSourceNode->getData().data.source;
-						//Connections source->hidden_sink->gateway->hidden_source
-						this->connectNodes(aSource, *gatewaySinkNode, CF_UNKNOWN, 1);
-						this->connectNodes(*gatewaySinkNode, *gatewayNode, CF_UNKNOWN, 1);
-						this->connectNodes(*gatewayNode, *nextSourceNode, CF_UNKNOWN, 1);
-						//Go ahead with hidden_source and sink
-						if(nextSource->domainID==sink->domainID)
-							result|=this->routeInSameDomain(*nextSourceNode, aSink);
-						else
-							result|=this->routeInAnotherDomain(*nextSourceNode, aSink);
-					}
-				}
-				else
-				{
-					//the gateway is not suitable, lets try to find paths within this domains
-					aSource.setStatus(GES_NOT_VISITED);
-
-					bool alternResult = this->routeInSameDomain(aSource, *gatewaySinkNode);
-					if(alternResult)
-					{
-						if(CAmRouter::getAllowedFormatsFromConvMatrix(gateway->convertionMatrix, gateway->listSourceFormats, gateway->listSinkFormats, sourceFormats, sinkFormats))
-						{
-							CAmNode<am_RoutingNodeData_s> *nextSourceNode = this->sourceNodeWithID(gateway->sourceID);
-							assert(nextSourceNode);
-							am_Source_s * nextSource = nextSourceNode->getData().data.source;
-							//Connections source->hidden_sink->gateway->hidden_source
-							this->connectNodes(*gatewaySinkNode, *gatewayNode, CF_UNKNOWN, 1);
-							this->connectNodes(*gatewayNode, *nextSourceNode, CF_UNKNOWN, 1);
-							//Go ahead with hidden_source and sink
-							if(nextSource->domainID==sink->domainID)
-								result|=this->routeInSameDomain(*nextSourceNode, aSink);
-							else
-								result|=this->routeInAnotherDomain(*nextSourceNode, aSink);
-						}
-					}
-				}
-#endif
-			}
-			gatewayNode->setStatus(GES_NOT_VISITED);
-		}
-	}
-	aSource.setStatus(GES_NOT_VISITED);
-	return result;
-}
-
-#ifdef EXTENDED_ROUTING_GRAPH
-void CAmRouter::getShortestPath(const am_Source_s & aSource,
-										   const am_Sink_s & aSink,
-										   std::vector<am_Route_s> & resultPath,
-										   std::vector<std::vector<CAmNode<am_RoutingNodeData_s>*>> & resultNodesPath)
-{
-	std::vector<CAmNode<am_RoutingNodeData_s>*> listTargets;
-	std::vector<CAmNode<am_RoutingNodeData_s>*> * pathNodes;
-	am_Route_s *path;
-	am_RoutingElement_s * element;
-	std::function<void(const am_GraphPathPosition_e, CAmNode<am_RoutingNodeData_s> &)> cb = [&](const am_GraphPathPosition_e pos, CAmNode<am_RoutingNodeData_s> & object)
-	{
-		if(pos==GRAPH_PATH_START)
-		{
-			resultNodesPath.emplace_back();
-			pathNodes=&resultNodesPath.back();
-			resultPath.emplace_back();
-			path= &resultPath.back();
-			path->sinkID = aSink.sinkID;
-			path->sourceID = aSource.sourceID;
-		}
-		pathNodes->insert(pathNodes->begin(), (CAmNode<am_RoutingNodeData_s>*)&object);
-
-		am_RoutingNodeData_s & routingData =  object.getData();
-
-		if(routingData.type==am_RoutingNodeData_s::am_NodeDataType_e::SINK)
-		{
-			auto iter = path->route.emplace(path->route.begin());
-			element = &(*iter);
-
-			element->domainID = routingData.data.sink->domainID;
-			element->sinkID = routingData.data.sink->sinkID;
-			element->connectionFormat = routingData.inConnectionFormat;
-
-		}
-		else if(routingData.type==am_RoutingNodeData_s::am_NodeDataType_e::SOURCE)
-		{
-			element->domainID = routingData.data.source->domainID;
-			element->sourceID = routingData.data.source->sourceID;
-			element->connectionFormat = routingData.inConnectionFormat;
-		}
-	};
-
-
-	for(auto it2=aSink.listConnectionFormats.begin(); it2!=aSink.listConnectionFormats.end(); it2++)
-	{
-		am::CAmNode<am::am_RoutingNodeData_s>* pRootNodeSink = sinkNodeWithID(aSink.sinkID, *it2);
-		if(pRootNodeSink)
-			listTargets.push_back(pRootNodeSink);
-	}
-	if(listTargets.size())
-	{
-		for(auto it1=aSource.listConnectionFormats.begin(); it1!=aSource.listConnectionFormats.end(); it1++)
-		{
-			am::CAmNode<am::am_RoutingNodeData_s>* pRootNodeSource = sourceNodeWithID(aSource.sourceID, *it1);
-			if(pRootNodeSource)
-			{
-				mRoutingGraph.getShortestPath(*pRootNodeSource, listTargets, cb);
-			}
-		}
-	}
-}
-
-void CAmRouter::getShortestPath(std::vector<am_Route_s> & routes, std::vector<std::vector<CAmNode<am_RoutingNodeData_s>*>> & nodes)
-{
-	getShortestPath(*mpRootSource, *mpRootSink, routes, nodes);
-}
-
-void CAmRouter::getShortestPath(const am_Source_s & aSource, const am_Sink_s & aSink,
-												std::vector<std::vector<CAmNode<am_RoutingNodeData_s>*>> & resultPath)
-{
-	std::vector<CAmNode<am_RoutingNodeData_s>*> listTargets;
-	for(auto it2=aSink.listConnectionFormats.begin(); it2!=aSink.listConnectionFormats.end(); it2++)
-	{
-		am::CAmNode<am::am_RoutingNodeData_s>* pRootNodeSink = sinkNodeWithID(aSink.sinkID, *it2);
-		if(pRootNodeSink)
-			listTargets.push_back(pRootNodeSink);
-	}
-	if(listTargets.size())
-	{
-		for(auto it1=aSource.listConnectionFormats.begin(); it1!=aSource.listConnectionFormats.end(); it1++)
-		{
-			am::CAmNode<am::am_RoutingNodeData_s>* pRootNodeSource = sourceNodeWithID(aSource.sourceID, *it1);
-			if(pRootNodeSource)
-			{
-				mRoutingGraph.getShortestPath(*pRootNodeSource, listTargets, resultPath);
-			}
-		}
-	}
-}
-#else
-
-am_Error_e CAmRouter::determineConnectionFormatsForPath(am_Route_s & routeObjects, std::vector<CAmNode<am_RoutingNodeData_s>*> & nodes)
-{
-	std::vector<am_RoutingElement_s>::iterator routingElementIterator = routeObjects.route.begin();
-	std::vector<CAmNode<am_RoutingNodeData_s>*>::iterator nodeIterator = nodes.begin();
-	if( routingElementIterator!= routeObjects.route.end() && nodeIterator!=nodes.end() )
-		return doConnectionFormatsForPath(routeObjects, nodes, routingElementIterator, nodeIterator);
-	return E_OK;
-}
-
-am_Error_e CAmRouter::doConnectionFormatsForPath(am_Route_s & routeObjects,
-													 std::vector<CAmNode<am_RoutingNodeData_s>*> & nodes,
-													 std::vector<am_RoutingElement_s>::iterator routingElementIterator,
-													 std::vector<CAmNode<am_RoutingNodeData_s>*>::iterator nodeIterator)
-{
-    am_Error_e returnError = E_NOT_POSSIBLE;
-    std::vector<am_CustomConnectionFormat_t> listConnectionFormats;
-    std::vector<am_CustomConnectionFormat_t> listMergeConnectionFormats;
-
-    std::vector<CAmNode<am_RoutingNodeData_s>*>::iterator  currentNodeIterator = nodeIterator;
-    std::vector<am_RoutingElement_s>::iterator  currentRoutingElementIterator = routingElementIterator;
-
-    if (currentRoutingElementIterator!=routeObjects.route.begin())
-    {
-    	std::vector<am_CustomConnectionFormat_t> listConnectionFormats;
-    	std::vector<am_RoutingElement_s>::iterator tempIterator = (currentRoutingElementIterator-1);
-      	CAmNode<am_RoutingNodeData_s> * currentNode = *currentNodeIterator;
-      	getSourceSinkPossibleConnectionFormats(currentNodeIterator+1, currentNodeIterator+2, listConnectionFormats);
-
-		if(currentNode->getData().type==am_RoutingNodeData_s::am_NodeDataType_e::GATEWAY)
-		{
-			am_Gateway_s *gateway = currentNode->getData().data.gateway;
-			getMergeConnectionFormats(gateway, tempIterator->connectionFormat, listConnectionFormats, listMergeConnectionFormats);
-		}
-		else if(currentNode->getData().type==am_RoutingNodeData_s::am_NodeDataType_e::CONVERTER)
-		{
-			am_Converter_s *converter = currentNode->getData().data.converter;
-			getMergeConnectionFormats(converter, tempIterator->connectionFormat, listConnectionFormats, listMergeConnectionFormats);
-		}
-		currentNodeIterator+=3;
-    }
-    else
-    {
-    	CAmNode<am_RoutingNodeData_s> * currentNode = *currentNodeIterator;
-    	assert(currentNode->getData().type==am_RoutingNodeData_s::am_NodeDataType_e::SOURCE);
-
-    	currentNodeIterator++;
-		assert(currentNodeIterator!=nodes.end());
-
-		CAmNode<am_RoutingNodeData_s> * nodeSink = *currentNodeIterator;
-		assert(nodeSink->getData().type==am_RoutingNodeData_s::am_NodeDataType_e::SINK);
-
-		am_Source_s *source = currentNode->getData().data.source;
-		am_Sink_s *sink = nodeSink->getData().data.sink;
-		CAmRouter::listPossibleConnectionFormats(source->listConnectionFormats, sink->listConnectionFormats, listMergeConnectionFormats);
-		currentNodeIterator+=1; //now we are on the next converter/gateway
-    }
-
-    //let the controller decide:
-    std::vector<am_CustomConnectionFormat_t> listPriorityConnectionFormats;
-    mpControlSender->getConnectionFormatChoice(currentRoutingElementIterator->sourceID, currentRoutingElementIterator->sinkID, routeObjects,
-    										  listMergeConnectionFormats, listPriorityConnectionFormats);
-
-    //we have the list sorted after priors - now we try one after the other with the next part of the route
-	std::vector<am_CustomConnectionFormat_t>::iterator connectionFormatIterator = listPriorityConnectionFormats.begin();
-	//here we need to check if we are at the end and stop
-	 std::vector<am_RoutingElement_s>::iterator nextIterator = currentRoutingElementIterator + 1;//next pair source and sink
-	if (nextIterator == routeObjects.route.end())
-	{
-		if (!listPriorityConnectionFormats.empty())
-		{
-			currentRoutingElementIterator->connectionFormat = listPriorityConnectionFormats.front();
-			return (E_OK);
-		}
-		else
-			return (E_NOT_POSSIBLE);
-	}
-
-	for (; connectionFormatIterator != listPriorityConnectionFormats.end(); ++connectionFormatIterator)
-	{
-		currentRoutingElementIterator->connectionFormat = *connectionFormatIterator;
-		if ((returnError = doConnectionFormatsForPath(routeObjects, nodes, nextIterator, currentNodeIterator)) == E_OK)
-		{
-			break;
-		}
-	}
-    return (returnError);
-}
-
-void CAmRouter::getShortestPath(const CAmNode<am_RoutingNodeData_s> & source,
-											   const CAmNode<am_RoutingNodeData_s> & destination,
-											   std::vector<CAmNode<am_RoutingNodeData_s>*> & resultPath)
-{
-	mRoutingGraph.getShortestPath(source, destination, resultPath);
-}
-
-void CAmRouter::getShortestPath(std::vector<CAmNode<am_RoutingNodeData_s>*> & resultPath)
-{
-	getShortestPath(*mpRootSource, *mpRootSink, resultPath);
-}
-
-void CAmRouter::getShortestPath(CAmNode<am_RoutingNodeData_s> & aSource, CAmNode<am_RoutingNodeData_s> & aSink,
-												am_Route_s & resultPath, std::vector<CAmNode<am_RoutingNodeData_s>*> & resultNodesPath)
-{
-	am_RoutingElement_s * element;
-	am_RoutingNodeData_s & sinkNodeData = aSink.getData();
-	am_RoutingNodeData_s & sourceNodeData = aSource.getData();
-	resultPath.sinkID = sinkNodeData.data.sink->sinkID;
-	resultPath.sourceID = sourceNodeData.data.source->sourceID;
-
-	std::function<void(const am_GraphPathPosition_e, CAmNode<am_RoutingNodeData_s> &)> cb = [&](const am_GraphPathPosition_e, CAmNode<am_RoutingNodeData_s> & object)
-	{
-		resultNodesPath.insert(resultNodesPath.begin(), (CAmNode<am_RoutingNodeData_s>*)&object);
-		am_RoutingNodeData_s & routingData =  object.getData();
-		if(routingData.type==am_RoutingNodeData_s::am_NodeDataType_e::SINK)
-		{
-			auto iter = resultPath.route.emplace(resultPath.route.begin());
-			element = &(*iter);
-			element->domainID = routingData.data.sink->domainID;
-			element->sinkID = routingData.data.sink->sinkID;
-			element->connectionFormat = CF_UNKNOWN;
-		}
-		else if(routingData.type==am_RoutingNodeData_s::am_NodeDataType_e::SOURCE)
-		{
-			element->domainID = routingData.data.source->domainID;
-			element->sourceID = routingData.data.source->sourceID;
-			element->connectionFormat = CF_UNKNOWN;
-		}
-	};
-	mRoutingGraph.getShortestPath(aSource, aSink, cb);
-}
-
-void CAmRouter::getShortestPath(am_Route_s & resultPath, std::vector<CAmNode<am_RoutingNodeData_s>*> & resultNodesPath)
-{
-	getShortestPath(*mpRootSource, *mpRootSink, resultPath, resultNodesPath);
-}
-
-am_Error_e CAmRouter::getAllPaths(CAmNode<am_RoutingNodeData_s> & aSource, CAmNode<am_RoutingNodeData_s> & aSink,
-											   std::vector<am_Route_s> & resultPath, std::vector<std::vector<CAmNode<am_RoutingNodeData_s>*>> & resultNodesPath)
-{
-	uint8_t errorsCount = 0, successCount = 0;
-	mRoutingGraph.getAllPaths(aSource, aSink, [&](const std::vector<CAmNode<am_RoutingNodeData_s>*> & path) {
-		resultNodesPath.push_back(path);
-		resultPath.emplace_back();
-		am_Route_s & nextRoute = resultPath.back();
-		nextRoute.sinkID = aSink.getData().data.sink->sinkID;
-		nextRoute.sourceID = aSource.getData().data.source->sourceID;
-		am_RoutingElement_s * element;
-		for(auto it = path.begin(); it!=path.end(); it++)
-		{
-			am_RoutingNodeData_s & routingData =  (*it)->getData();
-			if(routingData.type==am_RoutingNodeData_s::am_NodeDataType_e::SOURCE)
-			{
-				auto iter = nextRoute.route.emplace(nextRoute.route.end());
-				element = &(*iter);
-				element->domainID = routingData.data.source->domainID;
-				element->sourceID = routingData.data.source->sourceID;
-				element->connectionFormat = CF_UNKNOWN;
-			}
-			else if(routingData.type==am_RoutingNodeData_s::am_NodeDataType_e::SINK)
-			{
-				element->domainID = routingData.data.sink->domainID;
-				element->sinkID = routingData.data.sink->sinkID;
-				element->connectionFormat = CF_UNKNOWN;
-			}
-		}
-		am_Error_e err = determineConnectionFormatsForPath(nextRoute, (std::vector<CAmNode<am_RoutingNodeData_s>*> &)path);
-		if(err!=E_OK)
-		{
-			errorsCount++;
-			auto last = resultPath.end()-1;
-			resultPath.erase(last);
-#ifdef TRACE_GRAPH
-			std::cout<<"Error by determining connection formats for path from source:"<<nextRoute.sourceID<<" to sink:"<<nextRoute.sinkID<<"\n";
-#endif
-		}
-		else
-		{
-#ifdef TRACE_GRAPH
-			std::cout<<"\nSuccessfully determined connection formats for path from source:"<<nextRoute.sourceID<<" to sink:"<<nextRoute.sinkID<<"\n";
-			for(auto it = nextRoute.route.begin(); it!=nextRoute.route.end(); it++)
-			{
-				am_RoutingElement_s & routingElement =  *it;
-				std::cout<<"["
-						 <<routingElement.sourceID
-						 <<"->"
-						 <<routingElement.sinkID
-						 <<" cf:"
-						 <<routingElement.connectionFormat
-						 <<" d:"
-						 <<routingElement.domainID
-						 <<"]";
-			}
-			std::cout<<"\n";
-#endif
-			successCount++;
-		}
-	});
-	if(successCount)
-		return E_OK;
-	if(errorsCount)
-		return E_NOT_POSSIBLE;
-	return E_OK;
-}
-
-am_Error_e CAmRouter::getAllPaths(std::vector<am_Route_s> & resultPath, std::vector<std::vector<CAmNode<am_RoutingNodeData_s>*>> & resultNodesPath)
-{
-	return getAllPaths(*mpRootSource, *mpRootSink, resultPath, resultNodesPath);
-}
-
-#endif
-
-void CAmRouter::clear()
-{
-	mRoutingGraph.clear();
-	mNodeListSources.clear();
-	mNodeListSinks.clear();
-	mNodeListGateways.clear();
-	mNodeListConverters.clear();
-	mpRootSource=NULL;
-	mpRootSink=NULL;
+	am_Source_s *source = nodeSource->getData().data.source;
+	am_Sink_s *sink = nodeSink->getData().data.sink;
+	listPossibleConnectionFormats(source->listConnectionFormats, sink->listConnectionFormats, outConnectionFormats);
 }
 
 
