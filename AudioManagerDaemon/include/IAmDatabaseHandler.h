@@ -146,6 +146,7 @@ public:
     virtual am_Error_e getTimingInformation(const am_mainConnectionID_t mainConnectionID, am_timeSync_t& delay) const = 0;
     virtual am_Error_e getDomainOfSource(const am_sourceID_t sourceID, am_domainID_t& domainID) const = 0;
     virtual am_Error_e getDomainOfSink(const am_sinkID_t sinkID, am_domainID_t& domainID) const = 0;
+    virtual am_Error_e getDomainOfCrossfader(const am_crossfaderID_t crossfader, am_domainID_t& domainID) const = 0;
     virtual am_Error_e getSoureState(const am_sourceID_t sourceID, am_SourceState_e& sourceState) const = 0;
     virtual am_Error_e getDomainState(const am_domainID_t domainID, am_DomainState_e& state) const = 0;
     virtual am_Error_e peekDomain(const std::string& name, am_domainID_t& domainID) = 0;

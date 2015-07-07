@@ -94,8 +94,9 @@ public:
     void ackSourceNotificationConfiguration(const am_Handle_s handle, const am_Error_e error) ;
     void hookSinkNotificationDataChange(const am_sinkID_t sinkID, const am_NotificationPayload_s& payload) ;
     void hookSourceNotificationDataChange(const am_sourceID_t sourceID, const am_NotificationPayload_s& payload) ;
-    am_Error_e getDomainOfSink(const am_sinkID_t sinkID, am_domainID_t& domainID);
-   	am_Error_e getDomainOfSource(const am_sourceID_t sourceID, am_domainID_t& domainID);
+    am_Error_e getDomainOfSink(const am_sinkID_t sinkID, am_domainID_t& domainID) const;
+   	am_Error_e getDomainOfSource(const am_sourceID_t sourceID, am_domainID_t& domainID) const;
+   	am_Error_e getDomainOfCrossfader(const am_crossfaderID_t crossfader, am_domainID_t& domainID) const;
 
     uint16_t getStartupHandle(); //!< returns a startup handle
     uint16_t getRundownHandle(); //!< returns a rundown handle

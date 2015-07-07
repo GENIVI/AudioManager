@@ -328,11 +328,15 @@ public:
 	/**
 	 * E_OK in case of success
 	 */
-	virtual am_Error_e getDomainOfSink(const am_sinkID_t sinkID, am_domainID_t& domainID) =0;
+	virtual am_Error_e getDomainOfSink(const am_sinkID_t sinkID, am_domainID_t& domainID) const =0;
 	/**
 	 * E_OK in case of success
 	 */
-	virtual am_Error_e getDomainOfSource(const am_sourceID_t sourceID, am_domainID_t& domainID) =0;
+	virtual am_Error_e getDomainOfSource(const am_sourceID_t sourceID, am_domainID_t& domainID) const =0;
+	/**
+	 * E_OK in case of success
+	 */
+	virtual am_Error_e getDomainOfCrossfader(const am_crossfaderID_t crossfader, am_domainID_t& domainID) const = 0;
 
 };
 

@@ -25,6 +25,9 @@ if(USE_BUILD_LIBS)
      execute_process(COMMAND mkdir -p "${EXECUTABLE_OUTPUT_PATH}")
 endif(USE_BUILD_LIBS)
 
+#make aunt google stop complaining
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-local-typedefs")
+
 add_subdirectory (AmControlInterfaceTest)
 add_subdirectory (AmDatabaseHandlerTest)
 add_subdirectory (AmMapHandlerTest)

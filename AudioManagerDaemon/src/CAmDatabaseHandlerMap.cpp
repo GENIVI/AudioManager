@@ -2120,6 +2120,7 @@ bool CAmDatabaseHandlerMap::existConverter(const am_converterID_t converterID) c
 am_Error_e CAmDatabaseHandlerMap::getDomainOfSource(const am_sourceID_t sourceID, am_domainID_t & domainID) const
 {
     assert(sourceID!=0);
+    domainID=0;
 
     am_Source_Database_s const * source = objectForKeyIfExistsInMap(sourceID, mMappedData.mSourceMap);
     if( NULL!=source )
@@ -2133,11 +2134,26 @@ am_Error_e CAmDatabaseHandlerMap::getDomainOfSource(const am_sourceID_t sourceID
 am_Error_e am::CAmDatabaseHandlerMap::getDomainOfSink(const am_sinkID_t sinkID, am_domainID_t & domainID) const
 {
     assert(sinkID!=0);
+    domainID=0;
 
     am_Sink_Database_s const * source = objectForKeyIfExistsInMap(sinkID, mMappedData.mSinkMap);
 	if( NULL!=source )
 	{
 		domainID = source->domainID;
+		return E_OK;
+	}
+	return E_NON_EXISTENT;
+}
+
+am_Error_e am::CAmDatabaseHandlerMap::getDomainOfCrossfader(const am_converterID_t crossfader, am_domainID_t & domainID) const
+{
+    assert(crossfader!=0);
+    domainID=0;
+
+    am_Crossfader_Database_s const * cross = objectForKeyIfExistsInMap(crossfader, mMappedData.mCrossfaderMap);
+	if( NULL!=cross )
+	{
+		getDomainOfSource(cross->sinkID_A,domainID);
 		return E_OK;
 	}
 	return E_NON_EXISTENT;

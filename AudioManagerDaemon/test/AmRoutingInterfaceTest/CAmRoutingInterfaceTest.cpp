@@ -238,31 +238,7 @@ TEST_F(CAmRoutingInterfaceTest,setSinkSoundProperty)
     ASSERT_TRUE(listHandles[0].handleType==handle.handleType);
 }
 
-TEST_F(CAmRoutingInterfaceTest,setSourceVolumeNoChange)
-{
-    am_Source_s source;
-    am_sourceID_t sourceID;
-    am_Domain_s domain;
-    am_domainID_t domainID;
-    am_Handle_s handle;
-    am_volume_t volume = 34;
-    am_CustomRampType_t rampType = RAMP_GENIVI_DIRECT;
-    am_time_t rampTime = 300;
-    std::vector<am_Handle_s> listHandles;
-    pCF.createSource(source);
-    pCF.createDomain(domain);
-    domain.name = "mock";
-    domain.busname = "mock";
-    source.sourceID = 2;
-    source.domainID = DYNAMIC_ID_BOUNDARY;
-    source.volume = volume;
-    ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
-    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
-    //EXPECT_CALL(pMockInterface,asyncSetSourceVolume(_,2,volume,rampType,rampTime)).Times(1).WillOnce(Return(E_NO_CHANGE));
-    //ASSERT_EQ(E_NO_CHANGE, pControlReceiver.setSourceVolume(handle,2,volume,rampType,rampTime));
-    ASSERT_EQ(E_OK, pControlReceiver.getListHandles(listHandles));
-    ASSERT_TRUE(listHandles.empty());
-}
+
 
 TEST_F(CAmRoutingInterfaceTest,setSourceVolume)
 {
@@ -290,32 +266,6 @@ TEST_F(CAmRoutingInterfaceTest,setSourceVolume)
     ASSERT_EQ(E_OK, pControlReceiver.getListHandles(listHandles));
     ASSERT_TRUE(listHandles[0].handle==handle.handle);
     ASSERT_TRUE(listHandles[0].handleType==handle.handleType);
-}
-
-TEST_F(CAmRoutingInterfaceTest,setSinkVolumeNoChange)
-{
-    am_Sink_s sink;
-    am_sinkID_t sinkID;
-    am_Domain_s domain;
-    am_domainID_t domainID;
-    am_Handle_s handle;
-    am_volume_t volume = 34;
-    am_CustomRampType_t rampType = RAMP_GENIVI_DIRECT;
-    am_time_t rampTime = 300;
-    std::vector<am_Handle_s> listHandles;
-    pCF.createSink(sink);
-    pCF.createDomain(domain);
-    domain.name = "mock";
-    domain.busname = "mock";
-    sink.sinkID = 2;
-    sink.domainID = DYNAMIC_ID_BOUNDARY;
-    sink.volume = volume;
-    ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
-    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
-    //EXPECT_CALL(pMockInterface,asyncSetSinkVolume(_,2,volume,rampType,rampTime)).Times(0);
-    //ASSERT_EQ(E_NO_CHANGE, pControlReceiver.setSinkVolume(handle,2,volume,rampType,rampTime));
-    ASSERT_EQ(E_OK, pControlReceiver.getListHandles(listHandles));
-    ASSERT_TRUE(listHandles.empty());
 }
 
 TEST_F(CAmRoutingInterfaceTest,setSinkVolume)
@@ -412,26 +362,6 @@ TEST_F(CAmRoutingInterfaceTest,nothingTodisconnect)
     ASSERT_TRUE(listHandles.empty());
 }
 
-TEST_F(CAmRoutingInterfaceTest,setSourceStateNoChange)
-{
-    am_Source_s source;
-    am_sourceID_t sourceID;
-    am_Domain_s domain;
-    am_domainID_t domainID;
-    am_Handle_s handle;
-    handle.handle = 0;
-    am_SourceState_e state = SS_PAUSED;
-    pCF.createSource(source);
-    pCF.createDomain(domain);
-    domain.name = "mock";
-    domain.busname = "mock";
-    source.domainID = DYNAMIC_ID_BOUNDARY;
-    source.sourceState = state;
-    ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
-    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
-    EXPECT_CALL(pMockInterface,asyncSetSourceState(_,sourceID,state)).Times(0);
-    //ASSERT_EQ(E_NO_CHANGE, pControlReceiver.setSourceState(handle,sourceID,state));
-}
 
 int main(int argc, char **argv)
 {

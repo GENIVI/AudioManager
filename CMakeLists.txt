@@ -222,9 +222,9 @@ if(WITH_TESTS)
 endif(WITH_TESTS)
 
 ##global build flags set(CPACK_RPM_COMPONENT_INSTALL ON)
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x -D_GNU_SOURCE -pedantic -rdynamic -Wno-variadic-macros")
-set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g -Wall -Wextra -std=gnu++0x -D_GNU_SOURCE -pedantic -rdynamic -Wno-long-long -Wno-unused-parameter")
-set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O2 -fno-common -rdynamic -std=gnu++0x -fno-strict-aliasing -DNDEBUG")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x -pedantic -rdynamic -Wno-variadic-macros")
+set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -DDEBUG")
+set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O2 -DNDEBUG")
 
 configure_package_config_file ( 
     ${CMAKE_SOURCE_DIR}/cmake/audiomanagerConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/audiomanagerConfig.cmake
