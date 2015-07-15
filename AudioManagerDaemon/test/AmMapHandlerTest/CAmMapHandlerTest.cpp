@@ -3020,7 +3020,7 @@ TEST_F(CAmMapHandlerObserverCallbacksTest, enter_removeCrossfader)
     ASSERT_EQ(E_OK,pDatabaseHandler.removeCrossfaderDB(crossfaderID))<< "ERROR: database error";
 }
 
-TEST_F(CAmMapHandlerObserverCallbacksTest, enter_removeMainConnection)
+TEST_F(CAmMapHandlerObserverCallbacksTest, enter_update_removeMainConnection)
 {
     //fill the connection database
     am_Connection_s connection;
@@ -3076,9 +3076,20 @@ TEST_F(CAmMapHandlerObserverCallbacksTest, enter_removeMainConnection)
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), timingInformationChanged(1, _)).Times(1);
     ASSERT_EQ(E_OK, pDatabaseHandler.enterMainConnectionDB(mainConnection,mainConnectionID));
     ASSERT_NE(0, mainConnectionID);
+
+	//change delay of first connection
+    am_timeSync_t delay = 20;
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), timingInformationChanged(mainConnectionID, 20)).Times(1);
+    ASSERT_EQ(E_OK, pDatabaseHandler.changeConnectionTimingInformation(mainConnection.listConnectionID[0], delay));
+
+    //change delay of route
+    delay = 40;
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), timingInformationChanged(mainConnectionID, 40)).Times(1);
+    ASSERT_EQ(E_OK, pDatabaseHandler.changeDelayMainConnection(delay, mainConnectionID));
+
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), removedMainConnection(1)).Times(1);
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), mainConnectionStateChanged(1, _)).Times(1);
-    ASSERT_EQ(E_OK,pDatabaseHandler.removeMainConnectionDB(1)) << "ERROR: database error";
+    ASSERT_EQ(E_OK,pDatabaseHandler.removeMainConnectionDB(mainConnectionID)) << "ERROR: database error";
 }
 
 TEST_F(CAmMapHandlerObserverCallbacksTest, changeSinkAvailability)

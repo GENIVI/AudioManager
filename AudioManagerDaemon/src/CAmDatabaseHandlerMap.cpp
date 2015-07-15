@@ -534,8 +534,7 @@ am_Error_e CAmDatabaseHandlerMap::enterMainConnectionDB(const am_MainConnection_
 	}
 
     //now check the connectionTable for all connections in the route. IF connectionID exist
-     delay = calculateDelayForRoute(mainConnectionData.listConnectionID);
-     mMappedData.mMainConnectionMap[nextID].delay = delay;
+    delay = calculateDelayForRoute(mainConnectionData.listConnectionID);
     logInfo("DatabaseHandler::enterMainConnectionDB entered new mainConnection with sourceID", mainConnectionData.sourceID, "sinkID:", mainConnectionData.sinkID, "delay:", delay, "assigned ID:", connectionID);
 
     if (mpDatabaseObserver)
@@ -549,7 +548,9 @@ am_Error_e CAmDatabaseHandlerMap::enterMainConnectionDB(const am_MainConnection_
     //finally, we update the delay value for the maintable
     if (delay == 0)
         delay = -1;
-    return (changeDelayMainConnection(delay, connectionID));
+    (void)changeDelayMainConnection(delay, connectionID);
+
+    return (E_OK);
 }
 
 /**
@@ -2225,21 +2226,16 @@ am_timeSync_t CAmDatabaseHandlerMap::calculateMainConnectionDelay(const am_mainC
   		return -1;
     am_MainConnection_s mainConnection = mMappedData.mMainConnectionMap.at(mainConnectionID);
     am_timeSync_t delay = 0;
-	am_timeSync_t min = SHRT_MAX;
     std::vector<am_connectionID_t>::const_iterator iter = mainConnection.listConnectionID.begin();
 	for(;iter<mainConnection.listConnectionID.end(); ++iter)
 	{
 		am_Connection_Database_s const * source = objectForKeyIfExistsInMap(*iter, mMappedData.mConnectionMap);
 		if( NULL!=source )
 		{
-			delay += source->delay;
-			min = std::min(min,source->delay);
+			delay += std::max(source->delay, static_cast<am_timeSync_t>(0));
 		}
 	}
-    if (min < 0)
-        delay = -1;
-    return (delay);
-
+    return (delay == 0 ? -1 : std::min(delay, static_cast<am_timeSync_t>(SHRT_MAX)));
 }
 
 /**
