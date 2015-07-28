@@ -196,6 +196,7 @@ private:
 
     typedef CAmDelegate* CAmDelegagePtr; //!< pointer to a delegate
 
+public:
 	/**
 	 * instantiates a async delegate with given arguments and sends the delegate pointer over the pipe
 	 */
@@ -231,6 +232,7 @@ private:
 		//Delete the pointer.
 		delete pImp;
 	}
+private:
 
     /**
      * rings the line of the pipe and adds the delegate pointer to the queue
