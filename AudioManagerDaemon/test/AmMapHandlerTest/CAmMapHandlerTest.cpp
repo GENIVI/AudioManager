@@ -2413,6 +2413,7 @@ TEST_F(CAmMapHandlerTest,changeMainNotificationsSources)
     notify.type=NT_UNKNOWN;
     notify.status=NS_CHANGE;
     notify.parameter=10;
+    ASSERT_EQ(E_NO_CHANGE,pDatabaseHandler.changeMainSourceNotificationConfigurationDB(sourceID,notify));
     //change a setting
     notify.type=NT_TEST_2;
     ASSERT_EQ(E_OK,pDatabaseHandler.changeMainSourceNotificationConfigurationDB(sourceID,notify));
@@ -2450,6 +2451,8 @@ TEST_F(CAmMapHandlerTest,changeMainNotificationsSink)
     notify.type=NT_UNKNOWN;
     notify.status=NS_CHANGE;
     notify.parameter=27;
+    ASSERT_EQ(E_NO_CHANGE,pDatabaseHandler.changeMainSinkNotificationConfigurationDB(sinkID,notify))
+        << "ERROR: database error";
     //change a setting
     notify.type=NT_TEST_2;
     ASSERT_EQ(E_OK,pDatabaseHandler.changeMainSinkNotificationConfigurationDB(sinkID,notify))
@@ -2722,11 +2725,30 @@ TEST_F(CAmMapHandlerObserverCallbacksTest, peek_enter_update_removeSource)
     		return ref.sourceID==sourceID;
     	})!=listSources.end();
     ASSERT_TRUE(containsSourceID);
+
     std::vector<am_SoundProperty_s> listSoundProperties;
     std::vector<am_CustomAvailabilityReason_t> listConnectionFormats;
     std::vector<am_MainSoundProperty_s> listMainSoundProperties;
+#ifndef WITH_DATABASE_CHANGE_CHECK
+    //check no change
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), sourceUpdated(sourceID, _, _, _)).Times(1);
     ASSERT_EQ(E_OK,pDatabaseHandler.changeSourceDB(sourceID, source.sourceClassID, listSoundProperties, listConnectionFormats, listMainSoundProperties))<< "ERROR: database error";
+#else
+    //check no change
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), sourceUpdated(sourceID, _, _, _)).Times(0);
+    ASSERT_EQ(E_OK,pDatabaseHandler.changeSourceDB(sourceID, source.sourceClassID, listSoundProperties, listConnectionFormats, listMainSoundProperties))<< "ERROR: database error";
+    //check change of class id
+    source.sourceClassID++;
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), sourceUpdated(sourceID, source.sourceClassID, _, _)).Times(1);
+    ASSERT_EQ(E_OK,pDatabaseHandler.changeSourceDB(sourceID, source.sourceClassID, listSoundProperties, listConnectionFormats, listMainSoundProperties))<< "ERROR: database error";
+    //check change of main sound properties
+    am_MainSoundProperty_s mainSoundProperties;
+    mainSoundProperties.type = MSP_GENIVI_TREBLE;
+    mainSoundProperties.value = 0;
+    listMainSoundProperties.push_back(mainSoundProperties);
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), sourceUpdated(sourceID, _, _, _)).Times(1);
+    ASSERT_EQ(E_OK,pDatabaseHandler.changeSourceDB(sourceID, source.sourceClassID, listSoundProperties, listConnectionFormats, listMainSoundProperties))<< "ERROR: database error";
+#endif
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), removedSource(sourceID, _)).Times(1);
     ASSERT_EQ(E_OK,pDatabaseHandler.removeSourceDB(sourceID))<< "ERROR: database error";
     EXPECT_TRUE(Mock::VerifyAndClearExpectations(MockDatabaseObserver::getMockObserverObject()));
@@ -2768,11 +2790,29 @@ TEST_F(CAmMapHandlerObserverCallbacksTest, peek_enter_update_removeSink)
 			return ref.sinkID==sinkID;
 	})!=listSinks.end();
 	ASSERT_TRUE(containsSourceID);
+
     std::vector<am_SoundProperty_s> listSoundProperties;
     std::vector<am_CustomAvailabilityReason_t> listConnectionFormats;
     std::vector<am_MainSoundProperty_s> listMainSoundProperties;
+#ifndef WITH_DATABASE_CHANGE_CHECK
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), sinkUpdated(sinkID, _, _, _)).Times(1);
     ASSERT_EQ(E_OK,pDatabaseHandler.changeSinkDB(sinkID, sink.sinkClassID, listSoundProperties, listConnectionFormats, listMainSoundProperties))<< "ERROR: database error";
+#else
+    //check no change
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), sinkUpdated(sinkID, _, _, _)).Times(0);
+    ASSERT_EQ(E_OK,pDatabaseHandler.changeSinkDB(sinkID, sink.sinkClassID, listSoundProperties, listConnectionFormats, listMainSoundProperties))<< "ERROR: database error";
+    //check change of class id
+    sink.sinkClassID++;
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), sinkUpdated(sinkID, sink.sinkClassID, _, _)).Times(1);
+    ASSERT_EQ(E_OK,pDatabaseHandler.changeSinkDB(sinkID, sink.sinkClassID, listSoundProperties, listConnectionFormats, listMainSoundProperties))<< "ERROR: database error";
+    //check change of main sound properties
+    am_MainSoundProperty_s mainSoundProperties;
+    mainSoundProperties.type = MSP_GENIVI_TREBLE;
+    mainSoundProperties.value = 0;
+    listMainSoundProperties.push_back(mainSoundProperties);
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), sinkUpdated(sinkID, _, _, _)).Times(1);
+    ASSERT_EQ(E_OK,pDatabaseHandler.changeSinkDB(sinkID, sink.sinkClassID, listSoundProperties, listConnectionFormats, listMainSoundProperties))<< "ERROR: database error";
+#endif
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), removedSink(sinkID, _)).Times(1);
     ASSERT_EQ(E_OK,pDatabaseHandler.removeSinkDB(sinkID))<< "ERROR: database error";
     EXPECT_TRUE(Mock::VerifyAndClearExpectations(MockDatabaseObserver::getMockObserverObject()));
@@ -2938,18 +2978,28 @@ TEST_F(CAmMapHandlerObserverCallbacksTest, enter_update_removeMainConnection)
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSource(_)).Times(9);
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newMainConnection(Field(&am_MainConnectionType_s::mainConnectionID, 1))).Times(1);
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), mainConnectionStateChanged(1, CS_CONNECTED)).Times(1);
+#ifndef WITH_DATABASE_CHANGE_CHECK
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), timingInformationChanged(1, _)).Times(1);
+#else
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), timingInformationChanged(1, _)).Times(0);
+#endif
     createMainConnectionSetup(mainConnectionID, mainConnection);
 
-	//change delay of first connection
+    //change delay of first connection
     am_timeSync_t delay = 20;
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), timingInformationChanged(mainConnectionID, 20)).Times(1);
     ASSERT_EQ(E_OK, pDatabaseHandler.changeConnectionTimingInformation(mainConnection.listConnectionID[0], delay));
+#ifdef WITH_DATABASE_CHANGE_CHECK
+    ASSERT_EQ(E_NO_CHANGE, pDatabaseHandler.changeConnectionTimingInformation(mainConnection.listConnectionID[0], delay));
+#endif
 
     //change delay of route
     delay = 40;
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), timingInformationChanged(mainConnectionID, 40)).Times(1);
     ASSERT_EQ(E_OK, pDatabaseHandler.changeDelayMainConnection(delay, mainConnectionID));
+#ifdef WITH_DATABASE_CHANGE_CHECK
+    ASSERT_EQ(E_NO_CHANGE, pDatabaseHandler.changeDelayMainConnection(delay, mainConnectionID));
+#endif
 
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), removedMainConnection(1)).Times(1);
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), mainConnectionStateChanged(1, _)).Times(1);
@@ -2972,6 +3022,14 @@ TEST_F(CAmMapHandlerObserverCallbacksTest, changeSinkAvailability)
     ASSERT_EQ(E_OK, pDatabaseHandler.getListSinks(listSinks));
     ASSERT_EQ(availability.availability, listSinks[0].available.availability);
     ASSERT_EQ(availability.availabilityReason, listSinks[0].available.availabilityReason);
+
+#ifdef WITH_DATABASE_CHANGE_CHECK
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), sinkAvailabilityChanged(_, _)).Times(1);
+    ASSERT_EQ(E_NO_CHANGE, pDatabaseHandler.changeSinkAvailabilityDB(availability,sinkID));
+    availability.availability = A_AVAILABLE;
+    availability.availabilityReason = AR_GENIVI_TEMPERATURE;
+    ASSERT_EQ(E_OK, pDatabaseHandler.changeSinkAvailabilityDB(availability,sinkID));
+#endif
 }
 
 TEST_F(CAmMapHandlerObserverCallbacksTest, changeSourceAvailability)
@@ -2991,6 +3049,14 @@ TEST_F(CAmMapHandlerObserverCallbacksTest, changeSourceAvailability)
     ASSERT_EQ(E_OK, pDatabaseHandler.getListSources(listSources));
     ASSERT_EQ(availability.availability, listSources[0].available.availability);
     ASSERT_EQ(availability.availabilityReason, listSources[0].available.availabilityReason);
+
+#ifdef WITH_DATABASE_CHANGE_CHECK
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), sourceAvailabilityChanged(_, _)).Times(1);
+    ASSERT_EQ(E_NO_CHANGE, pDatabaseHandler.changeSourceAvailabilityDB(availability,sourceID));
+    availability.availability = A_AVAILABLE;
+    availability.availabilityReason = AR_GENIVI_TEMPERATURE;
+    ASSERT_EQ(E_OK, pDatabaseHandler.changeSourceAvailabilityDB(availability,sourceID));
+#endif
 }
 
 TEST_F(CAmMapHandlerObserverCallbacksTest,changeMainSinkVolume)
@@ -3006,6 +3072,13 @@ TEST_F(CAmMapHandlerObserverCallbacksTest,changeMainSinkVolume)
     ASSERT_EQ(E_OK, pDatabaseHandler.changeSinkMainVolumeDB(newVol,sinkID));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListSinks(listSinks));
     ASSERT_EQ(listSinks[0].mainVolume, newVol);
+
+#ifdef WITH_DATABASE_CHANGE_CHECK
+    am_mainVolume_t incVol = 21;
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), volumeChanged( sinkID, incVol)).Times(1);
+    ASSERT_EQ(E_NO_CHANGE, pDatabaseHandler.changeSinkMainVolumeDB(newVol,sinkID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.changeSinkMainVolumeDB(incVol,sinkID));
+#endif
 }
 
 TEST_F(CAmMapHandlerObserverCallbacksTest, changeSinkMuteState)
@@ -3021,6 +3094,13 @@ TEST_F(CAmMapHandlerObserverCallbacksTest, changeSinkMuteState)
     ASSERT_EQ(E_OK, pDatabaseHandler.changeSinkMuteStateDB(muteState,sinkID));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListSinks(listSinks));
     ASSERT_EQ(muteState, listSinks[0].muteState);
+
+#ifdef WITH_DATABASE_CHANGE_CHECK
+    am_MuteState_e newMuteState = MS_UNMUTED;
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), sinkMuteStateChanged(sinkID, newMuteState)).Times(1);
+    ASSERT_EQ(E_NO_CHANGE, pDatabaseHandler.changeSinkMuteStateDB(muteState,sinkID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.changeSinkMuteStateDB(newMuteState,sinkID));
+#endif
 }
 
 TEST_F(CAmMapHandlerObserverCallbacksTest, changeSystemProperty)
@@ -3038,6 +3118,13 @@ TEST_F(CAmMapHandlerObserverCallbacksTest, changeSystemProperty)
     ASSERT_EQ(E_OK, pDatabaseHandler.getListSystemProperties(listReturn));
     ASSERT_EQ(listReturn[0].type, systemProperty.type);
     ASSERT_EQ(listReturn[0].value, systemProperty.value);
+
+#ifdef WITH_DATABASE_CHANGE_CHECK
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), systemPropertyChanged(_)).Times(1);
+    ASSERT_EQ(E_NO_CHANGE, pDatabaseHandler.changeSystemPropertyDB(systemProperty));
+    systemProperty.value = 33;
+    ASSERT_EQ(E_OK, pDatabaseHandler.changeSystemPropertyDB(systemProperty));
+#endif
 }
 
 TEST_F(CAmMapHandlerObserverCallbacksTest, changeMainNotificationsSink)
@@ -3081,6 +3168,9 @@ TEST_F(CAmMapHandlerObserverCallbacksTest, changeMainNotificationsSink)
     //change a setting
     notify2.parameter++;
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), sinkMainNotificationConfigurationChanged(sinkID, _)).Times(1);
+#ifdef WITH_DATABASE_CHANGE_CHECK
+    ASSERT_EQ(E_NO_CHANGE,pDatabaseHandler.changeMainSinkNotificationConfigurationDB(sinkID,notify1));
+#endif
     ASSERT_EQ(E_OK,pDatabaseHandler.changeMainSinkNotificationConfigurationDB(sinkID,notify2));
 }
 
@@ -3126,6 +3216,9 @@ TEST_F(CAmMapHandlerObserverCallbacksTest, changeMainNotificationsSources)
     //change a setting
     notify2.parameter++;
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), sourceMainNotificationConfigurationChanged(sourceID, _)).Times(1);
+#ifdef WITH_DATABASE_CHANGE_CHECK
+    ASSERT_EQ(E_NO_CHANGE,pDatabaseHandler.changeMainSourceNotificationConfigurationDB(sourceID,notify1));
+#endif
     ASSERT_EQ(E_OK,pDatabaseHandler.changeMainSourceNotificationConfigurationDB(sourceID,notify2));
 }
 

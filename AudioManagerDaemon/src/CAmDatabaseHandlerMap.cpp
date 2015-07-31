@@ -35,8 +35,42 @@
 #include "CAmDltWrapper.h"
 
 
+#ifdef WITH_DATABASE_CHANGE_CHECK
+#	define DB_COND_UPDATE_RIE(x,y) \
+		if (isDataEqual(x,y)) return (E_NO_CHANGE); else x = y
+#	define DB_COND_UPDATE_INIT \
+		bool modified = false
+#	define DB_COND_UPDATE(x,y) \
+		if (!isDataEqual(x,y)) { x = y; modified = true; }
+#	define DB_COND_ISMODIFIED \
+		(modified == true)
+#else
+#	define DB_COND_UPDATE_RIE(x,y) \
+		x = y
+#	define DB_COND_UPDATE_INIT
+#	define DB_COND_UPDATE(x,y) \
+		x = y
+#	define DB_COND_ISMODIFIED \
+		(true)
+#endif
+
+
 namespace am
 {
+
+/*
+ * Checks if content of data is equal
+ */
+template <typename T> bool isDataEqual(const T & left, const T & right)
+{
+	return static_cast<bool>(!std::memcmp(&left, &right, sizeof(T)));
+}
+
+template <typename T, typename L = std::vector<T> > bool isDataEqual(const L & left, const L & right)
+{
+	return std::equal(left.begin(), left.end(), right.begin(), isDataEqual);
+}
+
 
 /*
  * Returns an object for given key
@@ -1078,7 +1112,7 @@ am_Error_e CAmDatabaseHandlerMap::changeMainConnectionRouteDB(const am_mainConne
     //now we replace the data in the main connection object with the new one
     mMappedData.mMainConnectionMap[mainconnectionID].listConnectionID = listConnectionID;
 
-    if (changeDelayMainConnection(delay,mainconnectionID)!=E_OK)
+    if (changeDelayMainConnection(delay,mainconnectionID) == E_NO_CHANGE)
         logError("DatabaseHandler::changeMainConnectionRouteDB error while changing mainConnectionDelay to ", delay);
 
     logInfo("DatabaseHandler::changeMainConnectionRouteDB entered new route:", mainconnectionID);
@@ -1094,7 +1128,8 @@ am_Error_e CAmDatabaseHandlerMap::changeMainConnectionStateDB(const am_mainConne
     {
         return (E_NON_EXISTENT);
     }
-    mMappedData.mMainConnectionMap[mainconnectionID].connectionState = connectionState;
+
+    DB_COND_UPDATE_RIE(mMappedData.mMainConnectionMap[mainconnectionID].connectionState, connectionState);
 
     logInfo("DatabaseHandler::changeMainConnectionStateDB changed mainConnectionState of MainConnection:", mainconnectionID, "to:", connectionState);
     if (mpDatabaseObserver)
@@ -1111,7 +1146,7 @@ am_Error_e CAmDatabaseHandlerMap::changeSinkMainVolumeDB(const am_mainVolume_t m
         return (E_NON_EXISTENT);
     }
 
-    mMappedData.mSinkMap[sinkID].mainVolume = mainVolume;
+    DB_COND_UPDATE_RIE(mMappedData.mSinkMap[sinkID].mainVolume, mainVolume);
 
     logInfo("DatabaseHandler::changeSinkMainVolumeDB changed mainVolume of sink:", sinkID, "to:", mainVolume);
 
@@ -1131,7 +1166,7 @@ am_Error_e CAmDatabaseHandlerMap::changeSinkAvailabilityDB(const am_Availability
         return (E_NON_EXISTENT);
     }
 
-    mMappedData.mSinkMap[sinkID].available = availability;
+    DB_COND_UPDATE_RIE(mMappedData.mSinkMap[sinkID].available, availability);
 
     logInfo("DatabaseHandler::changeSinkAvailabilityDB changed sinkAvailability of sink:", sinkID, "to:", availability.availability, "Reason:", availability.availabilityReason);
 
@@ -1150,7 +1185,7 @@ am_Error_e CAmDatabaseHandlerMap::changDomainStateDB(const am_DomainState_e doma
         return (E_NON_EXISTENT);
     }
 
-    mMappedData.mDomainMap[domainID].state = domainState;
+    DB_COND_UPDATE_RIE(mMappedData.mDomainMap[domainID].state, domainState);
 
     logInfo("DatabaseHandler::changDomainStateDB changed domainState of domain:", domainID, "to:", domainState);
     return (E_OK);
@@ -1166,7 +1201,7 @@ am_Error_e CAmDatabaseHandlerMap::changeSinkMuteStateDB(const am_MuteState_e mut
         return (E_NON_EXISTENT);
     }
 
-    mMappedData.mSinkMap[sinkID].muteState = muteState;
+    DB_COND_UPDATE_RIE(mMappedData.mSinkMap[sinkID].muteState, muteState);
 
     logInfo("DatabaseHandler::changeSinkMuteStateDB changed sinkMuteState of sink:", sinkID, "to:", muteState);
 
@@ -1190,7 +1225,7 @@ am_Error_e CAmDatabaseHandlerMap::changeMainSinkSoundPropertyDB(const am_MainSou
 	{
 		if (elementIterator->type == soundProperty.type)
 		{
-			elementIterator->value = soundProperty.value;
+			DB_COND_UPDATE_RIE(elementIterator->value, soundProperty.value);
 			if(sink.cacheMainSoundProperties.size())
 				sink.cacheMainSoundProperties[soundProperty.type] = soundProperty.value;
 			break;
@@ -1217,7 +1252,7 @@ am_Error_e CAmDatabaseHandlerMap::changeMainSourceSoundPropertyDB(const am_MainS
 	{
 		if (elementIterator->type == soundProperty.type)
 		{
-			elementIterator->value = soundProperty.value;
+			DB_COND_UPDATE_RIE(elementIterator->value, soundProperty.value);
 			if(source.cacheMainSoundProperties.size())
 				source.cacheMainSoundProperties[soundProperty.type] = soundProperty.value;
 			break;
@@ -1241,7 +1276,7 @@ am_Error_e CAmDatabaseHandlerMap::changeSourceAvailabilityDB(const am_Availabili
         return (E_NON_EXISTENT);
     }
 
-    mMappedData.mSourceMap[sourceID].available = availability;
+    DB_COND_UPDATE_RIE(mMappedData.mSourceMap[sourceID].available, availability);
 
     logInfo("DatabaseHandler::changeSourceAvailabilityDB changed changeSourceAvailabilityDB of source:", sourceID, "to:", availability.availability, "Reason:", availability.availabilityReason);
 
@@ -1256,7 +1291,7 @@ am_Error_e CAmDatabaseHandlerMap::changeSystemPropertyDB(const am_SystemProperty
 	for (;elementIterator != mMappedData.mSystemProperties.end(); ++elementIterator)
 	{
 		if (elementIterator->type == property.type)
-			elementIterator->value = property.value;
+			DB_COND_UPDATE_RIE(elementIterator->value, property.value);
 	}
 
     logInfo("DatabaseHandler::changeSystemPropertyDB changed system property");
@@ -1515,7 +1550,7 @@ am_Error_e CAmDatabaseHandlerMap::changeSinkClassInfoDB(const am_SinkClass_s& si
     if (!existSinkClass(sinkClass.sinkClassID))
         return (E_NON_EXISTENT);
 
-    mMappedData.mSinkClassesMap[sinkClass.sinkClassID].listClassProperties = sinkClass.listClassProperties;
+    DB_COND_UPDATE_RIE(mMappedData.mSinkClassesMap[sinkClass.sinkClassID].listClassProperties, sinkClass.listClassProperties);
 
     logInfo("DatabaseHandler::setSinkClassInfoDB set setSinkClassInfo");
     return (E_OK);
@@ -1530,7 +1565,7 @@ am_Error_e CAmDatabaseHandlerMap::changeSourceClassInfoDB(const am_SourceClass_s
     if (!existSourceClass(sourceClass.sourceClassID))
         return (E_NON_EXISTENT);
 
-    mMappedData.mSourceClassesMap[sourceClass.sourceClassID].listClassProperties = sourceClass.listClassProperties;
+    DB_COND_UPDATE_RIE(mMappedData.mSourceClassesMap[sourceClass.sourceClassID].listClassProperties, sourceClass.listClassProperties);
 
     logInfo("DatabaseHandler::setSinkClassInfoDB set setSinkClassInfo");
     return (E_OK);
@@ -1970,7 +2005,7 @@ am_Error_e CAmDatabaseHandlerMap::changeDelayMainConnection(const am_timeSync_t 
     assert(connectionID!=0);
     if (!existMainConnection(connectionID))
  		return (E_NON_EXISTENT);
-    mMappedData.mMainConnectionMap[connectionID].delay = delay;
+    DB_COND_UPDATE_RIE(mMappedData.mMainConnectionMap[connectionID].delay, delay);
     if (mpDatabaseObserver)
         mpDatabaseObserver->timingInformationChanged(connectionID, delay);
     return (E_OK);
@@ -2195,20 +2230,19 @@ am_Error_e CAmDatabaseHandlerMap::changeConnectionTimingInformation(const am_con
     //now we need to find all mainConnections that use the changed connection and update their timing
 
     //first get all route tables for all mainconnections
-
+    am_Error_e error = E_OK;
     CAmMapMainConnection::const_iterator iter = mMappedData.mMainConnectionMap.begin();
     for(; iter != mMappedData.mMainConnectionMap.end(); ++iter)
     {
-    	am_MainConnection_s mainConnection = iter->second;
-    	if (std::find(mainConnection.listConnectionID.begin(), mainConnection.listConnectionID.end(), connectionID) != mainConnection.listConnectionID.end())
-    	{
-    	  // Got it.
-    		changeDelayMainConnection(calculateMainConnectionDelay(mainConnection.mainConnectionID), mainConnection.mainConnectionID);
-    	}
-
+        am_MainConnection_s mainConnection = iter->second;
+        if (std::find(mainConnection.listConnectionID.begin(), mainConnection.listConnectionID.end(), connectionID) != mainConnection.listConnectionID.end())
+        {
+            // Got it.
+            error = changeDelayMainConnection(calculateMainConnectionDelay(mainConnection.mainConnectionID), mainConnection.mainConnectionID);
+        }
     }
 
-    return (E_OK);
+    return error;
 }
 
 am_Error_e CAmDatabaseHandlerMap::changeConnectionFinal(const am_connectionID_t connectionID)
@@ -2713,52 +2747,64 @@ am_Error_e CAmDatabaseHandlerMap::changeSourceDB(const am_sourceID_t sourceID, c
     {
         return (E_NON_EXISTENT);
     }
+
+    DB_COND_UPDATE_INIT;
     am_sourceClass_t sourceClassOut(sourceClassID);
     std::vector<am_MainSoundProperty_s> listMainSoundPropertiesOut(listMainSoundProperties);
     //check if sinkClass needs to be changed
 
-	std::unordered_map<am_sourceID_t, am_Source_Database_s>::iterator iter = mMappedData.mSourceMap.begin();
-	for(; iter!=mMappedData.mSourceMap.end(); ++iter)
-	{
-		if( iter->second.sourceID == sourceID )
-		{
-			if( sourceClassID!=0 )
-				iter->second.sourceClassID = sourceClassID;
-			else if( 0 == iter->second.reserved )
-				sourceClassOut = iter->second.sourceClassID;
-		}
-	}
+    std::unordered_map<am_sourceID_t, am_Source_Database_s>::iterator iter = mMappedData.mSourceMap.begin();
+    for(; iter!=mMappedData.mSourceMap.end(); ++iter)
+    {
+        if( iter->second.sourceID == sourceID )
+        {
+            if (sourceClassID != 0)
+            {
+                DB_COND_UPDATE(iter->second.sourceClassID, sourceClassID);
+            }
+            else if (0 == iter->second.reserved)
+            {
+                sourceClassOut = iter->second.sourceClassID;
+            }
+            break;
+        }
+    }
 
     //check if soundProperties need to be updated
     if (!listSoundProperties.empty())
     {
-    	mMappedData.mSourceMap.at(sourceID).listSoundProperties = listSoundProperties;
-    	mMappedData.mSourceMap.at(sourceID).cacheSoundProperties.clear();
+        mMappedData.mSourceMap.at(sourceID).listSoundProperties = listSoundProperties;
+        mMappedData.mSourceMap.at(sourceID).cacheSoundProperties.clear();
     }
 
     //check if we have to update the list of connectionformats
     if (!listConnectionFormats.empty())
     {
-    	mMappedData.mSourceMap.at(sourceID).listConnectionFormats = listConnectionFormats;
+        mMappedData.mSourceMap.at(sourceID).listConnectionFormats = listConnectionFormats;
     }
 
     //then we need to check if we need to update the listMainSoundProperties
-    if (!listMainSoundProperties.empty() && sourceVisible(sourceID))
+    if (sourceVisible(sourceID))
     {
-
-    	mMappedData.mSourceMap.at(sourceID).listMainSoundProperties = listMainSoundProperties;
-    	mMappedData.mSourceMap.at(sourceID).cacheMainSoundProperties.clear();
+        if (!listMainSoundProperties.empty())
+        {
+            DB_COND_UPDATE(mMappedData.mSourceMap.at(sourceID).listMainSoundProperties, listMainSoundProperties);
+            mMappedData.mSourceMap.at(sourceID).cacheMainSoundProperties.clear();
+        }
+        else
+        {
+            getListMainSourceSoundProperties(sourceID,listMainSoundPropertiesOut);
+        }
     }
-    else //read out the properties
-    {
-        getListMainSourceSoundProperties(sourceID,listMainSoundPropertiesOut);
-    }
 
-    logInfo("DatabaseHandler::changeSource changed changeSink of source:", sourceID);
-
-    if (mpDatabaseObserver != NULL)
+    if (DB_COND_ISMODIFIED)
     {
-        mpDatabaseObserver->sourceUpdated(sourceID,sourceClassOut,listMainSoundPropertiesOut,sourceVisible(sourceID));
+        logInfo("DatabaseHandler::changeSource changed changeSource of source:", sourceID);
+
+        if (mpDatabaseObserver != NULL)
+        {
+            mpDatabaseObserver->sourceUpdated(sourceID,sourceClassOut,listMainSoundPropertiesOut,sourceVisible(sourceID));
+        }
     }
 
     return (E_OK);
@@ -2769,6 +2815,7 @@ am_Error_e CAmDatabaseHandlerMap::changeSinkDB(const am_sinkID_t sinkID, const a
 {
     assert(sinkID!=0);
 
+    DB_COND_UPDATE_INIT;
     am_sinkClass_t sinkClassOut(sinkClassID);
     std::vector<am_MainSoundProperty_s> listMainSoundPropertiesOut(listMainSoundProperties);
 
@@ -2777,47 +2824,58 @@ am_Error_e CAmDatabaseHandlerMap::changeSinkDB(const am_sinkID_t sinkID, const a
         return (E_NON_EXISTENT);
     }
 
-	std::unordered_map<am_sinkID_t, am_Sink_Database_s>::iterator iter = mMappedData.mSinkMap.begin();
-	for(; iter!=mMappedData.mSinkMap.end(); ++iter)
-	{
-		if( iter->second.sinkID == sinkID )
-		{
-			if( sinkClassID!=0 )
-				iter->second.sinkClassID = sinkClassID;
-			else if( 0 == iter->second.reserved )
-				sinkClassOut = iter->second.sinkClassID;
-		}
-	}
+    std::unordered_map<am_sinkID_t, am_Sink_Database_s>::iterator iter = mMappedData.mSinkMap.begin();
+    for(; iter!=mMappedData.mSinkMap.end(); ++iter)
+    {
+        if (iter->second.sinkID == sinkID)
+        {
+            if (sinkClassID != 0)
+            {
+                DB_COND_UPDATE(iter->second.sinkClassID, sinkClassID);
+            }
+            else if (0 == iter->second.reserved)
+            {
+                sinkClassOut = iter->second.sinkClassID;
+            }
+            break;
+        }
+    }
 
     //check if soundProperties need to be updated
     if (!listSoundProperties.empty())
     {
-    	mMappedData.mSinkMap.at(sinkID).listSoundProperties = listSoundProperties;
-    	mMappedData.mSinkMap.at(sinkID).cacheSoundProperties.clear();
+        mMappedData.mSinkMap.at(sinkID).listSoundProperties = listSoundProperties;
+        mMappedData.mSinkMap.at(sinkID).cacheSoundProperties.clear();
     }
 
     //check if we have to update the list of connectionformats
     if (!listConnectionFormats.empty())
     {
-    	mMappedData.mSinkMap.at(sinkID).listConnectionFormats = listConnectionFormats;
+        mMappedData.mSinkMap.at(sinkID).listConnectionFormats = listConnectionFormats;
     }
 
     //then we need to check if we need to update the listMainSoundProperties
-    if (!listMainSoundProperties.empty() && sinkVisible(sinkID))
+    if (sinkVisible(sinkID))
     {
-    	mMappedData.mSinkMap.at(sinkID).listMainSoundProperties = listMainSoundProperties;
-    	mMappedData.mSinkMap.at(sinkID).cacheSoundProperties.clear();
-    }
-    else //read out the properties
-    {
-        getListMainSinkSoundProperties(sinkID,listMainSoundPropertiesOut);
+        if (!listMainSoundProperties.empty())
+        {
+            DB_COND_UPDATE(mMappedData.mSinkMap.at(sinkID).listMainSoundProperties, listMainSoundProperties);
+            mMappedData.mSinkMap.at(sinkID).cacheSoundProperties.clear();
+        }
+        else //read out the properties
+        {
+            getListMainSinkSoundProperties(sinkID,listMainSoundPropertiesOut);
+        }
     }
 
-    logInfo("DatabaseHandler::changeSink changed changeSink of sink:", sinkID);
-
-    if (mpDatabaseObserver != NULL)
+    if (DB_COND_ISMODIFIED)
     {
-        mpDatabaseObserver->sinkUpdated(sinkID,sinkClassOut,listMainSoundPropertiesOut,sinkVisible(sinkID));
+        logInfo("DatabaseHandler::changeSink changed changeSink of sink:", sinkID);
+
+        if (mpDatabaseObserver != NULL)
+        {
+            mpDatabaseObserver->sinkUpdated(sinkID,sinkClassOut,listMainSoundPropertiesOut,sinkVisible(sinkID));
+        }
     }
 
     return (E_OK);
@@ -2849,18 +2907,20 @@ am_Error_e CAmDatabaseHandlerMap::getListMainSourceNotificationConfigurations(co
 bool changeMainNotificationConfiguration(std::vector<am_NotificationConfiguration_s> & listMainNotificationConfigurations,
 											  const am_NotificationConfiguration_s & mainNotificationConfiguration)
 {
-	bool changed = false;
     std::vector<am_NotificationConfiguration_s>::iterator iter = listMainNotificationConfigurations.begin();
- 	for(; iter<listMainNotificationConfigurations.end(); ++iter)
- 	{
- 		if( mainNotificationConfiguration.type == iter->type )
- 		{
- 			iter->status = mainNotificationConfiguration.status;
- 			iter->parameter = mainNotificationConfiguration.parameter;
- 			changed |= true;
- 		}
- 	}
- 	return changed;
+    for(; iter<listMainNotificationConfigurations.end(); ++iter)
+    {
+        if( mainNotificationConfiguration.type == iter->type )
+        {
+#ifdef WITH_DATABASE_CHANGE_CHECK
+            if( iter->status == mainNotificationConfiguration.status && iter->parameter == mainNotificationConfiguration.parameter )
+                return false;
+#endif
+            *iter = mainNotificationConfiguration;
+            return true;
+        }
+    }
+    return false;
 }
 
 am_Error_e CAmDatabaseHandlerMap::changeMainSinkNotificationConfigurationDB(const am_sinkID_t sinkID, const am_NotificationConfiguration_s mainNotificationConfiguration)
