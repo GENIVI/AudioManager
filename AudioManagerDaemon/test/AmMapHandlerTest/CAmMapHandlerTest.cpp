@@ -42,33 +42,28 @@ int16_t const TEST_MAX_CONNECTION_ID = 20;
 int16_t const TEST_MAX_MAINCONNECTION_ID = 20;
 int16_t const TEST_MAX_SINK_ID = 40;
 
-CAmMapHandlerTest::CAmMapHandlerTest() :
-        plistRoutingPluginDirs(), //
-        plistCommandPluginDirs(), //
-        pSocketHandler(),//
-        pDatabaseHandler(), //
-        pRoutingSender(plistRoutingPluginDirs), //
-        pCommandSender(plistCommandPluginDirs), //
-        pMockInterface(), //
-        pRoutingInterfaceBackdoor(), //
-        pCommandInterfaceBackdoor(), //
-        pControlSender(), //
-        pRouter(&pDatabaseHandler, &pControlSender), //
-        pControlReceiver(&pDatabaseHandler, &pRoutingSender, &pCommandSender,  &pSocketHandler, &pRouter), //
-        pObserver(&pCommandSender,&pRoutingSender, &pSocketHandler)
-{
-    pDatabaseHandler.registerObserver(&pObserver);
-    pDatabaseHandler.setConnectionIDRange(1, TEST_MAX_CONNECTION_ID);
-    pDatabaseHandler.setMainConnectionIDRange(1, TEST_MAX_MAINCONNECTION_ID);
-    pDatabaseHandler.setSinkIDRange(DYNAMIC_ID_BOUNDARY, DYNAMIC_ID_BOUNDARY+TEST_MAX_SINK_ID);
-    pCommandInterfaceBackdoor.injectInterface(&pCommandSender, &pMockInterface);
-}
 
-CAmMapHandlerTest::~CAmMapHandlerTest()
+CAmMapBasicTest::CAmMapBasicTest() :
+                plistRoutingPluginDirs(), //
+                plistCommandPluginDirs(), //
+                pSocketHandler(),//
+                pDatabaseHandler(), //
+                pRoutingSender(plistRoutingPluginDirs), //
+                pCommandSender(plistCommandPluginDirs), //
+                pRoutingInterfaceBackdoor(), //
+                pCommandInterfaceBackdoor(), //
+                pControlSender(), //
+                pRouter(&pDatabaseHandler, &pControlSender), //
+                pControlReceiver(&pDatabaseHandler, &pRoutingSender, &pCommandSender,  &pSocketHandler, &pRouter), //
+				pCF()
 {
 }
 
-void CAmMapHandlerTest::createMainConnectionSetup()
+CAmMapBasicTest::~CAmMapBasicTest()
+{
+}
+
+void CAmMapBasicTest::createMainConnectionSetup(am_mainConnectionID_t & mainConnectionID, am_MainConnection_s & mainConnection)
 {
     //fill the connection database
     am_Connection_s connection;
@@ -107,8 +102,6 @@ void CAmMapHandlerTest::createMainConnectionSetup()
     }
 
     //create a mainConnection
-    am_MainConnection_s mainConnection;
-    am_mainConnectionID_t mainConnectionID;
     std::vector<am_MainConnection_s> mainConnectionList;
     mainConnection.listConnectionID = connectionList;
     mainConnection.mainConnectionID = 0;
@@ -137,96 +130,46 @@ void CAmMapHandlerTest::createMainConnectionSetup()
     }
 }
 
-void CAmMapHandlerTest::SetUp()
+void CAmMapBasicTest::SetUp()
 {
 	::testing::FLAGS_gmock_verbose = "error";
 }
 
-void CAmMapHandlerTest::TearDown()
+void CAmMapBasicTest::TearDown()
 {
 	::testing::FLAGS_gmock_verbose = "warning";
 }
 
+
+
+CAmMapHandlerTest::CAmMapHandlerTest() :
+        pMockInterface(), //
+        pObserver(&pCommandSender,&pRoutingSender, &pSocketHandler)
+{
+    pDatabaseHandler.registerObserver(&pObserver);
+    pDatabaseHandler.setConnectionIDRange(1, TEST_MAX_CONNECTION_ID);
+    pDatabaseHandler.setMainConnectionIDRange(1, TEST_MAX_MAINCONNECTION_ID);
+    pDatabaseHandler.setSinkIDRange(DYNAMIC_ID_BOUNDARY, DYNAMIC_ID_BOUNDARY+TEST_MAX_SINK_ID);
+    pCommandInterfaceBackdoor.injectInterface(&pCommandSender, &pMockInterface);
+}
+
+CAmMapHandlerTest::~CAmMapHandlerTest()
+{
+}
+
 TEST_F(CAmMapHandlerTest,getMainConnectionInfo)
 {
-    //fill the connection database
-    am_Connection_s connection;
-    am_Source_s source;
-    am_Sink_s sink;
-    std::vector<am_connectionID_t> connectionList;
+	am_mainConnectionID_t mainConnectionID;
+	am_MainConnection_s mainConnection, mainConnectionT;
+	createMainConnectionSetup(mainConnectionID, mainConnection);
 
-    //we create 9 sources and sinks:
-    uint16_t i = 1;
-    for (; i < 10; i++)
-    {
-        am_sinkID_t forgetSink;
-        am_sourceID_t forgetSource;
-        am_connectionID_t connectionID;
-
-        pCF.createSink(sink);
-        sink.sinkID = i;
-        sink.name = "sink" + int2string(i);
-        sink.domainID = 4;
-        pCF.createSource(source);
-        source.sourceID = i;
-        source.name = "source" + int2string(i);
-        source.domainID = 4;
-
-        connection.sinkID = i;
-        connection.sourceID = i;
-        connection.delay = -1;
-        connection.connectionFormat = CF_GENIVI_ANALOG;
-        connection.connectionID = 0;
-
-        ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,forgetSink));
-        ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,forgetSource));
-        ASSERT_EQ(E_OK, pDatabaseHandler.enterConnectionDB(connection,connectionID));
-        ASSERT_EQ(E_OK, pDatabaseHandler.changeConnectionFinal(connectionID));
-        connectionList.push_back(connectionID);
-
-    }
-
-    //create a mainConnection
-    am_MainConnection_s mainConnection;
-    am_mainConnectionID_t mainConnectionID;
-    std::vector<am_MainConnection_s> mainConnectionList;
-    mainConnection.listConnectionID = connectionList;
-    mainConnection.mainConnectionID = 0;
-    mainConnection.sinkID = 1;
-    mainConnection.sourceID = 1;
-    mainConnection.connectionState = CS_CONNECTED;
-    mainConnection.delay = -1;
-
-    //enter mainconnection in database
-
-
-    ASSERT_EQ(E_OK, pDatabaseHandler.enterMainConnectionDB(mainConnection,mainConnectionID));
-    ASSERT_NE(0, mainConnectionID);
-
-    //read out the mainconnections and check if they are equal to the data written.
-    ASSERT_EQ(E_OK, pDatabaseHandler.getListMainConnections(mainConnectionList));
-    std::vector<am_MainConnection_s>::iterator listIterator = mainConnectionList.begin();
-    for (; listIterator < mainConnectionList.end(); ++listIterator)
-    {
-        if (listIterator->mainConnectionID == mainConnectionID)
-        {
-            ASSERT_EQ(listIterator->connectionState, mainConnection.connectionState);
-            ASSERT_EQ(listIterator->sinkID, mainConnection.sinkID);
-            ASSERT_EQ(listIterator->sourceID, mainConnection.sourceID);
-            ASSERT_EQ(listIterator->delay, mainConnection.delay);
-            ASSERT_TRUE(std::equal(listIterator->listConnectionID.begin(), listIterator->listConnectionID.end(), connectionList.begin()));
-        }
-    }
-
-    am_MainConnection_s mainConnectionT;
-    ASSERT_EQ(E_OK, pDatabaseHandler.getMainConnectionInfoDB(mainConnectionID,mainConnectionT));
-    ASSERT_EQ(mainConnection.connectionState, mainConnectionT.connectionState);
-    ASSERT_EQ(mainConnection.delay, mainConnectionT.delay);
-    ASSERT_TRUE(std::equal(mainConnection.listConnectionID.begin(),mainConnection.listConnectionID.end(),mainConnectionT.listConnectionID.begin()));
-    ASSERT_EQ(mainConnection.sinkID, mainConnectionT.sinkID);
-    ASSERT_EQ(mainConnection.sourceID, mainConnectionT.sourceID);
-    ASSERT_EQ(mainConnectionID, mainConnectionT.mainConnectionID);
-
+	ASSERT_EQ(E_OK, pDatabaseHandler.getMainConnectionInfoDB(mainConnectionID,mainConnectionT));
+	ASSERT_TRUE(mainConnection.connectionState == mainConnectionT.connectionState);
+	ASSERT_TRUE(mainConnection.delay == mainConnectionT.delay);
+	ASSERT_TRUE(std::equal(mainConnection.listConnectionID.begin(),mainConnection.listConnectionID.end(),mainConnectionT.listConnectionID.begin()));
+	ASSERT_TRUE(mainConnection.sinkID == mainConnectionT.sinkID);
+	ASSERT_TRUE(mainConnection.sourceID == mainConnectionT.sourceID);
+	ASSERT_TRUE(mainConnectionID == mainConnectionT.mainConnectionID);
 }
 
 TEST_F(CAmMapHandlerTest,getSinkInfo)
@@ -681,11 +624,13 @@ TEST_F(CAmMapHandlerTest, peekSinkDouble)
 
 TEST_F(CAmMapHandlerTest,changeConnectionTimingInformationCheckMainConnection)
 {
+    am_mainConnectionID_t mainConnectionID;
+    am_MainConnection_s mainConnection;
     std::vector<am_Connection_s> connectionList;
     std::vector<am_MainConnectionType_s> mainList;
 
     //prepare the test, it is one mainconnection, so we expect one callback
-    createMainConnectionSetup();
+    createMainConnectionSetup(mainConnectionID, mainConnection);
 
     //first get all visible mainconnections and make sure, the delay is set to -1 for the first entry
     ASSERT_EQ(E_OK, pDatabaseHandler.getListVisibleMainConnections(mainList));
@@ -1162,7 +1107,6 @@ TEST_F(CAmMapHandlerTest, changeSinkMainSoundProperty)
     property.value = 33;
 
 
-
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
 
     ASSERT_EQ(E_OK, pDatabaseHandler.changeMainSinkSoundPropertyDB(property,sinkID));
@@ -1224,6 +1168,7 @@ TEST_F(CAmMapHandlerTest, changeSinkSoundProperty)
     am_SoundProperty_s property;
     property.type = SP_GENIVI_MID;
     property.value = 33;
+
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
 
@@ -1294,8 +1239,10 @@ TEST_F(CAmMapHandlerTest, changeDomainState)
 
 TEST_F(CAmMapHandlerTest, changeMainConnectionState)
 {
+    am_mainConnectionID_t mainConnectionID;
+    am_MainConnection_s mainConnection;
     std::vector<am_MainConnection_s> listMainConnections;
-    createMainConnectionSetup();
+    createMainConnectionSetup(mainConnectionID, mainConnection);
 
     ASSERT_EQ(E_OK, pDatabaseHandler.changeMainConnectionStateDB(1,CS_DISCONNECTING));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListMainConnections(listMainConnections));
@@ -1311,7 +1258,6 @@ TEST_F(CAmMapHandlerTest, changeSinkAvailability)
     am_Availability_s availability;
     availability.availability = A_UNKNOWN;
     availability.availabilityReason = AR_GENIVI_TEMPERATURE;
-
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
     ASSERT_EQ(E_OK, pDatabaseHandler.changeSinkAvailabilityDB(availability,sinkID));
@@ -1340,9 +1286,12 @@ TEST_F(CAmMapHandlerTest, changeSourceAvailability)
 
 TEST_F(CAmMapHandlerTest,changeMainConnectionRoute)
 {
+    am_mainConnectionID_t mainConnectionID;
+    am_MainConnection_s mainConnection;
     std::vector<am_MainConnection_s> originalList;
     std::vector<am_MainConnection_s> newList;
-    createMainConnectionSetup();
+    createMainConnectionSetup(mainConnectionID, mainConnection);
+
     //fill the connection database
     am_Connection_s connection;
     am_Source_s source;
@@ -1378,7 +1327,7 @@ TEST_F(CAmMapHandlerTest,changeMainConnectionRoute)
     }
 
     ASSERT_EQ(E_OK, pDatabaseHandler.getListMainConnections(originalList));
-    ASSERT_EQ(E_OK, pDatabaseHandler.changeMainConnectionRouteDB(1,listConnectionID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.changeMainConnectionRouteDB(mainConnectionID,listConnectionID));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListMainConnections(newList));
     ASSERT_FALSE(std::equal(newList[0].listConnectionID.begin(),newList[0].listConnectionID.end(),originalList[0].listConnectionID.begin()));
 }
@@ -1484,7 +1433,10 @@ TEST_F(CAmMapHandlerTest,getMainSinks)
 
 TEST_F(CAmMapHandlerTest,getVisibleMainConnections)
 {
-    createMainConnectionSetup();
+    am_mainConnectionID_t mainConnectionID;
+    am_MainConnection_s mainConnection;
+    createMainConnectionSetup(mainConnectionID, mainConnection);
+
     std::vector<am_MainConnectionType_s> listVisibleMainConnections;
     std::vector<am_MainConnection_s> listMainConnections;
     ASSERT_EQ(E_OK, pDatabaseHandler.getListVisibleMainConnections(listVisibleMainConnections));
@@ -1762,10 +1714,11 @@ TEST_F(CAmMapHandlerTest,removeSource)
 
 TEST_F(CAmMapHandlerTest, removeMainConnection)
 {
-    createMainConnectionSetup();
+    am_mainConnectionID_t mainConnectionID;
+    am_MainConnection_s mainConnection;
+    createMainConnectionSetup(mainConnectionID, mainConnection);
 
-
-    ASSERT_EQ(E_OK,pDatabaseHandler.removeMainConnectionDB(1))
+    ASSERT_EQ(E_OK,pDatabaseHandler.removeMainConnectionDB(mainConnectionID))
         << "ERROR: database error";
 }
 
@@ -2178,7 +2131,9 @@ TEST_F(CAmMapHandlerTest,registerConnectionCorrect)
 
 TEST_F(CAmMapHandlerTest,enterMainConnectionCorrect)
 {
-    createMainConnectionSetup();
+    am_mainConnectionID_t mainConnectionID;
+    am_MainConnection_s mainConnection;
+    createMainConnectionSetup(mainConnectionID, mainConnection);
 }
 
 TEST_F(CAmMapHandlerTest,enterSinksCorrect)
@@ -2440,25 +2395,6 @@ TEST_F(CAmMapHandlerTest,changeMainNotificationsSources)
     std::vector<am_Source_s> listSources;
     std::vector<am_NotificationConfiguration_s>returnList,returnList1;
 
-    am_NotificationConfiguration_s notify;
-    notify.type=NT_UNKNOWN;
-    notify.status=NS_CHANGE;
-    notify.parameter=25;
-
-    testSourceData.listMainNotificationConfigurations.push_back(notify);
-
-    am_NotificationConfiguration_s notify1;
-    notify1.type=NT_UNKNOWN;
-    notify1.status=NS_PERIODIC;
-    notify1.parameter=5;
-
-    am_NotificationConfiguration_s notify2;
-    notify2.type=NT_UNKNOWN;
-    notify2.status=NS_CHANGE;
-    notify2.parameter=10;
-
-    testSourceData.listMainNotificationConfigurations.push_back(notify1);
-
     //enter the sink in the database
     ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceDB(testSourceData,sourceID))
         << "ERROR: database error";
@@ -2472,15 +2408,21 @@ TEST_F(CAmMapHandlerTest,changeMainNotificationsSources)
     				 returnList.begin(),
     				 equalNotificationConfiguration));
 
+    //change notification which is not available
+    am_NotificationConfiguration_s notify;
+    notify.type=NT_UNKNOWN;
+    notify.status=NS_CHANGE;
+    notify.parameter=10;
     //change a setting
-    ASSERT_EQ(E_OK,pDatabaseHandler.changeMainSourceNotificationConfigurationDB(sourceID,notify2));
+    notify.type=NT_TEST_2;
+    ASSERT_EQ(E_OK,pDatabaseHandler.changeMainSourceNotificationConfigurationDB(sourceID,notify));
 
     ASSERT_EQ(E_OK,pDatabaseHandler.getListMainSourceNotificationConfigurations(sourceID,returnList1))
         << "ERROR: database error";
 
-    ASSERT_EQ(returnList1[3].parameter,notify2.parameter);
-    ASSERT_EQ(returnList1[3].status,notify2.status);
-    ASSERT_EQ(returnList1[3].type,notify2.type);
+    ASSERT_EQ(returnList1[1].parameter,notify.parameter);
+    ASSERT_EQ(returnList1[1].status,notify.status);
+    ASSERT_EQ(returnList1[1].type,notify.type);
 
 }
 
@@ -2493,25 +2435,6 @@ TEST_F(CAmMapHandlerTest,changeMainNotificationsSink)
     std::vector<am_Sink_s> listSinks;
     std::vector<am_NotificationConfiguration_s>returnList,returnList1;
 
-    am_NotificationConfiguration_s notify;
-    notify.type=NT_UNKNOWN;
-    notify.status=NS_CHANGE;
-    notify.parameter=25;
-
-    testSinkData.listMainNotificationConfigurations.push_back(notify);
-
-    am_NotificationConfiguration_s notify1;
-    notify1.type=NT_UNKNOWN;
-    notify1.status=NS_PERIODIC;
-    notify1.parameter=5;
-
-    am_NotificationConfiguration_s notify2;
-    notify2.type=NT_UNKNOWN;
-    notify2.status=NS_CHANGE;
-    notify2.parameter=27;
-
-    testSinkData.listMainNotificationConfigurations.push_back(notify1);
-
     //enter the sink in the database
     ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(testSinkData,sinkID))
         << "ERROR: database error";
@@ -2522,15 +2445,22 @@ TEST_F(CAmMapHandlerTest,changeMainNotificationsSink)
 
     std::equal(testSinkData.listMainNotificationConfigurations.begin(),testSinkData.listMainNotificationConfigurations.end(),returnList.begin(),equalNotificationConfiguration);
 
-    ASSERT_EQ(E_OK,pDatabaseHandler.changeMainSinkNotificationConfigurationDB(sinkID,notify2))
+    //change notification which is not available
+    am_NotificationConfiguration_s notify;
+    notify.type=NT_UNKNOWN;
+    notify.status=NS_CHANGE;
+    notify.parameter=27;
+    //change a setting
+    notify.type=NT_TEST_2;
+    ASSERT_EQ(E_OK,pDatabaseHandler.changeMainSinkNotificationConfigurationDB(sinkID,notify))
         << "ERROR: database error";
 
     ASSERT_EQ(E_OK,pDatabaseHandler.getListMainSinkNotificationConfigurations(sinkID,returnList1))
         << "ERROR: database error";
 
-    ASSERT_EQ(returnList1[3].parameter,notify2.parameter);
-    ASSERT_EQ(returnList1[3].status,notify2.status);
-    ASSERT_EQ(returnList1[3].type,notify2.type);
+    ASSERT_EQ(returnList1[1].parameter,notify.parameter);
+    ASSERT_EQ(returnList1[1].status,notify.status);
+    ASSERT_EQ(returnList1[1].type,notify.type);
 }
 
 TEST_F(CAmMapHandlerTest, peekDomain_2)
@@ -2703,33 +2633,13 @@ TEST_F(CAmMapHandlerTest, increaseID)
 
 
 CAmMapHandlerObserverCallbacksTest::CAmMapHandlerObserverCallbacksTest() :
-                plistRoutingPluginDirs(),
-                plistCommandPluginDirs(),
-				pSocketHandler(),
-				pRoutingSender(plistRoutingPluginDirs),
-				pCommandSender(plistCommandPluginDirs),
-				pControlSender(),
-				mMockObserver(&pCommandSender, &pRoutingSender, &pSocketHandler),
-				pDatabaseHandler(),
-				pRouter(&pDatabaseHandler, &pControlSender),
-				pCF()
+				mMockObserver(&pCommandSender, &pRoutingSender, &pSocketHandler)
 {
 	pDatabaseHandler.registerObserver(&mMockObserver);
 }
 
-void CAmMapHandlerObserverCallbacksTest::SetUp()
-{
-
-}
-
-void CAmMapHandlerObserverCallbacksTest::TearDown()
-{
-
-}
-
 CAmMapHandlerObserverCallbacksTest::~CAmMapHandlerObserverCallbacksTest()
 {
-
 }
 
 MATCHER_P(IsDomainDataEqualTo, value, "") {
@@ -2816,7 +2726,7 @@ TEST_F(CAmMapHandlerObserverCallbacksTest, peek_enter_update_removeSource)
     std::vector<am_CustomAvailabilityReason_t> listConnectionFormats;
     std::vector<am_MainSoundProperty_s> listMainSoundProperties;
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), sourceUpdated(sourceID, _, _, _)).Times(1);
-    ASSERT_EQ(E_OK,pDatabaseHandler.changeSourceDB(sourceID, 1, listSoundProperties, listConnectionFormats, listMainSoundProperties))<< "ERROR: database error";
+    ASSERT_EQ(E_OK,pDatabaseHandler.changeSourceDB(sourceID, source.sourceClassID, listSoundProperties, listConnectionFormats, listMainSoundProperties))<< "ERROR: database error";
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), removedSource(sourceID, _)).Times(1);
     ASSERT_EQ(E_OK,pDatabaseHandler.removeSourceDB(sourceID))<< "ERROR: database error";
     EXPECT_TRUE(Mock::VerifyAndClearExpectations(MockDatabaseObserver::getMockObserverObject()));
@@ -2862,7 +2772,7 @@ TEST_F(CAmMapHandlerObserverCallbacksTest, peek_enter_update_removeSink)
     std::vector<am_CustomAvailabilityReason_t> listConnectionFormats;
     std::vector<am_MainSoundProperty_s> listMainSoundProperties;
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), sinkUpdated(sinkID, _, _, _)).Times(1);
-    ASSERT_EQ(E_OK,pDatabaseHandler.changeSinkDB(sinkID, 1, listSoundProperties, listConnectionFormats, listMainSoundProperties))<< "ERROR: database error";
+    ASSERT_EQ(E_OK,pDatabaseHandler.changeSinkDB(sinkID, sink.sinkClassID, listSoundProperties, listConnectionFormats, listMainSoundProperties))<< "ERROR: database error";
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), removedSink(sinkID, _)).Times(1);
     ASSERT_EQ(E_OK,pDatabaseHandler.removeSinkDB(sinkID))<< "ERROR: database error";
     EXPECT_TRUE(Mock::VerifyAndClearExpectations(MockDatabaseObserver::getMockObserverObject()));
@@ -3022,60 +2932,14 @@ TEST_F(CAmMapHandlerObserverCallbacksTest, enter_removeCrossfader)
 
 TEST_F(CAmMapHandlerObserverCallbacksTest, enter_update_removeMainConnection)
 {
-    //fill the connection database
-    am_Connection_s connection;
-    am_Source_s source;
-    am_Sink_s sink;
-    std::vector<am_connectionID_t> connectionList;
-
-    //we create 9 sources and sinks:
-    uint16_t i = 1;
-    for (; i < 10; i++)
-    {
-        am_sinkID_t forgetSink;
-        am_sourceID_t forgetSource;
-        am_connectionID_t connectionID;
-
-        pCF.createSink(sink);
-        sink.sinkID = i;
-        sink.name = "sink" + int2string(i);
-        sink.domainID = 4;
-        pCF.createSource(source);
-        source.sourceID = i;
-        source.name = "source" + int2string(i);
-        source.domainID = 4;
-
-        connection.sinkID = i;
-        connection.sourceID = i;
-        connection.delay = -1;
-        connection.connectionFormat = CF_GENIVI_ANALOG;
-        connection.connectionID = 0;
-
-        EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSink(_)).Times(1);
-        ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,forgetSink));
-        EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSource(_)).Times(1);
-        ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,forgetSource));
-        ASSERT_EQ(E_OK, pDatabaseHandler.enterConnectionDB(connection,connectionID));
-        ASSERT_EQ(E_OK, pDatabaseHandler.changeConnectionFinal(connectionID));
-        connectionList.push_back(connectionID);
-    }
-    //create a mainConnection
-    am_MainConnection_s mainConnection;
     am_mainConnectionID_t mainConnectionID;
-    std::vector<am_MainConnection_s> mainConnectionList;
-    mainConnection.listConnectionID = connectionList;
-    mainConnection.mainConnectionID = 0;
-    mainConnection.sinkID = 1;
-    mainConnection.sourceID = 1;
-    mainConnection.connectionState = CS_CONNECTED;
-    mainConnection.delay = -1;
-
-    //enter mainconnection in database
+    am_MainConnection_s mainConnection;
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSink(_)).Times(9);
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSource(_)).Times(9);
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newMainConnection(Field(&am_MainConnectionType_s::mainConnectionID, 1))).Times(1);
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), mainConnectionStateChanged(1, CS_CONNECTED)).Times(1);
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), timingInformationChanged(1, _)).Times(1);
-    ASSERT_EQ(E_OK, pDatabaseHandler.enterMainConnectionDB(mainConnection,mainConnectionID));
-    ASSERT_NE(0, mainConnectionID);
+    createMainConnectionSetup(mainConnectionID, mainConnection);
 
 	//change delay of first connection
     am_timeSync_t delay = 20;
@@ -3186,31 +3050,38 @@ TEST_F(CAmMapHandlerObserverCallbacksTest, changeMainNotificationsSink)
     std::vector<am_NotificationConfiguration_s>returnList;
 
     am_NotificationConfiguration_s notify;
-    notify.type=NT_UNKNOWN;
+    notify.type=NT_TEST_1;
     notify.status=NS_CHANGE;
     notify.parameter=25;
 
     testSinkData.listMainNotificationConfigurations.push_back(notify);
 
     am_NotificationConfiguration_s notify1;
-    notify1.type=NT_UNKNOWN;
+    notify1.type=NT_TEST_1;
     notify1.status=NS_PERIODIC;
     notify1.parameter=5;
 
+    testSinkData.listMainNotificationConfigurations.push_back(notify1);
+
     am_NotificationConfiguration_s notify2;
-    notify2.type=NT_UNKNOWN;
+    notify2.type=NT_TEST_2;
     notify2.status=NS_CHANGE;
     notify2.parameter=27;
 
-    testSinkData.listMainNotificationConfigurations.push_back(notify1);
+    testSinkData.listMainNotificationConfigurations.push_back(notify2);
 
     //enter the sink in the database
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSink(_)).Times(1);
     ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(testSinkData,sinkID))
         << "ERROR: database error";
-    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), sinkMainNotificationConfigurationChanged(sinkID, _)).Times(1);
-    ASSERT_EQ(E_OK,pDatabaseHandler.changeMainSinkNotificationConfigurationDB(sinkID,notify2))
+    ASSERT_EQ(E_OK,pDatabaseHandler.getListMainSinkNotificationConfigurations(sinkID, returnList))
         << "ERROR: database error";
+    ASSERT_EQ(2, returnList.size()) << "ERROR: database error";
+
+    //change a setting
+    notify2.parameter++;
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), sinkMainNotificationConfigurationChanged(sinkID, _)).Times(1);
+    ASSERT_EQ(E_OK,pDatabaseHandler.changeMainSinkNotificationConfigurationDB(sinkID,notify2));
 }
 
 TEST_F(CAmMapHandlerObserverCallbacksTest, changeMainNotificationsSources)
@@ -3224,32 +3095,36 @@ TEST_F(CAmMapHandlerObserverCallbacksTest, changeMainNotificationsSources)
     std::vector<am_NotificationConfiguration_s>returnList;
 
     am_NotificationConfiguration_s notify;
-    notify.type=NT_UNKNOWN;
+    notify.type=NT_TEST_1;
     notify.status=NS_CHANGE;
     notify.parameter=25;
 
     testSourceData.listMainNotificationConfigurations.push_back(notify);
 
     am_NotificationConfiguration_s notify1;
-    notify1.type=NT_UNKNOWN;
+    notify1.type=NT_TEST_1;
     notify1.status=NS_PERIODIC;
     notify1.parameter=5;
 
+    testSourceData.listMainNotificationConfigurations.push_back(notify1);
+
     am_NotificationConfiguration_s notify2;
-    notify2.type=NT_UNKNOWN;
+    notify2.type=NT_TEST_2;
     notify2.status=NS_CHANGE;
     notify2.parameter=10;
 
-    testSourceData.listMainNotificationConfigurations.push_back(notify1);
+    testSourceData.listMainNotificationConfigurations.push_back(notify2);
 
     //enter the sink in the database
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSource(_)).Times(1);
     ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceDB(testSourceData,sourceID))
         << "ERROR: database error";
-    //read it again
     ASSERT_EQ(E_OK,pDatabaseHandler.getListMainSourceNotificationConfigurations(sourceID,returnList))
         << "ERROR: database error";
+    ASSERT_EQ(2, returnList.size()) << "ERROR: database error";
+
     //change a setting
+    notify2.parameter++;
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), sourceMainNotificationConfigurationChanged(sourceID, _)).Times(1);
     ASSERT_EQ(E_OK,pDatabaseHandler.changeMainSourceNotificationConfigurationDB(sourceID,notify2));
 }

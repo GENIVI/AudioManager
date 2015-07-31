@@ -28,6 +28,10 @@
 namespace am
 {
 
+static const am_CustomNotificationType_t NT_TEST_1 = 1;
+static const am_CustomNotificationType_t NT_TEST_2 = 2;
+
+
 class CAmCommonFunctions
 {
 public:

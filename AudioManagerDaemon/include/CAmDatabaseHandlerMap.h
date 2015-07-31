@@ -448,7 +448,23 @@ public:
     	return std::find_if(mMappedData.mConnectionMap.begin(), mMappedData.mConnectionMap.end(),[&](const std::pair<am_connectionID_t, am_Connection_Database_s>& rConnection){
     						return (rConnection.second.sinkID == comp.sinkID ||rConnection.second.sourceID ==comp.sourceID);})!=mMappedData.mConnectionMap.end();
     }
-
+	void filterDuplicateNotificationConfigurationTypes(std::vector<am_NotificationConfiguration_s> & list)
+	{
+		std::vector<am_NotificationConfiguration_s> oldList(list);
+		list.clear();
+		std::for_each(oldList.begin(), oldList.end(), [&](am_NotificationConfiguration_s & provided) {
+			std::vector<am_NotificationConfiguration_s>::iterator found =
+				std::find_if(list.begin(), list.end(), [&](am_NotificationConfiguration_s & stored) {
+						if (provided.type == stored.type) {
+							stored = provided;
+							return true;
+						}
+						return false;
+					} );
+				if (found == list.end())
+					list.push_back(provided);
+			} );
+	}
 
     CAmDatabaseObserver *mpDatabaseObserver; //!< pointer to the Observer
     ListConnectionFormat mListConnectionFormat; //!< list of connection formats

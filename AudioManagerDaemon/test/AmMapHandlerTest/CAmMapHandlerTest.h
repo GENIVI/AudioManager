@@ -47,49 +47,45 @@
 namespace am
 {
 
-class CAmMapHandlerTest: public ::testing::Test
+class CAmMapBasicTest : public ::testing::Test
 {
 public:
-	CAmMapHandlerTest();
-    ~CAmMapHandlerTest();
+	CAmMapBasicTest();
+    ~CAmMapBasicTest();
     std::vector<std::string> plistRoutingPluginDirs;
     std::vector<std::string> plistCommandPluginDirs;
-    CAmSocketHandler pSocketHandler;
-    CAmDatabaseHandlerMap pDatabaseHandler;
     CAmRoutingSender pRoutingSender;
     CAmCommandSender pCommandSender;
-    MockIAmCommandSend pMockInterface;
     IAmRoutingBackdoor pRoutingInterfaceBackdoor;
     IAmCommandBackdoor pCommandInterfaceBackdoor;
+    CAmSocketHandler pSocketHandler;
+    CAmDatabaseHandlerMap pDatabaseHandler;
     CAmControlSender pControlSender;
     CAmRouter pRouter;
     CAmControlReceiver pControlReceiver;
-    CAmDatabaseObserver pObserver;
     CAmCommonFunctions pCF;
     void SetUp();
     void TearDown();
-
-    void createMainConnectionSetup();
+    void createMainConnectionSetup(am_mainConnectionID_t & mainConnectionID, am_MainConnection_s & mainConnection);
 };
 
-class CAmMapHandlerObserverCallbacksTest: public ::testing::Test
+class CAmMapHandlerTest: public CAmMapBasicTest
 {
 public:
-    std::vector<std::string> plistRoutingPluginDirs;
-    std::vector<std::string> plistCommandPluginDirs;
-	CAmSocketHandler pSocketHandler;
-    CAmRoutingSender pRoutingSender;
-    CAmCommandSender pCommandSender;
-    CAmControlSender pControlSender;
-	CAmDatabaseObserver mMockObserver;
-    CAmDatabaseHandlerMap pDatabaseHandler;
-    CAmRouter pRouter;
-    CAmCommonFunctions pCF;
+	CAmMapHandlerTest();
+	~CAmMapHandlerTest();
+    MockIAmCommandSend pMockInterface;
+    CAmDatabaseObserver pObserver;
+};
+
+class CAmMapHandlerObserverCallbacksTest : public CAmMapBasicTest
+{
+public:
     CAmMapHandlerObserverCallbacksTest();
     ~CAmMapHandlerObserverCallbacksTest();
-    void SetUp();
-    void TearDown();
+	CAmDatabaseObserver mMockObserver;
 };
+
 
 }
 

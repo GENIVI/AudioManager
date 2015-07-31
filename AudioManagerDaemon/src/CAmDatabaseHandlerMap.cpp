@@ -565,6 +565,8 @@ bool CAmDatabaseHandlerMap::insertSinkDB(const am_Sink_s & sinkData, am_sinkID_t
 		sinkID = nextID;
 		mMappedData.mSinkMap[nextID] = sinkData;
 		mMappedData.mSinkMap[nextID].sinkID = nextID;
+		filterDuplicateNotificationConfigurationTypes(mMappedData.mSinkMap[nextID].listNotificationConfigurations);
+		filterDuplicateNotificationConfigurationTypes(mMappedData.mSinkMap[nextID].listMainNotificationConfigurations);
 		return (true);
 	}
 	else
@@ -847,6 +849,8 @@ bool CAmDatabaseHandlerMap::insertSourceDB(const am_Source_s & sourceData, am_so
 		sourceID = nextID;
 		mMappedData.mSourceMap[nextID] = sourceData;
 		mMappedData.mSourceMap[nextID].sourceID = nextID;
+		filterDuplicateNotificationConfigurationTypes(mMappedData.mSourceMap[nextID].listNotificationConfigurations);
+		filterDuplicateNotificationConfigurationTypes(mMappedData.mSourceMap[nextID].listMainNotificationConfigurations);
 		return (true);
 	}
 	else

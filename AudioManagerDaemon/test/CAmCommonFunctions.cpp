@@ -354,14 +354,14 @@ std::vector<am_NotificationConfiguration_s> am::CAmCommonFunctions::getStandardN
 {
     std::vector<am_NotificationConfiguration_s> listNotificationConfigurations;
     am_NotificationConfiguration_s tempNotificationConfiguration;
+    tempNotificationConfiguration.type=NT_TEST_1;
     tempNotificationConfiguration.parameter=12;
     tempNotificationConfiguration.status=NS_PERIODIC;
-    tempNotificationConfiguration.type=NT_UNKNOWN;
     listNotificationConfigurations.push_back(tempNotificationConfiguration);
 
+    tempNotificationConfiguration.type=NT_TEST_2;
     tempNotificationConfiguration.parameter=16;
     tempNotificationConfiguration.status=NS_CHANGE;
-    tempNotificationConfiguration.type=NT_UNKNOWN;
     listNotificationConfigurations.push_back(tempNotificationConfiguration);
 
     return (listNotificationConfigurations);
