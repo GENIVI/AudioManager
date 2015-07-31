@@ -104,7 +104,6 @@ void CAmMapHandlerTest::createMainConnectionSetup()
         ASSERT_EQ(E_OK, pDatabaseHandler.enterConnectionDB(connection,connectionID));
         ASSERT_EQ(E_OK, pDatabaseHandler.changeConnectionFinal(connectionID));
         connectionList.push_back(connectionID);
-
     }
 
     //create a mainConnection
@@ -119,25 +118,23 @@ void CAmMapHandlerTest::createMainConnectionSetup()
     mainConnection.delay = -1;
 
     //enter mainconnection in database
-
-
     ASSERT_EQ(E_OK, pDatabaseHandler.enterMainConnectionDB(mainConnection,mainConnectionID));
     ASSERT_NE(0, mainConnectionID);
 
     //read out the mainconnections and check if they are equal to the data written.
     ASSERT_EQ(E_OK, pDatabaseHandler.getListMainConnections(mainConnectionList));
-    bool equal = true;
     std::vector<am_MainConnection_s>::iterator listIterator = mainConnectionList.begin();
     for (; listIterator < mainConnectionList.end(); ++listIterator)
     {
         if (listIterator->mainConnectionID == mainConnectionID)
         {
-            equal = equal && (listIterator->connectionState == mainConnection.connectionState) && (listIterator->sinkID == mainConnection.sinkID) && (listIterator->sourceID == mainConnection.sourceID) && (listIterator->delay == mainConnection.delay) && (std::equal(listIterator->listConnectionID.begin(), listIterator->listConnectionID.end(), connectionList.begin()));
+            ASSERT_EQ(listIterator->connectionState, mainConnection.connectionState);
+            ASSERT_EQ(listIterator->sinkID, mainConnection.sinkID);
+            ASSERT_EQ(listIterator->sourceID, mainConnection.sourceID);
+            ASSERT_EQ(listIterator->delay, mainConnection.delay);
+            ASSERT_TRUE(std::equal(listIterator->listConnectionID.begin(), listIterator->listConnectionID.end(), connectionList.begin()));
         }
     }
-//    pDatabaseHandler.dump();
-
-    ASSERT_EQ(true, equal);
 }
 
 void CAmMapHandlerTest::SetUp()
@@ -208,19 +205,27 @@ TEST_F(CAmMapHandlerTest,getMainConnectionInfo)
 
     //read out the mainconnections and check if they are equal to the data written.
     ASSERT_EQ(E_OK, pDatabaseHandler.getListMainConnections(mainConnectionList));
-    bool equal = true;
     std::vector<am_MainConnection_s>::iterator listIterator = mainConnectionList.begin();
     for (; listIterator < mainConnectionList.end(); ++listIterator)
     {
         if (listIterator->mainConnectionID == mainConnectionID)
         {
-            equal = equal && (listIterator->connectionState == mainConnection.connectionState) && (listIterator->sinkID == mainConnection.sinkID) && (listIterator->sourceID == mainConnection.sourceID) && (listIterator->delay == mainConnection.delay) && (std::equal(listIterator->listConnectionID.begin(), listIterator->listConnectionID.end(), connectionList.begin()));
+            ASSERT_EQ(listIterator->connectionState, mainConnection.connectionState);
+            ASSERT_EQ(listIterator->sinkID, mainConnection.sinkID);
+            ASSERT_EQ(listIterator->sourceID, mainConnection.sourceID);
+            ASSERT_EQ(listIterator->delay, mainConnection.delay);
+            ASSERT_TRUE(std::equal(listIterator->listConnectionID.begin(), listIterator->listConnectionID.end(), connectionList.begin()));
         }
-    }ASSERT_EQ(true, equal);
+    }
 
     am_MainConnection_s mainConnectionT;
     ASSERT_EQ(E_OK, pDatabaseHandler.getMainConnectionInfoDB(mainConnectionID,mainConnectionT));
-    ASSERT_TRUE( (mainConnection.connectionState==mainConnectionT.connectionState) && (mainConnection.delay==mainConnectionT.delay) && (std::equal(mainConnection.listConnectionID.begin(),mainConnection.listConnectionID.end(),mainConnectionT.listConnectionID.begin())) && (mainConnection.sinkID==mainConnectionT.sinkID) && (mainConnection.sourceID==mainConnectionT.sourceID) && (mainConnectionID==mainConnectionT.mainConnectionID));
+    ASSERT_EQ(mainConnection.connectionState, mainConnectionT.connectionState);
+    ASSERT_EQ(mainConnection.delay, mainConnectionT.delay);
+    ASSERT_TRUE(std::equal(mainConnection.listConnectionID.begin(),mainConnection.listConnectionID.end(),mainConnectionT.listConnectionID.begin()));
+    ASSERT_EQ(mainConnection.sinkID, mainConnectionT.sinkID);
+    ASSERT_EQ(mainConnection.sourceID, mainConnectionT.sourceID);
+    ASSERT_EQ(mainConnectionID, mainConnectionT.mainConnectionID);
 
 }
 
@@ -257,42 +262,39 @@ TEST_F(CAmMapHandlerTest,getSinkInfo)
     //now read back and check the returns agains the given values
     ASSERT_EQ(E_OK,pDatabaseHandler.getListSinks(sinkList))
         << "ERROR: database error";
-    bool equal = true;
 
     std::vector<am_Sink_s>::iterator listIterator = sinkList.begin();
     for (; listIterator < sinkList.end(); ++listIterator)
     {
         if (listIterator->sinkID == staticSinkID)
         {
-            equal = equal && pCF.compareSink(listIterator, staticSink);
+            ASSERT_TRUE(pCF.compareSink(listIterator, staticSink));
         }
 
         if (listIterator->sinkID == firstDynamicSinkID)
         {
-            equal = equal && pCF.compareSink(listIterator, firstDynamicSink);
+            ASSERT_TRUE(pCF.compareSink(listIterator, firstDynamicSink));
         }
 
         if (listIterator->sinkID == secondDynamicSinkID)
         {
-            equal = equal && pCF.compareSink(listIterator, secondDynamicSink);
+            ASSERT_TRUE(pCF.compareSink(listIterator, secondDynamicSink));
         }
-    }ASSERT_EQ(true, equal);
+    }
 
     am_Sink_s sinkData;
     ASSERT_EQ(E_OK, pDatabaseHandler.getSinkInfoDB(secondDynamicSinkID,sinkData));
-    ASSERT_TRUE( (secondDynamicSink.available.availability == sinkData.available.availability) && //
-            (secondDynamicSink.available.availabilityReason == sinkData.available.availabilityReason) && //
-            (secondDynamicSink.sinkClassID == sinkData.sinkClassID) && //
-            (secondDynamicSink.domainID == sinkData.domainID) && //
-            (secondDynamicSink.visible == sinkData.visible) && //
-            (secondDynamicSink.name.compare(sinkData.name) == 0) && //
-            (secondDynamicSink.volume == sinkData.volume) && //
-            std::equal(secondDynamicSink.listConnectionFormats.begin(), secondDynamicSink.listConnectionFormats.end(), sinkData.listConnectionFormats.begin()) && //
-            std::equal(secondDynamicSink.listMainSoundProperties.begin(), secondDynamicSink.listMainSoundProperties.end(), sinkData.listMainSoundProperties.begin(), equalMainSoundProperty) && //
-            std::equal(secondDynamicSink.listNotificationConfigurations.begin(), secondDynamicSink.listNotificationConfigurations.end(), sinkData.listNotificationConfigurations.begin(), equalNotificationConfiguration) && //
-            std::equal(secondDynamicSink.listMainNotificationConfigurations.begin(), secondDynamicSink.listMainNotificationConfigurations.end(), sinkData.listMainNotificationConfigurations.begin(), equalNotificationConfiguration) //
-            );
-
+    ASSERT_EQ(secondDynamicSink.available.availability, sinkData.available.availability);
+    ASSERT_EQ(secondDynamicSink.available.availabilityReason, sinkData.available.availabilityReason);
+    ASSERT_EQ(secondDynamicSink.sinkClassID, sinkData.sinkClassID);
+    ASSERT_EQ(secondDynamicSink.domainID, sinkData.domainID);
+    ASSERT_EQ(secondDynamicSink.visible, sinkData.visible);
+    ASSERT_EQ(0, secondDynamicSink.name.compare(sinkData.name));
+    ASSERT_EQ(secondDynamicSink.volume, sinkData.volume);
+    ASSERT_TRUE(std::equal(secondDynamicSink.listConnectionFormats.begin(), secondDynamicSink.listConnectionFormats.end(), sinkData.listConnectionFormats.begin()));
+    ASSERT_TRUE(std::equal(secondDynamicSink.listMainSoundProperties.begin(), secondDynamicSink.listMainSoundProperties.end(), sinkData.listMainSoundProperties.begin(), equalMainSoundProperty));
+    ASSERT_TRUE(std::equal(secondDynamicSink.listNotificationConfigurations.begin(), secondDynamicSink.listNotificationConfigurations.end(), sinkData.listNotificationConfigurations.begin(), equalNotificationConfiguration));
+    ASSERT_TRUE(std::equal(secondDynamicSink.listMainNotificationConfigurations.begin(), secondDynamicSink.listMainNotificationConfigurations.end(), sinkData.listMainNotificationConfigurations.begin(), equalNotificationConfiguration));
 }
 
 TEST_F(CAmMapHandlerTest,getSourceInfo)
@@ -333,42 +335,39 @@ TEST_F(CAmMapHandlerTest,getSourceInfo)
     ASSERT_EQ(E_OK,pDatabaseHandler.getListSources(sourceList))
         << "ERROR: database error";
 
-    bool equal = true;
-
     std::vector<am_Source_s>::iterator listIterator = sourceList.begin();
     for (; listIterator < sourceList.end(); ++listIterator)
     {
         if (listIterator->sourceID == staticSourceID)
         {
-            equal = equal && pCF.compareSource(listIterator, staticSource);
+            ASSERT_TRUE(pCF.compareSource(listIterator, staticSource));
         }
 
         if (listIterator->sourceID == firstDynamicSourceID)
         {
-            equal = equal && pCF.compareSource(listIterator, firstDynamicSource);
+            ASSERT_TRUE(pCF.compareSource(listIterator, firstDynamicSource));
         }
 
         if (listIterator->sourceID == secondDynamicSourceID)
         {
-            equal = equal && pCF.compareSource(listIterator, secondDynamicSource);
+            ASSERT_TRUE(pCF.compareSource(listIterator, secondDynamicSource));
         }
     }
 
-    ASSERT_EQ(true, equal);
-
     am_Source_s sourceData;
     ASSERT_EQ(E_OK, pDatabaseHandler.getSourceInfoDB(secondDynamicSourceID,sourceData));
-    ASSERT_TRUE((secondDynamicSource.available.availability == sourceData.available.availability) && //
-            (secondDynamicSource.available.availabilityReason == sourceData.available.availabilityReason) && //
-            (secondDynamicSource.sourceClassID == sourceData.sourceClassID) && (secondDynamicSource.domainID == sourceData.domainID) && //
-            (secondDynamicSource.interruptState == sourceData.interruptState) && (secondDynamicSource.visible == sourceData.visible) && //
-            (secondDynamicSource.name.compare(sourceData.name) == 0) && (secondDynamicSource.volume == sourceData.volume) && //
-            std::equal(secondDynamicSource.listConnectionFormats.begin(), secondDynamicSource.listConnectionFormats.end(), sourceData.listConnectionFormats.begin()) && //
-            std::equal(secondDynamicSource.listMainSoundProperties.begin(), secondDynamicSource.listMainSoundProperties.end(), sourceData.listMainSoundProperties.begin(), equalMainSoundProperty) && //
-            std::equal(secondDynamicSource.listMainNotificationConfigurations.begin(), secondDynamicSource.listMainNotificationConfigurations.end(), sourceData.listMainNotificationConfigurations.begin(), equalNotificationConfiguration) && //
-            std::equal(secondDynamicSource.listNotificationConfigurations.begin(), secondDynamicSource.listNotificationConfigurations.end(), sourceData.listNotificationConfigurations.begin(), equalNotificationConfiguration) //
-    );
-
+    ASSERT_EQ(secondDynamicSource.available.availability, sourceData.available.availability);
+    ASSERT_EQ(secondDynamicSource.available.availabilityReason, sourceData.available.availabilityReason);
+    ASSERT_EQ(secondDynamicSource.sourceClassID, sourceData.sourceClassID);
+    ASSERT_EQ(secondDynamicSource.domainID, sourceData.domainID);
+    ASSERT_EQ(secondDynamicSource.interruptState, sourceData.interruptState);
+    ASSERT_EQ(secondDynamicSource.visible, sourceData.visible);
+    ASSERT_EQ(0, secondDynamicSource.name.compare(sourceData.name));
+    ASSERT_EQ(secondDynamicSource.volume, sourceData.volume);
+    ASSERT_TRUE(std::equal(secondDynamicSource.listConnectionFormats.begin(), secondDynamicSource.listConnectionFormats.end(), sourceData.listConnectionFormats.begin()));
+    ASSERT_TRUE(std::equal(secondDynamicSource.listMainSoundProperties.begin(), secondDynamicSource.listMainSoundProperties.end(), sourceData.listMainSoundProperties.begin(), equalMainSoundProperty));
+    ASSERT_TRUE(std::equal(secondDynamicSource.listMainNotificationConfigurations.begin(), secondDynamicSource.listMainNotificationConfigurations.end(), sourceData.listMainNotificationConfigurations.begin(), equalNotificationConfiguration));
+    ASSERT_TRUE(std::equal(secondDynamicSource.listNotificationConfigurations.begin(), secondDynamicSource.listNotificationConfigurations.end(), sourceData.listNotificationConfigurations.begin(), equalNotificationConfiguration));
 }
 
 TEST_F(CAmMapHandlerTest, peekSourceID)
@@ -717,9 +716,9 @@ TEST_F(CAmMapHandlerTest,changeConnectionTimingInformation)
     ASSERT_EQ(E_OK, pDatabaseHandler.changeConnectionFinal(connectionID));
 
     //change the timing and check it
-    ASSERT_EQ(E_OK, pDatabaseHandler.changeConnectionTimingInformation(connectionID,24));
+    ASSERT_EQ(E_OK, pDatabaseHandler.changeConnectionTimingInformation(connectionID, 24));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListConnections(connectionList));
-    ASSERT_TRUE(connectionList[0].delay==24);
+    ASSERT_TRUE(connectionList[0].delay == 24);
 }
 
 TEST_F(CAmMapHandlerTest,getSinkClassOfSink)
@@ -1084,28 +1083,26 @@ TEST_F(CAmMapHandlerTest,enterSourcesCorrect)
     //now read back and check the returns agains the given values
     ASSERT_EQ(E_OK,pDatabaseHandler.getListSources(sourceList))
         << "ERROR: database error";
-    bool equal = true;
 
     std::vector<am_Source_s>::iterator listIterator = sourceList.begin();
     for (; listIterator < sourceList.end(); ++listIterator)
     {
         if (listIterator->sourceID == staticSourceID)
         {
-            equal = equal && pCF.compareSource(listIterator, staticSource);
+            ASSERT_TRUE(pCF.compareSource(listIterator, staticSource));
         }
 
         if (listIterator->sourceID == firstDynamicSourceID)
         {
-            equal = equal && pCF.compareSource(listIterator, firstDynamicSource);
+            ASSERT_TRUE(pCF.compareSource(listIterator, firstDynamicSource));
         }
 
         if (listIterator->sourceID == secondDynamicSourceID)
         {
-            equal = equal && pCF.compareSource(listIterator, secondDynamicSource);
+            ASSERT_TRUE(pCF.compareSource(listIterator, secondDynamicSource));
         }
 
     }
-    ASSERT_EQ(true, equal);
 }
 
 TEST_F(CAmMapHandlerTest, changeSinkMuteState)
@@ -1163,6 +1160,7 @@ TEST_F(CAmMapHandlerTest, changeSinkMainSoundProperty)
     am_MainSoundProperty_s property;
     property.type = MSP_UNKNOWN;
     property.value = 33;
+
 
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
@@ -1226,7 +1224,6 @@ TEST_F(CAmMapHandlerTest, changeSinkSoundProperty)
     am_SoundProperty_s property;
     property.type = SP_GENIVI_MID;
     property.value = 33;
-
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
 
@@ -1334,7 +1331,6 @@ TEST_F(CAmMapHandlerTest, changeSourceAvailability)
     availability.availabilityReason = AR_GENIVI_TEMPERATURE;
     source.visible = true;
 
-
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     ASSERT_EQ(E_OK, pDatabaseHandler.changeSourceAvailabilityDB(availability,sourceID));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListSources(listSources));
@@ -1379,10 +1375,9 @@ TEST_F(CAmMapHandlerTest,changeMainConnectionRoute)
         ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,forgetSource));
         ASSERT_EQ(E_OK, pDatabaseHandler.enterConnectionDB(connection,connectionID));
         listConnectionID.push_back(connectionID);
-        ASSERT_EQ(E_OK, pDatabaseHandler.getListMainConnections(originalList));
-
     }
 
+    ASSERT_EQ(E_OK, pDatabaseHandler.getListMainConnections(originalList));
     ASSERT_EQ(E_OK, pDatabaseHandler.changeMainConnectionRouteDB(1,listConnectionID));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListMainConnections(newList));
     ASSERT_FALSE(std::equal(newList[0].listConnectionID.begin(),newList[0].listConnectionID.end(),originalList[0].listConnectionID.begin()));
@@ -1396,9 +1391,7 @@ TEST_F(CAmMapHandlerTest,changeMainSinkVolume)
     std::vector<am_Sink_s> listSinks;
     pCF.createSink(sink);
 
-
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
-
     ASSERT_EQ(E_OK, pDatabaseHandler.changeSinkMainVolumeDB(newVol,sinkID));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListSinks(listSinks));
     ASSERT_EQ(listSinks[0].mainVolume, newVol);
@@ -1412,7 +1405,6 @@ TEST_F(CAmMapHandlerTest,getMainSourceSoundProperties)
     std::vector<am_MainSoundProperty_s> mainSoundProperties = source.listMainSoundProperties;
     std::vector<am_MainSoundProperty_s> listMainSoundProperties;
 
-
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListMainSourceSoundProperties(sourceID,listMainSoundProperties));
     ASSERT_TRUE(std::equal(mainSoundProperties.begin(),mainSoundProperties.end(),listMainSoundProperties.begin(),equalMainSoundProperty));
@@ -1425,7 +1417,6 @@ TEST_F(CAmMapHandlerTest,getMainSinkSoundProperties)
     pCF.createSink(sink);
     std::vector<am_MainSoundProperty_s> mainSoundProperties = sink.listMainSoundProperties;
     std::vector<am_MainSoundProperty_s> listMainSoundProperties;
-
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListMainSinkSoundProperties(sinkID,listMainSoundProperties));
@@ -1445,8 +1436,6 @@ TEST_F(CAmMapHandlerTest,getMainSources)
     source1.visible = false;
     std::vector<am_SourceType_s> listMainSources;
     std::vector<am_Source_s> listSources;
-
-
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     source.sourceID = sourceID;
@@ -1473,11 +1462,9 @@ TEST_F(CAmMapHandlerTest,getMainSinks)
     pCF.createSink(sink2);
     sink1.name = "sink1";
     sink2.name = "sink2";
-    bool equal = true;
     sink1.visible = false;
     std::vector<am_SinkType_s> listMainSinks;
     std::vector<am_Sink_s> listSinks;
-
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
     sink.sinkID = sinkID;
@@ -1491,9 +1478,8 @@ TEST_F(CAmMapHandlerTest,getMainSinks)
     std::vector<am_SinkType_s>::iterator listIterator = listMainSinks.begin();
     for (; listIterator < listMainSinks.end(); ++listIterator)
     {
-        equal = equal && pCF.compareSinkMainSink(listIterator, listSinks);
+        ASSERT_TRUE(pCF.compareSinkMainSink(listIterator, listSinks));
     }
-    ASSERT_TRUE(equal);
 }
 
 TEST_F(CAmMapHandlerTest,getVisibleMainConnections)
@@ -1528,7 +1514,6 @@ TEST_F(CAmMapHandlerTest,getListSourcesOfDomain)
     pCF.createDomain(domain);
     sourceCheckList.push_back(1); //sink.sinkID);
 
-
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
     ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceDB(source,sourceID))
         << "ERROR: database error";
@@ -1556,7 +1541,6 @@ TEST_F(CAmMapHandlerTest,getListSinksOfDomain)
     sink2.name = "sink2";
     pCF.createDomain(domain);
     sinkCheckList.push_back(1); //sink.sinkID);
-
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
     ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(sink,sinkID))
@@ -1767,7 +1751,6 @@ TEST_F(CAmMapHandlerTest,removeSource)
     std::vector<am_Source_s> listSources;
     pCF.createSource(source);
 
-
     ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceDB(source,sourceID))
         << "ERROR: database error";
     ASSERT_EQ(E_OK,pDatabaseHandler.removeSourceDB(sourceID))
@@ -1854,28 +1837,25 @@ TEST_F(CAmMapHandlerTest,registerGatewayCorrect)
 
     //now check if we read out the correct values
     ASSERT_EQ(E_OK, pDatabaseHandler.getListGateways(returnList));
-    bool equal = true;
     std::vector<am_Gateway_s>::iterator listIterator = returnList.begin();
 
     for (; listIterator < returnList.end(); ++listIterator)
     {
         if (listIterator->gatewayID == gatewayID)
         {
-            equal = equal && pCF.compareGateway(listIterator, gateway);
+            ASSERT_TRUE(pCF.compareGateway(listIterator, gateway));
         }
 
         if (listIterator->gatewayID == gatewayID1)
         {
-            equal = equal && pCF.compareGateway(listIterator, gateway1);
+            ASSERT_TRUE(pCF.compareGateway(listIterator, gateway1));
         }
 
         if (listIterator->gatewayID == gatewayID2)
         {
-            equal = equal && pCF.compareGateway(listIterator, gateway2);
+            ASSERT_TRUE(pCF.compareGateway(listIterator, gateway2));
         }
     }
-
-    ASSERT_EQ(true, equal);
 }
 
 TEST_F(CAmMapHandlerTest,registerConverterCorrect)
@@ -1916,28 +1896,25 @@ TEST_F(CAmMapHandlerTest,registerConverterCorrect)
 
     //now check if we read out the correct values
     ASSERT_EQ(E_OK, pDatabaseHandler.getListConverters(returnList));
-    bool equal = true;
     std::vector<am_Converter_s>::iterator listIterator = returnList.begin();
 
     for (; listIterator < returnList.end(); ++listIterator)
     {
         if (listIterator->converterID == gatewayID)
         {
-            equal = equal && pCF.compareConverter(listIterator, gateway);
+            ASSERT_TRUE(pCF.compareConverter(listIterator, gateway));
         }
 
         if (listIterator->converterID == gatewayID1)
         {
-            equal = equal && pCF.compareConverter(listIterator, gateway1);
+            ASSERT_TRUE(pCF.compareConverter(listIterator, gateway1));
         }
 
         if (listIterator->converterID == gatewayID2)
         {
-            equal = equal && pCF.compareConverter(listIterator, gateway2);
+            ASSERT_TRUE(pCF.compareConverter(listIterator, gateway2));
         }
     }
-
-    ASSERT_EQ(true, equal);
 }
 
 TEST_F(CAmMapHandlerTest,getGatewayInfo)
@@ -1980,28 +1957,25 @@ TEST_F(CAmMapHandlerTest,getGatewayInfo)
 
     //now check if we read out the correct values
     ASSERT_EQ(E_OK, pDatabaseHandler.getListGateways(returnList));
-    bool equal = true;
     std::vector<am_Gateway_s>::iterator listIterator = returnList.begin();
 
     for (; listIterator < returnList.end(); ++listIterator)
     {
         if (listIterator->gatewayID == gatewayID)
         {
-            equal = equal && pCF.compareGateway(listIterator, gateway);
+            ASSERT_TRUE(pCF.compareGateway(listIterator, gateway));
         }
 
         if (listIterator->gatewayID == gatewayID1)
         {
-            equal = equal && pCF.compareGateway(listIterator, gateway1);
+            ASSERT_TRUE(pCF.compareGateway(listIterator, gateway1));
         }
 
         if (listIterator->gatewayID == gatewayID2)
         {
-            equal = equal && pCF.compareGateway(listIterator, gateway2);
+            ASSERT_TRUE(pCF.compareGateway(listIterator, gateway2));
         }
     }
-
-    ASSERT_EQ(true, equal);
 
     am_Gateway_s gatewayInfo;
     ASSERT_EQ(E_OK, pDatabaseHandler.getGatewayInfoDB(20,gatewayInfo));
@@ -2047,28 +2021,25 @@ TEST_F(CAmMapHandlerTest,getConverterInfo)
 
     //now check if we read out the correct values
     ASSERT_EQ(E_OK, pDatabaseHandler.getListConverters(returnList));
-    bool equal = true;
     std::vector<am_Converter_s>::iterator listIterator = returnList.begin();
 
     for (; listIterator < returnList.end(); ++listIterator)
     {
         if (listIterator->converterID == gatewayID)
         {
-            equal = equal && pCF.compareConverter(listIterator, gateway);
+            ASSERT_TRUE(pCF.compareConverter(listIterator, gateway));
         }
 
         if (listIterator->converterID == gatewayID1)
         {
-            equal = equal && pCF.compareConverter(listIterator, gateway1);
+            ASSERT_TRUE(pCF.compareConverter(listIterator, gateway1));
         }
 
         if (listIterator->converterID == gatewayID2)
         {
-            equal = equal && pCF.compareConverter(listIterator, gateway2);
+            ASSERT_TRUE(pCF.compareConverter(listIterator, gateway2));
         }
     }
-
-    ASSERT_EQ(true, equal);
 
     am_Converter_s gatewayInfo;
     ASSERT_EQ(E_OK, pDatabaseHandler.getConverterInfoDB(20,gatewayInfo));
@@ -2163,16 +2134,18 @@ TEST_F(CAmMapHandlerTest,registerDomainPredefined)
 
     //now check if we read out the correct values
     ASSERT_EQ(E_OK, pDatabaseHandler.getListDomains(returnList));
-    bool equal = true;
     std::vector<am_Domain_s>::iterator listIterator = returnList.begin();
     for (; listIterator < returnList.end(); ++listIterator)
     {
         if (listIterator->domainID == domainID)
         {
-            equal = equal && (listIterator->name.compare(domain.name) == 0) && (listIterator->busname.compare(domain.busname) == 0) && (listIterator->complete == domain.complete) && (listIterator->early == domain.early) && (listIterator->state == domain.state);
+            ASSERT_EQ(0, listIterator->name.compare(domain.name));
+            ASSERT_EQ(0, listIterator->busname.compare(domain.busname));
+            ASSERT_EQ(domain.complete, listIterator->complete);
+            ASSERT_EQ(domain.early, listIterator->early);
+            ASSERT_EQ(domain.state, listIterator->state);
         }
     }
-    ASSERT_EQ(true, equal);
 }
 
 TEST_F(CAmMapHandlerTest,registerConnectionCorrect)
@@ -2190,16 +2163,17 @@ TEST_F(CAmMapHandlerTest,registerConnectionCorrect)
     //now check if we read out the correct values
     ASSERT_EQ(E_OK, pDatabaseHandler.changeConnectionFinal(connectionID));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListConnections(returnList));
-    bool equal = false;
     std::vector<am_Connection_s>::iterator listIterator = returnList.begin();
     for (; listIterator < returnList.end(); ++listIterator)
     {
         if (listIterator->connectionID == connectionID)
         {
-            equal = (listIterator->sourceID == connection.sourceID) && (listIterator->sinkID == connection.sinkID) && (listIterator->delay == connection.delay) && (listIterator->connectionFormat = connection.connectionFormat);
+            ASSERT_EQ(connection.sourceID, listIterator->sourceID);
+            ASSERT_EQ(connection.sinkID, listIterator->sinkID);
+            ASSERT_EQ(connection.delay, listIterator->delay);
+            ASSERT_EQ(connection.connectionFormat, listIterator->connectionFormat);
         }
     }
-    ASSERT_EQ(true, equal);
 }
 
 TEST_F(CAmMapHandlerTest,enterMainConnectionCorrect)
@@ -2241,27 +2215,25 @@ TEST_F(CAmMapHandlerTest,enterSinksCorrect)
     //now read back and check the returns agains the given values
     ASSERT_EQ(E_OK,pDatabaseHandler.getListSinks(sinkList))
         << "ERROR: database error";
-    bool equal = true;
 
     std::vector<am_Sink_s>::iterator listIterator = sinkList.begin();
     for (; listIterator < sinkList.end(); ++listIterator)
     {
         if (listIterator->sinkID == staticSinkID)
         {
-            equal = equal && pCF.compareSink(listIterator, staticSink);
+            ASSERT_TRUE(pCF.compareSink(listIterator, staticSink));
         }
 
         if (listIterator->sinkID == firstDynamicSinkID)
         {
-            equal = equal && pCF.compareSink(listIterator, firstDynamicSink);
+            ASSERT_TRUE(pCF.compareSink(listIterator, firstDynamicSink));
         }
 
         if (listIterator->sinkID == secondDynamicSinkID)
         {
-            equal = equal && pCF.compareSink(listIterator, secondDynamicSink);
+            ASSERT_TRUE(pCF.compareSink(listIterator, secondDynamicSink));
         }
     }
-    ASSERT_EQ(true, equal);
 }
 
 TEST_F(CAmMapHandlerTest,enterNotificationConfigurationCorrect)
@@ -3200,7 +3172,7 @@ TEST_F(CAmMapHandlerObserverCallbacksTest, changeMainNotificationsSink)
     testSinkData.sinkID = 4;
     am_sinkID_t sinkID;
     std::vector<am_Sink_s> listSinks;
-    std::vector<am_NotificationConfiguration_s>returnList,returnList1;
+    std::vector<am_NotificationConfiguration_s>returnList;
 
     am_NotificationConfiguration_s notify;
     notify.type=NT_UNKNOWN;
@@ -3238,7 +3210,7 @@ TEST_F(CAmMapHandlerObserverCallbacksTest, changeMainNotificationsSources)
     testSourceData.sourceID = 4;
     am_sourceID_t sourceID;
     std::vector<am_Source_s> listSources;
-    std::vector<am_NotificationConfiguration_s>returnList,returnList1;
+    std::vector<am_NotificationConfiguration_s>returnList;
 
     am_NotificationConfiguration_s notify;
     notify.type=NT_UNKNOWN;
