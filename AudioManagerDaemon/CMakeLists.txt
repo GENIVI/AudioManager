@@ -46,7 +46,7 @@ if (WITH_SYSTEMD_WATCHDOG)
 endif (WITH_SYSTEMD_WATCHDOG)
 
 if(WITH_DBUS_WRAPPER)    
-    find_package(DBUS REQUIRED)
+	pkg_check_modules (DBUS "dbus-1 >= 1.4")
 endif(WITH_DBUS_WRAPPER)
 
 if(WITH_CAPI_WRAPPER)
@@ -99,7 +99,7 @@ if(WITH_DBUS_WRAPPER)
     set (AUDIOMAN_SRCS_CXX
         ${AUDIOMAN_SRCS_CXX}
         "${AUDIOMANAGER_UTILITIES_SRC}/CAmDbusWrapper.cpp")
-    set (AM_LINK_LIBS ${AM_LINK_LIBS} ${DBUS_LIBRARY})
+    set (AM_LINK_LIBS ${AM_LINK_LIBS} ${DBUS_LIBRARIES})
 endif(WITH_DBUS_WRAPPER)
 
 if(WITH_CAPI_WRAPPER)
@@ -108,7 +108,7 @@ if(WITH_CAPI_WRAPPER)
     if(${COMMONAPI_USED_BINDING} EQUAL 0)
        set (AM_LINK_LIBS ${AM_LINK_LIBS} 
                         ${CommonAPI-DBus_LIBRARY}
-                        ${DBUS_LIBRARY}
+                        ${DBUS_LIBRARIES}
                         ${CommonAPI_LIBRARY})
    else()
        set (AM_LINK_LIBS ${AM_LINK_LIBS} 
@@ -156,14 +156,19 @@ INCLUDE_DIRECTORIES(
 
 if(WITH_CAPI_WRAPPER)
     if(WITH_NSM)
-        COMMON_API_GENERATE_SOUCRES(
+    	IF(${COMMONAPI_USED_BINDING} EQUAL 1)#SomeIP
+	  		SET(SRC_GEN src-gen/v${COMMONAPI_SOMEIP_VERSION_NUMBER}/someip)
+		ELSE()#Dbus
+	   		SET(SRC_GEN src-gen/v${COMMONAPI_DBUS_VERSION_NUMBER}/dbus)
+		ENDIF()
+        COMMON_API_GENERATE_SOURCES(
                             TARGET COMMON_API
                             # A list with fidls for the generic generator.
                             FIDLS_GENERIC fidls/NodeStateManager.fdepl          
                             # A list with fidls for the binding generator.
                             FIDLS_BINDING fidls/NodeStateManager.fdepl          
                             # A relative path to the build directory or an absolute path.
-                            DESTINATION src-gen                                 
+                            DESTINATION ${SRC_GEN}                                 
                             # An alternative relative/absolute path with common-api sources, usually in the source tree.
                             ALT_DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/src-gen 
                             )                                               
@@ -178,8 +183,7 @@ if(WITH_CAPI_WRAPPER)
                 ${COMMONAPI_DBUS_INCLUDE_DIRS}
                 ${COMMONAPI_INCLUDE_DIRS}
                 ${COMMON_API_GEN_INCLUDE_DIR}
-                ${DBUS_ARCH_INCLUDE_DIR}
-                ${DBUS_INCLUDE_DIR})	
+                ${DBUS_INCLUDE_DIRS})	
    else()
        INCLUDE_DIRECTORIES(${INCLUDE_DIRECTORIES}
                ${VSOMEIP_INCLUDE_DIRS}
@@ -199,8 +203,7 @@ endif(WITH_DLT)
 
 if(WITH_DBUS_WRAPPER)
     INCLUDE_DIRECTORIES(${INCLUDE_DIRECTORIES}
-                            ${DBUS_ARCH_INCLUDE_DIR}
-                            ${DBUS_INCLUDE_DIR})
+                            ${DBUS_INCLUDE_DIRS})
 endif(WITH_DBUS_WRAPPER)
 
 ADD_EXECUTABLE(AudioManager ${AUDIOMAN_SRCS_CXX})

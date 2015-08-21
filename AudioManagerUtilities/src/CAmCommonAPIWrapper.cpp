@@ -62,11 +62,12 @@ CAmCommonAPIWrapper::CAmCommonAPIWrapper(CAmSocketHandler* socketHandler):
 #if COMMONAPI_VERSION_NUMBER < 300
 	mRuntime = CommonAPI::Runtime::load();
 #else
+	CommonAPI::Runtime::setProperty("LogContext", "AMCAPI");
 	mRuntime = CommonAPI::Runtime::get();
 #endif
 	assert(NULL!=mRuntime);
 
-//Create the context
+	//Create the context
 	mContext = std::make_shared<CommonAPI::MainLoopContext>();
 	assert(NULL!=mContext);
 
@@ -74,6 +75,7 @@ CAmCommonAPIWrapper::CAmCommonAPIWrapper(CAmSocketHandler* socketHandler):
 	mFactory = runtime->createFactory(mContext);
 	assert(mFactory);
 #else
+	logInfo("CommonAPI runtime has been loaded! Default Binding is", mRuntime->getDefaultBinding());
 	#if COMMONAPI_USED_BINDING > 0
 		mFactory = CommonAPI::SomeIP::Factory::get();
 		assert(mFactory);

@@ -46,7 +46,7 @@ MACRO(LOAD_COMMONAPI)
     IF(${COMMONAPI_USED_BINDING} EQUAL 1)
     	IF(NOT CommonAPI-SomeIP_FOUND)
     	    FIND_PACKAGE (vsomeip REQUIRED)
-	        FIND_PACKAGE(CommonAPI-SomeIP REQUIRED CONFIG NO_CMAKE_PACKAGE_REGISTRY)
+	        FIND_PACKAGE(CommonAPI-SomeIP REQUIRED)
 	        FIND_LIBRARY(CommonAPI-SomeIP_LIBRARY 
 	                     REQUIRED
 	                     NAMES CommonAPI-SomeIP
@@ -54,6 +54,7 @@ MACRO(LOAD_COMMONAPI)
 	                     "/usr/local/lib"
 	                     "/usr/lib"
 	                    ) 
+	                    
         ENDIF(NOT CommonAPI-SomeIP_FOUND)
         message(STATUS "CommonAPI-SomeIP Version: ${CommonAPI-SomeIP_VERSION}")
         
@@ -62,8 +63,8 @@ MACRO(LOAD_COMMONAPI)
     ELSE()
     	SET(COMMONAPI_USED_BINDING 0 CACHE INTERNAL "hide this!" FORCE)
     	IF(NOT CommonAPI-DBus_FOUND)
-    		FIND_PACKAGE(DBUS REQUIRED)
-	        FIND_PACKAGE(CommonAPI-DBus REQUIRED CONFIG NO_CMAKE_PACKAGE_REGISTRY)
+    		pkg_check_modules (DBUS "dbus-1 >= 1.4" REQUIRED)
+	        FIND_PACKAGE(CommonAPI-DBus REQUIRED)
 	        FIND_LIBRARY(CommonAPI-DBus_LIBRARY 
 	                     REQUIRED
 	                     NAMES CommonAPI-DBus
@@ -235,7 +236,7 @@ ENDMACRO(EXECUTE_GENERATOR)
 # FIDLS_BINDING a list with fidls for the binding generator.
 # DESTINATION a relative path to the build directory or an absolute path.                                
 # ALT_DESTINATION an alternative relative/absolute path with common-api sources, usually in the source tree.
-FUNCTION(COMMON_API_GENERATE_SOUCRES)
+FUNCTION(COMMON_API_GENERATE_SOURCES)
     #parse the input parameters
     set(options "")
     set(oneValueArgs TARGET DESTINATION ALT_DESTINATION HEADER_TEMPLATE)
