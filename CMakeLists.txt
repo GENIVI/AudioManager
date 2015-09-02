@@ -223,7 +223,7 @@ endif(WITH_TESTS)
 
 ##global build flags set(CPACK_RPM_COMPONENT_INSTALL ON)
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x -pedantic -rdynamic -Wno-variadic-macros")
-set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -DDEBUG")
+set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g -DDEBUG")
 set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O2 -DNDEBUG")
 
 configure_package_config_file ( 
@@ -236,15 +236,21 @@ write_basic_package_version_file(
     VERSION ${DAEMONVERSION}
     COMPATIBILITY SameMajorVersion )
                           
+   
+configure_file( ${CMAKE_SOURCE_DIR}/AudioManagerDaemon/docx/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/DoxyFile )
+configure_file( ${CMAKE_SOURCE_DIR}/cmake/config.cmake.in ${CMAKE_BINARY_DIR}/include/audiomanagerconfig.h )
+configure_file( ${CMAKE_SOURCE_DIR}/cmake/audiomanager.pc.in ${CMAKE_BINARY_DIR}/audiomanager.pc @ONLY )
+
+install(FILES ${CMAKE_BINARY_DIR}/audiomanager.pc DESTINATION lib/pkgconfig COMPONENT devel)    
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/audiomanagerConfig.cmake 
     DESTINATION lib/${LIB_INSTALL_SUFFIX}/cmake
     COMPONENT dev)    
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/include/config.h 
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/include/audiomanagerconfig.h  
     DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${LIB_INSTALL_SUFFIX}
     COMPONENT dev)
-    
-configure_file( ${CMAKE_SOURCE_DIR}/cmake/audiomanager.pc.in ${CMAKE_BINARY_DIR}/audiomanager.pc @ONLY )
-install(FILES ${CMAKE_BINARY_DIR}/audiomanager.pc DESTINATION lib/pkgconfig COMPONENT devel)    
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/tclap-1.2.1/include/tclap  
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${LIB_INSTALL_SUFFIX}
+    COMPONENT dev)    
 
 add_subdirectory (AudioManagerDaemon)
 
@@ -282,7 +288,4 @@ add_custom_target(test-install
      "${CMAKE_COMMAND}" -DCMAKE_INSTALL_COMPONENT=tests
      -P "${CMAKE_BINARY_DIR}/cmake_install.cmake"
 )
-
-configure_file( ${CMAKE_SOURCE_DIR}/AudioManagerDaemon/docx/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/DoxyFile )
-configure_file( ${CMAKE_SOURCE_DIR}/cmake/config.cmake.in ${CMAKE_BINARY_DIR}/include/config.h )
 

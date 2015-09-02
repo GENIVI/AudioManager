@@ -22,7 +22,7 @@
  */
 
 #include "CAmSocketHandler.h"
-//#include <config.h>
+//#include <audiomanagerconfig.h>
 #include <cassert>
 #include <sys/fcntl.h>
 #include <sys/errno.h>

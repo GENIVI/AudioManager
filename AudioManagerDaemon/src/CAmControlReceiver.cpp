@@ -25,7 +25,7 @@
 #include <cassert>
 #include <stdlib.h>
 #include <stdexcept>
-#include "config.h"
+#include "audiomanagerconfig.h"
 #include "IAmDatabaseHandler.h"
 #include "CAmRoutingSender.h"
 #include "CAmCommandSender.h"

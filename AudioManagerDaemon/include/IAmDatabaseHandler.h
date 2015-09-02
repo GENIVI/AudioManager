@@ -30,7 +30,7 @@
 #include <string>
 #include <iostream>
 #include <functional>
-#include "config.h"
+#include "audiomanagerconfig.h"
 
 namespace am
 {

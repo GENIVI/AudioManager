@@ -30,7 +30,7 @@
 #include "CAmCommandSender.h"
 #include "CAmControlSender.h"
 #include "CAmRouter.h"
-#include "config.h"
+#include "audiomanagerconfig.h"
 #include "CAmDatabaseHandlerMap.h"
 
 

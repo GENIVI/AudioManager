@@ -29,7 +29,7 @@
 #include <stdexcept>
 #include "CAmControlSender.h"
 #include "CAmDltWrapper.h"
-#include "config.h"
+#include "audiomanagerconfig.h"
 
 namespace am
 {

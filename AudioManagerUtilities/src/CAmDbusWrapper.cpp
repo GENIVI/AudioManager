@@ -22,7 +22,7 @@
  */
 
 #include "CAmDbusWrapper.h"
-#include <config.h>
+#include <audiomanagerconfig.h>
 #include <fstream>
 #include <sstream>
 #include <string>

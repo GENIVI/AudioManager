@@ -22,7 +22,7 @@
  *
  */
 
-#include "config.h"
+#include "audiomanagerconfig.h"
 
 #ifdef  WITH_TELNET
     #include "CAmTelnetServer.h"

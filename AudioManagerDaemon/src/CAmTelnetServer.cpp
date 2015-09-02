@@ -29,7 +29,7 @@
 #include <sys/ioctl.h>
 #include <string.h>
 #include <netdb.h>
-#include <config.h>
+#include <audiomanagerconfig.h>
 #include <errno.h>
 #include <sstream>
 #include <istream>

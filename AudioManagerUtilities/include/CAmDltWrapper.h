@@ -18,10 +18,9 @@
 #ifndef DLTWRAPPER_H_
 #define DLTWRAPPER_H_
 
-#include <config.h>
 #include <string>
 #include <pthread.h>
-#include <config.h>
+#include <audiomanagerconfig.h>
 #include "audiomanagertypes.h"
 
 #ifdef WITH_DLT

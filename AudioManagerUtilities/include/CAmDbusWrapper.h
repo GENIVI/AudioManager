@@ -25,7 +25,7 @@
 #include <string>
 #include <list>
 #include <map>
-#include "config.h"
+#include "audiomanagerconfig.h"
 #include "CAmSocketHandler.h"
 
 namespace am

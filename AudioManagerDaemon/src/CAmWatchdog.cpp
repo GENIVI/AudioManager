@@ -25,7 +25,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <stdexcept>
-#include "config.h"
+#include "audiomanagerconfig.h"
 #include "CAmDltWrapper.h"
 
 #ifdef SYSTEMD_FOUND

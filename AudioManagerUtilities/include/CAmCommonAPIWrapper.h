@@ -32,7 +32,7 @@
 #undef COMMONAPI_INTERNAL_COMPILATION
 #endif
 #include <CommonAPI/Utils.hpp>
-#include "config.h"
+#include "audiomanagerconfig.h"
 #include "CAmSocketHandler.h"
 
 

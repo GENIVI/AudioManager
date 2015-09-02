@@ -15,7 +15,7 @@
  * For further information see http://www.genivi.org/.
  */
 
-#include <config.h>
+#include <audiomanagerconfig.h>
 #include <fstream>
 #include <sstream>
 #include <algorithm>

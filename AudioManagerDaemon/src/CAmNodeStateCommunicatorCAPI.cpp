@@ -28,7 +28,7 @@
 #include <stdexcept>
 #include <functional>
 #include <memory>
-#include "config.h"
+#include "audiomanagerconfig.h"
 #include "CAmDltWrapper.h"
 #include "CAmNodeStateCommunicatorCAPI.h"
 #include "CAmControlSender.h"

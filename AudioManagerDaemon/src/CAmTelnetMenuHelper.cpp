@@ -24,7 +24,7 @@
 
 #include "CAmTelnetMenuHelper.h"
 #include <cassert>
-#include "config.h"
+#include "audiomanagerconfig.h"
 #include "CAmRouter.h"
 #include "CAmTelnetServer.h"
 #include "IAmDatabaseHandler.h"

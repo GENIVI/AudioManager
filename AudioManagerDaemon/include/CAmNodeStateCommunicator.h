@@ -26,7 +26,7 @@
 #define CAMNODESTATECOMMUNICATORBASE_H_
 
 #include <assert.h>
-#include "config.h"
+#include "audiomanagerconfig.h"
 #include "NodeStateManager.h"
 #include "audiomanagertypes.h"
 

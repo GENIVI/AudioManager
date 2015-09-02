@@ -30,7 +30,7 @@
 #include "CAmCommandReceiver.h"
 #include "CAmRoutingReceiver.h"
 #include "CAmControlReceiver.h"
-#include "config.h"
+#include "audiomanagerconfig.h"
 
 
 using namespace testing;
