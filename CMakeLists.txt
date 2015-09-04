@@ -235,7 +235,13 @@ write_basic_package_version_file(
     ${CMAKE_CURRENT_BINARY_DIR}/AudioManagerVersion.cmake
     VERSION ${DAEMONVERSION}
     COMPATIBILITY SameMajorVersion )
-                          
+ 
+ 
+add_subdirectory (AudioManagerDaemon)
+
+if(EXISTS "${CMAKE_SOURCE_DIR}/Plugins/")
+    add_subdirectory (${CMAKE_SOURCE_DIR}/Plugins)
+endif(EXISTS "${CMAKE_SOURCE_DIR}/Plugins/")                         
    
 configure_file( ${CMAKE_SOURCE_DIR}/AudioManagerDaemon/docx/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/DoxyFile )
 configure_file( ${CMAKE_SOURCE_DIR}/cmake/config.cmake.in ${CMAKE_BINARY_DIR}/include/audiomanagerconfig.h )
@@ -251,12 +257,6 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/include/audiomanagerconfig.h
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/tclap-1.2.1/include/tclap  
     DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${LIB_INSTALL_SUFFIX}
     COMPONENT dev)    
-
-add_subdirectory (AudioManagerDaemon)
-
-if(EXISTS "${CMAKE_SOURCE_DIR}/Plugins/")
-    add_subdirectory (${CMAKE_SOURCE_DIR}/Plugins)
-endif(EXISTS "${CMAKE_SOURCE_DIR}/Plugins/")
 
  
 if(WITH_DOCUMENTATION)
