@@ -49,7 +49,7 @@ DBUS_INTROSPECT_1_0_XML_DOCTYPE_DECL_NODE								\
 
 CAmDbusWrapper* CAmDbusWrapper::mpReference = NULL;
 
-CAmDbusWrapper::CAmDbusWrapper(CAmSocketHandler* socketHandler, DBusBusType type) :
+CAmDbusWrapper::CAmDbusWrapper(CAmSocketHandler* socketHandler, DBusBusType type, const std::string& prefix, const std::string& objectPath) :
         pDbusPrepareCallback(this,&CAmDbusWrapper::dbusPrepareCallback), //
         pDbusDispatchCallback(this, &CAmDbusWrapper::dbusDispatchCallback), //
         pDbusFireCallback(this, &CAmDbusWrapper::dbusFireCallback), //
@@ -68,7 +68,8 @@ CAmDbusWrapper::CAmDbusWrapper(CAmSocketHandler* socketHandler, DBusBusType type
 
     if (!dbus_threads_init_default())
         logError("CAmDbusWrapper::CAmDbusWrapper threads init call failed");
-    logInfo("DBusWrapper::DBusWrapper Opening DBus connection");
+
+    logInfo("DBusWrapper::DBusWrapper Opening DBus connection of:", prefix, objectPath);
     mpDbusConnection = dbus_bus_get(mDbusType, &mDBusError);
     if (dbus_error_is_set(&mDBusError))
     {
@@ -104,8 +105,8 @@ CAmDbusWrapper::CAmDbusWrapper(CAmSocketHandler* socketHandler, DBusBusType type
     //register callback for Introspectio
     mObjectPathVTable.message_function = CAmDbusWrapper::cbRootIntrospection;
     logInfo("dbusconnection ",mpDbusConnection);
-    dbus_connection_register_object_path(mpDbusConnection, DBUS_SERVICE_OBJECT_PATH, &mObjectPathVTable, this);
-    int ret = dbus_bus_request_name(mpDbusConnection, DBUS_SERVICE_PREFIX, DBUS_NAME_FLAG_DO_NOT_QUEUE, &mDBusError);
+    dbus_connection_register_object_path(mpDbusConnection, objectPath.c_str(), &mObjectPathVTable, this);
+    int ret = dbus_bus_request_name(mpDbusConnection, prefix.c_str(), DBUS_NAME_FLAG_DO_NOT_QUEUE, &mDBusError);
     if (dbus_error_is_set(&mDBusError))
     {
         logError("DBusWrapper::DBusWrapper Name Error", mDBusError.message);
@@ -138,12 +139,13 @@ CAmDbusWrapper::~CAmDbusWrapper()
  * @param vtable the vtable that holds a pointer to the callback that is called when the path is called from the dbus
  * @param path the name of the path
  * @param userdata pointer to the class that will handle the callback
+ * @param prefix before the path which is optional
  */
-void CAmDbusWrapper::registerCallback(const DBusObjectPathVTable* vtable, const std::string& path, void* userdata)
+void CAmDbusWrapper::registerCallback(const DBusObjectPathVTable* vtable, const std::string& path, void* userdata, const std::string& prefix)
 {
     logInfo("DBusWrapper::registerCallback register callback:", path);
 
-    std::string completePath = std::string(DBUS_SERVICE_OBJECT_PATH) + "/" + path;
+    std::string completePath = prefix + "/" + path;
     dbus_error_init(&mDBusError);
     mpDbusConnection = dbus_bus_get(mDbusType, &mDBusError);
     dbus_connection_register_object_path(mpDbusConnection, completePath.c_str(), vtable, userdata);
@@ -155,6 +157,27 @@ void CAmDbusWrapper::registerCallback(const DBusObjectPathVTable* vtable, const 
     mListNodes.push_back(path);
 }
 
+/**
+* register signal watch callback to matching rule
+* @param handler pointer to the callback function
+* @param rule signal watch rule like "type='signal',interface='org.genivi.audiomanager.something'"
+* @param userdata userdata
+*/
+void CAmDbusWrapper::registerSignalWatch(DBusHandleMessageFunction handler, const std::string& rule, void* userdata)
+{
+    logInfo("DBusWrapper::registerSignalWatch register callback:", rule);
+    dbus_error_init(&mDBusError);
+    mpDbusConnection = dbus_bus_get(mDbusType, &mDBusError);
+    dbus_bus_add_match(mpDbusConnection, rule.c_str(), &mDBusError);
+    dbus_connection_flush(mpDbusConnection);
+    dbus_connection_add_filter(mpDbusConnection, handler, userdata, 0);
+
+    if (dbus_error_is_set(&mDBusError))
+    {
+        logError("DBusWrapper::registerCallack error: ", mDBusError.message);
+        dbus_error_free(&mDBusError);
+    }
+}
 /**
  * internal callback for the root introspection
  * @param conn

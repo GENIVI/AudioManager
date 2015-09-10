@@ -37,10 +37,12 @@ namespace am
 class CAmDbusWrapper
 {
 public:
-    CAmDbusWrapper(CAmSocketHandler* socketHandler,DBusBusType type=DBUS_BUS_SESSION);
+    CAmDbusWrapper(CAmSocketHandler* socketHandler,DBusBusType type=DBUS_BUS_SESSION,
+            const std::string& prefix = DBUS_SERVICE_PREFIX, const std::string& objectPath = DBUS_SERVICE_OBJECT_PATH);
     virtual ~CAmDbusWrapper();
 
-    void registerCallback(const DBusObjectPathVTable* vtable, const std::string& path, void* userdata);
+    void registerCallback(const DBusObjectPathVTable* vtable, const std::string& path, void* userdata, const std::string& prefix = DBUS_SERVICE_OBJECT_PATH);
+    void registerSignalWatch(DBusHandleMessageFunction handler, const std::string& rule, void* userdata);
     void getDBusConnection(DBusConnection*& connection) const;
 
     static dbus_bool_t addWatch(DBusWatch *watch, void *userData);
