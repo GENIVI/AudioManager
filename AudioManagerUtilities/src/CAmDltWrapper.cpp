@@ -104,8 +104,35 @@ void CAmDltWrapper::registerContext(DltContext& handle, const char *contextid, c
             mDltContextData.context_description = new char[str_len + 1];
             (void) strcpy(mDltContextData.context_description,description);
         }
+        mDltContext.log_level_user = DLT_DEFAULT_LOG_LEVEL;
     }
+    handle.log_level_user = DLT_DEFAULT_LOG_LEVEL;
+    std::cout << "\e[0;34m[DLT]\e[0;30m\tRegistering Context " << contextid << " , " << description << std::endl;
 
+#endif
+}
+
+void CAmDltWrapper::registerContext(DltContext& handle, const char *contextid, const char * description,
+        const DltLogLevelType level, const DltTraceStatusType status)
+{
+#ifdef WITH_DLT
+    dlt_register_context_ll_ts(&handle, contextid, description, level, status);
+#else
+    strncpy(handle.contextID,contextid,4);
+
+    // store only the first contextID
+    if(0 == strlen(mDltContext.contextID))
+    {
+        memcpy(&mDltContext.contextID,contextid,4);
+        const size_t str_len = strlen(description);
+        if(str_len < 2000)
+        {
+            mDltContextData.context_description = new char[str_len + 1];
+            (void) strcpy(mDltContextData.context_description,description);
+        }
+        mDltContext.log_level_user = level;
+    }
+    handle.log_level_user = level;
     std::cout << "\e[0;34m[DLT]\e[0;30m\tRegistering Context " << contextid << " , " << description << std::endl;
 
 #endif
@@ -119,13 +146,15 @@ bool CAmDltWrapper::init(DltLogLevelType loglevel, DltContext* context)
         context = &mDltContext;
 #ifdef WITH_DLT
     if (dlt_user_log_write_start(context, &mDltContextData, loglevel) <= 0)
-    {
-    	pthread_mutex_unlock(&mMutex);
-    	return false;
-    }
 #else
-    if(mEnableNoDLTDebug)
-        std::cout << "\e[0;34m[" << context->contextID << "]\e[0;30m\t";
+    if((mEnableNoDLTDebug == false) || (loglevel > context->log_level_user))
+#endif
+    {
+        pthread_mutex_unlock(&mMutex);
+        return false;
+    }
+#ifndef WITH_DLT
+    std::cout << "\e[0;34m[" << context->contextID << "]\e[0;30m\t";
 #endif
     return true;
 }

@@ -40,6 +40,7 @@ typedef struct
 {
     char contextID[4]; /**< context id */
     int32_t log_level_pos; /**< offset in user-application context field */
+    int32_t log_level_user; /** any message above this log level is not logged */
 } DltContext;
 
 /**
@@ -58,6 +59,17 @@ typedef enum
 } DltLogLevelType;
 
 /**
+ * Definition of DLT trace status
+ */
+typedef enum
+{
+    DLT_TRACE_STATUS_DEFAULT =   -1,    /**< Default trace status */
+    DLT_TRACE_STATUS_OFF     = 0x00,    /**< Trace status: Off */
+    DLT_TRACE_STATUS_ON      = 0x01     /**< Trace status: On */
+} DltTraceStatusType;
+
+
+/**
  * This structure is used for context data used in an application.
  */
 typedef struct
@@ -70,6 +82,9 @@ typedef struct
     uint8_t mcnt; /**< message counter */
     char* context_description; /**< description of context */
 } DltContextData;
+
+#define DLT_DEFAULT_LOG_LEVEL DLT_LOG_INFO
+
 
 #define DLT_DECLARE_CONTEXT(CONTEXT) \
 DltContext CONTEXT;
@@ -92,6 +107,8 @@ public:
     static CAmDltWrapper* instance(const bool enableNoDLTDebug = false);
     void registerApp(const char *appid, const char * description);
     void registerContext(DltContext& handle, const char *contextid, const char * description);
+    void registerContext(DltContext& handle, const char *contextid, const char * description,
+            const DltLogLevelType level, const DltTraceStatusType status);
     void unregisterContext(DltContext& handle);
 
     bool init(DltLogLevelType loglevel, DltContext* context = NULL);
