@@ -117,8 +117,9 @@ public:
     void setControllerRundownSafe(int16_t signal)
     {
         int16_t p(signal);
-        write(mPipe[1], &p, sizeof(p));
-    }
+        ssize_t result(-1);
+        result =  write(mPipe[1], &p, sizeof(p));
+	}
 
     TAmShPollFired<CAmControlSender> receiverCallbackT;
     TAmShPollCheck<CAmControlSender> checkerCallbackT;

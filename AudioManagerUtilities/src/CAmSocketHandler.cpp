@@ -523,7 +523,7 @@ void CAmSocketHandler::exit_mainloop()
 
     //fire the ending filedescriptor
     int p(1);
-    write(mPipe[1], &p, sizeof(p));
+    ssize_t result = write(mPipe[1], &p, sizeof(p));
 }
 
 /**

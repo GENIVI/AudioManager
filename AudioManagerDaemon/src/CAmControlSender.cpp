@@ -481,7 +481,7 @@ void CAmControlSender::receiverCallback(const pollfd pollfd, const sh_pollHandle
    (void) handle;
    (void) userData;
    //get the signal number from the socket
-   read(pollfd.fd, &mSignal, sizeof(mSignal));
+   ssize_t result = read(pollfd.fd, &mSignal, sizeof(mSignal));
 }
 
 bool CAmControlSender::checkerCallback(const sh_pollHandle_t handle, void* userData)

@@ -157,7 +157,10 @@ private:
 		CallType call(int* pipe)
 		{
 			call(mInstance, mMethod, mReturn, std::forward<Tuple>(mArguments));
-			write(pipe[1], this, sizeof(this));
+			ssize_t result(-1);
+			result = write(pipe[1], this, sizeof(this));
+			if (result == -1)
+				logError("CAmSerializer: Problem writing into pipe! Error No:",errno);
 			return (SyncCallType);
 		};
 	};
@@ -189,7 +192,10 @@ private:
 		CallType call(int* pipe)
 		{
 			call(mInstance, mMethod, mReturn, std::forward<Tuple>(mArguments));
-			write(pipe[1], this, sizeof(this));
+			ssize_t result(-1);
+			result = write(pipe[1], this, sizeof(this));
+			if (result == -1)
+				logError("CAmSerializer: Problem writing into pipe! Error No:",errno);
 			return (SyncCallType);
 		};
 	};
