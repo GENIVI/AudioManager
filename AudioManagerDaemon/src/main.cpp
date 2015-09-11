@@ -335,7 +335,7 @@ void mainProgram(int argc, char *argv[])
 
 #ifdef WITH_CAPI_WRAPPER
     //We instantiate a singleton with the current socket handler, which loads the common-api runtime.
-    CAmCommonAPIWrapper *pCAPIWrapper = CAmCommonAPIWrapper::instantiateOnce(&iSocketHandler);
+    CAmCommonAPIWrapper *pCAPIWrapper = CAmCommonAPIWrapper::instantiateOnce(&iSocketHandler, "AudioManager");
     CAmCommonAPIWrapper iDBusWrapper = *pCAPIWrapper;
 #ifdef WITH_NSM
     CAmNodeStateCommunicatorCAPI iNodeStateCommunicator(&iDBusWrapper);

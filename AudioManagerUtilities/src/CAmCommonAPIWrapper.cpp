@@ -48,7 +48,7 @@ namespace am
 static CAmCommonAPIWrapper* pSingleCommonAPIInstance = NULL;
 
 
-CAmCommonAPIWrapper::CAmCommonAPIWrapper(CAmSocketHandler* socketHandler):
+CAmCommonAPIWrapper::CAmCommonAPIWrapper(CAmSocketHandler* socketHandler, const std::string & applicationName):
 				pCommonPrepareCallback(this,&CAmCommonAPIWrapper::commonPrepareCallback), //
 		        pCommonDispatchCallback(this, &CAmCommonAPIWrapper::commonDispatchCallback), //
 		        pCommonFireCallback(this, &CAmCommonAPIWrapper::commonFireCallback), //
@@ -64,18 +64,26 @@ CAmCommonAPIWrapper::CAmCommonAPIWrapper(CAmSocketHandler* socketHandler):
 #else
 	CommonAPI::Runtime::setProperty("LogContext", "AMCAPI");
 	mRuntime = CommonAPI::Runtime::get();
+	logInfo("CommonAPI runtime has been loaded! Default Binding is", mRuntime->getDefaultBinding());
 #endif
 	assert(NULL!=mRuntime);
 
 	//Create the context
+#if COMMONAPI_VERSION_NUMBER < 300
 	mContext = std::make_shared<CommonAPI::MainLoopContext>();
+#else
+	if(applicationName.size())
+		mContext = std::make_shared<CommonAPI::MainLoopContext>(applicationName);
+	else
+		mContext = std::make_shared<CommonAPI::MainLoopContext>();
+#endif
 	assert(NULL!=mContext);
+	logInfo("CommonAPI main loop context with name '", mContext->getName(), "' has been created!");
 
 #if COMMONAPI_VERSION_NUMBER < 300
-	mFactory = runtime->createFactory(mContext);
+	mFactory = mRuntime->createFactory(mContext);
 	assert(mFactory);
 #else
-	logInfo("CommonAPI runtime has been loaded! Default Binding is", mRuntime->getDefaultBinding());
 	#if COMMONAPI_USED_BINDING > 0
 		mFactory = CommonAPI::SomeIP::Factory::get();
 		assert(mFactory);
@@ -111,14 +119,14 @@ CAmCommonAPIWrapper::~CAmCommonAPIWrapper()
 	mWatchToCheck = NULL;
 }
 
-CAmCommonAPIWrapper* CAmCommonAPIWrapper::instantiateOnce(CAmSocketHandler* socketHandler)
+CAmCommonAPIWrapper* CAmCommonAPIWrapper::instantiateOnce(CAmSocketHandler* socketHandler, const std::string & applicationName)
 {
 	if(NULL==pSingleCommonAPIInstance)
 	{
 		if(NULL==socketHandler)
 			throw std::runtime_error(std::string("Expected a valid socket handler. The socket handler pointer must not be NULL."));
 		else
-			pSingleCommonAPIInstance = new CAmCommonAPIWrapper(socketHandler);
+			pSingleCommonAPIInstance = new CAmCommonAPIWrapper(socketHandler, applicationName);
 	}
 	else
 		throw std::logic_error(std::string("The singleton instance has been already instantiated. This method should be called only once."));

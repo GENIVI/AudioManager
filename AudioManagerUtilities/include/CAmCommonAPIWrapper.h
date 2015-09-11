@@ -94,7 +94,7 @@ class CAmCommonAPIWrapper
 	void wakeup();
 
 protected:
-    CAmCommonAPIWrapper(CAmSocketHandler* socketHandler) ;
+    CAmCommonAPIWrapper(CAmSocketHandler* socketHandler, const std::string & applicationName = "") ;
 
 public:
 
@@ -120,7 +120,7 @@ public:
 	*
 	* @return The common-api wrapper object.
 	*/
-	static CAmCommonAPIWrapper* instantiateOnce(CAmSocketHandler* socketHandler);
+	static CAmCommonAPIWrapper* instantiateOnce(CAmSocketHandler* socketHandler, const std::string & applicationName = "");
 
 
 	/**
@@ -129,7 +129,24 @@ public:
 	* @return Pointer to the socket handler.
 	*/
 	CAmSocketHandler *getSocketHandler() const { return mpSocketHandler; }
-
+#if COMMONAPI_VERSION_NUMBER >= 300
+	/**
+	* \brief Register stub objects.
+	*
+	* Example: std::shared_ptr<ConcreteStubClass> aStub;
+	* 		   registerService(	aStub, "local", "com.your_company.instance_name", "service-name");
+	*
+	* @param shStub: Shared pointer to a stub instance
+	* @param domain: A string with the domain name, usually "local"
+	* @param instance: Common-api instance string as example "com.your_company.instance_name"
+	* @param connectionId: A string connection id, which is used by CommonAPI to group applications
+	*
+	*/
+	template <class TStubImp> bool registerService(const std::shared_ptr<TStubImp> & shStub, const std::string & domain, const std::string & instance, const CommonAPI::ConnectionId_t & connectionId)
+	{
+		return mRuntime->registerService(domain, instance, shStub, connectionId);
+	}
+#endif
 	/**
 	* \brief Register stub objects.
 	*
@@ -195,6 +212,24 @@ public:
 		return unregisterService(parts[0], parts[1], parts[2]);
  	}
 
+#if COMMONAPI_VERSION_NUMBER >= 300
+	/**
+	* \brief Build proxy objects.
+	*
+	* Example: std::shared_ptr<AProxyClass<>> aProxy = buildProxy<AProxyClass>("local", "com.your_company.instance_name", "client-name");
+	*
+	* @param domain: A string with the domain name, usually "local"
+	* @param instance: Common-api instance string as example "com.your_company.instance_name"
+	* @param connectionId: A string connection id, which is used by CommonAPI to group applications
+	*
+	* @return A proxy object.
+	*/
+	template<template<typename ...> class ProxyClass, typename ... AttributeExtensions>
+	std::shared_ptr<ProxyClass<AttributeExtensions...>> buildProxy(const std::string &domain, const std::string &instance, const CommonAPI::ConnectionId_t & connectionId)
+	{
+		return mRuntime->buildProxy<ProxyClass>(domain, instance, connectionId);
+	}
+#endif
 
 	/**
 	* \brief Build proxy objects.
