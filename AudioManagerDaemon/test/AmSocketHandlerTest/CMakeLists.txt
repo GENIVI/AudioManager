@@ -23,6 +23,7 @@ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -DUNIT_TEST=1 -DDLT_CONTEXT=AudioMan
 
 set (AM_LINK_LIBS 
     ${CMAKE_DL_LIBS}
+    AudioManagerUtilities
     rt)
 
 if(WITH_DLT)    
@@ -49,9 +50,7 @@ if(WITH_DLT)
         ${DLT_INCLUDE_DIRS})
 endif(WITH_DLT)
    
-file(GLOB Socket_SRCS_CXX 
-    "${AUDIOMANAGER_UTILITIES_SRC}/CAmSocketHandler.cpp"
-    "${AUDIOMANAGER_UTILITIES_SRC}/CAmDltWrapper.cpp"    
+file(GLOB Socket_SRCS_CXX
     "*.cpp"    
 )
 
@@ -60,9 +59,10 @@ ADD_EXECUTABLE(AmSocketHandlerTest ${Socket_SRCS_CXX})
 TARGET_LINK_LIBRARIES(AmSocketHandlerTest 
     ${AM_LINK_LIBS}
     gtest
-    gmock)
+    gmock
+)
 
-ADD_DEPENDENCIES(AmSocketHandlerTest gtest gmock)
+ADD_DEPENDENCIES(AmSocketHandlerTest gtest gmock AudioManagerUtilities)
 
 INSTALL(TARGETS AmSocketHandlerTest 
         DESTINATION ${TEST_EXECUTABLE_INSTALL_PATH}

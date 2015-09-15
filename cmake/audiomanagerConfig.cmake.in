@@ -38,6 +38,7 @@ IF(WITH_TESTS)
 ENDIF(WITH_TESTS)
 
 check_required_components(AudioManagerDaemon)
+check_required_components(AudioManagerUtilities)
 
 
 

@@ -95,7 +95,7 @@ These are the compile options with default values:
  WITH_DATABASE_STORAGE            OFF                                                                                                                                                                              
  WITH_DLT                         ON                                                                                                                                                                               
  WITH_DOCUMENTATION               OFF                                                                                                                                                                              
- WITH_ENABLED_IPC                 CAPI                                                                                                                                                                                                                                                                                                                                                        
+ WITH_SHARED_UTILITIES            OFF
  WITH_SYSTEMD_WATCHDOG            OFF                                                                                                                                                                              
  WITH_TELNET                      ON                                                                                                                                                                               
  WITH_TESTS                       ON                                                                                                                                                                               
@@ -130,6 +130,7 @@ sudo apt-get install libdbus-1-dev libsqlite3-dev doxygen git cmake build-essent
 === AudioManagerUtilities
 
 In the AudioManagerUtilites you can find helper functions that can be reused by other projects as well.
+The library can be shipped as a static or a dynamic link library (WITH_SHARED_UTILITIES).
 
 === The NodeStateManager
 

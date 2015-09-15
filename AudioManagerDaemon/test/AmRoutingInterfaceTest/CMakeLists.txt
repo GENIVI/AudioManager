@@ -25,6 +25,7 @@ find_package(PkgConfig)
 
 set (AM_LINK_LIBS 
     ${CMAKE_DL_LIBS}
+    AudioManagerUtilities
     rt)
     
 if(WITH_DLT)    
@@ -57,9 +58,7 @@ file(GLOB ROUTING_INTERFACE_SRCS_CXX
     "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmCommandSender.cpp"
     "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmRoutingSender.cpp"
     "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmRouter.cpp"
-    "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmControlSender.cpp" 
-    "${AUDIOMANAGER_UTILITIES_SRC}/CAmDltWrapper.cpp"
-    "${AUDIOMANAGER_UTILITIES_SRC}/CAmSocketHandler.cpp"
+    "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmControlSender.cpp"
     "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmRoutingReceiver.cpp"
     "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmCommandReceiver.cpp"
      "../CAmCommonFunctions.cpp"
@@ -71,9 +70,10 @@ ADD_EXECUTABLE(AmRoutingInterfaceTest ${ROUTING_INTERFACE_SRCS_CXX})
 TARGET_LINK_LIBRARIES(AmRoutingInterfaceTest 
     ${AM_LINK_LIBS}
     gtest
-    gmock)
+    gmock
+)
 
-ADD_DEPENDENCIES(AmRoutingInterfaceTest gtest gmock)
+ADD_DEPENDENCIES(AmRoutingInterfaceTest gtest gmock AudioManagerUtilities)
 
 INSTALL(TARGETS AmRoutingInterfaceTest 
         DESTINATION ${TEST_EXECUTABLE_INSTALL_PATH}

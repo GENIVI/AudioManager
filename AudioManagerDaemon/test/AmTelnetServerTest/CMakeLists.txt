@@ -21,6 +21,7 @@ PROJECT(AmTelnetServerTest)
 
 set (AM_LINK_LIBS 
     ${CMAKE_DL_LIBS}
+    AudioManagerUtilities
     rt)
 
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -DUNIT_TEST=1 -DDLT_CONTEXT=AudioManager")
@@ -56,10 +57,8 @@ file(GLOB TELNET_SRCS_CXX
     "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmDatabaseObserver.cpp"
     "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmRoutingReceiver.cpp"
     "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmRoutingSender.cpp"
-    "${AUDIOMANAGER_UTILITIES_SRC}/CAmSocketHandler.cpp"
     "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmTelnetServer.cpp"
     "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmRouter.cpp"
-    "${AUDIOMANAGER_UTILITIES_SRC}/CAmDltWrapper.cpp"
     "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmTelnetMenuHelper.cpp"
     "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmDatabaseHandlerMap.cpp"
     "*.cpp"    
@@ -70,9 +69,10 @@ ADD_EXECUTABLE(AmTelnetServerTest ${TELNET_SRCS_CXX})
 TARGET_LINK_LIBRARIES(AmTelnetServerTest 
     ${AM_LINK_LIBS}
     gtest
-    gmock)
+    gmock
+)
 
-ADD_DEPENDENCIES(AmTelnetServerTest gtest gmock)
+ADD_DEPENDENCIES(AmTelnetServerTest gtest gmock AudioManagerUtilities)
 
 INSTALL(TARGETS AmTelnetServerTest 
         DESTINATION ${TEST_EXECUTABLE_INSTALL_PATH}

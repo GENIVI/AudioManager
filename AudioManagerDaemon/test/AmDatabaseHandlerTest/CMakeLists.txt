@@ -26,6 +26,7 @@ if(WITH_DATABASE_STORAGE)
 
     set (AM_LINK_LIBS 
         ${CMAKE_DL_LIBS}
+        AudioManagerUtilities
         rt)
         
 	pkg_check_modules(SQLITE REQUIRED sqlite3)
@@ -61,10 +62,8 @@ if(WITH_DATABASE_STORAGE)
         "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmControlReceiver.cpp"
         "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmControlSender.cpp"
         "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmRouter.cpp"
-        "${AUDIOMANAGER_UTILITIES_SRC}/CAmSocketHandler.cpp"
         "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmCommandReceiver.cpp"
         "${AUDIOMANAGER_DAEMON_FOLDER}/src/CAmRoutingReceiver.cpp"
-        "${AUDIOMANAGER_UTILITIES_SRC}/CAmDltWrapper.cpp"
         "../CAmCommonFunctions.cpp" 
         "*.cpp"
         )
@@ -81,7 +80,7 @@ if(WITH_DATABASE_STORAGE)
         gmock
     )
     
-    ADD_DEPENDENCIES(AmDatabaseHandlerTest gtest gmock)
+    ADD_DEPENDENCIES(AmDatabaseHandlerTest gtest gmock AudioManagerUtilities)
     
     INSTALL(TARGETS AmDatabaseHandlerTest 
             DESTINATION ${TEST_EXECUTABLE_INSTALL_PATH}

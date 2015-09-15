@@ -58,14 +58,17 @@ option ( USE_BUILD_LIBS
 option ( GLIB_DBUS_TYPES_TOLERANT
     "Build dbus with tolerance towards glib 16bit/32bit handling" ON)
 
-option ( WITH_DATABASE_STORAGE
-    "Build with sqlite as in memory storage" OFF)
-    
 option ( WITH_CAPI_WRAPPER
 	"Build with commonapi wrapper" ON)
 	
 option ( WITH_DBUS_WRAPPER
 	"Build with Dbus wrapper" OFF)	
+	
+option ( WITH_SHARED_UTILITIES
+    "Build audio manager utilities as dynamic library" OFF)	
+    
+option ( WITH_DATABASE_STORAGE
+    "Build with sqlite as in memory storage" OFF)    
      
 set(DBUS_SERVICE_PREFIX "org.genivi.audiomanager" 
     CACHE PROPERTY "The dbus service prefix for the AM - only changable for legacy dbus")
@@ -101,8 +104,8 @@ set(DOC_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/doc
     CACHE STRINGS "The doxygen documentation will be placed here")  
     
 set(AM_SHARE_FOLDER ${CMAKE_INSTALL_PREFIX}/share/audiomanager
-    CACHE STRINGS "The share folder for the AM. Some DBus xmls will be placed here and so on")   
-    
+    CACHE STRINGS "The share folder for the AM. Some DBus xmls will be placed here and so on")
+
 set(AUDIOMANAGER_INCLUDE_FOLDER  ${CMAKE_BINARY_DIR}/include)
 set(AUDIO_INCLUDE_FOLDER ${CMAKE_SOURCE_DIR}/include)
 set(AUDIOMANAGER_UTILITIES ${CMAKE_SOURCE_DIR}/AudioManagerUtilities)
@@ -177,6 +180,7 @@ write_basic_package_version_file(
     COMPATIBILITY SameMajorVersion )
  
 add_subdirectory (AudioManagerDaemon)
+add_subdirectory (AudioManagerUtilities)
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/Plugins/")
     add_subdirectory (${CMAKE_SOURCE_DIR}/Plugins)
