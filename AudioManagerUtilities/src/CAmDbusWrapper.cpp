@@ -80,6 +80,10 @@ CAmDbusWrapper::CAmDbusWrapper(CAmSocketHandler* socketHandler, DBusBusType type
     {
         logError("DBusWrapper::DBusWrapper DBus Connection is null");
     }
+    else
+    {
+        logInfo("DBusWrapper::DBusWrapper DBus Connection is", mpDbusConnection);
+    }
 
     //then we need to adopt the dbus to our mainloop:
     //first, we are old enought to live longer then the connection:
@@ -104,18 +108,37 @@ CAmDbusWrapper::CAmDbusWrapper(CAmSocketHandler* socketHandler, DBusBusType type
 
     //register callback for Introspectio
     mObjectPathVTable.message_function = CAmDbusWrapper::cbRootIntrospection;
-    logInfo("dbusconnection ",mpDbusConnection);
-    dbus_connection_register_object_path(mpDbusConnection, objectPath.c_str(), &mObjectPathVTable, this);
-    int ret = dbus_bus_request_name(mpDbusConnection, prefix.c_str(), DBUS_NAME_FLAG_DO_NOT_QUEUE, &mDBusError);
-    if (dbus_error_is_set(&mDBusError))
+    dbus_connection_register_object_path(mpDbusConnection, objectPath, &mObjectPathVTable, this);
+    int ret = dbus_bus_request_name(mpDbusConnection, prefix, DBUS_NAME_FLAG_DO_NOT_QUEUE, &mDBusError);
+    if (DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER == ret)
     {
-        logError("DBusWrapper::DBusWrapper Name Error", mDBusError.message);
-        dbus_error_free(&mDBusError);
+		logInfo("DBusWrapper::DBusWrapper We own", prefix);
     }
-    if (DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER != ret)
+    else
     {
-        logError("DBusWrapper::DBusWrapper Wrapper is not the Primary Owner ! Another instance already running?");
-        throw std::runtime_error("DBusWrapper::DBusWrapper Wrapper is not the Primary Owner ! Another instance already running?");
+        std::ostringstream sserror("DBusWrapper::DBusWrapper ");
+        switch (ret)
+        {
+            case -1:
+                sserror << "Couldn't acquire name " << prefix << ". DBus message: " << mDBusError.message;
+                dbus_error_free(&mDBusError);
+                break;
+            case DBUS_REQUEST_NAME_REPLY_IN_QUEUE:
+                sserror << "We are queued for " << prefix;
+                break;
+            case DBUS_REQUEST_NAME_REPLY_EXISTS:
+                sserror << ":-( " << prefix << " already exists!";
+                break;
+            case DBUS_REQUEST_NAME_REPLY_ALREADY_OWNER:
+                sserror << "Eh? We already own " << prefix;
+                break;
+            default:
+                sserror << "Unknown result = " << ret;
+                break;
+        }
+
+        logError(sserror.str());
+        throw std::runtime_error(sserror.str().c_str());
     }
 }
 
