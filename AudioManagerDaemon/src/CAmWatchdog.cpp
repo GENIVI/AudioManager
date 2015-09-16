@@ -56,11 +56,12 @@ CAmWatchdog::CAmWatchdog(CAmSocketHandler* CAmSocketHandler) :
     if (watchdogTimeout > 0)
     {
         timespec timeout;
-        logInfo("CAmWatchdog::CAmWatchdog setting watchdog timeout to ", watchdogTimeout, " museconds");
 
-        //calulate the half cycle as the right interval to trigger the watchdog.
-        timeout.tv_sec = watchdogTimeout / 2000000;
-        timeout.tv_nsec = (watchdogTimeout % 1000000) * 500;
+        //calculate the half cycle as the right interval to trigger the watchdog.
+        timeout.tv_sec =   (watchdogTimeout / 2) / 1000000;
+        timeout.tv_nsec = ((watchdogTimeout / 2) % 1000000) * 1000;
+        logInfo("CAmWatchdog::CAmWatchdog setting watchdog timeout:", watchdogTimeout, "us. Notification set to:",
+                timeout.tv_sec, "sec and", timeout.tv_nsec, "ns");
 
         //add the timer here
         if (mpCAmSocketHandler->addTimer(timeout, &TimerCallback, mHandle, NULL))
