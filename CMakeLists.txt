@@ -236,7 +236,6 @@ write_basic_package_version_file(
     VERSION ${DAEMONVERSION}
     COMPATIBILITY SameMajorVersion )
  
- 
 add_subdirectory (AudioManagerDaemon)
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/Plugins/")
@@ -249,6 +248,8 @@ configure_file( ${CMAKE_SOURCE_DIR}/cmake/audiomanager.pc.in ${CMAKE_BINARY_DIR}
 
 install(FILES ${CMAKE_BINARY_DIR}/audiomanager.pc DESTINATION lib/pkgconfig COMPONENT devel)    
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/audiomanagerConfig.cmake 
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/CommonAPI.cmake
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindNSM.cmake
     DESTINATION lib/${LIB_INSTALL_SUFFIX}/cmake
     COMPONENT dev)    
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/include/audiomanagerconfig.h  
