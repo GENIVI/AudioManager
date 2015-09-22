@@ -124,6 +124,7 @@ public:
     am_Error_e getSourceInfoDB(const am_sourceID_t sourceID, am_Source_s& sourceData) const;
     am_Error_e getCrossfaderInfoDB(const am_crossfaderID_t crossfaderID, am_Crossfader_s& crossfaderData) const;
     am_Error_e getMainConnectionInfoDB(const am_mainConnectionID_t mainConnectionID, am_MainConnection_s& mainConnectionData) const;
+    am_Error_e getSinkMainVolume(const am_sinkID_t sinkID, am_mainVolume_t& mainVolume) const;
     am_Error_e getSinkVolume(const am_sinkID_t sinkID, am_volume_t& volume) const;
     am_Error_e getSourceVolume(const am_sourceID_t sourceID, am_volume_t& volume) const;
     am_Error_e getSinkSoundPropertyValue(const am_sinkID_t sinkID, const am_CustomSoundPropertyType_t propertyType, int16_t& value) const;

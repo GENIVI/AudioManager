@@ -2381,6 +2381,19 @@ am_Error_e CAmDatabaseHandlerMap::changeSourceState(const am_sourceID_t sourceID
 	return (E_NON_EXISTENT);
 }
 
+am_Error_e CAmDatabaseHandlerMap::getSinkMainVolume(const am_sinkID_t sinkID, am_mainVolume_t& mainVolume) const {
+    assert(sinkID!=0);
+
+	am_Sink_Database_s const * source = objectForKeyIfExistsInMap(sinkID, mMappedData.mSinkMap);
+	if( NULL!=source )
+	{
+		mainVolume = source->mainVolume;
+		return (E_OK);
+	}
+	mainVolume = -1;
+	return (E_NON_EXISTENT);
+}
+
 am_Error_e CAmDatabaseHandlerMap::getSinkVolume(const am_sinkID_t sinkID, am_volume_t & volume) const
 {
     assert(sinkID!=0);

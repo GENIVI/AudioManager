@@ -4068,6 +4068,25 @@ am_Error_e CAmDatabaseHandlerSQLite::changeSourceState(const am_sourceID_t sourc
     return (E_OK);
 }
 
+am_Error_e CAmDatabaseHandlerSQLite::getSinkMainVolume(const am_sinkID_t sinkID, am_mainVolume_t& mainVolume) const {
+    assert(sinkID!=0);
+    sqlite3_stmt* query = NULL;
+    mainVolume = -1;
+    std::string command = "SELECT mainVolume FROM " + std::string(SINK_TABLE) + " WHERE sinkID=" + i2s(sinkID);
+    int eCode = 0;
+    MY_SQLITE_PREPARE_V2(mpDatabase, command.c_str(), -1, &query, NULL)
+    if ((eCode = sqlite3_step(query)) == SQLITE_ROW)
+    {
+        mainVolume = sqlite3_column_int(query, 0);
+    }
+    else if ((eCode = sqlite3_step(query)) == SQLITE_DONE)
+    {
+        logError("DatabaseHandler::getSinkVolume database error!:", eCode);
+    }
+    MY_SQLITE_FINALIZE(query)
+    return (E_OK);
+}
+
 am_Error_e CAmDatabaseHandlerSQLite::getSinkVolume(const am_sinkID_t sinkID, am_volume_t & volume) const
 {
     assert(sinkID!=0);
