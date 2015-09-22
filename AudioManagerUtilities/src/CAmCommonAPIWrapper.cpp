@@ -30,18 +30,6 @@
 #include "CAmDltWrapper.h"
 #include "CAmCommonAPIWrapper.h"
 
-#ifndef COMMONAPI_INTERNAL_COMPILATION
-#define COMMONAPI_INTERNAL_COMPILATION
-#if COMMONAPI_USED_BINDING > 0
-#include <CommonAPI/SomeIP/Factory.hpp>
-#else
-#include <CommonAPI/DBus/DBusFactory.hpp>
-#endif
-
-#undef COMMONAPI_INTERNAL_COMPILATION
-#endif
-
-
 
 namespace am
 {
@@ -58,42 +46,31 @@ CAmCommonAPIWrapper::CAmCommonAPIWrapper(CAmSocketHandler* socketHandler, const 
 		        mWatchToCheck(NULL)
 {
 	assert(NULL!=socketHandler);
-//Get the runtime
-#if COMMONAPI_VERSION_NUMBER < 300
-	mRuntime = CommonAPI::Runtime::load();
-#else
+
+	//Get the runtime
 	CommonAPI::Runtime::setProperty("LogContext", "AMCAPI");
 	mRuntime = CommonAPI::Runtime::get();
 	logInfo("CommonAPI runtime has been loaded! Default Binding is", mRuntime->getDefaultBinding());
-#endif
 	assert(NULL!=mRuntime);
 
 	//Create the context
-#if COMMONAPI_VERSION_NUMBER < 300
-	mContext = std::make_shared<CommonAPI::MainLoopContext>();
-#else
 	if(applicationName.size())
 		mContext = std::make_shared<CommonAPI::MainLoopContext>(applicationName);
 	else
 		mContext = std::make_shared<CommonAPI::MainLoopContext>();
-#endif
 	assert(NULL!=mContext);
 	logInfo("CommonAPI main loop context with name '", mContext->getName(), "' has been created!");
 
-#if COMMONAPI_VERSION_NUMBER < 300
-	mFactory = mRuntime->createFactory(mContext);
-	assert(mFactory);
-#else
-	#if COMMONAPI_USED_BINDING > 0
-		mFactory = CommonAPI::SomeIP::Factory::get();
-		assert(mFactory);
-		mRuntime->registerFactory("someip", mFactory);
-	#else
-		mFactory = CommonAPI::DBus::Factory::get();
-		assert(mFactory);
-		mRuntime->registerFactory("dbus", mFactory);
-	#endif
-#endif
+//	#if COMMONAPI_USED_BINDING > 0
+//		mFactory = CommonAPI::SomeIP::Factory::get();
+//		assert(mFactory);
+//		mRuntime->registerFactory("someip", mFactory);
+//	#else
+//		mFactory = CommonAPI::DBus::Factory::get();
+//		assert(mFactory);
+//		mRuntime->registerFactory("dbus", mFactory);
+//	#endif
+
 
 //Make subscriptions
 	mDispatchSourceListenerSubscription = mContext->subscribeForDispatchSources(

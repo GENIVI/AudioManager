@@ -151,14 +151,6 @@ class MockIAmControlSend : public IAmControlSend {
       am_Error_e(const am_sinkID_t sinkID, const am_NotificationConfiguration_s& notificationConfiguration));
   MOCK_METHOD2(hookUserSetMainSourceNotificationConfiguration,
       am_Error_e(const am_sourceID_t sourceID, const am_NotificationConfiguration_s& notificationConfiguration));
-  MOCK_METHOD1(hookSystemNodeStateChanged,
-      void(const NsmNodeState_e NodeStateId));
-  MOCK_METHOD1(hookSystemNodeApplicationModeChanged,
-      void(const NsmApplicationMode_e ApplicationModeId));
-  MOCK_METHOD3(hookSystemSessionStateChanged,
-      void(const std::string& sessionName, const NsmSeat_e seatID, const NsmSessionState_e sessionStateID));
-  MOCK_METHOD2(hookSystemLifecycleRequest,
-      NsmErrorStatus_e(const uint32_t Request, const uint32_t RequestId));
   MOCK_METHOD2(hookSystemSingleTimingInformationChanged,
       void(const am_connectionID_t connectionID, const am_timeSync_t time));
 };

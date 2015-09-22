@@ -104,10 +104,6 @@ public:
     void hookSourceNotificationDataChanged(const am_sourceID_t sourceID, const am_NotificationPayload_s& payload) ;
     am_Error_e hookUserSetMainSinkNotificationConfiguration(const am_sinkID_t sinkID, const am_NotificationConfiguration_s& notificationConfiguration) ;
     am_Error_e hookUserSetMainSourceNotificationConfiguration(const am_sourceID_t sourceID, const am_NotificationConfiguration_s& notificationConfiguration) ;
-    void hookSystemNodeStateChanged(const NsmNodeState_e NodeStateId) ;
-    void hookSystemNodeApplicationModeChanged(const NsmApplicationMode_e ApplicationModeId) ;
-    void hookSystemSessionStateChanged(const std::string& sessionName, const NsmSeat_e seatID, const NsmSessionState_e sessionStateID) ;
-    NsmErrorStatus_e hookSystemLifecycleRequest(const uint32_t Request, const uint32_t RequestId) ;
     void hookSystemSingleTimingInformationChanged(const am_connectionID_t connectionID, const am_timeSync_t time);
 
     void receiverCallback(const pollfd pollfd, const sh_pollHandle_t handle, void* userData);
@@ -125,8 +121,6 @@ public:
     TAmShPollCheck<CAmControlSender> checkerCallbackT;
     TAmShPollDispatch<CAmControlSender> dispatcherCallbackT;
 
-    //todo: add getSessionstate, interface nachbilden von org.genivi.NodeStateManager.LifeCycleConsumer, antwort nach NSM
-    //chek interface version RegisterShutdownClient, UnRegisterShutdownClient, GetSessionState, GetApplicationMode, GetNodeState
 
     //we need this here to call the rundown from the signal handler. In case everything screwed up
     static void CallsetControllerRundown(int16_t signal)

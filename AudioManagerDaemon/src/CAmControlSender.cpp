@@ -398,18 +398,6 @@ void CAmControlSender::confirmRoutingRundown(const am_Error_e error)
     mController->confirmRoutingRundown(error);
 }
 
-void CAmControlSender::hookSystemNodeStateChanged(const NsmNodeState_e NodeStateId)
-{
-    assert(mController);
-    mController->hookSystemNodeStateChanged(NodeStateId);
-}
-
-void CAmControlSender::hookSystemNodeApplicationModeChanged(const NsmApplicationMode_e ApplicationModeId)
-{
-    assert(mController);
-    mController->hookSystemNodeApplicationModeChanged(ApplicationModeId);
-}
-
 am_Error_e CAmControlSender::hookSystemUpdateSink(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_CustomConnectionFormat_t>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)
 {
     assert(mController);
@@ -489,18 +477,6 @@ bool CAmControlSender::checkerCallback(const sh_pollHandle_t handle, void* userD
    (void) handle;
    (void) userData;
    return (true);
-}
-
-void CAmControlSender::hookSystemSessionStateChanged(const std::string& sessionName, const NsmSeat_e seatID, const NsmSessionState_e sessionStateID)
-{
-    assert(mController);
-    mController->hookSystemSessionStateChanged(sessionName,seatID,sessionStateID);
-}
-
-NsmErrorStatus_e CAmControlSender::hookSystemLifecycleRequest(const uint32_t Request, const uint32_t RequestId)
-{
-    assert(mController);
-    return (mController->hookSystemLifecycleRequest(Request,RequestId));
 }
 
 void CAmControlSender::hookSystemSingleTimingInformationChanged(const am_connectionID_t connectionID, const am_timeSync_t time)

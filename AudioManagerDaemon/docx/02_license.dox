@@ -21,7 +21,6 @@
 The AudioManger comes with some open source software distributed in the source tree:
 - Google Mock (in \googleMock), licensed under MIT license
 - Tclap ( in \tclap-1.2.1), licensed under MIT license
-- The headers of the NSM, licensed under MPL 2.0
 \section split License Split
 The licenses of this project are split into two parts:\n
 1. the AudioManagerDaemon, licensed under MPL 2.0\n

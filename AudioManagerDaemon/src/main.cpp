@@ -30,19 +30,12 @@
 
 #ifdef WITH_CAPI_WRAPPER
     #include "CAmCommonAPIWrapper.h"
-#else
-	#ifdef WITH_DBUS_WRAPPER
-		#include "CAmDbusWrapper.h"
-	#endif
 #endif
 
-#ifdef WITH_NSM
-	#ifdef WITH_DBUS_WRAPPER
-		#include "CAmNodeStateCommunicatorDBus.h"
-	#else
-		#include "CAmNodeStateCommunicatorCAPI.h"
-	#endif
+#ifdef WITH_DBUS_WRAPPER
+	#include "CAmDbusWrapper.h"
 #endif
+
 
 #ifdef WITH_DATABASE_STORAGE
     #include "CAmDatabaseHandlerSQLite.h"
@@ -336,19 +329,12 @@ void mainProgram(int argc, char *argv[])
 #ifdef WITH_CAPI_WRAPPER
     //We instantiate a singleton with the current socket handler, which loads the common-api runtime.
     CAmCommonAPIWrapper *pCAPIWrapper = CAmCommonAPIWrapper::instantiateOnce(&iSocketHandler, "AudioManager");
-    CAmCommonAPIWrapper iDBusWrapper = *pCAPIWrapper;
-#ifdef WITH_NSM
-    CAmNodeStateCommunicatorCAPI iNodeStateCommunicator(&iDBusWrapper);
-#endif /*WITH_NSM*/
 #endif /*WITH_CAPI_WRAPPER */
 
 #ifdef WITH_DBUS_WRAPPER
     if (dbusWrapperTypeBool.getValue())
     	dbusWrapperType=DBUS_BUS_SYSTEM;
     CAmDbusWrapper iDBusWrapper(&iSocketHandler,dbusWrapperType);
-#ifdef WITH_NSM
-    CAmNodeStateCommunicatorDBus iNodeStateCommunicator(&iDBusWrapper);
-#endif /*WITH_NSM*/
 #endif /*WITH_DBUS_WRAPPER */
 
 #ifdef WITH_SYSTEMD_WATCHDOG
@@ -371,12 +357,7 @@ void mainProgram(int argc, char *argv[])
 	    CAmRoutingReceiver iRoutingReceiver(pDatabaseHandler,&iRoutingSender,&iControlSender,&iSocketHandler);
 #endif /*WITH_DBUS_WRAPPER*/
 
-#ifdef WITH_NSM
-	CAmControlReceiver iControlReceiver(pDatabaseHandler,&iRoutingSender,&iCommandSender,&iSocketHandler, &iRouter, &iNodeStateCommunicator);
-	iNodeStateCommunicator.registerControlSender(&iControlSender);
-#else /*WITH_NSM*/
-	CAmControlReceiver iControlReceiver(pDatabaseHandler,&iRoutingSender,&iCommandSender,&iSocketHandler, &iRouter);
-#endif /*WITH_NSM*/
+CAmControlReceiver iControlReceiver(pDatabaseHandler,&iRoutingSender,&iCommandSender,&iSocketHandler, &iRouter);
 
 #ifdef WITH_TELNET
     CAmTelnetServer iTelnetServer(&iSocketHandler, &iCommandSender, &iCommandReceiver, &iRoutingSender, &iRoutingReceiver, &iControlSender, &iControlReceiver, pDatabaseHandler, &iRouter, telnetPort.getValue(), maxConnections.getValue());

@@ -133,16 +133,6 @@ public:
     void sendMainSourceNotificationPayload(const am_sourceID_t sourceID, const am_NotificationPayload_s& notificationPayload) ;
     am_Error_e changeMainSinkNotificationConfigurationDB(const am_sinkID_t sinkID, const am_NotificationConfiguration_s& mainNotificationConfiguration) ;
     am_Error_e changeMainSourceNotificationConfigurationDB(const am_sourceID_t sourceID, const am_NotificationConfiguration_s& mainNotificationConfiguration) ;
-    am_Error_e getRestartReasonPropertyNSM(NsmRestartReason_e& restartReason) ;
-    am_Error_e getShutdownReasonPropertyNSM(NsmShutdownReason_e& ShutdownReason) ;
-    am_Error_e getRunningReasonPropertyNSM(NsmRunningReason_e& nsmRunningReason) ;
-    NsmErrorStatus_e getNodeStateNSM(NsmNodeState_e& nsmNodeState) ;
-    NsmErrorStatus_e getSessionStateNSM(const std::string& sessionName, const NsmSeat_e seatID, NsmSessionState_e& sessionState) ;
-    NsmErrorStatus_e getApplicationModeNSM(NsmApplicationMode_e& applicationMode) ;
-    NsmErrorStatus_e registerShutdownClientNSM(const uint32_t shutdownMode, const uint32_t timeoutMs) ;
-    NsmErrorStatus_e unRegisterShutdownClientNSM(const uint32_t shutdownMode) ;
-    am_Error_e getInterfaceVersionNSM(uint32_t& version) ;
-    NsmErrorStatus_e sendLifecycleRequestCompleteNSM(const uint32_t RequestId, const NsmErrorStatus_e status) ;
     am_Error_e getListMainSinkSoundProperties(const am_sinkID_t sinkID, std::vector<am_MainSoundProperty_s>& listSoundproperties) const;
    	am_Error_e getListMainSourceSoundProperties(const am_sourceID_t sourceID, std::vector<am_MainSoundProperty_s>& listSoundproperties) const;
    	am_Error_e getListSinkSoundProperties(const am_sinkID_t sinkID, std::vector<am_SoundProperty_s>& listSoundproperties) const;

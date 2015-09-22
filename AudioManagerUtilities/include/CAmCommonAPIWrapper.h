@@ -26,11 +26,6 @@
 #include <memory>
 #include <cassert>
 #include <CommonAPI/CommonAPI.hpp>
-#ifndef COMMONAPI_INTERNAL_COMPILATION
-#define COMMONAPI_INTERNAL_COMPILATION
-#include <CommonAPI/MainLoopContext.hpp>
-#undef COMMONAPI_INTERNAL_COMPILATION
-#endif
 #include <CommonAPI/Utils.hpp>
 #include "audiomanagerconfig.h"
 #include "CAmSocketHandler.h"

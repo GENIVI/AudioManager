@@ -32,12 +32,7 @@ if (NOT ${CMAKE_TOOLCHAIN_FILE} EQUAL "")
 endif (NOT ${CMAKE_TOOLCHAIN_FILE} EQUAL "")
 
 find_package(PkgConfig)
-
-#we need this anyway - even if not installed, then we take our stuff.
-find_package(NSM REQUIRED)
-
-set(WITH_ENABLED_IPC "CAPI" CACHE STRING "Disable 'NONE' / Enable Common-API 'CAPI' or Dbus 'DBUS' Support")
-set_property(CACHE WITH_ENABLED_IPC PROPERTY STRINGS "NONE" "CAPI" "DBUS") 
+find_package(CommonAPI)
 
 option( WITH_TESTS
 	"Build together with all available unitTest" ON )
@@ -63,37 +58,17 @@ option ( USE_BUILD_LIBS
 option ( GLIB_DBUS_TYPES_TOLERANT
     "Build dbus with tolerance towards glib 16bit/32bit handling" ON)
 
-option( WITH_NSM 
-    "build with NSM support" OFF)
-  
- option ( WITH_DATABASE_STORAGE
+option ( WITH_DATABASE_STORAGE
     "Build with sqlite as in memory storage" OFF)
+    
+option ( WITH_CAPI_WRAPPER
+	"Build with commonapi wrapper" ON)
+	
+option ( WITH_DBUS_WRAPPER
+	"Build with Dbus wrapper" ON)	
     
 set (WITH_COMMON_API_GEN ON CACHE INTERNAL "hide this!" FORCE)
  
-if (WITH_ENABLED_IPC STREQUAL "DBUS")
-    set (WITH_DBUS_WRAPPER ON CACHE INTERNAL "hide this!" FORCE)
-    set (WITH_CAPI_WRAPPER OFF CACHE INTERNAL "hide this!" FORCE)
-    unset(USE_CAPI_BINDING CACHE)
-elseif(WITH_ENABLED_IPC STREQUAL "CAPI")
-    set (WITH_CAPI_WRAPPER ON CACHE INTERNAL "hide this!" FORCE)
-    set (WITH_DBUS_WRAPPER OFF CACHE INTERNAL "hide this!" FORCE)
-    set (USE_CAPI_BINDING "DBUS" CACHE STRING "Select prefered binding for common-api 'DBUS' or 'SOMEIP'")
-    set_property(CACHE USE_CAPI_BINDING PROPERTY STRINGS "DBUS" "SOMEIP") 
-elseif(WITH_ENABLED_IPC STREQUAL "NONE")   
-    set (WITH_CAPI_WRAPPER OFF CACHE INTERNAL "hide this!" FORCE)
-    set (WITH_DBUS_WRAPPER OFF CACHE INTERNAL "hide this!" FORCE)
-    unset(USE_CAPI_BINDING CACHE)
-endif ()
-
-if (USE_CAPI_BINDING STREQUAL "SOMEIP")
-    set(COMMONAPI_USED_BINDING 1 CACHE INTERNAL "hide this!" FORCE)
-elseif (USE_CAPI_BINDING STREQUAL "DBUS")
-    set(COMMONAPI_USED_BINDING 0 CACHE INTERNAL "hide this!" FORCE)
-else()
-    unset(COMMONAPI_USED_BINDING CACHE)
-endif()
-
 set(DBUS_SERVICE_PREFIX "org.genivi.audiomanager" 
     CACHE PROPERTY "The dbus service prefix for the AM - only changable for legacy dbus")
 
@@ -105,15 +80,6 @@ set(DEFAULT_TELNETPORT 6080
 	
 set(MAX_TELNETCONNECTIONS 3 
     CACHE INTEGER "The maximum of allowed telnet connections, only valid if TELNET is ON")
-
-set(NSM_BUS_INTERFACE "org.genivi.NodeStateManager"
-    CACHE PROPERTY "The Dbus interface of the NSM - only relevant for legacy dbus" )
-
-set(NSM_PATH "/org/genivi/NodeStateManager"
-    CACHE PROPERTY "The Dbus path of the NSM - only relevant for legacy dbus")
-
-set(NSM_INTERFACE "org.genivi.NodeStateManager.Consumer"
-    CACHE PROPERTY "The NSM interface  - only relevant for legacy dbus")
 
 set(DYNAMIC_ID_BOUNDARY 100 
     CACHE INTEGER "The ID boundary between static and dynamic ID ranges")
@@ -180,33 +146,9 @@ else(USE_BUILD_LIBS)
 endif(USE_BUILD_LIBS)
 
 
-if (WITH_ENABLED_IPC STREQUAL "NONE")
-   set (ENABLE_NSM OFF)
-else  ()
-   set (ENABLE_NSM ON)
-endif ()
-    
-if (NOT WITH_DBUS_WRAPPER AND NOT WITH_CAPI_WRAPPER)
-    set (WITH_NSM OFF)
-endif (NOT WITH_DBUS_WRAPPER AND NOT WITH_CAPI_WRAPPER)
-
-
 if(USE_BUILD_LIBS) 
      execute_process(COMMAND mkdir -p "${CMAKE_CURRENT_BINARY_DIR}/bin")
 endif(USE_BUILD_LIBS)
-
-if(WITH_NSM AND WITH_DBUS_WRAPPER)
-    if(USE_BUILD_LIBS) 
-        set(NSM_INTROSPECTION_FILE ${EXECUTABLE_OUTPUT_PATH}/bin/LifeCycleConsumer.xml)
-            execute_process(COMMAND cp "${CMAKE_SOURCE_DIR}/Foo/LifecycleConsumer.xml" ${NSM_INTROSPECTION_FILE})
-    else(USE_BUILD_LIBS) 
-        set(NSM_INTROSPECTION_FILE ${AM_SHARE_FOLDER}/LifecycleConsumer.xml)
-            INSTALL(
-            FILES ${CMAKE_SOURCE_DIR}/Foo/LifecycleConsumer.xml 
-            DESTINATION "${NSM_INTROSPECTION_FILE}"
-            COMPONENT bin)
-    endif(USE_BUILD_LIBS)
-endif(WITH_NSM AND WITH_DBUS_WRAPPER)
 
 if(WITH_DLT)    
     pkg_check_modules(DLT REQUIRED automotive-dlt>=2.2.0)
@@ -248,8 +190,6 @@ configure_file( ${CMAKE_SOURCE_DIR}/cmake/audiomanager.pc.in ${CMAKE_BINARY_DIR}
 
 install(FILES ${CMAKE_BINARY_DIR}/audiomanager.pc DESTINATION lib/pkgconfig COMPONENT devel)    
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/audiomanagerConfig.cmake 
-    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/CommonAPI.cmake
-    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindNSM.cmake
     DESTINATION lib/${LIB_INSTALL_SUFFIX}/cmake
     COMPONENT dev)    
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/include/audiomanagerconfig.h  

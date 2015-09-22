@@ -30,8 +30,6 @@ namespace am {
 class CAmSocketHandler;
 }
 
-#include "NodeStateManager.h"
-
 #include "audiomanagertypes.h"
 
 #define ControlVersion "4.0" 
@@ -601,58 +599,6 @@ public:
 	 */
 	virtual am_Error_e changeMainSourceNotificationConfigurationDB(const am_sourceID_t sourceID, const am_NotificationConfiguration_s& mainNotificationConfiguration) =0;
 	/**
-	 * Retrieves the Restart Reason Property
-	 * @return E_OK on success E_UNKNOWN if property could not be retrieved.
-	 */
-	virtual am_Error_e getRestartReasonPropertyNSM(NsmRestartReason_e& restartReason) =0;
-	/**
-	 * Retrieves the shutdown reason property
-	 * @return E_OK on success E_UNKNOWN if property could not be retrieved.
-	 */
-	virtual am_Error_e getShutdownReasonPropertyNSM(NsmShutdownReason_e& ShutdownReason) =0;
-	/**
-	 * Retrieves the running reason
-	 * @return E_OK on success E_UNKNOWN if property could not be retrieved.
-	 */
-	virtual am_Error_e getRunningReasonPropertyNSM(NsmRunningReason_e& nsmRunningReason) =0;
-	/**
-	 * @return NsmErrorStatus_Ok in case of success
-	 */
-	virtual NsmErrorStatus_e getNodeStateNSM(NsmNodeState_e& nsmNodeState) =0;
-	/**
-	 * Retrieves the current session state
-	 * @return NsmErrorStatus_Ok on success E_UNKNOWN if property could not be
-	 * retrieved.
-	 */
-	virtual NsmErrorStatus_e getSessionStateNSM(const std::string& sessionName, const NsmSeat_e seatID, NsmSessionState_e& sessionState) =0;
-	/**
-	 * Retrieves the current applicationmode
-	 * @return NsmErrorStatus_Ok on success E_UNKNOWN if property could not be
-	 * retrieved.
-	 */
-	virtual NsmErrorStatus_e getApplicationModeNSM(NsmApplicationMode_e& applicationMode) =0;
-	/**
-	 * Registers the AudioManager as shutdown client
-	 * @return NsmErrorStatus_Ok on success
-	 * The interface for the client will be provided by the AudioManagerDeamon,
-	 * therefore is no need to mention it here.
-	 */
-	virtual NsmErrorStatus_e registerShutdownClientNSM(const uint32_t shutdownMode, const uint32_t timeoutMs) =0;
-	/**
-	 * unregisters the AudioManager as shutdown client
-	 * @return NsmErrorStatus_Ok on success
-	 */
-	virtual NsmErrorStatus_e unRegisterShutdownClientNSM(const uint32_t shutdownMode) =0;
-	/**
-	 * @return E_OK on success, E_UNKOWN if interface could not be reached
-	 */
-	virtual am_Error_e getInterfaceVersionNSM(uint32_t& version) =0;
-	/**
-	 * Sends out the lifecyclerequest complete to the NSM
-	 * @return NsmErrorStatus_Ok in case of success
-	 */
-	virtual NsmErrorStatus_e sendLifecycleRequestCompleteNSM(const uint32_t RequestId, const NsmErrorStatus_e status) =0;
-	/**
 	 * This function retrieves a list of all sink mainsoundproperties with its values
 	 * @return E_OK when successful, E_DATABASE on error
 	 */
@@ -1008,24 +954,6 @@ public:
 	 * @return E_OK on success, E_OUT_OF_RANGE if out of range, E_UNKNOWN on error
 	 */
 	virtual am_Error_e hookUserSetMainSourceNotificationConfiguration(const am_sourceID_t sourceID, const am_NotificationConfiguration_s& notificationConfiguration) =0;
-	/**
-	 * This hook is connected to the NodeState signal of the NodeStateManager
-	 */
-	virtual void hookSystemNodeStateChanged(const NsmNodeState_e NodeStateId) =0;
-	/**
-	 * This hook is connected to the NodeApplicationMode signal of the NodeStateManager
-	 */
-	virtual void hookSystemNodeApplicationModeChanged(const NsmApplicationMode_e ApplicationModeId) =0;
-	/**
-	 * the sessionstate change was send by the NSM
-	 */
-	virtual void hookSystemSessionStateChanged(const std::string& sessionName, const NsmSeat_e seatID, const NsmSessionState_e sessionStateID) =0;
-	/**
-	 * A lifecycle request comes in from the NSM and must be processed.
-	 * @return NsmErrorStatus_Ok if successful
-	 * The controller has to respond to this message with LifecycleRequestComplete.
-	 */
-	virtual NsmErrorStatus_e hookSystemLifecycleRequest(const uint32_t Request, const uint32_t RequestId) =0;
 	/**
 	 * This hook is fired whenever the timing information of a connection has changed.
 	 */

@@ -50,8 +50,7 @@ if(WITH_DBUS_WRAPPER)
 endif(WITH_DBUS_WRAPPER)
 
 if(WITH_CAPI_WRAPPER)
-    INCLUDE (CommonAPI)
-    LOAD_COMMONAPI()
+	find_package(CommonAPI REQUIRED)
 endif(WITH_CAPI_WRAPPER)
 
 set (AM_LINK_LIBS 
@@ -103,32 +102,9 @@ if(WITH_DBUS_WRAPPER)
 endif(WITH_DBUS_WRAPPER)
 
 if(WITH_CAPI_WRAPPER)
-    set (AUDIOMAN_SRCS_CXX ${AUDIOMAN_SRCS_CXX} "${AUDIOMANAGER_UTILITIES_SRC}/CAmCommonAPIWrapper.cpp")
+    set (AUDIOMAN_SRCS_CXX ${AUDIOMAN_SRCS_CXX} "${AUDIOMANAGER_UTILITIES_SRC}/CAmCommonAPIWrapper.cpp") 
     set (AM_LINK_LIBS ${AM_LINK_LIBS} ${CommonAPI_LIBRARY})
-    if(${COMMONAPI_USED_BINDING} EQUAL 0)
-       set (AM_LINK_LIBS ${AM_LINK_LIBS} 
-                        ${CommonAPI-DBus_LIBRARY}
-                        ${DBUS_LIBRARIES}
-                        ${CommonAPI_LIBRARY})
-   else()
-       set (AM_LINK_LIBS ${AM_LINK_LIBS} 
-                        ${CommonAPI-SomeIP_LIBRARY}
-                        ${CommonAPI_LIBRARY})
-   endif()
-   
 endif(WITH_CAPI_WRAPPER)
-
-if(WITH_NSM)
-    if(WITH_DBUS_WRAPPER)
-        set (AUDIOMAN_SRCS_CXX
-            ${AUDIOMAN_SRCS_CXX}
-            src/CAmNodeStateCommunicatorDBus.cpp)
-    else(WITH_DBUS_WRAPPER)
-            set (AUDIOMAN_SRCS_CXX
-            ${AUDIOMAN_SRCS_CXX}
-            src/CAmNodeStateCommunicatorCAPI.cpp)
-    endif(WITH_DBUS_WRAPPER)
-endif(WITH_NSM)
 
 if(WITH_DATABASE_STORAGE)
     set (AUDIOMAN_SRCS_CXX
@@ -150,47 +126,13 @@ INCLUDE_DIRECTORIES(
 	${AUDIOMANAGER_INCLUDE_FOLDER}
 	${AUDIOMANAGER_UTILITIES_INCLUDE}
 	${INCLUDE_FOLDER}
-	${NSM_INCLUDE_DIR}
 	${TCLAP_INCLUDE_DIR}
 )
 
 if(WITH_CAPI_WRAPPER)
-    if(WITH_NSM)
-    	IF(${COMMONAPI_USED_BINDING} EQUAL 1)#SomeIP
-	  		SET(SRC_GEN src-gen/v${COMMONAPI_SOMEIP_VERSION_NUMBER}/someip)
-		ELSE()#Dbus
-	   		SET(SRC_GEN src-gen/v${COMMONAPI_DBUS_VERSION_NUMBER}/dbus)
-		ENDIF()
-        COMMON_API_GENERATE_SOURCES(
-                            TARGET COMMON_API
-                            # A list with fidls for the generic generator.
-                            FIDLS_GENERIC fidls/NodeStateManager.fdepl          
-                            # A list with fidls for the binding generator.
-                            FIDLS_BINDING fidls/NodeStateManager.fdepl          
-                            # A relative path to the build directory or an absolute path.
-                            DESTINATION ${SRC_GEN}                                 
-                            # An alternative relative/absolute path with common-api sources, usually in the source tree.
-                            ALT_DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/src-gen 
-                            )                                               
-                            
-        set(AUDIOMAN_SRCS_CXX 
-            ${AUDIOMAN_SRCS_CXX} 
-            ${COMMON_API_GEN_SOURCES})
-    endif(WITH_NSM)
-    
-    if(${COMMONAPI_USED_BINDING} EQUAL 0)
-        INCLUDE_DIRECTORIES(${INCLUDE_DIRECTORIES}
-                ${COMMONAPI_DBUS_INCLUDE_DIRS}
-                ${COMMONAPI_INCLUDE_DIRS}
-                ${COMMON_API_GEN_INCLUDE_DIR}
-                ${DBUS_INCLUDE_DIRS})	
-   else()
-       INCLUDE_DIRECTORIES(${INCLUDE_DIRECTORIES}
-               ${VSOMEIP_INCLUDE_DIRS}
-               ${COMMONAPI_INCLUDE_DIRS}
-               ${COMMONAPI_SOMEIP_INCLUDE_DIRS}
-               ${COMMON_API_GEN_INCLUDE_DIR})
-   endif()
+  
+INCLUDE_DIRECTORIES(${INCLUDE_DIRECTORIES}
+                ${COMMONAPI_INCLUDE_DIRS})	
 endif(WITH_CAPI_WRAPPER)
 
 if(WITH_DLT)
