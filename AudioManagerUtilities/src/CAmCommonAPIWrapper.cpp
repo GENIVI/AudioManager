@@ -46,12 +46,11 @@ CAmCommonAPIWrapper::CAmCommonAPIWrapper(CAmSocketHandler* socketHandler, const 
 		        mWatchToCheck(NULL)
 {
 	assert(NULL!=socketHandler);
-
-	//Get the runtime
+//Get the runtime
 	CommonAPI::Runtime::setProperty("LogContext", "AMCAPI");
 	mRuntime = CommonAPI::Runtime::get();
-	logInfo("CommonAPI runtime has been loaded! Default Binding is", mRuntime->getDefaultBinding());
 	assert(NULL!=mRuntime);
+	logInfo("CommonAPI runtime has been loaded! Default Binding is", mRuntime->getDefaultBinding());
 
 	//Create the context
 	if(applicationName.size())
@@ -60,17 +59,6 @@ CAmCommonAPIWrapper::CAmCommonAPIWrapper(CAmSocketHandler* socketHandler, const 
 		mContext = std::make_shared<CommonAPI::MainLoopContext>();
 	assert(NULL!=mContext);
 	logInfo("CommonAPI main loop context with name '", mContext->getName(), "' has been created!");
-
-//	#if COMMONAPI_USED_BINDING > 0
-//		mFactory = CommonAPI::SomeIP::Factory::get();
-//		assert(mFactory);
-//		mRuntime->registerFactory("someip", mFactory);
-//	#else
-//		mFactory = CommonAPI::DBus::Factory::get();
-//		assert(mFactory);
-//		mRuntime->registerFactory("dbus", mFactory);
-//	#endif
-
 
 //Make subscriptions
 	mDispatchSourceListenerSubscription = mContext->subscribeForDispatchSources(
@@ -89,9 +77,7 @@ CAmCommonAPIWrapper::~CAmCommonAPIWrapper()
 	mContext->unsubscribeForDispatchSources(mDispatchSourceListenerSubscription);
 	mContext->unsubscribeForWatches(mWatchListenerSubscription);
 	mContext->unsubscribeForTimeouts(mTimeoutSourceListenerSubscription);
-	mFactory.reset();
 	mContext.reset();
-	mRuntime.reset();
 	mpSocketHandler = NULL;
 	mWatchToCheck = NULL;
 }

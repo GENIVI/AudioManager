@@ -65,7 +65,7 @@ option ( WITH_CAPI_WRAPPER
 	"Build with commonapi wrapper" ON)
 	
 option ( WITH_DBUS_WRAPPER
-	"Build with Dbus wrapper" ON)	
+	"Build with Dbus wrapper" OFF)	
     
 set (WITH_COMMON_API_GEN ON CACHE INTERNAL "hide this!" FORCE)
  

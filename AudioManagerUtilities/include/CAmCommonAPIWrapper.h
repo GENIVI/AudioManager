@@ -26,10 +26,18 @@
 #include <memory>
 #include <cassert>
 #include <CommonAPI/CommonAPI.hpp>
+#ifndef COMMONAPI_INTERNAL_COMPILATION
+#define COMMONAPI_INTERNAL_COMPILATION
+#include <CommonAPI/MainLoopContext.hpp>
+#undef COMMONAPI_INTERNAL_COMPILATION
+#endif
 #include <CommonAPI/Utils.hpp>
 #include "audiomanagerconfig.h"
 #include "CAmSocketHandler.h"
 
+#if COMMONAPI_VERSION_NUMBER < 300
+#error "CommonAPI versions < 300 are not supported."
+#endif
 
 /**
  * A Common-API wrapper class, which loads the common-api runtime and instantiates all necessary objects.
@@ -262,14 +270,6 @@ public:
 		return buildProxy<ProxyClass>(parts[0], parts[2]);
 	}
 
-	/**The following code is deprecated and it might be unavailable in future versions!
-	 * Compatibility to versions prior 3.0.0
-	 */
-private:
-	std::shared_ptr<CommonAPI::Factory> mFactory;
-public:
-	std::shared_ptr<CommonAPI::Factory> __attribute__((deprecated)) factory() const { return mFactory; };
-	std::shared_ptr<CommonAPI::Runtime> __attribute__((deprecated)) runtime() const { return mRuntime; };
 };
 
 
