@@ -25,7 +25,6 @@
 
 #include "CAmDltWrapper.h"
 #include <string>
-#include <sstream>
 #include <iostream>
 #include <string.h>
 
@@ -227,22 +226,9 @@ void CAmDltWrapper::append(const uint32_t value)
 #endif
 }
 
-void CAmDltWrapper::append(const char*& value)
-{
-#ifdef WITH_DLT
-    dlt_user_log_write_string(&mDltContextData, value);
-#else
-    mDltContextData.buffer << value;
-#endif
-}
-
 void CAmDltWrapper::append(const std::string& value)
 {
-#ifdef WITH_DLT
-    dlt_user_log_write_string(&mDltContextData, value.c_str());
-#else
-    mDltContextData.buffer << value;
-#endif
+	append(value.c_str());
 }
 
 void CAmDltWrapper::append(const bool value)
@@ -270,90 +256,6 @@ void CAmDltWrapper::append(const uint64_t value)
 #else
     appendNoDLT(value);
 #endif
-}
-
-void CAmDltWrapper::append(const am_Error_e value)
-{
-	switch (value)
-	{
-		case am_Error_e::E_OK:
-			#ifdef WITH_DLT
-				dlt_user_log_write_string(&mDltContextData, "E_OK");
-			#else
-				mDltContextData.buffer << "E_OK";
-			#endif
-			break;
-		case am_Error_e::E_ABORTED:
-			#ifdef WITH_DLT
-				dlt_user_log_write_string(&mDltContextData, "E_ABORTED");
-			#else
-				mDltContextData.buffer << "E_ABORTED";
-			#endif
-			break;
-		case am_Error_e::E_ALREADY_EXISTS:
-			#ifdef WITH_DLT
-				dlt_user_log_write_string(&mDltContextData, "E_ALREADY_EXISTS");
-			#else
-				mDltContextData.buffer << "E_ALREADY_EXISTS";
-			#endif
-			break;
-		case am_Error_e::E_DATABASE_ERROR:
-			#ifdef WITH_DLT
-				dlt_user_log_write_string(&mDltContextData, "E_DATABASE_ERROR");
-			#else
-				mDltContextData.buffer << "E_DATABASE_ERROR";
-			#endif
-			break;
-		case am_Error_e::E_NON_EXISTENT:
-			#ifdef WITH_DLT
-				dlt_user_log_write_string(&mDltContextData, "E_NON_EXISTENT");
-			#else
-				mDltContextData.buffer << "E_NON_EXISTENT";
-			#endif
-			break;
-		case am_Error_e::E_NOT_POSSIBLE:
-			#ifdef WITH_DLT
-				dlt_user_log_write_string(&mDltContextData, "E_NOT_POSSIBLE");
-			#else
-				mDltContextData.buffer << "E_NOT_POSSIBLE";
-			#endif
-			break;
-		case am_Error_e::E_NOT_USED:
-			#ifdef WITH_DLT
-				dlt_user_log_write_string(&mDltContextData, "E_NOT_USED");
-			#else
-				mDltContextData.buffer << "E_NOT_USED";
-			#endif
-			break;
-		case am_Error_e::E_NO_CHANGE:
-			#ifdef WITH_DLT
-				dlt_user_log_write_string(&mDltContextData, "E_NO_CHANGE");
-			#else
-				mDltContextData.buffer << "E_NO_CHANGE";
-			#endif
-			break;
-		case am_Error_e::E_OUT_OF_RANGE:
-			#ifdef WITH_DLT
-				dlt_user_log_write_string(&mDltContextData, "E_OUT_OF_RANGE");
-			#else
-				mDltContextData.buffer << "E_OUT_OF_RANGE";
-			#endif
-			break;
-		case am_Error_e::E_UNKNOWN:
-			#ifdef WITH_DLT
-				dlt_user_log_write_string(&mDltContextData, "E_UNKNOWN");
-			#else
-				mDltContextData.buffer << "E_UNKNOWN";
-			#endif
-			break;
-		default:
-			#ifdef WITH_DLT
-				dlt_user_log_write_string(&mDltContextData, "E_UNKNOWN");
-			#else
-				mDltContextData.buffer << "E_UNKNOWN";
-			#endif
-
-	}
 }
 
 void CAmDltWrapper::append(const std::vector<uint8_t> & data)

@@ -20,6 +20,7 @@
 
 #include <string>
 #include <pthread.h>
+#include <sstream>
 #include <audiomanagerconfig.h>
 #include "audiomanagertypes.h"
 
@@ -122,11 +123,63 @@ public:
     void append(const uint32_t value);
     void append(const uint64_t value);
     void append(const int64_t value);
-    void append(const char*& value);
     void append(const std::string& value);
     void append(const bool value);
-    void append(const am_Error_e value);
     void append(const std::vector<uint8_t> & data);
+
+    // specialization for const char*
+    template<typename T = const char*> void append(const char* value)
+    {
+    #ifdef WITH_DLT
+        dlt_user_log_write_string(&mDltContextData, value);
+    #else
+        mDltContextData.buffer << value;
+    #endif
+    }
+
+    // specialization for const am_Error_e
+    template<typename T = const am_Error_e> void CAmDltWrapper::append(const am_Error_e value)
+    {
+        const char* str_error[E_MAX] = {
+            "E_OK",
+            "E_UNKNOWN",
+            "E_OUT_OF_RANGE",
+            "E_NOT_USED",
+            "E_DATABASE_ERROR",
+            "E_ALREADY_EXISTS",
+            "E_NO_CHANGE",
+            "E_NOT_POSSIBLE",
+            "E_NON_EXISTENT",
+            "E_ABORTED",
+            "E_WRONG_FORMAT"
+        };
+        append(str_error[value]);
+    }
+
+    // Template to print unknown pointer types with their address
+    template<typename T> void append(T* value)
+    {
+        std::ostringstream ss;
+        ss << "0x" << std::hex << (uint64_t)value;
+        append(ss.str().c_str());
+    }
+
+    // Template to print unknown types
+    template<typename T> void append(T value)
+    {
+        std::ostringstream ss;
+        ss << std::dec << value;
+        append(ss.str().c_str());
+    }
+
+    // Template parameter pack to generate recursive code
+    void append(void) {}
+    template<typename T, typename... TArgs> void append(T value, TArgs... args)
+    {
+        this->append(value);
+        this->append(args...);
+    }
+
 #ifndef WITH_DLT
     void enableNoDLTDebug(const bool enableNoDLTDebug = true);
 #endif
@@ -154,776 +207,55 @@ inline CAmDltWrapper* getWrapper()
 }
 
 /**
- * logs a given value with infolevel with the default context
+ * logs given values with debuglevel with the default context
  * @param value
+ * @param ...
  */
-template<typename T> void logInfo(T value)
+template<typename T, typename... TArgs>
+void logDebug(T value, TArgs... args)
 {
-    CAmDltWrapper* inst(getWrapper());
-    if (!inst->init(DLT_LOG_INFO))
-        return;
-    inst->append(value);
-    inst->send();
+    log(NULL, DLT_LOG_DEBUG, value, args...);
 }
 
 /**
- * logs a given value with infolevel with the default context
+ * logs given values with infolevel with the default context
  * @param value
- * @param value1mDltContext
+ * @param ...
  */
-template<typename T, typename T1> void logInfo(T value, T1 value1)
+template<typename T, typename... TArgs>
+void logInfo(T value, TArgs... args)
 {
-    CAmDltWrapper* inst(getWrapper());
-
-    if (!inst->init(DLT_LOG_INFO))
-        return;
-    inst->append(value);
-    inst->append(value1);
-    inst->send();
-
+    log(NULL, DLT_LOG_INFO, value, args...);
 }
 
 /**
- * logs a given value with infolevel with the default context
+ * logs given values with errorlevel with the default context
  * @param value
- * @param value1
- * @param value2
+ * @param ...
  */
-template<typename T, typename T1, typename T2> void logInfo(T value, T1 value1, T2 value2)
+template<typename T, typename... TArgs>
+void logError(T value, TArgs... args)
 {
-    CAmDltWrapper* inst(getWrapper());
-
-    if (!inst->init(DLT_LOG_INFO))
-        return;
-    inst->append(value);
-    inst->append(value1);
-    inst->append(value2);
-    inst->send();
-
+    log(NULL, DLT_LOG_ERROR, value, args...);
 }
 
 /**
- * logs a given value with infolevel with the default context
- * @param value
- * @param value1
- * @param value2
- * @param value3
- */
-template<typename T, typename T1, typename T2, typename T3> void logInfo(T value, T1 value1, T2 value2, T3 value3)
-{
-    CAmDltWrapper* inst(getWrapper());
-
-    if (!inst->init(DLT_LOG_INFO))
-        return;
-    inst->append(value);
-    inst->append(value1);
-    inst->append(value2);
-    inst->append(value3);
-    inst->send();
-
-}
-
-/**
- * logs a given value with infolevel with the default context
- * @param value
- * @param value1
- * @param value2
- * @param value3
- * @param value4
- */
-template<typename T, typename T1, typename T2, typename T3, typename T4> void logInfo(T value, T1 value1, T2 value2, T3 value3, T4 value4)
-{
-    CAmDltWrapper* inst(getWrapper());
-
-    if (!inst->init(DLT_LOG_INFO))
-        return;
-    inst->append(value);
-    inst->append(value1);
-    inst->append(value2);
-    inst->append(value3);
-    inst->append(value4);
-    inst->send();
-
-}
-
-/**
- * logs a given value with infolevel with the default context
- * @param value
- * @param value1
- * @param value2
- * @param value3
- * @param value4
- * @param value5
- */
-template<typename T, typename T1, typename T2, typename T3, typename T4, typename T5> void logInfo(T value, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5)
-{
-    CAmDltWrapper* inst(getWrapper());
-
-    if (!inst->init(DLT_LOG_INFO))
-        return;
-    inst->append(value);
-    inst->append(value1);
-    inst->append(value2);
-    inst->append(value3);
-    inst->append(value4);
-    inst->append(value5);
-    inst->send();
-
-}
-
-/**
- * logs a given value with infolevel with the default context
- * @param value
- * @param value1
- * @param value2
- * @param value3
- * @param value4
- * @param value5
- * @param value6
- */
-template<typename T, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6> void logInfo(T value, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5, T6 value6)
-{
-    CAmDltWrapper* inst(getWrapper());
-
-    if (!inst->init(DLT_LOG_INFO))
-        return;
-    inst->append(value);
-    inst->append(value1);
-    inst->append(value2);
-    inst->append(value3);
-    inst->append(value4);
-    inst->append(value5);
-    inst->append(value6);
-    inst->send();
-
-}
-
-/**
- * logs a given value with infolevel with the default context
- * @param value
- * @param value1
- * @param value2
- * @param value3
- * @param value4
- * @param value5
- * @param value6
- * @param value7
- */
-template<typename T, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7> void logInfo(T value, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5, T6 value6, T7 value7)
-{
-    CAmDltWrapper* inst(getWrapper());
-
-    if (!inst->init(DLT_LOG_INFO))
-        return;
-    inst->append(value);
-    inst->append(value1);
-    inst->append(value2);
-    inst->append(value3);
-    inst->append(value4);
-    inst->append(value5);
-    inst->append(value6);
-    inst->append(value7);
-    inst->send();
-
-}
-
-/**
- * logs a given value with infolevel with the default context
- * @param value
- * @param value1
- * @param value2
- * @param value3
- * @param value4
- * @param value5
- * @param value6
- * @param value7
- * @param value8
- */
-template<typename T, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8> void logInfo(T value, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5, T6 value6, T7 value7, T8 value8)
-{
-    CAmDltWrapper* inst(getWrapper());
-
-    if (!inst->init(DLT_LOG_INFO))
-        return;
-    inst->append(value);
-    inst->append(value1);
-    inst->append(value2);
-    inst->append(value3);
-    inst->append(value4);
-    inst->append(value5);
-    inst->append(value6);
-    inst->append(value7);
-    inst->append(value8);
-    inst->send();
-
-}
-
-/**
- * logs a given value with infolevel with the default context
- * @param value
- * @param value1
- * @param value2
- * @param value3
- * @param value4
- * @param value5
- * @param value6
- * @param value7
- * @param value8
- * @param value9
- */
-template<typename T, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9> void logInfo(T value, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5, T6 value6, T7 value7, T8 value8, T9 value9)
-{
-    CAmDltWrapper* inst(getWrapper());
-
-    if (!inst->init(DLT_LOG_INFO))
-        return;
-    inst->append(value);
-    inst->append(value1);
-    inst->append(value2);
-    inst->append(value3);
-    inst->append(value4);
-    inst->append(value5);
-    inst->append(value6);
-    inst->append(value7);
-    inst->append(value8);
-    inst->append(value9);
-    inst->send();
-
-}
-
-/**
- * logs a given value with infolevel with the default context
- * @param value
- * @param value1
- * @param value2
- * @param value3
- * @param value4
- * @param value5
- * @param value6
- * @param value7
- * @param value8
- * @param value9
- * @param value10
- */
-template<typename T, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9, typename T10> void logInfo(T value, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5, T6 value6, T7 value7, T8 value8, T9 value9, T10 value10)
-{
-    CAmDltWrapper* inst(getWrapper());
-
-    if (!inst->init(DLT_LOG_INFO))
-        return;
-    inst->append(value);
-    inst->append(value1);
-    inst->append(value2);
-    inst->append(value3);
-    inst->append(value4);
-    inst->append(value5);
-    inst->append(value6);
-    inst->append(value7);
-    inst->append(value8);
-    inst->append(value9);
-    inst->append(value10);
-    inst->send();
-
-}
-
-/**
- * logs a given value with errorlevel with the default context
- * @param value
- */
-template<typename T> void logError(T value)
-{
-    CAmDltWrapper* inst(getWrapper());
-
-    if (!inst->init(DLT_LOG_ERROR))
-        return;
-    inst->append(value);
-    inst->send();
-
-}
-
-/**
- * logs a given value with errorlevel with the default context
- * @param value
- * @param value1
- */
-template<typename T, typename T1> void logError(T value, T1 value1)
-{
-    CAmDltWrapper* inst(getWrapper());
-
-    if (!inst->init(DLT_LOG_ERROR))
-        return;
-    inst->append(value);
-    inst->append(value1);
-    inst->send();
-
-}
-
-/**
- * logs a given value with errorlevel with the default context
- * @param value
- * @param value1
- * @param value2
- */
-template<typename T, typename T1, typename T2> void logError(T value, T1 value1, T2 value2)
-{
-    CAmDltWrapper* inst(getWrapper());
-
-    if (!inst->init(DLT_LOG_ERROR))
-        return;
-    inst->append(value);
-    inst->append(value1);
-    inst->append(value2);
-    inst->send();
-
-}
-
-/**
- * logs a given value with errorlevel with the default context
- * @param value
- * @param value1
- * @param value2
- * @param value3
- */
-template<typename T, typename T1, typename T2, typename T3> void logError(T value, T1 value1, T2 value2, T3 value3)
-{
-    CAmDltWrapper* inst(getWrapper());
-
-    if (!inst->init(DLT_LOG_ERROR))
-        return;
-    inst->append(value);
-    inst->append(value1);
-    inst->append(value2);
-    inst->append(value3);
-    inst->send();
-
-}
-
-/**
- * logs a given value with errorlevel with the default context
- * @param value
- * @param value1
- * @param value2
- * @param value3
- * @param value4
- */
-template<typename T, typename T1, typename T2, typename T3, typename T4> void logError(T value, T1 value1, T2 value2, T3 value3, T4 value4)
-{
-    CAmDltWrapper* inst(getWrapper());
-
-    if (!inst->init(DLT_LOG_ERROR))
-        return;
-    inst->append(value);
-    inst->append(value1);
-    inst->append(value2);
-    inst->append(value3);
-    inst->append(value4);
-    inst->send();
-
-}
-
-/**
- * logs a given value with errorlevel with the default context
- * @param value
- * @param value1
- * @param value2
- * @param value3
- * @param value4
- * @param value5
- */
-template<typename T, typename T1, typename T2, typename T3, typename T4, typename T5> void logError(T value, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5)
-{
-    CAmDltWrapper* inst(getWrapper());
-
-    if (!inst->init(DLT_LOG_ERROR))
-        return;
-    inst->append(value);
-    inst->append(value1);
-    inst->append(value2);
-    inst->append(value3);
-    inst->append(value4);
-    inst->append(value5);
-    inst->send();
-
-}
-
-/**
- * logs a given value with errorlevel with the default context
- * @param value
- * @param value1
- * @param value2
- * @param value3
- * @param value4
- * @param value5
- * @param value6
- */
-template<typename T, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6> void logError(T value, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5, T6 value6)
-{
-    CAmDltWrapper* inst(getWrapper());
-
-    if (!inst->init(DLT_LOG_ERROR))
-        return;
-    inst->append(value);
-    inst->append(value1);
-    inst->append(value2);
-    inst->append(value3);
-    inst->append(value4);
-    inst->append(value5);
-    inst->append(value6);
-    inst->send();
-
-}
-
-/**
- * logs a given value with errorlevel with the default context
- * @param value
- * @param value1
- * @param value2
- * @param value3
- * @param value4
- * @param value5
- * @param value6
- * @param value7
- */
-template<typename T, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7> void logError(T value, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5, T6 value6, T7 value7)
-{
-    CAmDltWrapper* inst(getWrapper());
-
-    if (!inst->init(DLT_LOG_ERROR))
-        return;
-    inst->append(value);
-    inst->append(value1);
-    inst->append(value2);
-    inst->append(value3);
-    inst->append(value4);
-    inst->append(value5);
-    inst->append(value6);
-    inst->append(value7);
-    inst->send();
-
-}
-
-/**
- * logs a given value with errorlevel with the default context
- * @param value
- * @param value1
- * @param value2
- * @param value3
- * @param value4
- * @param value5
- * @param value6
- * @param value7
- * @param value8
- */
-template<typename T, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8> void logError(T value, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5, T6 value6, T7 value7, T8 value8)
-{
-    CAmDltWrapper* inst(getWrapper());
-
-    if (!inst->init(DLT_LOG_ERROR))
-        return;
-    inst->append(value);
-    inst->append(value1);
-    inst->append(value2);
-    inst->append(value3);
-    inst->append(value4);
-    inst->append(value5);
-    inst->append(value6);
-    inst->append(value7);
-    inst->append(value8);
-    inst->send();
-
-}
-
-/**
- * logs a given value with errorlevel with the default context
- * @param value
- * @param value1
- * @param value2
- * @param value3
- * @param value4
- * @param value5
- * @param value6
- * @param value7
- * @param value8
- * @param value9
- */
-template<typename T, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9> void logError(T value, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5, T6 value6, T7 value7, T8 value8, T9 value9)
-{
-    CAmDltWrapper* inst(getWrapper());
-
-    if (!inst->init(DLT_LOG_ERROR))
-        return;
-    inst->append(value);
-    inst->append(value1);
-    inst->append(value2);
-    inst->append(value3);
-    inst->append(value4);
-    inst->append(value5);
-    inst->append(value6);
-    inst->append(value7);
-    inst->append(value8);
-    inst->append(value9);
-    inst->send();
-
-}
-
-/**
- * logs a given value with errorlevel with the default context
- * @param value
- * @param value1
- * @param value2
- * @param value3
- * @param value4
- * @param value5
- * @param value6
- * @param value7
- * @param value8
- * @param value9
- * @param value10
- */
-template<typename T, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9, typename T10> void logError(T value, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5, T6 value6, T7 value7, T8 value8, T9 value9, T10 value10)
-{
-    CAmDltWrapper* inst(getWrapper());
-
-    if (!inst->init(DLT_LOG_ERROR))
-        return;
-    inst->append(value);
-    inst->append(value1);
-    inst->append(value2);
-    inst->append(value3);
-    inst->append(value4);
-    inst->append(value5);
-    inst->append(value6);
-    inst->append(value7);
-    inst->append(value8);
-    inst->append(value9);
-    inst->append(value10);
-    inst->send();
-
-}
-
-/**
- * logs a given value with a given context (register first!) and given loglevel
+ * logs given values with a given context (register first!) and given loglevel
  * @param context
  * @param loglevel
  * @param value
+ * @param ...
  */
-template<typename T> void log(DltContext* const context, DltLogLevelType loglevel, T value)
+template<typename T, typename... TArgs>
+void log(DltContext* const context, DltLogLevelType loglevel, T value, TArgs... args)
 {
     CAmDltWrapper* inst(getWrapper());
 
     if (!inst->init(loglevel, context))
         return;
     inst->append(value);
+    inst->append(args...);
     inst->send();
-
-}
-
-/**
- * logs a given value with a given context (register first!) and given loglevel
- * @param context
- * @param loglevel
- * @param value
- * @param value1
- */
-template<typename T, typename T1> void log(DltContext* const context, DltLogLevelType loglevel, T value, T1 value1)
-{
-    CAmDltWrapper* inst(getWrapper());
-
-    if (!inst->init(loglevel, context))
-        return;
-    inst->append(value);
-    inst->append(value1);
-    inst->send();
-
-}
-
-/**
- * logs a given value with a given context (register first!) and given loglevel
- * @param context
- * @param loglevel
- * @param value
- * @param value1
- * @param value2
- */
-template<typename T, typename T1, typename T2> void log(DltContext* const context, DltLogLevelType loglevel, T value, T1 value1, T2 value2)
-{
-    CAmDltWrapper* inst(getWrapper());
-
-    if (!inst->init(loglevel, context))
-        return;
-    inst->append(value);
-    inst->append(value1);
-    inst->append(value2);
-    inst->send();
-
-}
-
-/**
- * logs a given value with a given context (register first!) and given loglevel
- * @param context
- * @param loglevel
- * @param value
- * @param value1
- * @param value2
- * @param value3
- */
-template<typename T, typename T1, typename T2, typename T3> void log(DltContext* const context, DltLogLevelType loglevel, T value, T1 value1, T2 value2, T3 value3)
-{
-    CAmDltWrapper* inst(getWrapper());
-
-    if (!inst->init(loglevel, context))
-        return;
-    inst->append(value);
-    inst->append(value1);
-    inst->append(value2);
-    inst->append(value3);
-    inst->send();
-
-}
-
-/**
- * logs a given value with a given context (register first!) and given loglevel
- * @param context
- * @param loglevel
- * @param value
- * @param value1
- * @param value2
- * @param value3
- * @param value4
- */
-template<typename T, typename T1, typename T2, typename T3, typename T4> void log(DltContext* const context, DltLogLevelType loglevel, T value, T1 value1, T2 value2, T3 value3, T4 value4)
-{
-    CAmDltWrapper* inst(getWrapper());
-
-    if (!inst->init(loglevel, context))
-        return;
-    inst->append(value);
-    inst->append(value1);
-    inst->append(value2);
-    inst->append(value3);
-    inst->append(value4);
-    inst->send();
-
-}
-
-/**
- * logs a given value with a given context (register first!) and given loglevel
- * @param context
- * @param loglevel
- * @param value
- * @param value1
- * @param value2
- * @param value3
- * @param value4
- * @param value5
- */
-template<typename T, typename T1, typename T2, typename T3, typename T4, typename T5> void log(DltContext* const context, DltLogLevelType loglevel, T value, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5)
-{
-    CAmDltWrapper* inst(getWrapper());
-
-    if (!inst->init(loglevel, context))
-        return;
-    inst->append(value);
-    inst->append(value1);
-    inst->append(value2);
-    inst->append(value3);
-    inst->append(value4);
-    inst->append(value5);
-    inst->send();
-
-}
-
-/**
- * logs a given value with a given context (register first!) and given loglevel
- * @param context
- * @param loglevel
- * @param value
- * @param value1
- * @param value2
- * @param value3
- * @param value4
- * @param value5
- * @param value6
- */
-template<typename T, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6> void log(DltContext* const context, DltLogLevelType loglevel, T value, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5, T6 value6)
-{
-    CAmDltWrapper* inst(getWrapper());
-
-    if (!inst->init(loglevel, context))
-        return;
-    inst->append(value);
-    inst->append(value1);
-    inst->append(value2);
-    inst->append(value3);
-    inst->append(value4);
-    inst->append(value5);
-    inst->append(value6);
-    inst->send();
-
-}
-
-/**
- * logs a given value with a given context (register first!) and given loglevel
- * @param context
- * @param loglevel
- * @param value
- * @param value1
- * @param value2
- * @param value3
- * @param value4
- * @param value5
- * @param value6
- * @param value7
- */
-template<typename T, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7> void log(DltContext* const context, DltLogLevelType loglevel, T value, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5, T6 value6, T7 value7)
-{
-    CAmDltWrapper* inst(getWrapper());
-
-    if (!inst->init(loglevel, context))
-        return;
-    inst->append(value);
-    inst->append(value1);
-    inst->append(value2);
-    inst->append(value3);
-    inst->append(value4);
-    inst->append(value5);
-    inst->append(value6);
-    inst->append(value7);
-    inst->send();
-
-}
-
-/**
- * logs a given value with a given context (register first!) and given loglevel
- * @param context
- * @param loglevel
- * @param value
- * @param value1
- * @param value2
- * @param value3
- * @param value4
- * @param value5
- * @param value6
- * @param value7
- * @param value8
- */
-template<typename T, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8> void log(DltContext* const context, DltLogLevelType loglevel, T value, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5, T6 value6, T7 value7, T8 value8)
-{
-    CAmDltWrapper* inst(getWrapper());
-
-    if (!inst->init(loglevel, context))
-        return;
-    inst->append(value);
-    inst->append(value1);
-    inst->append(value2);
-    inst->append(value3);
-    inst->append(value4);
-    inst->append(value5);
-    inst->append(value6);
-    inst->append(value7);
-    inst->append(value8);
-    inst->send();
-
 }
 
 }
