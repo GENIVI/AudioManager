@@ -73,7 +73,6 @@
 
 
 using namespace am;
-DLT_DECLARE_CONTEXT(AudioManager)
 
 //we need these because we parse them beforehand.
 std::vector<std::string> listCommandPluginDirs;
@@ -275,7 +274,6 @@ void mainProgram(int argc, char *argv[])
 	}
 
     CAmDltWrapper::instance(enableNoDLTDebug.getValue())->registerApp("AudioManagerDeamon", "AudioManagerDeamon");
-    CAmDltWrapper::instance()->registerContext(AudioManager, "Main", "Main Context");
 
     //Instantiate all classes. Keep in same order !
     CAmSocketHandler iSocketHandler;
