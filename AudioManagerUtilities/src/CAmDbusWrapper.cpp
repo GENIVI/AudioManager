@@ -108,8 +108,8 @@ CAmDbusWrapper::CAmDbusWrapper(CAmSocketHandler* socketHandler, DBusBusType type
 
     //register callback for Introspectio
     mObjectPathVTable.message_function = CAmDbusWrapper::cbRootIntrospection;
-    dbus_connection_register_object_path(mpDbusConnection, objectPath, &mObjectPathVTable, this);
-    int ret = dbus_bus_request_name(mpDbusConnection, prefix, DBUS_NAME_FLAG_DO_NOT_QUEUE, &mDBusError);
+    dbus_connection_register_object_path(mpDbusConnection, objectPath.c_str(), &mObjectPathVTable, this);
+    int ret = dbus_bus_request_name(mpDbusConnection, prefix.c_str(), DBUS_NAME_FLAG_DO_NOT_QUEUE, &mDBusError);
     if (DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER == ret)
     {
 		logInfo("DBusWrapper::DBusWrapper We own", prefix);

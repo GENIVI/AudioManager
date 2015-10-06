@@ -128,7 +128,7 @@ public:
     void append(const std::vector<uint8_t> & data);
 
     // specialization for const char*
-    template<typename T = const char*> void append(const char* value)
+    template<typename T = const char*&> void append(const char*& value)
     {
     #ifdef WITH_DLT
         dlt_user_log_write_string(&mDltContextData, value);
@@ -138,7 +138,7 @@ public:
     }
 
     // specialization for const am_Error_e
-    template<typename T = const am_Error_e> void CAmDltWrapper::append(const am_Error_e value)
+    template<typename T = const am_Error_e> void append(const am_Error_e value)
     {
         const char* str_error[E_MAX] = {
             "E_OK",
@@ -207,6 +207,25 @@ inline CAmDltWrapper* getWrapper()
 }
 
 /**
+ * logs given values with a given context (register first!) and given loglevel
+ * @param context
+ * @param loglevel
+ * @param value
+ * @param ...
+ */
+template<typename T, typename... TArgs>
+void log(DltContext* const context, DltLogLevelType loglevel, T value, TArgs... args)
+{
+    CAmDltWrapper* inst(getWrapper());
+
+    if (!inst->init(loglevel, context))
+        return;
+    inst->append(value);
+    inst->append(args...);
+    inst->send();
+}
+
+/**
  * logs given values with debuglevel with the default context
  * @param value
  * @param ...
@@ -236,26 +255,7 @@ void logInfo(T value, TArgs... args)
 template<typename T, typename... TArgs>
 void logError(T value, TArgs... args)
 {
-    log(NULL, DLT_LOG_ERROR, value, args...);
-}
-
-/**
- * logs given values with a given context (register first!) and given loglevel
- * @param context
- * @param loglevel
- * @param value
- * @param ...
- */
-template<typename T, typename... TArgs>
-void log(DltContext* const context, DltLogLevelType loglevel, T value, TArgs... args)
-{
-    CAmDltWrapper* inst(getWrapper());
-
-    if (!inst->init(loglevel, context))
-        return;
-    inst->append(value);
-    inst->append(args...);
-    inst->send();
+    log(NULL, DLT_LOG_ERROR,value,args...);
 }
 
 }
