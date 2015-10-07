@@ -128,7 +128,7 @@ public:
     void append(const std::vector<uint8_t> & data);
 
     // specialization for const char*
-    template<typename T = const char*&> void append(const char*& value)
+    template<typename T = const char*> void append(const char* value)
     {
     #ifdef WITH_DLT
         dlt_user_log_write_string(&mDltContextData, value);
