@@ -205,6 +205,7 @@ am_Error_e CAmRoutingSender::asyncAbort(const am_Handle_s& handle)
     iter = mMapHandleInterface.find(handle.handle);
     if (iter != mMapHandleInterface.end())
     {
+    	removeHandle(handle);
         return (iter->second->asyncAbort(handle));
     }
 
@@ -222,7 +223,15 @@ am_Error_e CAmRoutingSender::asyncConnect(am_Handle_s& handle, const am_connecti
         handle = createHandle(handleData, H_CONNECT);
         mMapConnectionInterface.insert(std::make_pair(connectionID, iter->second));
         mMapHandleInterface.insert(std::make_pair(+ handle.handle, iter->second));
-        return (iter->second->asyncConnect(handle, connectionID, sourceID, sinkID, connectionFormat));
+        am_Error_e syncError(iter->second->asyncConnect(handle, connectionID, sourceID, sinkID, connectionFormat));
+
+        if (syncError)
+        {
+        	removeHandle(handle);
+        	removeConnectionLookup(connectionID);
+        }
+        return(syncError);
+
     }
 
     return (E_NON_EXISTENT);
@@ -238,8 +247,12 @@ am_Error_e CAmRoutingSender::asyncDisconnect(am_Handle_s& handle, const am_conne
         handleData.connectionID = connectionID;
         handle = createHandle(handleData, H_DISCONNECT);
         mMapHandleInterface.insert(std::make_pair(+ handle.handle, iter->second));
-        am_Error_e returnVal = iter->second->asyncDisconnect(handle, connectionID);
-        return (returnVal);
+        am_Error_e syncError(iter->second->asyncDisconnect(handle, connectionID));
+        if (syncError)
+        {
+        	removeHandle(handle);
+        }
+        return(syncError);
     }
 
     return (E_NON_EXISTENT);
@@ -256,7 +269,12 @@ am_Error_e CAmRoutingSender::asyncSetSinkVolume(am_Handle_s& handle, const am_si
         handleData.volume = volume;
         handle = createHandle(handleData, H_SETSINKVOLUME);
         mMapHandleInterface.insert(std::make_pair(+ handle.handle, iter->second));
-        return (iter->second->asyncSetSinkVolume(handle, sinkID, volume, ramp, time));
+        am_Error_e syncError(iter->second->asyncSetSinkVolume(handle, sinkID, volume, ramp, time));
+        if (syncError)
+        {
+        	removeHandle(handle);
+        }
+        return(syncError);
     }
     return (E_NON_EXISTENT);
 }
@@ -272,7 +290,12 @@ am_Error_e CAmRoutingSender::asyncSetSourceVolume(am_Handle_s& handle, const am_
         handleData.volume = volume;
         handle = createHandle(handleData, H_SETSOURCEVOLUME);
         mMapHandleInterface.insert(std::make_pair(+ handle.handle, iter->second));
-        return (iter->second->asyncSetSourceVolume(handle, sourceID, volume, ramp, time));
+        am_Error_e syncError(iter->second->asyncSetSourceVolume(handle, sourceID, volume, ramp, time));
+        if (syncError)
+		{
+			removeHandle(handle);
+		}
+		return(syncError);
     }
     return (E_NON_EXISTENT);
 }
@@ -288,7 +311,12 @@ am_Error_e CAmRoutingSender::asyncSetSourceState(am_Handle_s& handle, const am_s
         handleData.sourceState = state;
         handle = createHandle(handleData, H_SETSOURCESTATE);
         mMapHandleInterface.insert(std::make_pair(+ handle.handle, iter->second));
-        return (iter->second->asyncSetSourceState(handle, sourceID, state));
+        am_Error_e syncError(iter->second->asyncSetSourceState(handle, sourceID, state));
+        if (syncError)
+		{
+			removeHandle(handle);
+		}
+		return(syncError);
     }
     return (E_NON_EXISTENT);
 }
@@ -304,7 +332,12 @@ am_Error_e CAmRoutingSender::asyncSetSinkSoundProperty(am_Handle_s& handle, cons
         handleData.soundPropery = soundProperty;
         handle = createHandle(handleData, H_SETSINKSOUNDPROPERTY);
         mMapHandleInterface.insert(std::make_pair(+ handle.handle, iter->second));
-        return (iter->second->asyncSetSinkSoundProperty(handle, sinkID, soundProperty));
+        am_Error_e syncError(iter->second->asyncSetSinkSoundProperty(handle, sinkID, soundProperty));
+        if (syncError)
+		{
+			removeHandle(handle);
+		}
+		return(syncError);
     }
     return (E_NON_EXISTENT);
 }
@@ -320,7 +353,12 @@ am_Error_e CAmRoutingSender::asyncSetSourceSoundProperty(am_Handle_s& handle, co
         handleData.soundPropery = soundProperty;
         handle = createHandle(handleData, H_SETSOURCESOUNDPROPERTY);
         mMapHandleInterface.insert(std::make_pair(+ handle.handle, iter->second));
-        return (iter->second->asyncSetSourceSoundProperty(handle, sourceID, soundProperty));
+        am_Error_e syncError(iter->second->asyncSetSourceSoundProperty(handle, sourceID, soundProperty));
+        if (syncError)
+		{
+			removeHandle(handle);
+		}
+		return(syncError);
     }
     return (E_NON_EXISTENT);
 }
@@ -336,7 +374,12 @@ am_Error_e CAmRoutingSender::asyncSetSourceSoundProperties(am_Handle_s& handle, 
         handleData.soundProperties = new std::vector<am_SoundProperty_s>(listSoundProperties);
         handle = createHandle(handleData, H_SETSOURCESOUNDPROPERTIES);
         mMapHandleInterface.insert(std::make_pair(+ handle.handle, iter->second));
-        return (iter->second->asyncSetSourceSoundProperties(handle, sourceID, listSoundProperties));
+        am_Error_e syncError(iter->second->asyncSetSourceSoundProperties(handle, sourceID, listSoundProperties));
+        if (syncError)
+		{
+			removeHandle(handle);
+		}
+		return(syncError);
     }
     return (E_NON_EXISTENT);
 }
@@ -352,7 +395,13 @@ am_Error_e CAmRoutingSender::asyncSetSinkSoundProperties(am_Handle_s& handle, co
         handleData.soundProperties = new std::vector<am_SoundProperty_s>(listSoundProperties);
         handle = createHandle(handleData, H_SETSINKSOUNDPROPERTIES);
         mMapHandleInterface.insert(std::make_pair(+ handle.handle, iter->second));
-        return (iter->second->asyncSetSinkSoundProperties(handle, sinkID, listSoundProperties));
+        am_Error_e syncError(iter->second->asyncSetSinkSoundProperties(handle, sinkID, listSoundProperties));
+        if (syncError)
+		{
+			removeHandle(handle);
+			delete handleData.soundProperties;
+		}
+		return(syncError);
     }
     return (E_NON_EXISTENT);
 
@@ -369,7 +418,12 @@ am_Error_e CAmRoutingSender::asyncCrossFade(am_Handle_s& handle, const am_crossf
         handleData.hotSink = hotSink;
         handle = createHandle(handleData, H_CROSSFADE);
         mMapHandleInterface.insert(std::make_pair(+ handle.handle, iter->second));
-        return (iter->second->asyncCrossFade(handle, crossfaderID, hotSink, rampType, time));
+        am_Error_e syncError(iter->second->asyncCrossFade(handle, crossfaderID, hotSink, rampType, time));
+        if (syncError)
+		{
+			removeHandle(handle);
+		}
+		return(syncError);
     }
     return (E_NON_EXISTENT);
 }
@@ -535,7 +589,6 @@ am_Error_e CAmRoutingSender::removeHandle(const am_Handle_s& handle)
 {
     if (mlistActiveHandles.erase(handle))
     {
-    	logInfo(__PRETTY_FUNCTION__,handle.handle,handle.handleType);
         return (E_OK);
     }
     logError(__PRETTY_FUNCTION__,"Could not remove handle",handle.handle);
@@ -578,25 +631,18 @@ am_Handle_s CAmRoutingSender::createHandle(const am_handleData_c& handleData, co
  * @param handle the handle
  * @return a class holding the handle data
  */
-CAmRoutingSender::am_handleData_c CAmRoutingSender::returnHandleData(const am_Handle_s handle) const
+am_Error_e CAmRoutingSender::returnHandleData(const am_Handle_s handle,CAmRoutingSender::am_handleData_c& handleData) const
 {
-
     HandlesMap::const_iterator it = mlistActiveHandles.begin();
     it = mlistActiveHandles.find(handle);
     if (it!=mlistActiveHandles.end())
     {
-    	const am_handleData_c & result = it->second;
-    	logInfo(__PRETTY_FUNCTION__, handle.handle, handle.handleType,
-    			"connectionID", result.connectionID,
-    			"sinkID", result.sinkID,
-    			"sourceID",result.sourceID,
-    			"sourceState", result.sourceState);
-        return result;
+    	handleData = it->second;
+        return (am_Error_e::E_OK);
     }
-    am_handleData_c handleData;
     handleData.sinkID=0;
     logError(__PRETTY_FUNCTION__,"could not find handle data for handle",handle.handle,handle.handleType);
-    return (handleData);
+    return (am_Error_e::E_NON_EXISTENT);
 }
 
 void CAmRoutingSender::setRoutingReady()
@@ -681,7 +727,14 @@ am_Error_e CAmRoutingSender::asyncSetVolumes(am_Handle_s& handle, const std::vec
     handle = createHandle(handleData, H_SETVOLUMES);
 
     mMapHandleInterface.insert(std::make_pair(+ handle.handle, pRoutingInterface));
-    return (pRoutingInterface->asyncSetVolumes(handle, listVolumes));
+    am_Error_e syncError(pRoutingInterface->asyncSetVolumes(handle, listVolumes));
+    if (syncError)
+	{
+		removeHandle(handle);
+		delete handleData.listVolumes;
+	}
+	return(syncError);
+
 }
 
 am_Error_e CAmRoutingSender::asyncSetSinkNotificationConfiguration(am_Handle_s& handle, const am_sinkID_t sinkID, const am_NotificationConfiguration_s& notificationConfiguration)
@@ -695,7 +748,13 @@ am_Error_e CAmRoutingSender::asyncSetSinkNotificationConfiguration(am_Handle_s& 
         handleData.notificationConfiguration = new am_NotificationConfiguration_s(notificationConfiguration);
         handle = createHandle(handleData, H_SETSINKNOTIFICATION);
         mMapHandleInterface.insert(std::make_pair(+ handle.handle, iter->second));
-        return (iter->second->asyncSetSinkNotificationConfiguration(handle, sinkID,notificationConfiguration));
+        am_Error_e syncError(iter->second->asyncSetSinkNotificationConfiguration(handle, sinkID,notificationConfiguration));
+        if (syncError)
+		{
+			removeHandle(handle);
+			delete handleData.notificationConfiguration;
+		}
+		return(syncError);
     }
     return (E_NON_EXISTENT);
 }
@@ -711,7 +770,13 @@ am_Error_e CAmRoutingSender::asyncSetSourceNotificationConfiguration(am_Handle_s
         handleData.notificationConfiguration = new am_NotificationConfiguration_s(notificationConfiguration);
         handle = createHandle(handleData, H_SETSOURCENOTIFICATION);
         mMapHandleInterface.insert(std::make_pair(+ handle.handle, iter->second));
-        return (iter->second->asyncSetSourceNotificationConfiguration(handle, sourceID,notificationConfiguration));
+        am_Error_e syncError(iter->second->asyncSetSourceNotificationConfiguration(handle, sourceID,notificationConfiguration));
+        if (syncError)
+		{
+			removeHandle(handle);
+			delete handleData.notificationConfiguration;
+		}
+		return(syncError);
     }
     return (E_NON_EXISTENT);
 }
@@ -740,4 +805,29 @@ void CAmRoutingSender::getInterfaceVersion(std::string & version) const
 {
     version = RoutingVersion;
 }
+am_Error_e CAmRoutingSender::resyncConnectionState(const am_domainID_t domainID,std::vector<am_Connection_s>& listOfExistingConnections)
+{
+    DomainInterfaceMap::iterator iter = mMapDomainInterface.begin();
+    iter = mMapDomainInterface.find(domainID);
+    if (iter != mMapDomainInterface.end())
+        return (iter->second->resyncConnectionState(domainID, listOfExistingConnections));
+    return (E_NON_EXISTENT);
+}
+
+am_Error_e CAmRoutingSender::returnHandleDataAndRemove(const am_Handle_s handle,CAmRoutingSender::am_handleData_c& handleData)
+{
+    HandlesMap::const_iterator it = mlistActiveHandles.begin();
+    it = mlistActiveHandles.find(handle);
+    if (it!=mlistActiveHandles.end())
+    {
+    	handleData = it->second;
+    	mlistActiveHandles.erase(handle);
+        return (am_Error_e::E_OK);
+    }
+    handleData.sinkID=0;
+    logError(__PRETTY_FUNCTION__,"could not find handle data for handle",handle.handle,handle.handleType);
+    return (am_Error_e::E_NON_EXISTENT);
+
+}
+
 }

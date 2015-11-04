@@ -32,6 +32,17 @@ using namespace testing;
 
 DLT_DECLARE_CONTEXT(AudioManager)
 
+ACTION(returnResyncConnection)
+{
+	std::vector<am_Connection_s> listConnections;
+	am_Connection_s conn;
+	conn.sinkID=1;
+	conn.sourceID=1;
+	conn.connectionFormat=CF_GENIVI_ANALOG;
+	listConnections.push_back(conn);
+	arg1=listConnections;
+}
+
 CAmControlInterfaceTest::CAmControlInterfaceTest() :
         pSocketHandler(), //
         plistCommandPluginDirs(), //
@@ -306,7 +317,7 @@ TEST_F(CAmControlInterfaceTest,ackDisconnectFailAndRetry)
 
     //then we fire the ack and expect a call on the controlInterface
     EXPECT_CALL(pMockControlInterface,cbAckDisconnect(_,E_NON_EXISTENT)).Times(1);
-    pRoutingReceiver.ackDisconnect(handle, connectionID, E_NON_EXISTENT);
+    pRoutingReceiver.ackDisconnect(handle, connectionID+1, E_NON_EXISTENT);
 
     //make sure the handle is gone
     ASSERT_EQ(E_OK, pControlReceiver.getListHandles(handlesList));
@@ -586,6 +597,61 @@ TEST_F(CAmControlInterfaceTest,ackSetSourceSoundProperty)
 TEST_F(CAmControlInterfaceTest,crossFading)
 {
     //todo: implement crossfading test
+}
+
+TEST_F(CAmControlInterfaceTest,resyncConnectionsTest)
+{
+    am_Domain_s domain;
+    am_domainID_t domainID;
+    pCF.createDomain(domain);
+    domain.name = "mock";
+    domain.busname = "mock";
+
+    //prepare the scene
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
+
+	std::vector<am_Connection_s> listConnections;
+
+    EXPECT_CALL(pMockRoutingInterface,resyncConnectionState(domainID,_)).WillOnce(DoAll(returnResyncConnection(), Return(E_OK)));
+    ASSERT_EQ(am_Error_e::E_OK,pControlReceiver.resyncConnectionState(domainID,listConnections));
+    ASSERT_EQ(listConnections[0].sinkID,1);
+    ASSERT_EQ(listConnections[0].sourceID,1);
+    ASSERT_EQ(listConnections[0].connectionFormat,CF_GENIVI_ANALOG);
+}
+
+TEST_F(CAmControlInterfaceTest,ackConnectNotPossible)
+{
+    am_connectionID_t connectionID;
+    am_Sink_s sink;
+    am_sinkID_t sinkID;
+    am_Domain_s domain;
+    am_domainID_t domainID;
+    std::vector<am_Connection_s> connectionList;
+    std::vector<am_Handle_s> handlesList;
+    am_Handle_s handle;
+    pCF.createSink(sink);
+    pCF.createDomain(domain);
+    domain.name = "mock";
+    domain.busname = "mock";
+    sink.sinkID = 2;
+    sink.domainID = DYNAMIC_ID_BOUNDARY;
+
+    //prepare the stage
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
+
+    //when asyncConnect is called, we expect a call on the routingInterface
+    EXPECT_CALL(pMockRoutingInterface,asyncConnect(_,1,2,2,CF_GENIVI_STEREO)).WillOnce(Return(E_COMMUNICATION));
+    ASSERT_EQ(E_COMMUNICATION, pControlReceiver.connect(handle,connectionID,CF_GENIVI_STEREO,2,2));
+
+    //The list of handles shall be empty
+    ASSERT_EQ(E_OK, pControlReceiver.getListHandles(handlesList));
+    ASSERT_TRUE(handlesList.empty());
+
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.getListConnections(connectionList));
+    ASSERT_TRUE(connectionList.empty());
+
 }
 
 int main(int argc, char **argv)

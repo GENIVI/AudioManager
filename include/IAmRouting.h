@@ -35,7 +35,7 @@ class CAmSocketHandler;
 
 #include "audiomanagertypes.h"
 
-#define RoutingVersion "4.0" 
+#define RoutingVersion "5.0"
 namespace am {
 
 /**
@@ -482,6 +482,11 @@ public:
 	 * @return E_OK on success, E_UNKNOWN on error.
 	 */
 	virtual am_Error_e asyncSetSourceNotificationConfiguration(const am_Handle_s handle, const am_sourceID_t sourceID, const am_NotificationConfiguration_s& notificationConfiguration) =0;
+	/**
+	 * Retrieves a list of all current active connections from a domain. This method
+	 * is meant to be used if the audiomanager and a remote domain are out of sync.
+	 */
+	virtual am_Error_e resyncConnectionState(const am_domainID_t domainID, std::vector<am_Connection_s>& listOfExistingConnections) =0;
 
 };
 }

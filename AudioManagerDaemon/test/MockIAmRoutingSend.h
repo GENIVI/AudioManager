@@ -71,6 +71,9 @@ class MockIAmRoutingSend : public IAmRoutingSend {
         am_Error_e(const am_Handle_s handle, const am_sinkID_t sinkID, const am_NotificationConfiguration_s& notificationConfiguration));
     MOCK_METHOD3(asyncSetSourceNotificationConfiguration,
         am_Error_e(const am_Handle_s handle, const am_sourceID_t sourceID, const am_NotificationConfiguration_s& notificationConfiguration));
+    MOCK_METHOD2(resyncConnectionState,
+        am_Error_e(const am_domainID_t domainID, std::vector<am_Connection_s>& listOfExistingConnections));
+
 
 };
 

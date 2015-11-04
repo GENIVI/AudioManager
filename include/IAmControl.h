@@ -32,7 +32,7 @@ class CAmSocketHandler;
 
 #include "audiomanagertypes.h"
 
-#define ControlVersion "4.0" 
+#define ControlVersion "5.0"
 namespace am {
 
 /**
@@ -639,6 +639,11 @@ public:
 	 * @return E_OK when successful, E_DATABASE on error
 	 */
 	virtual am_Error_e getSourceSoundPropertyValue(const am_sourceID_t sourceID, const am_CustomSoundPropertyType_t propertyType, int16_t& value) const =0;
+	/**
+	 * Retrieves a list of all current active connections from a domain. This method
+	 * is meant to be used if the audiomanager and a remote domain are out of sync.
+	 */
+	virtual am_Error_e resyncConnectionState(const am_domainID_t domainID, std::vector<am_Connection_s>& listOfExistingConnections) =0;
 
 };
 

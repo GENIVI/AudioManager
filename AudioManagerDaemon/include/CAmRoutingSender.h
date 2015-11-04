@@ -77,6 +77,7 @@ public:
     am_Error_e asyncSetVolumes(am_Handle_s& handle, const std::vector<am_Volumes_s>& listVolumes);
     am_Error_e asyncSetSinkNotificationConfiguration(am_Handle_s& handle, const am_sinkID_t sinkID, const am_NotificationConfiguration_s& notificationConfiguration);
     am_Error_e asyncSetSourceNotificationConfiguration(am_Handle_s& handle, const am_sourceID_t sourceID, const am_NotificationConfiguration_s& notificationConfiguration);
+    am_Error_e resyncConnectionState(const am_domainID_t domainID, std::vector<am_Connection_s>& listOfExistingConnections);
 
     struct InterfaceNamePairs //!< is used to pair interfaces with busnames
     {
@@ -109,7 +110,8 @@ public:
 
     };
 
-    am_handleData_c returnHandleData(const am_Handle_s handle) const; //!< returns the handle data associated with a handle
+    am_Error_e returnHandleData(const am_Handle_s handle,CAmRoutingSender::am_handleData_c& handleData) const; //!< returns the handle data associated with a handle
+    am_Error_e returnHandleDataAndRemove(const am_Handle_s handle,CAmRoutingSender::am_handleData_c& handleData); //!< returns the handle data associated with a handle and removes the handle
 
 #ifdef UNIT_TEST //this is needed to test RoutingSender
     friend class IAmRoutingBackdoor;

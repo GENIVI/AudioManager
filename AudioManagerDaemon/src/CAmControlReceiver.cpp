@@ -71,7 +71,12 @@ am_Error_e CAmControlReceiver::connect(am_Handle_s & handle, am_connectionID_t &
     tempConnection.delay=-1;
 
     mDatabaseHandler->enterConnectionDB(tempConnection, connectionID);
-    return (mRoutingSender->asyncConnect(handle, connectionID, sourceID, sinkID, format));
+    am_Error_e syncError(mRoutingSender->asyncConnect(handle, connectionID, sourceID, sinkID, format));
+	if (syncError)
+	{
+		mDatabaseHandler->removeConnection(connectionID);
+	}
+	return(syncError);
 }
 
 am_Error_e CAmControlReceiver::disconnect(am_Handle_s & handle, const am_connectionID_t connectionID)
@@ -589,6 +594,12 @@ am_Error_e CAmControlReceiver::getSourceSoundPropertyValue(const am_sourceID_t s
 {
 	 logInfo("CAmControlReceiver::getSourceSoundPropertyValue was called, sourceID", sourceID);
 	 return (mDatabaseHandler->getSourceSoundPropertyValue(sourceID,propertyType,value));
+}
+
+am_Error_e CAmControlReceiver::resyncConnectionState(const am_domainID_t domainID,std::vector<am_Connection_s>& listOfExistingConnections)
+{
+	logInfo("CAmControlReceiver::resyncConnectionState was called, domainID", domainID);
+	return (mRoutingSender->resyncConnectionState(domainID,listOfExistingConnections));
 }
 
 }
