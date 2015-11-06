@@ -112,7 +112,7 @@ void CAmRoutingReceiver::ackSetSinkVolumeChange(const am_Handle_s handle, const 
         return;
     }
 
-    if (error== am_Error_e::E_OK || am_Error_e::E_ABORTED)
+    if (error== am_Error_e::E_OK || error== am_Error_e::E_ABORTED)
     {
     	mpDatabaseHandler->changeSinkVolume(handleData.sinkID, volume);
     }
@@ -133,14 +133,14 @@ void CAmRoutingReceiver::ackSetSourceVolumeChange(const am_Handle_s handle, cons
         return;
     }
 
-    if (error== am_Error_e::E_OK || am_Error_e::E_ABORTED)
+    if (error== am_Error_e::E_OK || error== am_Error_e::E_ABORTED)
     {
     	mpDatabaseHandler->changeSourceVolume(handleData.sourceID, volume);
     }
 
     if(error == E_OK || handleData.volume!=volume)
     {
-    	logError("ackSetSourceVolumeChange volumes do not match, requested volume",handleData.volume,"returned volume",volume);
+      	logError("ackSetSourceVolumeChange volumes do not match, requested volume",handleData.volume,"returned volume",volume);
     }
     mpControlSender->cbAckSetSourceVolumeChange(handle, volume, error);
 }
