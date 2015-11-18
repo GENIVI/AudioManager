@@ -1789,7 +1789,7 @@ am_Error_e CAmDatabaseHandlerMap::getListSinkClasses(std::vector<am_SinkClass_s>
     listSinkClasses.clear();
 
     std::for_each(mMappedData.mSinkClassesMap.begin(), mMappedData.mSinkClassesMap.end(), [&](const std::pair<am_gatewayID_t, am_SinkClass_s>& ref) {
-    	listSinkClasses.push_back(ref.second);
+    	   listSinkClasses.push_back(ref.second);
        });
 
     return (E_OK);
@@ -1798,11 +1798,10 @@ am_Error_e CAmDatabaseHandlerMap::getListSinkClasses(std::vector<am_SinkClass_s>
 am_Error_e CAmDatabaseHandlerMap::getListVisibleMainConnections(std::vector<am_MainConnectionType_s> & listConnections) const
 {
     listConnections.clear();
-    am_MainConnectionType_s temp;
     std::for_each(mMappedData.mMainConnectionMap.begin(), mMappedData.mMainConnectionMap.end(), [&](const std::pair<am_mainConnectionID_t, am_MainConnection_Database_s>& ref) {
-    	ref.second.getMainConnectionType(temp);
-    	listConnections.push_back(temp);
-      });
+    	listConnections.emplace_back();
+		ref.second.getMainConnectionType(listConnections.back());
+    });
 
     return (E_OK);
 }
@@ -1810,14 +1809,13 @@ am_Error_e CAmDatabaseHandlerMap::getListVisibleMainConnections(std::vector<am_M
 am_Error_e CAmDatabaseHandlerMap::getListMainSinks(std::vector<am_SinkType_s> & listMainSinks) const
 {
     listMainSinks.clear();
-    am_SinkType_s sinkType;
     std::for_each(mMappedData.mSinkMap.begin(), mMappedData.mSinkMap.end(), [&](const std::pair<am_sinkID_t, am_Sink_Database_s>& ref) {
     	if( 0==ref.second.reserved && 1==ref.second.visible )
     	{
-    		ref.second.getSinkType(sinkType);
-    		listMainSinks.push_back(sinkType);
+    		listMainSinks.emplace_back();
+    		ref.second.getSinkType(listMainSinks.back());
     	}
-      });
+    });
 
     return (E_OK);
 }
@@ -1825,14 +1823,13 @@ am_Error_e CAmDatabaseHandlerMap::getListMainSinks(std::vector<am_SinkType_s> & 
 am_Error_e CAmDatabaseHandlerMap::getListMainSources(std::vector<am_SourceType_s> & listMainSources) const
 {
     listMainSources.clear();
-    am_SourceType_s temp;
     std::for_each(mMappedData.mSourceMap.begin(), mMappedData.mSourceMap.end(), [&](const std::pair<am_sourceID_t, am_Source_Database_s>& ref) {
-    	if( 1==ref.second.visible )
+    	if( 0==ref.second.reserved && 1==ref.second.visible )
     	{
-    		ref.second.getSourceType(temp);
-			listMainSources.push_back(temp);
+			listMainSources.emplace_back();
+    		ref.second.getSourceType(listMainSources.back());
     	}
-      });
+    });
 
     return (E_OK);
 }
@@ -1843,7 +1840,7 @@ am_Error_e CAmDatabaseHandlerMap::getListMainSinkSoundProperties(const am_sinkID
     if (!existSink(sinkID))
     	return E_NON_EXISTENT;
 
-    am_Sink_s sink = mMappedData.mSinkMap.at(sinkID);
+    const am_Sink_s & sink = mMappedData.mSinkMap.at(sinkID);
     listSoundProperties = sink.listMainSoundProperties;
 
     return (E_OK);
@@ -1855,7 +1852,7 @@ am_Error_e CAmDatabaseHandlerMap::getListMainSourceSoundProperties(const am_sour
     if (!existSource(sourceID))
     	return E_NON_EXISTENT;
 
-    am_Source_s source = mMappedData.mSourceMap.at(sourceID);
+    const am_Source_s & source = mMappedData.mSourceMap.at(sourceID);
     listSourceProperties = source.listMainSoundProperties;
 
     return (E_OK);
@@ -1867,7 +1864,7 @@ am_Error_e CAmDatabaseHandlerMap::getListSinkSoundProperties(const am_sinkID_t s
     if (!existSink(sinkID))
     	return E_NON_EXISTENT;
 
-    am_Sink_Database_s sink = mMappedData.mSinkMap.at(sinkID);
+    const am_Sink_Database_s & sink = mMappedData.mSinkMap.at(sinkID);
     listSoundproperties = sink.listSoundProperties;
 
     return (E_OK);
@@ -1879,7 +1876,7 @@ am_Error_e CAmDatabaseHandlerMap::getListSourceSoundProperties(const am_sourceID
 	if (!existSource(sourceID))
 		return E_NON_EXISTENT;
 
-	am_Source_Database_s source = mMappedData.mSourceMap.at(sourceID);
+	const am_Source_Database_s & source = mMappedData.mSourceMap.at(sourceID);
 	listSoundproperties = source.listSoundProperties;
 
 	return (E_OK);
@@ -1895,7 +1892,7 @@ am_Error_e am::CAmDatabaseHandlerMap::getListSinkConnectionFormats(const am_sink
 {
    if (!existSink(sinkID))
 	   return E_NON_EXISTENT;
-	am_Sink_s sink = mMappedData.mSinkMap.at(sinkID);
+	const am_Sink_s & sink = mMappedData.mSinkMap.at(sinkID);
 	listConnectionFormats = sink.listConnectionFormats;
 
     return (E_OK);
@@ -1905,7 +1902,7 @@ am_Error_e am::CAmDatabaseHandlerMap::getListSourceConnectionFormats(const am_so
 {
    if (!existSource(sourceID))
 	   return E_NON_EXISTENT;
-    am_Source_s source = mMappedData.mSourceMap.at(sourceID);
+    const am_Source_s & source = mMappedData.mSourceMap.at(sourceID);
     listConnectionFormats = source.listConnectionFormats;
 
     return (E_OK);
@@ -1933,7 +1930,7 @@ am_Error_e CAmDatabaseHandlerMap::getTimingInformation(const am_mainConnectionID
     	return E_NON_EXISTENT;
     delay = -1;
 
-    am_MainConnection_s mainConnection = mMappedData.mMainConnectionMap.at(mainConnectionID);
+    const am_MainConnection_s & mainConnection = mMappedData.mMainConnectionMap.at(mainConnectionID);
     delay = mainConnection.delay;
 
     if (delay == -1)
@@ -2176,7 +2173,7 @@ am_Error_e CAmDatabaseHandlerMap::changeConnectionTimingInformation(const am_con
     CAmMapMainConnection::const_iterator iter = mMappedData.mMainConnectionMap.begin();
     for(; iter != mMappedData.mMainConnectionMap.end(); ++iter)
     {
-        am_MainConnection_s mainConnection = iter->second;
+        const am_MainConnection_s & mainConnection = iter->second;
         if (std::find(mainConnection.listConnectionID.begin(), mainConnection.listConnectionID.end(), connectionID) != mainConnection.listConnectionID.end())
         {
             // Got it.
@@ -2204,7 +2201,7 @@ am_timeSync_t CAmDatabaseHandlerMap::calculateMainConnectionDelay(const am_mainC
     assert(mainConnectionID!=0);
     if (!existMainConnection(mainConnectionID))
   		return -1;
-    am_MainConnection_s mainConnection = mMappedData.mMainConnectionMap.at(mainConnectionID);
+    const am_MainConnection_s & mainConnection = mMappedData.mMainConnectionMap.at(mainConnectionID);
     am_timeSync_t delay = 0;
     std::vector<am_connectionID_t>::const_iterator iter = mainConnection.listConnectionID.begin();
 	for(;iter<mainConnection.listConnectionID.end(); ++iter)

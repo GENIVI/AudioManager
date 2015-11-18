@@ -499,6 +499,7 @@ TEST_F(CAmMapHandlerTest,sourceVolumeChange)
 
 TEST_F(CAmMapHandlerTest, peekSource)
 {
+    std::vector<am_SourceType_s> listSourceTypes;
     std::vector<am_Source_s> listSources;
     am_sourceID_t sourceID, source2ID, source3ID;
     am_Source_s source;
@@ -511,6 +512,8 @@ TEST_F(CAmMapHandlerTest, peekSource)
     //make sure it is not in the list
     ASSERT_EQ(E_OK, pDatabaseHandler.getListSources(listSources));
     ASSERT_TRUE(listSources.empty());
+    ASSERT_EQ(E_OK, pDatabaseHandler.getListMainSources(listSourceTypes));
+    ASSERT_TRUE(listSourceTypes.empty());
     ASSERT_EQ(sourceID, DYNAMIC_ID_BOUNDARY);
 
     //now enter the source with the same name and make sure it does not get a new ID
@@ -520,17 +523,27 @@ TEST_F(CAmMapHandlerTest, peekSource)
 
     ASSERT_EQ(E_OK, pDatabaseHandler.getListSources(listSources));
     ASSERT_EQ(sourceID, source2ID);
+    ASSERT_FALSE(listSources.empty());
     ASSERT_TRUE(listSources.at(0).sourceID==sourceID);
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.getListMainSources(listSourceTypes));
+    ASSERT_FALSE(listSourceTypes.empty());
+    ASSERT_TRUE(listSourceTypes.at(0).sourceID==sourceID);
 
     //now we peek again. This time, the source exists
     ASSERT_EQ(E_OK, pDatabaseHandler.peekSource(source.name,source3ID));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListSources(listSources));
     ASSERT_TRUE(listSources.size()==1);
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.getListMainSources(listSourceTypes));
+    ASSERT_TRUE(listSourceTypes.size()==1);
+    ASSERT_TRUE(listSourceTypes.at(0).sourceID==source3ID);
     ASSERT_EQ(source3ID, source2ID);
 }
 
 TEST_F(CAmMapHandlerTest, peekSourceDouble)
 {
+    std::vector<am_SourceType_s> listSourceTypes;
     std::vector<am_Source_s> listSources;
     am_sourceID_t sourceID;
     am_sourceID_t source2ID;
@@ -557,11 +570,17 @@ TEST_F(CAmMapHandlerTest, peekSourceDouble)
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,source3ID));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListSources(listSources));
     ASSERT_EQ(sourceID, source3ID);
+    ASSERT_TRUE(listSources.size()==1);
     ASSERT_TRUE(listSources[0].sourceID==sourceID);
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.getListMainSources(listSourceTypes));
+    ASSERT_TRUE(listSourceTypes.size()==1);
+    ASSERT_TRUE(listSourceTypes[0].sourceID==source3ID);
 }
 
 TEST_F(CAmMapHandlerTest, peekSink)
 {
+	std::vector<am_SinkType_s> listSinkTypes;
     std::vector<am_Sink_s> listSinks;
     am_sinkID_t sinkID, sink2ID, sink3ID;
     am_Sink_s sink;
@@ -584,15 +603,24 @@ TEST_F(CAmMapHandlerTest, peekSink)
     ASSERT_EQ(sinkID, sink2ID);
     ASSERT_TRUE(listSinks[0].sinkID==sinkID);
 
+    ASSERT_EQ(E_OK, pDatabaseHandler.getListMainSinks(listSinkTypes));
+    ASSERT_FALSE(listSinkTypes.empty());
+    ASSERT_TRUE(listSinkTypes.at(0).sinkID==sinkID);
+
     //now we peek again, this time, the sink exists
     ASSERT_EQ(E_OK, pDatabaseHandler.peekSink(sink.name,sink3ID));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListSinks(listSinks));
     ASSERT_TRUE(listSinks.size()==1);
     ASSERT_EQ(sink3ID, sink2ID);
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.getListMainSinks(listSinkTypes));
+    ASSERT_TRUE(listSinkTypes.size()==1);
+    ASSERT_TRUE(listSinkTypes.at(0).sinkID==sink3ID);
 }
 
 TEST_F(CAmMapHandlerTest, peekSinkDouble)
 {
+	std::vector<am_SinkType_s> listSinkTypes;
     std::vector<am_Sink_s> listSinks;
     am_sinkID_t sinkID;
     am_sinkID_t sink2ID;
@@ -620,6 +648,10 @@ TEST_F(CAmMapHandlerTest, peekSinkDouble)
     ASSERT_EQ(E_OK, pDatabaseHandler.getListSinks(listSinks));
     ASSERT_EQ(sinkID, sink3ID);
     ASSERT_TRUE(listSinks[0].sinkID==sinkID);
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.getListMainSinks(listSinkTypes));
+    ASSERT_TRUE(listSinkTypes.size()==1);
+    ASSERT_TRUE(listSinkTypes[0].sinkID==sink3ID);
 }
 
 TEST_F(CAmMapHandlerTest,changeConnectionTimingInformationCheckMainConnection)

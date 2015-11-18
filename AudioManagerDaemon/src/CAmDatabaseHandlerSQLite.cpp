@@ -2802,7 +2802,7 @@ am_Error_e CAmDatabaseHandlerSQLite::getListMainSources(std::vector<am_SourceTyp
     sqlite3_stmt* query = NULL;
     int eCode = 0;
     am_SourceType_s temp;
-    std::string command = "SELECT name, sourceClassID, availability, availabilityReason, sourceID FROM " + std::string(SOURCE_TABLE) + " WHERE visible=1";
+    std::string command = "SELECT name, sourceClassID, availability, availabilityReason, sourceID FROM " + std::string(SOURCE_TABLE) + " WHERE visible=1 AND reserved=0";
     MY_SQLITE_PREPARE_V2(mpDatabase, command.c_str(), -1, &query, NULL)
 
     while ((eCode = sqlite3_step(query)) == SQLITE_ROW)
@@ -3692,6 +3692,43 @@ am_Error_e am::CAmDatabaseHandlerSQLite::getDomainOfSink(const am_sinkID_t sinkI
 
     MY_SQLITE_FINALIZE(query)
     return (returnVal);
+}
+
+am_Error_e CAmDatabaseHandlerSQLite::getDomainOfCrossfader(const am_crossfaderID_t crossfader, am_domainID_t& domainID) const
+{
+    assert(crossfader!=0);
+
+    am_sourceID_t sourceID = 0;
+    sqlite3_stmt* query = NULL;
+	std::string command = "SELECT sourceID FROM " + std::string(CROSSFADER_TABLE) + " WHERE crossfaderID=" + i2s(crossfader);
+	int eCode = 0;
+	am_Error_e returnVal = E_DATABASE_ERROR;
+	MY_SQLITE_PREPARE_V2(mpDatabase, command.c_str(), -1, &query, NULL)
+	if ((eCode = sqlite3_step(query)) == SQLITE_ROW)
+	{
+		sourceID = sqlite3_column_int(query, 0);
+		MY_SQLITE_FINALIZE(query);
+
+	    sqlite3_stmt* querySrc = NULL;
+	    command = "SELECT domainID FROM " + std::string(SOURCE_TABLE) + " WHERE sourceID=" + i2s(sourceID);
+	    MY_SQLITE_PREPARE_V2(mpDatabase, command.c_str(), -1, &querySrc, NULL)
+	    if ((eCode = sqlite3_step(querySrc)) == SQLITE_ROW)
+	    {
+	        domainID = sqlite3_column_int(query, 0);
+	        returnVal = E_OK;
+	    }
+	    else
+	    {
+	        logError("DatabaseHandler::getDomainOfCrossfader database error!:", eCode);
+	    }
+	    MY_SQLITE_FINALIZE(querySrc)
+	}
+    else
+	{
+	    logError("DatabaseHandler::getDomainOfCrossfader database error!:", eCode);
+	}
+    MY_SQLITE_FINALIZE(query)
+	return (returnVal);
 }
 
 /**
