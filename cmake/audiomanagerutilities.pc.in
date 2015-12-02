@@ -1,0 +1,10 @@
+libdir=@CMAKE_INSTALL_PREFIX@/lib/@LIB_INSTALL_SUFFIX@
+includedir=@CMAKE_INSTALL_PREFIX@/include/@LIB_INSTALL_SUFFIX@
+
+Name: Audiomanager Utilities
+Description: The Audiomanager Utilities 
+Version: @DAEMONVERSION@
+Requires: 
+Libs: -L${libdir} -lAudioManagerUtilities
+Cflags: -I${includedir} @CMAKE_CXX_FLAGS@
+
