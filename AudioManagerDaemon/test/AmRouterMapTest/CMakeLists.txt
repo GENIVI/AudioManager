@@ -26,6 +26,13 @@ set (AM_LINK_LIBS
     AudioManagerUtilities
     rt)
     
+IF (WITH_CAPI_WRAPPER)
+	set (AM_LINK_LIBS
+        ${AM_LINK_LIBS}
+        -Wl,--as-needed CommonAPI
+        )
+ENDIF (WITH_CAPI_WRAPPER)    
+    
 if(WITH_DLT)    
     pkg_check_modules(DLT REQUIRED automotive-dlt>=2.2.0)   
     set (AM_LINK_LIBS

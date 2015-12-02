@@ -82,21 +82,6 @@ if(WITH_TELNET)
 		src/CAmTelnetMenuHelper.cpp)		
 endif(WITH_TELNET)		
 
-if(WITH_SYSTEMD_WATCHDOG)
-	set (AUDIOMAN_SRCS_CXX
-		${AUDIOMAN_SRCS_CXX}
-		src/CAmWatchdog.cpp)
-    set (AM_LINK_LIBS
-        ${AM_LINK_LIBS}
-        ${SYSTEMD_LIBRARIES})
-endif(WITH_SYSTEMD_WATCHDOG)
-
-if (NOT SYSTEMD_FOUND)
-	set (AUDIOMAN_SRCS_CXX
-		${AUDIOMAN_SRCS_CXX}
-		src/sd-daemon.c)
-endif (NOT SYSTEMD_FOUND)
-
 if(WITH_DBUS_WRAPPER)
     set (AUDIOMAN_SRCS_CXX
         ${AUDIOMAN_SRCS_CXX}

@@ -40,6 +40,23 @@ SET(AUDIO_MANAGER_UTILITIES_SRCS_CXX
 	src/CAmCommandLineSingleton.cpp
 	src/CAmDltWrapper.cpp
 	src/CAmSocketHandler.cpp)
+	
+if(WITH_SYSTEMD_WATCHDOG)
+	set (AUDIO_MANAGER_UTILITIES_SRCS_CXX
+		${AUDIO_MANAGER_UTILITIES_SRCS_CXX}
+		src/CAmWatchdog.cpp)
+    set (AM_LINK_LIBS
+        ${AM_LINK_LIBS}
+        ${SYSTEMD_LIBRARIES})
+endif(WITH_SYSTEMD_WATCHDOG)	
+	
+
+if (NOT SYSTEMD_FOUND)
+	set (AUDIO_MANAGER_UTILITIES_SRCS_CXX
+		${AUDIO_MANAGER_UTILITIES_SRCS_CXX}
+		src/sd-daemon.c)
+endif (NOT SYSTEMD_FOUND)
+	
 
 IF (WITH_DBUS_WRAPPER)
 	pkg_check_modules (DBUS "dbus-1 >= 1.4")
@@ -80,6 +97,8 @@ IF (WITH_SHARED_UTILITIES)
 	        LIBRARY DESTINATION lib
 	        PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
 	        COMPONENT bin)
+	configure_file( ${CMAKE_SOURCE_DIR}/cmake/audiomanagerutilities.pc.in ${CMAKE_BINARY_DIR}/audiomanagerutilities.pc @ONLY )       
+	install(FILES ${CMAKE_BINARY_DIR}/audiomanagerutilities.pc DESTINATION lib/pkgconfig COMPONENT devel) 
 ELSE (WITH_SHARED_UTILITIES)
 	INSTALL(TARGETS AudioManagerUtilities
 	        ARCHIVE DESTINATION lib

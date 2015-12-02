@@ -80,7 +80,8 @@ CAmWatchdog::CAmWatchdog(CAmSocketHandler* CAmSocketHandler) :
 CAmWatchdog::~CAmWatchdog()
 {
     //remove the timer again.
-    mpCAmSocketHandler->removeTimer(mHandle);
+	if (mHandle!=0)
+		mpCAmSocketHandler->removeTimer(mHandle);
 }
 
 void CAmWatchdog::timerCallback(sh_timerHandle_t handle, void* userData)

@@ -33,6 +33,13 @@ if(WITH_DLT)
         ${DLT_LIBRARIES})
 endif(WITH_DLT)
 
+IF (WITH_CAPI_WRAPPER)
+	set (AM_LINK_LIBS
+        ${AM_LINK_LIBS}
+        -Wl,--as-needed CommonAPI
+        )
+ENDIF (WITH_CAPI_WRAPPER)
+
 INCLUDE_DIRECTORIES(   
     ${CMAKE_CURRENT_BINARY_DIR}
     ${AUDIO_INCLUDE_FOLDER}

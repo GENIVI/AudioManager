@@ -25,6 +25,13 @@ set (AM_LINK_LIBS
     ${CMAKE_DL_LIBS}
     AudioManagerUtilities
     rt)
+    
+IF (WITH_CAPI_WRAPPER)
+	set (AM_LINK_LIBS
+        ${AM_LINK_LIBS}
+        -Wl,--as-needed CommonAPI
+        )
+ENDIF (WITH_CAPI_WRAPPER)
 
 if(WITH_DATABASE_STORAGE)
 	pkg_check_modules(SQLITE REQUIRED sqlite3)
