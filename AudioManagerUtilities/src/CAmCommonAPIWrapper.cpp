@@ -15,7 +15,7 @@
  * For further information see http://www.genivi.org/.
  */
 
-#include <audiomanagerconfig.h>
+#include "audiomanagerconfig.h"
 #include <fstream>
 #include <sstream>
 #include <algorithm>
@@ -80,17 +80,6 @@ CAmCommonAPIWrapper::~CAmCommonAPIWrapper()
 	mContext.reset();
 	mpSocketHandler = NULL;
 	mWatchToCheck = NULL;
-	try
-	{
-		if (pSingleCommonAPIInstance!=NULL)
-			delete pSingleCommonAPIInstance;
-
-		pSingleCommonAPIInstance=NULL;
-	}
-	catch(...)
-	{
-		logError(__PRETTY_FUNCTION__,"error while deleting CAPIWrapper instance");
-	}
 }
 
 CAmCommonAPIWrapper* CAmCommonAPIWrapper::instantiateOnce(CAmSocketHandler* socketHandler, const std::string & applicationName)
@@ -105,6 +94,21 @@ CAmCommonAPIWrapper* CAmCommonAPIWrapper::instantiateOnce(CAmSocketHandler* sock
 	else
 		throw std::logic_error(std::string("The singleton instance has been already instantiated. This method should be called only once."));
 	return pSingleCommonAPIInstance;
+}
+
+void CAmCommonAPIWrapper::deleteInstance()
+{
+	try
+	{
+		if (pSingleCommonAPIInstance!=NULL)
+			delete pSingleCommonAPIInstance;
+
+		pSingleCommonAPIInstance=NULL;
+	}
+	catch(...)
+	{
+		logError(__PRETTY_FUNCTION__,"error while deleting CAPIWrapper instance");
+	}
 }
 
 CAmCommonAPIWrapper* CAmCommonAPIWrapper::getInstance()

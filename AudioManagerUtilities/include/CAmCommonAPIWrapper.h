@@ -113,6 +113,11 @@ public:
 	static CAmCommonAPIWrapper* getInstance();
 
 	/**
+	* \brief Deletes the instanciated object
+	*/	
+	static void deleteInstance();
+
+	/**
 	* \brief Creates a singleton instance attached to the provided socket handler object.
 	*
 	* This method should be called only once because it instantiates a single object.
