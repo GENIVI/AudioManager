@@ -42,6 +42,14 @@ SET(AUDIO_MANAGER_UTILITIES_SRCS_CXX
 	src/CAmSocketHandler.cpp)
 	
 if(WITH_SYSTEMD_WATCHDOG)
+	
+	pkg_check_modules(SYSTEMD libsystemd>=44)
+	if (SYSTEMD_FOUND)
+		message(STATUS "Found libsystemd-daemon, version: ${SYSTEMD_VERSION}")
+	else (SYSTEMD_FOUND)
+		message(STATUS "Did not find libsystemd-daemon, using own lib")
+	endif(SYSTEMD_FOUND)
+	
 	set (AUDIO_MANAGER_UTILITIES_SRCS_CXX
 		${AUDIO_MANAGER_UTILITIES_SRCS_CXX}
 		src/CAmWatchdog.cpp)
