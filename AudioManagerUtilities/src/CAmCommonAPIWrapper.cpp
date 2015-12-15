@@ -80,6 +80,17 @@ CAmCommonAPIWrapper::~CAmCommonAPIWrapper()
 	mContext.reset();
 	mpSocketHandler = NULL;
 	mWatchToCheck = NULL;
+	try
+	{
+		if (pSingleCommonAPIInstance!=NULL)
+			delete pSingleCommonAPIInstance;
+
+		pSingleCommonAPIInstance=NULL;
+	}
+	catch(...)
+	{
+		logError(__PRETTY_FUNCTION__,"error while deleting CAPIWrapper instance");
+	}
 }
 
 CAmCommonAPIWrapper* CAmCommonAPIWrapper::instantiateOnce(CAmSocketHandler* socketHandler, const std::string & applicationName)
