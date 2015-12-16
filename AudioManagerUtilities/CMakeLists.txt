@@ -19,6 +19,11 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8)
 
 PROJECT(AudioManagerUtilities)
 
+set(AudioManagerUtilities_VERSION_MAJOR 1)
+set(AudioManagerUtilities_VERSION_MINOR 0)
+set(AudioManagerUtilities_VERSION_PATCH 0)
+set(AudioManagerUtilities_VERSION_STRING ${AudioManagerUtilities_VERSION_MAJOR}.${AudioManagerUtilities_VERSION_MINOR}.${AudioManagerUtilities_VERSION_PATCH})
+
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 SET(INCLUDE_FOLDER "include")
 
@@ -99,6 +104,8 @@ ENDIF (WITH_CAPI_WRAPPER)
 ADD_LIBRARY(AudioManagerUtilities ${LIBRARY_TYPE} ${AUDIO_MANAGER_UTILITIES_SRCS_CXX})
 
 TARGET_LINK_LIBRARIES(AudioManagerUtilities ${AM_LINK_LIBS})
+
+set_target_properties(AudioManagerUtilities PROPERTIES VERSION ${AudioManagerUtilities_VERSION_STRING} SOVERSION ${AudioManagerUtilities_VERSION_MAJOR})
 
 IF (WITH_SHARED_UTILITIES)
 	INSTALL(TARGETS AudioManagerUtilities
