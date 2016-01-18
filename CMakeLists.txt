@@ -26,6 +26,7 @@ include ( CMakeDependentOption )
 include ( MacroVersionFromGit )
 include ( MacroInterfaceVersions )
 include ( CMakePackageConfigHelpers )
+include ( GNUInstallDirs )
 
 if (NOT ${CMAKE_TOOLCHAIN_FILE} EQUAL "")
     message(STATUS "Using CMAKE_TOOLCHAIN_FILE='${CMAKE_TOOLCHAIN_FILE}'" )
@@ -210,6 +211,10 @@ if(WITH_DOCUMENTATION)
   		COMMAND ${DOXYGEN_EXECUTABLE} ${DOC_OUTPUT_PATH}/Doxyfile WORKING_DIRECTORY ${DOC_OUTPUT_PATH}
   		SOURCES ${CMAKE_SOURCE_DIR} ${DOC_OUTPUT_PATH}/Doxyfile
 	)
+	install (DIRECTORY ${DOC_OUTPUT_PATH}/
+		DESTINATION "${CMAKE_INSTALL_DOCDIR}"
+		PATTERN "Doxyfile" EXCLUDE
+		PATTERN "def" EXCLUDE)
 endif(WITH_DOCUMENTATION)
 
 SET(CMAKE_INSTALL_CONFIG_NAME "RelWithDebInfo")
