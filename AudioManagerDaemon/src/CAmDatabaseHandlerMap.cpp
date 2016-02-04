@@ -2821,7 +2821,7 @@ am_Error_e CAmDatabaseHandlerMap::changeSinkDB(const am_sinkID_t sinkID, const a
         if (!listMainSoundProperties.empty())
         {
             DB_COND_UPDATE(mMappedData.mSinkMap.at(sinkID).listMainSoundProperties, listMainSoundProperties);
-            mMappedData.mSinkMap.at(sinkID).cacheSoundProperties.clear();
+            mMappedData.mSinkMap.at(sinkID).cacheMainSoundProperties.clear();
         }
         else //read out the properties
         {
