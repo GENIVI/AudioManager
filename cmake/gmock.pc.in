@@ -1,0 +1,9 @@
+Name: libgmock
+Version: 1.6.0
+Description: Google's framework for writing C++ tests on a variety of platforms
+ 
+prefix=@CMAKE_INSTALL_PREFIX@
+includedir=${prefix}/include
+libdir=${prefix}/lib
+Cflags:-I${includedir}/gmock
+Libs: -L${libdir} -lgmock

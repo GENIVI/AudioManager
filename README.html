@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
 <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
-<meta name="generator" content="AsciiDoc 8.6.6" />
+<meta name="generator" content="AsciiDoc 8.6.9" />
 <title>GENIVI_AudioManager</title>
 <style type="text/css">
 /* Shared CSS for AsciiDoc xhtml11 and html5 backends */
@@ -87,9 +87,15 @@ ul, ol, li > p {
 ul > li     { color: #aaa; }
 ul > li > * { color: black; }
 
-pre {
+.monospaced, code, pre {
+  font-family: "Courier New", Courier, monospace;
+  font-size: inherit;
+  color: navy;
   padding: 0;
   margin: 0;
+}
+pre {
+  white-space: pre-wrap;
 }
 
 #author {
@@ -219,7 +225,7 @@ div.exampleblock > div.content {
 }
 
 div.imageblock div.content { padding-left: 0; }
-span.image img { border-style: none; }
+span.image img { border-style: none; vertical-align: text-bottom; }
 a.image:visited { color: white; }
 
 dl {
@@ -349,7 +355,7 @@ div.colist td img {
   margin-bottom: 0.1em;
 }
 
-div.toclevel1, div.toclevel2, div.toclevel3, div.toclevel4 {
+div.toclevel0, div.toclevel1, div.toclevel2, div.toclevel3, div.toclevel4 {
   margin-top: 0;
   margin-bottom: 0;
 }
@@ -407,17 +413,13 @@ span.underline { text-decoration: underline; }
 span.overline { text-decoration: overline; }
 span.line-through { text-decoration: line-through; }
 
+div.unbreakable { page-break-inside: avoid; }
+
 
 /*
  * xhtml11 specific
  *
  * */
-
-tt {
-  font-family: monospace;
-  font-size: inherit;
-  color: navy;
-}
 
 div.tableblock {
   margin-top: 1.0em;
@@ -451,12 +453,6 @@ div.tableblock > table[frame="vsides"] {
  * html5 specific
  *
  * */
-
-.monospaced {
-  font-family: monospace;
-  font-size: inherit;
-  color: navy;
-}
 
 table.tableblock {
   margin-top: 1.0em;
@@ -537,6 +533,8 @@ body.manpage div.sectionbody {
 @media print {
   body.manpage div#toc { display: none; }
 }
+
+
 </style>
 <script type="text/javascript">
 /*<![CDATA[*/
@@ -581,7 +579,7 @@ toc: function (toclevels) {
 
   function tocEntries(el, toclevels) {
     var result = new Array;
-    var re = new RegExp('[hH]([2-'+(toclevels+1)+'])');
+    var re = new RegExp('[hH]([1-'+(toclevels+1)+'])');
     // Function that scans the DOM tree for header elements (the DOM2
     // nodeIterator API would be a better technique but not supported by all
     // browsers).
@@ -610,7 +608,7 @@ toc: function (toclevels) {
   var i;
   for (i = 0; i < toc.childNodes.length; i++) {
     var entry = toc.childNodes[i];
-    if (entry.nodeName == 'div'
+    if (entry.nodeName.toLowerCase() == 'div'
      && entry.getAttribute("class")
      && entry.getAttribute("class").match(/^toclevel/))
       tocEntriesToRemove.push(entry);
@@ -656,7 +654,7 @@ footnotes: function () {
   var entriesToRemove = [];
   for (i = 0; i < noteholder.childNodes.length; i++) {
     var entry = noteholder.childNodes[i];
-    if (entry.nodeName == 'div' && entry.getAttribute("class") == "footnote")
+    if (entry.nodeName.toLowerCase() == 'div' && entry.getAttribute("class") == "footnote")
       entriesToRemove.push(entry);
   }
   for (i = 0; i < entriesToRemove.length; i++) {
@@ -746,20 +744,22 @@ asciidoc.install();
 Copyright &#169; 2012, BMW AG</p></div>
 <div class="paragraph"><p>This file is part of GENIVI Project AudioManager.</p></div>
 <div class="paragraph"><p>Contributions are licensed to the GENIVI Alliance under one or more
-Contribution License Agreements or MPL 2.0 .</p></div>
+Contribution License Agreements or MPL 2.0.</p></div>
 <div class="paragraph"><p>&#169; Copyright
 This Source Code Form is subject to the terms of the
 Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
 this file, You can obtain one at <a href="http://mozilla.org/MPL/2.0/">http://mozilla.org/MPL/2.0/</a>.</p></div>
-<div class="paragraph"><p>author Christian Linke = Christian Linke <a href="mailto:christian.linke@bmw.de">christian.linke@bmw.de</a> BMW 2011-2015</p></div>
+<div class="paragraph"><p>Author Christian Linke = Christian Linke <a href="mailto:christian.linke@bmw.de">christian.linke@bmw.de</a> BMW 2011-2015</p></div>
 <div class="paragraph"><p>For further information see <a href="http://projects.genivi.org/audio-manager/">http://projects.genivi.org/audio-manager/</a>.</p></div>
 </div>
 </div>
 <div class="sect1">
 <h2 id="_repositories">Repositories</h2>
 <div class="sectionbody">
-<div class="paragraph"><p>The main repository is <a href="http://git.projects.genivi.org-AudioManager.git">http://git.projects.genivi.org-AudioManager.git</a></p></div>
-<div class="paragraph"><p>The repository for example plugins can be found here: <a href="http://git.projects.genivi.org/AudioManagerPlugins.git">http://git.projects.genivi.org/AudioManagerPlugins.git</a></p></div>
+<div class="paragraph"><p>The main repository is
+<a href="http://git.projects.genivi.org-AudioManager.git">http://git.projects.genivi.org-AudioManager.git</a></p></div>
+<div class="paragraph"><p>The repository for example plugins can be found here:
+<a href="http://git.projects.genivi.org/AudioManagerPlugins.git">http://git.projects.genivi.org/AudioManagerPlugins.git</a></p></div>
 </div>
 </div>
 <div class="sect1">
@@ -769,21 +769,21 @@ this file, You can obtain one at <a href="http://mozilla.org/MPL/2.0/">http://mo
 <div class="paragraph"><p>1) the AudioManagerDaemon, licensed under MPL 2.0</p></div>
 <div class="paragraph"><p>2) the plugins that serve as example code that can be taken to build up an own project with it -
     these parts are licensed with the MIT license</p></div>
-<div class="paragraph"><p>Contribution is done under GENIVI CLA or MPL2.0.</p></div>
+<div class="paragraph"><p>Contribution is done under MPL2.0 or MIT License, depending on the location of the code.</p></div>
 </div>
 </div>
 <div class="sect1">
 <h2 id="_version">Version</h2>
 <div class="sectionbody">
-<div class="paragraph"><p>The current version can be taken out of the git. The version 1.0.0 is the first GENIVI compliant code,in the compliance statement of discovery (2.0).
-For every GENIVI release, there is a release of the AudioManager, each of the releases have an own bugfix branch that will get the most important fixes.
+<div class="paragraph"><p>The current version can be taken out of the git. The version 1.0.0 is the first GENIVI compliant code, in the compliance statement of Discovery (2.0).
+For every GENIVI release, there is a release of the AudioManager, each of the releases have their own bug fix branch that will get the most important fixes.
 Development is done on the master branch.</p></div>
 <div class="sect2">
 <h3 id="_versioning_scheme">Versioning Scheme</h3>
 <div class="paragraph"><p>The versioning scheme was decided in the February face2face 2012.
-The firs number describes the release branch. This is 1 for discovery, 2 for excalibur and 3 for photon. For major features or release, the second number will be increased.
-Each new GENIVI version (releases are every half year, around april and october) will get the current HEAD (for example 2.0.34 for excalibur) and release with the increase of the second number (2.1).
-The next commit on the master branch gets then the new first numner (3) and starts from zero.</p></div>
+The first number describes the release branch. This is 1 for Discovery, 2 for Excalibur and 3 for Foton. For major features or release, the second number will be increased.
+Each new GENIVI version (releases are every half year, around April and October) will get the current HEAD (for example 2.0.34 for Excalibur) and release with the increase of the second number (2.1).
+The next commit on the master branch gets then the new first number (3) and starts from zero.</p></div>
 <div class="paragraph"><p>For the daemon the third number (for example 1.0.X) describes the patch version. The versions are automatically created by git during the build process.
 The versioning scheme is used for the AudioManager daemon itself and for each of it&#8217;s interfaces. The versioning of the Interfaces in EA is defined via the tag "version" and the name of the interfaceversion versionName, for example "CommandReceiveVersion". This information is generated into the interface header files and is used then by cmake to set the interface versions.
 Whenever changes are done, the minor version of the interface needs to be incremented.</p></div>
@@ -797,10 +797,10 @@ Whenever changes are done, the minor version of the interface needs to be increm
 <div class="paragraph"><p>A very detailed documentation is provided by doxygen. In order to use this, please compile the AudioManager with</p></div>
 <div class="listingblock">
 <div class="content">
-<pre><tt>cmake -DWITH_DOCUMENTATION=ON
+<pre><code>cmake -DWITH_DOCUMENTATION=ON
 make
 
-The README is compiled into README.html with asciidoc</tt></pre>
+The README is compiled into README.html with asciidoc</code></pre>
 </div></div>
 </div>
 </div>
@@ -810,45 +810,35 @@ The README is compiled into README.html with asciidoc</tt></pre>
 <div class="sect2">
 <h3 id="_compile_options">Compile Options</h3>
 <div class="paragraph"><p>These are the compile options with default values:</p></div>
-<div class="literalblock">
+<div class="listingblock">
 <div class="content">
-<pre><tt>AM_MAP_CAPACITY                  10
-AM_MAX_CONNECTIONS               0x1000
-AM_SHARE_FOLDER                  /usr/local/share/audiomanager
-BUILD_SHARED_LIBS                OFF
-CMAKE_BUILD_TYPE
-CMAKE_INSTALL_PREFIX             /usr/local
-COMMON_API_DBUS_LIBRARY          /usr/local/lib/libCommonAPI-DBus.so
-COMMON_API_LIBRARY               /usr/local/lib/libCommonAPI.so
-DBUS_SERVICE_OBJECT_PATH         /org/genivi/audiomanager
-DBUS_SERVICE_PREFIX              org.genivi.audiomanager
-DEFAULT_TELNETPORT               6080
-DOC_OUTPUT_PATH                  XXX/build/doc
-DYNAMIC_ID_BOUNDARY              100
-EXECUTABLE_OUTPUT_PATH           XXX/build/bin
-GLIB_DBUS_TYPES_TOLERANT         ON
-LIB_INSTALL_SUFFIX               audiomanager
-MAX_TELNETCONNECTIONS            3
-NSM_BUS_INTERFACE                org.genivi.NodeStateManager
-NSM_INTERFACE                    org.genivi.NodeStateManager.Consumer
-NSM_PATH                         /org/genivi/NodeStateManager
-PLUGINS_OUTPUT_PATH              XXX/build/plugins
-TEST_EXECUTABLE_INSTALL_PATH     ~/tests
-TEST_EXECUTABLE_OUTPUT_PATH      XXX/build/bin/tests
-USE_BUILD_LIBS                   ON
-WITH_DATABASE_STORAGE            OFF
-WITH_DLT                         ON
-WITH_DOCUMENTATION               OFF
-WITH_ENABLED_IPC                 CAPI
-WITH_NSM                         OFF
-WITH_SYSTEMD_WATCHDOG            OFF
-WITH_TELNET                      ON
-WITH_TESTS                       ON
-gmock_build_tests                OFF
-gtest_build_samples              OFF
-gtest_build_tests                OFF
-gtest_disable_pthreads           OFF
-gtest_force_shared_crt           OFF</tt></pre>
+<pre><code>AudioManager Configuration:
+-- CMAKE_BUILD_TYPE              =
+-- CMAKE_INSTALL_PREFIX          = /usr/local
+-- BUILD_DOCUMENTATION           = OFF
+-- WITH_TESTS                    = ON
+-- WITH_DLT                      = ON
+-- WITH_TESTS                    = ON
+-- WITH_TELNET                   = ON
+-- WITH_SYSTEMD_WATCHDOG         = OFF
+-- WITH_CAPI_WRAPPER             = ON
+-- WITH_DBUS_WRAPPER             = OFF
+-- WITH_SHARED_UTILITIES         = OFF
+-- WITH_SHARED_CORE              = OFF
+-- DYNAMIC_ID_BOUNDARY           = 100
+-- LIB_INSTALL_SUFFIX            = audiomanager
+-- TEST_EXECUTABLE_INSTALL_PATH  = ~/tests
+-- DEFAULT_PLUGIN_COMMAND_DIR    = /usr/local/lib/audiomanager/command
+-- DEFAULT_PLUGIN_ROUTING_DIR    = /usr/local/lib/audiomanager/routing
+-- CONTROLLER_PLUGIN_DIR         = /usr/local/lib/audiomanager/control
+-- AM_SHARE_FOLDER               = /usr/local/share/audiomanager
+-- AM_MAP_CAPACITY               = 10
+-- AM_MAX_CONNECTIONS            = 0x1000
+-- AM_MAX_MAIN_CONNECTIONS       = 0x1000
+-- BUILD_TESTING                 = ON
+-- CommandInterface version: 4.0
+-- ControlInterface version: 5.0
+-- RoutingInterface version: 5.0</code></pre>
 </div></div>
 </div>
 <div class="sect2">
@@ -860,16 +850,11 @@ For each option, some hints are given.</p></div>
 <h3 id="_build_dependencies">Build dependencies</h3>
 <div class="paragraph"><p>Basically, all build dependencies are optional- but you might need to use some if you want to have support for Dbus,
 for example&#8230;</p></div>
-<div class="paragraph"><p>You will need optionally fullfill some dependencies in order to comile the GENIVI AudioManager Daemon, these are:</p></div>
+<div class="paragraph"><p>You will need optionally fulfill some dependencies in order to compile the GENIVI AudioManager Daemon, these are:</p></div>
 <div class="ulist"><ul>
 <li>
 <p>
-dbus (only when DBUS_WRAPPER==ON) [tested on version 1.2.16]
-</p>
-</li>
-<li>
-<p>
-sqlite3 [tested on version 3.6.22] (only when WITH_DATABASE_STORAGE==ON)
+dbus (only when WITH_DBUS_WRAPPER==ON) [tested on version 1.2.16]
 </p>
 </li>
 <li>
@@ -884,32 +869,35 @@ doxygen [tested on version 1.6.3] (only when WITH_DOCUMENTATION==ON)
 </li>
 <li>
 <p>
-commonAPI [version &gt; 2.1] (only with WITH_ENABLED_IPC CAPI), more information here <a href="http://projects.genivi.org/commonapi/">http://projects.genivi.org/commonapi/</a>
+commonAPI [version &gt; 3.1.5] (only with WITH_CAPI_WRAPPER), more information here <a href="http://projects.genivi.org/commonapi/">http://projects.genivi.org/commonapi/</a>
+</p>
+</li>
+<li>
+<p>
+systemd [ version &gt; 44 ] (only WITH_SYSTEMD_WATCHDOG)
 </p>
 </li>
 </ul></div>
-<div class="paragraph"><p>To install them in a build environment like Ubuntu you can use:</p></div>
-<div class="listingblock">
-<div class="content">
-<pre><tt>sudo apt-get install libdbus-1-dev libsqlite3-dev doxygen git cmake build-essential</tt></pre>
-</div></div>
 </div>
 <div class="sect2">
 <h3 id="_audiomanagerutilities">AudioManagerUtilities</h3>
-<div class="paragraph"><p>In the AudioManagerUtilites you can find hany helper functions that can be reused by other projects as well.</p></div>
+<div class="paragraph"><p>In the AudioManagerUtilites you can find helper functions that can be reused by other projects as well.
+The library can be shipped as a static or a dynamic link library (WITH_SHARED_UTILITIES).</p></div>
 </div>
 <div class="sect2">
-<h3 id="_the_nodestatemanager">The NodeStateManager</h3>
-<div class="paragraph"><p>The nodestatemanager headers are needed to compile the audiomanager. If the nodestatemanagerincludes are not found,
-the headers shipped with the audiomanager are used.
-The nodestatemanager can be retrieved from projects.genivi.org .</p></div>
-<div class="paragraph"><p>Please note that the NSM interface must be compatible with Dbus properties. This requires for CommonAPI to use the commonAPI fdepl.
-It used to work, but currently with CommmonAPI 2.6.1 the generation does not work anymore.</p></div>
+<h3 id="_audiomanagercore">AudioManagerCore</h3>
+<div class="paragraph"><p>The AudioMangerCore is build as a static (or with WITH_SHARED_CORE) library. Sometimes it is useful for unit testing of a plugin to compile against the core.</p></div>
 </div>
 <div class="sect2">
-<h3 id="_commonapi_file_generation">CommonAPI File generation</h3>
-<div class="paragraph"><p>The audiomanager will search in /usr/share or /usr/local/share for a generator. He will generate all neccessary files with this generator into the build tree.</p></div>
-<div class="paragraph"><p>The adresses used for commonAPI are fixed. If you need to change them, you can use a central or local configure file. More information on CommonAPI documentation: <a href="http://projects.genivi.org/commonapi/">http://projects.genivi.org/commonapi/</a></p></div>
+<h3 id="_commonapi_wrapper">CommonAPI Wrapper</h3>
+<div class="paragraph"><p>The commonapi wrapper provides the mainloop intergration for commonapi into the Mainloop of the audiomanager (CAmSockethandler).
+In order to use it, just use:</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><code>CAPI-&gt;registerService(....)
+CAPI-&gt;buildProxy(...)</code></pre>
+</div></div>
+<div class="paragraph"><p>instead of the standard calls. The CAPIWrapper will serialize the commands and integrate it smoothly with the mainloop.</p></div>
 </div>
 <div class="sect2">
 <h3 id="_tests">Tests</h3>
@@ -921,16 +909,16 @@ python [tested on version 2.6, should work on higher versions as well]
 </p>
 </li>
 </ul></div>
-<div class="paragraph"><p>GoogleMock and GoogleTest are as source code integrated in the sourcetree
+<div class="paragraph"><p>GoogleMock and GoogleTest are as source code integrated in the source tree
 To install them in a build environment like Ubuntu you can use:</p></div>
 <div class="listingblock">
 <div class="content">
-<pre><tt>sudo apt-get install python2.6-dev</tt></pre>
+<pre><code>sudo apt-get install python2.6-dev</code></pre>
 </div></div>
-<div class="paragraph"><p>For compiling, you will need a compiler, linker etc. On most linux systems you will get this via</p></div>
+<div class="paragraph"><p>For compiling, you will need a compiler, linker etc. On most Linux systems you will get this via</p></div>
 <div class="listingblock">
 <div class="content">
-<pre><tt>sudo apt-get install build-essential</tt></pre>
+<pre><code>sudo apt-get install build-essential</code></pre>
 </div></div>
 <div class="paragraph"><p>More details in the CMake Files CmakeList.txt in the projects.</p></div>
 </div>
@@ -939,53 +927,43 @@ To install them in a build environment like Ubuntu you can use:</p></div>
 <div class="paragraph"><p>To compile open a shell, browse to the AudioManager folder and</p></div>
 <div class="listingblock">
 <div class="content">
-<pre><tt>mkdir /build
+<pre><code>mkdir /build
 cd build
 cmake ..
-make</tt></pre>
+make</code></pre>
 </div></div>
-<div class="paragraph"><p>The AudioManager executable will be placed in the bin folder of your build folder, tests in a subfolder below.-</p></div>
+<div class="paragraph"><p>The AudioManager executable will be placed in the bin folder of your build folder, tests in a sub folder below.-</p></div>
 <div class="paragraph"><p>In order to install the AudioManager, you can do</p></div>
 <div class="listingblock">
 <div class="content">
-<pre><tt>sudo make install</tt></pre>
+<pre><code>sudo make install</code></pre>
 </div></div>
 <div class="paragraph"><p>this installs everything.</p></div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_build_targets">Build targets</h2>
+<h2 id="_compiling_plugins">Compiling plugins</h2>
 <div class="sectionbody">
-<div class="paragraph"><p>Several install targets exists:</p></div>
-<div class="paragraph"><p>just install the audiomanager</p></div>
+<div class="paragraph"><p>Once the Audiomanager is installed, it will also install *.pc files for autotools and *Config.cmake files for cmake projects.
+In order to compile and link against the AudioMananger, you can use:</p></div>
 <div class="listingblock">
 <div class="content">
-<pre><tt>sudo make bin-install</tt></pre>
+<pre><code>find_package(AudioManager REQUIRED )
+find_package(AudioManagerUtilities)</code></pre>
 </div></div>
-<div class="paragraph"><p>just install the dev package with all headers and cmake file, needed to compile plugins out of source</p></div>
+<div class="paragraph"><p>to find the configuration files. To use the right include paths, use:</p></div>
 <div class="listingblock">
 <div class="content">
-<pre><tt>sudo make dev-install</tt></pre>
+<pre><code>${AudioManager_INCLUDE_DIRS}
+${AudioManagerUtilities_INCLUDE_DIRS}</code></pre>
 </div></div>
-<div class="paragraph"><p>just install the tests</p></div>
+<div class="paragraph"><p>to link agains the right libs use:</p></div>
 <div class="listingblock">
 <div class="content">
-<pre><tt>sudo make test-install</tt></pre>
+<pre><code>${AudioManagerUtilities_LIBRARIES}</code></pre>
 </div></div>
-<div class="paragraph"><p>just install the plugins (only available if plugins are compiled)</p></div>
-<div class="listingblock">
-<div class="content">
-<pre><tt>sudo make plugins-install</tt></pre>
-</div></div>
-<div class="paragraph"><p>just install the test for the plugins (only available if plugins are compiled)</p></div>
-<div class="listingblock">
-<div class="content">
-<pre><tt>sudo make plugin-test-install</tt></pre>
-</div></div>
-<div class="paragraph"><p>If you want to compile the Audiomanager together with the plugins, simply clone the plugins into a folder
-Plugins on the mainlevel. The Plugins will be then compiled together with the AudioManager.</p></div>
-<div class="paragraph"><p>If the plugins are compiled seperatly, the AudioManager needs to be installed on the system. The plugins will find and read the important CMake variables and use them.</p></div>
+<div class="paragraph"><p>for example, see the AudiomanagerPlugins</p></div>
 <div class="sect2">
 <h3 id="_adding_own_plugins">Adding own plugins</h3>
 <div class="paragraph"><p>To keep the own sources away from the GENIVI code the project specific elements can be reconfigured with own type definitions.
@@ -993,7 +971,7 @@ You can copy paste the CMake scripts from the example plugins for example.</p></
 <div class="listingblock">
 <div class="title">The are already examples given in audiomanagertypes.h:</div>
 <div class="content">
-<pre><tt>/**
+<pre><code>/**
  * This type gives the information about reason for Source/Sink change
  */
 typedef uint16_t am_CustomAvailabilityReason_t;
@@ -1071,7 +1049,7 @@ static const am_CustomRampType_t RAMP_GENIVI_LINEAR = 4;
 static const am_CustomRampType_t RAMP_GENIVI_EXP = 5;
 
 /**
- * Within genivi only the some example properties are defined.
+ * Within GENIVI only the some example properties are defined.
  * For products these should be changed or extended.
  */
 typedef uint16_t am_CustomSoundPropertyType_t;
@@ -1087,7 +1065,7 @@ static const am_CustomSoundPropertyType_t SP_GENIVI_BASS = 3;
  * Describes the different system properties which are project specific.
  */
 typedef uint16_t am_CustomSystemPropertyType_t;
-static const am_CustomSystemPropertyType_t SYP_UNKNOWN = 0;</tt></pre>
+static const am_CustomSystemPropertyType_t SYP_UNKNOWN = 0;</code></pre>
 </div></div>
 </div>
 <div class="sect2">
@@ -1095,7 +1073,7 @@ static const am_CustomSystemPropertyType_t SYP_UNKNOWN = 0;</tt></pre>
 <div class="paragraph"><p>The commandline options of the AudioManager:</p></div>
 <div class="listingblock">
 <div class="content">
-<pre><tt>USAGE:
+<pre><code>USAGE:
 
    ./AudioManager  [-K &lt;string&gt;] [-m &lt;int&gt;] [-t &lt;int&gt;] [-i] [-r &lt;string&gt;]
                    [-R &lt;string&gt;] [-l &lt;string&gt;] [-L &lt;string&gt;] [-c &lt;string&gt;]
@@ -1143,7 +1121,7 @@ Where:
      Displays usage information and exits.
 
 
-   The team of the AudioManager wishes you a nice day!</tt></pre>
+   The team of the AudioManager wishes you a nice day!</code></pre>
 </div></div>
 <div class="paragraph"><p>To learn more about the commandline options, check the doxygen documentation.</p></div>
 </div>
@@ -1152,24 +1130,24 @@ Where:
 <div class="sect1">
 <h2 id="_telnet_server">Telnet Server</h2>
 <div class="sectionbody">
-<div class="paragraph"><p>The audiomanager has a build- in telnetserver that serves for debuggin purposes.
-If you compile your AudioManager with TelnetServer support (cmake -DWITH_TELNET=ON), you will be able to
+<div class="paragraph"><p>The audiomanager has a build- in telnet server that serves for debugging purposes.
+If you compile your AudioManager with Telnet Server support (cmake -DWITH_TELNET=ON), you will be able to
 set with commandline argument -t the port number and with -m the maximum supported connections.
 The default telnet port is 6060.</p></div>
 <div class="literalblock">
 <div class="title">For example, launch a telnet session on port 6080:</div>
 <div class="content">
-<pre><tt>telnet localhost 6060</tt></pre>
+<pre><code>telnet localhost 6060</code></pre>
 </div></div>
 <div class="literalblock">
 <div class="content">
-<pre><tt>#&gt;Welcome to GENIVI AudioManager ver-0.0.1-37-ga004215
-#&gt;</tt></pre>
+<pre><code>#&gt;Welcome to GENIVI AudioManager ver-0.0.1-37-ga004215
+#&gt;</code></pre>
 </div></div>
 <div class="literalblock">
 <div class="title">press <em>help</em> to get a list of all supported commands on this level:</div>
 <div class="content">
-<pre><tt>#&gt;help
+<pre><code>#&gt;help
 ####################################################
 ####### The following commands are supported: ######
 ####################################################
@@ -1181,12 +1159,12 @@ The default telnet port is 6060.</p></div>
 #list  - Go into 'list'-submenu
 #set   - Go into 'set'-submenu
 #
-#\&gt;</tt></pre>
+#\&gt;</code></pre>
 </div></div>
 <div class="literalblock">
 <div class="title">Now type one of these commands, for example <em>get</em>, followed with another <em>help</em> to get a list of supported commands:</div>
 <div class="content">
-<pre><tt>#\&gt;get
+<pre><code>#\&gt;get
 #
 #\Get&gt;help
 ####################################################
@@ -1200,12 +1178,12 @@ The default telnet port is 6060.</p></div>
 #routing  - show current routing
 #sendv - show senderversion
 #
-#\Get&gt;</tt></pre>
+#\Get&gt;</code></pre>
 </div></div>
 <div class="literalblock">
 <div class="title">You can also execute several commands in a line:</div>
 <div class="content">
-<pre><tt>#\Get&gt;recv sendv .. help exit
+<pre><code>#\Get&gt;recv sendv .. help exit
 #   Receiver versions:
 #   Ctrl: 1 | Cmd: 1 | Routing: 1
 #   Sender versions:
@@ -1222,7 +1200,7 @@ The default telnet port is 6060.</p></div>
 #set   - Go into 'set'-submenu
 #
 #Your wish is my command ... bye!
-#Connection closed by foreign host.</tt></pre>
+#Connection closed by foreign host.</code></pre>
 </div></div>
 </div>
 </div>
@@ -1232,7 +1210,7 @@ The default telnet port is 6060.</p></div>
 <div class="paragraph"><p>The source code if formatted with eclipse, the style sheet used can be found in the Foo folder:</p></div>
 <div class="listingblock">
 <div class="content">
-<pre><tt>cmake/AudioManager_Codestyle.xml</tt></pre>
+<pre><code>cmake/AudioManager_Codestyle.xml</code></pre>
 </div></div>
 </div>
 </div>
@@ -1242,36 +1220,36 @@ The default telnet port is 6060.</p></div>
 <div class="literalblock">
 <div class="title">First get the code from the git:</div>
 <div class="content">
-<pre><tt>git clone</tt></pre>
+<pre><code>git clone</code></pre>
 </div></div>
 <div class="literalblock">
 <div class="title">Get an overview of all branches:</div>
 <div class="content">
-<pre><tt>git branch</tt></pre>
+<pre><code>git branch</code></pre>
 </div></div>
 <div class="literalblock">
-<div class="title">Switch to the branch you want to work on (see versioning schmeme, the master is the feature branch) and verify that it has switched (* changed)</div>
+<div class="title">Switch to the branch you want to work on (see versioning scheme, the master is the feature branch) and verify that it has switched (* changed)</div>
 <div class="content">
-<pre><tt>git checkout &lt;your branch&gt;
-git branch</tt></pre>
+<pre><code>git checkout &lt;your branch&gt;
+git branch</code></pre>
 </div></div>
 <div class="literalblock">
 <div class="title">Best practice is to create a local branch based on the current branch:</div>
 <div class="content">
-<pre><tt>git branch working_branch</tt></pre>
+<pre><code>git branch working_branch</code></pre>
 </div></div>
-<div class="paragraph"><p>Start working, best practice is to commit smaller, compilable peaced during the work that makes it easier to
+<div class="paragraph"><p>Start working, best practice is to commit smaller, buildable peices during the work that makes it easier to
 handle later on.</p></div>
 <div class="literalblock">
 <div class="title">If you want to commit you changes, send them to the audiomanager-dev list, you can create a patch like this:</div>
 <div class="content">
-<pre><tt>git format-patch working_branch &lt;your branch&gt;</tt></pre>
+<pre><code>git format-patch working_branch &lt;your branch&gt;</code></pre>
 </div></div>
 <div class="paragraph"><p>This creates a set of patches that are published via the mailing list.The patches will be discussed and then merged &amp; uploaded on the git by the maintainer.</p></div>
 <div class="paragraph"><p>Patches can be accepted either under GENIVI Cla or MPL 2.0 (see section License). Please be sure that the signed-off-by is set correctly. For more, check out <a href="http://gerrit.googlecode.com/svn/documentation/2.0/user-signedoffby.html">http://gerrit.googlecode.com/svn/documentation/2.0/user-signedoffby.html</a></p></div>
 <div class="listingblock">
 <div class="content">
-<pre><tt>                                            _             _ _       __  __
+<pre><code>                                            _             _ _       __  __
                                            / \  _   _  __| (_) ___ |  \/  | __ _ _ __   __ _  __ _  ___ _ __
                                           / _ \| | | |/ _` | |/ _ \| |\/| |/ _` | '_ \ / _` |/ _` |/ _ \ '__|
                                          / ___ \ |_| | (_| | | (_) | |  | | (_| | | | | (_| | (_| |  __/ |
@@ -1315,7 +1293,7 @@ handle later on.</p></div>
                            ]QQQ[   ]QQQQWWQQf  ]QQQQQQQWQWQWQf  ]QQQf  ?QQQQa ]QQQf  ]QQQQ    i4QQQ6  qQQQQ'    ]QQQQ
                            ]QQQ6,   .   qQQQf  ]QQQf            ]QQQf   ]4QQQ6jQQQf  ]QQQQ      4QQQ6gQWQQ'     ]QQQQ
                             4QQQQQQQQQQQQQQW'  ]QQQQQQWQWQWQWQ  ]QQQf    i?QQQQQQQf  ]QQQQ       ]QQQQQQQ'      ]QQQQ
-                            ++"??????????`     ]""!"""""""""""S ]""!'      ]"""!""'  -""!"        """!""'       ]""!"</tt></pre>
+                            ++"??????????`     ]""!"""""""""""S ]""!'      ]"""!""'  -""!"        """!""'       ]""!"</code></pre>
 </div></div>
 </div>
 </div>
@@ -1323,7 +1301,8 @@ handle later on.</p></div>
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2015-04-16 10:44:06 CEST
+Last updated
+ 2016-02-10 17:38:39 CET
 </div>
 </div>
 </body>

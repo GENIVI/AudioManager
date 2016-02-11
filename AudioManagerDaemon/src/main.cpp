@@ -79,7 +79,7 @@ std::vector<std::string> listCommandPluginDirs;
 std::vector<std::string> listRoutingPluginDirs;
 
 //commandline options used by the Audiomanager itself
-TCLAP::ValueArg<std::string> controllerPlugin("c","controllerPlugin","use controllerPlugin full path with .so ending",false,CONTROLLER_PLUGIN,"string");
+TCLAP::ValueArg<std::string> controllerPlugin("c","controllerPlugin","use controllerPlugin full path with .so ending",false,CONTROLLER_PLUGIN_DIR,"string");
 TCLAP::ValueArg<std::string> additionalCommandPluginDirs("L","additionalCommandPluginDirs","additional path for looking for command plugins, can be used after -l option",false," ","string");
 TCLAP::ValueArg<std::string> additionalRoutingPluginDirs("R","additionalRoutingPluginDirs","additional path for looking for routing plugins, can be used after -r option ",false," ","string");
 TCLAP::ValueArg<std::string> routingPluginDir("r","RoutingPluginDir","path for looking for routing plugins",false," ","string");
@@ -87,8 +87,8 @@ TCLAP::ValueArg<std::string> commandPluginDir("l","CommandPluginDir","path for l
 TCLAP::ValueArg<std::string> databasePath ("p","databasePath","path for sqlite database (default is in memory)",false,":memory:","string");
 TCLAP::ValueArg<unsigned int> telnetPort ("t","telnetport","The port that is used for telnet",false,DEFAULT_TELNETPORT,"int");
 TCLAP::ValueArg<unsigned int> maxConnections ("m","maxConnections","Maximal number of connections for telnet",false,MAX_TELNETCONNECTIONS,"int");
-TCLAP::SwitchArg dbusWrapperTypeBool ("t","dbusType","DbusType to be used by CAmDbusWrapper: if option is selected, DBUS_SYSTEM is used otherwise DBUS_SESSION",false);
-TCLAP::SwitchArg enableNoDLTDebug ("V","logDlt","print DLT logs to stdout",false);
+TCLAP::SwitchArg dbusWrapperTypeBool ("T","dbusType","DbusType to be used by CAmDbusWrapper: if option is selected, DBUS_SYSTEM is used otherwise DBUS_SESSION",false);
+TCLAP::SwitchArg enableNoDLTDebug ("V","logDlt","print DLT logs to stdout or dlt-daemon, default on",true);
 TCLAP::SwitchArg currentSettings("i","currentSettings","print current settings and exit",false);
 TCLAP::SwitchArg daemonizeAM("d","daemonize","daemonize Audiomanager. Better use systemd...",false);
 
@@ -104,8 +104,7 @@ int fd0, fd1, fd2;
 void OutOfMemoryHandler()
 {
     logError("No more memory - bye");
-    //todo: add gracefull dead here. Do what can be done persistence wise
-    exit(1);
+    throw std::runtime_error(std::string("SocketHandler::start_listenting ppoll returned with error."));
 }
 
 /**
@@ -168,9 +167,6 @@ void printCmdInformation()
 #ifdef WITH_TELNET
 	printf("\tTelnet portNumber:\t\t\t%i\n", telnetPort.getValue());
 	printf("\tTelnet maxConnections:\t\t\t%i\n", maxConnections.getValue());
-#endif
-#ifdef WITH_DATABASE_STORAGE
-	printf("\tSqlite Database path:\t\t\t%s\n", databasePath.getValue().c_str());
 #endif
 #ifndef WITH_DLT
 	printf("\tDlt Command Line Output: \t\t%s\n", enableNoDLTDebug.getValue()?"enabled":"not enabled");
@@ -248,9 +244,7 @@ void mainProgram(int argc, char *argv[])
     	cmd->add(routingPluginDir);
     	cmd->add(currentSettings);
     	cmd->add(daemonizeAM);
-#ifndef WITH_DLT
     	cmd->add(enableNoDLTDebug);
-#endif
 #ifdef WITH_DBUS_WRAPPER
     	cmd->add(dbusWrapperTypeBool);
 #endif

@@ -48,7 +48,10 @@ CAmDltWrapper *CAmDltWrapper::instance(const bool enableNoDLTDebug)
 void CAmDltWrapper::unregisterContext(DltContext & handle)
 {
 #ifdef WITH_DLT
-    dlt_unregister_context(&handle);
+	if (mEnableNoDLTDebug)
+    {
+		dlt_unregister_context(&handle);
+    }
 #else
     (void) handle;
 #endif
@@ -57,16 +60,17 @@ void CAmDltWrapper::unregisterContext(DltContext & handle)
 void CAmDltWrapper::deinit()
 {
 #ifdef WITH_DLT
-    unregisterContext(mDltContext);
+	if (mEnableNoDLTDebug)
+    {
+		unregisterContext(mDltContext);
+    }
 #endif
 }
 
-CAmDltWrapper::CAmDltWrapper(const bool enableNoDLTDebug) :
-#ifndef WITH_DLT
-        mEnableNoDLTDebug(enableNoDLTDebug),
-#endif
+CAmDltWrapper::CAmDltWrapper(const bool enableNoDLTDebug=true) :
         mDltContext(), //
-        mDltContextData()
+        mDltContextData(), //
+		mEnableNoDLTDebug(enableNoDLTDebug)
 {
     (void) enableNoDLTDebug;
 #ifndef WITH_DLT
@@ -77,9 +81,12 @@ CAmDltWrapper::CAmDltWrapper(const bool enableNoDLTDebug) :
 void CAmDltWrapper::registerApp(const char *appid, const char *description)
 {
 #ifdef WITH_DLT
-    dlt_register_app(appid, description);
-    //register a default context
-    dlt_register_context(&mDltContext, "def", "default Context registered by DLTWrapper CLass");
+	if (mEnableNoDLTDebug)
+	{
+		dlt_register_app(appid, description);
+		//register a default context
+		dlt_register_context(&mDltContext, "def", "default Context registered by DLTWrapper CLass");
+	}
 #else
     (void) appid;
     (void) description;
@@ -89,7 +96,10 @@ void CAmDltWrapper::registerApp(const char *appid, const char *description)
 void CAmDltWrapper::registerContext(DltContext& handle, const char *contextid, const char *description)
 {
 #ifdef WITH_DLT
-    dlt_register_context(&handle, contextid, description);
+	if (mEnableNoDLTDebug)
+	{
+		dlt_register_context(&handle, contextid, description);
+	}
 #else
     strncpy(handle.contextID,contextid,4);
 
@@ -115,7 +125,10 @@ void CAmDltWrapper::registerContext(DltContext& handle, const char *contextid, c
         const DltLogLevelType level, const DltTraceStatusType status)
 {
 #ifdef WITH_DLT
-    dlt_register_context_ll_ts(&handle, contextid, description, level, status);
+	if (mEnableNoDLTDebug)
+	{
+		dlt_register_context_ll_ts(&handle, contextid, description, level, status);
+	}
 #else
     strncpy(handle.contextID,contextid,4);
 
@@ -144,14 +157,15 @@ bool CAmDltWrapper::init(DltLogLevelType loglevel, DltContext* context)
     if (!context)
         context = &mDltContext;
 #ifdef WITH_DLT
-    if (dlt_user_log_write_start(context, &mDltContextData, loglevel) <= 0)
+	if (mEnableNoDLTDebug)
+		if(dlt_user_log_write_start(context, &mDltContextData, loglevel) <= 0)
 #else
     if((mEnableNoDLTDebug == false) || (loglevel > context->log_level_user))
 #endif
-    {
-        pthread_mutex_unlock(&mMutex);
-        return false;
-    }
+		{
+			pthread_mutex_unlock(&mMutex);
+			return false;
+		}
 #ifndef WITH_DLT
     std::cout << "\e[0;34m[" << context->contextID << "]\e[0;30m\t";
 #endif
@@ -161,7 +175,10 @@ bool CAmDltWrapper::init(DltLogLevelType loglevel, DltContext* context)
 void CAmDltWrapper::send()
 {
 #ifdef WITH_DLT
-    dlt_user_log_write_finish(&mDltContextData);
+	if (mEnableNoDLTDebug)
+	{
+		dlt_user_log_write_finish(&mDltContextData);
+	}
 #else
     if(mEnableNoDLTDebug)
         std::cout << mDltContextData.buffer.str().c_str() << std::endl;
@@ -175,7 +192,10 @@ void CAmDltWrapper::send()
 void CAmDltWrapper::append(const int8_t value)
 {
 #ifdef WITH_DLT
-    dlt_user_log_write_int8(&mDltContextData, value);
+	if (mEnableNoDLTDebug)
+	{
+		dlt_user_log_write_int8(&mDltContextData, value);
+	}
 #else
     appendNoDLT(value);
 #endif
@@ -184,7 +204,10 @@ void CAmDltWrapper::append(const int8_t value)
 void CAmDltWrapper::append(const uint8_t value)
 {
 #ifdef WITH_DLT
-    dlt_user_log_write_uint8(&mDltContextData, value);
+	if (mEnableNoDLTDebug)
+	{
+		dlt_user_log_write_uint8(&mDltContextData, value);
+	}
 #else
     appendNoDLT(value);
 #endif
@@ -193,7 +216,10 @@ void CAmDltWrapper::append(const uint8_t value)
 void CAmDltWrapper::append(const int16_t value)
 {
 #ifdef WITH_DLT
-    dlt_user_log_write_int16(&mDltContextData, value);
+	if (mEnableNoDLTDebug)
+	{
+		dlt_user_log_write_int16(&mDltContextData, value);
+	}
 #else
     appendNoDLT(value);
 #endif
@@ -202,7 +228,10 @@ void CAmDltWrapper::append(const int16_t value)
 void CAmDltWrapper::append(const uint16_t value)
 {
 #ifdef WITH_DLT
-    dlt_user_log_write_uint16(&mDltContextData, value);
+	if (mEnableNoDLTDebug)
+	{
+		dlt_user_log_write_uint16(&mDltContextData, value);
+	}
 #else
     appendNoDLT(value);
 #endif
@@ -211,7 +240,10 @@ void CAmDltWrapper::append(const uint16_t value)
 void CAmDltWrapper::append(const int32_t value)
 {
 #ifdef WITH_DLT
-    dlt_user_log_write_int32(&mDltContextData, value);
+	if (mEnableNoDLTDebug)
+	{
+		dlt_user_log_write_int32(&mDltContextData, value);
+	}
 #else
     appendNoDLT(value);
 #endif
@@ -220,7 +252,10 @@ void CAmDltWrapper::append(const int32_t value)
 void CAmDltWrapper::append(const uint32_t value)
 {
 #ifdef WITH_DLT
-    dlt_user_log_write_uint32(&mDltContextData, value);
+	if (mEnableNoDLTDebug)
+	{
+		dlt_user_log_write_uint32(&mDltContextData, value);
+	}
 #else
     appendNoDLT(value);
 #endif
@@ -228,13 +263,17 @@ void CAmDltWrapper::append(const uint32_t value)
 
 void CAmDltWrapper::append(const std::string& value)
 {
-	append(value.c_str());
+	if (mEnableNoDLTDebug)
+		append(value.c_str());
 }
 
 void CAmDltWrapper::append(const bool value)
 {
 #ifdef WITH_DLT
-    dlt_user_log_write_bool(&mDltContextData, static_cast<uint8_t>(value));
+	if (mEnableNoDLTDebug)
+	{
+		dlt_user_log_write_bool(&mDltContextData, static_cast<uint8_t>(value));
+	}
 #else
     appendNoDLT(value);
 #endif
@@ -243,7 +282,10 @@ void CAmDltWrapper::append(const bool value)
 void CAmDltWrapper::append(const int64_t value)
 {
 #ifdef WITH_DLT
-    dlt_user_log_write_int64(&mDltContextData, value);
+	if (mEnableNoDLTDebug)
+	{
+		dlt_user_log_write_int64(&mDltContextData, value);
+	}
 #else
     appendNoDLT(value);
 #endif
@@ -252,7 +294,10 @@ void CAmDltWrapper::append(const int64_t value)
 void CAmDltWrapper::append(const uint64_t value)
 {
 #ifdef WITH_DLT
-    dlt_user_log_write_uint64(&mDltContextData, value);
+	if (mEnableNoDLTDebug)
+	{
+		dlt_user_log_write_uint64(&mDltContextData, value);
+	}
 #else
     appendNoDLT(value);
 #endif
@@ -261,7 +306,10 @@ void CAmDltWrapper::append(const uint64_t value)
 void CAmDltWrapper::append(const std::vector<uint8_t> & data)
 {
 #ifdef WITH_DLT
-	dlt_user_log_write_raw(&mDltContextData,(void*)data.data(),data.size());
+	if (mEnableNoDLTDebug)
+	{
+		dlt_user_log_write_raw(&mDltContextData,(void*)data.data(),data.size());
+	}
 #else
 	mDltContextData.buffer << data.data();
 #endif
@@ -281,7 +329,7 @@ void CAmDltWrapper::enableNoDLTDebug(const bool enableNoDLTDebug)
 
 CAmDltWrapper::~CAmDltWrapper()
 {
-    if (mpDLTWrapper)
+    if (mpDLTWrapper && mEnableNoDLTDebug)
     {
         mpDLTWrapper->unregisterContext(mDltContext);
         delete mpDLTWrapper;

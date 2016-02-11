@@ -1,0 +1,10 @@
+libdir=@CMAKE_INSTALL_PREFIX@/lib/@LIB_INSTALL_SUFFIX@
+includedir=@CMAKE_INSTALL_PREFIX@/include/@LIB_INSTALL_SUFFIX@/AudioManagerCore
+
+Name: Audiomanager Core
+Description: The Audiomanager Core Lib 
+Version: @AudioManagerCore_VERSION_STRING@
+Requires: AudioManagerUtilities
+Libs: -L${libdir} lAudioManagerCore
+Cflags: -I${includedir} @CMAKE_CXX_FLAGS@
+

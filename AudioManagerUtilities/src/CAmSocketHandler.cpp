@@ -22,7 +22,6 @@
  */
 
 #include "CAmSocketHandler.h"
-//#include <audiomanagerconfig.h>
 #include <cassert>
 #include <sys/fcntl.h>
 #include <sys/errno.h>
@@ -113,7 +112,7 @@ void CAmSocketHandler::start_listenting()
             else
             {
                 logError("SocketHandler::start_listenting ppoll returned with error", errno);
-                exit(0);
+                throw std::runtime_error(std::string("SocketHandler::start_listenting ppoll returned with error."));
             }
         }
 

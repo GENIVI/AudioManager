@@ -27,12 +27,7 @@
 #include <stdexcept>
 #include "audiomanagerconfig.h"
 #include "CAmDltWrapper.h"
-
-#ifdef SYSTEMD_FOUND
-    #include <systemd/sd-daemon.h>
-#else
-    #include "sd-daemon.h"
-#endif
+#include <systemd/sd-daemon.h>
 
 namespace am
 {
@@ -61,7 +56,7 @@ CAmWatchdog::CAmWatchdog(CAmSocketHandler* CAmSocketHandler) :
         timeout.tv_sec =   (watchdogTimeout / 2) / 1000000;
         timeout.tv_nsec = ((watchdogTimeout / 2) % 1000000) * 1000;
         logInfo("CAmWatchdog::CAmWatchdog setting watchdog timeout:", watchdogTimeout, "us. Notification set to:",
-                timeout.tv_sec, "sec and", timeout.tv_nsec, "ns");
+                (int)timeout.tv_sec, "sec and", (int)timeout.tv_nsec, "ns");
 
         //add the timer here
         if (mpCAmSocketHandler->addTimer(timeout, &TimerCallback, mHandle, NULL))

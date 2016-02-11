@@ -131,7 +131,10 @@ public:
     template<typename T = const char*> void append(const char* value)
     {
     #ifdef WITH_DLT
-        dlt_user_log_write_string(&mDltContextData, value);
+    	if(mEnableNoDLTDebug)
+    	{
+    		dlt_user_log_write_string(&mDltContextData, value);
+    	}
     #else
         mDltContextData.buffer << value;
     #endif
@@ -153,7 +156,8 @@ public:
             "E_ABORTED",
             "E_WRONG_FORMAT"
         };
-        append(str_error[value]);
+        if(mEnableNoDLTDebug)
+        	append(str_error[value]);
     }
 
     // Template to print unknown pointer types with their address
@@ -188,10 +192,10 @@ private:
     CAmDltWrapper(const bool enableNoDLTDebug); //is private because of singleton pattern
 #ifndef WITH_DLT
     template<class T> void appendNoDLT(T value);
-    bool mEnableNoDLTDebug;
 #endif
     DltContext mDltContext; //!< the default context
     DltContextData mDltContextData; //!< contextdata
+    bool mEnableNoDLTDebug;
     static CAmDltWrapper* mpDLTWrapper; //!< pointer to the wrapper instance
     static pthread_mutex_t mMutex;
 

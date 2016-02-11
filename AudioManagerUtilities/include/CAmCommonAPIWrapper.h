@@ -35,10 +35,6 @@
 #include "audiomanagerconfig.h"
 #include "CAmSocketHandler.h"
 
-#if COMMONAPI_VERSION_NUMBER < 300
-#error "CommonAPI versions < 300 are not supported."
-#endif
-
 /**
  * A Common-API wrapper class, which loads the common-api runtime and instantiates all necessary objects.
  * It is implemented as singleton and usually instantiated at the beginning with CAmSocketHandler as parameter.

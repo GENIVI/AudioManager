@@ -86,6 +86,13 @@ target_link_libraries(gmock gtest)
 cxx_library(gmock_main "${cxx_strict}" src/gmock_main.cc)
 target_link_libraries(gmock_main gmock)
 
+INSTALL(TARGETS gmock gmock_main
+        ARCHIVE DESTINATION lib
+        COMPONENT dev)
+INSTALL(DIRECTORY "${CMAKE_SOURCE_DIR}/googleMock/include/gmock"
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/include/
+        COMPONENT dev)
+
 ########################################################################
 #
 # Google Mock's own tests.

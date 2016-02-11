@@ -71,6 +71,13 @@ cxx_library(gtest "${cxx_strict}" src/gtest-all.cc)
 cxx_library(gtest_main "${cxx_strict}" src/gtest_main.cc)
 target_link_libraries(gtest_main gtest)
 
+INSTALL(TARGETS gtest gtest_main
+        ARCHIVE DESTINATION lib
+        COMPONENT dev)
+INSTALL(DIRECTORY "${CMAKE_SOURCE_DIR}/googleMock/gtest/include/gtest"
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/include/
+        COMPONENT dev)
+
 ########################################################################
 #
 # Samples on how to link user tests with gtest or gtest_main.

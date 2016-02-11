@@ -441,16 +441,7 @@ private:
     bool mRecreatePollfds; //!<when this is true, the poll list needs to be recreated
     timespec mStartTime; //!<here the actual time is saved for timecorrection
 
-//    void debugPrintTimerList ()
-//    {
-//        std::list<sh_timer_s>::iterator it(mListActiveTimer.begin());
-//        for(;it!=mListActiveTimer.end();++it)
-//        {
-//            std::cout<< "Handle " << it->handle << "sec " << it->countdown.tv_sec << "nsec " << it->countdown.tv_nsec<<std::endl;
-//        }
-//    }
-}
-;
+};
 
 /**
  * template to create the functor for a class
@@ -465,9 +456,7 @@ public:
     TAmShTimerCallBack(TClass* instance, void (TClass::*function)(sh_timerHandle_t handle, void* userData)) :
             mInstance(instance), //
             mFunction(function)
-    {
-    }
-    ;
+    {};
 
     virtual void Call(sh_timerHandle_t handle, void* userData)
     {
@@ -488,15 +477,12 @@ public:
     TAmShPollPrepare(TClass* instance, void (TClass::*function)(const sh_timerHandle_t handle, void* userData)) :
             mInstance(instance), //
             mFunction(function)
-    {
-    }
-    ;
+    {};
 
     virtual void Call(const sh_timerHandle_t handle, void* userData)
     {
         (*mInstance.*mFunction)(handle, userData);
-    }
-    ;
+    };
 };
 
 /**make private, not public
@@ -512,15 +498,12 @@ public:
     TAmShPollFired(TClass* instance, void (TClass::*function)(const pollfd pollfd, const sh_pollHandle_t handle, void* userData)) :
             mInstance(instance), //
             mFunction(function)
-    {
-    }
-    ;
+    {};
 
     virtual void Call(const pollfd pollfd, const sh_pollHandle_t handle, void* userData)
     {
         (*mInstance.*mFunction)(pollfd, handle, userData);
-    }
-    ;
+    };
 };
 
 /**
@@ -536,15 +519,12 @@ public:
     TAmShPollCheck(TClass* instance, bool (TClass::*function)(const sh_pollHandle_t handle, void* userData)) :
             mInstance(instance), //
             mFunction(function)
-    {
-    }
-    ;
+    {};
 
     virtual bool Call(const sh_pollHandle_t handle, void* userData)
     {
         return ((*mInstance.*mFunction)(handle, userData));
-    }
-    ;
+    };
 };
 
 /**
@@ -560,15 +540,12 @@ public:
     TAmShPollDispatch(TClass* instance, bool (TClass::*function)(const sh_pollHandle_t handle, void* userData)) :
             mInstance(instance), //
             mFunction(function)
-    {
-    }
-    ;
+    {};
 
     virtual bool Call(const sh_pollHandle_t handle, void* userData)
     {
         return ((*mInstance.*mFunction)(handle, userData));
-    }
-    ;
+    };
 };
 } /* namespace am */
 #endif /* SOCKETHANDLER_H_ */

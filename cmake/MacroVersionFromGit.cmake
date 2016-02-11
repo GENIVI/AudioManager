@@ -17,7 +17,6 @@ endif(NOT DAEMONVERSION)
 
 message(STATUS "Build Version ${DAEMONVERSION}")
 
-
 execute_process(COMMAND git log --pretty=short WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} 
                 OUTPUT_FILE ${CMAKE_CURRENT_SOURCE_DIR}/CHANGELOG)
 
