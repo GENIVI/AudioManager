@@ -23,6 +23,7 @@
 #include <sys/poll.h>
 #include <list>
 #include <map>
+#include <set>
 #include <signal.h>
 
 #include <iostream> //todo: remove me
@@ -30,6 +31,8 @@ namespace am
 {
 
 #define MAX_NS 1000000000L
+#define MAX_TIMERHANDLE INT16_MAX
+#define MAX_POLLHANDLE INT16_MAX
 
 typedef uint16_t sh_timerHandle_t; //!<this is a handle for a timer to be used with the SocketHandler
 typedef uint16_t sh_pollHandle_t; //!<this is a handle for a filedescriptor to be used with the SocketHandler
@@ -178,7 +181,7 @@ private:
     int mDispatchDone; //this starts / stops the mainloop
     struct sh_timer_s //!<struct that holds information of timers
     {
-        sh_timerHandle_t handle; //!<the handle of the timer
+		sh_timerHandle_t handle; //!<the handle of the timer
         timespec countdown; //!<the countdown, this value is decreased every time the timer is up
         IAmShTimerCallBack* callback; //!<the callbackfunction
         void * userData; //!<saves a void pointer together with the rest.
@@ -433,7 +436,9 @@ private:
     };
 
     mListPollfd_t mfdPollingArray; //!<the polling array for ppoll
+    std::set<sh_pollHandle_t> mSetPollKeys; //!A set of all used ppoll keys
     mListPoll_t mListPoll; //!<list that holds all information for the ppoll
+    std::set<sh_timerHandle_t> mSetTimerKeys; //!A set of all used timer keys
     std::list<sh_timer_s> mListTimer; //!<list of all timers
     std::list<sh_timer_s> mListActiveTimer; //!<list of all currently active timers
     sh_timerHandle_t mLastInsertedHandle; //!<keeps track of the last inserted timer handle

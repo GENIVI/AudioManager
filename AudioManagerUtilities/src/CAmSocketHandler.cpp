@@ -194,10 +194,29 @@ am_Error_e CAmSocketHandler::addFDPoll(const int fd, const short event, IAmShPol
 {
     if (!fdIsValid(fd))
         return (E_NON_EXISTENT);
+        
+     //create a new handle for the poll
+    sh_pollHandle_t lastHandle(mLastInsertedPollHandle);
+    do
+    {
+		++mLastInsertedPollHandle;
+		if (mLastInsertedPollHandle == MAX_POLLHANDLE)
+		{
+				mLastInsertedPollHandle = 0;
+		}
+		if (mLastInsertedPollHandle==lastHandle)
+		{
+			logError(__PRETTY_FUNCTION__,"Could not create new polls, too many open!");
+			return (am_Error_e::E_NOT_POSSIBLE);
+		}
+			
+	} while (mSetPollKeys.find(mLastInsertedPollHandle) != mSetPollKeys.end());
+    
+    mSetPollKeys.insert(mLastInsertedPollHandle);
 
     sh_poll_s pollData;
     pollData.pollfdValue.fd = fd;
-    pollData.handle = ++mLastInsertedPollHandle;
+    pollData.handle = mLastInsertedPollHandle;
     pollData.pollfdValue.events = event;
     pollData.pollfdValue.revents = 0;
     pollData.userData = userData;
@@ -229,6 +248,7 @@ am_Error_e CAmSocketHandler::removeFDPoll(const sh_pollHandle_t handle)
         if (iterator->handle == handle)
         {
             iterator = mListPoll.erase(iterator);
+            mSetPollKeys.erase(handle);
             mRecreatePollfds = true;
             return (E_OK);
         }
@@ -255,8 +275,25 @@ am_Error_e CAmSocketHandler::addTimer(const timespec timeouts, IAmShTimerCallBac
     sh_timer_s timerItem;
 
     //create a new handle for the timer
-    handle = ++mLastInsertedHandle; //todo: overflow ruling !o
-    timerItem.handle = handle;
+    sh_timerHandle_t lastTimerHandle(mLastInsertedHandle);
+    do
+    {
+		++mLastInsertedHandle;
+		if (mLastInsertedHandle == MAX_TIMERHANDLE)
+		{
+				mLastInsertedHandle = 0;
+		}
+		if (lastTimerHandle==mLastInsertedHandle)
+		{
+			logError(__PRETTY_FUNCTION__,"Could not create new timers, too many open!");
+			return (am_Error_e::E_NOT_POSSIBLE);	
+		}
+			
+	} while (mSetTimerKeys.find(mLastInsertedHandle) != mSetTimerKeys.end());
+	
+    mSetTimerKeys.insert(mLastInsertedHandle);
+ 
+    timerItem.handle = mLastInsertedHandle;
     timerItem.countdown = timeouts;
     timerItem.callback = callback;
     timerItem.userData = userData;
@@ -292,6 +329,7 @@ am_Error_e CAmSocketHandler::removeTimer(const sh_timerHandle_t handle)
         if (it->handle == handle)
         {
             it = mListTimer.erase(it);
+            mSetTimerKeys.erase(handle);
             return (E_OK);
         }
     }
