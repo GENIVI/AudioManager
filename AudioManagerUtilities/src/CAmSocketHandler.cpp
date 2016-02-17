@@ -292,8 +292,8 @@ am_Error_e CAmSocketHandler::addTimer(const timespec timeouts, IAmShTimerCallBac
 	} while (mSetTimerKeys.find(mLastInsertedHandle) != mSetTimerKeys.end());
 	
     mSetTimerKeys.insert(mLastInsertedHandle);
- 
-    timerItem.handle = mLastInsertedHandle;
+	handle=mLastInsertedHandle;
+    timerItem.handle = handle;
     timerItem.countdown = timeouts;
     timerItem.callback = callback;
     timerItem.userData = userData;
