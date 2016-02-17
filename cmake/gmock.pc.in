@@ -5,5 +5,5 @@ Description: Google's framework for writing C++ tests on a variety of platforms
 prefix=@CMAKE_INSTALL_PREFIX@
 includedir=${prefix}/include
 libdir=${prefix}/lib
-Cflags:-I${includedir}/gmock
+Cflags:-I${includedir}
 Libs: -L${libdir} -lgmock

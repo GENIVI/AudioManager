@@ -34,7 +34,7 @@ ADD_EXECUTABLE( AmRouterTest ${ROUTING_SRCS_CXX})
 
 TARGET_LINK_LIBRARIES(AmRouterTest 
         ${GTEST_LIBRARIES}
-	${GMOCK_LIBRARIES}
+		${GMOCK_LIBRARIES}
     	AudioManagerCore
 )
 

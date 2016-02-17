@@ -84,11 +84,12 @@ TCLAP::ValueArg<std::string> additionalCommandPluginDirs("L","additionalCommandP
 TCLAP::ValueArg<std::string> additionalRoutingPluginDirs("R","additionalRoutingPluginDirs","additional path for looking for routing plugins, can be used after -r option ",false," ","string");
 TCLAP::ValueArg<std::string> routingPluginDir("r","RoutingPluginDir","path for looking for routing plugins",false," ","string");
 TCLAP::ValueArg<std::string> commandPluginDir("l","CommandPluginDir","path for looking for command plugins",false," ","string");
-TCLAP::ValueArg<std::string> databasePath ("p","databasePath","path for sqlite database (default is in memory)",false,":memory:","string");
+TCLAP::ValueArg<std::string> dltLogFilename("F","dltLogFilename","the name of the logfile, absolute path. Only if logging is et to file",false," ","string");
+TCLAP::ValueArg<unsigned int> dltOutput ("O","dltOutput","defines where logs are written. 0=dlt-daemon(default), 1=command line, 2=file ",false,0,"int");
 TCLAP::ValueArg<unsigned int> telnetPort ("t","telnetport","The port that is used for telnet",false,DEFAULT_TELNETPORT,"int");
 TCLAP::ValueArg<unsigned int> maxConnections ("m","maxConnections","Maximal number of connections for telnet",false,MAX_TELNETCONNECTIONS,"int");
+TCLAP::SwitchArg dltEnable ("e","dltEnable","Enables or disables dlt logging. Default = enabled",true);
 TCLAP::SwitchArg dbusWrapperTypeBool ("T","dbusType","DbusType to be used by CAmDbusWrapper: if option is selected, DBUS_SYSTEM is used otherwise DBUS_SESSION",false);
-TCLAP::SwitchArg enableNoDLTDebug ("V","logDlt","print DLT logs to stdout or dlt-daemon, default on",true);
 TCLAP::SwitchArg currentSettings("i","currentSettings","print current settings and exit",false);
 TCLAP::SwitchArg daemonizeAM("d","daemonize","daemonize Audiomanager. Better use systemd...",false);
 
@@ -168,9 +169,6 @@ void printCmdInformation()
 	printf("\tTelnet portNumber:\t\t\t%i\n", telnetPort.getValue());
 	printf("\tTelnet maxConnections:\t\t\t%i\n", maxConnections.getValue());
 #endif
-#ifndef WITH_DLT
-	printf("\tDlt Command Line Output: \t\t%s\n", enableNoDLTDebug.getValue()?"enabled":"not enabled");
-#endif
 	printf("\tControllerPlugin: \t\t\t%s\n", controllerPlugin.getValue().c_str());
 	printf("\tDirectories of CommandPlugins: \t\t\n");
     std::vector<std::string>::const_iterator dirIter = listCommandPluginDirs.begin();
@@ -206,7 +204,7 @@ static void signalHandler(int sig, siginfo_t *siginfo, void *context)
     switch (sig)
     {
         /*ctl +c lets call direct controllerRundown, because we might be blocked at the moment.
-        But there is the risk of interrupting something important */
+        But there is the risk of interrupting something important */https://asc.bmwgroup.net/wiki/display/MGUROTO/Lastest+and+greatest
         case SIGINT:
             CAmControlSender::CallsetControllerRundown(sig);
             break;
@@ -244,7 +242,9 @@ void mainProgram(int argc, char *argv[])
     	cmd->add(routingPluginDir);
     	cmd->add(currentSettings);
     	cmd->add(daemonizeAM);
-    	cmd->add(enableNoDLTDebug);
+    	cmd->add(dltEnable);
+    	cmd->add(dltLogFilename);
+    	cmd->add(dltOutput);
 #ifdef WITH_DBUS_WRAPPER
     	cmd->add(dbusWrapperTypeBool);
 #endif
@@ -267,7 +267,7 @@ void mainProgram(int argc, char *argv[])
 		daemonize();
 	}
 
-    CAmDltWrapper::instance(enableNoDLTDebug.getValue())->registerApp("AudioManagerDeamon", "AudioManagerDeamon");
+    CAmDltWrapper::instanctiateOnce("AUDI", "AudioManager",dltEnable.getValue(),static_cast<am::CAmDltWrapper::logDestination>(dltOutput.getValue()),dltLogFilename.getValue());
 
     //Instantiate all classes. Keep in same order !
     CAmSocketHandler iSocketHandler;
@@ -423,11 +423,6 @@ int main(int argc, char *argv[], char** envp)
     close(fd0);
     close(fd1);
     close(fd2);
-
-    //deinit the DLT
-    CAmDltWrapper* inst(getWrapper());
-    inst->deinit();
-
     exit(0);
 
 }

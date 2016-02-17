@@ -21,80 +21,80 @@
 #include <string>
 #include <pthread.h>
 #include <sstream>
+#include <iostream>
+#include <fstream>
+#include <map>
 #include <audiomanagerconfig.h>
 #include "audiomanagertypes.h"
 
 #ifdef WITH_DLT
-#include <dlt/dlt.h>
-namespace am
-{
+	#include <dlt/dlt.h>
 #else
-#include <stdint.h>
-#include <sstream>
+	#include <stdint.h>
+	#include <sstream>
 
-#define DLT_USER_BUF_MAX_SIZE 2048
+	#define DLT_USER_BUF_MAX_SIZE 2048
 
-/**
- * This structure is used for every context used in an application.
- */
-typedef struct
-{
-    char contextID[4]; /**< context id */
-    int32_t log_level_pos; /**< offset in user-application context field */
-    int32_t log_level_user; /** any message above this log level is not logged */
-} DltContext;
+	/**
+	 * This structure is used for every context used in an application.
+	 */
+	typedef struct
+	{
+		char contextID[4]; /**< context id */
+		int32_t log_level_pos; /**< offset in user-application context field */
+		int32_t log_level_user; /** any message above this log level is not logged */
+	} DltContext;
+	
+	/**
+	* Definition of DLT trace status
+	*/
+	typedef enum
+	{
+		DLT_TRACE_STATUS_DEFAULT =   -1,    /**< Default trace status */
+		DLT_TRACE_STATUS_OFF     = 0x00,    /**< Trace status: Off */
+		DLT_TRACE_STATUS_ON      = 0x01     /**< Trace status: On */
+	} DltTraceStatusType;
+	
+	/**
+	 * This structure is used for context data used in an application.
+	 */
+	typedef struct
+	{
+		DltContext *handle; /**< pointer to DltContext */
+		std::stringstream buffer; /**< buffer for building log message*/
+		int32_t log_level; /**< log level */
+		int32_t trace_status; /**< trace status */
+		int32_t args_num; /**< number of arguments for extended header*/
+		uint8_t mcnt; /**< message counter */
+		char* context_description; /**< description of context */
+	} DltContextData;	
 
-/**
- * Definitions of DLT log level
- */
-typedef enum
-{
-    DLT_LOG_DEFAULT = -1, /**< Default log level */
-    DLT_LOG_OFF = 0x00, /**< Log level off */
-    DLT_LOG_FATAL = 0x01, /**< fatal system error */
-    DLT_LOG_ERROR = 0x02, /**< error with impact to correct functionality */
-    DLT_LOG_WARN = 0x03, /**< warning, correct behaviour could not be ensured */
-    DLT_LOG_INFO = 0x04, /**< informational */
-    DLT_LOG_DEBUG = 0x05, /**< debug  */
-    DLT_LOG_VERBOSE = 0x06 /**< highest grade of information */
-} DltLogLevelType;
+	/**
+	 * Definitions of DLT log level
+	 */
+	typedef enum
+	{
+		DLT_LOG_DEFAULT = -1, /**< Default log level */
+		DLT_LOG_OFF = 0x00, /**< Log level off */
+		DLT_LOG_FATAL = 0x01, /**< fatal system error */
+		DLT_LOG_ERROR = 0x02, /**< error with impact to correct functionality */
+		DLT_LOG_WARN = 0x03, /**< warning, correct behaviour could not be ensured */
+		DLT_LOG_INFO = 0x04, /**< informational */
+		DLT_LOG_DEBUG = 0x05, /**< debug  */
+		DLT_LOG_VERBOSE = 0x06 /**< highest grade of information */
+	} DltLogLevelType;
 
-/**
- * Definition of DLT trace status
- */
-typedef enum
-{
-    DLT_TRACE_STATUS_DEFAULT =   -1,    /**< Default trace status */
-    DLT_TRACE_STATUS_OFF     = 0x00,    /**< Trace status: Off */
-    DLT_TRACE_STATUS_ON      = 0x01     /**< Trace status: On */
-} DltTraceStatusType;
+	#define DLT_DEFAULT_LOG_LEVEL DLT_LOG_INFO
+	#define DLT_DECLARE_CONTEXT(CONTEXT)                               \
+	DltContext CONTEXT;
 
+	#define DLT_IMPORT_CONTEXT(CONTEXT)                                \
+	extern DltContext CONTEXT;
 
-/**
- * This structure is used for context data used in an application.
- */
-typedef struct
-{
-    DltContext *handle; /**< pointer to DltContext */
-    std::stringstream buffer; /**< buffer for building log message*/
-    int32_t log_level; /**< log level */
-    int32_t trace_status; /**< trace status */
-    int32_t args_num; /**< number of arguments for extended header*/
-    uint8_t mcnt; /**< message counter */
-    char* context_description; /**< description of context */
-} DltContextData;
+#endif // WITH_DLT
 
-#define DLT_DEFAULT_LOG_LEVEL DLT_LOG_INFO
-
-
-#define DLT_DECLARE_CONTEXT(CONTEXT) \
-DltContext CONTEXT;
-
-#define DLT_IMPORT_CONTEXT(CONTEXT) \
-extern DltContext CONTEXT;
 namespace am
 {
-#endif // WITH_DLT
 
 /**
  * Wraps around the dlt. This class is instantiated as a singleton and offers a default
@@ -105,13 +105,57 @@ namespace am
 class CAmDltWrapper
 {
 public:
-    static CAmDltWrapper* instance(const bool enableNoDLTDebug = false);
-    void registerApp(const char *appid, const char * description);
-    void registerContext(DltContext& handle, const char *contextid, const char * description);
-    void registerContext(DltContext& handle, const char *contextid, const char * description,
-            const DltLogLevelType level, const DltTraceStatusType status);
-    void unregisterContext(DltContext& handle);
 
+	/**
+	 * This structure is used for context data used in an application.
+	 */
+	typedef struct
+	{
+		DltContext *handle; /**< pointer to DltContext */
+		std::stringstream buffer; /**< buffer for building log message*/
+		int32_t log_level; /**< log level */
+		int32_t trace_status; /**< trace status */
+		int32_t args_num; /**< number of arguments for extended header*/
+		uint8_t mcnt; /**< message counter */
+		char* context_description; /**< description of context */
+	} NoDltContextData;
+	
+	/*
+	 * The eunum gives the logtype
+	 */
+	enum logDestination
+	{
+		DAEMON=0, //!< logging with the DLT daemon
+		COMMAND_LINE=1, //!< logging with commandline 
+		FILE_OUT =2 //!< logging into a file
+	};
+	
+	/**
+	 * Instanciate the Dlt Wrapper
+	 * @param appid The AppID
+	 * @param description A description of the Application
+	 * @param debugEnabled if set to true, debug outputs will be generated, default = true
+	 * @param logDest the destination, the log should be written
+	 * @param Filename the filename with absolute path where the log shall be written. only needed if logDest==FILE_OUT
+	 * @param onlyError if set to true, only errors will be logged. just valid for commandline and file logs, default value = false
+	 */ 
+	static CAmDltWrapper* instanctiateOnce(const char *appid, const char * description, const bool debugEnabled = true, const logDestination logDest = logDestination::DAEMON, const std::string Filename="",bool onlyError=false);
+    
+    /**
+     * get the Wrapper Instance
+     */
+    static CAmDltWrapper* instance();
+	
+	/**
+	 * register a context
+	 */
+    void registerContext(DltContext& handle, const char *contextid, const char * description);
+    void registerContext(DltContext& handle, const char *contextid, const char * description, const DltLogLevelType level, const DltTraceStatusType status);
+    void unregisterContext(DltContext& handle);
+    bool getEnabled();
+    ~CAmDltWrapper();
+    
+     
     bool init(DltLogLevelType loglevel, DltContext* context = NULL);
     void deinit();
     void send();
@@ -126,19 +170,29 @@ public:
     void append(const std::string& value);
     void append(const bool value);
     void append(const std::vector<uint8_t> & data);
+        
+    template<class T> void appendNoDLT(T value)
+	{
+		mNoDltContextData.buffer << value <<" ";
+	}
 
     // specialization for const char*
     template<typename T = const char*> void append(const char* value)
     {
-    #ifdef WITH_DLT
-    	if(mEnableNoDLTDebug)
-    	{
-    		dlt_user_log_write_string(&mDltContextData, value);
-    	}
-    #else
-        mDltContextData.buffer << value;
-    #endif
-    }
+		#ifdef WITH_DLT
+			if (mlogDestination == logDestination::DAEMON)
+			{
+				dlt_user_log_write_string(&mDltContextData, value);
+			}
+			else
+			{
+				mNoDltContextData.buffer << std::string(value);
+			}
+		#else
+			mNoDltContextData.buffer << std::string(value);
+    	#endif //WITH_DLT
+
+	}
 
     // specialization for const am_Error_e
     template<typename T = const am_Error_e> void append(const am_Error_e value)
@@ -156,8 +210,7 @@ public:
             "E_ABORTED",
             "E_WRONG_FORMAT"
         };
-        if(mEnableNoDLTDebug)
-        	append(str_error[value]);
+       	append(str_error[value]);
     }
 
     // Template to print unknown pointer types with their address
@@ -184,31 +237,26 @@ public:
         this->append(args...);
     }
 
-#ifndef WITH_DLT
-    void enableNoDLTDebug(const bool enableNoDLTDebug = true);
-#endif
-    ~CAmDltWrapper();
 private:
-    CAmDltWrapper(const bool enableNoDLTDebug); //is private because of singleton pattern
-#ifndef WITH_DLT
-    template<class T> void appendNoDLT(T value);
-#endif
+	/**
+	 * private contructor
+	 */
+    CAmDltWrapper(const char *appid, const char * description, const bool debugEnabled = true, const logDestination logDest = logDestination::DAEMON, const std::string Filename="",bool onlyError=false); //is private because of singleton pattern
+    bool initNoDlt(DltLogLevelType loglevel, DltContext* context);
+    std::string now();
     DltContext mDltContext; //!< the default context
     DltContextData mDltContextData; //!< contextdata
-    bool mEnableNoDLTDebug;
+    NoDltContextData mNoDltContextData; //!<contextdata for std out logging
+    std::map<DltContext*,std::string> mMapContext; //!< a Map for all registered context
+    bool mDebugEnabled;	//!< debug Enabled or not
+    logDestination mlogDestination; //!< The log destination
+    std::ofstream mFilename; //!< Filename for logging
+    bool mOnlyError; //!< Only if Log Level is above Error
+    bool mLogOn; //!< Used to keep track if currently logging is on
     static CAmDltWrapper* mpDLTWrapper; //!< pointer to the wrapper instance
     static pthread_mutex_t mMutex;
 
 };
-
-/**
- * returns the instance of the CAmDltWrapper
- * @return
- */
-inline CAmDltWrapper* getWrapper()
-{
-    return (CAmDltWrapper::instance());
-}
 
 /**
  * logs given values with a given context (register first!) and given loglevel
@@ -220,10 +268,15 @@ inline CAmDltWrapper* getWrapper()
 template<typename T, typename... TArgs>
 void log(DltContext* const context, DltLogLevelType loglevel, T value, TArgs... args)
 {
-    CAmDltWrapper* inst(getWrapper());
-
+    CAmDltWrapper* inst(CAmDltWrapper::instance());
+	if (!inst->getEnabled())
+    {
+		return;
+	}
     if (!inst->init(loglevel, context))
-        return;
+    {
+		return;
+	}
     inst->append(value);
     inst->append(args...);
     inst->send();
@@ -260,6 +313,17 @@ template<typename T, typename... TArgs>
 void logError(T value, TArgs... args)
 {
     log(NULL, DLT_LOG_ERROR,value,args...);
+}
+
+/**
+ * logs given values with warninglevel with the default context
+ * @param value
+ * @param ...
+ */
+template<typename T, typename... TArgs>
+void logWarning(T value, TArgs... args)
+{
+    log(NULL, DLT_LOG_WARN,value,args...);
 }
 
 }

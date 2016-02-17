@@ -27,314 +27,562 @@
 #include <string>
 #include <iostream>
 #include <string.h>
+#include <chrono>
+#include <ctime>
 
 namespace am
 {
-
 CAmDltWrapper* CAmDltWrapper::mpDLTWrapper = NULL;
 pthread_mutex_t CAmDltWrapper::mMutex = PTHREAD_MUTEX_INITIALIZER;
 
-CAmDltWrapper *CAmDltWrapper::instance(const bool enableNoDLTDebug)
+std::string CAmDltWrapper::now()
 {
-    if (!mpDLTWrapper)
-        mpDLTWrapper = new CAmDltWrapper(enableNoDLTDebug);
-#ifndef WITH_DLT
-    if(enableNoDLTDebug)
-        mpDLTWrapper->enableNoDLTDebug(true);
-#endif        
-    return (mpDLTWrapper);
+	std::time_t t(std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()));
+	struct tm * timeinfo(localtime(&t));
+	char buffer[80];
+	std::strftime(buffer,80,"%D %T ",timeinfo);
+	return (std::string(buffer));
 }
 
-void CAmDltWrapper::unregisterContext(DltContext & handle)
+CAmDltWrapper* CAmDltWrapper::instanctiateOnce(const char *appid, const char * description, const bool debugEnabled, const logDestination logDest, const std::string Filename,bool onlyError)
 {
-#ifdef WITH_DLT
-	if (mEnableNoDLTDebug)
-    {
-		dlt_unregister_context(&handle);
-    }
-#else
-    (void) handle;
-#endif
-}
-
-void CAmDltWrapper::deinit()
-{
-#ifdef WITH_DLT
-	if (mEnableNoDLTDebug)
-    {
-		unregisterContext(mDltContext);
-    }
-#endif
-}
-
-CAmDltWrapper::CAmDltWrapper(const bool enableNoDLTDebug=true) :
-        mDltContext(), //
-        mDltContextData(), //
-		mEnableNoDLTDebug(enableNoDLTDebug)
-{
-    (void) enableNoDLTDebug;
-#ifndef WITH_DLT
-    std::cout << "\e[0;34m[DLT]\e[0;30m\tRunning without DLT-support" << std::endl;
-#endif
-}
-
-void CAmDltWrapper::registerApp(const char *appid, const char *description)
-{
-#ifdef WITH_DLT
-	if (mEnableNoDLTDebug)
+	if (!mpDLTWrapper)
 	{
-		dlt_register_app(appid, description);
-		//register a default context
-		dlt_register_context(&mDltContext, "def", "default Context registered by DLTWrapper CLass");
-	}
-#else
-    (void) appid;
-    (void) description;
-#endif
+		mpDLTWrapper = new CAmDltWrapper(appid,description,debugEnabled,logDest,Filename,onlyError);
+	}   
+	return (mpDLTWrapper);
 }
 
-void CAmDltWrapper::registerContext(DltContext& handle, const char *contextid, const char *description)
+CAmDltWrapper* CAmDltWrapper::instance()
 {
-#ifdef WITH_DLT
-	if (mEnableNoDLTDebug)
+	return mpDLTWrapper;
+}
+
+bool CAmDltWrapper::getEnabled()
+{
+	return (mDebugEnabled);
+}
+
+bool CAmDltWrapper::initNoDlt(DltLogLevelType loglevel, DltContext* context)
+{
+	if (mlogDestination==logDestination::COMMAND_LINE)
 	{
-		dlt_register_context(&handle, contextid, description);
-	}
-#else
-    strncpy(handle.contextID,contextid,4);
-
-    // store only the first contextID
-    if(0 == strlen(mDltContext.contextID))
-    {
-        memcpy(&mDltContext.contextID,contextid,4);
-        const size_t str_len = strlen(description);
-        if(str_len < 2000)
-        {
-            mDltContextData.context_description = new char[str_len + 1];
-            (void) strcpy(mDltContextData.context_description,description);
-        }
-        mDltContext.log_level_user = DLT_DEFAULT_LOG_LEVEL;
-    }
-    handle.log_level_user = DLT_DEFAULT_LOG_LEVEL;
-    std::cout << "\e[0;34m[DLT]\e[0;30m\tRegistering Context " << contextid << " , " << description << std::endl;
-
-#endif
-}
-
-void CAmDltWrapper::registerContext(DltContext& handle, const char *contextid, const char * description,
-        const DltLogLevelType level, const DltTraceStatusType status)
-{
-#ifdef WITH_DLT
-	if (mEnableNoDLTDebug)
-	{
-		dlt_register_context_ll_ts(&handle, contextid, description, level, status);
-	}
-#else
-    strncpy(handle.contextID,contextid,4);
-
-    // store only the first contextID
-    if(0 == strlen(mDltContext.contextID))
-    {
-        memcpy(&mDltContext.contextID,contextid,4);
-        const size_t str_len = strlen(description);
-        if(str_len < 2000)
-        {
-            mDltContextData.context_description = new char[str_len + 1];
-            (void) strcpy(mDltContextData.context_description,description);
-        }
-        mDltContext.log_level_user = level;
-    }
-    handle.log_level_user = level;
-    std::cout << "\e[0;34m[DLT]\e[0;30m\tRegistering Context " << contextid << " , " << description << std::endl;
-
-#endif
-}
-
-bool CAmDltWrapper::init(DltLogLevelType loglevel, DltContext* context)
-{
-    (void) loglevel;
-    pthread_mutex_lock(&mMutex);
-    if (!context)
-        context = &mDltContext;
-#ifdef WITH_DLT
-	if (mEnableNoDLTDebug)
-		if(dlt_user_log_write_start(context, &mDltContextData, loglevel) <= 0)
-#else
-    if((mEnableNoDLTDebug == false) || (loglevel > context->log_level_user))
-#endif
+		if (!context)
 		{
-			pthread_mutex_unlock(&mMutex);
-			return false;
+			switch (loglevel)
+			{
+				case DLT_LOG_OFF :
+				case DLT_LOG_FATAL : 
+				case DLT_LOG_ERROR :
+					mNoDltContextData.buffer << "\033[0;31m"<<"[DEF] [Erro] \033[0m";
+					mLogOn=true;
+					break;
+				case DLT_LOG_WARN :
+					if (!mOnlyError)
+					{
+						mNoDltContextData.buffer << "\033[0;33m"<<"[DEF] [Warn] \033[0m";	
+					}
+					else
+						mLogOn=false;
+					break;
+				case DLT_LOG_INFO :
+					if (!mOnlyError)
+					{
+						mNoDltContextData.buffer << "\033[0;36m"<<"[DEF] [Info] \033[0m";
+					}
+					else
+						mLogOn=false;
+					break;	
+				default:
+					if (!mOnlyError)
+					{
+						mNoDltContextData.buffer << "\033[0;32m"<<"[DEF] [Defa] \033[0m";	
+					}
+					else
+						mLogOn=false;
+			}
 		}
-#ifndef WITH_DLT
-    std::cout << "\e[0;34m[" << context->contextID << "]\e[0;30m\t";
-#endif
-    return true;
-}
+		else
+		{
+			std::string con(mMapContext.at(context));
+			switch (loglevel)
+			{
+				case DLT_LOG_OFF :
+				case DLT_LOG_FATAL : 
+				case DLT_LOG_ERROR :
+					mNoDltContextData.buffer << "\033[0;31m["<<con<<"] [Erro] \033[0m";
+					mLogOn=true;
+					break;
+				case DLT_LOG_WARN :
+					if (!mOnlyError)
+					{
+						mNoDltContextData.buffer << "\033[0;33m["<<con<<"] [Warn] \033[0m";	
+					}
+					else
+						mLogOn=false;
+					break;
+				case DLT_LOG_INFO :
+					if (!mOnlyError)
+					{
+						mNoDltContextData.buffer << "\033[0;36m["<<con<<"]  [Info] \033[0m";						
+					}
+					else
+						mLogOn=false;
 
-void CAmDltWrapper::send()
-{
-#ifdef WITH_DLT
-	if (mEnableNoDLTDebug)
-	{
-		dlt_user_log_write_finish(&mDltContextData);
+					break;	
+				default:
+					if (!mOnlyError)
+					{
+						mNoDltContextData.buffer << "\033[0;32m["<<con<<"]  [Defa] \033[0m";	
+					}
+					else
+						mLogOn=false;	
+			}
+		}
+		return true;
 	}
-#else
-    if(mEnableNoDLTDebug)
-        std::cout << mDltContextData.buffer.str().c_str() << std::endl;
-
-    mDltContextData.buffer.str("");
-    mDltContextData.buffer.clear();
-#endif
-    pthread_mutex_unlock(&mMutex);
-}
-
-void CAmDltWrapper::append(const int8_t value)
-{
-#ifdef WITH_DLT
-	if (mEnableNoDLTDebug)
+	else
 	{
-		dlt_user_log_write_int8(&mDltContextData, value);
-	}
-#else
-    appendNoDLT(value);
-#endif
-}
+		if (!context)
+		{
+			switch (loglevel)
+			{
+				case DLT_LOG_OFF :
+				case DLT_LOG_FATAL : 
+				case DLT_LOG_ERROR :
+					mNoDltContextData.buffer <<"[DEF] [Erro] ";
+					mLogOn=true;
+					 break;
+				case DLT_LOG_WARN :
+					if (!mOnlyError)
+					{
+						mNoDltContextData.buffer <<"[DEF] [Warn] ";	
+					}
+					else
+						mLogOn=false;
+					break;
+				case DLT_LOG_INFO :
+					if (!mOnlyError)
+					{
+						mNoDltContextData.buffer <<"[DEF] [Info] ";
+					}
+					else
+						mLogOn=false;					
+					break;	
+				default:
+					if (!mOnlyError)
+					{
+						mNoDltContextData.buffer <<"[DEF] [Defa] ";						
+					}
+					else
+						mLogOn=false;					
 
-void CAmDltWrapper::append(const uint8_t value)
-{
-#ifdef WITH_DLT
-	if (mEnableNoDLTDebug)
+			}
+		}
+		else
+		{
+			std::string con(mMapContext.at(context));
+			switch (loglevel)
+			{
+				case DLT_LOG_OFF :
+				case DLT_LOG_FATAL : 
+				case DLT_LOG_ERROR :
+					mNoDltContextData.buffer << "["<<con<<"] [Erro] ";
+					mLogOn=true;
+					 break;
+				case DLT_LOG_WARN :
+					if (!mOnlyError)
+					{
+						mNoDltContextData.buffer << "["<<con<<"] [Warn] ";								
+					}
+					else
+						mLogOn=false;							
+					break;
+				case DLT_LOG_INFO :
+					if (!mOnlyError)
+					{
+						mNoDltContextData.buffer << "["<<con<<"] [Info] ";												
+					}
+					else
+						mLogOn=false;						
+
+					break;	
+				default:
+					if (!mOnlyError)
+					{
+						mNoDltContextData.buffer << "["<<con<<"] [Defa] ";														
+					}
+					else
+						mLogOn=false;					
+			}
+		}
+		return true;		
+	}
+}
+	
+#ifdef WITH_DLT	
+
+	CAmDltWrapper::CAmDltWrapper(const char *appid, const char * description, const bool debugEnabled, const logDestination logDest, const std::string Filename,bool onlyError) :
+		mDebugEnabled(debugEnabled), //
+		mlogDestination(logDest), //
+		mFilename(NULL), //
+		mOnlyError(onlyError), //
+		mLogOn(true)
 	{
-		dlt_user_log_write_uint8(&mDltContextData, value);
+		if (mDebugEnabled && mlogDestination==logDestination::DAEMON)
+		{
+			dlt_register_app(appid, description);
+			//register a default context
+			dlt_register_context(&mDltContext, "DEF", "Default Context registered by DLTWrapper Class");	
+		}
+		else if (mDebugEnabled)
+		{
+			if (mlogDestination==logDestination::COMMAND_LINE)
+				std::cout << "\033[0;36m[DLT] Registering AppID " << appid << " , " << description << "\033[0m"<< std::endl;
+			else
+			{
+				mFilename.open(Filename, std::ofstream::out | std::ofstream::trunc);
+				if (!mFilename.is_open())
+				{
+					throw std::runtime_error("Cannot open file for logging");
+				}
+				mFilename << now() << "[DLT] Registering AppID " << appid << " , " << description << std::endl;
+			}
+		}
 	}
-#else
-    appendNoDLT(value);
-#endif
-}
-
-void CAmDltWrapper::append(const int16_t value)
-{
-#ifdef WITH_DLT
-	if (mEnableNoDLTDebug)
+	
+	CAmDltWrapper::~CAmDltWrapper()
 	{
-		dlt_user_log_write_int16(&mDltContextData, value);
+		if (mpDLTWrapper && mDebugEnabled && mlogDestination==logDestination::DAEMON)
+		{
+			mpDLTWrapper->unregisterContext(mDltContext);
+			delete mpDLTWrapper;
+		}
+		else if (mpDLTWrapper && mDebugEnabled && mlogDestination==logDestination::COMMAND_LINE)
+		{
+			mFilename.close();
+		}
 	}
-#else
-    appendNoDLT(value);
-#endif
-}
 
-void CAmDltWrapper::append(const uint16_t value)
-{
-#ifdef WITH_DLT
-	if (mEnableNoDLTDebug)
+	void CAmDltWrapper::unregisterContext(DltContext & handle)
 	{
-		dlt_user_log_write_uint16(&mDltContextData, value);
+		if (mDebugEnabled && mlogDestination==logDestination::DAEMON)
+		{
+			dlt_unregister_context(&handle);
+		}
 	}
-#else
-    appendNoDLT(value);
-#endif
-}
 
-void CAmDltWrapper::append(const int32_t value)
-{
-#ifdef WITH_DLT
-	if (mEnableNoDLTDebug)
+	void CAmDltWrapper::deinit()
 	{
-		dlt_user_log_write_int32(&mDltContextData, value);
+		if (mDebugEnabled)
+		{
+			unregisterContext(mDltContext);
+		}
 	}
-#else
-    appendNoDLT(value);
-#endif
-}
-
-void CAmDltWrapper::append(const uint32_t value)
-{
-#ifdef WITH_DLT
-	if (mEnableNoDLTDebug)
+	
+	void CAmDltWrapper::registerContext(DltContext& handle, const char *contextid, const char *description)
 	{
-		dlt_user_log_write_uint32(&mDltContextData, value);
+		if (mDebugEnabled && mlogDestination==logDestination::DAEMON)
+		{
+			dlt_register_context(&handle, contextid, description);
+		}
+		else if (mDebugEnabled)
+		{
+			mMapContext.emplace(&handle,std::string(contextid));
+			
+			if (mlogDestination==logDestination::COMMAND_LINE)
+				std::cout << "\033[0;36m[DLT] Registering Context " << contextid << " , " << description << "\033[0m"<< std::endl;
+			else
+				mFilename << now() << "[DLT] Registering Context " << contextid << " , " << description << std::endl;
+		}
 	}
-#else
-    appendNoDLT(value);
-#endif
-}
+	
+	void CAmDltWrapper::registerContext(DltContext& handle, const char *contextid, const char * description,const DltLogLevelType level, const DltTraceStatusType status)
+	{
+		if (mDebugEnabled && mlogDestination==logDestination::DAEMON)
+		{
+			dlt_register_context_ll_ts(&handle, contextid, description, level, status);
+		}
+		else if (mDebugEnabled)
+		{
+			mMapContext.emplace(&handle,std::string(contextid));
+			
+			if (mlogDestination==logDestination::COMMAND_LINE)
+				std::cout << "\033[0;36m[DLT] Registering Context " << contextid << " , " << description << "\033[0m"<< std::endl;
+			else
+				mFilename << now() << " [DLT] Registering Context " << contextid << " , " << description << std::endl;
+		}
+	}
+	
+	bool CAmDltWrapper::init(DltLogLevelType loglevel, DltContext* context)
+	{
+		pthread_mutex_lock(&mMutex);
+		if (mlogDestination==logDestination::DAEMON)
+		{
+			if (!context)
+				context = &mDltContext;
 
-void CAmDltWrapper::append(const std::string& value)
-{
-	if (mEnableNoDLTDebug)
+			if(dlt_user_log_write_start(context, &mDltContextData, loglevel) < 0)
+			{
+				pthread_mutex_unlock(&mMutex);
+				return false;
+			}
+		}
+		else 
+		{
+			initNoDlt(loglevel,context);
+		}
+		return true;
+	}
+
+	void CAmDltWrapper::send()
+	{
+		if (mlogDestination==logDestination::DAEMON)
+		{
+			dlt_user_log_write_finish(&mDltContextData);
+		}
+		else
+		{
+			if (mlogDestination==logDestination::COMMAND_LINE && mLogOn)
+				std::cout << mNoDltContextData.buffer.str().c_str() << std::endl;
+			else if (mLogOn)
+				mFilename << now() << mNoDltContextData.buffer.str().c_str() << std::endl;	
+					
+			mNoDltContextData.buffer.str("");
+			mNoDltContextData.buffer.clear();
+		}
+		pthread_mutex_unlock(&mMutex);
+	}
+	
+	void CAmDltWrapper::append(const int8_t value)
+	{
+		if (mlogDestination==logDestination::DAEMON)
+			dlt_user_log_write_int8(&mDltContextData, value);
+		else
+			appendNoDLT(value);
+	}
+
+	void CAmDltWrapper::append(const uint8_t value)
+	{
+		if (mlogDestination==logDestination::DAEMON)
+			dlt_user_log_write_uint8(&mDltContextData, value);
+		else
+			appendNoDLT(value);
+	}
+
+	void CAmDltWrapper::append(const int16_t value)
+	{
+		if (mlogDestination==logDestination::DAEMON)
+			dlt_user_log_write_int16(&mDltContextData, value);
+		else
+			appendNoDLT(value);			
+	}
+
+	void CAmDltWrapper::append(const uint16_t value)
+	{
+		if (mlogDestination==logDestination::DAEMON)
+			dlt_user_log_write_uint16(&mDltContextData, value);
+		else
+			appendNoDLT(value);
+	}
+
+	void CAmDltWrapper::append(const int32_t value)
+	{
+		if (mlogDestination==logDestination::DAEMON)
+			dlt_user_log_write_int32(&mDltContextData, value);
+		else
+			appendNoDLT(value);
+	}
+
+	void CAmDltWrapper::append(const uint32_t value)
+	{
+		if (mlogDestination==logDestination::DAEMON)
+			dlt_user_log_write_uint32(&mDltContextData, value);
+		else
+			appendNoDLT(value);
+	}
+
+	void CAmDltWrapper::append(const std::string& value)
+	{
 		append(value.c_str());
-}
-
-void CAmDltWrapper::append(const bool value)
-{
-#ifdef WITH_DLT
-	if (mEnableNoDLTDebug)
-	{
-		dlt_user_log_write_bool(&mDltContextData, static_cast<uint8_t>(value));
 	}
-#else
-    appendNoDLT(value);
-#endif
-}
 
-void CAmDltWrapper::append(const int64_t value)
-{
-#ifdef WITH_DLT
-	if (mEnableNoDLTDebug)
+	void CAmDltWrapper::append(const bool value)
 	{
-		dlt_user_log_write_int64(&mDltContextData, value);
+		if (mlogDestination==logDestination::DAEMON)
+			dlt_user_log_write_bool(&mDltContextData, static_cast<uint8_t>(value));
+		else
+			appendNoDLT(value);
 	}
-#else
-    appendNoDLT(value);
-#endif
-}
 
-void CAmDltWrapper::append(const uint64_t value)
-{
-#ifdef WITH_DLT
-	if (mEnableNoDLTDebug)
+	void CAmDltWrapper::append(const int64_t value)
 	{
-		dlt_user_log_write_uint64(&mDltContextData, value);
+		if (mlogDestination==logDestination::DAEMON)
+			dlt_user_log_write_int64(&mDltContextData, value);
+		else
+			appendNoDLT(value);
 	}
-#else
-    appendNoDLT(value);
-#endif
-}
 
-void CAmDltWrapper::append(const std::vector<uint8_t> & data)
-{
-#ifdef WITH_DLT
-	if (mEnableNoDLTDebug)
+	void CAmDltWrapper::append(const uint64_t value)
 	{
-		dlt_user_log_write_raw(&mDltContextData,(void*)data.data(),data.size());
+		if (mlogDestination==logDestination::DAEMON)
+			dlt_user_log_write_uint64(&mDltContextData, value);
+		else
+			appendNoDLT(value);
 	}
-#else
-	mDltContextData.buffer << data.data();
-#endif
+
+	void CAmDltWrapper::append(const std::vector<uint8_t> & data)
+	{
+		if (mlogDestination==logDestination::DAEMON)
+			dlt_user_log_write_raw(&mDltContextData,(void*)data.data(),data.size());
+		else
+			mNoDltContextData.buffer << data.data();
+	}
 }
 
-#ifndef WITH_DLT
-template<class T> void CAmDltWrapper::appendNoDLT(T value)
-{
-    mDltContextData.buffer << value;
-}
+#else //------------------------------------------------------------------------------------------------- no DLT !
 
-void CAmDltWrapper::enableNoDLTDebug(const bool enableNoDLTDebug)
-{
-    mEnableNoDLTDebug = enableNoDLTDebug;
-}
-#endif
+	CAmDltWrapper::CAmDltWrapper(const char *appid, const char * description, const bool debugEnabled, const logDestination logDest, const std::string Filename,bool onlyError) :
+		mDebugEnabled(debugEnabled), //
+		mlogDestination(logDest), //
+		mFilename(NULL), //
+		mOnlyError(onlyError), //
+		mLogOn(true)
+	{
+		if (logDest==logDestination::DAEMON)
+		{
+			std::cout << "\033[0;31m[DLT] Cannot Use Daemon Logging, active in CMAKE! Using CommandLine\033[0m"<< std::endl;	
+			mlogDestination=logDestination::COMMAND_LINE;
+		}
+		if (mDebugEnabled)
+		{
+			if (mlogDestination==logDestination::COMMAND_LINE)
+				std::cout << "\033[0;36m[DLT] Registering AppID " << appid << " , " << description << "\033[0m"<< std::endl;
+			else
+			{
+				mFilename.open(Filename, std::ofstream::out | std::ofstream::trunc);
+				if (!mFilename.is_open())
+				{
+					throw std::runtime_error("Cannot open file for logging");
+				}
+				mFilename << now() << "[DLT] Registering AppID " << appid << " , " << description << std::endl;
+			}
+		}
+	}
+	
+	CAmDltWrapper::~CAmDltWrapper()
+	{
+		if (mpDLTWrapper && mDebugEnabled && mlogDestination==logDestination::COMMAND_LINE)
+		{
+			mFilename.close();
+		}
+	}
+	
+	void CAmDltWrapper::unregisterContext(DltContext & handle)
+	{}
 
-CAmDltWrapper::~CAmDltWrapper()
-{
-    if (mpDLTWrapper && mEnableNoDLTDebug)
-    {
-        mpDLTWrapper->unregisterContext(mDltContext);
-        delete mpDLTWrapper;
-    }
+	void CAmDltWrapper::deinit()
+	{}
+	
+	void CAmDltWrapper::registerContext(DltContext& handle, const char *contextid, const char *description)
+	{
+		if (mDebugEnabled)
+		{
+			mMapContext.emplace(&handle,std::string(contextid));
+			
+			if (mlogDestination==logDestination::COMMAND_LINE)
+				std::cout << "\033[0;36m[DLT] Registering Context " << contextid << " , " << description << "\033[0m"<< std::endl;
+			else
+				mFilename << now() << "[DLT] Registering Context " << contextid << " , " << description << std::endl;
+		}
+	}
+	
+	void CAmDltWrapper::registerContext(DltContext& handle, const char *contextid, const char * description,const DltLogLevelType level, const DltTraceStatusType status)
+	{
+		if (mDebugEnabled)
+		{
+			mMapContext.emplace(&handle,std::string(contextid));
+			
+			if (mlogDestination==logDestination::COMMAND_LINE)
+				std::cout << "\033[0;36m[DLT] Registering Context " << contextid << " , " << description << "\033[0m"<< std::endl;
+			else
+				mFilename << now() << " [DLT] Registering Context " << contextid << " , " << description << std::endl;
+		}
+	}
+	
+	bool CAmDltWrapper::init(DltLogLevelType loglevel, DltContext* context)
+	{
+		pthread_mutex_lock(&mMutex);
+		initNoDlt(loglevel,context);
+	}
+	
+	void CAmDltWrapper::send()
+	{
+		if (mlogDestination==logDestination::COMMAND_LINE && mLogOn)
+			std::cout << mNoDltContextData.buffer.str().c_str() << std::endl;
+		else if (mLogOn)
+			mFilename << now() << mNoDltContextData.buffer.str().c_str() << std::endl;	
+				
+		mNoDltContextData.buffer.str("");
+		mNoDltContextData.buffer.clear();
+		pthread_mutex_unlock(&mMutex);
+	}
+	
+	void CAmDltWrapper::append(const int8_t value)
+	{
+		appendNoDLT(value);
+	}
+
+	void CAmDltWrapper::append(const uint8_t value)
+	{
+		appendNoDLT(value);
+	}
+
+	void CAmDltWrapper::append(const int16_t value)
+	{
+		appendNoDLT(value);			
+	}
+
+	void CAmDltWrapper::append(const uint16_t value)
+	{
+		appendNoDLT(value);	
+	}
+
+	void CAmDltWrapper::append(const int32_t value)
+	{
+		appendNoDLT(value);	
+	}
+
+	void CAmDltWrapper::append(const uint32_t value)
+	{
+		appendNoDLT(value);	
+	}
+
+	void CAmDltWrapper::append(const std::string& value)
+	{
+		append(value.c_str());
+	}
+
+	void CAmDltWrapper::append(const bool value)
+	{
+		appendNoDLT(value);	
+	}
+
+	void CAmDltWrapper::append(const int64_t value)
+	{
+		appendNoDLT(value);	
+	}
+
+	void CAmDltWrapper::append(const uint64_t value)
+	{
+		appendNoDLT(value);	
+	}
+
+	void CAmDltWrapper::append(const std::vector<uint8_t> & data)
+	{
+		mNoDltContextData.buffer << data.data();
+	}
 }
-}
+#endif //WITH_DLT
 
 

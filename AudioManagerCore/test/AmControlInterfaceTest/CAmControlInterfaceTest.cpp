@@ -32,7 +32,7 @@ using namespace am;
 using namespace testing;
 
 DLT_DECLARE_CONTEXT(AudioManager)
-TCLAP::SwitchArg enableNoDLTDebug ("V","logDlt","print DLT logs to stdout or dlt-daemon default off",false);
+TCLAP::SwitchArg enableDebug ("V","logDlt","print DLT logs to stdout or dlt-daemon default on",true);
 
 ACTION(returnResyncConnection)
 {
@@ -659,13 +659,12 @@ int main(int argc, char **argv)
 	try
 	{
 		TCLAP::CmdLine* cmd(CAmCommandLineSingleton::instanciateOnce("The team of the AudioManager wishes you a nice day!",' ',DAEMONVERSION,true));
-		cmd->add(enableNoDLTDebug);
+		cmd->add(enableDebug);
 	}
 	catch (TCLAP::ArgException &e)  // catch any exceptions
 	{ std::cerr << "error: " << e.error() << " for arg " << e.argId() << std::endl; }
 	CAmCommandLineSingleton::instance()->preparse(argc,argv);
-	CAmDltWrapper::instance(enableNoDLTDebug.getValue())->registerApp("AudioManagerDeamon", "AudioManagerDeamon");
-	CAmDltWrapper::instance()->registerContext(AudioManager, "Main", "Main Context");
+	CAmDltWrapper::instanctiateOnce("ATEST","AudioManagerControlInterface Test",enableDebug.getValue(),CAmDltWrapper::logDestination::DAEMON);
 	logInfo("RoutingSendInterface Test started");
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

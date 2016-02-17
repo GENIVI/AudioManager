@@ -43,7 +43,7 @@ int16_t const TEST_MAX_CONNECTION_ID = 20;
 int16_t const TEST_MAX_MAINCONNECTION_ID = 20;
 int16_t const TEST_MAX_SINK_ID = 40;
 
-TCLAP::SwitchArg enableNoDLTDebug ("V","logDlt","print DLT logs to stdout or dlt-daemon default off",false);
+TCLAP::SwitchArg enableDebug ("V","logDlt","print DLT logs to stdout or dlt-daemon default off",false);
 
 
 CAmMapBasicTest::CAmMapBasicTest() :
@@ -3262,12 +3262,12 @@ int main(int argc, char **argv)
 	try
 	{
 		TCLAP::CmdLine* cmd(CAmCommandLineSingleton::instanciateOnce("The team of the AudioManager wishes you a nice day!",' ',DAEMONVERSION,true));
-		cmd->add(enableNoDLTDebug);
+		cmd->add(enableDebug);
 	}
 	catch (TCLAP::ArgException &e)  // catch any exceptions
 	{ std::cerr << "error: " << e.error() << " for arg " << e.argId() << std::endl; }
 	CAmCommandLineSingleton::instance()->preparse(argc,argv);
-	CAmDltWrapper::instance(enableNoDLTDebug.getValue())->registerApp("databse", "databasetest");
+		CAmDltWrapper::instanctiateOnce("DTEST","Database Test",enableDebug.getValue(),CAmDltWrapper::logDestination::DAEMON);
     logInfo("Database Test started ");
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
