@@ -21,6 +21,8 @@ project (AudioManagerDeamon LANGUAGES CXX VERSION ${DAEMONVERSION})
 
 set(AUDIOMAN_SRCS_CXX
     src/main.cpp)
+    
+message (STATUS "daemon ${AUDIOMANAGER_UTILITIES_INCLUDE}" )
 
 INCLUDE_DIRECTORIES(	
 	${CMAKE_SOURCE_DIR} 

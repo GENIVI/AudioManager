@@ -3175,7 +3175,7 @@ int main(int argc, char **argv)
 	catch (TCLAP::ArgException &e)  // catch any exceptions
 	{ std::cerr << "error: " << e.error() << " for arg " << e.argId() << std::endl; }
 	CAmCommandLineSingleton::instance()->preparse(argc,argv);
-		CAmDltWrapper::instanctiateOnce("rTEST","RouterMap Test",enableDebug.getValue(),CAmDltWrapper::logDestination::DAEMON);
+	CAmDltWrapper::instanctiateOnce("rTEST","RouterMap Test",enableDebug.getValue(),CAmDltWrapper::logDestination::DAEMON);
 	logInfo("Routing Test started ");
 	::testing::InitGoogleTest(&argc, argv);
 	return RUN_ALL_TESTS();

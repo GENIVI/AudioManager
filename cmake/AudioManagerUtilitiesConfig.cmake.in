@@ -2,6 +2,8 @@
 
 set_and_check(AudioManagerUtilities_INCLUDE_DIRS @CMAKE_INSTALL_PREFIX@/include/@LIB_INSTALL_SUFFIX@/AudioManagerUtilities)
 find_library(AudioManagerUtilities_LIBRARY NAMES AudioManagerUtilities HINTS ${@CMAKE_INSTALL_PREFIX@/lib}) 
+set(AudioManagerUtilities_INCLUDE_DIRS ${AudioManagerUtilities_INCLUDE_DIRS} @AUDIOMANAGER_UTILITIES_EXTERNAL_INCLUDE@)
+
 
 set(AudioManagerUtilities_LIBRARIES @AUDIO_MANAGER_UTILITIES_LIBS@ ${AudioManagerUtilities_LIBRARY})
 set(DAEMONVERSION "@DAEMONVERSION@")

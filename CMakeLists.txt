@@ -46,7 +46,7 @@ option( WITH_TELNET
 	"Build with Telnetserver (can only work with SocketHandler)" ON)
 	
 option ( WITH_SYSTEMD_WATCHDOG
-    "Build with systemD support & watchdog" OFF)
+    "Build with systemD support & watchdog" ON)
 	
 option ( GLIB_DBUS_TYPES_TOLERANT
     "Build dbus with tolerance towards glib 16bit/32bit handling" ON)
