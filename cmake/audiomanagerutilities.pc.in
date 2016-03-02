@@ -6,5 +6,5 @@ Description: The Audiomanager Utilities
 Version: @AudioManagerUtilities_VERSION_STRING@
 Requires: 
 Libs: -L${libdir} -lAudioManagerUtilities
-Cflags: -I${includedir} @CMAKE_CXX_FLAGS@
+Cflags: -I${includedir} @AUDIOMANAGER_CMAKE_CXX_FLAGS@
 

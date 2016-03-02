@@ -6,5 +6,5 @@ Description: The Audiomanager Core Lib
 Version: @AudioManagerCore_VERSION_STRING@
 Requires: AudioManagerUtilities
 Libs: -L${libdir} lAudioManagerCore
-Cflags: -I${includedir} @CMAKE_CXX_FLAGS@
+Cflags: -I${includedir} 
 

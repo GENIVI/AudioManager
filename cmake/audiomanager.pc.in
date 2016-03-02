@@ -6,5 +6,5 @@ Description: The Audiomanager
 Version: @DAEMONVERSION@
 Requires: 
 Libs: -L${libdir} 
-Cflags: -I${includedir} @CMAKE_CXX_FLAGS@
+Cflags: -I${includedir} @AUDIOMANAGER_CMAKE_CXX_FLAGS@
 
