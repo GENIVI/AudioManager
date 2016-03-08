@@ -33,9 +33,9 @@ INCLUDE_DIRECTORIES(
 add_executable(AmControlInterfaceTest ${CONTROL_INTERFACE_SRCS_CXX})
 
 TARGET_LINK_LIBRARIES(AmControlInterfaceTest 
-        ${GTEST_LIBRARIES}
-	${GMOCK_LIBRARIES}
-    	AudioManagerCore
+    ${GTEST_LIBRARIES}
+    ${GMOCK_LIBRARIES}
+	AudioManagerCore
 )
 
 add_test(AmControlInterfaceTest AmControlInterfaceTest)

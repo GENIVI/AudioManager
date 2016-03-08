@@ -36,7 +36,7 @@ TARGET_LINK_LIBRARIES(AmSocketHandlerTest
     AudioManagerUtilities
 )
 
-ADD_TEST(AmSocketHandlerTest AmSocketHandlerTest ${Socket_SRCS_CXX})
+#ADD_TEST(AmSocketHandlerTest AmSocketHandlerTest ${Socket_SRCS_CXX})
 
 ADD_DEPENDENCIES(AmSocketHandlerTest AudioManagerUtilities)
 

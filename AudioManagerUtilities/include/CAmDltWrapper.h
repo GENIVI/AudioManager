@@ -24,6 +24,7 @@
 #include <iostream>
 #include <fstream>
 #include <map>
+#include <vector>
 #include <audiomanagerconfig.h>
 #include "audiomanagertypes.h"
 
@@ -197,21 +198,189 @@ public:
     // specialization for const am_Error_e
     template<typename T = const am_Error_e> void append(const am_Error_e value)
     {
-        const char* str_error[E_MAX] = {
-            "E_OK",
-            "E_UNKNOWN",
-            "E_OUT_OF_RANGE",
-            "E_NOT_USED",
-            "E_DATABASE_ERROR",
-            "E_ALREADY_EXISTS",
-            "E_NO_CHANGE",
-            "E_NOT_POSSIBLE",
-            "E_NON_EXISTENT",
-            "E_ABORTED",
-            "E_WRONG_FORMAT"
+        const std::vector<const char*> str_error = {
+        		"E_OK",
+        		"E_UNKNOWN",
+        		"E_OUT_OF_RANGE",
+        		"E_NOT_USED",
+        		"E_DATABASE_ERROR",
+        		"E_ALREADY_EXISTS",
+        		"E_NO_CHANGE",
+        		"E_NOT_POSSIBLE",
+        		"E_NON_EXISTENT",
+        		"E_ABORTED",
+        		"E_WRONG_FORMAT",
+        		"E_COMMUNICATION",
+        		"E_MAX"
         };
+        if ((int)value >=str_error.size())
+        {
+        	append("value for am_Error_e out of bounds!");
+        	append(value);
+        	return;
+        }
        	append(str_error[value]);
     }
+
+    // specialization for const am_Error_e
+    template<typename T = const am_SourceState_e> void append(const am_SourceState_e value)
+    {
+    	const std::vector<const char*> str_sourceState = {
+        		"SS_UNKNNOWN",
+        		"SS_ON",
+        		"SS_OFF",
+        		"SS_PAUSED",
+        		"SS_MAX"
+        };
+        if ((int)value >=(str_sourceState.size()))
+        {
+        	append("value for am_SourceState_e out of bounds!");
+        	append(value);
+        	return;
+        }
+       	append(str_sourceState[value]);
+    }
+
+
+    template<typename T = const am_MuteState_e> void append(const am_MuteState_e value)
+    {
+    	const std::vector<const char*> str_MuteState= {
+            	"MS_UNKNOWN" ,
+            	"MS_MUTED" ,
+            	"MS_UNMUTED" ,
+            	"MS_MAX"
+        };
+        if ((int)value >=str_MuteState.size())
+        {
+        	append("value for am_MuteState_e out of bounds!");
+        	append(value);
+        	return;
+        }
+       	append(str_MuteState[value]);
+    }
+
+    template<typename T = const am_DomainState_e> void append(const am_DomainState_e value)
+    {
+    	const std::vector<const char*>  str_DomainState = {
+        		"DS_UNKNOWN",
+        		"DS_CONTROLLED",
+        		"DS_INDEPENDENT_STARTUP",
+        		"DS_INDEPENDENT_RUNDOWN",
+        		"DS_MAX"
+        };
+        if ((int)value >= str_DomainState.size())
+        {
+        	append("value for am_DomainState_e out of bounds!");
+        	append(value);
+        	return;
+        }
+       	append(str_DomainState[value]);
+    }
+
+    template<typename T = const am_ConnectionState_e> void append(const am_ConnectionState_e value)
+    {
+    	const std::vector<const char*>  str_ConnectionState = {
+        		"CS_UNKNOWN",
+        		"CS_CONNECTING",
+        		"CS_CONNECTED",
+        		"CS_DISCONNECTING",
+        		"CS_DISCONNECTED",
+        		"CS_SUSPENDED",
+        		"CS_MAX"
+        };
+        if ((int)value >=str_ConnectionState.size())
+        {
+        	append("value for am_ConnectionState_e out of bounds!");
+        	append(value);
+        	return;
+        }
+       	append(str_ConnectionState[value]);
+    }
+
+    template<typename T = const am_Availability_e> void append(const am_Availability_e value)
+    {
+    	const std::vector<const char*> str_Availability = {
+        		"A_UNKNOWN",
+        		"A_AVAILABLE",
+				"A_UNAVAILABLE",
+        		"A_MAX"
+        };
+        if ((int)value >= str_Availability.size())
+        {
+        	append("value for am_Availability_e out of bounds!");
+        	append(value);
+        	return;
+        }
+       	append(str_Availability[value]);
+    }
+
+    template<typename T = const am_InterruptState_e> void append(const am_InterruptState_e value)
+    {
+    	const std::vector<const char*> str_Interrupt = {
+        		"IS_UNKNOWN",
+        		"IS_OFF",
+        		"IS_INTERRUPTED",
+        		"IS_MAX"
+        };
+        if ((int)value >=str_Interrupt.size())
+        {
+        	append("value for am_InterruptState_e out of bounds!");
+        	append(value);
+        	return;
+        }
+       	append(str_Interrupt[value]);
+    }
+
+    template<typename T = const am_Handle_e> void append(const am_Handle_e value)
+    {
+    	const std::vector<const char*> str_Handle = {
+    			"H_UNKNOWN",
+				"H_CONNECT",
+				"H_DISCONNECT",
+				"H_SETSOURCESTATE",
+				"H_SETSINKVOLUME",
+				"H_SETSOURCEVOLUME",
+				"H_SETSINKSOUNDPROPERTY",
+				"H_SETSOURCESOUNDPROPERTY",
+				"H_SETSINKSOUNDPROPERTIES",
+				"H_SETSOURCESOUNDPROPERTIES",
+				"H_CROSSFADE",
+				"H_SETVOLUMES",
+				"H_SETSINKNOTIFICATION",
+				"H_SETSOURCENOTIFICATION",
+				"H_MAX"
+        };
+        if ((int)value >=str_Handle.size())
+        {
+        	append("value for am_Handle_e out of bounds!");
+        	append(value);
+        	return;
+        }
+       	append(str_Handle[value]);
+    }
+
+    template<typename T = const am_NotificationStatus_e> void append(const am_NotificationStatus_e value)
+    {
+    	const std::vector<const char*> str_NotificationStatus = {
+    			"NS_UNKNOWN",
+				"NS_OFF",
+				"NS_PERIODIC",
+				"NS_MINIMUM",
+				"NS_MAXIMUM",
+				"NS_CHANGE",
+				"NS_MAX"
+        };
+        if ((int)value >=str_NotificationStatus.size())
+        {
+        	append("value for am_NotificationStatus_e out of bounds!");
+        	append(value);
+        	return;
+        }
+       	append(str_NotificationStatus[value]);
+    }
+
+
+
 
     // Template to print unknown pointer types with their address
     template<typename T> void append(T* value)

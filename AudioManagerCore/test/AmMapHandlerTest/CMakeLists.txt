@@ -39,6 +39,8 @@ TARGET_LINK_LIBRARIES( AmMapHandlerTest
     	AudioManagerCore
 )
 
+ADD_TEST(AmMapHandlerTest AmMapHandlerTest)
+
 ADD_DEPENDENCIES(AmMapHandlerTest AudioManagerCore)
 
 INSTALL(TARGETS AmMapHandlerTest 

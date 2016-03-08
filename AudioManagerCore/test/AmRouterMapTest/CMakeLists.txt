@@ -37,6 +37,8 @@ TARGET_LINK_LIBRARIES(AmRouterMapTest
     	AudioManagerCore
 )
 
+ADD_TEST(AmRouterMapTest AmRouterMapTest)
+
 ADD_DEPENDENCIES(AmRouterMapTest AudioManagerCore)
 
 INSTALL(TARGETS AmRouterMapTest 

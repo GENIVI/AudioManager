@@ -35,7 +35,7 @@ TARGET_LINK_LIBRARIES(AmTelnetServerTest
 		${GMOCK_LIBRARIES}
     	AudioManagerCore
 )
-add_test(AmTelnetServerTest AmTelnetServerTest)
+#add_test(AmTelnetServerTest AmTelnetServerTest)
 
 ADD_DEPENDENCIES(AmTelnetServerTest AudioManagerCore)
 

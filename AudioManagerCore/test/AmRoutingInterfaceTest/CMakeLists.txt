@@ -33,6 +33,8 @@ file(GLOB ROUTING_INTERFACE_SRCS_CXX
 
 ADD_EXECUTABLE(AmRoutingInterfaceTest ${ROUTING_INTERFACE_SRCS_CXX})
 
+ADD_TEST(AmRoutingInterfaceTest AmRoutingInterfaceTest)
+
 TARGET_LINK_LIBRARIES(AmRoutingInterfaceTest 
         ${GTEST_LIBRARIES}
 	${GMOCK_LIBRARIES}
