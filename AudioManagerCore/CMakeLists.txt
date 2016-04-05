@@ -54,7 +54,7 @@ if(WITH_TELNET)
 	set (AUDIOMAN_CORE_SRCS_CXX
 		${AUDIOMAN_CORE_SRCS_CXX}
 		src/CAmTelnetServer.cpp
-		src/CAmTelnetMenuHelper.cpp)		
+		src/CAmTelnetMenuHelper.cpp)
 endif(WITH_TELNET)
 
 INCLUDE_DIRECTORIES(${AUDIOMANAGER_CORE_INCLUDE})
@@ -70,35 +70,35 @@ set_target_properties(AudioManagerCore PROPERTIES VERSION ${AudioManagerCore_VER
 
 IF (WITH_SHARED_CORE)
 	INSTALL(TARGETS AudioManagerCore
-		LIBRARY DESTINATION lib
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 		PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
 		COMPONENT bin)
 ELSE (WITH_SHARED_CORE)
 	INSTALL(TARGETS AudioManagerCore
-	        ARCHIVE DESTINATION lib
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 	        COMPONENT dev)
 ENDIF (WITH_SHARED_CORE)
 
-configure_file( ${CMAKE_SOURCE_DIR}/cmake/audiomanagercore.pc.in ${CMAKE_BINARY_DIR}/audiomanagercore.pc @ONLY )       
-install(FILES ${CMAKE_BINARY_DIR}/audiomanagercore.pc DESTINATION lib/pkgconfig COMPONENT devel) 
+configure_file( ${CMAKE_SOURCE_DIR}/cmake/audiomanagercore.pc.in ${CMAKE_BINARY_DIR}/audiomanagercore.pc @ONLY )
+install(FILES ${CMAKE_BINARY_DIR}/audiomanagercore.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig COMPONENT devel)
 
-configure_package_config_file ( 
+configure_package_config_file (
 	${CMAKE_SOURCE_DIR}/cmake/AudioManagerCoreConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/AudioManagerCoreConfig.cmake
 	INSTALL_DESTINATION lib/${LIB_INSTALL_SUFFIX}/cmake
 	PATH_VARS AUDIO_INCLUDE_FOLDER )
-							  
+
 write_basic_package_version_file(
 	${CMAKE_CURRENT_BINARY_DIR}/AudioManagerCoreConfigVersion.cmake
 	VERSION ${DAEMONVERSION}
-	COMPATIBILITY SameMajorVersion )	
-	
+	COMPATIBILITY SameMajorVersion )
+
 install(
 FILES ${CMAKE_CURRENT_BINARY_DIR}/AudioManagerCoreConfig.cmake
 	  ${CMAKE_CURRENT_BINARY_DIR}/AudioManagerCoreConfigVersion.cmake
-DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/cmake/AudioManagerCore-${DAEMONVERSION})
+      DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}/cmake/AudioManagerCore-${DAEMONVERSION})
 
-INSTALL(DIRECTORY "${AUDIOMANAGER_CORE}/include/" 
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${LIB_INSTALL_SUFFIX}/AudioManagerCore
+INSTALL(DIRECTORY "${AUDIOMANAGER_CORE}/include/"
+    DESTINATION ${CMAKE_INSTALL_FULL_INCLUDEDIR}/${LIB_INSTALL_SUFFIX}/AudioManagerCore
         COMPONENT dev)
 
 if(WITH_TESTS)

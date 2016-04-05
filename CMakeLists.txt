@@ -1,15 +1,15 @@
 # Copyright (C) 2012, BMW AG
 #
 # This file is part of GENIVI Project AudioManager.
-# 
+#
 # Contributions are licensed to the GENIVI Alliance under one or more
 # Contribution License Agreements.
-# 
+#
 # copyright
 # This Source Code Form is subject to the terms of the
 # Mozilla Public License, v. 2.0. if a  copy of the MPL was not distributed with
 # this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-# 
+#
 # author Christian Linke, christian.linke@bmw.de BMW 2011,2012,2015
 #
 # For further information see http://www.genivi.org/.
@@ -36,7 +36,7 @@ option( WITH_TESTS
 option( WITH_DOCUMENTATION
 	"Build together with Doxygen Documentation" OFF )
 
-option( WITH_DLT 
+option( WITH_DLT
     "Enable automotive-DLT Support" ON )
 
 option( WITH_DOCUMENTATION
@@ -44,50 +44,50 @@ option( WITH_DOCUMENTATION
 
 option( WITH_TELNET
 	"Build with Telnetserver (can only work with SocketHandler)" ON)
-	
+
 option ( WITH_SYSTEMD_WATCHDOG
     "Build with systemD support & watchdog" ON)
-	
+
 option ( GLIB_DBUS_TYPES_TOLERANT
     "Build dbus with tolerance towards glib 16bit/32bit handling" ON)
 
 option ( WITH_CAPI_WRAPPER
 	"Build with commonapi wrapper" ON)
-	
+
 option ( WITH_DBUS_WRAPPER
-	"Build with Dbus wrapper" OFF)	
-	
+	"Build with Dbus wrapper" OFF)
+
 option ( WITH_SHARED_UTILITIES
     "Build audio manager utilities as dynamic library" OFF)
 
 option ( WITH_SHARED_CORE
     "Build audio manager core as dynamic library" OFF)
 
-   
-set(DBUS_SERVICE_PREFIX "org.genivi.audiomanager" 
+
+set(DBUS_SERVICE_PREFIX "org.genivi.audiomanager"
     CACHE PROPERTY "The dbus service prefix for the AM - only changable for legacy dbus")
 
-set(DBUS_SERVICE_OBJECT_PATH "/org/genivi/audiomanager" 
+set(DBUS_SERVICE_OBJECT_PATH "/org/genivi/audiomanager"
     CACHE PROPERTY "The service object path of the AM - only changable for legacy dbus")
 
-set(DEFAULT_TELNETPORT 6080 
+set(DEFAULT_TELNETPORT 6080
     CACHE INTEGER "The telnet port that is offered by the AM, only valid if TELNET is ON")
-	
-set(MAX_TELNETCONNECTIONS 3 
+
+set(MAX_TELNETCONNECTIONS 3
     CACHE INTEGER "The maximum of allowed telnet connections, only valid if TELNET is ON")
 
-set(DYNAMIC_ID_BOUNDARY 100 
+set(DYNAMIC_ID_BOUNDARY 100
     CACHE INTEGER "The ID boundary between static and dynamic ID ranges")
 
 set(LIB_INSTALL_SUFFIX "audiomanager"
     CACHE STRINGS "The suffix used for installation of the plugins")
-    
+
 set(TEST_EXECUTABLE_INSTALL_PATH ${CMAKE_INSTALL_PREFIX}/bin
-    CACHE STRINGS "The test binaries will be installed here")    
-    
+    CACHE STRINGS "The test binaries will be installed here")
+
 set(DOC_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/doc/AudioManager
-    CACHE STRINGS "The doxygen documentation will be placed here")  
-    
+    CACHE STRINGS "The doxygen documentation will be placed here")
+
 set(AM_SHARE_FOLDER ${CMAKE_INSTALL_PREFIX}/share/audiomanager
     CACHE STRINGS "The share folder for the AM. Some DBus xmls will be placed here and so on")
 
@@ -98,7 +98,7 @@ set(AM_MAX_CONNECTIONS 0x1000
     CACHE INTEGER "Number of max connections before rollover")
 
 set(AM_MAX_MAIN_CONNECTIONS 0x1000
-    CACHE INTEGER "Number of max Mainconnections before rollover")   
+    CACHE INTEGER "Number of max Mainconnections before rollover")
 
 set(AUDIOMANAGER_INCLUDE_FOLDER  ${CMAKE_BINARY_DIR}/include)
 set(AUDIO_INCLUDE_FOLDER ${CMAKE_SOURCE_DIR}/include)
@@ -116,13 +116,13 @@ GET_ROUTING_INTERFACE_VERSION(${AUDIO_INCLUDE_FOLDER})
 GET_CONTROL_INTERFACE_VERSION(${AUDIO_INCLUDE_FOLDER})
 
 if(NOT DEFINED DEFAULT_PLUGIN_COMMAND_DIR)
-	set(DEFAULT_PLUGIN_COMMAND_DIR "${CMAKE_INSTALL_PREFIX}/lib/${LIB_INSTALL_SUFFIX}/command")
+    set(DEFAULT_PLUGIN_COMMAND_DIR "${CMAKE_INSTALL_FULL_LIBDIR}/${LIB_INSTALL_SUFFIX}/command")
 endif(NOT DEFINED DEFAULT_PLUGIN_COMMAND_DIR)
 if(NOT DEFINED DEFAULT_PLUGIN_ROUTING_DIR)
-	set(DEFAULT_PLUGIN_ROUTING_DIR "${CMAKE_INSTALL_PREFIX}/lib/${LIB_INSTALL_SUFFIX}/routing")
+    set(DEFAULT_PLUGIN_ROUTING_DIR "${CMAKE_INSTALL_FULL_LIBDIR}/${LIB_INSTALL_SUFFIX}/routing")
 endif(NOT DEFINED DEFAULT_PLUGIN_ROUTING_DIR)
 if(NOT DEFINED CONTROLLER_PLUGIN_DIR)
-	set(CONTROLLER_PLUGIN_DIR "${CMAKE_INSTALL_PREFIX}/lib/${LIB_INSTALL_SUFFIX}/control")
+    set(CONTROLLER_PLUGIN_DIR "${CMAKE_INSTALL_FULL_LIBDIR}/${LIB_INSTALL_SUFFIX}/control")
 endif(NOT DEFINED CONTROLLER_PLUGIN_DIR)
 
 ##global build flags set(CPACK_RPM_COMPONENT_INSTALL ON)
@@ -133,7 +133,7 @@ set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g -DDEBUG")
 set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O2 -DNDEBUG")
 
 
-if(WITH_TESTS)	
+if(WITH_TESTS)
 	#check if we can find the google stuff
 	pkg_check_modules (GTEST "gtest >= 1.6.0")
 	pkg_check_modules (GMOCK "gmock >= 1.6.0")
@@ -146,15 +146,15 @@ if(WITH_TESTS)
 		set(GMOCK_LIBRARIES gmock gmock_main)
 		configure_file( ${CMAKE_SOURCE_DIR}/cmake/gtest.pc.in ${CMAKE_BINARY_DIR}/gtest.pc @ONLY )
 		configure_file( ${CMAKE_SOURCE_DIR}/cmake/gmock.pc.in ${CMAKE_BINARY_DIR}/gmock.pc @ONLY )
-		install(FILES ${CMAKE_BINARY_DIR}/gmock.pc ${CMAKE_BINARY_DIR}/gtest.pc DESTINATION lib/pkgconfig COMPONENT devel) 
+        install(FILES ${CMAKE_BINARY_DIR}/gmock.pc ${CMAKE_BINARY_DIR}/gtest.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig COMPONENT devel)
 	endif (NOT(${GTEST_FOUND} AND ${GMOCK_FOUND}))
 endif(WITH_TESTS)
 
-configure_package_config_file ( 
+configure_package_config_file (
     ${CMAKE_SOURCE_DIR}/cmake/AudioManagerConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/AudioManagerConfig.cmake
-    INSTALL_DESTINATION lib/${LIB_INSTALL_SUFFIX}/cmake
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/${LIB_INSTALL_SUFFIX}/cmake
     PATH_VARS AUDIO_INCLUDE_FOLDER )
-                              
+
 write_basic_package_version_file(
     ${CMAKE_CURRENT_BINARY_DIR}/AudioManagerConfigVersion.cmake
     VERSION ${DAEMONVERSION}
@@ -163,7 +163,7 @@ write_basic_package_version_file(
 configure_file( ${CMAKE_SOURCE_DIR}/docx/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/DoxyFile )
 configure_file( ${CMAKE_SOURCE_DIR}/cmake/config.cmake.in ${CMAKE_BINARY_DIR}/include/audiomanagerconfig.h )
 configure_file( ${CMAKE_SOURCE_DIR}/cmake/audiomanager.pc.in ${CMAKE_BINARY_DIR}/audiomanager.pc @ONLY )
- 
+
 add_subdirectory (AudioManagerUtilities)
 add_subdirectory (AudioManagerCore)
 add_subdirectory (AudioManagerDaemon)
@@ -172,23 +172,23 @@ add_subdirectory (AudioManagerDaemon)
 install(
     FILES ${CMAKE_BINARY_DIR}/AudioManagerConfig.cmake
           ${CMAKE_BINARY_DIR}/AudioManagerConfigVersion.cmake
-	DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/cmake/AudioManager-${DAEMONVERSION}
-)                       
-   
-install(FILES ${CMAKE_BINARY_DIR}/audiomanager.pc DESTINATION lib/pkgconfig COMPONENT devel)     
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/include/audiomanagerconfig.h  
-    DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${LIB_INSTALL_SUFFIX}
-    COMPONENT dev)
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/tclap-1.2.1/include/tclap  
-    DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${LIB_INSTALL_SUFFIX}
-    COMPONENT dev)    
+          DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}/cmake/AudioManager-${DAEMONVERSION}
+)
 
- 
+install(FILES ${CMAKE_BINARY_DIR}/audiomanager.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig COMPONENT devel)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/include/audiomanagerconfig.h
+    DESTINATION ${CMAKE_INSTALL_FULL_INCLUDEDIR}/${LIB_INSTALL_SUFFIX}
+    COMPONENT dev)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/tclap-1.2.1/include/tclap
+    DESTINATION ${CMAKE_INSTALL_FULL_INCLUDEDIR}/${LIB_INSTALL_SUFFIX}
+    COMPONENT dev)
+
+
 if(WITH_DOCUMENTATION)
 	find_package(Doxygen)
 	configure_file(${DOXY_FILE}  ${DOC_OUTPUT_PATH}/Doxyfile  @ONLY IMMEDIATE)
 	configure_file("README.html" ${DOC_OUTPUT_PATH}/html/README.html)
-  	add_custom_target (AudioManangerDoku ALL 
+  	add_custom_target (AudioManangerDoku ALL
   		COMMAND ${DOXYGEN_EXECUTABLE} ${DOC_OUTPUT_PATH}/Doxyfile WORKING_DIRECTORY ${DOC_OUTPUT_PATH}
   		SOURCES ${CMAKE_SOURCE_DIR} ${DOC_OUTPUT_PATH}/Doxyfile
 	)
@@ -197,7 +197,7 @@ if(WITH_DOCUMENTATION)
 	if (ASCIIDOC_FOUND)
 		execute_process(COMMAND ${ASCIIDOC} -o ${DOC_OUTPUT_PATH}/html/README.html ${CMAKE_SOURCE_DIR}/README )
 	endif(ASCIIDOC_FOUND)
-	
+
 	install (DIRECTORY ${DOC_OUTPUT_PATH}/
 		DESTINATION "${CMAKE_INSTALL_DOCDIR}"
 		PATTERN "Doxyfile" EXCLUDE

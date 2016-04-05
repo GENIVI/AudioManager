@@ -37,7 +37,7 @@ SET(AUDIO_MANAGER_UTILITIES_SRCS_CXX
 	src/CAmCommandLineSingleton.cpp
 	src/CAmDltWrapper.cpp
 	src/CAmSocketHandler.cpp)
-	
+
 if(WITH_SYSTEMD_WATCHDOG)
 	pkg_check_modules(SYSTEMD REQUIRED "libsystemd >= 44")
 
@@ -53,20 +53,20 @@ if(WITH_SYSTEMD_WATCHDOG)
 		${AUDIO_MANAGER_UTILITIES_SRCS_CXX}
 		src/CAmWatchdog.cpp)
 
-endif(WITH_SYSTEMD_WATCHDOG)	
+endif(WITH_SYSTEMD_WATCHDOG)
 
 IF (WITH_DBUS_WRAPPER)
 	pkg_check_modules (DBUS REQUIRED "dbus-1 >= 1.4")
-	
+
 	set(AUDIOMANAGER_UTILITIES_EXTERNAL_INCLUDE
 		${AUDIOMANAGER_UTILITIES_EXTERNAL_INCLUDE}
 		${DBUS_INCLUDE_DIRS})
-	
+
 	set (AUDIO_MANAGER_UTILITIES_LIBS
 		${AUDIO_MANAGER_UTILITIES_LIBS}
 		${DBUS_LIBRARIES}
 		CACHE INTERNAL "AUDIO_MANAGER_UTILITIES_LIBS libs" FORCE)
-   
+
    	set(AUDIO_MANAGER_UTILITIES_SRCS_CXX
 		${AUDIO_MANAGER_UTILITIES_SRCS_CXX}
 		src/CAmDbusWrapper.cpp)
@@ -90,11 +90,11 @@ IF (WITH_CAPI_WRAPPER)
 	        ${COMMONAPI_INCLUDE_DIRS})
 ENDIF (WITH_CAPI_WRAPPER)
 
-if(WITH_DLT)    
+if(WITH_DLT)
     pkg_check_modules(DLT REQUIRED "automotive-dlt >= 2.2.0")
-    	
+
 	add_definitions(${DLT_CFLAGS_OTHER})
-    	
+
 	set(AUDIO_MANAGER_UTILITIES_LIBS
             ${AUDIO_MANAGER_UTILITIES_LIBS}
             ${DLT_LDFLAGS}
@@ -124,35 +124,35 @@ set_target_properties(AudioManagerUtilities PROPERTIES VERSION ${AudioManagerUti
 
 IF (WITH_SHARED_UTILITIES)
 	INSTALL(TARGETS AudioManagerUtilities
-	        LIBRARY DESTINATION lib
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 	        PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
 	        COMPONENT bin)
 ELSE (WITH_SHARED_UTILITIES)
 	INSTALL(TARGETS AudioManagerUtilities
-	        ARCHIVE DESTINATION lib
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 	        COMPONENT dev)
 ENDIF (WITH_SHARED_UTILITIES)
 
-configure_file( ${CMAKE_SOURCE_DIR}/cmake/audiomanagerutilities.pc.in ${CMAKE_BINARY_DIR}/audiomanagerutilities.pc @ONLY )       
-install(FILES ${CMAKE_BINARY_DIR}/audiomanagerutilities.pc DESTINATION lib/pkgconfig COMPONENT devel) 
+configure_file( ${CMAKE_SOURCE_DIR}/cmake/audiomanagerutilities.pc.in ${CMAKE_BINARY_DIR}/audiomanagerutilities.pc @ONLY )
+install(FILES ${CMAKE_BINARY_DIR}/audiomanagerutilities.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig COMPONENT devel)
 
-configure_package_config_file ( 
+configure_package_config_file (
 	${CMAKE_SOURCE_DIR}/cmake/AudioManagerUtilitiesConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/AudioManagerUtilitiesConfig.cmake
-	INSTALL_DESTINATION lib/${LIB_INSTALL_SUFFIX}/cmake
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/${LIB_INSTALL_SUFFIX}/cmake
 	PATH_VARS AUDIO_INCLUDE_FOLDER )
-							  
+
 write_basic_package_version_file(
 	${CMAKE_CURRENT_BINARY_DIR}/AudioManagerUtilitiesConfigVersion.cmake
 	VERSION ${DAEMONVERSION}
-	COMPATIBILITY SameMajorVersion )	
-	
+	COMPATIBILITY SameMajorVersion )
+
 install(
 FILES ${CMAKE_CURRENT_BINARY_DIR}/AudioManagerUtilitiesConfig.cmake
 	  ${CMAKE_CURRENT_BINARY_DIR}/AudioManagerUtilitiesConfigVersion.cmake
-DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/cmake/AudioManagerUtilities-${DAEMONVERSION})
+      DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}/cmake/AudioManagerUtilities-${DAEMONVERSION})
 
 INSTALL(DIRECTORY "include/"
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${LIB_INSTALL_SUFFIX}/AudioManagerUtilities
+        DESTINATION ${CMAKE_INSTALL_FULL_INCLUDEDIR}/${LIB_INSTALL_SUFFIX}/AudioManagerUtilities
         COMPONENT dev)
 
 if(WITH_TESTS)
