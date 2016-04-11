@@ -72,6 +72,7 @@ void CAmMapBasicTest::createMainConnectionSetup(am_mainConnectionID_t & mainConn
     am_Connection_s connection;
     am_Source_s source;
     am_Sink_s sink;
+    am_Domain_s domain;
     std::vector<am_connectionID_t> connectionList;
 
     //we create 9 sources and sinks:
@@ -85,11 +86,10 @@ void CAmMapBasicTest::createMainConnectionSetup(am_mainConnectionID_t & mainConn
         pCF.createSink(sink);
         sink.sinkID = i;
         sink.name = "sink" + int2string(i);
-        sink.domainID = 4;
         pCF.createSource(source);
         source.sourceID = i;
         source.name = "source" + int2string(i);
-        source.domainID = 4;
+
 
         connection.sinkID = i;
         connection.sourceID = i;
@@ -136,6 +136,22 @@ void CAmMapBasicTest::createMainConnectionSetup(am_mainConnectionID_t & mainConn
 void CAmMapBasicTest::SetUp()
 {
 	::testing::FLAGS_gmock_verbose = "error";
+
+	am_Domain_s domain;
+	pCF.createDomain(domain);
+    am_domainID_t forgetDomain;
+    am_sinkClass_t forgetSinkClassID;
+    am_SinkClass_s sinkClass;
+    sinkClass.name="TestSinkClass";
+    sinkClass.sinkClassID=1;
+    am_sourceClass_t forgetSourceClassID;
+    am_SourceClass_s sourceClass;
+    sourceClass.name="TestSourceClass";
+    sourceClass.sourceClassID=1;
+    domain.domainID=4;
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,forgetDomain));
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkClassDB(sinkClass,forgetSinkClassID));
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceClassDB(forgetSourceClassID,sourceClass));
 }
 
 void CAmMapBasicTest::TearDown()
@@ -182,7 +198,7 @@ TEST_F(CAmMapHandlerTest,getSinkInfo)
     am_sinkID_t staticSinkID, firstDynamicSinkID, secondDynamicSinkID;
     std::vector<am_Sink_s> sinkList;
 
-    pCF.createSink(staticSink);
+   pCF.createSink(staticSink);
     staticSink.sinkID = 4;
 
     ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(staticSink,staticSinkID))
@@ -688,8 +704,20 @@ TEST_F(CAmMapHandlerTest,changeConnectionTimingInformation)
 {
     am_Connection_s connection;
     am_connectionID_t connectionID;
+    am_Source_s source;
+    am_Sink_s sink;
+    am_sourceID_t sourceid;
+    am_sinkID_t sinkid;
     std::vector<am_Connection_s> connectionList;
     pCF.createConnection(connection);
+    pCF.createSink(sink);
+    pCF.createSource(source);
+
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(sink,sinkid));
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceDB(source,sourceid));
+
+    connection.sinkID=sinkid;
+    connection.sourceID=sourceid;
 
     //enter a connection
     ASSERT_EQ(E_OK, pDatabaseHandler.enterConnectionDB(connection,connectionID));
@@ -723,12 +751,12 @@ TEST_F(CAmMapHandlerTest,getSinkClassOfSink)
     sink.sinkClassID = 4;
 
     //prepare test
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkClassDB(sinkClass,sinkClassID));
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
 
     //enter a new sinkclass, read out again and check
 
-    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkClassDB(sinkClass,sinkClassID));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListSinkClasses(sinkClassList));
     ASSERT_EQ(sinkClassList[0].name, sinkClass.name);
     ASSERT_EQ(sinkClassList[0].sinkClassID, 4);
@@ -756,17 +784,17 @@ TEST_F(CAmMapHandlerTest,getSourceClassOfSource)
     classProperty.value = 4;
     classPropertyList.push_back(classProperty);
     sourceClass.name = "test";
-    sourceClass.sourceClassID = 1;
+    sourceClass.sourceClassID = 8;
     sourceClass.listClassProperties = classPropertyList;
     pCF.createSource(source);
-
-
-    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
+    source.sourceClassID=8;
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceClassDB(sourceClassID,sourceClass));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
+
     ASSERT_EQ(E_OK, pDatabaseHandler.getListSourceClasses(sourceClassList));
     ASSERT_EQ(sourceClassList[0].name, sourceClass.name);
-    ASSERT_EQ(sourceClassList[0].sourceClassID, 1);
+    ASSERT_EQ(sourceClassList[0].sourceClassID, source.sourceClassID);
     ASSERT_TRUE(std::equal(sourceClassList[0].listClassProperties.begin(),sourceClassList[0].listClassProperties.end(),classPropertyList.begin(),equalClassProperties));
     ASSERT_EQ(E_OK, pDatabaseHandler.getSourceClassInfoDB(sourceID,sinkSourceClass));
     ASSERT_EQ(sourceClassList[0].name, sinkSourceClass.name);
@@ -798,6 +826,7 @@ TEST_F(CAmMapHandlerTest,removeSourceClass)
     ASSERT_EQ(sourceClassList[0].sourceClassID, 3);
     ASSERT_TRUE(std::equal(sourceClassList[0].listClassProperties.begin(),sourceClassList[0].listClassProperties.end(),classPropertyList.begin(),equalClassProperties));
     ASSERT_EQ(E_OK, pDatabaseHandler.removeSourceClassDB(3));
+    ASSERT_EQ(E_OK, pDatabaseHandler.removeSourceClassDB(1));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListSourceClasses(sourceClassList));
     ASSERT_TRUE(sourceClassList.empty());
 }
@@ -909,6 +938,7 @@ TEST_F(CAmMapHandlerTest,removeSinkClass)
     ASSERT_EQ(sinkClassList[0].sinkClassID, DYNAMIC_ID_BOUNDARY);
     ASSERT_TRUE(std::equal(sinkClassList[0].listClassProperties.begin(),sinkClassList[0].listClassProperties.end(),classPropertyList.begin(),equalClassProperties));
     ASSERT_EQ(E_OK, pDatabaseHandler.removeSinkClassDB(sinkClassID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.removeSinkClassDB(1));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListSinkClasses(sinkClassList));
     ASSERT_TRUE(sinkClassList.empty());
 }
@@ -1235,7 +1265,7 @@ TEST_F(CAmMapHandlerTest, peekDomain)
     pCF.createDomain(domain);
     ASSERT_EQ(E_OK, pDatabaseHandler.peekDomain(std::string("newdomain"),domainID));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListDomains(listDomains));
-    ASSERT_TRUE(listDomains.empty());
+    ASSERT_FALSE(listDomains.empty());
     ASSERT_EQ(domainID, DYNAMIC_ID_BOUNDARY);
     domain.name = "newdomain";
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domain2ID));
@@ -1267,7 +1297,7 @@ TEST_F(CAmMapHandlerTest, changeDomainState)
     pCF.createDomain(domain);
     am_DomainState_e newState = DS_INDEPENDENT_STARTUP;
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
-    ASSERT_EQ(E_OK, pDatabaseHandler.changDomainStateDB(newState,domainID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.changeDomainStateDB(newState,domainID));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListDomains(listDomains));
     ASSERT_EQ(newState, listDomains[0].state);
 }
@@ -1486,7 +1516,7 @@ TEST_F(CAmMapHandlerTest,getVisibleMainConnections)
 TEST_F(CAmMapHandlerTest,getListSourcesOfDomain)
 {
     am_Source_s source, source2;
-    am_Domain_s domain;
+    am_Domain_s domain,domain1;
     am_domainID_t domainID;
     am_sourceID_t sourceID;
     std::vector<am_sourceID_t> sourceList, sourceCheckList;
@@ -1497,8 +1527,10 @@ TEST_F(CAmMapHandlerTest,getListSourcesOfDomain)
     pCF.createSource(source2);
     source2.sourceID = 0;
     source2.name = "testSource2";
-    source2.domainID = 5;
+    source2.domainID = 4;
     pCF.createDomain(domain);
+    domain.domainID=0;
+    domain.name="dynDomain";
     sourceCheckList.push_back(1); //sink.sinkID);
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
@@ -1524,9 +1556,11 @@ TEST_F(CAmMapHandlerTest,getListSinksOfDomain)
     sink.sinkID = 1;
     sink.domainID = DYNAMIC_ID_BOUNDARY;
     pCF.createSink(sink2);
-    sink2.domainID = 5;
+    sink2.domainID = 4;
     sink2.name = "sink2";
     pCF.createDomain(domain);
+    domain.domainID=0;
+    domain.name="dyndomain";
     sinkCheckList.push_back(1); //sink.sinkID);
 
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
@@ -1546,20 +1580,48 @@ TEST_F(CAmMapHandlerTest,getListGatewaysOfDomain)
     am_Gateway_s gateway, gateway2;
     am_gatewayID_t gatewayID1, gatewayID2;
     am_domainID_t domainID;
+    am_sinkID_t sinkID;
+    am_sourceID_t sourceID;
     am_Domain_s domain;
+    am_Sink_s sink;
+    am_Source_s source;
     std::vector<am_gatewayID_t> gatewayList, gatewayCheckList;
 
     pCF.createDomain(domain);
+    domain.domainID=0;
+    domain.name="dyndomain";
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
+    pCF.createSink(sink);
+    pCF.createSource(source);
+    source.sourceID=20;
+    sink.sinkID=30;
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(sink,sinkID));
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceDB(source,sourceID));
+
+    am_Sink_s sink1;
+    am_Source_s source1;
+    am_sinkID_t sinkID1;
+    am_sourceID_t sourceID1;
+    pCF.createSink(sink1);
+    sink1.sinkID=32;
+    sink1.name="bla";
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink1,sinkID1));
+    sink.sinkID = sinkID1;
+
+    pCF.createSource(source1);
+    source1.name="blubb";
+    source1.sourceID=56;
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source1,sourceID1));
+    source.sourceID = sourceID1;
 
     pCF.createGateway(gateway);
     gateway.gatewayID = 1;
     gateway.name = "testGateway";
     gateway.controlDomainID = domainID;
-    gateway.sourceID = 1;
-    gateway.sinkID = 1;
-    gateway.domainSinkID = 1;
-    gateway.domainSourceID = 1;
+    gateway.sourceID = source.sourceID;
+    gateway.sinkID = sink.sinkID;
+    gateway.domainSinkID = 4;
+    gateway.domainSourceID = 4;
     ASSERT_EQ(E_OK,pDatabaseHandler.enterGatewayDB(gateway,gatewayID1))
         << "ERROR: database error";
     ASSERT_EQ(true, gatewayID1==1);
@@ -1568,26 +1630,15 @@ TEST_F(CAmMapHandlerTest,getListGatewaysOfDomain)
     gateway2.gatewayID = 2;
     gateway2.name = "testGateway2";
     gateway2.controlDomainID = 4;
-    gateway2.sourceID = 1;
-    gateway2.sinkID = 1;
-    gateway2.domainSinkID = 1;
-    gateway2.domainSourceID = 1;
+    gateway2.sourceID = source1.sourceID;
+    gateway2.sinkID = sink1.sinkID;
+    gateway2.domainSinkID = 4;
+    gateway2.domainSourceID = 4;
     ASSERT_EQ(E_OK,pDatabaseHandler.enterGatewayDB(gateway2,gatewayID2))
         << "ERROR: database error";
     ASSERT_EQ(true, gatewayID2==2);
     gatewayCheckList.push_back(gatewayID1);
 
-    am_Sink_s sink;
-    am_Source_s source;
-    am_sinkID_t sinkID;
-    am_sourceID_t sourceID;
-    pCF.createSink(sink);
-    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
-    sink.sinkID = sinkID;
-
-    pCF.createSource(source);
-    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
-    source.sourceID = sourceID;
 
     ASSERT_EQ(E_NON_EXISTENT,pDatabaseHandler.getListGatewaysOfDomain(2,gatewayList))
         << "ERROR: database error";
@@ -1606,24 +1657,37 @@ TEST_F(CAmMapHandlerTest,getListConvertersOfDomain)
     std::vector<am_converterID_t> converterList, converterCheckList;
 
     pCF.createDomain(domain);
+    domain.domainID=6;
+    domain.name="sdfsd";
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
+
+    am_sinkID_t sinkID1;
+    am_sourceID_t sourceID1;
+    am_Sink_s sink1;
+    am_Source_s source1;
+    pCF.createSink(sink1);
+    pCF.createSource(source1);
+    source1.sourceID=20;
+    sink1.sinkID=30;
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(sink1,sinkID1));
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceDB(source1,sourceID1));
 
     pCF.createConverter(converter);
     converter.converterID = 1;
-    converter.name = "testGateway";
-    converter.sourceID = 1;
-    converter.sinkID = 1;
-    converter.domainID = domainID;
+    converter.name = "testConverter";
+    converter.sourceID = 20;
+    converter.sinkID = 30;
+    converter.domainID = 4;
     ASSERT_EQ(E_OK,pDatabaseHandler.enterConverterDB(converter,converterID1))
         << "ERROR: database error";
     ASSERT_EQ(true, converterID1==1);
 
     pCF.createConverter(converter2);
     converter2.converterID = 2;
-    converter2.name = "testGateway2";
-    converter2.domainID = 4;
-    converter2.sourceID = 1;
-    converter2.sinkID = 1;
+    converter2.name = "testConverter2";
+    converter2.domainID = 6;
+    converter2.sourceID = 20;
+    converter2.sinkID = 30;
     ASSERT_EQ(E_OK,pDatabaseHandler.enterConverterDB(converter2,converterID2))
         << "ERROR: database error";
     ASSERT_EQ(true, converterID2==2);
@@ -1634,17 +1698,21 @@ TEST_F(CAmMapHandlerTest,getListConvertersOfDomain)
     am_sinkID_t sinkID;
     am_sourceID_t sourceID;
     pCF.createSink(sink);
+    sink.sinkID=4;
+    sink.name="ere";
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
     sink.sinkID = sinkID;
 
     pCF.createSource(source);
+    source.sourceID=2;
+    source.name="ere2";
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     source.sourceID = sourceID;
 
-    ASSERT_EQ(E_NON_EXISTENT,pDatabaseHandler.getListConvertersOfDomain(4,converterList))
+    ASSERT_EQ(E_NON_EXISTENT,pDatabaseHandler.getListConvertersOfDomain(8,converterList))
         << "ERROR: database error";
     ASSERT_TRUE(converterList.empty());
-    ASSERT_EQ(E_OK,pDatabaseHandler.getListConvertersOfDomain(domainID,converterList))
+    ASSERT_EQ(E_OK,pDatabaseHandler.getListConvertersOfDomain(4,converterList))
         << "ERROR: database error";
     ASSERT_TRUE(std::equal(converterList.begin(),converterList.end(),converterCheckList.begin()) && !converterList.empty());
 }
@@ -1678,6 +1746,7 @@ TEST_F(CAmMapHandlerTest,removeGateway)
     pCF.createSource(source);
     sink.sinkID = 1;
     source.sourceID = 2;
+
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     ASSERT_EQ(E_OK,pDatabaseHandler.enterGatewayDB(gateway,gatewayID))
@@ -2143,8 +2212,21 @@ TEST_F(CAmMapHandlerTest,registerConnectionCorrect)
     std::vector<am_Connection_s> returnList;
     pCF.createConnection(connection);
 
+    am_Sink_s sink;
+    am_Source_s source;
+    am_sinkID_t sinkID;
+    am_sourceID_t sourceID;
+    pCF.createSink(sink);
+    sink.sinkID=connection.sinkID;
+    pCF.createSource(source);
+    source.sourceID=connection.sourceID;
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(sink,sinkID));
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceDB(source,sourceID));
+
+
+
     ASSERT_EQ(E_OK,pDatabaseHandler.enterConnectionDB(connection,connectionID))
-        << "ERROR: database error";;
+        << "ERROR: database error";
     ASSERT_NE(0,connectionID)
         << "ERROR: connectionID zero";
 
@@ -2508,13 +2590,16 @@ TEST_F(CAmMapHandlerTest, peekDomain_2)
     am_domainID_t domainID;
     am_domainID_t domain2ID;
     pCF.createDomain(domain);
+    am_Domain_s domain2;
+    pCF.createDomain(domain2);
+    domain2.domainID=0;
     ASSERT_EQ(E_OK,pDatabaseHandler.peekDomain(std::string("newdomain"),domainID));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListDomains(listDomains));
-    ASSERT_TRUE(listDomains.empty());
+    ASSERT_TRUE(listDomains.size()==1);
     ASSERT_EQ(domainID, DYNAMIC_ID_BOUNDARY);
 
-    domain.name = "anotherdomain";
-    ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domain2ID));
+    domain2.name = "anotherdomain";
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain2,domain2ID));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListDomains(listDomains));
     ASSERT_EQ(domain2ID, DYNAMIC_ID_BOUNDARY+1);
 
@@ -2574,6 +2659,12 @@ TEST_F(CAmMapHandlerTest, connectionIDBoundary)
 	ASSERT_EQ(10, connectionID);
 	connection.sinkID = 77;
 	connection.sourceID = 77;
+	sink.sinkID=77;
+	sink.name="77";
+	source.sourceID=77;
+	source.name="77";
+	ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink, forgetSink));
+	ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source, forgetSource));
 	ASSERT_EQ(E_OK, pDatabaseHandler.enterConnectionDB(connection,connectionID));
 	ASSERT_EQ(12, connectionID);
 	ASSERT_EQ(E_UNKNOWN, pDatabaseHandler.enterConnectionDB(connection,connectionID));
@@ -2626,6 +2717,8 @@ TEST_F(CAmMapHandlerTest, mainConnectionIDBoundary)
 	mainConnection.mainConnectionID = 0;
 	mainConnection.connectionState = CS_CONNECTED;
 	mainConnection.delay = -1;
+	mainConnection.sinkID=2;
+	mainConnection.sourceID=1;
 
 	for (uint16_t i = 1; i < TEST_MAX_MAINCONNECTION_ID; i++)
 	{
@@ -2640,6 +2733,12 @@ TEST_F(CAmMapHandlerTest, mainConnectionIDBoundary)
 	ASSERT_EQ(10, mainConnectionID);
 	mainConnection.sinkID = 77;
 	mainConnection.sourceID = 77;
+	sink.sinkID=77;
+	sink.name="77";
+	source.sourceID=77;
+	source.name="77";
+	ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink, forgetSink));
+	ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source, forgetSource));
 	ASSERT_EQ(E_OK, pDatabaseHandler.enterMainConnectionDB(mainConnection,mainConnectionID));
 	ASSERT_EQ(12, mainConnectionID);
 	ASSERT_EQ(E_UNKNOWN, pDatabaseHandler.enterMainConnectionDB(mainConnection,mainConnectionID));
@@ -2699,10 +2798,11 @@ TEST_F(CAmMapHandlerObserverCallbacksTest, peek_enter_removeDomain)
     pCF.createDomain(domain);
     ASSERT_EQ(E_OK,pDatabaseHandler.peekDomain(std::string("newdomain"), domainID));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListDomains(listDomains));
-    ASSERT_TRUE(listDomains.empty());
+    ASSERT_TRUE(listDomains.size()==1);
     ASSERT_EQ(domainID, DYNAMIC_ID_BOUNDARY);
 
     domain.name = "anotherdomain";
+    domain.domainID=0;
     const am_Domain_s expDomain1 = {DYNAMIC_ID_BOUNDARY+1, domain.name, domain.busname, domain.nodename, domain.early, domain.complete, domain.state};
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newDomain(IsDomainDataEqualTo(expDomain1))).Times(1);
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domain2ID));
@@ -2869,7 +2969,7 @@ TEST_F(CAmMapHandlerObserverCallbacksTest, peekSourceClassID)
     ASSERT_EQ(E_NON_EXISTENT, pDatabaseHandler.peekSourceClassID(sourceName,sourceClassID));
 
     //now we enter the class into the database
-    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), numberOfSourceClassesChanged()).Times(1);
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), numberOfSourceClassesChanged()).Times(13);
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceClassDB(sourceClassID,sourceClass));
 
     //first we peek without an existing class
@@ -2893,7 +2993,7 @@ TEST_F(CAmMapHandlerObserverCallbacksTest, peekSinkClassID)
     ASSERT_EQ(E_NON_EXISTENT, pDatabaseHandler.peekSinkClassID(sinkName,sinkClassID));
 
     //now we enter the class into the database
-    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), numberOfSinkClassesChanged()).Times(1);
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), numberOfSinkClassesChanged()).Times(12);
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkClassDB(sinkClass,sinkClassID));
 
     //first we peek without an existing class

@@ -35,6 +35,8 @@
 
 namespace am
 {
+#define TRACE_GRAPH 1
+#define ROUTING_BUILD_CONNECTIONS 1
 /**
  * Optimal path search between a source and a sink is implemented with a graph which contains nodes - sinks, sources, gateways, converters.
  * The nodes are identified by sinkID, sourceID, gatewayID, converterID.

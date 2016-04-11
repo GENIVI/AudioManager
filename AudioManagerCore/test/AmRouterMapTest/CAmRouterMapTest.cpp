@@ -63,6 +63,21 @@ CAmRouterMapTest::~CAmRouterMapTest()
 void CAmRouterMapTest::SetUp()
 {
 	logInfo("Routing Test started ");
+	am_Domain_s domain;
+	pCF.createDomain(domain);
+    am_domainID_t forgetDomain;
+    am_sinkClass_t forgetSinkClassID;
+    am_SinkClass_s sinkClass;
+    sinkClass.name="TestSinkClass";
+    sinkClass.sinkClassID=1;
+    am_sourceClass_t forgetSourceClassID;
+    am_SourceClass_s sourceClass;
+    sourceClass.name="TestSourceClass";
+    sourceClass.sourceClassID=1;
+    domain.domainID=4;
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,forgetDomain));
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkClassDB(sinkClass,forgetSinkClassID));
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceClassDB(forgetSourceClassID,sourceClass));
 }
 
 void CAmRouterMapTest::TearDown()
@@ -236,6 +251,10 @@ TEST_F(CAmRouterMapTest,simpleRoute2withDomainNoMatchFormats)
 
     am_Source_s source;
     am_sourceID_t sourceID;
+    am_SourceClass_s sourceclass;
+
+    sourceclass.name="sClass";
+    sourceclass.sourceClassID=5;
 
     source.domainID = domainID1;
     source.name = "source1";
@@ -244,10 +263,15 @@ TEST_F(CAmRouterMapTest,simpleRoute2withDomainNoMatchFormats)
     source.sourceClassID = 5;
     source.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceClassDB(source.sourceClassID,sourceclass));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
 
     am_Sink_s sink;
     am_sinkID_t sinkID;
+    am_SinkClass_s sinkclass;
+    sinkclass.sinkClassID=5;
+    sinkclass.name="sname";
 
     sink.domainID = domainID1;
     sink.name = "sink1";
@@ -256,6 +280,7 @@ TEST_F(CAmRouterMapTest,simpleRoute2withDomainNoMatchFormats)
     sink.muteState = MS_MUTED;
     sink.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
 
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkClassDB(sinkclass,sinkclass.sinkClassID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
 
     std::vector<am_Route_s> listRoutes;
@@ -301,6 +326,10 @@ TEST_F(CAmRouterMapTest,simpleRoute2withDomain)
 
     am_Source_s source;
     am_sourceID_t sourceID;
+    am_SourceClass_s sourceclass;
+
+    sourceclass.name="sClass";
+    sourceclass.sourceClassID=5;
 
     source.domainID = domainID1;
     source.name = "source1";
@@ -309,10 +338,15 @@ TEST_F(CAmRouterMapTest,simpleRoute2withDomain)
     source.sourceClassID = 5;
     source.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
 
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceClassDB(source.sourceClassID,sourceclass));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
 
     am_Sink_s sink;
     am_sinkID_t sinkID;
+    am_SinkClass_s sinkclass;
+    sinkclass.sinkClassID=5;
+    sinkclass.name="sname";
+
 
     sink.domainID = domainID1;
     sink.name = "sink1";
@@ -321,6 +355,7 @@ TEST_F(CAmRouterMapTest,simpleRoute2withDomain)
     sink.muteState = MS_MUTED;
     sink.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
 
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkClassDB(sinkclass,sinkclass.sinkClassID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
 
     std::vector<am_Route_s> listRoutes;
@@ -372,6 +407,10 @@ TEST_F(CAmRouterMapTest,simpleRoute2DomainsOnlyFree)
 
     am_Source_s source, gwSource;
     am_sourceID_t sourceID, gwSourceID;
+    am_SourceClass_s sourceclass;
+
+    sourceclass.name="sClass";
+    sourceclass.sourceClassID=5;
 
     source.domainID = domainID1;
     source.name = "source1";
@@ -387,11 +426,15 @@ TEST_F(CAmRouterMapTest,simpleRoute2DomainsOnlyFree)
     gwSource.sourceClassID = 5;
     gwSource.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceClassDB(source.sourceClassID,sourceclass));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(gwSource,gwSourceID));
 
     am_Sink_s sink, gwSink;
     am_sinkID_t sinkID, gwSinkID;
+    am_SinkClass_s sinkclass;
+    sinkclass.sinkClassID=5;
+    sinkclass.name="sname";
 
     sink.domainID = domainID2;
     sink.name = "sink1";
@@ -407,6 +450,7 @@ TEST_F(CAmRouterMapTest,simpleRoute2DomainsOnlyFree)
     gwSink.muteState = MS_MUTED;
     gwSink.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
 
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkClassDB(sinkclass,sinkclass.sinkClassID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(gwSink,gwSinkID));
 
@@ -483,6 +527,10 @@ TEST_F(CAmRouterMapTest,simpleRoute2DomainsOnlyFreeNotFree)
 
     am_Source_s source, gwSource;
     am_sourceID_t sourceID, gwSourceID;
+    am_SourceClass_s sourceclass;
+
+    sourceclass.name="sClass";
+    sourceclass.sourceClassID=5;
 
     source.domainID = domainID1;
     source.name = "source1";
@@ -498,11 +546,16 @@ TEST_F(CAmRouterMapTest,simpleRoute2DomainsOnlyFreeNotFree)
     gwSource.sourceClassID = 5;
     gwSource.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceClassDB(source.sourceClassID,sourceclass));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(gwSource,gwSourceID));
 
     am_Sink_s sink, gwSink;
     am_sinkID_t sinkID, gwSinkID;
+    am_SinkClass_s sinkclass;
+    sinkclass.sinkClassID=5;
+    sinkclass.name="sname";
+
 
     sink.domainID = domainID2;
     sink.name = "sink1";
@@ -518,6 +571,7 @@ TEST_F(CAmRouterMapTest,simpleRoute2DomainsOnlyFreeNotFree)
     gwSink.muteState = MS_MUTED;
     gwSink.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
 
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkClassDB(sinkclass,sinkclass.sinkClassID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(gwSink,gwSinkID));
 
@@ -611,6 +665,10 @@ TEST_F(CAmRouterMapTest,simpleRoute2DomainsCircularGWOnlyFree)
 
     am_Source_s source, gwSource, gwSource2;
     am_sourceID_t sourceID, gwSourceID, gwSourceID2;
+    am_SourceClass_s sourceclass;
+
+    sourceclass.name="sClass";
+    sourceclass.sourceClassID=5;
 
     source.domainID = domainID1;
     source.name = "source1";
@@ -633,12 +691,16 @@ TEST_F(CAmRouterMapTest,simpleRoute2DomainsCircularGWOnlyFree)
     gwSource2.sourceClassID = 5;
     gwSource2.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceClassDB(source.sourceClassID,sourceclass));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(gwSource,gwSourceID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(gwSource2,gwSourceID2));
 
     am_Sink_s sink, gwSink, gwSink2;
     am_sinkID_t sinkID, gwSinkID, gwSinkID2;
+    am_SinkClass_s sinkclass;
+    sinkclass.sinkClassID=5;
+    sinkclass.name="sname";
 
     sink.domainID = domainID2;
     sink.name = "sink1";
@@ -661,6 +723,7 @@ TEST_F(CAmRouterMapTest,simpleRoute2DomainsCircularGWOnlyFree)
     gwSink2.muteState = MS_MUTED;
     gwSink2.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkClassDB(sinkclass,sinkclass.sinkClassID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(gwSink,gwSinkID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(gwSink2,gwSinkID2));
@@ -754,6 +817,11 @@ TEST_F(CAmRouterMapTest,simpleRoute3DomainsListConnectionFormats_2)
 
     am_Source_s source, gwSource, gwSource1;
     am_sourceID_t sourceID, gwSourceID, gwSourceID1;
+    am_SourceClass_s sourceclass;
+
+    sourceclass.name="sClass";
+    sourceclass.sourceClassID=5;
+
 
     source.domainID = domainID1;
     source.name = "source1";
@@ -780,6 +848,7 @@ TEST_F(CAmRouterMapTest,simpleRoute3DomainsListConnectionFormats_2)
     gwSource1.listConnectionFormats.push_back(CF_GENIVI_STEREO);
     gwSource1.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceClassDB(source.sourceClassID,sourceclass));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(gwSource,gwSourceID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(gwSource1,gwSourceID1));
@@ -793,6 +862,9 @@ TEST_F(CAmRouterMapTest,simpleRoute3DomainsListConnectionFormats_2)
     sink.sinkClassID = 5;
     sink.muteState = MS_MUTED;
     sink.listConnectionFormats.push_back(CF_GENIVI_MONO);
+    am_SinkClass_s sinkclass;
+    sinkclass.sinkClassID=5;
+    sinkclass.name="sname";
 
     gwSink.domainID = domainID1;
     gwSink.name = "gwSink";
@@ -810,6 +882,7 @@ TEST_F(CAmRouterMapTest,simpleRoute3DomainsListConnectionFormats_2)
     gwSink1.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
     gwSink1.listConnectionFormats.push_back(CF_GENIVI_STEREO);
 
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkClassDB(sinkclass,sinkclass.sinkClassID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(gwSink,gwSinkID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(gwSink1,gwSinkID1));
@@ -925,6 +998,10 @@ TEST_F(CAmRouterMapTest,simpleRoute3DomainsListConnectionFormats_1)
     source.sourceClassID = 5;
     source.listConnectionFormats.push_back(CF_GENIVI_STEREO);
     source.listConnectionFormats.push_back(CF_GENIVI_MONO);
+    am_SourceClass_s sourceclass;
+
+    sourceclass.name="sClass";
+    sourceclass.sourceClassID=5;
 
     gwSource.domainID = domainID2;
     gwSource.name = "gwsource1";
@@ -942,12 +1019,16 @@ TEST_F(CAmRouterMapTest,simpleRoute3DomainsListConnectionFormats_1)
     gwSource1.sourceClassID = 5;
     gwSource1.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceClassDB(source.sourceClassID,sourceclass));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(gwSource,gwSourceID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(gwSource1,gwSourceID1));
 
     am_Sink_s sink, gwSink, gwSink1;
     am_sinkID_t sinkID, gwSinkID, gwSinkID1;
+    am_SinkClass_s sinkclass;
+	sinkclass.sinkClassID=5;
+	sinkclass.name="sname";
 
     sink.domainID = domainID3;
     sink.name = "sink1";
@@ -971,6 +1052,7 @@ TEST_F(CAmRouterMapTest,simpleRoute3DomainsListConnectionFormats_1)
     gwSink1.muteState = MS_MUTED;
     gwSink1.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
 
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkClassDB(sinkclass,sinkclass.sinkClassID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(gwSink,gwSinkID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(gwSink1,gwSinkID1));
@@ -1076,6 +1158,10 @@ TEST_F(CAmRouterMapTest,simpleRoute3DomainsListConnectionFormats)
 
     am_Source_s source, gwSource, gwSource1;
     am_sourceID_t sourceID, gwSourceID, gwSourceID1;
+    am_SourceClass_s sourceclass;
+
+    sourceclass.name="sClass";
+    sourceclass.sourceClassID=5;
 
     source.domainID = domainID1;
     source.name = "source1";
@@ -1099,12 +1185,17 @@ TEST_F(CAmRouterMapTest,simpleRoute3DomainsListConnectionFormats)
     gwSource1.sourceClassID = 5;
     gwSource1.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceClassDB(source.sourceClassID,sourceclass));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(gwSource,gwSourceID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(gwSource1,gwSourceID1));
 
     am_Sink_s sink, gwSink, gwSink1;
     am_sinkID_t sinkID, gwSinkID, gwSinkID1;
+
+    am_SinkClass_s sinkclass;
+    sinkclass.sinkClassID=5;
+    sinkclass.name="sname";
 
     sink.domainID = domainID3;
     sink.name = "sink1";
@@ -1128,6 +1219,7 @@ TEST_F(CAmRouterMapTest,simpleRoute3DomainsListConnectionFormats)
     gwSink1.muteState = MS_MUTED;
     gwSink1.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
 
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkClassDB(sinkclass,sinkclass.sinkClassID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(gwSink,gwSinkID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(gwSink1,gwSinkID1));
@@ -1234,6 +1326,10 @@ TEST_F(CAmRouterMapTest,simpleRoute4Domains2Routes)
 
     am_Source_s source, gwSource, gwSource1, gwSource2, gwSource3;
     am_sourceID_t sourceID, gwSourceID, gwSourceID1, gwSourceID2, gwSourceID3;
+    am_SourceClass_s sourceclass;
+
+    sourceclass.name="sClass";
+    sourceclass.sourceClassID=5;
 
     source.domainID = domainID1;
     source.name = "source1";
@@ -1270,6 +1366,7 @@ TEST_F(CAmRouterMapTest,simpleRoute4Domains2Routes)
     gwSource3.sourceClassID = 5;
     gwSource3.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceClassDB(source.sourceClassID,sourceclass));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(gwSource,gwSourceID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(gwSource1,gwSourceID1));
@@ -1313,7 +1410,11 @@ TEST_F(CAmRouterMapTest,simpleRoute4Domains2Routes)
     sink.sinkClassID = 5;
     sink.muteState = MS_MUTED;
     sink.listConnectionFormats.push_back(CF_GENIVI_STEREO);
+    am_SinkClass_s sinkclass;
+    sinkclass.sinkClassID=5;
+    sinkclass.name="sname";
 
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkClassDB(sinkclass,sinkclass.sinkClassID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(gwSink,gwSinkID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(gwSink1,gwSinkID1));
@@ -1482,6 +1583,10 @@ TEST_F(CAmRouterMapTest,simpleRoute3DomainsNoConnection)
     source.sourceID = 0;
     source.sourceClassID = 5;
     source.listConnectionFormats.push_back(CF_GENIVI_MONO);
+    am_SourceClass_s sourceclass;
+
+    sourceclass.name="sClass";
+    sourceclass.sourceClassID=5;
 
     gwSource.domainID = domainID2;
     gwSource.name = "gwsource1";
@@ -1497,6 +1602,7 @@ TEST_F(CAmRouterMapTest,simpleRoute3DomainsNoConnection)
     gwSource1.sourceClassID = 5;
     gwSource1.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceClassDB(source.sourceClassID,sourceclass));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(gwSource,gwSourceID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(gwSource1,gwSourceID1));
@@ -1510,6 +1616,9 @@ TEST_F(CAmRouterMapTest,simpleRoute3DomainsNoConnection)
     sink.sinkClassID = 5;
     sink.muteState = MS_MUTED;
     sink.listConnectionFormats.push_back(CF_GENIVI_STEREO);
+    am_SinkClass_s sinkclass;
+    sinkclass.sinkClassID=5;
+    sinkclass.name="sname";
 
     gwSink.domainID = domainID1;
     gwSink.name = "gwSink";
@@ -1525,6 +1634,7 @@ TEST_F(CAmRouterMapTest,simpleRoute3DomainsNoConnection)
     gwSink1.muteState = MS_MUTED;
     gwSink1.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
 
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkClassDB(sinkclass,sinkclass.sinkClassID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(gwSink,gwSinkID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(gwSink1,gwSinkID1));
@@ -1625,6 +1735,10 @@ TEST_F(CAmRouterMapTest,simpleRoute2Domains)
     source.sourceID = 0;
     source.sourceClassID = 5;
     source.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
+    am_SourceClass_s sourceclass;
+
+    sourceclass.name="sClass";
+    sourceclass.sourceClassID=5;
 
     gwSource.domainID = domainID2;
     gwSource.name = "gwsource1";
@@ -1633,11 +1747,16 @@ TEST_F(CAmRouterMapTest,simpleRoute2Domains)
     gwSource.sourceClassID = 5;
     gwSource.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceClassDB(source.sourceClassID,sourceclass));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(gwSource,gwSourceID));
 
     am_Sink_s sink, gwSink;
     am_sinkID_t sinkID, gwSinkID;
+    am_SinkClass_s sinkclass;
+    sinkclass.sinkClassID=5;
+    sinkclass.name="sname";
+
 
     sink.domainID = domainID2;
     sink.name = "sink1";
@@ -1653,6 +1772,8 @@ TEST_F(CAmRouterMapTest,simpleRoute2Domains)
     gwSink.muteState = MS_MUTED;
     gwSink.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
 
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkClassDB(sinkclass,sinkclass.sinkClassID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(gwSink,gwSinkID));
 
@@ -1734,6 +1855,10 @@ TEST_F(CAmRouterMapTest,simpleRoute2DomainsNoMatchConnectionFormats)
     source.sourceID = 0;
     source.sourceClassID = 5;
     source.listConnectionFormats.push_back(CF_GENIVI_STEREO);
+    am_SourceClass_s sourceclass;
+
+    sourceclass.name="sClass";
+    sourceclass.sourceClassID=5;
 
     gwSource.domainID = domainID2;
     gwSource.name = "gwsource1";
@@ -1742,11 +1867,15 @@ TEST_F(CAmRouterMapTest,simpleRoute2DomainsNoMatchConnectionFormats)
     gwSource.sourceClassID = 5;
     gwSource.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceClassDB(source.sourceClassID,sourceclass));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(gwSource,gwSourceID));
 
     am_Sink_s sink, gwSink;
     am_sinkID_t sinkID, gwSinkID;
+    am_SinkClass_s sinkclass;
+    sinkclass.sinkClassID=5;
+    sinkclass.name="sname";
 
     sink.domainID = domainID2;
     sink.name = "sink1";
@@ -1762,6 +1891,7 @@ TEST_F(CAmRouterMapTest,simpleRoute2DomainsNoMatchConnectionFormats)
     gwSink.muteState = MS_MUTED;
     gwSink.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
 
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkClassDB(sinkclass,sinkclass.sinkClassID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(gwSink,gwSinkID));
 
@@ -1819,6 +1949,10 @@ TEST_F(CAmRouterMapTest,simpleRoute3Domains)
 
     am_Source_s source, gwSource, gwSource1;
     am_sourceID_t sourceID, gwSourceID, gwSourceID1;
+    am_SourceClass_s sourceclass;
+
+    sourceclass.name="sClass";
+    sourceclass.sourceClassID=5;
 
     source.domainID = domainID1;
     source.name = "source1";
@@ -1841,12 +1975,17 @@ TEST_F(CAmRouterMapTest,simpleRoute3Domains)
     gwSource1.sourceClassID = 5;
     gwSource1.listConnectionFormats.push_back(CF_GENIVI_MONO);
 
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceClassDB(source.sourceClassID,sourceclass));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(gwSource,gwSourceID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(gwSource1,gwSourceID1));
 
     am_Sink_s sink, gwSink, gwSink1;
     am_sinkID_t sinkID, gwSinkID, gwSinkID1;
+    am_SinkClass_s sinkclass;
+    sinkclass.sinkClassID=5;
+    sinkclass.name="sname";
+
 
     sink.domainID = domainID3;
     sink.name = "sink1";
@@ -1869,6 +2008,7 @@ TEST_F(CAmRouterMapTest,simpleRoute3Domains)
     gwSink1.muteState = MS_MUTED;
     gwSink1.listConnectionFormats.push_back(CF_GENIVI_ANALOG);
 
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkClassDB(sinkclass,sinkclass.sinkClassID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(gwSink,gwSinkID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(gwSink1,gwSinkID1));
@@ -1974,6 +2114,10 @@ TEST_F(CAmRouterMapTest,simpleRoute4Domains)
 
     am_Source_s source, gwSource, gwSource1, gwSource2;
     am_sourceID_t sourceID, gwSourceID, gwSourceID1, gwSourceID2;
+    am_SourceClass_s sourceclass;
+
+    sourceclass.name="sClass";
+    sourceclass.sourceClassID=5;
 
     source.domainID = domainID1;
     source.name = "source1";
@@ -2003,6 +2147,7 @@ TEST_F(CAmRouterMapTest,simpleRoute4Domains)
     gwSource2.sourceClassID = 5;
     gwSource2.listConnectionFormats.push_back(CF_GENIVI_STEREO);
 
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceClassDB(source.sourceClassID,sourceclass));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(gwSource,gwSourceID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(gwSource1,gwSourceID1));
@@ -2038,7 +2183,11 @@ TEST_F(CAmRouterMapTest,simpleRoute4Domains)
     sink.sinkClassID = 5;
     sink.muteState = MS_MUTED;
     sink.listConnectionFormats.push_back(CF_GENIVI_STEREO);
+    am_SinkClass_s sinkclass;
+    sinkclass.sinkClassID=5;
+    sinkclass.name="sname";
 
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkClassDB(sinkclass,sinkclass.sinkClassID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(gwSink,gwSinkID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(gwSink1,gwSinkID1));
@@ -2212,12 +2361,21 @@ TEST_F(CAmRouterMapTest,route1Domain1Source1Sink)
 	std::vector<am_CustomConnectionFormat_t> cf1;
 	cf1.push_back(CF_GENIVI_STEREO);
 	cf1.push_back(CF_GENIVI_ANALOG);
+    am_SourceClass_s sourceclass;
+
+    sourceclass.name="sClass";
+    sourceclass.sourceClassID=5;
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceClassDB(sourceclass.sourceClassID,sourceclass));
 	enterSourceDB("source1", domainID1, cf1, sourceID);
 
 	am_sinkID_t sinkID;
 	std::vector<am_CustomConnectionFormat_t> cf2;
 	cf2.push_back(CF_GENIVI_ANALOG);
 	cf2.push_back(CF_GENIVI_MONO);
+    am_SinkClass_s sinkclass;
+    sinkclass.sinkClassID=5;
+    sinkclass.name="sname";
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkClassDB(sinkclass,sinkclass.sinkClassID));
 	enterSinkDB("sink1", domainID1, cf2, sinkID);
 
     am::am_Source_s source;
@@ -2258,12 +2416,24 @@ TEST_F(CAmRouterMapTest,route1Domain1Source1Converter1Sink)
 	std::vector<am_CustomConnectionFormat_t> cf1;
 	cf1.push_back(CF_GENIVI_STEREO);
 	cf1.push_back(CF_GENIVI_AUTO);
+    am_SourceClass_s sourceclass;
+
+    sourceclass.name="sClass";
+    sourceclass.sourceClassID=5;
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceClassDB(sourceclass.sourceClassID,sourceclass));
 	enterSourceDB("source1", domainID1, cf1, sourceID);
 
 	am_sinkID_t sinkID1, sinkID2;
 	std::vector<am_CustomConnectionFormat_t> cf2;
 	cf2.push_back(CF_GENIVI_MONO);
 	cf2.push_back(CF_GENIVI_ANALOG);
+    am_SinkClass_s sinkclass;
+    sinkclass.sinkClassID=5;
+    sinkclass.name="sname";
+
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkClassDB(sinkclass,sinkclass.sinkClassID));
 	enterSinkDB("sink1", domainID1, cf2, sinkID1);
 	enterSinkDB("sink2", domainID1, cf2, sinkID2);
 
@@ -2323,6 +2493,20 @@ TEST_F(CAmRouterMapTest,route1Domain1Source1Converter1Sink)
 TEST_F(CAmRouterMapTest,route1Domain1Source3Converters1Sink)
 {
 	EXPECT_CALL(pMockControlInterface,getConnectionFormatChoice(_,_,_,_,_)).WillRepeatedly(DoAll(returnConnectionFormat(), Return(E_OK)));
+
+    am_SourceClass_s sourceclass;
+
+    sourceclass.name="sClass";
+    sourceclass.sourceClassID=5;
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceClassDB(sourceclass.sourceClassID,sourceclass));
+
+    am_SinkClass_s sinkclass;
+    sinkclass.sinkClassID=5;
+    sinkclass.name="sname";
+
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkClassDB(sinkclass,sinkclass.sinkClassID));
 
 	am_domainID_t domainID1;
 	enterDomainDB("domain1", domainID1);
@@ -2431,6 +2615,20 @@ TEST_F(CAmRouterMapTest,route2Domains1Source1Sink)
 {
 	EXPECT_CALL(pMockControlInterface,getConnectionFormatChoice(_,_,_,_,_)).WillRepeatedly(DoAll(returnConnectionFormat(), Return(E_OK)));
 
+    am_SourceClass_s sourceclass;
+
+    sourceclass.name="sClass";
+    sourceclass.sourceClassID=5;
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceClassDB(sourceclass.sourceClassID,sourceclass));
+
+    am_SinkClass_s sinkclass;
+    sinkclass.sinkClassID=5;
+    sinkclass.name="sname";
+
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkClassDB(sinkclass,sinkclass.sinkClassID));
+
 	am_domainID_t domainID1, domainID2;
 	enterDomainDB("domain1", domainID1);
 	enterDomainDB("domain2", domainID2);
@@ -2481,6 +2679,20 @@ TEST_F(CAmRouterMapTest,route2Domains1Source1Sink)
 TEST_F(CAmRouterMapTest,route3Domains1Source1Sink)
 {
 	EXPECT_CALL(pMockControlInterface,getConnectionFormatChoice(_,_,_,_,_)).WillRepeatedly(DoAll(returnConnectionFormat(), Return(E_OK)));
+
+    am_SourceClass_s sourceclass;
+
+    sourceclass.name="sClass";
+    sourceclass.sourceClassID=5;
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceClassDB(sourceclass.sourceClassID,sourceclass));
+
+    am_SinkClass_s sinkclass;
+    sinkclass.sinkClassID=5;
+    sinkclass.name="sname";
+
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkClassDB(sinkclass,sinkclass.sinkClassID));
 
 	am_domainID_t domainID1, domainID2, domainID3;
 	enterDomainDB("domain1", domainID1);
@@ -2544,6 +2756,20 @@ TEST_F(CAmRouterMapTest,route3Domains1Source1Sink)
 TEST_F(CAmRouterMapTest,routeSource1Sink2PathThroughConv1Gate1)
 {
 	EXPECT_CALL(pMockControlInterface,getConnectionFormatChoice(_,_,_,_,_)).WillRepeatedly(DoAll(returnConnectionFormat(), Return(E_OK)));
+
+    am_SourceClass_s sourceclass;
+
+    sourceclass.name="sClass";
+    sourceclass.sourceClassID=5;
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceClassDB(sourceclass.sourceClassID,sourceclass));
+
+    am_SinkClass_s sinkclass;
+    sinkclass.sinkClassID=5;
+    sinkclass.name="sname";
+
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkClassDB(sinkclass,sinkclass.sinkClassID));
 
 	std::vector<bool> matrix;
 	matrix.push_back(true);
@@ -2616,6 +2842,20 @@ TEST_F(CAmRouterMapTest, routeSource1Sink1PathThroughDomain2)
 {
 	EXPECT_CALL(pMockControlInterface,getConnectionFormatChoice(_,_,_,_,_)).WillRepeatedly(DoAll(returnConnectionFormat(), Return(E_OK)));
 
+    am_SourceClass_s sourceclass;
+
+    sourceclass.name="sClass";
+    sourceclass.sourceClassID=5;
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceClassDB(sourceclass.sourceClassID,sourceclass));
+
+    am_SinkClass_s sinkclass;
+    sinkclass.sinkClassID=5;
+    sinkclass.name="sname";
+
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkClassDB(sinkclass,sinkclass.sinkClassID));
+
 	std::vector<bool> matrix;
 	matrix.push_back(true);
 	am_domainID_t domainID1, domainID2;
@@ -2680,6 +2920,20 @@ TEST_F(CAmRouterMapTest, routeSource1Sink1PathThroughDomain2)
 TEST_F(CAmRouterMapTest, routeSource1Sink1PathThroughGate1Conv2Gate2)
 {
 	EXPECT_CALL(pMockControlInterface,getConnectionFormatChoice(_,_,_,_,_)).WillRepeatedly(DoAll(returnConnectionFormat(), Return(E_OK)));
+
+    am_SourceClass_s sourceclass;
+
+    sourceclass.name="sClass";
+    sourceclass.sourceClassID=5;
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceClassDB(sourceclass.sourceClassID,sourceclass));
+
+    am_SinkClass_s sinkclass;
+    sinkclass.sinkClassID=5;
+    sinkclass.name="sname";
+
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkClassDB(sinkclass,sinkclass.sinkClassID));
 
 	std::vector<bool> matrix;
 	matrix.push_back(true);
@@ -2759,6 +3013,20 @@ TEST_F(CAmRouterMapTest, routeSource1Sink1PathThroughGate1Conv2Gate2)
 TEST_F(CAmRouterMapTest, routeSource1Sink1PathThroughConv1Gate1Conv2Gate2)
 {
 	EXPECT_CALL(pMockControlInterface,getConnectionFormatChoice(_,_,_,_,_)).WillRepeatedly(DoAll(returnConnectionFormat(), Return(E_OK)));
+
+    am_SourceClass_s sourceclass;
+
+    sourceclass.name="sClass";
+    sourceclass.sourceClassID=5;
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceClassDB(sourceclass.sourceClassID,sourceclass));
+
+    am_SinkClass_s sinkclass;
+    sinkclass.sinkClassID=5;
+    sinkclass.name="sname";
+
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkClassDB(sinkclass,sinkclass.sinkClassID));
 
 	std::vector<bool> matrix;
 	matrix.push_back(true);
@@ -2869,6 +3137,20 @@ TEST_F(CAmRouterMapTest, routeSource1Sink1PathThroughConv1Gate1Conv2Gate2)
 TEST_F(CAmRouterMapTest,route3Domains1Source1SinkGwCycles)
 {
 	EXPECT_CALL(pMockControlInterface,getConnectionFormatChoice(_,_,_,_,_)).WillRepeatedly(DoAll(returnConnectionFormat(), Return(E_OK)));
+
+    am_SourceClass_s sourceclass;
+
+    sourceclass.name="sClass";
+    sourceclass.sourceClassID=5;
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceClassDB(sourceclass.sourceClassID,sourceclass));
+
+    am_SinkClass_s sinkclass;
+    sinkclass.sinkClassID=5;
+    sinkclass.name="sname";
+
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkClassDB(sinkclass,sinkclass.sinkClassID));
 
 	am_domainID_t domain1ID, domain2ID, domain3ID;
 	enterDomainDB("domain1", domain1ID);
@@ -3037,6 +3319,20 @@ TEST_F(CAmRouterMapTest,route3Domains1Source1SinkGwCycles)
 TEST_F(CAmRouterMapTest,route3Domains1Source3Gateways3Convertres1Sink)
 {
 	EXPECT_CALL(pMockControlInterface,getConnectionFormatChoice(_,_,_,_,_)).WillRepeatedly(DoAll(returnConnectionFormat(), Return(E_OK)));
+
+    am_SourceClass_s sourceclass;
+
+    sourceclass.name="sClass";
+    sourceclass.sourceClassID=5;
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceClassDB(sourceclass.sourceClassID,sourceclass));
+
+    am_SinkClass_s sinkclass;
+    sinkclass.sinkClassID=5;
+    sinkclass.name="sname";
+
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkClassDB(sinkclass,sinkclass.sinkClassID));
 
 	am_domainID_t domainID1, domainID2, domainID3;
 	enterDomainDB("domain1", domainID1);

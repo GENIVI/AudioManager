@@ -70,7 +70,9 @@ am_Error_e CAmControlReceiver::connect(am_Handle_s & handle, am_connectionID_t &
     tempConnection.connectionID = 0;
     tempConnection.delay=-1;
 
-    mDatabaseHandler->enterConnectionDB(tempConnection, connectionID);
+    am_Error_e connError(mDatabaseHandler->enterConnectionDB(tempConnection, connectionID));
+    if (connError)
+    	return(connError);
     am_Error_e syncError(mRoutingSender->asyncConnect(handle, connectionID, sourceID, sinkID, format));
 	if (syncError)
 	{
@@ -217,7 +219,7 @@ am_Error_e CAmControlReceiver::changeSinkAvailabilityDB(const am_Availability_s 
 
 am_Error_e CAmControlReceiver::changDomainStateDB(const am_DomainState_e domainState, const am_domainID_t domainID)
 {
-    return (mDatabaseHandler->changDomainStateDB(domainState, domainID));
+    return (mDatabaseHandler->changeDomainStateDB(domainState, domainID));
 }
 
 am_Error_e CAmControlReceiver::changeSinkMuteStateDB(const am_MuteState_e muteState, const am_sinkID_t sinkID)

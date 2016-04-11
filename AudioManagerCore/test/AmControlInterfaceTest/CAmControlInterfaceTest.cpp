@@ -77,6 +77,24 @@ CAmControlInterfaceTest::~CAmControlInterfaceTest()
 void CAmControlInterfaceTest::SetUp()
 {
 
+	::testing::FLAGS_gmock_verbose = "error";
+
+	am_Domain_s domain;
+	pCF.createDomain(domain);
+    am_domainID_t forgetDomain;
+    am_sinkClass_t forgetSinkClassID;
+    am_SinkClass_s sinkClass;
+    sinkClass.name="TestSinkClass";
+    sinkClass.sinkClassID=1;
+    am_sourceClass_t forgetSourceClassID;
+    am_SourceClass_s sourceClass;
+    sourceClass.name="TestSourceClass";
+    sourceClass.sourceClassID=1;
+    domain.domainID=4;
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,forgetDomain));
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkClassDB(sinkClass,forgetSinkClassID));
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceClassDB(forgetSourceClassID,sourceClass));
+
 }
 
 void CAmControlInterfaceTest::TearDown()
@@ -173,6 +191,8 @@ TEST_F(CAmControlInterfaceTest,ackConnect)
     am_connectionID_t connectionID;
     am_Sink_s sink;
     am_sinkID_t sinkID;
+    am_Source_s source;
+    am_sourceID_t sourceID;
     am_Domain_s domain;
     am_domainID_t domainID;
     std::vector<am_Connection_s> connectionList;
@@ -180,14 +200,16 @@ TEST_F(CAmControlInterfaceTest,ackConnect)
     am_Handle_s handle;
     pCF.createSink(sink);
     pCF.createDomain(domain);
+    pCF.createSource(source);
     domain.name = "mock";
     domain.busname = "mock";
     sink.sinkID = 2;
-    sink.domainID = DYNAMIC_ID_BOUNDARY;
+    source.sourceID=2;
 
     //prepare the stage
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
 
     //when asyncConnect is called, we expect a call on the routingInterface
     EXPECT_CALL(pMockRoutingInterface,asyncConnect(_,1,2,2,CF_GENIVI_STEREO)).WillOnce(Return(E_OK));
@@ -231,19 +253,25 @@ TEST_F(CAmControlInterfaceTest,ackDisconnect)
     am_sinkID_t sinkID;
     am_Domain_s domain;
     am_domainID_t domainID;
+    am_Source_s source;
+    am_sourceID_t sourceID;
     std::vector<am_Connection_s> connectionList;
     std::vector<am_Handle_s> handlesList;
     am_Handle_s handle;
     pCF.createSink(sink);
     pCF.createDomain(domain);
+    pCF.createSource(source);
+    domain.domainID=0;
     domain.name = "mock";
     domain.busname = "mock";
     sink.sinkID = 2;
     sink.domainID = DYNAMIC_ID_BOUNDARY;
+    source.sourceID=2;
 
     //prepare the stage
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
 
     //now we first need to connect, we expect a call on the routing interface
     EXPECT_CALL(pMockRoutingInterface,asyncConnect(_,1,2,2,CF_GENIVI_STEREO)).WillOnce(Return(E_OK));
@@ -285,19 +313,25 @@ TEST_F(CAmControlInterfaceTest,ackDisconnectFailAndRetry)
     am_sinkID_t sinkID;
     am_Domain_s domain;
     am_domainID_t domainID;
+    am_Source_s source;
+    am_sourceID_t sourceID;
     std::vector<am_Connection_s> connectionList;
     std::vector<am_Handle_s> handlesList;
     am_Handle_s handle;
     pCF.createSink(sink);
     pCF.createDomain(domain);
+    pCF.createSource(source);
     domain.name = "mock";
     domain.busname = "mock";
+    domain.domainID=0;
     sink.sinkID = 2;
     sink.domainID = DYNAMIC_ID_BOUNDARY;
+    source.sourceID=2;
 
     //prepare the stage
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
 
     //now we first need to connect, we expect a call on the routing interface
     EXPECT_CALL(pMockRoutingInterface,asyncConnect(_,1,2,2,CF_GENIVI_STEREO)).WillOnce(Return(E_OK));
@@ -349,6 +383,7 @@ TEST_F(CAmControlInterfaceTest,setSourceState)
     pCF.createDomain(domain);
     domain.name = "mock";
     domain.busname = "mock";
+    domain.domainID=0;
     source.sourceID = 2;
     source.domainID = DYNAMIC_ID_BOUNDARY;
 
@@ -399,6 +434,7 @@ TEST_F(CAmControlInterfaceTest,SetSinkVolumeChange)
     pCF.createDomain(domain);
     domain.name = "mock";
     domain.busname = "mock";
+    domain.domainID=0;
     sink.sinkID = 2;
     sink.domainID = DYNAMIC_ID_BOUNDARY;
     sink.volume = 10;
@@ -450,6 +486,7 @@ TEST_F(CAmControlInterfaceTest,ackSetSourceVolumeChange)
     pCF.createDomain(domain);
     domain.name = "mock";
     domain.busname = "mock";
+    domain.domainID=0;
     source.sourceID = 2;
     source.domainID = DYNAMIC_ID_BOUNDARY;
     source.volume = 12;
@@ -502,6 +539,7 @@ TEST_F(CAmControlInterfaceTest,ackSetSinkSoundProperty)
     pCF.createDomain(domain);
     domain.name = "mock";
     domain.busname = "mock";
+    domain.domainID=0;
     sink.sinkID = 2;
     sink.domainID = DYNAMIC_ID_BOUNDARY;
     soundProperty.type = SP_GENIVI_BASS;
@@ -555,6 +593,7 @@ TEST_F(CAmControlInterfaceTest,ackSetSourceSoundProperty)
     pCF.createDomain(domain);
     domain.name = "mock";
     domain.busname = "mock";
+    domain.domainID=0;
     source.sourceID = 2;
     source.domainID = DYNAMIC_ID_BOUNDARY;
     soundProperty.type = SP_GENIVI_BASS;
@@ -626,19 +665,26 @@ TEST_F(CAmControlInterfaceTest,ackConnectNotPossible)
     am_sinkID_t sinkID;
     am_Domain_s domain;
     am_domainID_t domainID;
+    am_Source_s source;
+    am_sourceClass_t sourceID;
     std::vector<am_Connection_s> connectionList;
     std::vector<am_Handle_s> handlesList;
     am_Handle_s handle;
     pCF.createSink(sink);
     pCF.createDomain(domain);
+    pCF.createSource(source);
+
     domain.name = "mock";
     domain.busname = "mock";
+    domain.domainID=0;
     sink.sinkID = 2;
     sink.domainID = DYNAMIC_ID_BOUNDARY;
+    source.sourceID=2;
 
     //prepare the stage
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
 
     //when asyncConnect is called, we expect a call on the routingInterface
     EXPECT_CALL(pMockRoutingInterface,asyncConnect(_,1,2,2,CF_GENIVI_STEREO)).WillOnce(Return(E_COMMUNICATION));

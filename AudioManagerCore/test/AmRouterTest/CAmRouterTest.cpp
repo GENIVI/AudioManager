@@ -60,6 +60,21 @@ CAmRouterTest::~CAmRouterTest()
 void CAmRouterTest::SetUp()
 {
     logInfo("Routing Test started ");
+	am_Domain_s domain;
+	pCF.createDomain(domain);
+    am_domainID_t forgetDomain;
+    am_sinkClass_t forgetSinkClassID;
+    am_SinkClass_s sinkClass;
+    sinkClass.name="TestSinkClass";
+    sinkClass.sinkClassID=5;
+    am_sourceClass_t forgetSourceClassID;
+    am_SourceClass_s sourceClass;
+    sourceClass.name="TestSourceClass";
+    sourceClass.sourceClassID=5;
+    domain.domainID=4;
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,forgetDomain));
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkClassDB(sinkClass,forgetSinkClassID));
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceClassDB(forgetSourceClassID,sourceClass));
 }
 
 void CAmRouterTest::TearDown()

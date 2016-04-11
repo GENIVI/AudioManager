@@ -292,7 +292,7 @@ void CAmCommonFunctions::createSource(am_Source_s& source) const
 void CAmCommonFunctions::createDomain(am_Domain_s & domain) const
 {
 
-    domain.domainID = 0;
+    domain.domainID = 4;
     domain.name = "AnyDomain";
     domain.nodename = "AnyNode";
     domain.busname = "AnyBusname";
@@ -306,8 +306,8 @@ void CAmCommonFunctions::createGateway(am_Gateway_s & gateway)
     gateway.name = "AnyGateway";
     gateway.sinkID = 1;
     gateway.sourceID = 2;
-    gateway.controlDomainID = 1;
-    gateway.domainSinkID = 3;
+    gateway.controlDomainID = 4;
+    gateway.domainSinkID = 4;
     gateway.domainSourceID = 4;
     gateway.convertionMatrix = getStandardConvertionMatrix();
     gateway.listSourceFormats = getStandardConnectionFormatList();
@@ -321,7 +321,7 @@ void CAmCommonFunctions::createConverter(am_Converter_s & converter) const
 	converter.name = "AnyConverter";
 	converter.sinkID = 1;
 	converter.sourceID = 2;
-	converter.domainID = 1;
+	converter.domainID = 4;
 	converter.convertionMatrix = getStandardConvertionMatrix();
 	converter.listSourceFormats = getStandardConnectionFormatList();
 	converter.listSinkFormats = getStandardConnectionFormatList();

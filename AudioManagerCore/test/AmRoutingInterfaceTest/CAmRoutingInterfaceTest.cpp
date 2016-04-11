@@ -57,6 +57,24 @@ CAmRoutingInterfaceTest::~CAmRoutingInterfaceTest()
 void CAmRoutingInterfaceTest::SetUp()
 {
     logInfo("RoutingSendInterface Test started ");
+	am_Domain_s domain;
+	pCF.createDomain(domain);
+	domain.domainID=0;
+	domain.busname="mock";
+    am_domainID_t forgetDomain;
+    am_sinkClass_t forgetSinkClassID;
+    am_SinkClass_s sinkClass;
+    sinkClass.name="TestSinkClass";
+    sinkClass.sinkClassID=1;
+    am_sourceClass_t forgetSourceClassID;
+    am_SourceClass_s sourceClass;
+    sourceClass.name="TestSourceClass";
+    sourceClass.sourceClassID=1;
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,forgetDomain));
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkClassDB(sinkClass,forgetSinkClassID));
+    ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceClassDB(forgetSourceClassID,sourceClass));
+    ASSERT_EQ(E_OK,pRoutingSender.addDomainLookup(domain));
+
 
 }
 
@@ -73,16 +91,26 @@ TEST_F(CAmRoutingInterfaceTest,abort)
     am_Handle_s handle;
     am_connectionID_t connectionID;
     std::vector<am_Handle_s> listHandles;
+    am_Source_s source;
+    pCF.createSource(source);
+    source.sourceID=1;
+    source.domainID=DYNAMIC_ID_BOUNDARY;
+    source.name="sds";
+
+
+
     pCF.createSink(sink);
     pCF.createDomain(domain);
     domain.name = "mock";
     domain.busname = "mock";
+    domain.domainID=0;
     sink.sinkID = 2;
     sink.domainID = DYNAMIC_ID_BOUNDARY;
 
     //prepare the stage
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,source.sourceID));
 
     //start a connect, expect a call on the routingInterface
     EXPECT_CALL(pMockInterface,asyncConnect(_,_,1,sinkID,CF_GENIVI_ANALOG)).WillOnce(Return(E_OK));
@@ -127,8 +155,28 @@ TEST_F(CAmRoutingInterfaceTest,alreadyConnected)
     domain.busname = "mock";
     sink.sinkID = 2;
     sink.domainID = DYNAMIC_ID_BOUNDARY;
+
+
+    am_SourceClass_s sourceclass;
+
+    sourceclass.name="sClass";
+    sourceclass.sourceClassID=5;
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceClassDB(sourceclass.sourceClassID,sourceclass));
+
+    am_SinkClass_s sinkclass;
+    sinkclass.sinkClassID=5;
+    sinkclass.name="sname";
+
+    am_Source_s source;
+    pCF.createSource(source);
+    source.sourceID=1;
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkClassDB(sinkclass,sinkclass.sinkClassID));
+
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,source.sourceID));
     EXPECT_CALL(pMockInterface,asyncConnect(_,_,1,sinkID,CF_GENIVI_ANALOG)).WillOnce(Return(E_OK));
     am_Handle_s handle;
     am_connectionID_t connectionID;
@@ -314,8 +362,15 @@ TEST_F(CAmRoutingInterfaceTest,connect)
     domain.busname = "mock";
     sink.sinkID = 2;
     sink.domainID = DYNAMIC_ID_BOUNDARY;
+
+    am_Source_s source;
+    pCF.createSource(source);
+    source.sourceID=1;
+    source.domainID=DYNAMIC_ID_BOUNDARY;
+
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,source.sourceID));
     EXPECT_CALL(pMockInterface,asyncConnect(_,_,1,sinkID,CF_GENIVI_ANALOG)).WillOnce(Return(E_OK));
     ASSERT_EQ(E_OK, pControlReceiver.connect(handle,connectionID,CF_GENIVI_ANALOG,1,2));
     ASSERT_NE(handle.handle, 0);
@@ -340,8 +395,16 @@ TEST_F(CAmRoutingInterfaceTest,disconnect)
     domain.busname = "mock";
     sink.sinkID = 2;
     sink.domainID = DYNAMIC_ID_BOUNDARY;
-    ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
-    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
+
+    am_Source_s source;
+     pCF.createSource(source);
+     source.sourceID=1;
+     source.domainID=DYNAMIC_ID_BOUNDARY;
+
+     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
+     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
+     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,source.sourceID));
+
     EXPECT_CALL(pMockInterface,asyncConnect(_,_,1,sinkID,CF_GENIVI_ANALOG)).WillOnce(Return(E_OK));
     ASSERT_EQ(E_OK, pControlReceiver.connect(handle,connectionID,CF_GENIVI_ANALOG,1,2));
     ASSERT_EQ(E_OK, pDatabaseHandler.changeConnectionFinal(connectionID));
