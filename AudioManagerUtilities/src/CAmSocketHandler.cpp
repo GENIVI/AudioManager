@@ -202,7 +202,7 @@ am_Error_e CAmSocketHandler::addFDPoll(const int fd, const short event, IAmShPol
 		++mLastInsertedPollHandle;
 		if (mLastInsertedPollHandle == MAX_POLLHANDLE)
 		{
-				mLastInsertedPollHandle = 0;
+				mLastInsertedPollHandle = 1;
 		}
 		if (mLastInsertedPollHandle==lastHandle)
 		{
@@ -281,7 +281,7 @@ am_Error_e CAmSocketHandler::addTimer(const timespec timeouts, IAmShTimerCallBac
 		++mLastInsertedHandle;
 		if (mLastInsertedHandle == MAX_TIMERHANDLE)
 		{
-				mLastInsertedHandle = 0;
+				mLastInsertedHandle = 1;
 		}
 		if (lastTimerHandle==mLastInsertedHandle)
 		{
