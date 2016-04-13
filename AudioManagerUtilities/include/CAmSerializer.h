@@ -760,6 +760,8 @@ public:
             dispatcherCallbackT(this, &CAmSerializer::dispatcherCallback), //
             checkerCallbackT(this, &CAmSerializer::checkerCallback)
     {
+    	assert(NULL!=iSocketHandler);
+
         if (pipe(mPipe) == -1)
         {
             logError("CAmSerializer could not create pipe!");
