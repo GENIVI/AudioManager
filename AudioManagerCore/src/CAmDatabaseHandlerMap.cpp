@@ -516,7 +516,7 @@ am_Error_e CAmDatabaseHandlerMap::enterMainConnectionDB(const am_MainConnection_
     	logError(__PRETTY_FUNCTION__,"sinkID must be valid!");
     	return (E_NOT_POSSIBLE);
     }
-    if(!existSink(mainConnectionData.sourceID))
+    if(!existSource(mainConnectionData.sourceID))
     {
     	logError(__PRETTY_FUNCTION__,"sourceID must be valid!");
     	return (E_NOT_POSSIBLE);
