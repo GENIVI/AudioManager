@@ -51,7 +51,7 @@ CAmSocketHandler::CAmSocketHandler() :
 {
     if (pipe(mPipe) == -1)
     {
-        logError("CAmSerializer could not create pipe!");
+        logError("Sockethandler could not create pipe!");
     }
 
     //add the pipe to the poll - nothing needs to be proccessed here we just need the pipe to trigger the ppoll

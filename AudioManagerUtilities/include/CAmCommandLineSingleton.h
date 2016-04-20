@@ -35,8 +35,13 @@ public:
 			const char delimiter = ' ',
 			const std::string& version = "none",
 			bool helpAndVersion = true);
+			
 	static TCLAP::CmdLine* instance();
+	
+	static void deleteInstance();
+	
 private:
+
 	CAmCommandLineSingleton();
 	virtual ~CAmCommandLineSingleton();
 };

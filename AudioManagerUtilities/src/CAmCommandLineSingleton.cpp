@@ -44,6 +44,14 @@ TCLAP::CmdLine* CAmCommandLineSingleton::instance()
 	return pSingleCmdLine;
 }
 
+void CAmCommandLineSingleton::deleteInstance()
+{
+	if (pSingleCmdLine)
+		delete pSingleCmdLine;
+	
+	pSingleCmdLine=NULL;		
+}
+
 CAmCommandLineSingleton::~CAmCommandLineSingleton() {
 	// TODO Auto-generated destructor stub
 }
