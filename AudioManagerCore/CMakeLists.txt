@@ -95,7 +95,7 @@ write_basic_package_version_file(
 install(
 FILES ${CMAKE_CURRENT_BINARY_DIR}/AudioManagerCoreConfig.cmake
 	  ${CMAKE_CURRENT_BINARY_DIR}/AudioManagerCoreConfigVersion.cmake
-      DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}/cmake/AudioManagerCore-${DAEMONVERSION})
+      DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}/cmake/AudioManagerCore)
 
 INSTALL(DIRECTORY "${AUDIOMANAGER_CORE}/include/"
     DESTINATION ${CMAKE_INSTALL_FULL_INCLUDEDIR}/${LIB_INSTALL_SUFFIX}/AudioManagerCore

@@ -172,7 +172,7 @@ add_subdirectory (AudioManagerDaemon)
 install(
     FILES ${CMAKE_BINARY_DIR}/AudioManagerConfig.cmake
           ${CMAKE_BINARY_DIR}/AudioManagerConfigVersion.cmake
-          DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}/cmake/AudioManager-${DAEMONVERSION}
+          DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}/cmake/AudioManager
 )
 
 install(FILES ${CMAKE_BINARY_DIR}/audiomanager.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig COMPONENT devel)

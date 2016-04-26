@@ -149,7 +149,7 @@ write_basic_package_version_file(
 install(
 FILES ${CMAKE_CURRENT_BINARY_DIR}/AudioManagerUtilitiesConfig.cmake
 	  ${CMAKE_CURRENT_BINARY_DIR}/AudioManagerUtilitiesConfigVersion.cmake
-      DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}/cmake/AudioManagerUtilities-${DAEMONVERSION})
+      DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}/cmake/AudioManagerUtilities)
 
 INSTALL(DIRECTORY "include/"
         DESTINATION ${CMAKE_INSTALL_FULL_INCLUDEDIR}/${LIB_INSTALL_SUFFIX}/AudioManagerUtilities
