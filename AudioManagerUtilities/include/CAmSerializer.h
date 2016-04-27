@@ -782,6 +782,10 @@ public:
 
     ~CAmSerializer()
     {
+		close(mPipe[0]);
+		close(mPipe[1]);
+		close(mReturnPipe[0]);
+		close(mReturnPipe[1]);
     }
 };
 } /* namespace am */
