@@ -31,9 +31,9 @@
 //so we need the macro here
 
 #if defined __cplusplus
-#define CONST const
+#define A_CONST const
 #else
-#define CONST static const
+#define A_CONST static const
 #endif
 
 
@@ -89,7 +89,7 @@ typedef uint16_t am_speed_t;
  * maximum can be limited by actual project.
  */
 typedef int16_t am_volume_t;
-CONST am_volume_t AM_MUTE = -3000;
+A_CONST am_volume_t AM_MUTE = -3000;
 
 /**
  * This is the volume presented on the command interface. It is in the duty of the
@@ -117,28 +117,28 @@ typedef int16_t am_timeSync_t;
  * This type gives the information about reason for reason for Source/Sink change
  */
 typedef uint16_t am_CustomAvailabilityReason_t;
-CONST am_CustomAvailabilityReason_t AR_UNKNOWN = 0;
+A_CONST am_CustomAvailabilityReason_t AR_UNKNOWN = 0;
 /** new media was entered  */
-CONST am_CustomAvailabilityReason_t AR_GENIVI_NEWMEDIA = 1;
+A_CONST am_CustomAvailabilityReason_t AR_GENIVI_NEWMEDIA = 1;
 /** same media was entered */
-CONST am_CustomAvailabilityReason_t AR_GENIVI_SAMEMEDIA = 2;
+A_CONST am_CustomAvailabilityReason_t AR_GENIVI_SAMEMEDIA = 2;
 /** there is no media or media is removed */
-CONST am_CustomAvailabilityReason_t AR_GENIVI_NOMEDIA = 3;
+A_CONST am_CustomAvailabilityReason_t AR_GENIVI_NOMEDIA = 3;
 /** there was a temperature event */
-CONST am_CustomAvailabilityReason_t AR_GENIVI_TEMPERATURE = 4;
+A_CONST am_CustomAvailabilityReason_t AR_GENIVI_TEMPERATURE = 4;
 /** there was a voltage event */
-CONST am_CustomAvailabilityReason_t AR_GENIVI_VOLTAGE = 5;
+A_CONST am_CustomAvailabilityReason_t AR_GENIVI_VOLTAGE = 5;
 /** fatal errors on reading or accessing media */
-CONST am_CustomAvailabilityReason_t AR_GENIVI_ERRORMEDIA = 6;
+A_CONST am_CustomAvailabilityReason_t AR_GENIVI_ERRORMEDIA = 6;
 
 /**
  * This is a custom specific identifier of property. It can be used to
  * differentiate between interrupt source/sink, main source/sink, etc.
  */
 typedef uint16_t am_CustomClassProperty_t;
-CONST am_CustomClassProperty_t CP_UNKNOWN = 0;
-CONST am_CustomClassProperty_t CP_GENIVI_SOURCE_TYPE = 1;
-CONST am_CustomClassProperty_t CP_GENIVI_SINK_TYPE = 2;
+A_CONST am_CustomClassProperty_t CP_UNKNOWN = 0;
+A_CONST am_CustomClassProperty_t CP_GENIVI_SOURCE_TYPE = 1;
+A_CONST am_CustomClassProperty_t CP_GENIVI_SINK_TYPE = 2;
 
 /**
  * This type classifies the format in which data is exchanged within a connection.
@@ -146,27 +146,27 @@ CONST am_CustomClassProperty_t CP_GENIVI_SINK_TYPE = 2;
  * defined.
  */
 typedef uint16_t am_CustomConnectionFormat_t;
-CONST am_CustomConnectionFormat_t CF_UNKNOWN = 0;
-CONST am_CustomConnectionFormat_t CF_GENIVI_MONO = 1;
-CONST am_CustomConnectionFormat_t CF_GENIVI_STEREO = 2;
-CONST am_CustomConnectionFormat_t CF_GENIVI_ANALOG = 3;
-CONST am_CustomConnectionFormat_t CF_GENIVI_AUTO = 4;
+A_CONST am_CustomConnectionFormat_t CF_UNKNOWN = 0;
+A_CONST am_CustomConnectionFormat_t CF_GENIVI_MONO = 1;
+A_CONST am_CustomConnectionFormat_t CF_GENIVI_STEREO = 2;
+A_CONST am_CustomConnectionFormat_t CF_GENIVI_ANALOG = 3;
+A_CONST am_CustomConnectionFormat_t CF_GENIVI_AUTO = 4;
 
 /**
  * Here are all SoundProperties that can be set via the CommandInterface.
  * This type is product specific and can be changed or extended.
  */
 typedef uint16_t am_CustomMainSoundPropertyType_t;
-CONST am_CustomMainSoundPropertyType_t MSP_UNKNOWN = 0;
-CONST am_CustomMainSoundPropertyType_t MSP_GENIVI_TREBLE = 1;
-CONST am_CustomMainSoundPropertyType_t MSP_GENIVI_MID = 2;
-CONST am_CustomMainSoundPropertyType_t MSP_GENIVI_BASS = 3;
+A_CONST am_CustomMainSoundPropertyType_t MSP_UNKNOWN = 0;
+A_CONST am_CustomMainSoundPropertyType_t MSP_GENIVI_TREBLE = 1;
+A_CONST am_CustomMainSoundPropertyType_t MSP_GENIVI_MID = 2;
+A_CONST am_CustomMainSoundPropertyType_t MSP_GENIVI_BASS = 3;
 
 /**
  * The notification types are project specific.
  */
 typedef uint16_t am_CustomNotificationType_t;
-CONST am_CustomNotificationType_t NT_UNKNOWN = 0;
+A_CONST am_CustomNotificationType_t NT_UNKNOWN = 0;
 
 /**
  * The given ramp types here are just examples. For products, different ramp types
@@ -174,33 +174,33 @@ CONST am_CustomNotificationType_t NT_UNKNOWN = 0;
  * that the routing plugins are aware of the ramp types used.
  */
 typedef uint16_t am_CustomRampType_t;
-CONST am_CustomRampType_t RAMP_UNKNOWN = 0;
+A_CONST am_CustomRampType_t RAMP_UNKNOWN = 0;
 /** sets directly the value without a ramp */
-CONST am_CustomRampType_t RAMP_GENIVI_DIRECT = 1;
+A_CONST am_CustomRampType_t RAMP_GENIVI_DIRECT = 1;
 /** Sets the volume as fast as possible */
-CONST am_CustomRampType_t RAMP_GENIVI_NO_PLOP = 2;
+A_CONST am_CustomRampType_t RAMP_GENIVI_NO_PLOP = 2;
 /** inverted exponential update, high gradient at the start - soft end */
-CONST am_CustomRampType_t RAMP_GENIVI_EXP_INV = 3;
+A_CONST am_CustomRampType_t RAMP_GENIVI_EXP_INV = 3;
 /** continues update of volume */
-CONST am_CustomRampType_t RAMP_GENIVI_LINEAR = 4;
+A_CONST am_CustomRampType_t RAMP_GENIVI_LINEAR = 4;
 /** exponential update, soft start - high gradient at the end */
-CONST am_CustomRampType_t RAMP_GENIVI_EXP = 5;
+A_CONST am_CustomRampType_t RAMP_GENIVI_EXP = 5;
 
 /**
  * Within genivi only the some example properties are defined.
  * For products these should be changed or extended.
  */
 typedef uint16_t am_CustomSoundPropertyType_t;
-CONST am_CustomSoundPropertyType_t SP_UNKNOWN = 0;
-CONST am_CustomSoundPropertyType_t SP_GENIVI_TREBLE = 1;
-CONST am_CustomSoundPropertyType_t SP_GENIVI_MID = 2;
-CONST am_CustomSoundPropertyType_t SP_GENIVI_BASS = 3;
+A_CONST am_CustomSoundPropertyType_t SP_UNKNOWN = 0;
+A_CONST am_CustomSoundPropertyType_t SP_GENIVI_TREBLE = 1;
+A_CONST am_CustomSoundPropertyType_t SP_GENIVI_MID = 2;
+A_CONST am_CustomSoundPropertyType_t SP_GENIVI_BASS = 3;
 
 /**
  * Describes the different system properties which are project specific.
  */
 typedef uint16_t am_CustomSystemPropertyType_t;
-CONST am_CustomSystemPropertyType_t SYP_UNKNOWN = 0;
+A_CONST am_CustomSystemPropertyType_t SYP_UNKNOWN = 0;
 
 /**
  * describes the active sink of a crossfader.

@@ -35,6 +35,108 @@ namespace am
 CAmDltWrapper* CAmDltWrapper::mpDLTWrapper = NULL;
 pthread_mutex_t CAmDltWrapper::mMutex = PTHREAD_MUTEX_INITIALIZER;
 
+const std::vector<const char*> CAmDltWrapper::mStr_error = 
+{
+		"E_OK",
+		"E_UNKNOWN",
+		"E_OUT_OF_RANGE",
+		"E_NOT_USED",
+		"E_DATABASE_ERROR",
+		"E_ALREADY_EXISTS",
+		"E_NO_CHANGE",
+		"E_NOT_POSSIBLE",
+		"E_NON_EXISTENT",
+		"E_ABORTED",
+		"E_WRONG_FORMAT",
+		"E_COMMUNICATION",
+		"E_MAX"
+};
+
+const std::vector<const char*> CAmDltWrapper::mStr_sourceState = 
+{
+		"SS_UNKNNOWN",
+		"SS_ON",
+		"SS_OFF",
+		"SS_PAUSED",
+		"SS_MAX"
+};
+
+const std::vector<const char*> CAmDltWrapper::mStr_MuteState = 
+{
+		"MS_UNKNOWN" ,
+		"MS_MUTED" ,
+		"MS_UNMUTED" ,
+		"MS_MAX"
+};
+
+const std::vector<const char*> CAmDltWrapper::mStr_DomainState = 
+{
+		"DS_UNKNOWN",
+		"DS_CONTROLLED",
+		"DS_INDEPENDENT_STARTUP",
+		"DS_INDEPENDENT_RUNDOWN",
+		"DS_MAX"
+};
+
+const std::vector<const char*> CAmDltWrapper::mStr_ConnectionState = 
+{
+		"CS_UNKNOWN",
+		"CS_CONNECTING",
+		"CS_CONNECTED",
+		"CS_DISCONNECTING",
+		"CS_DISCONNECTED",
+		"CS_SUSPENDED",
+		"CS_MAX"
+};
+
+const std::vector<const char*> CAmDltWrapper::mStr_Availability = 
+{
+		"A_UNKNOWN",
+		"A_AVAILABLE",
+		"A_UNAVAILABLE",
+		"A_MAX"
+};
+
+const std::vector<const char*> CAmDltWrapper::mStr_Interrupt = 
+{
+		"IS_UNKNOWN",
+		"IS_OFF",
+		"IS_INTERRUPTED",
+		"IS_MAX"
+};
+
+const std::vector<const char*> CAmDltWrapper::mStr_Handle = 
+{
+		"H_UNKNOWN",
+		"H_CONNECT",
+		"H_DISCONNECT",
+		"H_SETSOURCESTATE",
+		"H_SETSINKVOLUME",
+		"H_SETSOURCEVOLUME",
+		"H_SETSINKSOUNDPROPERTY",
+		"H_SETSOURCESOUNDPROPERTY",
+		"H_SETSINKSOUNDPROPERTIES",
+		"H_SETSOURCESOUNDPROPERTIES",
+		"H_CROSSFADE",
+		"H_SETVOLUMES",
+		"H_SETSINKNOTIFICATION",
+		"H_SETSOURCENOTIFICATION",
+		"H_MAX"
+};
+
+const std::vector<const char*> CAmDltWrapper::mStr_NotificationStatus = 
+{
+		"NS_UNKNOWN",
+		"NS_OFF",
+		"NS_PERIODIC",
+		"NS_MINIMUM",
+		"NS_MAXIMUM",
+		"NS_CHANGE",
+		"NS_MAX"
+};
+
+
+
 std::string CAmDltWrapper::now()
 {
 	std::time_t t(std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()));
