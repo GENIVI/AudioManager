@@ -755,6 +755,7 @@ public:
      */
     CAmSerializer(CAmSocketHandler *iSocketHandler) :
             mPipe(), //
+            mReturnPipe(),//
             mListDelegatePoiters(), //
             receiverCallbackT(this, &CAmSerializer::receiverCallback), //
             dispatcherCallbackT(this, &CAmSerializer::dispatcherCallback), //

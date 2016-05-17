@@ -153,6 +153,8 @@ CAmControlSender::CAmControlSender(std::string controlPluginFile,CAmSocketHandle
 
 CAmControlSender::~CAmControlSender()
 {
+	close(mPipe[0]);
+	close(mPipe[1]);
     //if (mlibHandle)
     //    dlclose(mlibHandle);
 }

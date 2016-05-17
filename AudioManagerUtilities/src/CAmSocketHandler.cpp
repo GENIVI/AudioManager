@@ -63,6 +63,8 @@ CAmSocketHandler::CAmSocketHandler() :
 
 CAmSocketHandler::~CAmSocketHandler()
 {
+	close(mPipe[0]);
+	close(mPipe[1]);
 }
 
 //todo: maybe have some: give me more time returned?
