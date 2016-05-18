@@ -26,7 +26,6 @@
 #include <set>
 #include <signal.h>
 
-#include <iostream> //todo: remove me
 namespace am
 {
 
@@ -43,11 +42,8 @@ typedef uint16_t sh_pollHandle_t; //!<this is a handle for a filedescriptor to b
 class IAmShPollPrepare
 {
 public:
-    virtual void Call(const sh_pollHandle_t handle, void* userData)=0;
-    virtual ~IAmShPollPrepare()
-    {
-    }
-    ;
+    virtual void Call(const sh_pollHandle_t handle, void* userData) = 0;
+    virtual ~IAmShPollPrepare() {};
 };
 
 /**
@@ -56,11 +52,8 @@ public:
 class IAmShPollFired
 {
 public:
-    virtual void Call(const pollfd pollfd, const sh_pollHandle_t handle, void* userData)=0;
-    virtual ~ IAmShPollFired()
-    {
-    }
-    ;
+    virtual void Call(const pollfd pollfd, const sh_pollHandle_t handle, void* userData) = 0;
+    virtual ~ IAmShPollFired() {};
 };
 
 /**
@@ -69,11 +62,8 @@ public:
 class IAmShPollCheck
 {
 public:
-    virtual bool Call(const sh_pollHandle_t handle, void* userData)=0;
-    virtual ~ IAmShPollCheck()
-    {
-    }
-    ;
+    virtual bool Call(const sh_pollHandle_t handle, void* userData) = 0;
+    virtual ~ IAmShPollCheck() {};
 };
 
 /**
@@ -82,11 +72,8 @@ public:
 class IAmShPollDispatch
 {
 public:
-    virtual bool Call(const sh_pollHandle_t handle, void* userData)=0;
-    virtual ~ IAmShPollDispatch()
-    {
-    }
-    ;
+    virtual bool Call(const sh_pollHandle_t handle, void* userData) = 0;
+    virtual ~ IAmShPollDispatch() {};
 };
 
 /**
@@ -95,11 +82,8 @@ public:
 class IAmShTimerCallBack
 {
 public:
-    virtual void Call(const sh_timerHandle_t handle, void* userData)=0;
-    virtual ~IAmShTimerCallBack()
-    {
-    }
-    ;
+    virtual void Call(const sh_timerHandle_t handle, void* userData) = 0;
+    virtual ~IAmShTimerCallBack() {};
 };
 
 /**
@@ -289,8 +273,7 @@ private:
         else if (a.tv_nsec > b.tv_nsec)
             return (1);
         //equal
-        else
-            return (0);
+        return (0);
     }
 
     /**
@@ -334,56 +317,29 @@ private:
     private:
         mListPollfd_t& mArray;
     public:
-        CAmShCopyPollfd(mListPollfd_t& dest) :
-                mArray(dest)
-        {
-        }
-        void operator()(const sh_poll_s& row)
-        {
-            pollfd temp = row.pollfdValue;
-            temp.revents = 0;
-            mArray.push_back(temp);
-        }
+        CAmShCopyPollfd(mListPollfd_t& dest) : mArray(dest) {}
+        void operator()(const sh_poll_s& row);
     };
 
     class CAmShCallFire //!< functor to call the firecallbacks
     {
     public:
-        CAmShCallFire()
-        {
-        }
-        ;
-        void operator()(sh_poll_s& row)
-        {
-            row.firedCB->Call(row.pollfdValue, row.handle, row.userData);
-        }
+        CAmShCallFire() {};
+        void operator()(sh_poll_s& row);
     };
 
     class CAmShCallPrep //!< functor to call the preparation callbacks
     {
     public:
-        CAmShCallPrep()
-        {
-        }
-        ;
-        void operator()(sh_poll_s& row)
-        {
-            if (row.prepareCB)
-                row.prepareCB->Call(row.handle, row.userData);
-        }
+        CAmShCallPrep() {};
+        void operator()(sh_poll_s& row);
     };
 
     class CAmShCallTimer //!<functor to call a timer
     {
     public:
-        CAmShCallTimer()
-        {
-        }
-        ;
-        void operator()(sh_timer_s& row)
-        {
-            row.callback->Call(row.handle, row.userData);
-        }
+        CAmShCallTimer() {};
+        void operator()(sh_timer_s& row);
     };
 
     class CAmShCountdownUp //!<functor that checks if a timer is up
@@ -391,33 +347,15 @@ private:
     private:
         timespec mDiffTime;
     public:
-        CAmShCountdownUp(const timespec& differenceTime) :
-                mDiffTime(differenceTime)
-        {
-        }
-        ;
-        bool operator()(const sh_timer_s& row)
-        {
-            timespec sub = timespecSub(row.countdown, mDiffTime);
-            if (sub.tv_nsec == 0 && sub.tv_sec == 0)
-                return (true);
-            return (false);
-        }
+        CAmShCountdownUp(const timespec& differenceTime) : mDiffTime(differenceTime) {};
+        bool operator()(const sh_timer_s& row);
     };
 
     class CAmShCountdownZero //!<functor that checks if a timer is zero
     {
     public:
-        CAmShCountdownZero()
-        {
-        }
-        ;
-        bool operator()(const sh_timer_s& row)
-        {
-            if (row.countdown.tv_nsec == 0 && row.countdown.tv_sec == 0)
-                return (true);
-            return (false);
-        }
+        CAmShCountdownZero() {};
+        bool operator()(const sh_timer_s& row);
     };
 
     class CAmShSubstractTime //!<functor to easy substract from each countdown value
@@ -425,10 +363,7 @@ private:
     private:
         timespec param;
     public:
-        CAmShSubstractTime(timespec param) :
-                param(param)
-        {
-        }
+        CAmShSubstractTime(timespec param) : param(param) {}
         inline void operator()(sh_timer_s& t)
         {
             t.countdown = timespecSub(t.countdown, param);
@@ -460,8 +395,7 @@ private:
 public:
     TAmShTimerCallBack(TClass* instance, void (TClass::*function)(sh_timerHandle_t handle, void* userData)) :
             mInstance(instance), //
-            mFunction(function)
-    {};
+            mFunction(function) {};
 
     virtual void Call(sh_timerHandle_t handle, void* userData)
     {
@@ -481,8 +415,7 @@ private:
 public:
     TAmShPollPrepare(TClass* instance, void (TClass::*function)(const sh_timerHandle_t handle, void* userData)) :
             mInstance(instance), //
-            mFunction(function)
-    {};
+            mFunction(function) {};
 
     virtual void Call(const sh_timerHandle_t handle, void* userData)
     {
@@ -502,8 +435,7 @@ private:
 public:
     TAmShPollFired(TClass* instance, void (TClass::*function)(const pollfd pollfd, const sh_pollHandle_t handle, void* userData)) :
             mInstance(instance), //
-            mFunction(function)
-    {};
+            mFunction(function) {};
 
     virtual void Call(const pollfd pollfd, const sh_pollHandle_t handle, void* userData)
     {
@@ -523,8 +455,7 @@ private:
 public:
     TAmShPollCheck(TClass* instance, bool (TClass::*function)(const sh_pollHandle_t handle, void* userData)) :
             mInstance(instance), //
-            mFunction(function)
-    {};
+            mFunction(function) {};
 
     virtual bool Call(const sh_pollHandle_t handle, void* userData)
     {
@@ -544,8 +475,7 @@ private:
 public:
     TAmShPollDispatch(TClass* instance, bool (TClass::*function)(const sh_pollHandle_t handle, void* userData)) :
             mInstance(instance), //
-            mFunction(function)
-    {};
+            mFunction(function) {};
 
     virtual bool Call(const sh_pollHandle_t handle, void* userData)
     {

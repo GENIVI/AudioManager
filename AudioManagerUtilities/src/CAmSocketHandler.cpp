@@ -208,7 +208,7 @@ am_Error_e CAmSocketHandler::addFDPoll(const int fd, const short event, IAmShPol
 		}
 		if (mLastInsertedPollHandle==lastHandle)
 		{
-			logError(__PRETTY_FUNCTION__,"Could not create new polls, too many open!");
+			logError(__func__,"Could not create new polls, too many open!");
 			return (am_Error_e::E_NOT_POSSIBLE);
 		}
 			
@@ -287,7 +287,7 @@ am_Error_e CAmSocketHandler::addTimer(const timespec timeouts, IAmShTimerCallBac
 		}
 		if (lastTimerHandle==mLastInsertedHandle)
 		{
-			logError(__PRETTY_FUNCTION__,"Could not create new timers, too many open!");
+			logError(__func__,"Could not create new timers, too many open!");
 			return (am_Error_e::E_NOT_POSSIBLE);	
 		}
 			
@@ -582,6 +582,68 @@ inline timespec* CAmSocketHandler::insertTime(timespec& buffertime)
         return (NULL);
     }
 }
+
+void CAmSocketHandler::CAmShCallFire::operator()(sh_poll_s& row)
+{	
+	try
+	{
+		row.firedCB->Call(row.pollfdValue, row.handle, row.userData);
+	}
+	catch (std::exception& e)
+	{
+		logError("Sockethandler: Exception in FireCallback,caught",e.what());
+	}
+}
+
+void CAmSocketHandler::CAmShCallPrep::operator()(sh_poll_s& row)
+{
+	if (row.prepareCB)
+	{
+		try
+		{
+			row.prepareCB->Call(row.handle, row.userData);
+		}
+		catch (std::exception& e)
+		{
+			logError("Sockethandler: Exception in Preparecallback,caught",e.what());
+		}
+	}
+}
+
+void CAmSocketHandler::CAmShCallTimer::operator()(sh_timer_s& row)
+{
+	try
+	{
+		row.callback->Call(row.handle, row.userData);
+	}
+	catch (std::exception& e)
+	{
+		logError("Sockethandler: Exception in Timercallback,caught",e.what());
+	}
+}
+
+void CAmSocketHandler::CAmShCopyPollfd::operator()(const sh_poll_s& row)
+{
+	pollfd temp = row.pollfdValue;
+	temp.revents = 0;
+	mArray.push_back(temp);
+}
+
+bool CAmSocketHandler::CAmShCountdownUp::operator()(const sh_timer_s& row)
+{
+	timespec sub = timespecSub(row.countdown, mDiffTime);
+	if (sub.tv_nsec == 0 && sub.tv_sec == 0)
+		return (true);
+	return (false);
+}
+
+bool CAmSocketHandler::CAmShCountdownZero::operator()(const sh_timer_s& row)
+{
+	if (row.countdown.tv_nsec == 0 && row.countdown.tv_sec == 0)
+		return (true);
+	return (false);
+}
+
 
 }
 
