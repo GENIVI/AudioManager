@@ -774,35 +774,11 @@ am_Error_e CAmDatabaseHandlerMap::enterGatewayDB(const am_Gateway_s & gatewayDat
     	return (E_NOT_POSSIBLE);
     }
 
-    if(!existSink(gatewayData.sinkID))
-    {
-    	logError(__PRETTY_FUNCTION__,"sinkID must be exist");
-    	return (E_NOT_POSSIBLE);
-    }
-
-    if(!existSource(gatewayData.sourceID))
-    {
-    	logError(__PRETTY_FUNCTION__,"sourceID must be exist");
-    	return (E_NOT_POSSIBLE);
-    }
-
     if(!existDomain(gatewayData.controlDomainID))
     {
     	logError(__PRETTY_FUNCTION__,"controlDomainID must be exist");
     	return (E_NOT_POSSIBLE);
     }
-
-    if(!existDomain(gatewayData.domainSinkID))
-    {
-    	logError(__PRETTY_FUNCTION__,"domainSinkID must be exist");
-    	return (E_NOT_POSSIBLE);
-    }
-    if(!existDomain(gatewayData.domainSourceID))
-    {
-    	logError(__PRETTY_FUNCTION__,"domainSourceID must be exist");
-    	return (E_NOT_POSSIBLE);
-    }
-
 
     if(gatewayData.name.empty())
     {

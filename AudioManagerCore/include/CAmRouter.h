@@ -35,6 +35,7 @@
 
 namespace am
 {
+#define ROUTING_BUILD_CONNECTIONS 1
 
 /**
  * Optimal path search between a source and a sink is implemented with a graph which contains nodes - sinks, sources, gateways, converters.
