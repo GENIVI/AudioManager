@@ -298,6 +298,12 @@ public:
         }
        	append(mStr_Handle[value]);
     }
+    
+    template<typename T = const am_Handle_s> void append(const am_Handle_s value)
+    {
+		append (value.handleType);
+		append (value.handle);
+    }
 
     template<typename T = const am_NotificationStatus_e> void append(const am_NotificationStatus_e value)
     {
@@ -421,6 +427,17 @@ template<typename T, typename... TArgs>
 void logWarning(T value, TArgs... args)
 {
     log(NULL, DLT_LOG_WARN,value,args...);
+}
+
+/**
+ * logs given values with verbose with the default context
+ * @param value
+ * @param ...
+ */
+template<typename T, typename... TArgs>
+void logVerbose(T value, TArgs... args)
+{
+    log(NULL, DLT_LOG_VERBOSE,value,args...);
 }
 
 }

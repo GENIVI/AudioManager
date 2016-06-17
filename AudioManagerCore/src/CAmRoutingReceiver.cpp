@@ -78,213 +78,140 @@ CAmRoutingReceiver::~CAmRoutingReceiver()
 {
 }
 
-void CAmRoutingReceiver::ackConnect(const am_Handle_s handle, const am_connectionID_t connectionID, const am_Error_e error)
+void CAmRoutingReceiver::handleCallback(const am_Handle_s handle, const am_Error_e error)
 {
-    mpRoutingSender->removeHandle(handle);
     if (error == am_Error_e::E_OK)
     {
-        mpDatabaseHandler->changeConnectionFinal(connectionID);
+        mpRoutingSender->writeToDatabaseAndRemove(mpDatabaseHandler,handle);
     }
     else
     {
-        mpDatabaseHandler->removeConnection(connectionID);
-        mpRoutingSender->removeConnectionLookup(connectionID);
+		mpRoutingSender->removeHandle(handle);
+	}	
+}
+
+void CAmRoutingReceiver::ackConnect(const am_Handle_s handle, const am_connectionID_t connectionID, const am_Error_e error)
+{
+	logInfo(__func__,"handle=",handle,"connectionID=",connectionID,"error=",error);
+    if (error == am_Error_e::E_OK)
+    {
+        mpRoutingSender->writeToDatabaseAndRemove(mpDatabaseHandler,handle);
+    }
+    else
+    {
+		//only remove connection of handle was found
+		if(mpRoutingSender->removeHandle(handle)==0)
+		{
+			mpDatabaseHandler->removeConnection(connectionID);
+			mpRoutingSender->removeConnectionLookup(connectionID);
+		}
     }
     mpControlSender->cbAckConnect(handle, error);
 }
 
 void CAmRoutingReceiver::ackDisconnect(const am_Handle_s handle, const am_connectionID_t connectionID, const am_Error_e error)
 {
-
-	//so we will remove the connection anyway no matter what is answered
-    mpRoutingSender->removeHandle(handle);
-    mpDatabaseHandler->removeConnection(connectionID);
-    mpRoutingSender->removeConnectionLookup(connectionID);
+	logInfo(__func__,"handle=",handle,"connectionID=",connectionID,"error=",error);
+	//only remove connection of handle was found
+	if(mpRoutingSender->removeHandle(handle)==0)
+	{
+		mpDatabaseHandler->removeConnection(connectionID);
+		mpRoutingSender->removeConnectionLookup(connectionID);
+	}
     mpControlSender->cbAckDisconnect(handle, error);
 }
 
 void CAmRoutingReceiver::ackSetSinkVolumeChange(const am_Handle_s handle, const am_volume_t volume, const am_Error_e error)
 {
-    CAmRoutingSender::am_handleData_c handleData;
-    if (mpRoutingSender->returnHandleDataAndRemove(handle,handleData))
+	logInfo(__func__,"handle=",handle,"volume=",volume,"error=",error);
+	if(error == E_OK)
     {
-    	logError(__PRETTY_FUNCTION__,"Could not find handleData, handle: ",handle.handle);
-        return;
-    }
-
+      	mpRoutingSender->checkVolume(handle,volume);
+    }		
+    
     if (error== am_Error_e::E_OK || error== am_Error_e::E_ABORTED)
     {
-    	mpDatabaseHandler->changeSinkVolume(handleData.sinkID, volume);
+    	mpRoutingSender->writeToDatabaseAndRemove(mpDatabaseHandler,handle);
     }
-
-    if(error == am_Error_e::E_OK || handleData.volume!=volume)
-    {
-       	logError("ackSetSinkVolumeChange volumes do not match, requested volume",handleData.volume,"returned volume",volume);
-    }
+    
+    mpRoutingSender->removeHandle(handle);
     mpControlSender->cbAckSetSinkVolumeChange(handle, volume, error);
 }
 
 void CAmRoutingReceiver::ackSetSourceVolumeChange(const am_Handle_s handle, const am_volume_t volume, const am_Error_e error)
 {
-    CAmRoutingSender::am_handleData_c handleData;
-    if (mpRoutingSender->returnHandleDataAndRemove(handle,handleData))
+	logInfo(__func__,"handle=",handle,"volume=",volume,"error=",error);	
+	if(error == E_OK)
     {
-    	logError(__PRETTY_FUNCTION__,"Could not find handleData, handle: ",handle.handle);
-        return;
+      	mpRoutingSender->checkVolume(handle,volume);
     }
 
     if (error== am_Error_e::E_OK || error== am_Error_e::E_ABORTED)
     {
-    	mpDatabaseHandler->changeSourceVolume(handleData.sourceID, volume);
+    	mpRoutingSender->writeToDatabaseAndRemove(mpDatabaseHandler,handle);
     }
-
-    if(error == E_OK || handleData.volume!=volume)
-    {
-      	logError("ackSetSourceVolumeChange volumes do not match, requested volume",handleData.volume,"returned volume",volume);
-    }
+    
+    mpRoutingSender->removeHandle(handle);
     mpControlSender->cbAckSetSourceVolumeChange(handle, volume, error);
 }
 
 void CAmRoutingReceiver::ackSetSourceState(const am_Handle_s handle, const am_Error_e error)
 {
-    CAmRoutingSender::am_handleData_c handleData;
-    if (mpRoutingSender->returnHandleDataAndRemove(handle,handleData))
-    {
-    	logError(__PRETTY_FUNCTION__,"Could not find handleData, handle: ",handle.handle);
-        return;
-    }
-
-    //no error, so we can write the change into the database;
-    if (error == am_Error_e::E_OK)
-    {
-    	mpDatabaseHandler->changeSourceState(handleData.sourceID, handleData.sourceState);
-    }
-
+	logInfo(__func__,"handle=",handle,"error=",error);		
+	handleCallback(handle,error);
     mpControlSender->cbAckSetSourceState(handle, error);
 }
 
 void CAmRoutingReceiver::ackSetSinkSoundProperty(const am_Handle_s handle, const am_Error_e error)
 {
-    CAmRoutingSender::am_handleData_c handleData;
-    if (mpRoutingSender->returnHandleDataAndRemove(handle,handleData))
-    {
-    	logError(__PRETTY_FUNCTION__,"Could not find handleData, handle: ",handle.handle);
-        return;
-    }
-
-    if (error==am_Error_e::E_OK)
-    {
-        mpDatabaseHandler->changeSinkSoundPropertyDB(handleData.soundPropery, handleData.sinkID);
-    }
-
+	logInfo(__func__,"handle=",handle,"error=",error);	
+	handleCallback(handle,error);
     mpControlSender->cbAckSetSinkSoundProperty(handle, error);
-
 }
 
 void am::CAmRoutingReceiver::ackSetSinkSoundProperties(const am_Handle_s handle, const am_Error_e error)
 {
-    CAmRoutingSender::am_handleData_c handleData;
-    if (mpRoutingSender->returnHandleDataAndRemove(handle,handleData))
-    {
-    	logError(__PRETTY_FUNCTION__,"Could not find handleData, handle: ",handle.handle);
-        return;
-    }
-
-    if (error==am_Error_e::E_OK)
-    {
-        std::vector<am_SoundProperty_s>::const_iterator it = handleData.soundProperties->begin();
-        for (; it != handleData.soundProperties->end(); ++it)
-        {
-            mpDatabaseHandler->changeSinkSoundPropertyDB(*it, handleData.sinkID);
-        }
-    }
-
-    try
-	{
-    	delete handleData.soundProperties;
-	}
-    catch(...)
-    {
-    	logError("exception while deleting handleData while ackSetSinkSoundProperties");
-    }
+	logInfo(__func__,"handle=",handle,"error=",error);	
+	handleCallback(handle,error);
     mpControlSender->cbAckSetSinkSoundProperties(handle, error);
 }
 
 void CAmRoutingReceiver::ackSetSourceSoundProperty(const am_Handle_s handle, const am_Error_e error)
 {
-    CAmRoutingSender::am_handleData_c handleData;
-    if (mpRoutingSender->returnHandleDataAndRemove(handle,handleData))
-    {
-    	logError(__PRETTY_FUNCTION__,"Could not find handleData, handle: ",handle.handle);
-        return;
-    }
-
-    if(error==am_Error_e::E_OK)
-    {
-        mpDatabaseHandler->changeSourceSoundPropertyDB(handleData.soundPropery, handleData.sourceID);
-    }
+	logInfo(__func__,"handle=",handle,"error=",error);	
+	handleCallback(handle,error);
     mpControlSender->cbAckSetSourceSoundProperty(handle, error);
 }
 
 void am::CAmRoutingReceiver::ackSetSourceSoundProperties(const am_Handle_s handle, const am_Error_e error)
 {
-    CAmRoutingSender::am_handleData_c handleData;
-    if (mpRoutingSender->returnHandleDataAndRemove(handle,handleData))
-    {
-    	logError(__PRETTY_FUNCTION__,"Could not find handleData, handle: ",handle.handle);
-        return;
-    }
-
-    if(error==am_Error_e::E_OK)
-    {
-        std::vector<am_SoundProperty_s>::const_iterator it = handleData.soundProperties->begin();
-        for (; it != handleData.soundProperties->end(); ++it)
-        {
-            mpDatabaseHandler->changeSourceSoundPropertyDB(*it, handleData.sourceID);
-        }
-    }
-
-    try
-    {
-    	delete handleData.soundProperties;
-    }
-	catch(...)
-	{
-		logError("exception while deleting handleData while ackSetSourceSoundProperties");
-	}
+	logInfo(__func__,"handle=",handle,"error=",error);	
+	handleCallback(handle,error);
     mpControlSender->cbAckSetSourceSoundProperties(handle, error);
 }
 
 void CAmRoutingReceiver::ackCrossFading(const am_Handle_s handle, const am_HotSink_e hotSink, const am_Error_e error)
 {
-    CAmRoutingSender::am_handleData_c handleData;
-    if (mpRoutingSender->returnHandleDataAndRemove(handle,handleData))
-    {
-    	logError(__PRETTY_FUNCTION__,"Could not find handleData, handle: ",handle.handle);
-        return;
-    }
-
-    if(error==am_Error_e::E_OK)
-    {
-        mpDatabaseHandler->changeCrossFaderHotSink(handleData.crossfaderID, hotSink);
-    }
+	logInfo(__func__,"handle=",handle,"hotsink=",hotSink,"error=",error);	
+	handleCallback(handle,error);
     mpControlSender->cbAckCrossFade(handle, hotSink, error);
 }
 
 void CAmRoutingReceiver::ackSourceVolumeTick(const am_Handle_s handle, const am_sourceID_t sourceID, const am_volume_t volume)
 {
+	logInfo(__func__,"handle=",handle,"sourceID=",sourceID,"volume=",volume);	
     mpControlSender->hookSystemSourceVolumeTick(handle, sourceID, volume);
 }
 
 void CAmRoutingReceiver::ackSinkVolumeTick(const am_Handle_s handle, const am_sinkID_t sinkID, const am_volume_t volume)
 {
+	logInfo(__func__,"handle=",handle,"sinkID=",sinkID,"volume=",volume);	
     mpControlSender->hookSystemSinkVolumeTick(handle, sinkID, volume);
 }
 
 am_Error_e CAmRoutingReceiver::peekDomain(const std::string & name, am_domainID_t & domainID)
-{
+{	
     return (mpDatabaseHandler->peekDomain(name, domainID));
-
 }
 
 am_Error_e CAmRoutingReceiver::registerDomain(const am_Domain_s & domainData, am_domainID_t & domainID)
@@ -466,50 +393,15 @@ void am::CAmRoutingReceiver::waitOnStartup(bool startup)
 
 void CAmRoutingReceiver::ackSinkNotificationConfiguration(const am_Handle_s handle, const am_Error_e error)
 {
-    CAmRoutingSender::am_handleData_c handleData;
-    if (mpRoutingSender->returnHandleDataAndRemove(handle,handleData))
-    {
-    	logError(__PRETTY_FUNCTION__,"Could not find handleData, handle: ",handle.handle);
-        return;
-    }
-
-    if(error==am_Error_e::E_OK)
-    {
-        mpDatabaseHandler->changeSinkNotificationConfigurationDB(handleData.sinkID,*handleData.notificationConfiguration);
-    }
-
-    try
-    {
-    	delete handleData.notificationConfiguration;
-    }
-	catch(...)
-	{
-		logError("exception while deleting handleData while ackSinkNotificationConfiguration");
-	}
+	logInfo(__func__,"handle=",handle,"error=",error);		
+	handleCallback(handle,error);
     mpControlSender->cbAckSetSinkNotificationConfiguration(handle,error);
 }
 
 void CAmRoutingReceiver::ackSourceNotificationConfiguration(const am_Handle_s handle, const am_Error_e error)
 {
-    CAmRoutingSender::am_handleData_c handleData;
-    if (mpRoutingSender->returnHandleDataAndRemove(handle,handleData))
-    {
-    	logError(__PRETTY_FUNCTION__,"Could not find handleData, handle: ",handle.handle);
-        return;
-    }
-
-    if(error==am_Error_e::E_OK)
-    {
-        mpDatabaseHandler->changeSourceNotificationConfigurationDB(handleData.sourceID,*handleData.notificationConfiguration);
-    }
-    try
-    {
-    	delete handleData.notificationConfiguration;
-	}
-	catch(...)
-	{
-		logError("exception while deleting handleData while ackSourceNotificationConfiguration");
-	}
+	logInfo(__func__,"handle=",handle,"error=",error);		
+	handleCallback(handle,error);
     mpControlSender->cbAckSetSourceNotificationConfiguration(handle,error);
 }
 
@@ -535,40 +427,8 @@ am_Error_e CAmRoutingReceiver::updateSource(const am_sourceID_t sourceID, const 
 
 void CAmRoutingReceiver::ackSetVolumes(const am_Handle_s handle, const std::vector<am_Volumes_s>& listvolumes, const am_Error_e error)
 {
-    CAmRoutingSender::am_handleData_c handleData;
-    if (mpRoutingSender->returnHandleDataAndRemove(handle,handleData))
-    {
-    	logError(__PRETTY_FUNCTION__,"Could not find handleData, handle: ",handle.handle);
-        return;
-    }
-
-    if(error==am_Error_e::E_OK)
-    {
-        std::vector<am_Volumes_s>::const_iterator iterator (listvolumes.begin());
-
-        for (;iterator!=listvolumes.end();++iterator)
-        {
-            if (iterator->volumeType==VT_SINK)
-            {
-                mpDatabaseHandler->changeSinkVolume(iterator->volumeID.sink,iterator->volume);
-            }
-            else if (iterator->volumeType==VT_SOURCE)
-            {
-                mpDatabaseHandler->changeSourceVolume(iterator->volumeID.source,iterator->volume);
-            }
-        }
-
-    }
-
-    try
-    {
-    	delete handleData.listVolumes;
-    }
-    catch(...)
-    {
-    	logError("exception while deleting handleData while ackSetVolumes");
-    }
-
+	logInfo(__func__,"handle=",handle,"error=",error);		
+	handleCallback(handle,error);
     mpControlSender->cbAckSetVolume(handle,listvolumes,error);
 }
 
@@ -603,18 +463,6 @@ void CAmRoutingReceiver::waitOnRundown(bool rundown)
 {
     mWaitRundown = rundown;
     mLastRundownError=E_OK;
-}
-
-am_Error_e CAmRoutingSender::removeConnectionLookup(const am_connectionID_t connectionID)
-{
-    ConnectionInterfaceMap::iterator iter = mMapConnectionInterface.begin();
-    iter = mMapConnectionInterface.find(connectionID);
-    if (iter != mMapConnectionInterface.end())
-    {
-        mMapConnectionInterface.erase(iter);
-        return (E_OK);
-    }
-    return (E_UNKNOWN);
 }
 
 }

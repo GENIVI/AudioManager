@@ -141,6 +141,7 @@ public:
     am_Error_e getMainSourceSoundPropertyValue(const am_sourceID_t sourceID, const am_CustomMainSoundPropertyType_t propertyType, int16_t& value) const;
     am_Error_e getSourceSoundPropertyValue(const am_sourceID_t sourceID, const am_CustomSoundPropertyType_t propertyType, int16_t& value) const;
     am_Error_e resyncConnectionState(const am_domainID_t domainID, std::vector<am_Connection_s>& listOfExistingConnections);
+    am_Error_e removeHandle(const am_Handle_s handle);
 
 private:
     IAmDatabaseHandler* mDatabaseHandler; //!< pointer tto the databasehandler

@@ -141,6 +141,7 @@ public:
     am_Error_e getListMainConnections(std::vector<am_MainConnection_s>& listMainConnections) const;
     am_Error_e getListDomains(std::vector<am_Domain_s>& listDomains) const;
     am_Error_e getListConnections(std::vector<am_Connection_s>& listConnections) const;
+    am_Error_e getListConnectionsReserved(std::vector<am_Connection_s>& listConnections) const;
     am_Error_e getListSinks(std::vector<am_Sink_s>& listSinks) const;
     am_Error_e getListSources(std::vector<am_Source_s>& lisSources) const;
     am_Error_e getListSourceClasses(std::vector<am_SourceClass_s>& listSourceClasses) const;

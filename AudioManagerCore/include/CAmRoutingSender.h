@@ -26,6 +26,7 @@
 
 #include "IAmRouting.h"
 #include <map>
+#include <memory>
 
 #ifdef UNIT_TEST //this is needed to test RoutingSender
 #include "../test/IAmRoutingBackdoor.h"
@@ -35,6 +36,7 @@ namespace am
 {
 
 class CAmRoutingReceiver;
+class IAmDatabaseHandler;
 
 /**
  * Implements the RoutingSendInterface. Loads all plugins and dispatches calls to the plugins
@@ -84,34 +86,205 @@ public:
         IAmRoutingSend* routingInterface; //!< pointer to the routingInterface
         std::string busName; //!< the busname
     };
-
-    class am_handleData_c //!< is used to store data related to handles
+    
+    class handleDataBase
     {
-    public:
-        union
-        {
-            am_sinkID_t sinkID;
-            am_sourceID_t sourceID;
-            am_crossfaderID_t crossfaderID;
-            am_connectionID_t connectionID;
-            am_DataType_u volumeID;
-        };
-
-        union
-        {
-            am_SoundProperty_s soundPropery;
-            am_SourceState_e sourceState;
-            am_volume_t volume;
-            am_HotSink_e hotSink;
-            std::vector<am_SoundProperty_s>* soundProperties;
-            std::vector<am_Volumes_s>* listVolumes;
-            am_NotificationConfiguration_s* notificationConfiguration;
-        };
-
-    };
-
-    am_Error_e returnHandleData(const am_Handle_s handle,CAmRoutingSender::am_handleData_c& handleData) const; //!< returns the handle data associated with a handle
-    am_Error_e returnHandleDataAndRemove(const am_Handle_s handle,CAmRoutingSender::am_handleData_c& handleData); //!< returns the handle data associated with a handle and removes the handle
+		public:
+			handleDataBase(IAmRoutingSend* interface) : mInterface(interface) {}
+			virtual ~handleDataBase() {}
+			virtual am_Error_e writeDataToDatabase(IAmDatabaseHandler* database)=0; //!< function to write the handle data to the database
+			IAmRoutingSend* returnInterface() {return mInterface;}
+		private:
+			IAmRoutingSend*	mInterface;	
+	};
+	
+	class handleVolumeBase : public handleDataBase
+	{
+			public:
+				handleVolumeBase(IAmRoutingSend* interface,am_volume_t volume) : 
+					handleDataBase(interface)
+				   ,mVolume(volume) {}
+				virtual ~handleVolumeBase(){}
+				am_volume_t returnVolume() { return mVolume; }
+			private:
+				am_volume_t mVolume;
+	};
+	
+	class handleSinkSoundProperty : public handleDataBase
+	{
+		public: 
+			handleSinkSoundProperty(IAmRoutingSend* interface,const am_sinkID_t sinkID, const am_SoundProperty_s& soundProperty) : 
+				 handleDataBase(interface)
+				,mSinkID(sinkID)
+				,mSoundProperty(soundProperty) {}
+			~handleSinkSoundProperty() {}
+			am_Error_e writeDataToDatabase(IAmDatabaseHandler* database);
+		private:
+			am_sinkID_t mSinkID;
+			am_SoundProperty_s mSoundProperty;		
+	};
+	
+	class handleSinkSoundProperties : public handleDataBase
+	{
+		public: 
+			handleSinkSoundProperties(IAmRoutingSend* interface,const am_sinkID_t sinkID, const std::vector<am_SoundProperty_s>& listSoundProperties) : 
+				 handleDataBase(interface)
+				,mSinkID(sinkID)
+				,mlistSoundProperties(listSoundProperties) {}
+			~handleSinkSoundProperties() {}
+			am_Error_e writeDataToDatabase(IAmDatabaseHandler* database);
+		private:
+			am_sinkID_t mSinkID;
+			std::vector<am_SoundProperty_s> mlistSoundProperties;		
+	};	
+	
+	class handleSourceSoundProperty : public handleDataBase
+	{
+		public: 
+			handleSourceSoundProperty(IAmRoutingSend* interface,const am_sourceID_t sourceID, const am_SoundProperty_s& soundProperty) : 
+				 handleDataBase(interface)
+				,mSourceID(sourceID)
+				,mSoundProperty(soundProperty) {}
+			~handleSourceSoundProperty() {}
+			am_Error_e writeDataToDatabase(IAmDatabaseHandler* database);
+		private:
+			am_sourceID_t mSourceID;
+			am_SoundProperty_s mSoundProperty;		
+	};
+	
+	class handleSourceSoundProperties : public handleDataBase
+	{
+		public: 
+			handleSourceSoundProperties(IAmRoutingSend* interface,const am_sourceID_t sourceID, const std::vector<am_SoundProperty_s>& listSoundProperties) : 
+				 handleDataBase(interface)
+				,mSourceID(sourceID)
+				,mlistSoundProperties(listSoundProperties) {}
+			~handleSourceSoundProperties(){}
+			am_Error_e writeDataToDatabase(IAmDatabaseHandler* database);
+		private:
+			am_sourceID_t mSourceID;
+			std::vector<am_SoundProperty_s> mlistSoundProperties;	
+	};	
+	
+	class handleSourceState : public handleDataBase
+	{
+		public: 
+			handleSourceState(IAmRoutingSend* interface,const am_sourceID_t sourceID, const am_SourceState_e& state) : 
+				 handleDataBase(interface)
+				,mSourceID(sourceID)
+				,mSourceState(state) {}
+			~handleSourceState() {}
+			am_Error_e writeDataToDatabase(IAmDatabaseHandler* database);
+		private:
+			am_sourceID_t mSourceID;
+			am_SourceState_e mSourceState;		
+	};	
+	
+	class handleSourceVolume : public handleVolumeBase
+	{
+		public: 
+			handleSourceVolume(IAmRoutingSend* interface, const am_sourceID_t sourceID, const am_volume_t& volume) : 
+				 handleVolumeBase(interface,volume)
+				,mSourceID(sourceID) {}
+			~handleSourceVolume() {}
+			am_Error_e writeDataToDatabase(IAmDatabaseHandler* database);
+		private:
+			am_sourceID_t mSourceID;	
+	};	
+	
+	class handleSinkVolume : public handleVolumeBase
+	{
+		public: 
+			handleSinkVolume(IAmRoutingSend* interface, const am_sinkID_t sinkID, const am_volume_t& volume) : 
+				 handleVolumeBase(interface,volume)
+				,mSinkID(sinkID) {}
+			~handleSinkVolume() {}
+			am_Error_e writeDataToDatabase(IAmDatabaseHandler* database);
+		private:
+			am_sinkID_t mSinkID;	
+	};	
+	
+	class handleCrossFader : public handleDataBase
+	{
+		public: 
+			handleCrossFader(IAmRoutingSend* interface, const am_crossfaderID_t crossfaderID, const am_HotSink_e& hotSink) : 
+				 handleDataBase(interface)
+				,mCrossfaderID(crossfaderID)
+				,mHotSink(hotSink) {}
+			~handleCrossFader() {}
+			am_Error_e writeDataToDatabase(IAmDatabaseHandler* database);
+		private:
+			am_crossfaderID_t mCrossfaderID;
+			am_HotSink_e mHotSink;	
+	};	
+	
+	class handleConnect : public handleDataBase
+	{
+		public: 
+			handleConnect(IAmRoutingSend* interface, const am_connectionID_t connectionID) : 
+				 handleDataBase(interface)
+				,mConnectionID(connectionID) {}
+			~handleConnect() {}
+			am_Error_e writeDataToDatabase(IAmDatabaseHandler* database);
+		private:
+			am_connectionID_t mConnectionID;
+	};	
+	
+	class handleDisconnect : public handleDataBase
+	{
+		public: 
+			handleDisconnect(IAmRoutingSend* interface, const am_connectionID_t connectionID) : 
+				 handleDataBase(interface)
+				,mConnectionID(connectionID) {}
+			~handleDisconnect() {}
+			am_Error_e writeDataToDatabase(IAmDatabaseHandler* database);
+		private:
+			am_connectionID_t mConnectionID;
+	};		
+	
+	class handleSetVolumes : public handleDataBase
+	{
+		public: 
+			handleSetVolumes(IAmRoutingSend* interface, const std::vector<am_Volumes_s> listVolumes) : 
+				 handleDataBase(interface)
+				,mlistVolumes(listVolumes) {}
+			~handleSetVolumes() {}
+			am_Error_e writeDataToDatabase(IAmDatabaseHandler* database);
+		private:
+			std::vector<am_Volumes_s> mlistVolumes;
+	};		
+	
+	class handleSetSinkNotificationConfiguration : public handleDataBase
+	{
+		public: 
+			handleSetSinkNotificationConfiguration(IAmRoutingSend* interface, const am_sinkID_t sinkID, const am_NotificationConfiguration_s notificationConfiguration) : 
+				 handleDataBase(interface)
+				,mSinkID(sinkID) 
+				,mNotificationConfiguration(notificationConfiguration){}
+			~handleSetSinkNotificationConfiguration() {}
+			am_Error_e writeDataToDatabase(IAmDatabaseHandler* database);
+		private:
+			am_sinkID_t mSinkID;
+			am_NotificationConfiguration_s mNotificationConfiguration;
+	};	
+	
+	class handleSetSourceNotificationConfiguration : public handleDataBase
+	{
+		public: 
+			handleSetSourceNotificationConfiguration(IAmRoutingSend* interface, const am_sourceID_t sourceID, const am_NotificationConfiguration_s notificationConfiguration) : 
+				 handleDataBase(interface)
+				,mSourceID(sourceID) 
+				,mNotificationConfiguration(notificationConfiguration) {}
+			~handleSetSourceNotificationConfiguration() {}
+			am_Error_e writeDataToDatabase(IAmDatabaseHandler* database);
+		private:
+			am_sourceID_t mSourceID;
+			am_NotificationConfiguration_s mNotificationConfiguration;
+	};		
+	
+    am_Error_e writeToDatabaseAndRemove(IAmDatabaseHandler* databasehandler,const am_Handle_s handle); //!< write data to Database and remove handle
+    void checkVolume(const am_Handle_s handle, const am_volume_t volume);
+    bool handleExists(const am_Handle_s handle); //!< returns true if the handle exists
 
 #ifdef UNIT_TEST //this is needed to test RoutingSender
     friend class IAmRoutingBackdoor;
@@ -126,7 +299,7 @@ private:
         }
     };
 
-    am_Handle_s createHandle(const am_handleData_c& handleData, const am_Handle_e type); //!< creates a handle
+    am_Handle_s createHandle(std::shared_ptr<handleDataBase> handleData, const am_Handle_e type); //!< creates a handle
     void unloadLibraries(void); //!< unloads all loaded plugins
 
     typedef std::map<am_domainID_t, IAmRoutingSend*> DomainInterfaceMap; //!< maps domains to interfaces
@@ -134,19 +307,17 @@ private:
     typedef std::map<am_sourceID_t, IAmRoutingSend*> SourceInterfaceMap; //!< maps sources to interfaces
     typedef std::map<am_crossfaderID_t, IAmRoutingSend*> CrossfaderInterfaceMap; //!< maps crossfaders to interfaces
     typedef std::map<am_connectionID_t, IAmRoutingSend*> ConnectionInterfaceMap; //!< maps connections to interfaces
-    typedef std::map<uint16_t, IAmRoutingSend*> HandleInterfaceMap; //!< maps handles to interfaces
-    typedef std::map<am_Handle_s, am_handleData_c, comparator> HandlesMap; //!< maps handleData to handles
+    typedef std::map<am_Handle_s, std::shared_ptr<handleDataBase>, comparator> HandlesMap; //!< maps handleData to handles
 
     int16_t mHandleCount; //!< is used to create handles
     HandlesMap mlistActiveHandles; //!< list of all currently "running" handles.
     std::vector<void*> mListLibraryHandles; //!< list of all loaded pluginInterfaces
     std::vector<InterfaceNamePairs> mListInterfaces; //!< list of busname/interface relation
-    ConnectionInterfaceMap mMapConnectionInterface; //!< map of connection to interfaces
     CrossfaderInterfaceMap mMapCrossfaderInterface; //!< map of crossfaders to interface
+    ConnectionInterfaceMap mMapConnectionInterface; //!< map of connection to interfaces
     DomainInterfaceMap mMapDomainInterface; //!< map of domains to interfaces
     SinkInterfaceMap mMapSinkInterface; //!< map of sinks to interfaces
     SourceInterfaceMap mMapSourceInterface; //!< map of sources to interfaces
-    HandleInterfaceMap mMapHandleInterface; //!< map of handles to interfaces
     CAmRoutingReceiver *mpRoutingReceiver; //!< pointer to routing receiver
 };
 

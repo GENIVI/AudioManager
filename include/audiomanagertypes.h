@@ -1000,7 +1000,8 @@ public:
 	 * the handle as value
 	 */
 	uint16_t handle:10;
-
+	
+	am_Handle_s():handleType(am_Handle_e::H_UNKNOWN),handle(0){ }
 };
 
 /**

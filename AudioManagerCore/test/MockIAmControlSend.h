@@ -153,6 +153,8 @@ class MockIAmControlSend : public IAmControlSend {
       am_Error_e(const am_sourceID_t sourceID, const am_NotificationConfiguration_s& notificationConfiguration));
   MOCK_METHOD2(hookSystemSingleTimingInformationChanged,
       void(const am_connectionID_t connectionID, const am_timeSync_t time));
+  MOCK_METHOD1(removeHandle,
+	  am_Error_e(const am_Handle_s handle));       
 };
 
 

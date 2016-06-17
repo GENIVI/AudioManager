@@ -105,6 +105,9 @@ public:
     void waitOnRundown(bool rundown); //!< tells the RoutingReceiver to start waiting for all handles to be confirmed
 
 private:
+	
+	void handleCallback(const am_Handle_s handle, const am_Error_e error);
+
     IAmDatabaseHandler *mpDatabaseHandler; //!< pointer to the databaseHandler
     CAmRoutingSender *mpRoutingSender; //!< pointer to the routingSender
     CAmControlSender *mpControlSender; //!< pointer to the controlSender

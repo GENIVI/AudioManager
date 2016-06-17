@@ -644,6 +644,11 @@ public:
 	 * is meant to be used if the audiomanager and a remote domain are out of sync.
 	 */
 	virtual am_Error_e resyncConnectionState(const am_domainID_t domainID, std::vector<am_Connection_s>& listOfExistingConnections) =0;
+	/**
+	 *  This function searches for a handle in the RoutingSender and removes it if found
+	 * 	@return E_OK on success, handle removed, E_NON_EXISTENT in case the handle was not foud
+	 */
+	virtual am_Error_e removeHandle(const am_Handle_s handle) = 0; 
 
 };
 
@@ -963,6 +968,7 @@ public:
 	 * This hook is fired whenever the timing information of a connection has changed.
 	 */
 	virtual void hookSystemSingleTimingInformationChanged(const am_connectionID_t connectionID, const am_timeSync_t time) =0;
+
 
 };
 }

@@ -31,13 +31,16 @@
 #include <set>
 #include "CAmDatabaseHandlerMap.h"
 #include "CAmControlReceiver.h"
+#include "CAmRoutingReceiver.h"
 #include "CAmControlSender.h"
 #include "CAmDatabaseObserver.h"
 #include "CAmRouter.h"
 #include "../IAmRoutingBackdoor.h"
 #include "../IAmCommandBackdoor.h"
+#include "../IAmControlBackdoor.h"
 #include "../CAmCommonFunctions.h"
 #include "../MockIAmRoutingSend.h"
+#include "../MockIAmControlSend.h"
 #include "CAmSocketHandler.h"
 
 namespace am
@@ -53,12 +56,15 @@ public:
     CAmSocketHandler pSocketHandler;
     CAmDatabaseHandlerMap pDatabaseHandler;
     CAmRoutingSender pRoutingSender;
+    CAmRoutingReceiver pRoutingReceiver;
     CAmCommandSender pCommandSender;
     CAmControlSender pControlSender;
     CAmRouter pRouter;
     MockIAmRoutingSend pMockInterface;
+    MockIAmControlSend pMockControlInterface;
     IAmRoutingBackdoor pRoutingInterfaceBackdoor;
     IAmCommandBackdoor pCommandInterfaceBackdoor;
+    IAmControlBackdoor pControlInterfaceBackdoor;
     CAmControlReceiver pControlReceiver;
     CAmDatabaseObserver pObserver;
     CAmCommonFunctions pCF;

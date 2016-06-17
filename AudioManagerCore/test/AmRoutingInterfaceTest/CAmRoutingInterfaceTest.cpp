@@ -42,11 +42,13 @@ CAmRoutingInterfaceTest::CAmRoutingInterfaceTest() :
         pRoutingInterfaceBackdoor(), //
         pCommandInterfaceBackdoor(), //
         pControlReceiver(&pDatabaseHandler, &pRoutingSender, &pCommandSender, &pSocketHandler, &pRouter), //
-        pObserver(&pCommandSender, &pRoutingSender, &pSocketHandler)
+        pObserver(&pCommandSender, &pRoutingSender, &pSocketHandler), //
+        pRoutingReceiver(&pDatabaseHandler,  &pRoutingSender, &pControlSender, &pSocketHandler)
 {
     pDatabaseHandler.registerObserver(&pObserver);
     pRoutingInterfaceBackdoor.unloadPlugins(&pRoutingSender);
     pRoutingInterfaceBackdoor.injectInterface(&pRoutingSender, &pMockInterface, "mock");
+    pControlInterfaceBackdoor.replaceController(&pControlSender, &pMockControlInterface);
     pCommandInterfaceBackdoor.unloadPlugins(&pCommandSender);
 }
 
@@ -82,7 +84,8 @@ void CAmRoutingInterfaceTest::TearDown()
 {
 }
 
-TEST_F(CAmRoutingInterfaceTest,abort)
+
+TEST_F(CAmRoutingInterfaceTest,connectRace)
 {
     am_Sink_s sink;
     am_sinkID_t sinkID;
@@ -96,8 +99,6 @@ TEST_F(CAmRoutingInterfaceTest,abort)
     source.sourceID=1;
     source.domainID=DYNAMIC_ID_BOUNDARY;
     source.name="sds";
-
-
 
     pCF.createSink(sink);
     pCF.createDomain(domain);
@@ -128,6 +129,73 @@ TEST_F(CAmRoutingInterfaceTest,abort)
     //send an abort expect a call on the routing interface
     EXPECT_CALL(pMockInterface,asyncAbort(_)).WillOnce(Return(E_OK));
     ASSERT_EQ(E_OK, pControlReceiver.abortAction(handle));
+	
+	//so we aborted but there was a race. We get the correct answer now. 
+    EXPECT_CALL(pMockControlInterface,cbAckConnect(_,E_OK));
+    pRoutingReceiver.ackConnect(handle,connectionID,E_OK);
+    
+    //the abort can be ignored or anwered with error by the routingadaper, should not matter
+
+    EXPECT_CALL(pMockControlInterface,cbAckConnect(_,E_NON_EXISTENT));    
+    pRoutingReceiver.ackConnect(handle,connectionID,E_NON_EXISTENT);
+	
+	std::vector<am_Connection_s> listconnections;
+	//In the end, the database must be correct:
+	pDatabaseHandler.getListConnections(listconnections);
+	ASSERT_EQ(listconnections[0].connectionID,connectionID);
+	
+	//In the end, the database must be correct:
+	pDatabaseHandler.getListConnectionsReserved(listconnections);
+	ASSERT_EQ(listconnections[0].connectionID,connectionID);
+}
+
+TEST_F(CAmRoutingInterfaceTest,abort)
+{
+    am_Sink_s sink;
+    am_sinkID_t sinkID;
+    am_Domain_s domain;
+    am_domainID_t domainID;
+    am_Handle_s handle;
+    am_connectionID_t connectionID;
+    std::vector<am_Handle_s> listHandles;
+    am_Source_s source;
+    pCF.createSource(source);
+    source.sourceID=1;
+    source.domainID=DYNAMIC_ID_BOUNDARY;
+    source.name="sds";
+
+    pCF.createSink(sink);
+    pCF.createDomain(domain);
+    domain.name = "mock";
+    domain.busname = "mock";
+    domain.domainID=0;
+    sink.sinkID = 2;
+    sink.domainID = DYNAMIC_ID_BOUNDARY;
+
+    //prepare the stage
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,source.sourceID));
+
+    //start a connect, expect a call on the routingInterface
+    EXPECT_CALL(pMockInterface,asyncConnect(_,_,1,sinkID,CF_GENIVI_ANALOG)).WillOnce(Return(E_OK));
+    ASSERT_EQ(E_OK, pControlReceiver.connect(handle,connectionID,CF_GENIVI_ANALOG,1,2));
+
+    //check the correctness of the handle
+    ASSERT_NE(handle.handle, 0);
+    ASSERT_EQ(handle.handleType, H_CONNECT);
+
+    //the handle must be inside the handlelist
+    ASSERT_EQ(E_OK, pControlReceiver.getListHandles(listHandles));
+    ASSERT_TRUE(listHandles[0].handle==handle.handle);
+    ASSERT_TRUE(listHandles[0].handleType==handle.handleType);
+
+    //send an abort expect a call on the routing interface
+    EXPECT_CALL(pMockInterface,asyncAbort(_)).WillOnce(Return(E_OK));
+    ASSERT_EQ(E_OK, pControlReceiver.abortAction(handle));
+
+    EXPECT_CALL(pMockControlInterface,cbAckConnect(_,E_ABORTED));
+    pRoutingReceiver.ackConnect(handle,connectionID,E_ABORTED);
 
     //the reaction on the abort is specific for every function
 
@@ -380,13 +448,63 @@ TEST_F(CAmRoutingInterfaceTest,connect)
     ASSERT_TRUE(listHandles[0].handleType==handle.handleType);
 }
 
-TEST_F(CAmRoutingInterfaceTest,disconnect)
+TEST_F(CAmRoutingInterfaceTest,connectError)
 {
     am_Sink_s sink;
     am_sinkID_t sinkID;
     am_Domain_s domain;
     am_domainID_t domainID;
     am_Handle_s handle;
+    am_connectionID_t connectionID;
+    std::vector<am_Handle_s> listHandles;
+    pCF.createSink(sink);
+    pCF.createDomain(domain);
+    domain.name = "mock";
+    domain.busname = "mock";
+    sink.sinkID = 2;
+    sink.domainID = DYNAMIC_ID_BOUNDARY;
+
+    am_Source_s source;
+    pCF.createSource(source);
+    source.sourceID=1;
+    source.domainID=DYNAMIC_ID_BOUNDARY;
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,source.sourceID));
+    EXPECT_CALL(pMockInterface,asyncConnect(_,_,1,sinkID,CF_GENIVI_ANALOG)).WillOnce(Return(E_OK));
+    ASSERT_EQ(E_OK, pControlReceiver.connect(handle,connectionID,CF_GENIVI_ANALOG,1,2));
+    ASSERT_NE(handle.handle, 0);
+    ASSERT_EQ(handle.handleType, H_CONNECT);
+    ASSERT_EQ(E_OK, pControlReceiver.getListHandles(listHandles));
+    ASSERT_TRUE(listHandles[0].handle==handle.handle);
+    ASSERT_TRUE(listHandles[0].handleType==handle.handleType);
+ 
+ 	//so we aborted but there was a race. We get the correct answer now. 
+    EXPECT_CALL(pMockControlInterface,cbAckConnect(_,E_UNKNOWN));
+    pRoutingReceiver.ackConnect(handle,connectionID,E_UNKNOWN);
+       
+ 	std::vector<am_Connection_s> listconnections;
+	//In the end, the database must be correct:
+	pDatabaseHandler.getListConnections(listconnections);
+	ASSERT_EQ(listconnections.size(),0);  
+	
+	//No more reservations
+	pDatabaseHandler.getListConnectionsReserved(listconnections);
+	ASSERT_EQ(listconnections.size(),0);	
+	
+	ASSERT_EQ(E_OK, pControlReceiver.getListHandles(listHandles));
+	ASSERT_EQ(listHandles.size(),0);  
+    
+}
+
+TEST_F(CAmRoutingInterfaceTest,disconnect)
+{
+    am_Sink_s sink;
+    am_sinkID_t sinkID;
+    am_Domain_s domain;
+    am_domainID_t domainID;
+    am_Handle_s handle,handle2;
     am_connectionID_t connectionID;
     std::vector<am_Handle_s> listHandles;
     pCF.createSink(sink);
@@ -409,12 +527,12 @@ TEST_F(CAmRoutingInterfaceTest,disconnect)
     ASSERT_EQ(E_OK, pControlReceiver.connect(handle,connectionID,CF_GENIVI_ANALOG,1,2));
     ASSERT_EQ(E_OK, pDatabaseHandler.changeConnectionFinal(connectionID));
     EXPECT_CALL(pMockInterface,asyncDisconnect(_,connectionID)).WillOnce(Return(E_OK));
-    ASSERT_EQ(E_OK, pControlReceiver.disconnect(handle,connectionID));
-    ASSERT_NE(handle.handle, 0);
-    ASSERT_EQ(handle.handleType, H_DISCONNECT);
+    ASSERT_EQ(E_OK, pControlReceiver.disconnect(handle2,connectionID));
+    ASSERT_NE(handle2.handle, 0);
+    ASSERT_EQ(handle2.handleType, H_DISCONNECT);
     ASSERT_EQ(E_OK, pControlReceiver.getListHandles(listHandles));
-    ASSERT_TRUE(listHandles[1].handle==handle.handle);
-    ASSERT_TRUE(listHandles[1].handleType==handle.handleType);
+    ASSERT_TRUE(listHandles[1].handle==handle2.handle);
+    ASSERT_TRUE(listHandles[1].handleType==handle2.handleType);
 }
 
 
@@ -429,6 +547,7 @@ TEST_F(CAmRoutingInterfaceTest,nothingTodisconnect)
 }
 
 
+
 int main(int argc, char **argv)
 {
 	try
@@ -439,7 +558,7 @@ int main(int argc, char **argv)
 	catch (TCLAP::ArgException &e)  // catch any exceptions
 	{ std::cerr << "error: " << e.error() << " for arg " << e.argId() << std::endl; }
 	CAmCommandLineSingleton::instance()->preparse(argc,argv);
-		CAmDltWrapper::instanctiateOnce("RTEST","RoutingInterface Test",enableDebug.getValue(),CAmDltWrapper::logDestination::DAEMON);
+		CAmDltWrapper::instanctiateOnce("RTEST","RoutingInterface Test",enableDebug.getValue(),CAmDltWrapper::logDestination::COMMAND_LINE);
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }

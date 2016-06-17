@@ -126,7 +126,7 @@ if(NOT DEFINED CONTROLLER_PLUGIN_DIR)
 endif(NOT DEFINED CONTROLLER_PLUGIN_DIR)
 
 ##global build flags set(CPACK_RPM_COMPONENT_INSTALL ON)
-set (AUDIOMANAGER_CMAKE_CXX_FLAGS "-std=gnu++11 -pedantic -rdynamic -Wno-variadic-macros")
+set (AUDIOMANAGER_CMAKE_CXX_FLAGS "-std=c++11 -pedantic -rdynamic -Wno-variadic-macros")
 
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${AUDIOMANAGER_CMAKE_CXX_FLAGS}")
 set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g -DDEBUG")
