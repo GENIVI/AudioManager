@@ -297,8 +297,11 @@ void mainProgram(int argc, char *argv[])
     //in this place, the plugins can get the gloval commandlineparser via CAmCommandLineSingleton::instance() and add their options to the commandline
     //this must be done in the constructor.
     //later when the plugins are started, the commandline is already parsed and the objects defined before can be used to get the neccesary information
+    
+    CAmDatabaseHandlerMap iDatabaseHandler;
+	IAmDatabaseHandler *pDatabaseHandler = dynamic_cast<IAmDatabaseHandler*>( &iDatabaseHandler );
 
-    CAmRoutingSender iRoutingSender(listRoutingPluginDirs);
+    CAmRoutingSender iRoutingSender(listRoutingPluginDirs,pDatabaseHandler);
     CAmCommandSender iCommandSender(listCommandPluginDirs);
     CAmControlSender iControlSender(controllerPlugin.getValue(),&iSocketHandler);
 
@@ -333,13 +336,7 @@ void mainProgram(int argc, char *argv[])
     CAmWatchdog iWatchdog(&iSocketHandler);
 #endif /*WITH_SYSTEMD_WATCHDOG*/
 
-#ifdef WITH_DATABASE_STORAGE
-    CAmDatabaseHandlerSQLite iDatabaseHandler(databasePath.getValue());
-#else
-    CAmDatabaseHandlerMap iDatabaseHandler;
-#endif /*WITH_DATABASE_STORAGE*/
-    IAmDatabaseHandler *pDatabaseHandler = dynamic_cast<IAmDatabaseHandler*>( &iDatabaseHandler );
-    CAmRouter iRouter(pDatabaseHandler, &iControlSender);
+CAmRouter iRouter(pDatabaseHandler, &iControlSender);
 
 #ifdef WITH_DBUS_WRAPPER
     CAmCommandReceiver iCommandReceiver(pDatabaseHandler, &iControlSender, &iSocketHandler, &iDBusWrapper);

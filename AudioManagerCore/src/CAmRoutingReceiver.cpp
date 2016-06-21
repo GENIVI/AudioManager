@@ -82,7 +82,7 @@ void CAmRoutingReceiver::handleCallback(const am_Handle_s handle, const am_Error
 {
     if (error == am_Error_e::E_OK)
     {
-        mpRoutingSender->writeToDatabaseAndRemove(mpDatabaseHandler,handle);
+        mpRoutingSender->writeToDatabaseAndRemove(handle);
     }
     else
     {
@@ -95,7 +95,7 @@ void CAmRoutingReceiver::ackConnect(const am_Handle_s handle, const am_connectio
 	logInfo(__func__,"handle=",handle,"connectionID=",connectionID,"error=",error);
     if (error == am_Error_e::E_OK)
     {
-        mpRoutingSender->writeToDatabaseAndRemove(mpDatabaseHandler,handle);
+        mpRoutingSender->writeToDatabaseAndRemove(handle);
     }
     else
     {
@@ -131,7 +131,7 @@ void CAmRoutingReceiver::ackSetSinkVolumeChange(const am_Handle_s handle, const 
     
     if (error== am_Error_e::E_OK || error== am_Error_e::E_ABORTED)
     {
-    	mpRoutingSender->writeToDatabaseAndRemove(mpDatabaseHandler,handle);
+    	mpRoutingSender->writeToDatabaseAndRemove(handle);
     }
     
     mpRoutingSender->removeHandle(handle);
@@ -148,7 +148,7 @@ void CAmRoutingReceiver::ackSetSourceVolumeChange(const am_Handle_s handle, cons
 
     if (error== am_Error_e::E_OK || error== am_Error_e::E_ABORTED)
     {
-    	mpRoutingSender->writeToDatabaseAndRemove(mpDatabaseHandler,handle);
+    	mpRoutingSender->writeToDatabaseAndRemove(handle);
     }
     
     mpRoutingSender->removeHandle(handle);

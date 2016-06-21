@@ -32,7 +32,7 @@ class CAmSocketHandler;
 
 #include "audiomanagertypes.h"
 
-#define ControlVersion "5.0"
+#define ControlVersion "5.1"
 namespace am {
 
 /**
@@ -49,6 +49,9 @@ namespace am {
  * implement thread safe by using the deferred-call pattern described on the wiki
  * which also helps to implement calls that are forbidden.\n
  * For more information, please check CAmSerializer
+ * 
+ * All functions that contain handles can be resend when using the same handle. Take care to initialize
+ * the handles properly to avaid unintended resending.
  */
 class IAmControlReceive
 {

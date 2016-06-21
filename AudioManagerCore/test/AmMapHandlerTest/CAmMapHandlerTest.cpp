@@ -51,7 +51,7 @@ CAmMapBasicTest::CAmMapBasicTest() :
                 plistCommandPluginDirs(), //
                 pSocketHandler(),//
                 pDatabaseHandler(), //
-                pRoutingSender(plistRoutingPluginDirs), //
+                pRoutingSender(plistRoutingPluginDirs,dynamic_cast<IAmDatabaseHandler*>( &pDatabaseHandler )), //
                 pCommandSender(plistCommandPluginDirs), //
                 pRoutingInterfaceBackdoor(), //
                 pCommandInterfaceBackdoor(), //

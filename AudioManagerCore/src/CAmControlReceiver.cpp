@@ -61,24 +61,7 @@ am_Error_e CAmControlReceiver::getRoute(const bool onlyfree, const am_sourceID_t
 
 am_Error_e CAmControlReceiver::connect(am_Handle_s & handle, am_connectionID_t & connectionID, const am_CustomConnectionFormat_t format, const am_sourceID_t sourceID, const am_sinkID_t sinkID)
 {
-
-    am_Connection_s tempConnection;
-    tempConnection.sinkID = sinkID;
-    tempConnection.sourceID = sourceID;
-    tempConnection.connectionFormat = format;
-    tempConnection.connectionID = 0;
-    tempConnection.delay=-1;
-
-    am_Error_e connError(mDatabaseHandler->enterConnectionDB(tempConnection, connectionID));
-    if (connError)
-    	return(connError);
-    am_Error_e syncError(mRoutingSender->asyncConnect(handle, connectionID, sourceID, sinkID, format));
-	if (syncError)
-	{
-		logError(__func__,"syncError",syncError);
-		mDatabaseHandler->removeConnection(connectionID);
-	}
-	return(syncError);
+	return (mRoutingSender->asyncConnect(handle, connectionID, sourceID, sinkID, format));
 }
 
 am_Error_e CAmControlReceiver::disconnect(am_Handle_s & handle, const am_connectionID_t connectionID)

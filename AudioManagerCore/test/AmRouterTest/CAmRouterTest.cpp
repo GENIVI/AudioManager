@@ -37,7 +37,7 @@ CAmRouterTest::CAmRouterTest() :
         pControlSender(), //
 		pDatabaseHandler(),
         pRouter(&pDatabaseHandler, &pControlSender), //
-        pRoutingSender(plistRoutingPluginDirs), //
+        pRoutingSender(plistRoutingPluginDirs,dynamic_cast<IAmDatabaseHandler*>( &pDatabaseHandler )), //
         pCommandSender(plistCommandPluginDirs), //
         pMockInterface(), //
         pMockControlInterface(), //

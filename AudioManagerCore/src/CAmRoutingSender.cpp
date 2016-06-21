@@ -43,7 +43,7 @@ namespace am
 #define REQUIRED_INTERFACE_VERSION_MAJOR 1  //!< major interface version. All versions smaller than this will be rejected
 #define REQUIRED_INTERFACE_VERSION_MINOR 0 //!< minor interface version. All versions smaller than this will be rejected
 
-CAmRoutingSender::CAmRoutingSender(const std::vector<std::string>& listOfPluginDirectories) :
+CAmRoutingSender::CAmRoutingSender(const std::vector<std::string>& listOfPluginDirectories, IAmDatabaseHandler* databaseHandler) :
         mHandleCount(0), //
         mlistActiveHandles(), //
         mListInterfaces(), //
@@ -52,12 +52,13 @@ CAmRoutingSender::CAmRoutingSender(const std::vector<std::string>& listOfPluginD
         mMapDomainInterface(), //
         mMapSinkInterface(), //
         mMapSourceInterface(), //
-        mpRoutingReceiver()
+        mpRoutingReceiver(), //
+        mpDatabaseHandler(databaseHandler)
 {
 
     if (listOfPluginDirectories.empty())
     {
-        logError("CAmRoutingSender::CAmRoutingSender: List of routingplugins is empty");
+        logError(__func__,"List of routingplugins is empty");
     }
 
     std::vector<std::string> sharedLibraryNameList;
@@ -213,7 +214,7 @@ am_Error_e CAmRoutingSender::asyncAbort(const am_Handle_s& handle)
 	return (iter->second->returnInterface()->asyncAbort(handle));
 }
 
-am_Error_e CAmRoutingSender::asyncConnect(am_Handle_s& handle, const am_connectionID_t connectionID, const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_CustomConnectionFormat_t connectionFormat)
+am_Error_e CAmRoutingSender::asyncConnect(am_Handle_s& handle, am_connectionID_t& connectionID, const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_CustomConnectionFormat_t connectionFormat)
 {
 	auto iter (mMapSinkInterface.find(sinkID));
 	if (iter == mMapSinkInterface.end())
@@ -236,8 +237,21 @@ am_Error_e CAmRoutingSender::asyncConnect(am_Handle_s& handle, const am_connecti
 	}
 	else
 	{
+		
+		am_Connection_s tempConnection;
+		tempConnection.sinkID = sinkID;
+		tempConnection.sourceID = sourceID;
+		tempConnection.connectionFormat = connectionFormat;
+		tempConnection.connectionID = 0;
+		tempConnection.delay=-1;
+
+		am_Error_e connError(mpDatabaseHandler->enterConnectionDB(tempConnection, connectionID));
+		if (connError)
+		{
+			return(connError);
+		}
 		mMapConnectionInterface.insert(std::make_pair(connectionID, iter->second));
-		auto handleData = std::make_shared<handleConnect>(iter->second,connectionID);
+		auto handleData = std::make_shared<handleConnect>(iter->second,connectionID,mpDatabaseHandler);
 		handle = createHandle(handleData, am_Handle_e::H_CONNECT);
 	}
 
@@ -247,6 +261,7 @@ am_Error_e CAmRoutingSender::asyncConnect(am_Handle_s& handle, const am_connecti
 	{
 		removeHandle(handle);
 		logError(__func__,"Error while calling connect connectionID:",connectionID,"sourceID:",sourceID,"sinkID:",sinkID,"connectionFormat:",connectionFormat,"handle",handle);
+		mpDatabaseHandler->removeConnection(connectionID);
 	}
 	return(syncError); 
 }
@@ -274,7 +289,7 @@ am_Error_e CAmRoutingSender::asyncDisconnect(am_Handle_s& handle, const am_conne
     }
     else
     {
-		auto handleData = std::make_shared<handleDisconnect>(iter->second,connectionID);
+		auto handleData = std::make_shared<handleDisconnect>(iter->second,connectionID,mpDatabaseHandler);
 		handle = createHandle(handleData, am_Handle_e::H_DISCONNECT);
 	}
 
@@ -311,7 +326,7 @@ am_Error_e CAmRoutingSender::asyncSetSinkVolume(am_Handle_s& handle, const am_si
     }
 	else
 	{
-        auto handleData = std::make_shared<handleSinkVolume>(iter->second,sinkID,volume);
+        auto handleData = std::make_shared<handleSinkVolume>(iter->second,sinkID,mpDatabaseHandler,volume);
         handle = createHandle(handleData, H_SETSINKVOLUME);
     }
     
@@ -348,7 +363,7 @@ am_Error_e CAmRoutingSender::asyncSetSourceVolume(am_Handle_s& handle, const am_
     }
 	else
 	{
-		auto handleData = std::make_shared<handleSourceVolume>(iter->second,sourceID,volume);
+		auto handleData = std::make_shared<handleSourceVolume>(iter->second,sourceID,mpDatabaseHandler,volume);
         handle = createHandle(handleData, H_SETSOURCEVOLUME);
     }
      
@@ -385,7 +400,7 @@ am_Error_e CAmRoutingSender::asyncSetSourceState(am_Handle_s& handle, const am_s
     }
 	else
 	{	
-		auto handleData = std::make_shared<handleSourceState>(iter->second,sourceID,state);
+		auto handleData = std::make_shared<handleSourceState>(iter->second,sourceID,state,mpDatabaseHandler);
 		handle = createHandle(handleData, H_SETSOURCESTATE);
 	}
     logInfo(__func__,"sourceID=", sourceID, "state=", state,"handle=",handle);	
@@ -421,7 +436,7 @@ am_Error_e CAmRoutingSender::asyncSetSinkSoundProperty(am_Handle_s& handle, cons
     }
 	else
 	{
-		auto handleData = std::make_shared<handleSinkSoundProperty>(iter->second,sinkID,soundProperty);
+		auto handleData = std::make_shared<handleSinkSoundProperty>(iter->second,sinkID,soundProperty,mpDatabaseHandler);
         handle = createHandle(handleData, H_SETSINKSOUNDPROPERTY);
      }
      
@@ -458,7 +473,7 @@ am_Error_e CAmRoutingSender::asyncSetSourceSoundProperty(am_Handle_s& handle, co
     }
 	else
 	{		
-		auto handleData = std::make_shared<handleSourceSoundProperty>(iter->second,sourceID,soundProperty);
+		auto handleData = std::make_shared<handleSourceSoundProperty>(iter->second,sourceID,soundProperty,mpDatabaseHandler);
         handle = createHandle(handleData, H_SETSOURCESOUNDPROPERTY);
     }
     logInfo(__func__,"sourceID=", sourceID, "soundProperty.Type=", soundProperty.type, "soundProperty.value=", soundProperty.value,"handle=",handle);    
@@ -494,7 +509,7 @@ am_Error_e CAmRoutingSender::asyncSetSourceSoundProperties(am_Handle_s& handle, 
     }
 	else
 	{		
-		auto handleData = std::make_shared<handleSourceSoundProperties>(iter->second,sourceID,listSoundProperties);
+		auto handleData = std::make_shared<handleSourceSoundProperties>(iter->second,sourceID,listSoundProperties,mpDatabaseHandler);
         handle = createHandle(handleData, H_SETSOURCESOUNDPROPERTIES);
     }
      
@@ -531,7 +546,7 @@ am_Error_e CAmRoutingSender::asyncSetSinkSoundProperties(am_Handle_s& handle, co
     }
 	else
 	{	
-		auto handleData = std::make_shared<handleSinkSoundProperties>(iter->second,sinkID,listSoundProperties);
+		auto handleData = std::make_shared<handleSinkSoundProperties>(iter->second,sinkID,listSoundProperties,mpDatabaseHandler);
         handle = createHandle(handleData, H_SETSINKSOUNDPROPERTIES);
     }
     
@@ -568,7 +583,7 @@ am_Error_e CAmRoutingSender::asyncCrossFade(am_Handle_s& handle, const am_crossf
     }
 	else
 	{	
-		auto handleData = std::make_shared<handleCrossFader>(iter->second,crossfaderID,hotSink);
+		auto handleData = std::make_shared<handleCrossFader>(iter->second,crossfaderID,hotSink,mpDatabaseHandler);
         handle = createHandle(handleData, H_CROSSFADE);
 	}
 	
@@ -858,7 +873,7 @@ am_Error_e CAmRoutingSender::asyncSetVolumes(am_Handle_s& handle, const std::vec
     else
         return (E_NON_EXISTENT);
 
-	auto handleData = std::make_shared<handleSetVolumes>(pRoutingInterface,listVolumes);
+	auto handleData = std::make_shared<handleSetVolumes>(pRoutingInterface,listVolumes,mpDatabaseHandler);
     handle = createHandle(handleData, H_SETVOLUMES);
 
     logInfo(__func__, "handle=", handle);
@@ -894,7 +909,7 @@ am_Error_e CAmRoutingSender::asyncSetSinkNotificationConfiguration(am_Handle_s& 
     }
 	else
 	{	
-		auto handleData = std::make_shared<handleSetSinkNotificationConfiguration>(iter->second,sinkID,notificationConfiguration);
+		auto handleData = std::make_shared<handleSetSinkNotificationConfiguration>(iter->second,sinkID,notificationConfiguration,mpDatabaseHandler);
         handle = createHandle(handleData, H_SETSINKNOTIFICATION);
     }
 
@@ -931,7 +946,7 @@ am_Error_e CAmRoutingSender::asyncSetSourceNotificationConfiguration(am_Handle_s
     }
 	else
 	{	
-		auto handleData = std::make_shared<handleSetSourceNotificationConfiguration>(iter->second,sourceID,notificationConfiguration);
+		auto handleData = std::make_shared<handleSetSourceNotificationConfiguration>(iter->second,sourceID,notificationConfiguration,mpDatabaseHandler);
         handle = createHandle(handleData, H_SETSOURCENOTIFICATION);
     }
 
@@ -978,12 +993,12 @@ am_Error_e CAmRoutingSender::resyncConnectionState(const am_domainID_t domainID,
     return (E_NON_EXISTENT);
 }
 
-am_Error_e CAmRoutingSender::writeToDatabaseAndRemove(IAmDatabaseHandler* databasehandler,const am_Handle_s handle)
+am_Error_e CAmRoutingSender::writeToDatabaseAndRemove(const am_Handle_s handle)
 {
     auto it(mlistActiveHandles.find(handle));
     if (it!=mlistActiveHandles.end())
     {
-    	am_Error_e error(it->second->writeDataToDatabase(databasehandler));
+    	am_Error_e error(it->second->writeDataToDatabase());
     	mlistActiveHandles.erase(handle);
         return (error);
     }
@@ -1016,68 +1031,68 @@ bool CAmRoutingSender::handleExists(const am_Handle_s handle)
 	return (false);
 }
 
-am_Error_e CAmRoutingSender::handleSinkSoundProperty::writeDataToDatabase(IAmDatabaseHandler* database)
+am_Error_e CAmRoutingSender::handleSinkSoundProperty::writeDataToDatabase()
 {
-	return (database->changeSinkSoundPropertyDB(mSoundProperty,mSinkID));
+	return (mpDatabaseHandler->changeSinkSoundPropertyDB(mSoundProperty,mSinkID));
 }
 
-am_Error_e CAmRoutingSender::handleSinkSoundProperties::writeDataToDatabase(IAmDatabaseHandler* database)
-{
-	std::vector<am_SoundProperty_s>::const_iterator it = mlistSoundProperties.begin();
-	for (; it != mlistSoundProperties.end(); ++it)
-	{
-		database->changeSinkSoundPropertyDB(*it, mSinkID);
-	}
-	return (am_Error_e::E_OK);
-}
-
-am_Error_e CAmRoutingSender::handleSourceSoundProperty::writeDataToDatabase(IAmDatabaseHandler* database)
-{
-	return (database->changeSourceSoundPropertyDB(mSoundProperty,mSourceID));
-}
-
-am_Error_e CAmRoutingSender::handleSourceSoundProperties::writeDataToDatabase(IAmDatabaseHandler* database)
+am_Error_e CAmRoutingSender::handleSinkSoundProperties::writeDataToDatabase()
 {
 	std::vector<am_SoundProperty_s>::const_iterator it = mlistSoundProperties.begin();
 	for (; it != mlistSoundProperties.end(); ++it)
 	{
-		database->changeSourceSoundPropertyDB(*it, mSourceID);
+		mpDatabaseHandler->changeSinkSoundPropertyDB(*it, mSinkID);
 	}
 	return (am_Error_e::E_OK);
 }
 
-am_Error_e CAmRoutingSender::handleSourceState::writeDataToDatabase(IAmDatabaseHandler* database)
+am_Error_e CAmRoutingSender::handleSourceSoundProperty::writeDataToDatabase()
 {
-	return (database->changeSourceState(mSourceID,mSourceState));
+	return (mpDatabaseHandler->changeSourceSoundPropertyDB(mSoundProperty,mSourceID));
 }
 
-am_Error_e CAmRoutingSender::handleSourceVolume::writeDataToDatabase(IAmDatabaseHandler* database)
+am_Error_e CAmRoutingSender::handleSourceSoundProperties::writeDataToDatabase()
 {
-	return (database->changeSourceVolume(mSourceID,returnVolume()));
+	std::vector<am_SoundProperty_s>::const_iterator it = mlistSoundProperties.begin();
+	for (; it != mlistSoundProperties.end(); ++it)
+	{
+		mpDatabaseHandler->changeSourceSoundPropertyDB(*it, mSourceID);
+	}
+	return (am_Error_e::E_OK);
 }
 
-am_Error_e CAmRoutingSender::handleSinkVolume::writeDataToDatabase(IAmDatabaseHandler* database)
+am_Error_e CAmRoutingSender::handleSourceState::writeDataToDatabase()
 {
-	return (database->changeSinkVolume(mSinkID,returnVolume()));
+	return (mpDatabaseHandler->changeSourceState(mSourceID,mSourceState));
+}
+
+am_Error_e CAmRoutingSender::handleSourceVolume::writeDataToDatabase()
+{
+	return (mpDatabaseHandler->changeSourceVolume(mSourceID,returnVolume()));
+}
+
+am_Error_e CAmRoutingSender::handleSinkVolume::writeDataToDatabase()
+{
+	return (mpDatabaseHandler->changeSinkVolume(mSinkID,returnVolume()));
 }
 
 
-am_Error_e CAmRoutingSender::handleCrossFader::writeDataToDatabase(IAmDatabaseHandler* database)
+am_Error_e CAmRoutingSender::handleCrossFader::writeDataToDatabase()
 {
-	return (database->changeCrossFaderHotSink(mCrossfaderID, mHotSink));
+	return (mpDatabaseHandler->changeCrossFaderHotSink(mCrossfaderID, mHotSink));
 }
 
-am_Error_e CAmRoutingSender::handleConnect::writeDataToDatabase(IAmDatabaseHandler* database)
+am_Error_e CAmRoutingSender::handleConnect::writeDataToDatabase()
 {
-	return (database->changeConnectionFinal(mConnectionID));
+	return (mpDatabaseHandler->changeConnectionFinal(mConnectionID));
 }
 
-am_Error_e CAmRoutingSender::handleDisconnect::writeDataToDatabase(IAmDatabaseHandler* database)
+am_Error_e CAmRoutingSender::handleDisconnect::writeDataToDatabase()
 {
 	return E_OK;
 }
 
-am_Error_e CAmRoutingSender::handleSetVolumes::writeDataToDatabase(IAmDatabaseHandler* database)
+am_Error_e CAmRoutingSender::handleSetVolumes::writeDataToDatabase()
 {
 	std::vector<am_Volumes_s>::const_iterator iterator (mlistVolumes.begin());
 
@@ -1085,23 +1100,23 @@ am_Error_e CAmRoutingSender::handleSetVolumes::writeDataToDatabase(IAmDatabaseHa
 	{
 		if (iterator->volumeType==VT_SINK)
 		{
-			database->changeSinkVolume(iterator->volumeID.sink,iterator->volume);
+			mpDatabaseHandler->changeSinkVolume(iterator->volumeID.sink,iterator->volume);
 		}
 		else if (iterator->volumeType==VT_SOURCE)
 		{
-			database->changeSourceVolume(iterator->volumeID.source,iterator->volume);
+			mpDatabaseHandler->changeSourceVolume(iterator->volumeID.source,iterator->volume);
 		}
 	}
 }
 
-am_Error_e CAmRoutingSender::handleSetSinkNotificationConfiguration::writeDataToDatabase(IAmDatabaseHandler* database)
+am_Error_e CAmRoutingSender::handleSetSinkNotificationConfiguration::writeDataToDatabase()
 {
-	return (database->changeSinkNotificationConfigurationDB(mSinkID,mNotificationConfiguration));
+	return (mpDatabaseHandler->changeSinkNotificationConfigurationDB(mSinkID,mNotificationConfiguration));
 }
 
-am_Error_e CAmRoutingSender::handleSetSourceNotificationConfiguration::writeDataToDatabase(IAmDatabaseHandler* database)
+am_Error_e CAmRoutingSender::handleSetSourceNotificationConfiguration::writeDataToDatabase()
 {
-	return (database->changeSourceNotificationConfigurationDB(mSourceID,mNotificationConfiguration));
+	return (mpDatabaseHandler->changeSourceNotificationConfigurationDB(mSourceID,mNotificationConfiguration));
 }
 
 am_Error_e CAmRoutingSender::removeConnectionLookup(const am_connectionID_t connectionID)
