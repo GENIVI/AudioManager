@@ -259,6 +259,14 @@ private:
 public:
 
     /**
+    * get the size of delegate pointers
+    */
+    int getListDelegatePoiters()
+    {
+    	return mListDelegatePoiters.size();
+    }
+
+    /**
 	  * calls a function with variadic arguments threadsafe
 	  * @param instance the instance of the class that shall be called
 	  * @param function the function that shall be called as member function pointer.
