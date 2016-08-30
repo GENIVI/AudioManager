@@ -289,7 +289,7 @@ am_Error_e CAmRoutingSender::asyncDisconnect(am_Handle_s& handle, const am_conne
     }
     else
     {
-		auto handleData = std::make_shared<handleDisconnect>(iter->second,connectionID,mpDatabaseHandler);
+		auto handleData = std::make_shared<handleDisconnect>(iter->second,connectionID,mpDatabaseHandler,this);
 		handle = createHandle(handleData, am_Handle_e::H_DISCONNECT);
 	}
 
@@ -1076,7 +1076,6 @@ am_Error_e CAmRoutingSender::handleSinkVolume::writeDataToDatabase()
 	return (mpDatabaseHandler->changeSinkVolume(mSinkID,returnVolume()));
 }
 
-
 am_Error_e CAmRoutingSender::handleCrossFader::writeDataToDatabase()
 {
 	return (mpDatabaseHandler->changeCrossFaderHotSink(mCrossfaderID, mHotSink));
@@ -1084,6 +1083,7 @@ am_Error_e CAmRoutingSender::handleCrossFader::writeDataToDatabase()
 
 am_Error_e CAmRoutingSender::handleConnect::writeDataToDatabase()
 {
+	mConnectionPending = false;
 	return (mpDatabaseHandler->changeConnectionFinal(mConnectionID));
 }
 
@@ -1100,13 +1100,14 @@ am_Error_e CAmRoutingSender::handleSetVolumes::writeDataToDatabase()
 	{
 		if (iterator->volumeType==VT_SINK)
 		{
-			mpDatabaseHandler->changeSinkVolume(iterator->volumeID.sink,iterator->volume);
+			return (mpDatabaseHandler->changeSinkVolume(iterator->volumeID.sink,iterator->volume));
 		}
 		else if (iterator->volumeType==VT_SOURCE)
 		{
-			mpDatabaseHandler->changeSourceVolume(iterator->volumeID.source,iterator->volume);
+			return (mpDatabaseHandler->changeSourceVolume(iterator->volumeID.source,iterator->volume));
 		}
 	}
+	return (am_Error_e::E_WRONG_FORMAT);
 }
 
 am_Error_e CAmRoutingSender::handleSetSinkNotificationConfiguration::writeDataToDatabase()
@@ -1129,6 +1130,19 @@ am_Error_e CAmRoutingSender::removeConnectionLookup(const am_connectionID_t conn
         return (E_OK);
     }
     return (E_UNKNOWN);
+}
+
+CAmRoutingSender::handleConnect::~handleConnect()
+{
+	if (mConnectionPending)
+	{
+		mpDatabaseHandler->removeConnection(mConnectionID);
+	}
+}
+
+CAmRoutingSender::handleDisconnect::~handleDisconnect()
+{
+	mRoutingSender->removeConnectionLookup(mConnectionID);
 }
 
 }

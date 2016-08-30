@@ -223,25 +223,29 @@ public:
 	class handleConnect : public handleDataBase
 	{
 		public: 
-			handleConnect(IAmRoutingSend* interface, const am_connectionID_t connectionID, IAmDatabaseHandler* databaseHandler) : 
+			handleConnect(IAmRoutingSend* interface, const am_connectionID_t connectionID, IAmDatabaseHandler* databaseHandler) :
 				 handleDataBase(interface,databaseHandler)
-				,mConnectionID(connectionID) {}
-			~handleConnect() {}
+				,mConnectionID(connectionID)
+				,mConnectionPending(true) {}
+			~handleConnect();
 			am_Error_e writeDataToDatabase();
 		private:
 			am_connectionID_t mConnectionID;
+			bool mConnectionPending;
 	};	
 	
 	class handleDisconnect : public handleDataBase
 	{
 		public: 
-			handleDisconnect(IAmRoutingSend* interface, const am_connectionID_t connectionID, IAmDatabaseHandler* databaseHandler) : 
+			handleDisconnect(IAmRoutingSend* interface, const am_connectionID_t connectionID, IAmDatabaseHandler* databaseHandler,CAmRoutingSender* routingSender) :
 				 handleDataBase(interface,databaseHandler)
-				,mConnectionID(connectionID) {}
-			~handleDisconnect() {}
+				,mConnectionID(connectionID)
+				,mRoutingSender(routingSender){}
+			~handleDisconnect();
 			am_Error_e writeDataToDatabase();
 		private:
 			am_connectionID_t mConnectionID;
+			CAmRoutingSender* mRoutingSender;
 	};		
 	
 	class handleSetVolumes : public handleDataBase

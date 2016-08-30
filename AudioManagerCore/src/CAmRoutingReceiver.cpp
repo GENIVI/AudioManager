@@ -113,9 +113,8 @@ void CAmRoutingReceiver::ackDisconnect(const am_Handle_s handle, const am_connec
 {
 	logInfo(__func__,"handle=",handle,"connectionID=",connectionID,"error=",error);
 	//only remove connection of handle was found
-	if(mpRoutingSender->removeHandle(handle)==0)
+	if(mpRoutingSender->removeHandle(handle) == 0)
 	{
-		mpDatabaseHandler->removeConnection(connectionID);
 		mpRoutingSender->removeConnectionLookup(connectionID);
 	}
     mpControlSender->cbAckDisconnect(handle, error);
@@ -133,8 +132,10 @@ void CAmRoutingReceiver::ackSetSinkVolumeChange(const am_Handle_s handle, const 
     {
     	mpRoutingSender->writeToDatabaseAndRemove(handle);
     }
-    
-    mpRoutingSender->removeHandle(handle);
+    else
+    {
+		mpRoutingSender->removeHandle(handle);
+	}
     mpControlSender->cbAckSetSinkVolumeChange(handle, volume, error);
 }
 
@@ -150,8 +151,10 @@ void CAmRoutingReceiver::ackSetSourceVolumeChange(const am_Handle_s handle, cons
     {
     	mpRoutingSender->writeToDatabaseAndRemove(handle);
     }
-    
-    mpRoutingSender->removeHandle(handle);
+    else
+    {
+		mpRoutingSender->removeHandle(handle);
+	}
     mpControlSender->cbAckSetSourceVolumeChange(handle, volume, error);
 }
 

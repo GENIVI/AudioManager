@@ -127,9 +127,9 @@ CAmControlSender::CAmControlSender(std::string controlPluginFile,CAmSocketHandle
         
         
 
-        if (majorVersion < cMajorVersion || ((majorVersion == cMajorVersion) && (minorVersion > cMinorVersion)))
+        if (majorVersion < cMajorVersion || ((majorVersion == cMajorVersion) && (minorVersion < cMinorVersion)))
         {
-            logError("ControlSender::ControlSender: Interface Version of Controller too old, exiting now");
+            logError("ControlSender::ControlSender: Interface Version of Controller too old, required version:",ControlVersion," Controller Version:",version,"exiting now");
             throw std::runtime_error("Interface Version of Controller too old");
         }
     }
