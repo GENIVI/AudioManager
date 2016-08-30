@@ -1142,7 +1142,7 @@ CAmRoutingSender::handleConnect::~handleConnect()
 
 CAmRoutingSender::handleDisconnect::~handleDisconnect()
 {
-	mRoutingSender->removeConnectionLookup(mConnectionID);
+	mpDatabaseHandler->removeConnection(mConnectionID);
 }
 
 }
