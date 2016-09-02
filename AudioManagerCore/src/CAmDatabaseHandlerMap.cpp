@@ -2877,7 +2877,7 @@ am_Error_e CAmDatabaseHandlerMap::changeSourceSoundPropertyDB(const am_SoundProp
 			return (E_OK);
 		}
 	}
-	logError(__func__,"sourceID must be valid");
+	logError(__func__,"soundproperty type must be valid source:",sourceID,"type",soundProperty.type);
 	return (E_NON_EXISTENT);
 }
 
@@ -2901,7 +2901,7 @@ am_Error_e CAmDatabaseHandlerMap::changeSinkSoundPropertyDB(const am_SoundProper
  			return (E_OK);
  		}
  	}
-	logError(__func__,"sinkID must be valid");
+	logError(__func__,"soundproperty type must be valid sinkID:",sinkID,"type",soundProperty.type);
  	return (E_NON_EXISTENT);
 }
 
