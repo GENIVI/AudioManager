@@ -14,7 +14,6 @@
 #
 # For further information see http://www.genivi.org/.
 #
-
 # This is a sample unit file that utilized the watchdog functionality of the AudioManager.
 # If the time WatchdogSec equals 0, no watchdog function will be used.
 
