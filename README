@@ -18,14 +18,14 @@ Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
 this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  
 Author Christian Linke = Christian Linke christian.linke@bmw.de BMW 2011-2015
-For further information see http://projects.genivi.org/audio-manager/.
+For further information see https://at.projects.genivi.org/wiki/display/PROJ/Audio+Manager
 
 == Repositories
 The main repository is 
-http://git.projects.genivi.org-AudioManager.git
+https://github.com/GENIVI/AudioManager
 
 The repository for example plugins can be found here: 
-http://git.projects.genivi.org/AudioManagerPlugins.git
+https://github.com/GENIVI/AudioManagerPlugins
 
 == License
 The licenses of this project are split into two parts:
