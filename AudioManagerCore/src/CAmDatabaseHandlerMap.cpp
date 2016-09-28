@@ -1649,7 +1649,7 @@ am_Error_e CAmDatabaseHandlerMap::getSinkInfoDB(const am_sinkID_t sinkID, am_Sin
 
     if (!existSink(sinkID))
     {
-    	logError(__func__,"sinkID must exist");
+    	logWarning(__func__,"sinkID",sinkID,"does not exist");
         return (E_NON_EXISTENT);
     }
 
@@ -1666,7 +1666,7 @@ am_Error_e CAmDatabaseHandlerMap::getSourceInfoDB(const am_sourceID_t sourceID, 
 
     if (!existSource(sourceID))
     {
-    	logWarning(__func__,"sourceID must exist");
+    	logWarning(__func__,"sourceID",sourceID,"does not exist");
         return (E_NON_EXISTENT);
     }
 
