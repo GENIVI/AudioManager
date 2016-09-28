@@ -47,10 +47,8 @@ CAmCommonAPIWrapper::CAmCommonAPIWrapper(CAmSocketHandler* socketHandler, const 
 {
 	assert(NULL!=socketHandler);
 //Get the runtime
-	CommonAPI::Runtime::setProperty("LogContext", "AMCAPI");
 	mRuntime = CommonAPI::Runtime::get();
 	assert(NULL!=mRuntime);
-	logInfo("CommonAPI runtime has been loaded! Default Binding is", mRuntime->getDefaultBinding());
 
 	//Create the context
 	if(applicationName.size())
@@ -58,7 +56,7 @@ CAmCommonAPIWrapper::CAmCommonAPIWrapper(CAmSocketHandler* socketHandler, const 
 	else
 		mContext = std::make_shared<CommonAPI::MainLoopContext>();
 	assert(NULL!=mContext);
-	logInfo("CommonAPI main loop context with name '", mContext->getName(), "' has been created!");
+	logInfo(__func__,"CommonAPI main loop context with name '", mContext->getName(), "' has been created!");
 
 //Make subscriptions
 	mDispatchSourceListenerSubscription = mContext->subscribeForDispatchSources(
@@ -107,7 +105,7 @@ void CAmCommonAPIWrapper::deleteInstance()
 	}
 	catch(...)
 	{
-		logError(__PRETTY_FUNCTION__,"error while deleting CAPIWrapper instance");
+		logError(__func__,"error while deleting CAPIWrapper instance");
 	}
 }
 
@@ -246,7 +244,7 @@ void CAmCommonAPIWrapper::registerWatch(CommonAPI::Watch* watch, const CommonAPI
 
     //if everything is alright, add the watch and the handle to our map so we know this relationship
     if (error == !am_Error_e::E_OK || handle == 0)
-        logError(__PRETTY_FUNCTION__,"entering watch failed");
+        logError(__func__,"entering watch failed");
 
     mMapWatches.insert(std::make_pair(pollfd_.fd,watch));
 }
