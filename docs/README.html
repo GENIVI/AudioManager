@@ -1,0 +1,1308 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+    "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+<meta name="generator" content="AsciiDoc 8.6.9" />
+<title>GENIVI_AudioManager</title>
+<style type="text/css">
+/* Shared CSS for AsciiDoc xhtml11 and html5 backends */
+
+/* Default font. */
+body {
+  font-family: Georgia,serif;
+}
+
+/* Title font. */
+h1, h2, h3, h4, h5, h6,
+div.title, caption.title,
+thead, p.table.header,
+#toctitle,
+#author, #revnumber, #revdate, #revremark,
+#footer {
+  font-family: Arial,Helvetica,sans-serif;
+}
+
+body {
+  margin: 1em 5% 1em 5%;
+}
+
+a {
+  color: blue;
+  text-decoration: underline;
+}
+a:visited {
+  color: fuchsia;
+}
+
+em {
+  font-style: italic;
+  color: navy;
+}
+
+strong {
+  font-weight: bold;
+  color: #083194;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #527bbd;
+  margin-top: 1.2em;
+  margin-bottom: 0.5em;
+  line-height: 1.3;
+}
+
+h1, h2, h3 {
+  border-bottom: 2px solid silver;
+}
+h2 {
+  padding-top: 0.5em;
+}
+h3 {
+  float: left;
+}
+h3 + * {
+  clear: left;
+}
+h5 {
+  font-size: 1.0em;
+}
+
+div.sectionbody {
+  margin-left: 0;
+}
+
+hr {
+  border: 1px solid silver;
+}
+
+p {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+ul, ol, li > p {
+  margin-top: 0;
+}
+ul > li     { color: #aaa; }
+ul > li > * { color: black; }
+
+.monospaced, code, pre {
+  font-family: "Courier New", Courier, monospace;
+  font-size: inherit;
+  color: navy;
+  padding: 0;
+  margin: 0;
+}
+pre {
+  white-space: pre-wrap;
+}
+
+#author {
+  color: #527bbd;
+  font-weight: bold;
+  font-size: 1.1em;
+}
+#email {
+}
+#revnumber, #revdate, #revremark {
+}
+
+#footer {
+  font-size: small;
+  border-top: 2px solid silver;
+  padding-top: 0.5em;
+  margin-top: 4.0em;
+}
+#footer-text {
+  float: left;
+  padding-bottom: 0.5em;
+}
+#footer-badges {
+  float: right;
+  padding-bottom: 0.5em;
+}
+
+#preamble {
+  margin-top: 1.5em;
+  margin-bottom: 1.5em;
+}
+div.imageblock, div.exampleblock, div.verseblock,
+div.quoteblock, div.literalblock, div.listingblock, div.sidebarblock,
+div.admonitionblock {
+  margin-top: 1.0em;
+  margin-bottom: 1.5em;
+}
+div.admonitionblock {
+  margin-top: 2.0em;
+  margin-bottom: 2.0em;
+  margin-right: 10%;
+  color: #606060;
+}
+
+div.content { /* Block element content. */
+  padding: 0;
+}
+
+/* Block element titles. */
+div.title, caption.title {
+  color: #527bbd;
+  font-weight: bold;
+  text-align: left;
+  margin-top: 1.0em;
+  margin-bottom: 0.5em;
+}
+div.title + * {
+  margin-top: 0;
+}
+
+td div.title:first-child {
+  margin-top: 0.0em;
+}
+div.content div.title:first-child {
+  margin-top: 0.0em;
+}
+div.content + div.title {
+  margin-top: 0.0em;
+}
+
+div.sidebarblock > div.content {
+  background: #ffffee;
+  border: 1px solid #dddddd;
+  border-left: 4px solid #f0f0f0;
+  padding: 0.5em;
+}
+
+div.listingblock > div.content {
+  border: 1px solid #dddddd;
+  border-left: 5px solid #f0f0f0;
+  background: #f8f8f8;
+  padding: 0.5em;
+}
+
+div.quoteblock, div.verseblock {
+  padding-left: 1.0em;
+  margin-left: 1.0em;
+  margin-right: 10%;
+  border-left: 5px solid #f0f0f0;
+  color: #888;
+}
+
+div.quoteblock > div.attribution {
+  padding-top: 0.5em;
+  text-align: right;
+}
+
+div.verseblock > pre.content {
+  font-family: inherit;
+  font-size: inherit;
+}
+div.verseblock > div.attribution {
+  padding-top: 0.75em;
+  text-align: left;
+}
+/* DEPRECATED: Pre version 8.2.7 verse style literal block. */
+div.verseblock + div.attribution {
+  text-align: left;
+}
+
+div.admonitionblock .icon {
+  vertical-align: top;
+  font-size: 1.1em;
+  font-weight: bold;
+  text-decoration: underline;
+  color: #527bbd;
+  padding-right: 0.5em;
+}
+div.admonitionblock td.content {
+  padding-left: 0.5em;
+  border-left: 3px solid #dddddd;
+}
+
+div.exampleblock > div.content {
+  border-left: 3px solid #dddddd;
+  padding-left: 0.5em;
+}
+
+div.imageblock div.content { padding-left: 0; }
+span.image img { border-style: none; vertical-align: text-bottom; }
+a.image:visited { color: white; }
+
+dl {
+  margin-top: 0.8em;
+  margin-bottom: 0.8em;
+}
+dt {
+  margin-top: 0.5em;
+  margin-bottom: 0;
+  font-style: normal;
+  color: navy;
+}
+dd > *:first-child {
+  margin-top: 0.1em;
+}
+
+ul, ol {
+    list-style-position: outside;
+}
+ol.arabic {
+  list-style-type: decimal;
+}
+ol.loweralpha {
+  list-style-type: lower-alpha;
+}
+ol.upperalpha {
+  list-style-type: upper-alpha;
+}
+ol.lowerroman {
+  list-style-type: lower-roman;
+}
+ol.upperroman {
+  list-style-type: upper-roman;
+}
+
+div.compact ul, div.compact ol,
+div.compact p, div.compact p,
+div.compact div, div.compact div {
+  margin-top: 0.1em;
+  margin-bottom: 0.1em;
+}
+
+tfoot {
+  font-weight: bold;
+}
+td > div.verse {
+  white-space: pre;
+}
+
+div.hdlist {
+  margin-top: 0.8em;
+  margin-bottom: 0.8em;
+}
+div.hdlist tr {
+  padding-bottom: 15px;
+}
+dt.hdlist1.strong, td.hdlist1.strong {
+  font-weight: bold;
+}
+td.hdlist1 {
+  vertical-align: top;
+  font-style: normal;
+  padding-right: 0.8em;
+  color: navy;
+}
+td.hdlist2 {
+  vertical-align: top;
+}
+div.hdlist.compact tr {
+  margin: 0;
+  padding-bottom: 0;
+}
+
+.comment {
+  background: yellow;
+}
+
+.footnote, .footnoteref {
+  font-size: 0.8em;
+}
+
+span.footnote, span.footnoteref {
+  vertical-align: super;
+}
+
+#footnotes {
+  margin: 20px 0 20px 0;
+  padding: 7px 0 0 0;
+}
+
+#footnotes div.footnote {
+  margin: 0 0 5px 0;
+}
+
+#footnotes hr {
+  border: none;
+  border-top: 1px solid silver;
+  height: 1px;
+  text-align: left;
+  margin-left: 0;
+  width: 20%;
+  min-width: 100px;
+}
+
+div.colist td {
+  padding-right: 0.5em;
+  padding-bottom: 0.3em;
+  vertical-align: top;
+}
+div.colist td img {
+  margin-top: 0.3em;
+}
+
+@media print {
+  #footer-badges { display: none; }
+}
+
+#toc {
+  margin-bottom: 2.5em;
+}
+
+#toctitle {
+  color: #527bbd;
+  font-size: 1.1em;
+  font-weight: bold;
+  margin-top: 1.0em;
+  margin-bottom: 0.1em;
+}
+
+div.toclevel0, div.toclevel1, div.toclevel2, div.toclevel3, div.toclevel4 {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+div.toclevel2 {
+  margin-left: 2em;
+  font-size: 0.9em;
+}
+div.toclevel3 {
+  margin-left: 4em;
+  font-size: 0.9em;
+}
+div.toclevel4 {
+  margin-left: 6em;
+  font-size: 0.9em;
+}
+
+span.aqua { color: aqua; }
+span.black { color: black; }
+span.blue { color: blue; }
+span.fuchsia { color: fuchsia; }
+span.gray { color: gray; }
+span.green { color: green; }
+span.lime { color: lime; }
+span.maroon { color: maroon; }
+span.navy { color: navy; }
+span.olive { color: olive; }
+span.purple { color: purple; }
+span.red { color: red; }
+span.silver { color: silver; }
+span.teal { color: teal; }
+span.white { color: white; }
+span.yellow { color: yellow; }
+
+span.aqua-background { background: aqua; }
+span.black-background { background: black; }
+span.blue-background { background: blue; }
+span.fuchsia-background { background: fuchsia; }
+span.gray-background { background: gray; }
+span.green-background { background: green; }
+span.lime-background { background: lime; }
+span.maroon-background { background: maroon; }
+span.navy-background { background: navy; }
+span.olive-background { background: olive; }
+span.purple-background { background: purple; }
+span.red-background { background: red; }
+span.silver-background { background: silver; }
+span.teal-background { background: teal; }
+span.white-background { background: white; }
+span.yellow-background { background: yellow; }
+
+span.big { font-size: 2em; }
+span.small { font-size: 0.6em; }
+
+span.underline { text-decoration: underline; }
+span.overline { text-decoration: overline; }
+span.line-through { text-decoration: line-through; }
+
+div.unbreakable { page-break-inside: avoid; }
+
+
+/*
+ * xhtml11 specific
+ *
+ * */
+
+div.tableblock {
+  margin-top: 1.0em;
+  margin-bottom: 1.5em;
+}
+div.tableblock > table {
+  border: 3px solid #527bbd;
+}
+thead, p.table.header {
+  font-weight: bold;
+  color: #527bbd;
+}
+p.table {
+  margin-top: 0;
+}
+/* Because the table frame attribute is overriden by CSS in most browsers. */
+div.tableblock > table[frame="void"] {
+  border-style: none;
+}
+div.tableblock > table[frame="hsides"] {
+  border-left-style: none;
+  border-right-style: none;
+}
+div.tableblock > table[frame="vsides"] {
+  border-top-style: none;
+  border-bottom-style: none;
+}
+
+
+/*
+ * html5 specific
+ *
+ * */
+
+table.tableblock {
+  margin-top: 1.0em;
+  margin-bottom: 1.5em;
+}
+thead, p.tableblock.header {
+  font-weight: bold;
+  color: #527bbd;
+}
+p.tableblock {
+  margin-top: 0;
+}
+table.tableblock {
+  border-width: 3px;
+  border-spacing: 0px;
+  border-style: solid;
+  border-color: #527bbd;
+  border-collapse: collapse;
+}
+th.tableblock, td.tableblock {
+  border-width: 1px;
+  padding: 4px;
+  border-style: solid;
+  border-color: #527bbd;
+}
+
+table.tableblock.frame-topbot {
+  border-left-style: hidden;
+  border-right-style: hidden;
+}
+table.tableblock.frame-sides {
+  border-top-style: hidden;
+  border-bottom-style: hidden;
+}
+table.tableblock.frame-none {
+  border-style: hidden;
+}
+
+th.tableblock.halign-left, td.tableblock.halign-left {
+  text-align: left;
+}
+th.tableblock.halign-center, td.tableblock.halign-center {
+  text-align: center;
+}
+th.tableblock.halign-right, td.tableblock.halign-right {
+  text-align: right;
+}
+
+th.tableblock.valign-top, td.tableblock.valign-top {
+  vertical-align: top;
+}
+th.tableblock.valign-middle, td.tableblock.valign-middle {
+  vertical-align: middle;
+}
+th.tableblock.valign-bottom, td.tableblock.valign-bottom {
+  vertical-align: bottom;
+}
+
+
+/*
+ * manpage specific
+ *
+ * */
+
+body.manpage h1 {
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+  border-top: 2px solid silver;
+  border-bottom: 2px solid silver;
+}
+body.manpage h2 {
+  border-style: none;
+}
+body.manpage div.sectionbody {
+  margin-left: 3em;
+}
+
+@media print {
+  body.manpage div#toc { display: none; }
+}
+
+
+</style>
+<script type="text/javascript">
+/*<![CDATA[*/
+var asciidoc = {  // Namespace.
+
+/////////////////////////////////////////////////////////////////////
+// Table Of Contents generator
+/////////////////////////////////////////////////////////////////////
+
+/* Author: Mihai Bazon, September 2002
+ * http://students.infoiasi.ro/~mishoo
+ *
+ * Table Of Content generator
+ * Version: 0.4
+ *
+ * Feel free to use this script under the terms of the GNU General Public
+ * License, as long as you do not remove or alter this notice.
+ */
+
+ /* modified by Troy D. Hanson, September 2006. License: GPL */
+ /* modified by Stuart Rackham, 2006, 2009. License: GPL */
+
+// toclevels = 1..4.
+toc: function (toclevels) {
+
+  function getText(el) {
+    var text = "";
+    for (var i = el.firstChild; i != null; i = i.nextSibling) {
+      if (i.nodeType == 3 /* Node.TEXT_NODE */) // IE doesn't speak constants.
+        text += i.data;
+      else if (i.firstChild != null)
+        text += getText(i);
+    }
+    return text;
+  }
+
+  function TocEntry(el, text, toclevel) {
+    this.element = el;
+    this.text = text;
+    this.toclevel = toclevel;
+  }
+
+  function tocEntries(el, toclevels) {
+    var result = new Array;
+    var re = new RegExp('[hH]([1-'+(toclevels+1)+'])');
+    // Function that scans the DOM tree for header elements (the DOM2
+    // nodeIterator API would be a better technique but not supported by all
+    // browsers).
+    var iterate = function (el) {
+      for (var i = el.firstChild; i != null; i = i.nextSibling) {
+        if (i.nodeType == 1 /* Node.ELEMENT_NODE */) {
+          var mo = re.exec(i.tagName);
+          if (mo && (i.getAttribute("class") || i.getAttribute("className")) != "float") {
+            result[result.length] = new TocEntry(i, getText(i), mo[1]-1);
+          }
+          iterate(i);
+        }
+      }
+    }
+    iterate(el);
+    return result;
+  }
+
+  var toc = document.getElementById("toc");
+  if (!toc) {
+    return;
+  }
+
+  // Delete existing TOC entries in case we're reloading the TOC.
+  var tocEntriesToRemove = [];
+  var i;
+  for (i = 0; i < toc.childNodes.length; i++) {
+    var entry = toc.childNodes[i];
+    if (entry.nodeName.toLowerCase() == 'div'
+     && entry.getAttribute("class")
+     && entry.getAttribute("class").match(/^toclevel/))
+      tocEntriesToRemove.push(entry);
+  }
+  for (i = 0; i < tocEntriesToRemove.length; i++) {
+    toc.removeChild(tocEntriesToRemove[i]);
+  }
+
+  // Rebuild TOC entries.
+  var entries = tocEntries(document.getElementById("content"), toclevels);
+  for (var i = 0; i < entries.length; ++i) {
+    var entry = entries[i];
+    if (entry.element.id == "")
+      entry.element.id = "_toc_" + i;
+    var a = document.createElement("a");
+    a.href = "#" + entry.element.id;
+    a.appendChild(document.createTextNode(entry.text));
+    var div = document.createElement("div");
+    div.appendChild(a);
+    div.className = "toclevel" + entry.toclevel;
+    toc.appendChild(div);
+  }
+  if (entries.length == 0)
+    toc.parentNode.removeChild(toc);
+},
+
+
+/////////////////////////////////////////////////////////////////////
+// Footnotes generator
+/////////////////////////////////////////////////////////////////////
+
+/* Based on footnote generation code from:
+ * http://www.brandspankingnew.net/archive/2005/07/format_footnote.html
+ */
+
+footnotes: function () {
+  // Delete existing footnote entries in case we're reloading the footnodes.
+  var i;
+  var noteholder = document.getElementById("footnotes");
+  if (!noteholder) {
+    return;
+  }
+  var entriesToRemove = [];
+  for (i = 0; i < noteholder.childNodes.length; i++) {
+    var entry = noteholder.childNodes[i];
+    if (entry.nodeName.toLowerCase() == 'div' && entry.getAttribute("class") == "footnote")
+      entriesToRemove.push(entry);
+  }
+  for (i = 0; i < entriesToRemove.length; i++) {
+    noteholder.removeChild(entriesToRemove[i]);
+  }
+
+  // Rebuild footnote entries.
+  var cont = document.getElementById("content");
+  var spans = cont.getElementsByTagName("span");
+  var refs = {};
+  var n = 0;
+  for (i=0; i<spans.length; i++) {
+    if (spans[i].className == "footnote") {
+      n++;
+      var note = spans[i].getAttribute("data-note");
+      if (!note) {
+        // Use [\s\S] in place of . so multi-line matches work.
+        // Because JavaScript has no s (dotall) regex flag.
+        note = spans[i].innerHTML.match(/\s*\[([\s\S]*)]\s*/)[1];
+        spans[i].innerHTML =
+          "[<a id='_footnoteref_" + n + "' href='#_footnote_" + n +
+          "' title='View footnote' class='footnote'>" + n + "</a>]";
+        spans[i].setAttribute("data-note", note);
+      }
+      noteholder.innerHTML +=
+        "<div class='footnote' id='_footnote_" + n + "'>" +
+        "<a href='#_footnoteref_" + n + "' title='Return to text'>" +
+        n + "</a>. " + note + "</div>";
+      var id =spans[i].getAttribute("id");
+      if (id != null) refs["#"+id] = n;
+    }
+  }
+  if (n == 0)
+    noteholder.parentNode.removeChild(noteholder);
+  else {
+    // Process footnoterefs.
+    for (i=0; i<spans.length; i++) {
+      if (spans[i].className == "footnoteref") {
+        var href = spans[i].getElementsByTagName("a")[0].getAttribute("href");
+        href = href.match(/#.*/)[0];  // Because IE return full URL.
+        n = refs[href];
+        spans[i].innerHTML =
+          "[<a href='#_footnote_" + n +
+          "' title='View footnote' class='footnote'>" + n + "</a>]";
+      }
+    }
+  }
+},
+
+install: function(toclevels) {
+  var timerId;
+
+  function reinstall() {
+    asciidoc.footnotes();
+    if (toclevels) {
+      asciidoc.toc(toclevels);
+    }
+  }
+
+  function reinstallAndRemoveTimer() {
+    clearInterval(timerId);
+    reinstall();
+  }
+
+  timerId = setInterval(reinstall, 500);
+  if (document.addEventListener)
+    document.addEventListener("DOMContentLoaded", reinstallAndRemoveTimer, false);
+  else
+    window.onload = reinstallAndRemoveTimer;
+}
+
+}
+asciidoc.install();
+/*]]>*/
+</script>
+</head>
+<body class="article">
+<div id="header">
+<h1>GENIVI_AudioManager</h1>
+<span id="author">Christian Linke &lt;christian.linke@bmw.de&gt;</span><br />
+</div>
+<div id="content">
+<div class="sect1">
+<h2 id="_copyright">Copyright</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>Copyright &#169; 2012, GENIVI Alliance, Inc.
+Copyright &#169; 2012, BMW AG</p></div>
+<div class="paragraph"><p>This file is part of GENIVI Project AudioManager.</p></div>
+<div class="paragraph"><p>Contributions are licensed to the GENIVI Alliance under one or more
+Contribution License Agreements or MPL 2.0.</p></div>
+<div class="paragraph"><p>This Source Code Form is subject to the terms of the
+Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
+this file, You can obtain one at <a href="http://mozilla.org/MPL/2.0/">http://mozilla.org/MPL/2.0/</a>.</p></div>
+<div class="paragraph"><p>Author Christian Linke = Christian Linke <a href="mailto:christian.linke@bmw.de">christian.linke@bmw.de</a> BMW 2011-2015
+For further information see <a href="https://at.projects.genivi.org/wiki/display/PROJ/Audio+Manager">https://at.projects.genivi.org/wiki/display/PROJ/Audio+Manager</a></p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_repositories">Repositories</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>The main repository is
+<a href="https://github.com/GENIVI/AudioManager">https://github.com/GENIVI/AudioManager</a></p></div>
+<div class="paragraph"><p>The repository for example plugins can be found here:
+<a href="https://github.com/GENIVI/AudioManagerPlugins">https://github.com/GENIVI/AudioManagerPlugins</a></p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_license">License</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>The licenses of this project are split into two parts:</p></div>
+<div class="paragraph"><p>1) the AudioManagerDaemon, licensed under MPL 2.0</p></div>
+<div class="paragraph"><p>2) the plugins that serve as example code that can be taken to build up an own project with it -
+    these parts are licensed with the MIT license</p></div>
+<div class="paragraph"><p>Contribution is done under MPL2.0 or MIT License, depending on the location of the code.</p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_version">Version</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>The current version can be taken out of the git. The version 1.0.0 is the first GENIVI compliant code, in the compliance statement of Discovery (2.0).
+For every GENIVI release, there is a release of the AudioManager, each of the releases have their own bug fix branch that will get the most important fixes.
+Development is done on the master branch.</p></div>
+<div class="sect2">
+<h3 id="_versioning_scheme">Versioning Scheme</h3>
+<div class="paragraph"><p>The versioning scheme was decided in the February face2face 2012.
+The first number describes the release branch. This is 1 for Discovery, 2 for Excalibur and 3 for Foton. For major features or release, the second number will be increased.
+Each new GENIVI version (releases are every half year, around April and October) will get the current HEAD (for example 2.0.34 for Excalibur) and release with the increase of the second number (2.1).
+The next commit on the master branch gets then the new first number (3) and starts from zero.</p></div>
+<div class="paragraph"><p>For the daemon the third number (for example 1.0.X) describes the patch version. The versions are automatically created by git during the build process.
+The versioning scheme is used for the AudioManager daemon itself and for each of it&#8217;s interfaces. The versioning of the Interfaces in EA is defined via the tag "version" and the name of the interfaceversion versionName, for example "CommandReceiveVersion". This information is generated into the interface header files and is used then by cmake to set the interface versions.
+Whenever changes are done, the minor version of the interface needs to be incremented.</p></div>
+<div class="paragraph"><p>Since 7.0, the AudioManager follows a new versioning scheme. Please check the documentation for that.</p></div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_documentation">Documentation</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>A very detailed documentation is provided by doxygen. In order to use this, please compile the AudioManager with</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><code>cmake -DWITH_DOCUMENTATION=ON
+make
+
+The README is compiled into README.html with asciidoc</code></pre>
+</div></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_compile_programs">COMPILE PROGRAMS</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_compile_options">Compile Options</h3>
+<div class="paragraph"><p>These are the compile options with default values:</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><code>AudioManager Configuration:
+-- CMAKE_BUILD_TYPE              =
+-- CMAKE_INSTALL_PREFIX          = /usr/local
+-- BUILD_DOCUMENTATION           = OFF
+-- WITH_TESTS                    = ON
+-- WITH_DLT                      = ON
+-- WITH_TESTS                    = ON
+-- WITH_TELNET                   = ON
+-- WITH_SYSTEMD_WATCHDOG         = OFF
+-- WITH_CAPI_WRAPPER             = ON
+-- WITH_DBUS_WRAPPER             = OFF
+-- WITH_SHARED_UTILITIES         = OFF
+-- WITH_SHARED_CORE              = OFF
+-- DYNAMIC_ID_BOUNDARY           = 100
+-- LIB_INSTALL_SUFFIX            = audiomanager
+-- TEST_EXECUTABLE_INSTALL_PATH  = ~/tests
+-- DEFAULT_PLUGIN_COMMAND_DIR    = /usr/local/lib/audiomanager/command
+-- DEFAULT_PLUGIN_ROUTING_DIR    = /usr/local/lib/audiomanager/routing
+-- CONTROLLER_PLUGIN_DIR         = /usr/local/lib/audiomanager/control
+-- AM_SHARE_FOLDER               = /usr/local/share/audiomanager
+-- AM_MAP_CAPACITY               = 10
+-- AM_MAX_CONNECTIONS            = 0x1000
+-- AM_MAX_MAIN_CONNECTIONS       = 0x1000
+-- BUILD_TESTING                 = ON
+-- CommandInterface version: 4.0
+-- ControlInterface version: 5.0
+-- RoutingInterface version: 5.0</code></pre>
+</div></div>
+</div>
+<div class="sect2">
+<h3 id="_passing_options_to_cmake">Passing options to cmake:</h3>
+<div class="paragraph"><p>Standard CMake can be used to configure these options. Tools like ccmake can be used to visually change the values.
+For each option, some hints are given.</p></div>
+</div>
+<div class="sect2">
+<h3 id="_build_dependencies">Build dependencies</h3>
+<div class="paragraph"><p>Basically, all build dependencies are optional- but you might need to use some if you want to have support for Dbus,
+for example&#8230;</p></div>
+<div class="paragraph"><p>You will need optionally fulfill some dependencies in order to compile the GENIVI AudioManager Daemon, these are:</p></div>
+<div class="ulist"><ul>
+<li>
+<p>
+dbus (only when WITH_DBUS_WRAPPER==ON) [tested on version 1.2.16]
+</p>
+</li>
+<li>
+<p>
+automotive-dlt [greater 2.5.0] (only when WITH_DLT==ON)
+</p>
+</li>
+<li>
+<p>
+doxygen [tested on version 1.6.3] (only when WITH_DOCUMENTATION==ON)
+</p>
+</li>
+<li>
+<p>
+commonAPI [version &gt; 3.1.5] (only with WITH_CAPI_WRAPPER), more information here <a href="http://projects.genivi.org/commonapi/">http://projects.genivi.org/commonapi/</a>
+</p>
+</li>
+<li>
+<p>
+systemd [ version &gt; 44 ] (only WITH_SYSTEMD_WATCHDOG)
+</p>
+</li>
+</ul></div>
+</div>
+<div class="sect2">
+<h3 id="_audiomanagerutilities">AudioManagerUtilities</h3>
+<div class="paragraph"><p>In the AudioManagerUtilites you can find helper functions that can be reused by other projects as well.
+The library can be shipped as a static or a dynamic link library (WITH_SHARED_UTILITIES).</p></div>
+</div>
+<div class="sect2">
+<h3 id="_audiomanagercore">AudioManagerCore</h3>
+<div class="paragraph"><p>The AudioMangerCore is build as a static (or with WITH_SHARED_CORE) library. Sometimes it is useful for unit testing of a plugin to compile against the core.</p></div>
+</div>
+<div class="sect2">
+<h3 id="_commonapi_wrapper">CommonAPI Wrapper</h3>
+<div class="paragraph"><p>The commonapi wrapper provides the mainloop intergration for commonapi into the Mainloop of the audiomanager (CAmSockethandler).
+In order to use it, just use:</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><code>CAPI-&gt;registerService(....)
+CAPI-&gt;buildProxy(...)</code></pre>
+</div></div>
+<div class="paragraph"><p>instead of the standard calls. The CAPIWrapper will serialize the commands and integrate it smoothly with the mainloop.</p></div>
+</div>
+<div class="sect2">
+<h3 id="_tests">Tests</h3>
+<div class="paragraph"><p>For building the tests, you will need the following packages:</p></div>
+<div class="ulist"><ul>
+<li>
+<p>
+python [tested on version 2.6, should work on higher versions as well]
+</p>
+</li>
+</ul></div>
+<div class="paragraph"><p>GoogleMock and GoogleTest are as source code integrated in the source tree
+To install them in a build environment like Ubuntu you can use:</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><code>sudo apt-get install python2.6-dev</code></pre>
+</div></div>
+<div class="paragraph"><p>For compiling, you will need a compiler, linker etc. On most Linux systems you will get this via</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><code>sudo apt-get install build-essential</code></pre>
+</div></div>
+<div class="paragraph"><p>More details in the CMake Files CmakeList.txt in the projects.</p></div>
+</div>
+<div class="sect2">
+<h3 id="_compiling">Compiling</h3>
+<div class="paragraph"><p>To compile open a shell, browse to the AudioManager folder and</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><code>mkdir /build
+cd build
+cmake ..
+make</code></pre>
+</div></div>
+<div class="paragraph"><p>The AudioManager executable will be placed in the bin folder of your build folder, tests in a sub folder below.-</p></div>
+<div class="paragraph"><p>In order to install the AudioManager, you can do</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><code>sudo make install</code></pre>
+</div></div>
+<div class="paragraph"><p>this installs everything.</p></div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_compiling_plugins">Compiling plugins</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>Once the Audiomanager is installed, it will also install *.pc files for autotools and *Config.cmake files for cmake projects.
+In order to compile and link against the AudioMananger, you can use:</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><code>find_package(AudioManager REQUIRED )
+find_package(AudioManagerUtilities)</code></pre>
+</div></div>
+<div class="paragraph"><p>to find the configuration files. To use the right include paths, use:</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><code>
+</code></pre>
+</div></div>
+<div class="paragraph"><p>to link agains the right libs use:</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><code></code></pre>
+</div></div>
+<div class="paragraph"><p>for example, see the AudiomanagerPlugins</p></div>
+<div class="sect2">
+<h3 id="_adding_own_plugins">Adding own plugins</h3>
+<div class="paragraph"><p>To keep the own sources away from the GENIVI code the project specific elements can be reconfigured with own type definitions.
+You can copy paste the CMake scripts from the example plugins for example.</p></div>
+<div class="listingblock">
+<div class="title">The are already examples given in audiomanagertypes.h:</div>
+<div class="content">
+<pre><code>/**
+ * This type gives the information about reason for Source/Sink change
+ */
+typedef uint16_t am_CustomAvailabilityReason_t;
+static const am_CustomAvailabilityReason_t AR_UNKNOWN = 0;
+/** new media was entered  */
+static const am_CustomAvailabilityReason_t AR_GENIVI_NEWMEDIA = 1;
+/** same media was entered */
+static const am_CustomAvailabilityReason_t AR_GENIVI_SAMEMEDIA = 2;
+/** there is no media or media is removed */
+static const am_CustomAvailabilityReason_t AR_GENIVI_NOMEDIA = 3;
+/** there was a temperature event */
+static const am_CustomAvailabilityReason_t AR_GENIVI_TEMPERATURE = 4;
+/** there was a voltage event */
+static const am_CustomAvailabilityReason_t AR_GENIVI_VOLTAGE = 5;
+/** fatal errors on reading or accessing media */
+static const am_CustomAvailabilityReason_t AR_GENIVI_ERRORMEDIA = 6;
+
+/**
+ * This is a custom specific identifier of property. It can be used to
+ * differentiate between interrupt source/sink, main source/sink, etc.
+ */
+typedef uint16_t am_CustomClassProperty_t;
+static const am_CustomClassProperty_t CP_UNKNOWN = 0;
+static const am_CustomClassProperty_t CP_GENIVI_SOURCE_TYPE = 1;
+static const am_CustomClassProperty_t CP_GENIVI_SINK_TYPE = 2;
+
+/**
+ * This type classifies the format in which data is exchanged within a connection.
+ * The type itself is project specific although there are some standard formats
+ * defined.
+ */
+typedef uint16_t am_CustomConnectionFormat_t;
+static const am_CustomConnectionFormat_t CF_UNKNOWN = 0;
+/** plain mono */
+static const am_CustomConnectionFormat_t CF_GENIVI_MONO = 1;
+/** stereo connection */
+static const am_CustomConnectionFormat_t CF_GENIVI_STEREO = 2;
+/** analog connection */
+static const am_CustomConnectionFormat_t CF_GENIVI_ANALOG = 3;
+/** automatic connection.  */
+static const am_CustomConnectionFormat_t CF_GENIVI_AUTO = 4;
+
+/**
+ * Here are all SoundProperties that can be set via the CommandInterface.
+ * This type is product specific and can be changed or extended.
+ */
+typedef uint16_t am_CustomMainSoundPropertyType_t;
+static const am_CustomMainSoundPropertyType_t MSP_UNKNOWN = 0;
+/** example value between -10 and +10  */
+static const am_CustomMainSoundPropertyType_t MSP_GENIVI_TREBLE = 1;
+/** example value between -10 and +10  */
+static const am_CustomMainSoundPropertyType_t MSP_GENIVI_MID = 2;
+/** example value between -10 and +10  */
+static const am_CustomMainSoundPropertyType_t MSP_GENIVI_BASS = 3;
+
+/**
+ * The notification types are project specific.
+ */
+typedef uint16_t am_CustomNotificationType_t;
+static const am_CustomNotificationType_t NT_UNKNOWN = 0;
+
+/**
+ * The given ramp types here are just examples. For products, different ramp types
+ * can be defined here. It is in the responsibility of the product to make sure
+ * that the routing plugins are aware of the ramp types used.
+ */
+typedef uint16_t am_CustomRampType_t;
+static const am_CustomRampType_t RAMP_UNKNOWN = 0;
+/** sets directly the value without a ramp */
+static const am_CustomRampType_t RAMP_GENIVI_DIRECT = 1;
+/** Sets the volume as fast as possible */
+static const am_CustomRampType_t RAMP_GENIVI_NO_PLOP = 2;
+static const am_CustomRampType_t RAMP_GENIVI_EXP_INV = 3;
+static const am_CustomRampType_t RAMP_GENIVI_LINEAR = 4;
+static const am_CustomRampType_t RAMP_GENIVI_EXP = 5;
+
+/**
+ * Within GENIVI only the some example properties are defined.
+ * For products these should be changed or extended.
+ */
+typedef uint16_t am_CustomSoundPropertyType_t;
+static const am_CustomSoundPropertyType_t SP_UNKNOWN = 0;
+/** example treble value min =-10 max =10 */
+static const am_CustomSoundPropertyType_t SP_GENIVI_TREBLE = 1;
+/** example mid value min =-10 max =10 */
+static const am_CustomSoundPropertyType_t SP_GENIVI_MID = 2;
+/** example bass value min =-10 max =10 */
+static const am_CustomSoundPropertyType_t SP_GENIVI_BASS = 3;
+
+/**
+ * Describes the different system properties which are project specific.
+ */
+typedef uint16_t am_CustomSystemPropertyType_t;
+static const am_CustomSystemPropertyType_t SYP_UNKNOWN = 0;</code></pre>
+</div></div>
+</div>
+<div class="sect2">
+<h3 id="_commandline_options">CommandLine options</h3>
+<div class="paragraph"><p>The commandline options of the AudioManager:</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><code>USAGE:
+
+   ./AudioManager  [-K &lt;string&gt;] [-m &lt;int&gt;] [-t &lt;int&gt;] [-i] [-r &lt;string&gt;]
+                   [-R &lt;string&gt;] [-l &lt;string&gt;] [-L &lt;string&gt;] [-c &lt;string&gt;]
+                   [--] [--version] [-h]
+
+
+Where:
+
+   -K &lt;string&gt;,  --controllerPluginArg &lt;string&gt;
+     a test argument for the controller
+
+   -m &lt;int&gt;,  --maxConnections &lt;int&gt;
+     Maximal number of connections for telnet
+
+   -t &lt;int&gt;,  --telnetport &lt;int&gt;
+     The port that is used for telnet
+
+   -i,  --currentSettings
+     print current settings and exit
+
+   -r &lt;string&gt;,  --RoutingPluginDir &lt;string&gt;
+     path for looking for routing plugins
+
+   -R &lt;string&gt;,  --additionalRoutingPluginDirs &lt;string&gt;
+     additional path for looking for routing plugins, can be used after -r
+     option
+
+   -l &lt;string&gt;,  --CommandPluginDir &lt;string&gt;
+     path for looking for command plugins
+
+   -L &lt;string&gt;,  --additionalCommandPluginDirs &lt;string&gt;
+     additional path for looking for command plugins, can be used after -l
+     option
+
+   -c &lt;string&gt;,  --controllerPlugin &lt;string&gt;
+     use controllerPlugin full path with .so ending
+
+   --,  --ignore_rest
+     Ignores the rest of the labeled arguments following this flag.
+
+   --version
+     Displays version information and exits.
+
+   -h,  --help
+     Displays usage information and exits.
+
+
+   The team of the AudioManager wishes you a nice day!</code></pre>
+</div></div>
+<div class="paragraph"><p>To learn more about the commandline options, check the doxygen documentation.</p></div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_telnet_server">Telnet Server</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>The audiomanager has a build- in telnet server that serves for debugging purposes.
+If you compile your AudioManager with Telnet Server support (cmake -DWITH_TELNET=ON), you will be able to
+set with commandline argument -t the port number and with -m the maximum supported connections.
+The default telnet port is 6060.</p></div>
+<div class="literalblock">
+<div class="title">For example, launch a telnet session on port 6080:</div>
+<div class="content">
+<pre><code>telnet localhost 6060</code></pre>
+</div></div>
+<div class="literalblock">
+<div class="content">
+<pre><code>#&gt;Welcome to GENIVI AudioManager ver-0.0.1-37-ga004215
+#&gt;</code></pre>
+</div></div>
+<div class="literalblock">
+<div class="title">press <em>help</em> to get a list of all supported commands on this level:</div>
+<div class="content">
+<pre><code>#&gt;help
+####################################################
+####### The following commands are supported: ######
+####################################################
+#
+#exit  - quit telnet session
+#get   - Go into 'get'-submenu
+#help  - show all possible commands
+#info  - Go into 'info'-submenu
+#list  - Go into 'list'-submenu
+#set   - Go into 'set'-submenu
+#
+#\&gt;</code></pre>
+</div></div>
+<div class="literalblock">
+<div class="title">Now type one of these commands, for example <em>get</em>, followed with another <em>help</em> to get a list of supported commands:</div>
+<div class="content">
+<pre><code>#\&gt;get
+#
+#\Get&gt;help
+####################################################
+####### The following commands are supported: ######
+####################################################
+#
+#.. - one step back in menu tree (back to root folder)
+#exit  - close telnet session
+#help  - show all possible commands
+#recv  - show receiverversion
+#routing  - show current routing
+#sendv - show senderversion
+#
+#\Get&gt;</code></pre>
+</div></div>
+<div class="literalblock">
+<div class="title">You can also execute several commands in a line:</div>
+<div class="content">
+<pre><code>#\Get&gt;recv sendv .. help exit
+#   Receiver versions:
+#   Ctrl: 1 | Cmd: 1 | Routing: 1
+#   Sender versions:
+#   Ctrl: 1 | Cmd: 1 | Routing: 1
+####################################################
+######## The following commands are supported: ######
+####################################################
+#
+#exit  - quit telnet session
+#get   - Go into 'get'-submenu
+#help  - show all possible commands
+#info  - Go into 'info'-submenu
+#list  - Go into 'list'-submenu
+#set   - Go into 'set'-submenu
+#
+#Your wish is my command ... bye!
+#Connection closed by foreign host.</code></pre>
+</div></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_code_formatting">Code Formatting</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>The source code if formatted with eclipse, the style sheet used can be found in the Foo folder:</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><code>cmake/AudioManager_Codestyle.xml</code></pre>
+</div></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_working_on_the_code_amp_contribution">Working on the code &amp; contribution</h2>
+<div class="sectionbody">
+<div class="literalblock">
+<div class="title">First get the code from the git:</div>
+<div class="content">
+<pre><code>git clone</code></pre>
+</div></div>
+<div class="literalblock">
+<div class="title">Get an overview of all branches:</div>
+<div class="content">
+<pre><code>git branch</code></pre>
+</div></div>
+<div class="literalblock">
+<div class="title">Switch to the branch you want to work on (see versioning scheme, the master is the feature branch) and verify that it has switched (* changed)</div>
+<div class="content">
+<pre><code>git checkout &lt;your branch&gt;
+git branch</code></pre>
+</div></div>
+<div class="literalblock">
+<div class="title">Best practice is to create a local branch based on the current branch:</div>
+<div class="content">
+<pre><code>git branch working_branch</code></pre>
+</div></div>
+<div class="paragraph"><p>Start working, best practice is to commit smaller, buildable peices during the work that makes it easier to
+handle later on.</p></div>
+<div class="literalblock">
+<div class="title">If you want to commit you changes, send them to the audiomanager-dev list, you can create a patch like this:</div>
+<div class="content">
+<pre><code>git format-patch working_branch &lt;your branch&gt;</code></pre>
+</div></div>
+<div class="paragraph"><p>This creates a set of patches that are published via the mailing list.The patches will be discussed and then merged &amp; uploaded on the git by the maintainer.</p></div>
+<div class="paragraph"><p>Patches can be accepted either under GENIVI Cla or MPL 2.0 (see section License). Please be sure that the signed-off-by is set correctly. For more, check out <a href="http://gerrit.googlecode.com/svn/documentation/2.0/user-signedoffby.html">http://gerrit.googlecode.com/svn/documentation/2.0/user-signedoffby.html</a></p></div>
+<div class="listingblock">
+<div class="content">
+<pre><code>                                            _             _ _       __  __
+                                           / \  _   _  __| (_) ___ |  \/  | __ _ _ __   __ _  __ _  ___ _ __
+                                          / _ \| | | |/ _` | |/ _ \| |\/| |/ _` | '_ \ / _` |/ _` |/ _ \ '__|
+                                         / ___ \ |_| | (_| | | (_) | |  | | (_| | | | | (_| | (_| |  __/ |
+                                        /_/   \_\__,_|\__,_|_|\___/|_|  |_|\__,_|_| |_|\__,_|\__, |\___|_|
+                                                                                             |___/
+
+
+
+
+                                                                        QQ
+                                                                        QQ[
+                                                                  qaap
+                                                                  )4W? ayQap
+                                                                       4QQQ[
+                                                              .awQap   ==
+                                                               $WWQF   aaaa,
+                                                                 `    QWQWQQ
+                                                            _aaap=    J?QQP'|
+                                                           qQQWQQ6    -      qyQQQgp
+                                                           )4QQQQ^ .yQQQQ,   QQQQQQQ
+                                                         aa         4QQQW'   )?QQQP'  gmQQma
+                                                       ]QQQQp         .               WQQQQW
+                                                        ????    aQQQ6p    _aQQQQa      "??"+
+                                                       qaaa,   ]QQQQQQ    jQQQQQQf   -aaaap
+                                                      jQQWWQ    )????'    )4QQQQP'   mQWQWQf
+                                                      ]WQQQQ    jaaa                 QQQQQQf
+                                                      )WQQQQ   yQQWWQp    ayQQQap    QQQQQQf
+                                                      )QQQQQ   QQQQQQf   ]QQQQQQQ,   QQQQQQf
+                                                      ]QQQQD   QQQQQQf   ]QQQQQQQ[   QQQQQQf
+                                                        ??':   QQQQQQf   ]QQQQQQQ[   4QQQQQf
+                                                               QQQQQQf   ]QQQQQQQ[   =????'I
+                                                               QQQQQQf   ]QQQQQQQ[
+                                                              .4QQQQQ'   ]QQQQQQQ[
+                                                                ]??"-    ]QQQQQQQ(
+                                                                         ]4QQQQQ?
+                                                                           :
+
+                            qaayQQQQQQQQQwaa   ]mmmmmmmmmmmmmm  ]mmmmmmg,     ]mmm[  ]mmmm  4mmmg         ymmm' ]mmmm pwLq
+                           jQQQQD???????QWWQf  ]QQQP??????????  ]QQQWQQQQp    ]QQQf  ]QQQQ   4QQQ6.     _yQQQ'  ]QQQQ \!'a'
+                           ]QQQf        )???'  ]QQQ6aaaaaaaaap  ]QQQf)4QQQ6,  ]QQQf  ]QQQQ   |4QQQ6    jmQQQ'v  ]QQQQ
+                           ]QQQ[   ]QQQQWWQQf  ]QQQQQQQWQWQWQf  ]QQQf  ?QQQQa ]QQQf  ]QQQQ    i4QQQ6  qQQQQ'    ]QQQQ
+                           ]QQQ6,   .   qQQQf  ]QQQf            ]QQQf   ]4QQQ6jQQQf  ]QQQQ      4QQQ6gQWQQ'     ]QQQQ
+                            4QQQQQQQQQQQQQQW'  ]QQQQQQWQWQWQWQ  ]QQQf    i?QQQQQQQf  ]QQQQ       ]QQQQQQQ'      ]QQQQ
+                            ++"??????????`     ]""!"""""""""""S ]""!'      ]"""!""'  -""!"        """!""'       ]""!"</code></pre>
+</div></div>
+</div>
+</div>
+</div>
+<div id="footnotes"><hr /></div>
+<div id="footer">
+<div id="footer-text">
+Last updated
+ 2016-09-28 06:05:17 PDT
+</div>
+</div>
+</body>
+</html>
