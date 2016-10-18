@@ -34,6 +34,8 @@
 #include "CAmRouter.h"
 #include "CAmDltWrapper.h"
 
+#define __METHOD_NAME__ std::string (std::string("CAmDatabaseHandlerMap::") + __func__)
+
 
 #ifdef WITH_DATABASE_CHANGE_CHECK
 #	define DB_COND_UPDATE_RIE(x,y) \
@@ -413,12 +415,12 @@ CAmDatabaseHandlerMap::CAmDatabaseHandlerMap():	mFirstStaticSink(true), //
 														mListConnectionFormat(), //
 														mMappedData()
 {
-	logVerbose(__func__,"Init ");
+	logVerbose(__METHOD_NAME__,"Init ");
 }
 
 CAmDatabaseHandlerMap::~CAmDatabaseHandlerMap()
 {
-    logVerbose(__func__,"Destroy");
+    logVerbose(__METHOD_NAME__,"Destroy");
     mpDatabaseObserver = NULL;
 }
 
@@ -426,17 +428,17 @@ am_Error_e CAmDatabaseHandlerMap::enterDomainDB(const am_Domain_s & domainData, 
 {
     if(domainData.name.empty())
     {
-    	logError(__func__,"DomainName must not be emtpy!");
+    	logError(__METHOD_NAME__,"DomainName must not be emtpy!");
     	return (E_NOT_POSSIBLE);
     }
     if(domainData.busname.empty())
     {
-    	logError(__func__,"Busname must not be emtpy!");
+    	logError(__METHOD_NAME__,"Busname must not be emtpy!");
     	return (E_NOT_POSSIBLE);
     }
     if(!(domainData.state>=DS_UNKNOWN && domainData.state<=DS_MAX))
     {
-    	logError(__func__,"State must not be valid!");
+    	logError(__METHOD_NAME__,"State must not be valid!");
     	return (E_NOT_POSSIBLE);
     }
     //first check for a reserved domain
@@ -473,7 +475,7 @@ am_Error_e CAmDatabaseHandlerMap::enterDomainDB(const am_Domain_s & domainData, 
 		else
 		{
 			domainID = 0;
-			logVerbose(__func__,"Max limit reached.");
+			logVerbose(__METHOD_NAME__,"Max limit reached.");
 			return (E_UNKNOWN);
 		}
     }
@@ -503,22 +505,22 @@ am_Error_e CAmDatabaseHandlerMap::enterMainConnectionDB(const am_MainConnection_
 {
     if(mainConnectionData.mainConnectionID!=0)
     {
-    	logError(__func__,"mainConnectionID must be 0!");
+    	logError(__METHOD_NAME__,"mainConnectionID must be 0!");
     	return (E_NOT_POSSIBLE);
     }
     if(!(mainConnectionData.connectionState>=CS_UNKNOWN && mainConnectionData.connectionState<=CS_MAX))
     {
-    	logError(__func__,"connectionState must be valid!");
+    	logError(__METHOD_NAME__,"connectionState must be valid!");
     	return (E_NOT_POSSIBLE);
     }
     if(!existSink(mainConnectionData.sinkID))
     {
-    	logError(__func__,"sinkID must be valid!");
+    	logError(__METHOD_NAME__,"sinkID must be valid!");
     	return (E_NOT_POSSIBLE);
     }
     if(!existSource(mainConnectionData.sourceID))
     {
-    	logError(__func__,"sourceID must be valid!");
+    	logError(__METHOD_NAME__,"sourceID must be valid!");
     	return (E_NOT_POSSIBLE);
     }
 
@@ -533,7 +535,7 @@ am_Error_e CAmDatabaseHandlerMap::enterMainConnectionDB(const am_MainConnection_
 	else
 	{
 		connectionID = 0;
-		logVerbose(__func__,"Max limit reached.");
+		logVerbose(__METHOD_NAME__,"Max limit reached.");
 		return (E_UNKNOWN);
 	}
 
@@ -576,7 +578,7 @@ bool CAmDatabaseHandlerMap::insertSinkDB(const am_Sink_s & sinkData, am_sinkID_t
 	else
 	{
 		sinkID = 0;
-		logVerbose(__func__,"Max limit reached!");
+		logVerbose(__METHOD_NAME__,"Max limit reached!");
 		return (false);
 	}
 }
@@ -585,28 +587,28 @@ am_Error_e CAmDatabaseHandlerMap::enterSinkDB(const am_Sink_s & sinkData, am_sin
 {
     if(sinkData.sinkID>DYNAMIC_ID_BOUNDARY)
     {
-    	logError(__func__,"sinkID must be below:",DYNAMIC_ID_BOUNDARY);
+    	logError(__METHOD_NAME__,"sinkID must be below:",DYNAMIC_ID_BOUNDARY);
     	return (E_NOT_POSSIBLE);
     }
     if(!existDomain(sinkData.domainID))
     {
-    	logError(__func__,"domainID must be valid");
+    	logError(__METHOD_NAME__,"domainID must be valid");
     	return (E_NOT_POSSIBLE);
     }
     if(sinkData.name.empty())
     {
-    	logError(__func__,"sinkName must not be zero");
+    	logError(__METHOD_NAME__,"sinkName must not be zero");
     	return (E_NOT_POSSIBLE);
     }
     if(!existSinkClass(sinkData.sinkClassID))
     {
-    	logError(__func__,"sinkClass must be valid");
+    	logError(__METHOD_NAME__,"sinkClass must be valid");
     	return (E_NOT_POSSIBLE);
     }
 
     if(!(sinkData.muteState>=MS_UNKNOWN && sinkData.muteState<=MS_MAX))
     {
-    	logError(__func__,"muteState must be valid");
+    	logError(__METHOD_NAME__,"muteState must be valid");
     	return (E_NOT_POSSIBLE);
     }
 
@@ -673,7 +675,7 @@ bool CAmDatabaseHandlerMap::insertCrossfaderDB(const am_Crossfader_s & crossfade
 	else
 	{
 		crossfaderID = 0;
-		logVerbose(__func__,"Max limit reached.");
+		logVerbose(__METHOD_NAME__,"Max limit reached.");
 		return (false);
 	}
 }
@@ -682,34 +684,34 @@ am_Error_e CAmDatabaseHandlerMap::enterCrossfaderDB(const am_Crossfader_s & cros
 {
     if(crossfaderData.crossfaderID>DYNAMIC_ID_BOUNDARY)
     {
-    	logError(__func__,"crossfaderID must be below:",DYNAMIC_ID_BOUNDARY);
+    	logError(__METHOD_NAME__,"crossfaderID must be below:",DYNAMIC_ID_BOUNDARY);
     	return (E_NOT_POSSIBLE);
     }
 
     if(!(crossfaderData.hotSink>=HS_UNKNOWN && crossfaderData.hotSink<=HS_MAX))
     {
-    	logError(__func__,"hotSink must be valid");
+    	logError(__METHOD_NAME__,"hotSink must be valid");
     	return (E_NOT_POSSIBLE);
     }
     if(crossfaderData.name.empty())
     {
-    	logError(__func__,"crossfaderName must not be zero");
+    	logError(__METHOD_NAME__,"crossfaderName must not be zero");
     	return (E_NOT_POSSIBLE);
     }
 
     if(!existSink(crossfaderData.sinkID_A))
     {
-    	logError(__func__,"sinkID_A must exist");
+    	logError(__METHOD_NAME__,"sinkID_A must exist");
     	return (E_NOT_POSSIBLE);
     }
     if(!existSink(crossfaderData.sinkID_B))
     {
-    	logError(__func__,"sinkID_B must exist");
+    	logError(__METHOD_NAME__,"sinkID_B must exist");
     	return (E_NOT_POSSIBLE);
     }
     if(!existSource(crossfaderData.sourceID))
     {
-    	logError(__func__,"sourceID must exist");
+    	logError(__METHOD_NAME__,"sourceID must exist");
     	return (E_NOT_POSSIBLE);
     }
 
@@ -760,7 +762,7 @@ bool CAmDatabaseHandlerMap::insertGatewayDB(const am_Gateway_s & gatewayData, am
 	else
 	{
 		gatewayID = 0;
-		logVerbose(__func__,"Max limit reached.");
+		logVerbose(__METHOD_NAME__,"Max limit reached.");
 		return (false);
 	}
 }
@@ -770,19 +772,19 @@ am_Error_e CAmDatabaseHandlerMap::enterGatewayDB(const am_Gateway_s & gatewayDat
 
     if(gatewayData.gatewayID>DYNAMIC_ID_BOUNDARY)
     {
-    	logError(__func__,"gatewayID must be below:",DYNAMIC_ID_BOUNDARY);
+    	logError(__METHOD_NAME__,"gatewayID must be below:",DYNAMIC_ID_BOUNDARY);
     	return (E_NOT_POSSIBLE);
     }
 
     if(!existDomain(gatewayData.controlDomainID))
     {
-    	logError(__func__,"controlDomainID must be exist");
+    	logError(__METHOD_NAME__,"controlDomainID must be exist");
     	return (E_NOT_POSSIBLE);
     }
 
     if(gatewayData.name.empty())
     {
-    	logError(__func__,"gatewayName must not be empty");
+    	logError(__METHOD_NAME__,"gatewayName must not be empty");
     	return (E_NOT_POSSIBLE);
     }
 
@@ -835,7 +837,7 @@ bool CAmDatabaseHandlerMap::insertConverterDB(const am_Converter_s & converteDat
 	else
 	{
 		converterID = 0;
-		logVerbose(__func__,"Max limit reached.");
+		logVerbose(__METHOD_NAME__,"Max limit reached.");
 		return (false);
 	}
 }
@@ -844,31 +846,31 @@ am_Error_e CAmDatabaseHandlerMap::enterConverterDB(const am_Converter_s & conver
 {
     if(converterData.converterID>DYNAMIC_ID_BOUNDARY)
     {
-    	logError(__func__,"converterID must be below:",DYNAMIC_ID_BOUNDARY);
+    	logError(__METHOD_NAME__,"converterID must be below:",DYNAMIC_ID_BOUNDARY);
     	return (E_NOT_POSSIBLE);
     }
 
     if(!existSink(converterData.sinkID))
     {
-    	logError(__func__,"sinkID must exists");
+    	logError(__METHOD_NAME__,"sinkID must exists");
     	return (E_NOT_POSSIBLE);
     }
 
     if(!existSource(converterData.sourceID))
     {
-    	logError(__func__,"sourceID must exists");
+    	logError(__METHOD_NAME__,"sourceID must exists");
     	return (E_NOT_POSSIBLE);
     }
 
     if(!existDomain(converterData.domainID))
     {
-    	logError(__func__,"domainID must exists");
+    	logError(__METHOD_NAME__,"domainID must exists");
     	return (E_NOT_POSSIBLE);
     }
 
     if(converterData.name.empty())
     {
-    	logError(__func__,"converterName must not be empty");
+    	logError(__METHOD_NAME__,"converterName must not be empty");
     	return (E_NOT_POSSIBLE);
     }
 
@@ -942,7 +944,7 @@ bool CAmDatabaseHandlerMap::insertSourceDB(const am_Source_s & sourceData, am_so
 	else
 	{
 		sourceID = 0;
-		logVerbose(__func__,"Max limit reached.");
+		logVerbose(__METHOD_NAME__,"Max limit reached.");
 		return (false);
 	}
 }
@@ -951,28 +953,28 @@ am_Error_e CAmDatabaseHandlerMap::enterSourceDB(const am_Source_s & sourceData, 
 {
     if(sourceData.sourceID>DYNAMIC_ID_BOUNDARY)
     {
-    	logError(__func__,"sourceID must be below:",DYNAMIC_ID_BOUNDARY);
+    	logError(__METHOD_NAME__,"sourceID must be below:",DYNAMIC_ID_BOUNDARY);
     	return (E_NOT_POSSIBLE);
     }
     if(!existDomain(sourceData.domainID))
     {
-    	logError(__func__,"domainID must be valid");
+    	logError(__METHOD_NAME__,"domainID must be valid");
     	return (E_NOT_POSSIBLE);
     }
     if(sourceData.name.empty())
     {
-    	logError(__func__,"sourceName must not be zero");
+    	logError(__METHOD_NAME__,"sourceName must not be zero");
     	return (E_NOT_POSSIBLE);
     }
     if(!existSourceClass(sourceData.sourceClassID))
     {
-    	logError(__func__,"sourceClassID must be valid");
+    	logError(__METHOD_NAME__,"sourceClassID must be valid");
     	return (E_NOT_POSSIBLE);
     }
 
     if(!(sourceData.sourceState>=SS_UNKNNOWN && sourceData.sourceState<=SS_MAX))
     {
-    	logError(__func__,"sourceState must be valid");
+    	logError(__METHOD_NAME__,"sourceState must be valid");
     	return (E_NOT_POSSIBLE);
     }
 
@@ -1027,19 +1029,19 @@ am_Error_e CAmDatabaseHandlerMap::enterConnectionDB(const am_Connection_s& conne
 {
     if(connection.connectionID!=0)
     {
-    	logError(__func__,"connectionID must be 0!");
+    	logError(__METHOD_NAME__,"connectionID must be 0!");
     	return (E_NOT_POSSIBLE);
     }
 
     if(!existSink(connection.sinkID))
     {
-    	logError(__func__,"sinkID must exist!");
+    	logError(__METHOD_NAME__,"sinkID must exist!");
     	return (E_NOT_POSSIBLE);
     }
 
     if(!existSource(connection.sourceID))
     {
-    	logError(__func__,"sourceID must exist!");
+    	logError(__METHOD_NAME__,"sourceID must exist!");
     	return (E_NOT_POSSIBLE);
     }
     //connection format is not checked, because it's project specific
@@ -1054,7 +1056,7 @@ am_Error_e CAmDatabaseHandlerMap::enterConnectionDB(const am_Connection_s& conne
 	else
 	{
 		connectionID = 0;
-		logVerbose(__func__,"Max limit reached.");
+		logVerbose(__METHOD_NAME__,"Max limit reached.");
 		return (E_UNKNOWN);
 	}
 
@@ -1075,7 +1077,7 @@ bool CAmDatabaseHandlerMap::insertSinkClassDB(const am_SinkClass_s & sinkClass, 
 	else
 	{
 		sinkClassID = 0;
-		logVerbose(__func__,"Max limit reached.");
+		logVerbose(__METHOD_NAME__,"Max limit reached.");
 		return (false);
 	}
 }
@@ -1084,13 +1086,13 @@ am_Error_e CAmDatabaseHandlerMap::enterSinkClassDB(const am_SinkClass_s & sinkCl
 {
     if(sinkClass.sinkClassID>DYNAMIC_ID_BOUNDARY)
     {
-    	logError(__func__,"sinkClassID must be <",DYNAMIC_ID_BOUNDARY);
+    	logError(__METHOD_NAME__,"sinkClassID must be <",DYNAMIC_ID_BOUNDARY);
     	return (E_NOT_POSSIBLE);
     }
 
     if(sinkClass.name.empty())
     {
-    	logError(__func__,"name must not be empty");
+    	logError(__METHOD_NAME__,"name must not be empty");
     	return (E_NOT_POSSIBLE);
     }
 
@@ -1140,7 +1142,7 @@ bool CAmDatabaseHandlerMap::insertSourceClassDB(am_sourceClass_t & sourceClassID
 	else
 	{
 		sourceClassID = 0;
-		logVerbose(__func__,"Max limit reached.");
+		logVerbose(__METHOD_NAME__,"Max limit reached.");
 		return (false);
 	}
 }
@@ -1149,13 +1151,13 @@ am_Error_e CAmDatabaseHandlerMap::enterSourceClassDB(am_sourceClass_t & sourceCl
 {
     if(sourceClass.sourceClassID>DYNAMIC_ID_BOUNDARY)
     {
-    	logError(__func__,"sourceClassID must be <",DYNAMIC_ID_BOUNDARY);
+    	logError(__METHOD_NAME__,"sourceClassID must be <",DYNAMIC_ID_BOUNDARY);
     	return (E_NOT_POSSIBLE);
     }
 
     if(sourceClass.name.empty())
     {
-    	logError(__func__,"name must not be empty");
+    	logError(__METHOD_NAME__,"name must not be empty");
     	return (E_NOT_POSSIBLE);
     }
 
@@ -1199,7 +1201,7 @@ am_Error_e CAmDatabaseHandlerMap::enterSystemProperties(const std::vector<am_Sys
 {
     if(listSystemProperties.empty())
 	{
-    	logError(__func__,"listSystemProperties must not be empty");
+    	logError(__METHOD_NAME__,"listSystemProperties must not be empty");
     	return (E_NOT_POSSIBLE);
 	}
 
@@ -1213,13 +1215,13 @@ am_Error_e CAmDatabaseHandlerMap::changeMainConnectionRouteDB(const am_mainConne
 {
     if(mainconnectionID==0)
     {
-    	logError(__func__,"mainconnectionID must not be 0");
+    	logError(__METHOD_NAME__,"mainconnectionID must not be 0");
     	return (E_NOT_POSSIBLE);
     }
 
     if (!existMainConnection(mainconnectionID))
     {
-    	logError(__func__,"existMainConnection must exist");
+    	logError(__METHOD_NAME__,"existMainConnection must exist");
         return (E_NON_EXISTENT);
     }
 
@@ -1239,19 +1241,19 @@ am_Error_e CAmDatabaseHandlerMap::changeMainConnectionStateDB(const am_mainConne
 {
     if(mainconnectionID==0)
     {
-    	logError(__func__,"mainconnectionID must not be 0");
+    	logError(__METHOD_NAME__,"mainconnectionID must not be 0");
     	return (E_NOT_POSSIBLE);
     }
 
     if(!(connectionState>=CS_UNKNOWN && connectionState<=CS_MAX))
     {
-    	logError(__func__,"connectionState must be valid");
+    	logError(__METHOD_NAME__,"connectionState must be valid");
     	return (E_NOT_POSSIBLE);
     }
 
     if (!existMainConnection(mainconnectionID))
     {
-    	logError(__func__,"existMainConnection must exist");
+    	logError(__METHOD_NAME__,"existMainConnection must exist");
         return (E_NON_EXISTENT);
     }
 
@@ -1267,7 +1269,7 @@ am_Error_e CAmDatabaseHandlerMap::changeSinkMainVolumeDB(const am_mainVolume_t m
 {
     if (!existSink(sinkID))
     {
-    	logError(__func__,"sinkID must exist");
+    	logError(__METHOD_NAME__,"sinkID must exist");
         return (E_NON_EXISTENT);
     }
 
@@ -1285,13 +1287,13 @@ am_Error_e CAmDatabaseHandlerMap::changeSinkAvailabilityDB(const am_Availability
 {
     if (!(availability.availability>=A_UNKNOWN && availability.availability<=A_MAX))
     {
-    	logError(__func__,"availability must be valid");
+    	logError(__METHOD_NAME__,"availability must be valid");
     	return (E_NOT_POSSIBLE);
     }
 
     if (!existSink(sinkID))
     {
-    	logError(__func__,"sinkID must exist");
+    	logError(__METHOD_NAME__,"sinkID must exist");
         return (E_NON_EXISTENT);
     }
 
@@ -1309,13 +1311,13 @@ am_Error_e CAmDatabaseHandlerMap::changeDomainStateDB(const am_DomainState_e dom
 
     if(!(domainState>=DS_UNKNOWN && domainState<=DS_MAX))
     {
-    	logError(__func__,"domainState must be valid");
+    	logError(__METHOD_NAME__,"domainState must be valid");
     	return (E_NOT_POSSIBLE);
     }
 
     if (!existDomain(domainID))
     {
-    	logError(__func__,"domainID must exist");
+    	logError(__METHOD_NAME__,"domainID must exist");
         return (E_NON_EXISTENT);
     }
 
@@ -1330,13 +1332,13 @@ am_Error_e CAmDatabaseHandlerMap::changeSinkMuteStateDB(const am_MuteState_e mut
 
     if(!(muteState>=MS_UNKNOWN && muteState<=MS_MAX))
     {
-    	logError(__func__,"muteState must be valid");
+    	logError(__METHOD_NAME__,"muteState must be valid");
     	return (E_NOT_POSSIBLE);
     }
 
     if (!existSink(sinkID))
     {
-    	logError(__func__,"sinkID must exist");
+    	logError(__METHOD_NAME__,"sinkID must exist");
         return (E_NON_EXISTENT);
     }
 
@@ -1355,7 +1357,7 @@ am_Error_e CAmDatabaseHandlerMap::changeMainSinkSoundPropertyDB(const am_MainSou
 
     if (!existSink(sinkID))
     {
-    	logError(__func__,"sinkID must exist");
+    	logError(__METHOD_NAME__,"sinkID must exist");
         return (E_NON_EXISTENT);
     }
     am_Sink_Database_s & sink = mMappedData.mSinkMap[sinkID];
@@ -1382,7 +1384,7 @@ am_Error_e CAmDatabaseHandlerMap::changeMainSourceSoundPropertyDB(const am_MainS
 
     if (!existSource(sourceID))
     {
-    	logError(__func__,"sourceID must exist");
+    	logError(__METHOD_NAME__,"sourceID must exist");
         return (E_NON_EXISTENT);
     }
     am_Source_Database_s & source = mMappedData.mSourceMap.at(sourceID);
@@ -1409,13 +1411,13 @@ am_Error_e CAmDatabaseHandlerMap::changeSourceAvailabilityDB(const am_Availabili
 {
     if(!(availability.availability>=A_UNKNOWN && availability.availability<=A_MAX))
     {
-    	logError(__func__,"availability must be valid");
+    	logError(__METHOD_NAME__,"availability must be valid");
     	return (E_NOT_POSSIBLE);
     }
 
     if (!existSource(sourceID))
     {
-    	logError(__func__,"sourceID must exist");
+    	logError(__METHOD_NAME__,"sourceID must exist");
         return (E_NON_EXISTENT);
     }
 
@@ -1450,7 +1452,7 @@ am_Error_e CAmDatabaseHandlerMap::removeMainConnectionDB(const am_mainConnection
 
     if (!existMainConnection(mainConnectionID))
     {
-    	logError(__func__,"mainConnectionID must exist");
+    	logError(__METHOD_NAME__,"mainConnectionID must exist");
         return (E_NON_EXISTENT);
     }
 
@@ -1470,7 +1472,7 @@ am_Error_e CAmDatabaseHandlerMap::removeSinkDB(const am_sinkID_t sinkID)
 
     if (!existSink(sinkID))
     {
-    	logError(__func__,"sinkID must exist");
+    	logError(__METHOD_NAME__,"sinkID must exist");
         return (E_NON_EXISTENT);
     }
 
@@ -1492,7 +1494,7 @@ am_Error_e CAmDatabaseHandlerMap::removeSourceDB(const am_sourceID_t sourceID)
 
     if (!existSource(sourceID))
     {
-    	logError(__func__,"sourceID must exist");
+    	logError(__METHOD_NAME__,"sourceID must exist");
         return (E_NON_EXISTENT);
     }
 
@@ -1514,7 +1516,7 @@ am_Error_e CAmDatabaseHandlerMap::removeGatewayDB(const am_gatewayID_t gatewayID
 
     if (!existGateway(gatewayID))
     {
-    	logError(__func__,"gatewayID must exist");
+    	logError(__METHOD_NAME__,"gatewayID must exist");
         return (E_NON_EXISTENT);
     }
 
@@ -1531,7 +1533,7 @@ am_Error_e CAmDatabaseHandlerMap::removeConverterDB(const am_converterID_t conve
 
     if (!existConverter(converterID))
     {
-    	logError(__func__,"converterID must exist");
+    	logError(__METHOD_NAME__,"converterID must exist");
         return (E_NON_EXISTENT);
     }
 
@@ -1548,7 +1550,7 @@ am_Error_e CAmDatabaseHandlerMap::removeCrossfaderDB(const am_crossfaderID_t cro
 
     if (!existCrossFader(crossfaderID))
     {
-    	logError(__func__,"crossfaderID must exist");
+    	logError(__METHOD_NAME__,"crossfaderID must exist");
         return (E_NON_EXISTENT);
     }
     mMappedData.mCrossfaderMap.erase(crossfaderID);
@@ -1564,7 +1566,7 @@ am_Error_e CAmDatabaseHandlerMap::removeDomainDB(const am_domainID_t domainID)
 
     if (!existDomain(domainID))
     {
-    	logError(__func__,"domainID must exist");
+    	logError(__METHOD_NAME__,"domainID must exist");
         return (E_NON_EXISTENT);
     }
     mMappedData.mDomainMap.erase(domainID);
@@ -1580,7 +1582,7 @@ am_Error_e CAmDatabaseHandlerMap::removeSinkClassDB(const am_sinkClass_t sinkCla
 
     if (!existSinkClass(sinkClassID))
     {
-    	logError(__func__,"sinkClassID must exist");
+    	logError(__METHOD_NAME__,"sinkClassID must exist");
         return (E_NON_EXISTENT);
     }
 
@@ -1598,7 +1600,7 @@ am_Error_e CAmDatabaseHandlerMap::removeSourceClassDB(const am_sourceClass_t sou
 
     if (!existSourceClass(sourceClassID))
     {
-    	logError(__func__,"sourceClassID must exist");
+    	logError(__METHOD_NAME__,"sourceClassID must exist");
         return (E_NON_EXISTENT);
     }
 
@@ -1613,7 +1615,7 @@ am_Error_e CAmDatabaseHandlerMap::removeConnection(const am_connectionID_t conne
 {
     if (!existConnectionID(connectionID))
     {
-    	logError(__func__,"connectionID must exist",connectionID);
+    	logError(__METHOD_NAME__,"connectionID must exist",connectionID);
         return (E_NON_EXISTENT);
     }
 
@@ -1628,7 +1630,7 @@ am_Error_e CAmDatabaseHandlerMap::getSourceClassInfoDB(const am_sourceID_t sourc
 
     if (!existSource(sourceID))
     {
-    	logWarning(__func__,"sourceID must exist");
+    	logWarning(__METHOD_NAME__,"sourceID must exist");
         return (E_NON_EXISTENT);
     }
     am_Source_Database_s source = mMappedData.mSourceMap.at(sourceID);
@@ -1649,7 +1651,7 @@ am_Error_e CAmDatabaseHandlerMap::getSinkInfoDB(const am_sinkID_t sinkID, am_Sin
 
     if (!existSink(sinkID))
     {
-    	logWarning(__func__,"sinkID",sinkID,"does not exist");
+    	logWarning(__METHOD_NAME__,"sinkID",sinkID,"does not exist");
         return (E_NON_EXISTENT);
     }
 
@@ -1666,7 +1668,7 @@ am_Error_e CAmDatabaseHandlerMap::getSourceInfoDB(const am_sourceID_t sourceID, 
 
     if (!existSource(sourceID))
     {
-    	logWarning(__func__,"sourceID",sourceID,"does not exist");
+    	logWarning(__METHOD_NAME__,"sourceID",sourceID,"does not exist");
         return (E_NON_EXISTENT);
     }
 
@@ -1683,7 +1685,7 @@ am_Error_e am::CAmDatabaseHandlerMap::getMainConnectionInfoDB(const am_mainConne
 {
     if (!existMainConnection(mainConnectionID))
     {
-    	logError(__func__,"mainConnectionID must exist");
+    	logError(__METHOD_NAME__,"mainConnectionID must exist");
         return (E_NON_EXISTENT);
     }
     am_MainConnection_s temp = mMappedData.mMainConnectionMap.at(mainConnectionID);
@@ -1696,14 +1698,14 @@ am_Error_e CAmDatabaseHandlerMap::changeSinkClassInfoDB(const am_SinkClass_s& si
 {
     if(sinkClass.listClassProperties.empty())
     {
-    	logError(__func__,"listClassProperties must not be empty");
+    	logError(__METHOD_NAME__,"listClassProperties must not be empty");
     	return (E_NOT_POSSIBLE);
     }
 
     //check if the ID already exists
     if (!existSinkClass(sinkClass.sinkClassID))
     {
-    	logError(__func__,"sinkClassID must exist");
+    	logError(__METHOD_NAME__,"sinkClassID must exist");
         return (E_NON_EXISTENT);
     }
 
@@ -1717,14 +1719,14 @@ am_Error_e CAmDatabaseHandlerMap::changeSourceClassInfoDB(const am_SourceClass_s
 {
     if(sourceClass.listClassProperties.empty())
     {
-		logError(__func__,"listClassProperties must not be empty");
+		logError(__METHOD_NAME__,"listClassProperties must not be empty");
 		return (E_NOT_POSSIBLE);
     }
 
     //check if the ID already exists
     if (!existSourceClass(sourceClass.sourceClassID))
     {
-    	logError(__func__,"sourceClassID must exist");
+    	logError(__METHOD_NAME__,"sourceClassID must exist");
         return (E_NON_EXISTENT);
     }
 
@@ -1739,7 +1741,7 @@ am_Error_e CAmDatabaseHandlerMap::getSinkClassInfoDB(const am_sinkID_t sinkID, a
 
     if (!existSink(sinkID))
     {
-    	logWarning(__func__,"sinkID must exist");
+    	logWarning(__METHOD_NAME__,"sinkID must exist");
         return (E_NON_EXISTENT);
     }
     am_Sink_Database_s sink = mMappedData.mSinkMap.at(sinkID);
@@ -1747,7 +1749,7 @@ am_Error_e CAmDatabaseHandlerMap::getSinkClassInfoDB(const am_sinkID_t sinkID, a
 
     if (!existSinkClass(sinkClass.sinkClassID))
     {
-    	logWarning(__func__,"sinkClassID must exist");
+    	logWarning(__METHOD_NAME__,"sinkClassID must exist");
         return (E_NON_EXISTENT);
     }
     am_SinkClass_s tmpSinkClass = mMappedData.mSinkClassesMap.at(sinkClass.sinkClassID);
@@ -1760,7 +1762,7 @@ am_Error_e CAmDatabaseHandlerMap::getGatewayInfoDB(const am_gatewayID_t gatewayI
 {
     if (!existGateway(gatewayID))
     {
-    	logWarning(__func__,"gatewayID must exist");
+    	logWarning(__METHOD_NAME__,"gatewayID must exist");
         return (E_NON_EXISTENT);
     }
 
@@ -1774,7 +1776,7 @@ am_Error_e CAmDatabaseHandlerMap::getConverterInfoDB(const am_converterID_t conv
 {
     if (!existConverter(converterID))
     {
-    	logWarning(__func__,"converterID must exist");
+    	logWarning(__METHOD_NAME__,"converterID must exist");
         return (E_NON_EXISTENT);
     }
 
@@ -1788,7 +1790,7 @@ am_Error_e CAmDatabaseHandlerMap::getCrossfaderInfoDB(const am_crossfaderID_t cr
 {
     if (!existCrossFader(crossfaderID))
     {
-    	logWarning(__func__,"crossfaderID must exist");
+    	logWarning(__METHOD_NAME__,"crossfaderID must exist");
         return (E_NON_EXISTENT);
     }
 
@@ -1802,7 +1804,7 @@ am_Error_e CAmDatabaseHandlerMap::getListSinksOfDomain(const am_domainID_t domai
     listSinkID.clear();
     if (!existDomain(domainID))
     {
-    	logWarning(__func__,"domainID must exist");
+    	logWarning(__METHOD_NAME__,"domainID must exist");
         return (E_NON_EXISTENT);
     }
 
@@ -1820,7 +1822,7 @@ am_Error_e CAmDatabaseHandlerMap::getListSourcesOfDomain(const am_domainID_t dom
     listSourceID.clear();
     if (!existDomain(domainID))
     {
-    	logWarning(__func__,"domainID must exist");
+    	logWarning(__METHOD_NAME__,"domainID must exist");
         return (E_NON_EXISTENT);
     }
      CAmMapSource::const_iterator elementIterator = mMappedData.mSourceMap.begin();
@@ -1838,7 +1840,7 @@ am_Error_e CAmDatabaseHandlerMap::getListCrossfadersOfDomain(const am_domainID_t
     listCrossfader.clear();
     if (!existDomain(domainID))
     {
-    	logWarning(__func__,"domainID must exist");
+    	logWarning(__METHOD_NAME__,"domainID must exist");
         return (E_NON_EXISTENT);
     }
 
@@ -1865,7 +1867,7 @@ am_Error_e CAmDatabaseHandlerMap::getListGatewaysOfDomain(const am_domainID_t do
     listGatewaysID.clear();
     if (!existDomain(domainID))
     {
-    	logWarning(__func__,"domainID must exist");
+    	logWarning(__METHOD_NAME__,"domainID must exist");
         return (E_NON_EXISTENT);
     }
 
@@ -1883,7 +1885,7 @@ am_Error_e CAmDatabaseHandlerMap::getListConvertersOfDomain(const am_domainID_t 
     listConvertersID.clear();
     if (!existDomain(domainID))
     {
-    	logWarning(__func__,"domainID must exist");
+    	logWarning(__METHOD_NAME__,"domainID must exist");
         return (E_NON_EXISTENT);
     }
 
@@ -2074,7 +2076,7 @@ am_Error_e CAmDatabaseHandlerMap::getListMainSinkSoundProperties(const am_sinkID
 {
     if (!existSink(sinkID))
     {
-    	logWarning(__func__,"sinkID must exist");
+    	logWarning(__METHOD_NAME__,"sinkID must exist");
     	return E_NON_EXISTENT;
     }
 
@@ -2088,7 +2090,7 @@ am_Error_e CAmDatabaseHandlerMap::getListMainSourceSoundProperties(const am_sour
 {
     if (!existSource(sourceID))
     {
-    	logWarning(__func__,"sourceID must exist");
+    	logWarning(__METHOD_NAME__,"sourceID must exist");
     	return E_NON_EXISTENT;
     }
     const am_Source_s & source = mMappedData.mSourceMap.at(sourceID);
@@ -2101,7 +2103,7 @@ am_Error_e CAmDatabaseHandlerMap::getListSinkSoundProperties(const am_sinkID_t s
 {
     if (!existSink(sinkID))
     {
-    	logWarning(__func__,"sinkID must exist");
+    	logWarning(__METHOD_NAME__,"sinkID must exist");
     	return E_NON_EXISTENT;
     }
 
@@ -2115,7 +2117,7 @@ am_Error_e CAmDatabaseHandlerMap::getListSourceSoundProperties(const am_sourceID
 {
 	if (!existSource(sourceID))
     {
-		logWarning(__func__,"sourceID must exist");
+		logWarning(__METHOD_NAME__,"sourceID must exist");
     	return E_NON_EXISTENT;
     }
 
@@ -2135,7 +2137,7 @@ am_Error_e am::CAmDatabaseHandlerMap::getListSinkConnectionFormats(const am_sink
 {
    if (!existSink(sinkID))
    {
-	   logWarning(__func__,"sinkID must exist");
+	   logWarning(__METHOD_NAME__,"sinkID must exist");
 		return E_NON_EXISTENT;
    }
 	const am_Sink_s & sink = mMappedData.mSinkMap.at(sinkID);
@@ -2148,7 +2150,7 @@ am_Error_e am::CAmDatabaseHandlerMap::getListSourceConnectionFormats(const am_so
 {
    if (!existSource(sourceID))
    {
-	   logWarning(__func__,"sourceID must exist");
+	   logWarning(__METHOD_NAME__,"sourceID must exist");
 		return E_NON_EXISTENT;
    }
     const am_Source_s & source = mMappedData.mSourceMap.at(sourceID);
@@ -2161,7 +2163,7 @@ am_Error_e am::CAmDatabaseHandlerMap::getListGatewayConnectionFormats(const am_g
 {
    if (!existGateway(gatewayID))
    {
-	   logWarning(__func__,"gatewayID must exist");
+	   logWarning(__METHOD_NAME__,"gatewayID must exist");
 		return E_NON_EXISTENT;
    }
     ListConnectionFormat::const_iterator iter = mListConnectionFormat.begin();
@@ -2181,7 +2183,7 @@ am_Error_e CAmDatabaseHandlerMap::getTimingInformation(const am_mainConnectionID
 {
     if (!existMainConnection(mainConnectionID))
     {
-    	logWarning(__func__,"mainConnectionID must exist");
+    	logWarning(__METHOD_NAME__,"mainConnectionID must exist");
  		return E_NON_EXISTENT;
     }
     delay = -1;
@@ -2199,7 +2201,7 @@ am_Error_e CAmDatabaseHandlerMap::changeDelayMainConnection(const am_timeSync_t 
 {
     if (!existMainConnection(connectionID))
     {
- 		logError(__func__,"connectionID must exist");
+ 		logError(__METHOD_NAME__,"connectionID must exist");
  		return E_NON_EXISTENT;
     }
     DB_COND_UPDATE_RIE(mMappedData.mMainConnectionMap[connectionID].delay, delay);
@@ -2417,7 +2419,7 @@ am_Error_e CAmDatabaseHandlerMap::changeConnectionTimingInformation(const am_con
 {
      if(!existConnectionID(connectionID))
      {
-     	logError(__func__,"connectionID must exist");
+     	logError(__METHOD_NAME__,"connectionID must exist");
          return (E_NON_EXISTENT);
      }
 
@@ -2449,7 +2451,7 @@ am_Error_e CAmDatabaseHandlerMap::changeConnectionFinal(const am_connectionID_t 
     	mMappedData.mConnectionMap.at(connectionID).reserved = false;
     	return E_OK;
     }
-	logError(__func__,"connectionID must exist");
+	logError(__METHOD_NAME__,"connectionID must exist");
     return (E_NON_EXISTENT);
 }
 
@@ -2490,7 +2492,7 @@ bool CAmDatabaseHandlerMap::sourceVisible(const am_sourceID_t sourceID) const
 {
     if (!existSource(sourceID))
     {
-    	logError(__func__,"sourceID must exist");
+    	logError(__METHOD_NAME__,"sourceID must exist");
     	return false;
     }
     am_Source_Database_s source = mMappedData.mSourceMap.at(sourceID);
@@ -2574,7 +2576,7 @@ am_Error_e CAmDatabaseHandlerMap::changeSourceState(const am_sourceID_t sourceID
 {
     if(!(sourceState>=SS_UNKNNOWN && sourceState<=SS_MAX))
 	{
-		logError(__func__,"sourceState must be valid");
+		logError(__METHOD_NAME__,"sourceState must be valid");
 		return (E_NOT_POSSIBLE);
 	}
 
@@ -2583,7 +2585,7 @@ am_Error_e CAmDatabaseHandlerMap::changeSourceState(const am_sourceID_t sourceID
     	mMappedData.mSourceMap.at(sourceID).sourceState = sourceState;
 		return (E_OK);
 	}
-    logError(__func__,"sourceID must exist");
+    logError(__METHOD_NAME__,"sourceID must exist");
 	return (E_NON_EXISTENT);
 }
 
@@ -2597,7 +2599,7 @@ am_Error_e CAmDatabaseHandlerMap::getSinkMainVolume(const am_sinkID_t sinkID, am
 		return (E_OK);
 	}
 	mainVolume = -1;
-	logWarning(__func__,"sinkID must be valid");
+	logWarning(__METHOD_NAME__,"sinkID must be valid");
 	return (E_NON_EXISTENT);
 }
 
@@ -2611,7 +2613,7 @@ am_Error_e CAmDatabaseHandlerMap::getSinkVolume(const am_sinkID_t sinkID, am_vol
 		return (E_OK);
 	}
 	volume = -1;
-	logWarning(__func__,"sinkID must be valid");
+	logWarning(__METHOD_NAME__,"sinkID must be valid");
 	return (E_NON_EXISTENT);
 }
 
@@ -2624,7 +2626,7 @@ am_Error_e CAmDatabaseHandlerMap::getSourceVolume(const am_sourceID_t sourceID, 
 		return (E_OK);
 	}
 	volume = -1;
-	logWarning(__func__,"sourceID must be valid");
+	logWarning(__METHOD_NAME__,"sourceID must be valid");
 	return (E_NON_EXISTENT);
 }
 
@@ -2648,7 +2650,7 @@ am_Error_e CAmDatabaseHandlerMap::getSinkSoundPropertyValue(const am_sinkID_t si
 		}
 	}
 	value = -1;
-	logWarning(__func__,"sinkID must be valid");
+	logWarning(__METHOD_NAME__,"sinkID must be valid");
 	return (E_NON_EXISTENT);
 }
 
@@ -2671,7 +2673,7 @@ am_Error_e CAmDatabaseHandlerMap::getSourceSoundPropertyValue(const am_sourceID_
 		}
 	}
 	value = -1;
-	logWarning(__func__,"sourceID must be valid");
+	logWarning(__METHOD_NAME__,"sourceID must be valid");
 	return (E_NON_EXISTENT);
 }
 
@@ -2694,7 +2696,7 @@ am_Error_e CAmDatabaseHandlerMap::getMainSinkSoundPropertyValue(const am_sinkID_
 		}
 	}
 	value = -1;
-	logWarning(__func__,"sinkID must be valid");
+	logWarning(__METHOD_NAME__,"sinkID must be valid");
 	return (E_NON_EXISTENT);
 }
 
@@ -2719,7 +2721,7 @@ am_Error_e CAmDatabaseHandlerMap::getMainSourceSoundPropertyValue(const am_sourc
 	}
 
 	value = -1;
-	logWarning(__func__,"sourceID must be valid");
+	logWarning(__METHOD_NAME__,"sourceID must be valid");
 	return (E_NON_EXISTENT);
 }
 
@@ -2733,7 +2735,7 @@ am_Error_e CAmDatabaseHandlerMap::getDomainState(const am_domainID_t domainID, a
 		return (E_OK);
 	}
 	state = DS_UNKNOWN;
-	logWarning(__func__,"domainID must be valid");
+	logWarning(__METHOD_NAME__,"domainID must be valid");
 	return (E_NON_EXISTENT);
 }
 
@@ -2837,7 +2839,7 @@ am_Error_e CAmDatabaseHandlerMap::changeSinkVolume(const am_sinkID_t sinkID, con
 {
     if (!existSink(sinkID))
     {
-    	logError(__func__,"sinkID must be valid");
+    	logError(__METHOD_NAME__,"sinkID must be valid");
         return (E_NON_EXISTENT);
     }
 
@@ -2849,7 +2851,7 @@ am_Error_e CAmDatabaseHandlerMap::changeSourceVolume(const am_sourceID_t sourceI
 {
     if (!existSource(sourceID))
     {
-    	logError(__func__,"sourceID must be valid");
+    	logError(__METHOD_NAME__,"sourceID must be valid");
         return (E_NON_EXISTENT);
     }
     mMappedData.mSourceMap[sourceID].volume = volume;
@@ -2861,7 +2863,7 @@ am_Error_e CAmDatabaseHandlerMap::changeSourceSoundPropertyDB(const am_SoundProp
 {
     if (!existSource(sourceID))
     {
-    	logError(__func__,"sourceID must be valid");
+    	logError(__METHOD_NAME__,"sourceID must be valid");
         return (E_NON_EXISTENT);
     }
 
@@ -2877,7 +2879,7 @@ am_Error_e CAmDatabaseHandlerMap::changeSourceSoundPropertyDB(const am_SoundProp
 			return (E_OK);
 		}
 	}
-	logError(__func__,"soundproperty type must be valid source:",sourceID,"type",soundProperty.type);
+	logError(__METHOD_NAME__,"soundproperty type must be valid source:",sourceID,"type",soundProperty.type);
 	return (E_NON_EXISTENT);
 }
 
@@ -2886,7 +2888,7 @@ am_Error_e CAmDatabaseHandlerMap::changeSinkSoundPropertyDB(const am_SoundProper
 
     if (!existSink(sinkID))
     {
-    	logError(__func__,"sinkID must be valid");
+    	logError(__METHOD_NAME__,"sinkID must be valid");
         return (E_NON_EXISTENT);
     }
     am_Sink_Database_s & sink = mMappedData.mSinkMap[sinkID];
@@ -2901,7 +2903,7 @@ am_Error_e CAmDatabaseHandlerMap::changeSinkSoundPropertyDB(const am_SoundProper
  			return (E_OK);
  		}
  	}
-	logError(__func__,"soundproperty type must be valid sinkID:",sinkID,"type",soundProperty.type);
+	logError(__METHOD_NAME__,"soundproperty type must be valid sinkID:",sinkID,"type",soundProperty.type);
  	return (E_NON_EXISTENT);
 }
 
@@ -2910,7 +2912,7 @@ am_Error_e CAmDatabaseHandlerMap::changeCrossFaderHotSink(const am_crossfaderID_
 
     if (!existCrossFader(crossfaderID))
     {
-    	logError(__func__,"crossfaderID must be valid");
+    	logError(__METHOD_NAME__,"crossfaderID must be valid");
         return (E_NON_EXISTENT);
     }
 
@@ -2966,7 +2968,7 @@ am_Error_e CAmDatabaseHandlerMap::changeSourceDB(const am_sourceID_t sourceID, c
 
     if (!existSource(sourceID))
     {
-    	logError(__func__,"sourceID must be valid");
+    	logError(__METHOD_NAME__,"sourceID must be valid");
         return (E_NON_EXISTENT);
     }
 
@@ -3042,7 +3044,7 @@ am_Error_e CAmDatabaseHandlerMap::changeSinkDB(const am_sinkID_t sinkID, const a
 
     if (!existSink(sinkID))
     {
-    	logError(__func__,"sinkID must be valid");
+    	logError(__METHOD_NAME__,"sinkID must be valid");
         return (E_NON_EXISTENT);
     }
 
@@ -3108,7 +3110,7 @@ am_Error_e CAmDatabaseHandlerMap::getListMainSinkNotificationConfigurations(cons
 
     if (!existSink(sinkID))
     {
-    	logWarning(__func__,"sinkID must be valid");
+    	logWarning(__METHOD_NAME__,"sinkID must be valid");
         return (E_DATABASE_ERROR);
     }
     listMainNotificationConfigurations.clear();
@@ -3123,7 +3125,7 @@ am_Error_e CAmDatabaseHandlerMap::getListMainSourceNotificationConfigurations(co
 
     if (!existSource(sourceID))
     {
-    	logWarning(__func__,"sourceID must be valid");
+    	logWarning(__METHOD_NAME__,"sourceID must be valid");
         return (E_DATABASE_ERROR);
     }
 
@@ -3156,7 +3158,7 @@ am_Error_e CAmDatabaseHandlerMap::changeMainSinkNotificationConfigurationDB(cons
 
     if (!existSink(sinkID))
     {
-    	logError(__func__,"sinkID must be valid");
+    	logError(__METHOD_NAME__,"sinkID must be valid");
         return (E_NON_EXISTENT);
     }
     if(!changeMainNotificationConfiguration(mMappedData.mSinkMap.at(sinkID).listMainNotificationConfigurations, mainNotificationConfiguration))
@@ -3174,7 +3176,7 @@ am_Error_e CAmDatabaseHandlerMap::changeMainSourceNotificationConfigurationDB(co
 
     if (!existSource(sourceID))
     {
-    	logError(__func__,"sourceID must be valid");
+    	logError(__METHOD_NAME__,"sourceID must be valid");
         return (E_NON_EXISTENT);
     }
 
@@ -3193,7 +3195,7 @@ am_Error_e CAmDatabaseHandlerMap::changeGatewayDB(const am_gatewayID_t gatewayID
 
    if (!existGateway(gatewayID))
    {
-	   logError(__func__,"gatewayID must be valid");
+	   logError(__METHOD_NAME__,"gatewayID must be valid");
        return (E_NON_EXISTENT);
    }
 
@@ -3224,7 +3226,7 @@ am_Error_e CAmDatabaseHandlerMap::changeConverterDB(const am_converterID_t conve
 
    if (!existConverter(converterID))
    {
-	   logError(__func__,"converterID must be valid");
+	   logError(__METHOD_NAME__,"converterID must be valid");
        return (E_NON_EXISTENT);
    }
 
@@ -3271,7 +3273,7 @@ am_Error_e CAmDatabaseHandlerMap::changeSinkNotificationConfigurationDB(const am
 
     if (!existSink(sinkID))
     {
- 	   logError(__func__,"sinkID must be valid");
+ 	   logError(__METHOD_NAME__,"sinkID must be valid");
         return (E_NON_EXISTENT);
     }
     if(!changeNotificationConfiguration(mMappedData.mSinkMap.at(sinkID).listNotificationConfigurations, notificationConfiguration))
@@ -3288,7 +3290,7 @@ am_Error_e CAmDatabaseHandlerMap::changeSourceNotificationConfigurationDB(const 
 
     if (!existSource(sourceID))
     {
-  	   logError(__func__,"sourceID must be valid");
+  	   logError(__METHOD_NAME__,"sourceID must be valid");
         return (E_NON_EXISTENT);
     }
 
