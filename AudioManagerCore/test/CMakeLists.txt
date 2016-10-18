@@ -29,7 +29,3 @@ add_subdirectory (AmRouterTest)
 add_subdirectory (AmRouterMapTest)
 add_subdirectory (AmRoutingInterfaceTest)
 
-IF(WITH_TELNET)
-    add_subdirectory (AmTelnetServerTest)
-ENDIF(WITH_TELNET)
-

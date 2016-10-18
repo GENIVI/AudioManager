@@ -42,9 +42,6 @@ option( WITH_DLT
 option( WITH_DOCUMENTATION
 	"Build together with Doxygen Documentation" OFF )
 
-option( WITH_TELNET
-	"Build with Telnetserver (can only work with SocketHandler)" ON)
-
 option ( WITH_SYSTEMD_WATCHDOG
     "Build with systemD support & watchdog" ON)
 
@@ -69,12 +66,6 @@ set(DBUS_SERVICE_PREFIX "org.genivi.audiomanager"
 
 set(DBUS_SERVICE_OBJECT_PATH "/org/genivi/audiomanager"
     CACHE PROPERTY "The service object path of the AM - only changable for legacy dbus")
-
-set(DEFAULT_TELNETPORT 6080
-    CACHE INTEGER "The telnet port that is offered by the AM, only valid if TELNET is ON")
-
-set(MAX_TELNETCONNECTIONS 3
-    CACHE INTEGER "The maximum of allowed telnet connections, only valid if TELNET is ON")
 
 set(DYNAMIC_ID_BOUNDARY 100
     CACHE INTEGER "The ID boundary between static and dynamic ID ranges")
@@ -213,7 +204,6 @@ message(STATUS "BUILD_DOCUMENTATION           = ${WITH_DOCUMENTATION}")
 message(STATUS "WITH_TESTS                    = ${WITH_TESTS}")
 message(STATUS "WITH_DLT                      = ${WITH_DLT}")
 message(STATUS "WITH_TESTS                    = ${WITH_TESTS}")
-message(STATUS "WITH_TELNET                   = ${WITH_TELNET}")
 message(STATUS "WITH_SYSTEMD_WATCHDOG         = ${WITH_SYSTEMD_WATCHDOG}")
 message(STATUS "WITH_CAPI_WRAPPER             = ${WITH_CAPI_WRAPPER}")
 message(STATUS "WITH_DBUS_WRAPPER             = ${WITH_DBUS_WRAPPER}")

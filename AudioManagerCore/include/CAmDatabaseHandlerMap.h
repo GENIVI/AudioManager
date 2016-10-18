@@ -471,6 +471,7 @@ public:
     CAmDatabaseObserver *mpDatabaseObserver; //!< pointer to the Observer
     ListConnectionFormat mListConnectionFormat; //!< list of connection formats
     CAmMappedData mMappedData; //!< Internal structure encapsulating all the maps used in this class
+
 #ifdef UNIT_TEST
     public:
     void setConnectionIDRange(const int16_t & min, const int16_t &  max)

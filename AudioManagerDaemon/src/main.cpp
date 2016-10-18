@@ -24,10 +24,6 @@
 
 #include "audiomanagerconfig.h"
 
-#ifdef  WITH_TELNET
-    #include "CAmTelnetServer.h"
-#endif
-
 #ifdef WITH_CAPI_WRAPPER
     #include "CAmCommonAPIWrapper.h"
 #endif
@@ -35,7 +31,6 @@
 #ifdef WITH_DBUS_WRAPPER
 	#include "CAmDbusWrapper.h"
 #endif
-
 
 #ifdef WITH_DATABASE_STORAGE
     #include "CAmDatabaseHandlerSQLite.h"
@@ -86,8 +81,6 @@ TCLAP::ValueArg<std::string> routingPluginDir("r","RoutingPluginDir","path for l
 TCLAP::ValueArg<std::string> commandPluginDir("l","CommandPluginDir","path for looking for command plugins",false," ","string");
 TCLAP::ValueArg<std::string> dltLogFilename("F","dltLogFilename","the name of the logfile, absolute path. Only if logging is et to file",false," ","string");
 TCLAP::ValueArg<unsigned int> dltOutput ("O","dltOutput","defines where logs are written. 0=dlt-daemon(default), 1=command line, 2=file ",false,0,"int");
-TCLAP::ValueArg<unsigned int> telnetPort ("t","telnetport","The port that is used for telnet",false,DEFAULT_TELNETPORT,"int");
-TCLAP::ValueArg<unsigned int> maxConnections ("m","maxConnections","Maximal number of connections for telnet",false,MAX_TELNETCONNECTIONS,"int");
 TCLAP::SwitchArg dltEnable ("e","dltEnable","Enables or disables dlt logging. Default = enabled",true);
 TCLAP::SwitchArg dbusWrapperTypeBool ("T","dbusType","DbusType to be used by CAmDbusWrapper: if option is selected, DBUS_SYSTEM is used otherwise DBUS_SESSION",false);
 TCLAP::SwitchArg currentSettings("i","currentSettings","print current settings and exit",false);
@@ -165,10 +158,6 @@ void printCmdInformation()
 {
 	printf("\n\n\nCurrent settings:\n\n");
 	printf("\tAudioManagerDaemon Version:\t\t%s\n", DAEMONVERSION);
-#ifdef WITH_TELNET
-	printf("\tTelnet portNumber:\t\t\t%i\n", telnetPort.getValue());
-	printf("\tTelnet maxConnections:\t\t\t%i\n", maxConnections.getValue());
-#endif
 	printf("\tControllerPlugin: \t\t\t%s\n", controllerPlugin.getValue().c_str());
 	printf("\tDirectories of CommandPlugins: \t\t\n");
     std::vector<std::string>::const_iterator dirIter = listCommandPluginDirs.begin();
@@ -247,10 +236,6 @@ void mainProgram(int argc, char *argv[])
     	cmd->add(dltOutput);
 #ifdef WITH_DBUS_WRAPPER
     	cmd->add(dbusWrapperTypeBool);
-#endif
-#ifdef WITH_TELNET
-    	cmd->add(telnetPort);
-    	cmd->add(maxConnections);
 #endif
 #ifdef WITH_DATABASE_STORAGE
     	cmd->add(databasePath);
@@ -348,12 +333,6 @@ CAmRouter iRouter(pDatabaseHandler, &iControlSender);
 
 CAmControlReceiver iControlReceiver(pDatabaseHandler,&iRoutingSender,&iCommandSender,&iSocketHandler, &iRouter);
 
-#ifdef WITH_TELNET
-    CAmTelnetServer iTelnetServer(&iSocketHandler, &iCommandSender, &iCommandReceiver, &iRoutingSender, &iRoutingReceiver, &iControlSender, &iControlReceiver, pDatabaseHandler, &iRouter, telnetPort.getValue(), maxConnections.getValue());
-    CAmDatabaseObserver iObserver(&iCommandSender, &iRoutingSender, &iSocketHandler, &iTelnetServer);
-#else /*WITH_TELNET*/
-    CAmDatabaseObserver iObserver(&iCommandSender,&iRoutingSender, &iSocketHandler);
-#endif
 
     iDatabaseHandler.registerObserver(&iObserver);
 
