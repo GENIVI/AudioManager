@@ -90,6 +90,12 @@ set(AM_MAX_CONNECTIONS 0x1000
 
 set(AM_MAX_MAIN_CONNECTIONS 0x1000
     CACHE INTEGER "Number of max Mainconnections before rollover")
+    
+set(AUDIOMANGER_APP_ID "AUDI"
+    CACHE PROPERTY "The application ID that is used by the audiomanager")   
+    
+set(AUDIOMANGER_APP_DESCRIPTION "Audiomanager"
+    CACHE PROPERTY "The description of the Audiomanager application")     
 
 set(AUDIOMANAGER_INCLUDE_FOLDER  ${CMAKE_BINARY_DIR}/include)
 set(AUDIO_INCLUDE_FOLDER ${CMAKE_SOURCE_DIR}/include)
@@ -221,6 +227,8 @@ message(STATUS "AM_MAX_CONNECTIONS            = ${AM_MAX_CONNECTIONS}")
 message(STATUS "AM_MAX_MAIN_CONNECTIONS       = ${AM_MAX_MAIN_CONNECTIONS}")
 message(STATUS "BUILD_TESTING                 = ${BUILD_TESTING}")
 message(STATUS "CMAKE_INSTALL_DOCDIR          = ${CMAKE_INSTALL_DOCDIR}")
+message(STATUS "AUDIOMANGER_APP_ID            = ${AUDIOMANGER_APP_ID}")
+message(STATUS "AUDIOMANGER_APP_DESCRIPTION   = ${AUDIOMANGER_APP_DESCRIPTION}")
 message(STATUS "CommandInterface version: ${LIB_COMMAND_INTERFACE_VERSION}")
 message(STATUS "ControlInterface version: ${LIB_CONTROL_INTERFACE_VERSION}")
 message(STATUS "RoutingInterface version: ${LIB_ROUTING_INTERFACE_VERSION}")

@@ -61,6 +61,14 @@
 #include "CAmCommandLineSingleton.h"
 #include "CAmDatabaseHandlerMap.h"
 
+#ifndef AUDIOMANGER_APP_ID
+	#define AUDIOMANGER_APP_ID "AUDI"
+#endif
+
+#ifndef AUDIOMANGER_APP_DESCRIPTION
+	#define AUDIOMANGER_APP_DESCRIPTION "AudioManager"
+#endif
+
 
 using namespace am;
 
@@ -244,7 +252,7 @@ void mainProgram(int argc, char *argv[])
 		daemonize();
 	}
 
-    CAmDltWrapper::instanctiateOnce("AUDI", "AudioManager",dltEnable.getValue(),static_cast<am::CAmDltWrapper::logDestination>(dltOutput.getValue()),dltLogFilename.getValue());
+    CAmDltWrapper::instanctiateOnce(AUDIOMANGER_APP_ID, AUDIOMANGER_APP_DESCRIPTION ,dltEnable.getValue(),static_cast<am::CAmDltWrapper::logDestination>(dltOutput.getValue()),dltLogFilename.getValue());
 
     //Instantiate all classes. Keep in same order !
     CAmSocketHandler iSocketHandler;
