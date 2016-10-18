@@ -32,12 +32,6 @@
 	#include "CAmDbusWrapper.h"
 #endif
 
-#ifdef WITH_DATABASE_STORAGE
-    #include "CAmDatabaseHandlerSQLite.h"
-#else
-    #include "CAmDatabaseHandlerMap.h"
-#endif
-
 #ifdef WITH_SYSTEMD_WATCHDOG
     #include "CAmWatchdog.h"
 #endif
@@ -65,6 +59,7 @@
 #include "CAmDltWrapper.h"
 #include "CAmSocketHandler.h"
 #include "CAmCommandLineSingleton.h"
+#include "CAmDatabaseHandlerMap.h"
 
 
 using namespace am;
@@ -237,9 +232,6 @@ void mainProgram(int argc, char *argv[])
 #ifdef WITH_DBUS_WRAPPER
     	cmd->add(dbusWrapperTypeBool);
 #endif
-#ifdef WITH_DATABASE_STORAGE
-    	cmd->add(databasePath);
-#endif
     }
     catch (TCLAP::ArgException &e)  // catch any exceptions
     { std::cerr << "error: " << e.error() << " for arg " << e.argId() << std::endl; }
@@ -332,18 +324,19 @@ CAmRouter iRouter(pDatabaseHandler, &iControlSender);
 #endif /*WITH_DBUS_WRAPPER*/
 
 CAmControlReceiver iControlReceiver(pDatabaseHandler,&iRoutingSender,&iCommandSender,&iSocketHandler, &iRouter);
+CAmDatabaseObserver iObserver(&iCommandSender,&iRoutingSender, &iSocketHandler);
 
 
-    iDatabaseHandler.registerObserver(&iObserver);
+iDatabaseHandler.registerObserver(&iObserver);
 
-    //startup all the Plugins and Interfaces
-    //at this point, commandline arguments can be parsed
-    iControlSender.startupController(&iControlReceiver);
-    iCommandSender.startupInterfaces(&iCommandReceiver);
-    iRoutingSender.startupInterfaces(&iRoutingReceiver);
+//startup all the Plugins and Interfaces
+//at this point, commandline arguments can be parsed
+iControlSender.startupController(&iControlReceiver);
+iCommandSender.startupInterfaces(&iCommandReceiver);
+iRoutingSender.startupInterfaces(&iRoutingReceiver);
 
-    //when the routingInterface is done, all plugins are loaded:
-    iControlSender.setControllerReady();
+//when the routingInterface is done, all plugins are loaded:
+iControlSender.setControllerReady();
 
 #ifdef WITH_SYSTEMD_WATCHDOG
     iWatchdog.startWatchdog();
