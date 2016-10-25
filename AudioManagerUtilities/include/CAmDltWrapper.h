@@ -29,7 +29,7 @@
 #include "audiomanagertypes.h"
 
 #ifdef WITH_DLT
-	#include <dlt/dlt.h>
+	#include <dlt.h>
 #else
 	#include <stdint.h>
 	#include <sstream>
