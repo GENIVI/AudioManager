@@ -30,6 +30,8 @@ INCLUDE_DIRECTORIES(
     "*.cpp"    
 )
 
+LINK_DIRECTORIES(${AUDIO_MANAGER_CORE_LIB_DIRECTORIES})
+
 add_executable(AmControlInterfaceTest ${CONTROL_INTERFACE_SRCS_CXX})
 
 TARGET_LINK_LIBRARIES(AmControlInterfaceTest 
