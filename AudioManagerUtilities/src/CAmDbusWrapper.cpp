@@ -106,6 +106,12 @@ CAmDbusWrapper::CAmDbusWrapper(CAmSocketHandler* socketHandler, DBusBusType type
         logError("DBusWrapper::DBusWrapper Registering of timer functions failed");
     }
 
+    if (prefix.empty() && objectPath.empty())
+    {
+        logInfo("DBusWrapper::DBusWrapper We don't register a connection object!");
+        return;
+    }
+
     //register callback for Introspectio
     mObjectPathVTable.message_function = CAmDbusWrapper::cbRootIntrospection;
     dbus_connection_register_object_path(mpDbusConnection, objectPath.c_str(), &mObjectPathVTable, this);
