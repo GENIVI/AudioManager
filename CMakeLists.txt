@@ -137,7 +137,7 @@ if(WITH_TESTS)
 	#check if we can find the google stuff
 	pkg_check_modules (GTEST "gtest >= 1.6.0")
 	pkg_check_modules (GMOCK "gmock >= 1.6.0")
-	if (NOT(${GTEST_FOUND} AND ${GMOCK_FOUND}))
+	if (NOT("${GTEST_FOUND}" AND "${GMOCK_FOUND}"))
 		message (STATUS "Building and installing with shipped sources")
 		add_subdirectory(googleMock)
 		set(GMOCK_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/googleMock/include")
@@ -147,7 +147,7 @@ if(WITH_TESTS)
 		configure_file( ${CMAKE_SOURCE_DIR}/cmake/gtest.pc.in ${CMAKE_BINARY_DIR}/gtest.pc @ONLY )
 		configure_file( ${CMAKE_SOURCE_DIR}/cmake/gmock.pc.in ${CMAKE_BINARY_DIR}/gmock.pc @ONLY )
         install(FILES ${CMAKE_BINARY_DIR}/gmock.pc ${CMAKE_BINARY_DIR}/gtest.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig COMPONENT devel)
-	endif (NOT(${GTEST_FOUND} AND ${GMOCK_FOUND}))
+	endif (NOT("${GTEST_FOUND}" AND "${GMOCK_FOUND}"))
 endif(WITH_TESTS)
 
 configure_package_config_file (
