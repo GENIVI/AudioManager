@@ -254,6 +254,8 @@ private:
 
     int mPipe[2]; //!< the pipe
     int mReturnPipe[2]; //!< pipe handling returns
+    sh_pollHandle_t mHandle;
+    CAmSocketHandler* mpSocketHandler;
     std::deque<CAmDelegagePtr> mListDelegatePoiters; //!< intermediate queue to store the pipe results
 
 public:
@@ -764,6 +766,8 @@ public:
     CAmSerializer(CAmSocketHandler *iSocketHandler) :
             mPipe(), //
             mReturnPipe(),//
+            mHandle(),
+            mpSocketHandler(iSocketHandler),
             mListDelegatePoiters(), //
             receiverCallbackT(this, &CAmSerializer::receiverCallback), //
             dispatcherCallbackT(this, &CAmSerializer::dispatcherCallback), //
@@ -784,17 +788,17 @@ public:
         }
 
         short event = 0;
-        sh_pollHandle_t handle;
         event |= POLLIN;
-        iSocketHandler->addFDPoll(mPipe[0], event, NULL, &receiverCallbackT, &checkerCallbackT, &dispatcherCallbackT, NULL, handle);
+        mpSocketHandler->addFDPoll(mPipe[0], event, NULL, &receiverCallbackT, &checkerCallbackT, &dispatcherCallbackT, NULL, mHandle);
     }
 
     ~CAmSerializer()
     {
-		close(mPipe[0]);
-		close(mPipe[1]);
-		close(mReturnPipe[0]);
-		close(mReturnPipe[1]);
+        mpSocketHandler->removeFDPoll(mHandle);
+        close(mPipe[0]);
+        close(mPipe[1]);
+        close(mReturnPipe[0]);
+        close(mReturnPipe[1]);
     }
 };
 } /* namespace am */
