@@ -1,5 +1,5 @@
-libdir=@CMAKE_INSTALL_PREFIX@/lib
-includedir=@CMAKE_INSTALL_PREFIX@/include/@LIB_INSTALL_SUFFIX@/AudioMangerUtilities
+libdir=@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_LIBDIR@
+includedir=@CMAKE_INSTALL_PREFIX@/include/@LIB_INSTALL_SUFFIX@/AudioManagerUtilities
 
 Name: Audiomanager Utilities
 Description: The Audiomanager Utilities 
