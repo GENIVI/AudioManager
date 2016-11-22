@@ -29,7 +29,6 @@
 #include <sys/ioctl.h>
 #include "CAmCommandSender.h"
 #include "CAmRoutingSender.h"
-#include "CAmTelnetServer.h"
 #include "CAmDltWrapper.h"
 #include "CAmSerializer.h"
 

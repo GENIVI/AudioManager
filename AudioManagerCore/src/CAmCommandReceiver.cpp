@@ -29,6 +29,8 @@
 #include "CAmDltWrapper.h"
 #include "CAmSocketHandler.h"
 
+#define __METHOD_NAME__ std::string (std::string("CAmCommandReceiver::") + __func__)
+
 namespace am
 {
 
@@ -76,49 +78,49 @@ CAmCommandReceiver::~CAmCommandReceiver()
 
 am_Error_e CAmCommandReceiver::connect(const am_sourceID_t sourceID, const am_sinkID_t sinkID, am_mainConnectionID_t & mainConnectionID)
 {
-    logInfo("CommandReceiver::connect got called, sourceID=", sourceID, "sinkID=", sinkID);
+    logInfo(__METHOD_NAME__,"sourceID=", sourceID, "sinkID=", sinkID);
     return (mControlSender->hookUserConnectionRequest(sourceID, sinkID, mainConnectionID));
 }
 
 am_Error_e CAmCommandReceiver::disconnect(const am_mainConnectionID_t mainConnectionID)
 {
-    logInfo("CommandReceiver::disconnect got called, mainConnectionID=", mainConnectionID);
+    logInfo(__METHOD_NAME__,"mainConnectionID=", mainConnectionID);
     return (mControlSender->hookUserDisconnectionRequest(mainConnectionID));
 }
 
 am_Error_e CAmCommandReceiver::setVolume(const am_sinkID_t sinkID, const am_mainVolume_t volume)
 {
-    logInfo("CommandReceiver::setVolume got called, sinkID=", sinkID, "volume=", volume);
+    logInfo(__METHOD_NAME__,"sinkID=", sinkID, "volume=", volume);
     return (mControlSender->hookUserVolumeChange(sinkID, volume));
 }
 
 am_Error_e CAmCommandReceiver::volumeStep(const am_sinkID_t sinkID, const int16_t volumeStep)
 {
-    logInfo("CommandReceiver::volumeStep got called, sinkID=", sinkID, "volumeStep=", volumeStep);
+    logInfo(__METHOD_NAME__,"sinkID=", sinkID, "volumeStep=", volumeStep);
     return (mControlSender->hookUserVolumeStep(sinkID, volumeStep));
 }
 
 am_Error_e CAmCommandReceiver::setSinkMuteState(const am_sinkID_t sinkID, const am_MuteState_e muteState)
 {
-    logInfo("CommandReceiver::setSinkMuteState got called, sinkID=", sinkID, "muteState=", muteState);
+    logInfo(__METHOD_NAME__,"sinkID=", sinkID, "muteState=", muteState);
     return (mControlSender->hookUserSetSinkMuteState(sinkID, muteState));
 }
 
 am_Error_e CAmCommandReceiver::setMainSinkSoundProperty(const am_MainSoundProperty_s & soundProperty, const am_sinkID_t sinkID)
 {
-    logInfo("CommandReceiver::setMainSinkSoundProperty got called, sinkID=", sinkID, "soundPropertyType=", soundProperty.type, "soundPropertyValue=", soundProperty.value);
+    logInfo(__METHOD_NAME__,"sinkID=", sinkID, "soundPropertyType=", soundProperty.type, "soundPropertyValue=", soundProperty.value);
     return (mControlSender->hookUserSetMainSinkSoundProperty(sinkID, soundProperty));
 }
 
 am_Error_e CAmCommandReceiver::setMainSourceSoundProperty(const am_MainSoundProperty_s & soundProperty, const am_sourceID_t sourceID)
 {
-    logInfo("CommandReceiver::setMainSourceSoundProperty got called, sourceID=", sourceID, "soundPropertyType=", soundProperty.type, "soundPropertyValue=", soundProperty.value);
+    logInfo(__METHOD_NAME__,"sourceID=", sourceID, "soundPropertyType=", soundProperty.type, "soundPropertyValue=", soundProperty.value);
     return (mControlSender->hookUserSetMainSourceSoundProperty(sourceID, soundProperty));
 }
 
 am_Error_e CAmCommandReceiver::setSystemProperty(const am_SystemProperty_s & property)
 {
-    logInfo("CommandReceiver::setSystemProperty got called", "type=", property.type, "soundPropertyValue=", property.value);
+    logInfo(__METHOD_NAME__,"type=", property.type, "soundPropertyValue=", property.value);
     return (mControlSender->hookUserSetSystemProperty(property));
 }
 
@@ -130,7 +132,6 @@ am_Error_e CAmCommandReceiver::getVolume(const am_sinkID_t sinkID, am_mainVolume
 am_Error_e CAmCommandReceiver::getListMainConnections(std::vector<am_MainConnectionType_s> & listConnections) const
 {
     return (mDatabaseHandler->getListVisibleMainConnections(listConnections));
-
 }
 
 am_Error_e CAmCommandReceiver::getListMainSinks(std::vector<am_SinkType_s>& listMainSinks) const
@@ -245,13 +246,13 @@ am_Error_e CAmCommandReceiver::getListMainSourceNotificationConfigurations(const
 
 am_Error_e CAmCommandReceiver::setMainSinkNotificationConfiguration(const am_sinkID_t sinkID, const am_NotificationConfiguration_s& mainNotificationConfiguration)
 {
-    logInfo("CommandReceiver::setMainSinkNotificationConfiguration got called, sinkID=", sinkID, " type=",mainNotificationConfiguration.type, " parameter=", mainNotificationConfiguration.parameter, "status=",mainNotificationConfiguration.status);
+    logInfo(__METHOD_NAME__,"sinkID=", sinkID, " type=",mainNotificationConfiguration.type, " parameter=", mainNotificationConfiguration.parameter, "status=",mainNotificationConfiguration.status);
     return (mControlSender->hookUserSetMainSinkNotificationConfiguration(sinkID,mainNotificationConfiguration));
 }
 
 am_Error_e CAmCommandReceiver::setMainSourceNotificationConfiguration(const am_sourceID_t sourceID, const am_NotificationConfiguration_s& mainNotificationConfiguration)
 {
-    logInfo("CommandReceiver::setMainSourceNotificationConfiguration got called, sourceID=", sourceID, " type=",mainNotificationConfiguration.type, " parameter=", mainNotificationConfiguration.parameter, "status=",mainNotificationConfiguration.status);
+    logInfo(__METHOD_NAME__,"sourceID=", sourceID, " type=",mainNotificationConfiguration.type, " parameter=", mainNotificationConfiguration.parameter, "status=",mainNotificationConfiguration.status);
     return (mControlSender->hookUserSetMainSourceNotificationConfiguration(sourceID,mainNotificationConfiguration));
 }
 

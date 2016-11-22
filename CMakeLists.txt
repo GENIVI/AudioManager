@@ -42,9 +42,6 @@ option( WITH_DLT
 option( WITH_DOCUMENTATION
 	"Build together with Doxygen Documentation" OFF )
 
-option( WITH_TELNET
-	"Build with Telnetserver (can only work with SocketHandler)" ON)
-
 option ( WITH_SYSTEMD_WATCHDOG
     "Build with systemD support & watchdog" ON)
 
@@ -70,12 +67,6 @@ set(DBUS_SERVICE_PREFIX "org.genivi.audiomanager"
 set(DBUS_SERVICE_OBJECT_PATH "/org/genivi/audiomanager"
     CACHE PROPERTY "The service object path of the AM - only changable for legacy dbus")
 
-set(DEFAULT_TELNETPORT 6080
-    CACHE INTEGER "The telnet port that is offered by the AM, only valid if TELNET is ON")
-
-set(MAX_TELNETCONNECTIONS 3
-    CACHE INTEGER "The maximum of allowed telnet connections, only valid if TELNET is ON")
-
 set(DYNAMIC_ID_BOUNDARY 100
     CACHE INTEGER "The ID boundary between static and dynamic ID ranges")
 
@@ -99,6 +90,12 @@ set(AM_MAX_CONNECTIONS 0x1000
 
 set(AM_MAX_MAIN_CONNECTIONS 0x1000
     CACHE INTEGER "Number of max Mainconnections before rollover")
+    
+set(AUDIOMANGER_APP_ID "AUDI"
+    CACHE PROPERTY "The application ID that is used by the audiomanager")   
+    
+set(AUDIOMANGER_APP_DESCRIPTION "Audiomanager"
+    CACHE PROPERTY "The description of the Audiomanager application")     
 
 set(AUDIOMANAGER_INCLUDE_FOLDER  ${CMAKE_BINARY_DIR}/include)
 set(AUDIO_INCLUDE_FOLDER ${CMAKE_SOURCE_DIR}/include)
@@ -115,15 +112,19 @@ GET_COMMAND_INTERFACE_VERSION(${AUDIO_INCLUDE_FOLDER})
 GET_ROUTING_INTERFACE_VERSION(${AUDIO_INCLUDE_FOLDER})
 GET_CONTROL_INTERFACE_VERSION(${AUDIO_INCLUDE_FOLDER})
 
+if(NOT DEFINED DEFAULT_PLUGIN_DIR)
+    set(DEFAULT_PLUGIN_DIR "${CMAKE_INSTALL_FULL_LIBDIR}/${LIB_INSTALL_SUFFIX}")
+endif(NOT DEFINED DEFAULT_PLUGIN_DIR)
 if(NOT DEFINED DEFAULT_PLUGIN_COMMAND_DIR)
-    set(DEFAULT_PLUGIN_COMMAND_DIR "${CMAKE_INSTALL_FULL_LIBDIR}/${LIB_INSTALL_SUFFIX}/command")
+    set(DEFAULT_PLUGIN_COMMAND_DIR "${DEFAULT_PLUGIN_DIR}/command")
 endif(NOT DEFINED DEFAULT_PLUGIN_COMMAND_DIR)
 if(NOT DEFINED DEFAULT_PLUGIN_ROUTING_DIR)
-    set(DEFAULT_PLUGIN_ROUTING_DIR "${CMAKE_INSTALL_FULL_LIBDIR}/${LIB_INSTALL_SUFFIX}/routing")
+    set(DEFAULT_PLUGIN_ROUTING_DIR "${DEFAULT_PLUGIN_DIR}/routing")
 endif(NOT DEFINED DEFAULT_PLUGIN_ROUTING_DIR)
 if(NOT DEFINED CONTROLLER_PLUGIN_DIR)
-    set(CONTROLLER_PLUGIN_DIR "${CMAKE_INSTALL_FULL_LIBDIR}/${LIB_INSTALL_SUFFIX}/control")
+    set(CONTROLLER_PLUGIN_DIR "${DEFAULT_PLUGIN_DIR}/control")
 endif(NOT DEFINED CONTROLLER_PLUGIN_DIR)
+
 
 ##global build flags set(CPACK_RPM_COMPONENT_INSTALL ON)
 set (AUDIOMANAGER_CMAKE_CXX_FLAGS "-std=c++11 -pedantic -rdynamic -Wno-variadic-macros")
@@ -137,7 +138,7 @@ if(WITH_TESTS)
 	#check if we can find the google stuff
 	pkg_check_modules (GTEST "gtest >= 1.6.0")
 	pkg_check_modules (GMOCK "gmock >= 1.6.0")
-	if (NOT(${GTEST_FOUND} AND ${GMOCK_FOUND}))
+	if (NOT("${GTEST_FOUND}" AND "${GMOCK_FOUND}"))
 		message (STATUS "Building and installing with shipped sources")
 		add_subdirectory(googleMock)
 		set(GMOCK_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/googleMock/include")
@@ -147,7 +148,7 @@ if(WITH_TESTS)
 		configure_file( ${CMAKE_SOURCE_DIR}/cmake/gtest.pc.in ${CMAKE_BINARY_DIR}/gtest.pc @ONLY )
 		configure_file( ${CMAKE_SOURCE_DIR}/cmake/gmock.pc.in ${CMAKE_BINARY_DIR}/gmock.pc @ONLY )
         install(FILES ${CMAKE_BINARY_DIR}/gmock.pc ${CMAKE_BINARY_DIR}/gtest.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig COMPONENT devel)
-	endif (NOT(${GTEST_FOUND} AND ${GMOCK_FOUND}))
+	endif (NOT("${GTEST_FOUND}" AND "${GMOCK_FOUND}"))
 endif(WITH_TESTS)
 
 configure_package_config_file (
@@ -213,7 +214,6 @@ message(STATUS "BUILD_DOCUMENTATION           = ${WITH_DOCUMENTATION}")
 message(STATUS "WITH_TESTS                    = ${WITH_TESTS}")
 message(STATUS "WITH_DLT                      = ${WITH_DLT}")
 message(STATUS "WITH_TESTS                    = ${WITH_TESTS}")
-message(STATUS "WITH_TELNET                   = ${WITH_TELNET}")
 message(STATUS "WITH_SYSTEMD_WATCHDOG         = ${WITH_SYSTEMD_WATCHDOG}")
 message(STATUS "WITH_CAPI_WRAPPER             = ${WITH_CAPI_WRAPPER}")
 message(STATUS "WITH_DBUS_WRAPPER             = ${WITH_DBUS_WRAPPER}")
@@ -224,6 +224,7 @@ message(STATUS "LIB_INSTALL_SUFFIX            = ${LIB_INSTALL_SUFFIX}")
 message(STATUS "TEST_EXECUTABLE_INSTALL_PATH  = ${TEST_EXECUTABLE_INSTALL_PATH}")
 message(STATUS "DEFAULT_PLUGIN_COMMAND_DIR    = ${DEFAULT_PLUGIN_COMMAND_DIR}")
 message(STATUS "DEFAULT_PLUGIN_ROUTING_DIR    = ${DEFAULT_PLUGIN_ROUTING_DIR}")
+message(STATUS "DEFAULT_PLUGIN_DIR            = ${DEFAULT_PLUGIN_DIR}")
 message(STATUS "CONTROLLER_PLUGIN_DIR         = ${CONTROLLER_PLUGIN_DIR}")
 message(STATUS "AM_SHARE_FOLDER               = ${AM_SHARE_FOLDER}")
 message(STATUS "AM_MAP_CAPACITY               = ${AM_MAP_CAPACITY}")
@@ -231,6 +232,8 @@ message(STATUS "AM_MAX_CONNECTIONS            = ${AM_MAX_CONNECTIONS}")
 message(STATUS "AM_MAX_MAIN_CONNECTIONS       = ${AM_MAX_MAIN_CONNECTIONS}")
 message(STATUS "BUILD_TESTING                 = ${BUILD_TESTING}")
 message(STATUS "CMAKE_INSTALL_DOCDIR          = ${CMAKE_INSTALL_DOCDIR}")
+message(STATUS "AUDIOMANGER_APP_ID            = ${AUDIOMANGER_APP_ID}")
+message(STATUS "AUDIOMANGER_APP_DESCRIPTION   = ${AUDIOMANGER_APP_DESCRIPTION}")
 message(STATUS "CommandInterface version: ${LIB_COMMAND_INTERFACE_VERSION}")
 message(STATUS "ControlInterface version: ${LIB_CONTROL_INTERFACE_VERSION}")
 message(STATUS "RoutingInterface version: ${LIB_ROUTING_INTERFACE_VERSION}")

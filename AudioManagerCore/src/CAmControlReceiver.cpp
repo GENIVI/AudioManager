@@ -35,6 +35,8 @@
 
 namespace am {
 
+#define __METHOD_NAME__ std::string (std::string("CAmControlReceiver::") + __func__)
+
 CAmControlReceiver::CAmControlReceiver(IAmDatabaseHandler *iDatabaseHandler, CAmRoutingSender *iRoutingSender, CAmCommandSender *iCommandSender, CAmSocketHandler *iSocketHandler, CAmRouter* iRouter) :
         mDatabaseHandler(iDatabaseHandler), //
         mRoutingSender(iRoutingSender), //
@@ -402,32 +404,32 @@ am_Error_e CAmControlReceiver::removeSourceClassDB(const am_sourceClass_t source
 
 void CAmControlReceiver::setCommandReady()
 {
-    logInfo("CAmControlReceiver::setCommandReady got called");
+    logVerbose(__METHOD_NAME__);
     mCommandSender->setCommandReady();
 }
 
 void CAmControlReceiver::setRoutingReady()
 {
-    logInfo("CAmControlReceiver::setRoutingReady got called");
+	logVerbose(__METHOD_NAME__);
     mRoutingSender->setRoutingReady();
 }
 
 void CAmControlReceiver::confirmControllerReady(const am_Error_e error)
 {
 	if (error!=E_OK)
-		logError("CAmControlReceiver::confirmControllerReady controller reported error", error);
+		logError(__METHOD_NAME__,"controller reported error", error);
 }
 
 void CAmControlReceiver::confirmControllerRundown(const am_Error_e error)
 {
 	if (error!=E_OK)
 	{
-		logError("CAmControlReceiver::confirmControllerRundown() exited with error ",error);
+		logError(__METHOD_NAME__,"exited with error ",error);
 		//we might be blocked here -> so lets better exit right away
 		throw std::runtime_error("controller Confirmed with error");
 	}
 
-	logInfo ("CAmControlReceiver::confirmControllerRundown(), will exit now");
+	logVerbose (__METHOD_NAME__,"will exit now");
 
 	//end the mainloop here...
 	mSocketHandler->exit_mainloop();
@@ -441,13 +443,13 @@ am_Error_e CAmControlReceiver::getSocketHandler(CAmSocketHandler *& socketHandle
 
 void CAmControlReceiver::setCommandRundown()
 {
-    logInfo("CAmControlReceiver::setCommandRundown got called");
+	logInfo(__METHOD_NAME__);
     mCommandSender->setCommandRundown();
 }
 
 void CAmControlReceiver::setRoutingRundown()
 {
-    logInfo("CAmControlReceiver::setRoutingRundown got called");
+    logInfo(__METHOD_NAME__);
     mRoutingSender->setRoutingRundown();
 }
 
@@ -493,85 +495,85 @@ am_Error_e CAmControlReceiver::setSourceNotificationConfiguration(am_Handle_s& h
 
 void CAmControlReceiver::sendMainSinkNotificationPayload(const am_sinkID_t sinkID, const am_NotificationPayload_s& notificationPayload)
 {
-    logInfo(__func__,"sinkID=",sinkID,"type=",notificationPayload.type,"value=",notificationPayload.value);
+	logVerbose(__METHOD_NAME__,"sinkID=",sinkID,"type=",notificationPayload.type,"value=",notificationPayload.value);
     mCommandSender->cbSinkNotification(sinkID,notificationPayload);
 }
 
 void CAmControlReceiver::sendMainSourceNotificationPayload(const am_sourceID_t sourceID, const am_NotificationPayload_s& notificationPayload)
 {
-    logInfo(__func__,"sourceID=",sourceID,"type=",notificationPayload.type,"value=",notificationPayload.value);
+	logVerbose(__METHOD_NAME__,"sourceID=",sourceID,"type=",notificationPayload.type,"value=",notificationPayload.value);
     mCommandSender->cbSourceNotification(sourceID,notificationPayload);
 }
 
 am_Error_e CAmControlReceiver::changeMainSinkNotificationConfigurationDB(const am_sinkID_t sinkID, const am_NotificationConfiguration_s& mainNotificationConfiguration)
 {
-    logVerbose(__func__,"sinkID", sinkID);
+    logVerbose(__METHOD_NAME__,"sinkID", sinkID);
     return (mDatabaseHandler->changeMainSinkNotificationConfigurationDB(sinkID,mainNotificationConfiguration));
 }
 
 am_Error_e CAmControlReceiver::changeMainSourceNotificationConfigurationDB(const am_sourceID_t sourceID, const am_NotificationConfiguration_s& mainNotificationConfiguration)
 {
-    logVerbose(__func__,"sourceID", sourceID);
+    logVerbose(__METHOD_NAME__,"sourceID", sourceID);
     return (mDatabaseHandler->changeMainSourceNotificationConfigurationDB(sourceID,mainNotificationConfiguration));
 }
 
 am_Error_e CAmControlReceiver::getListMainSinkSoundProperties(const am_sinkID_t sinkID, std::vector<am_MainSoundProperty_s>& listSoundproperties) const
 {
-	logVerbose(__func__,"sinkID", sinkID);
+	logVerbose(__METHOD_NAME__,"sinkID", sinkID);
 	return (mDatabaseHandler->getListMainSinkSoundProperties(sinkID,listSoundproperties));
 }
 
 am_Error_e CAmControlReceiver::getListMainSourceSoundProperties(const am_sourceID_t sourceID, std::vector<am_MainSoundProperty_s>& listSoundproperties) const
 {
-	 logVerbose(__func__,"sourceID", sourceID);
+	 logVerbose(__METHOD_NAME__,"sourceID", sourceID);
 	 return (mDatabaseHandler->getListMainSourceSoundProperties(sourceID, listSoundproperties));
 }
 
 am_Error_e CAmControlReceiver::getListSinkSoundProperties(const am_sinkID_t sinkID, std::vector<am_SoundProperty_s>& listSoundproperties) const
 {
-	logVerbose(__func__,"sinkID", sinkID);
+	logVerbose(__METHOD_NAME__,"sinkID", sinkID);
 	return (mDatabaseHandler->getListSinkSoundProperties(sinkID,listSoundproperties));
 }
 
 am_Error_e CAmControlReceiver::getListSourceSoundProperties(const am_sourceID_t sourceID, std::vector<am_SoundProperty_s>& listSoundproperties) const
 {
-	 logVerbose(__func__,"sourceID", sourceID);
+	 logVerbose(__METHOD_NAME__,"sourceID", sourceID);
 	 return (mDatabaseHandler->getListSourceSoundProperties(sourceID, listSoundproperties));
 }
 
 am_Error_e CAmControlReceiver::getMainSinkSoundPropertyValue(const am_sinkID_t sinkID, const am_CustomMainSoundPropertyType_t propertyType, int16_t& value) const
 {
-	logVerbose(__func__,"sinkID", sinkID);
+	logVerbose(__METHOD_NAME__,"sinkID", sinkID);
 	return (mDatabaseHandler->getMainSinkSoundPropertyValue(sinkID,propertyType,value));
 }
 
 am_Error_e CAmControlReceiver::getSinkSoundPropertyValue(const am_sinkID_t sinkID, const am_CustomSoundPropertyType_t propertyType, int16_t& value) const
 {
-	logVerbose(__func__,"sinkID", sinkID);
+	logVerbose(__METHOD_NAME__,"sinkID", sinkID);
 	return (mDatabaseHandler->getSinkSoundPropertyValue(sinkID,propertyType,value));
 }
 
 am_Error_e CAmControlReceiver::getMainSourceSoundPropertyValue(const am_sourceID_t sourceID, const am_CustomMainSoundPropertyType_t propertyType, int16_t& value) const
 {
-	logVerbose(__func__,"sourceID", sourceID);
+	logVerbose(__METHOD_NAME__,"sourceID", sourceID);
 	return (mDatabaseHandler->getMainSourceSoundPropertyValue(sourceID,propertyType,value));
 }
 
 am_Error_e CAmControlReceiver::getSourceSoundPropertyValue(const am_sourceID_t sourceID, const am_CustomSoundPropertyType_t propertyType, int16_t& value) const
 {
-	 logVerbose(__func__,"sourceID", sourceID);
+	 logVerbose(__METHOD_NAME__,"sourceID", sourceID);
 	 return (mDatabaseHandler->getSourceSoundPropertyValue(sourceID,propertyType,value));
 }
 
 am_Error_e CAmControlReceiver::resyncConnectionState(const am_domainID_t domainID,std::vector<am_Connection_s>& listOfExistingConnections)
 {
-	logInfo(__func__,"domainID", domainID);
+	logInfo(__METHOD_NAME__,"domainID", domainID);
 	return (mRoutingSender->resyncConnectionState(domainID,listOfExistingConnections));
 }
 
 am_Error_e CAmControlReceiver::removeHandle(const am_Handle_s handle)
 {
-	logInfo(__func__,"handle", handle.handle);
+	logInfo(__METHOD_NAME__,"handle", handle.handle);
 	return (mRoutingSender->removeHandle(handle));
 }
 

@@ -35,6 +35,8 @@
 #include "CAmDltWrapper.h"
 #include "audiomanagerconfig.h"
 
+#define __METHOD_NAME__ std::string (std::string("CAmCommandSender::") + __func__)
+
 namespace am
 {
 
@@ -57,7 +59,7 @@ CAmCommandSender::CAmCommandSender(const std::vector<std::string>& listOfPluginD
 {
     if (listOfPluginDirectories.empty())
     {
-        logError("CAmCommandSender::CAmCommandSender: List of commandplugins is empty");
+        logError(__METHOD_NAME__,"List of commandplugins is empty");
     }
 
     std::vector<std::string> sharedLibraryNameList;
@@ -68,12 +70,12 @@ CAmCommandSender::CAmCommandSender(const std::vector<std::string>& listOfPluginD
     for (; dirIter < dirIterEnd; ++dirIter)
     {
         const char* directoryName = dirIter->c_str();
-        logInfo("Searching for CommandPlugins in", *dirIter);
+        logInfo(__METHOD_NAME__,"Searching for CommandPlugins in", *dirIter);
         DIR *directory = opendir(directoryName);
 
         if (!directory)
         {
-            logError("Error opening directory ", *dirIter);
+            logError(__METHOD_NAME__,"Error opening directory ", *dirIter);
             continue;
         }
 
@@ -93,7 +95,7 @@ CAmCommandSender::CAmCommandSender(const std::vector<std::string>& listOfPluginD
 	            struct stat buf;
 
 	            if (stat(fullName.c_str(), &buf)) {
-	                logInfo(__PRETTY_FUNCTION__,"Failed to stat file: ", entryName, errno);
+	                logInfo(__METHOD_NAME__,"Failed to stat file: ", entryName, errno);
 	                continue;
 	            }
 
@@ -115,14 +117,14 @@ CAmCommandSender::CAmCommandSender(const std::vector<std::string>& listOfPluginD
 
     for (; iter < iterEnd; ++iter)
     {
-        logInfo("Loading CommandSender plugin", *iter);
+        logInfo(__METHOD_NAME__,"Loading CommandSender plugin", *iter);
         IAmCommandSend* (*createFunc)();
         void* tempLibHandle = NULL;
         createFunc = getCreateFunction<IAmCommandSend*()>(*iter, tempLibHandle);
 
         if (!createFunc)
         {
-            logInfo("Entry point of CommandPlugin not found", *iter);
+            logInfo(__METHOD_NAME__,"Entry point of CommandPlugin not found", *iter);
             continue;
         }
 
@@ -130,7 +132,7 @@ CAmCommandSender::CAmCommandSender(const std::vector<std::string>& listOfPluginD
 
         if (!commander)
         {
-            logInfo("CommandPlugin initialization failed. Entry Function not callable");
+            logInfo(__METHOD_NAME__,"CommandPlugin initialization failed. Entry Function not callable");
             dlclose(tempLibHandle);
             continue;
         }
@@ -148,7 +150,7 @@ CAmCommandSender::CAmCommandSender(const std::vector<std::string>& listOfPluginD
 
         if (majorVersion < cMajorVersion || ((majorVersion == cMajorVersion) && (minorVersion > cMinorVersion)))
         {
-            logError("CommandInterface initialization failed. Version of Interface to old");
+            logError(__METHOD_NAME__,"CommandInterface initialization failed. Version of Interface to old");
             dlclose(tempLibHandle);
             continue;
         }

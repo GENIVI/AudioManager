@@ -30,6 +30,8 @@
 #include "CAmDltWrapper.h"
 #include "CAmSocketHandler.h"
 
+#define __METHOD_NAME__ std::string (std::string("CAmRoutingReceiver::") + __func__)
+
 namespace am
 {
 
@@ -92,7 +94,7 @@ void CAmRoutingReceiver::handleCallback(const am_Handle_s handle, const am_Error
 
 void CAmRoutingReceiver::ackConnect(const am_Handle_s handle, const am_connectionID_t connectionID, const am_Error_e error)
 {
-	logInfo(__func__,"handle=",handle,"connectionID=",connectionID,"error=",error);
+	logInfo(__METHOD_NAME__,"handle=",handle,"connectionID=",connectionID,"error=",error);
     if (error == am_Error_e::E_OK)
     {
         mpRoutingSender->writeToDatabaseAndRemove(handle);
@@ -111,7 +113,7 @@ void CAmRoutingReceiver::ackConnect(const am_Handle_s handle, const am_connectio
 
 void CAmRoutingReceiver::ackDisconnect(const am_Handle_s handle, const am_connectionID_t connectionID, const am_Error_e error)
 {
-	logInfo(__func__,"handle=",handle,"connectionID=",connectionID,"error=",error);
+	logInfo(__METHOD_NAME__,"handle=",handle,"connectionID=",connectionID,"error=",error);
 	//only remove connection of handle was found
 	if(mpRoutingSender->removeHandle(handle) == 0)
 	{
@@ -122,7 +124,7 @@ void CAmRoutingReceiver::ackDisconnect(const am_Handle_s handle, const am_connec
 
 void CAmRoutingReceiver::ackSetSinkVolumeChange(const am_Handle_s handle, const am_volume_t volume, const am_Error_e error)
 {
-	logInfo(__func__,"handle=",handle,"volume=",volume,"error=",error);
+	logInfo(__METHOD_NAME__,"handle=",handle,"volume=",volume,"error=",error);
 	if(error == E_OK)
     {
       	mpRoutingSender->checkVolume(handle,volume);
@@ -141,7 +143,7 @@ void CAmRoutingReceiver::ackSetSinkVolumeChange(const am_Handle_s handle, const 
 
 void CAmRoutingReceiver::ackSetSourceVolumeChange(const am_Handle_s handle, const am_volume_t volume, const am_Error_e error)
 {
-	logInfo(__func__,"handle=",handle,"volume=",volume,"error=",error);	
+	logInfo(__METHOD_NAME__,"handle=",handle,"volume=",volume,"error=",error);
 	if(error == E_OK)
     {
       	mpRoutingSender->checkVolume(handle,volume);
@@ -160,55 +162,55 @@ void CAmRoutingReceiver::ackSetSourceVolumeChange(const am_Handle_s handle, cons
 
 void CAmRoutingReceiver::ackSetSourceState(const am_Handle_s handle, const am_Error_e error)
 {
-	logInfo(__func__,"handle=",handle,"error=",error);		
+	logInfo(__METHOD_NAME__,"handle=",handle,"error=",error);
 	handleCallback(handle,error);
     mpControlSender->cbAckSetSourceState(handle, error);
 }
 
 void CAmRoutingReceiver::ackSetSinkSoundProperty(const am_Handle_s handle, const am_Error_e error)
 {
-	logInfo(__func__,"handle=",handle,"error=",error);	
+	logInfo(__METHOD_NAME__,"handle=",handle,"error=",error);
 	handleCallback(handle,error);
     mpControlSender->cbAckSetSinkSoundProperty(handle, error);
 }
 
 void am::CAmRoutingReceiver::ackSetSinkSoundProperties(const am_Handle_s handle, const am_Error_e error)
 {
-	logInfo(__func__,"handle=",handle,"error=",error);	
+	logInfo(__METHOD_NAME__,"handle=",handle,"error=",error);
 	handleCallback(handle,error);
     mpControlSender->cbAckSetSinkSoundProperties(handle, error);
 }
 
 void CAmRoutingReceiver::ackSetSourceSoundProperty(const am_Handle_s handle, const am_Error_e error)
 {
-	logInfo(__func__,"handle=",handle,"error=",error);	
+	logInfo(__METHOD_NAME__,"handle=",handle,"error=",error);
 	handleCallback(handle,error);
     mpControlSender->cbAckSetSourceSoundProperty(handle, error);
 }
 
 void am::CAmRoutingReceiver::ackSetSourceSoundProperties(const am_Handle_s handle, const am_Error_e error)
 {
-	logInfo(__func__,"handle=",handle,"error=",error);	
+	logInfo(__METHOD_NAME__,"handle=",handle,"error=",error);
 	handleCallback(handle,error);
     mpControlSender->cbAckSetSourceSoundProperties(handle, error);
 }
 
 void CAmRoutingReceiver::ackCrossFading(const am_Handle_s handle, const am_HotSink_e hotSink, const am_Error_e error)
 {
-	logInfo(__func__,"handle=",handle,"hotsink=",hotSink,"error=",error);	
+	logInfo(__METHOD_NAME__,"handle=",handle,"hotsink=",hotSink,"error=",error);
 	handleCallback(handle,error);
     mpControlSender->cbAckCrossFade(handle, hotSink, error);
 }
 
 void CAmRoutingReceiver::ackSourceVolumeTick(const am_Handle_s handle, const am_sourceID_t sourceID, const am_volume_t volume)
 {
-	logInfo(__func__,"handle=",handle,"sourceID=",sourceID,"volume=",volume);	
+	logInfo(__METHOD_NAME__,"handle=",handle,"sourceID=",sourceID,"volume=",volume);
     mpControlSender->hookSystemSourceVolumeTick(handle, sourceID, volume);
 }
 
 void CAmRoutingReceiver::ackSinkVolumeTick(const am_Handle_s handle, const am_sinkID_t sinkID, const am_volume_t volume)
 {
-	logInfo(__func__,"handle=",handle,"sinkID=",sinkID,"volume=",volume);	
+	logInfo(__METHOD_NAME__,"handle=",handle,"sinkID=",sinkID,"volume=",volume);
     mpControlSender->hookSystemSinkVolumeTick(handle, sinkID, volume);
 }
 
@@ -396,14 +398,14 @@ void am::CAmRoutingReceiver::waitOnStartup(bool startup)
 
 void CAmRoutingReceiver::ackSinkNotificationConfiguration(const am_Handle_s handle, const am_Error_e error)
 {
-	logInfo(__func__,"handle=",handle,"error=",error);		
+	logInfo(__METHOD_NAME__,"handle=",handle,"error=",error);
 	handleCallback(handle,error);
     mpControlSender->cbAckSetSinkNotificationConfiguration(handle,error);
 }
 
 void CAmRoutingReceiver::ackSourceNotificationConfiguration(const am_Handle_s handle, const am_Error_e error)
 {
-	logInfo(__func__,"handle=",handle,"error=",error);		
+	logInfo(__METHOD_NAME__,"handle=",handle,"error=",error);
 	handleCallback(handle,error);
     mpControlSender->cbAckSetSourceNotificationConfiguration(handle,error);
 }
@@ -430,20 +432,20 @@ am_Error_e CAmRoutingReceiver::updateSource(const am_sourceID_t sourceID, const 
 
 void CAmRoutingReceiver::ackSetVolumes(const am_Handle_s handle, const std::vector<am_Volumes_s>& listvolumes, const am_Error_e error)
 {
-	logInfo(__func__,"handle=",handle,"error=",error);		
+	logInfo(__METHOD_NAME__,"handle=",handle,"error=",error);
 	handleCallback(handle,error);
     mpControlSender->cbAckSetVolume(handle,listvolumes,error);
 }
 
 void CAmRoutingReceiver::hookSinkNotificationDataChange(const am_sinkID_t sinkID, const am_NotificationPayload_s& payload)
 {
-    logInfo("CAmRoutingReceiver::hookSinkNotificationDataChange received, sinkID=",sinkID,"type=",payload.type,"notificationValue=",payload.value);
+    logInfo(__METHOD_NAME__,"sinkID=",sinkID,"type=",payload.type,"notificationValue=",payload.value);
     mpControlSender->hookSinkNotificationDataChanged(sinkID,payload);
 }
 
 void CAmRoutingReceiver::hookSourceNotificationDataChange(const am_sourceID_t sourceID, const am_NotificationPayload_s& payload)
 {
-    logInfo("CAmRoutingReceiver::hookSourceNotificationDataChange received, sinkID=",sourceID,"type=",payload.type,"notificationValue=",payload.value);
+    logInfo(__METHOD_NAME__,"sinkID=",sourceID,"type=",payload.type,"notificationValue=",payload.value);
     mpControlSender->hookSourceNotificationDataChanged(sourceID,payload);
 }
 
