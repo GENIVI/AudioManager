@@ -103,6 +103,7 @@ public:
     am_Error_e changeConnectionTimingInformation(const am_connectionID_t connectionID, const am_timeSync_t delay);
     am_Error_e changeConnectionFinal(const am_connectionID_t connectionID);
     am_Error_e changeSourceState(const am_sourceID_t sourceID, const am_SourceState_e sourceState);
+    am_Error_e changeSourceInterruptState(const am_sourceID_t sourceID, const am_InterruptState_e interruptState);
     am_Error_e changeSinkVolume(const am_sinkID_t sinkID, const am_volume_t volume);
     am_Error_e changeSourceVolume(const am_sourceID_t sourceID, const am_volume_t volume);
     am_Error_e changeCrossFaderHotSink(const am_crossfaderID_t crossfaderID, const am_HotSink_e hotsink);

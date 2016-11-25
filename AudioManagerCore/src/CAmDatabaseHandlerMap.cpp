@@ -2589,6 +2589,19 @@ am_Error_e CAmDatabaseHandlerMap::changeSourceState(const am_sourceID_t sourceID
 	return (E_NON_EXISTENT);
 }
 
+am_Error_e CAmDatabaseHandlerMap::changeSourceInterruptState(const am_sourceID_t sourceID, const am_InterruptState_e interruptState)
+{
+    assert(sourceID!=0);
+    assert(interruptState>=IS_UNKNOWN && interruptState<=IS_MAX);
+    if(existSource(sourceID))
+    {
+        mMappedData.mSourceMap.at(sourceID).interruptState = interruptState;
+        return (E_OK);
+    }
+    return (E_NON_EXISTENT);
+}
+
+
 am_Error_e CAmDatabaseHandlerMap::getSinkMainVolume(const am_sinkID_t sinkID, am_mainVolume_t& mainVolume) const {
 
 
