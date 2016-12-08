@@ -158,6 +158,18 @@ public:
     
      
     bool init(DltLogLevelType loglevel, DltContext* context = NULL);
+    bool checkLogLevel(DltLogLevelType logLevel)
+    {
+#ifdef WITH_DLT
+    #if (DLT_MAJOR_VERSION >= 2 && DLT_MINOR_VERSION >= 16)
+        return (1 == dlt_user_is_logLevel_enabled(&mDltContext,logLevel)? true: false);
+    #else
+        return false;
+    #endif
+#else
+        return (logLevel <= mDltContext.log_level_user);
+#endif
+    }
     void deinit();
     void send();
     void append(const int8_t value);
