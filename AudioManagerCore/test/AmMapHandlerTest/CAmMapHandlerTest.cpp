@@ -480,6 +480,26 @@ TEST_F(CAmMapHandlerTest,sourceState)
     ASSERT_EQ(listSources[0].sourceState, SS_ON);
 }
 
+TEST_F(CAmMapHandlerTest,sourceInterruptState)
+{
+    am_Source_s source;
+    am_sourceID_t sourceID;
+    std::vector<am_Source_s> listSources;
+    pCF.createSource(source);
+    source.interruptState = IS_OFF;
+
+    //prepare the test
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
+
+    //change the source interrupt state
+    ASSERT_EQ(E_OK, pDatabaseHandler.changeSourceInterruptState(sourceID,IS_INTERRUPTED));
+
+    //read out the changed values
+    ASSERT_EQ(E_OK, pDatabaseHandler.getListSources(listSources));
+    ASSERT_EQ(listSources[0].interruptState, IS_INTERRUPTED);
+}
+
 TEST_F(CAmMapHandlerTest,sinkVolumeChange)
 {
     am_Sink_s sink;

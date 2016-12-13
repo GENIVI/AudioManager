@@ -165,6 +165,23 @@ TEST_F(CAmControlInterfaceTest,deregisterSource)
     ASSERT_EQ(E_OK, pRoutingReceiver.deregisterSource(sourceID));
 }
 
+TEST_F(CAmControlInterfaceTest,hookInterruptStatusChange)
+{
+    am_Source_s source;
+    am_sourceID_t sourceID;
+    pCF.createSource(source);
+    source.sourceID=12;
+    source.interruptState = IS_UNKNOWN;
+    sourceID = source.sourceID;
+
+    //prepare the stage
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
+
+    //When we run this test, we expect the call on the control interface
+    EXPECT_CALL(pMockControlInterface,hookSystemInterruptStateChange(sourceID, IS_OFF));
+    pRoutingReceiver.hookInterruptStatusChange(sourceID, IS_OFF);
+}
+
 TEST_F(CAmControlInterfaceTest,registerGateway)
 {
     am_Gateway_s gateway;

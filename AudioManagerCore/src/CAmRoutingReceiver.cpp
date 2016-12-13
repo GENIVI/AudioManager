@@ -291,7 +291,12 @@ am_Error_e CAmRoutingReceiver::deregisterCrossfader(const am_crossfaderID_t cros
 
 void CAmRoutingReceiver::hookInterruptStatusChange(const am_sourceID_t sourceID, const am_InterruptState_e interruptState)
 {
-    return (mpControlSender->hookSystemInterruptStateChange(sourceID, interruptState));
+    am_Error_e error;
+    error = mpDatabaseHandler->changeSourceInterruptState(sourceID, interruptState);
+    if (error == E_OK)
+    {
+        mpControlSender->hookSystemInterruptStateChange(sourceID, interruptState);
+    }
 }
 
 void CAmRoutingReceiver::hookDomainRegistrationComplete(const am_domainID_t domainID)
