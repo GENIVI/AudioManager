@@ -424,7 +424,7 @@ bool CAmDltWrapper::initNoDlt(DltLogLevelType loglevel, DltContext* context)
 			if (!context)
 				context = &mDltContext;
 
-			if(dlt_user_log_write_start(context, &mDltContextData, loglevel) < 0)
+			if(dlt_user_log_write_start(context, &mDltContextData, loglevel) <= 0)
 			{
 				pthread_mutex_unlock(&mMutex);
 				return false;
