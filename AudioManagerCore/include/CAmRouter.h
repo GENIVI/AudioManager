@@ -27,6 +27,7 @@
 
 #include <assert.h>
 #include <vector>
+#include <iomanip>
 #include <functional>
 #include "audiomanagertypes.h"
 #include "CAmGraph.h"
@@ -35,7 +36,6 @@
 
 namespace am
 {
-#define ROUTING_BUILD_CONNECTIONS 1
 
 /**
  * Optimal path search between a source and a sink is implemented with a graph which contains nodes - sinks, sources, gateways, converters.
@@ -105,20 +105,19 @@ struct am_RoutingNodeData_s
 					};
 
 #ifdef TRACE_GRAPH
+#define COUT_NODE(HEAD, NAME, ID) \
+	std::cout << HEAD << "(" << std::setfill('0') << std::setw(4) << ID << " " << NAME << ")";
+
 	void trace() const
 	{
 		if(type==SINK)
-			std::cout << "[SINK:" << data.sink->sinkID << ":" << data.sink->name << "(" << data.sink->domainID << ")"
-			<< "]";
+			COUT_NODE("SI", data.sink->name, data.sink->sinkID )
 		else if(type==SOURCE)
-			std::cout << "[SOUR:" << data.source->sourceID << ":" << data.source->name << "(" << data.source->domainID << ")"
-			<< "]";
+			COUT_NODE("SO", data.source->name, data.source->sourceID )
 		else if(type==GATEWAY)
-			std::cout << "[GATE:" << data.gateway->gatewayID << ":" << data.gateway->name << "(" << data.gateway->controlDomainID << ")"
-			<< "]";
+			COUT_NODE("GA", data.gateway->name, data.gateway->gatewayID )
 		else if(type==CONVERTER)
-			std::cout << "[CONV:" << data.converter->converterID << ":" << data.converter->name << "(" << data.converter->domainID << ")"
-			<< "]";
+			COUT_NODE("CO", data.converter->name, data.converter->converterID )
 	};
 #endif
 
@@ -160,11 +159,12 @@ class CAmRouter
 	std::map<am_domainID_t,std::vector<CAmRoutingNode*>> mNodeListGateways;	//!< map with pointers to nodes with gateways, used for quick access
 	std::map<am_domainID_t,std::vector<CAmRoutingNode*>> mNodeListConverters;//!< map with pointers to nodes with converters, used for quick access
 
-	am_Error_e determineConnectionFormatsForPath(am_Route_s & routeObjects, std::vector<CAmRoutingNode*> & nodes);
+	am_Error_e determineConnectionFormatsForPath(am_Route_s & routeObjects, std::vector<CAmRoutingNode*> & nodes, std::vector<am_Route_s> & result);
 	am_Error_e doConnectionFormatsForPath(am_Route_s & routeObjects,
-			std::vector<CAmRoutingNode*> & route,
-			std::vector<am_RoutingElement_s>::iterator routingElementIterator,
-			std::vector<CAmRoutingNode*>::iterator routeIterator);
+											std::vector<CAmRoutingNode*> & route,
+											std::vector<am_RoutingElement_s>::iterator routingElementIterator,
+											std::vector<CAmRoutingNode*>::iterator routeIterator,
+											std::vector<am_Route_s> & result);
 
 
 	/**
@@ -270,7 +270,7 @@ public:
 			const std::vector<am_CustomConnectionFormat_t> & listSinkFormats,
 			const am_CustomConnectionFormat_t connectionFormat,
 			std::vector<am_CustomConnectionFormat_t> & listFormats);
-	static void getSourceSinkPossibleConnectionFormats(std::vector<CAmRoutingNode*>::iterator iteratorSource,
+	static am_Error_e getSourceSinkPossibleConnectionFormats(std::vector<CAmRoutingNode*>::iterator iteratorSource,
 			std::vector<CAmRoutingNode*>::iterator iteratorSink,
 			std::vector<am_CustomConnectionFormat_t> & outConnectionFormats);
 
