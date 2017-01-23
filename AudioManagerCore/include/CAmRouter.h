@@ -38,7 +38,7 @@ namespace am
 {
 
 /**
- * Optimal path search between a source and a sink is implemented with a graph which contains nodes - sinks, sources, gateways, converters.
+ * Optimal path search is implemented with graph which contains nodes - sinks, sources, gateways, converters.
  * The nodes are identified by sinkID, sourceID, gatewayID, converterID.
  * A possible connection between two nodes represents the facts that the nodes can be connected with one or more connectionFormats (Node[id=1] ---> Node[id=2]).
  * It is assumption that the two nodes can be connected. The controller itself decides later whether the connection is possible or not.
@@ -48,22 +48,25 @@ namespace am
 /**
  * Trace on/off.
  */
-#if !defined(ROUTING_BUILD_CONNECTIONS)
-	#undef TRACE_GRAPH
-#endif
+#undef TRACE_GRAPH
 
 /**
- * Default behavior is to do the search in one step without connections, which are identified during the search.
- * Alternatively the search can be done in two steps.
+ * Max paths count returned to the controller
  */
-#if !defined(ROUTING_BUILD_CONNECTIONS)
-	#undef ROUTING_BUILD_CONNECTIONS
+#ifndef MAX_ROUTING_PATHS
+#define MAX_ROUTING_PATHS 5
 #endif
-
-#if defined(TRACE_GRAPH)
-#if !defined(ROUTING_BUILD_CONNECTIONS)
-#warning "You should define ROUTING_BUILD_CONNECTIONS in order to be able to see the connections in the trace."
-#endif
+/**
+ * How many times the routing algorithm should look back into domains.
+ *
+ * 0 - no cycles are allowed
+ * 1 - default is one cycle
+ * ...
+ * UINT_MAX - set this define to UINT_MAX in order to allow cycles.
+ *
+ */
+#ifndef MAX_ALLOWED_DOMAIN_CYCLES
+#define MAX_ALLOWED_DOMAIN_CYCLES 1
 #endif
 
 class CAmRouter;
@@ -150,22 +153,16 @@ class CAmControlSender;
  */
 class CAmRouter
 {
-	IAmDatabaseHandler* mpDatabaseHandler; 							//!< pointer to database handler
-	CAmControlSender* mpControlSender; 								//!< pointer the controlsender - is used to retrieve information for the optimal route
-	bool mOnlyFreeConversionNodes;									//!< bool flag whether only disconnected elements should be considered or not
-	CAmRoutingGraph mRoutingGraph;			//!< graph object
-	std::map<am_domainID_t,std::vector<CAmRoutingNode*>> mNodeListSources;	//!< map with pointers to nodes with sources, used for quick access
-	std::map<am_domainID_t,std::vector<CAmRoutingNode*>> mNodeListSinks;		//!< map with pointers to nodes with sinks, used for quick access
-	std::map<am_domainID_t,std::vector<CAmRoutingNode*>> mNodeListGateways;	//!< map with pointers to nodes with gateways, used for quick access
+	IAmDatabaseHandler* mpDatabaseHandler; 									 //!< pointer to database handler
+	CAmControlSender* mpControlSender; 										 //!< pointer the controlsender - is used to retrieve information for the optimal route
+	bool mOnlyFreeConversionNodes;											 //!< bool flag whether only disconnected elements should be considered or not
+	unsigned mMaxAllowedCycles;												 //!< max allowed cycles, default is 1
+	unsigned mMaxPathCount;													 //!< max paths count returned to the controller, default is 5
+	CAmRoutingGraph mRoutingGraph;											 //!< graph object
+	std::map<am_domainID_t,std::vector<CAmRoutingNode*>> mNodeListSources;	 //!< map with pointers to nodes with sources, used for quick access
+	std::map<am_domainID_t,std::vector<CAmRoutingNode*>> mNodeListSinks;	 //!< map with pointers to nodes with sinks, used for quick access
+	std::map<am_domainID_t,std::vector<CAmRoutingNode*>> mNodeListGateways;	 //!< map with pointers to nodes with gateways, used for quick access
 	std::map<am_domainID_t,std::vector<CAmRoutingNode*>> mNodeListConverters;//!< map with pointers to nodes with converters, used for quick access
-
-	am_Error_e determineConnectionFormatsForPath(am_Route_s & routeObjects, std::vector<CAmRoutingNode*> & nodes, std::vector<am_Route_s> & result);
-	am_Error_e doConnectionFormatsForPath(am_Route_s & routeObjects,
-											std::vector<CAmRoutingNode*> & route,
-											std::vector<am_RoutingElement_s>::iterator routingElementIterator,
-											std::vector<CAmRoutingNode*>::iterator routeIterator,
-											std::vector<am_Route_s> & result);
-
 
 	/**
 	 * Check whether given converter or gateway has been connected.
@@ -176,86 +173,119 @@ class CAmRouter
 	{
 		return mpDatabaseHandler->isComponentConnected(comp);
 	}
-	void generateAllPaths(const CAmRoutingNode & src,
-			const CAmRoutingNode & dst,
-			const bool includeCycles,
-			std::function<void(const std::vector<CAmRoutingNode*> & path)> cb);
-	void goThroughAllPaths(const CAmRoutingNode & dst,
-			std::vector<CAmRoutingNode*> & visited,
-			std::vector<am_domainID_t> & visitedDomains,
-			std::function<void(const std::vector<CAmRoutingNode*> & path)> cb);
 
-#ifdef ROUTING_BUILD_CONNECTIONS
 	/**
-	 * Connects all converters to its sink and sources if possible.
+	 * Connect all converters to its sink and sources if possible.
 	 *
 	 */
 	void constructConverterConnections();
 
 	/**
-	 * Connects all gateways to its sink and sources if possible.
+	 * Connect all gateways to its sink and sources if possible.
 	 *
 	 */
 	void constructGatewayConnections();
 
 	/**
-	 * Connects all sources to the sinks if possible.
+	 * Connect all sources to the sinks if possible.
 	 *
 	 */
 	void constructSourceSinkConnections();
-#else
+
 	/**
-	 * Construct a list with all vertices
+	 * Construct list with all vertices
 	 */
 	void getVerticesForNode(const CAmRoutingNode & node, CAmRoutingListVertices & list);
 
 	/**
-	 * Construct a list with all vertices from given source.
+	 * Construct list with all vertices from given source.
 	 */
 	void getVerticesForSource(const CAmRoutingNode & node, CAmRoutingListVertices & list);
 
 	/**
-	 * Construct a list with all vertices from given sink.
+	 * Construct list with all vertices from given sink.
 	 */
 	void getVerticesForSink(const CAmRoutingNode & node, CAmRoutingListVertices & list);
 
 	/**
-	 * Construct a list with all vertices from given converter.
+	 * Construct list with all vertices from given converter.
 	 */
 	void getVerticesForConverter(const CAmRoutingNode & node, CAmRoutingListVertices & list);
 
 	/**
-	 * Construct a list with all vertices from given gateway.
+	 * Construct list with all vertices from given gateway.
 	 */
 	void getVerticesForGateway(const CAmRoutingNode & node, CAmRoutingListVertices & list);
-#endif
+
+	/**
+	 * Connection format permutations.
+	 */
+	am_Error_e determineConnectionFormatsForPath(am_Route_s & routeObjects, std::vector<CAmRoutingNode*> & nodes, std::vector<am_Route_s> & result);
+	am_Error_e doConnectionFormatsForPath(am_Route_s & routeObjects,
+											std::vector<CAmRoutingNode*> & route,
+											std::vector<am_RoutingElement_s>::iterator routingElementIterator,
+											std::vector<CAmRoutingNode*>::iterator routeIterator,
+											std::vector<am_Route_s> & result);
+	am_Error_e cfPermutationsForPath(am_Route_s shortestRoute, std::vector<CAmRoutingNode*> resultNodesPath, std::vector<am_Route_s>& resultPath);
+
+	/**
+	 * Helper method.
+	 */
+	static int insertPostion(const std::vector<CAmRoutingNode*>& path, const std::vector<std::vector<CAmRoutingNode*> >& nodes) ;
+
 
 public:
 	CAmRouter(IAmDatabaseHandler* iDatabaseHandler, CAmControlSender* iSender);
 	~CAmRouter();
 
+	unsigned getMaxAllowedCycles() { return mMaxAllowedCycles; }
+	void setMaxAllowedCycles(unsigned count) { mMaxAllowedCycles = count; }
+
+	unsigned getMaxPathCount() { return mMaxPathCount; }
+	void setMaxPathCount(unsigned count) { mMaxPathCount = count; }
+
 	/**
-	 * Finds all possible paths between given source and sink.
+	 * Find first mMaxPathCount paths between given source and sink.
 	 *
 	 * @param onlyfree only disconnected elements should be included or not.
-	 * @param sourceID starting point.
-	 * @param sinkID ending point.
+	 * @param sourceID start point.
+	 * @param sinkID end point.
 	 * @param returnList list with all possible paths
 	 * @return E_OK on success(0 or more paths) or E_NOT_POSSIBLE on failure.
 	 */
 	am_Error_e getRoute(const bool onlyfree, const am_sourceID_t sourceID, const am_sinkID_t sinkID, std::vector<am_Route_s>& returnList);
-	am_Error_e getRoute(const bool onlyfree, const am_Source_s & aSource, const am_Sink_s & aSink, std::vector<am_Route_s> & listRoutes);
+	am_Error_e getRoute(const bool onlyfree, const am_Source_s & source, const am_Sink_s & sink, std::vector<am_Route_s> & listRoutes);
 
-	am_Error_e getAllPaths(CAmRoutingNode & aSource, CAmRoutingNode & aSink,
-			std::vector<am_Route_s> & resultPath, std::vector<std::vector<CAmRoutingNode*>> & resultNodesPath,
-#if !defined(ROUTING_BUILD_CONNECTIONS)
-			__attribute__((unused))
-#endif
-			const bool includeCycles = false);
-#ifdef ROUTING_BUILD_CONNECTIONS
-	void getShortestPath(const CAmRoutingNode & source, const CAmRoutingNode & destination, std::vector<CAmRoutingNode*> & resultPath);
-	void getShortestPath(CAmRoutingNode & aSource, CAmRoutingNode & aSink, am_Route_s & resultPath, std::vector<CAmRoutingNode*> & resultNodesPath);
-#endif
+	/**
+	 * Find first mMaxPathCount paths between given source and sink after the nodes have been loaded.
+	 *
+	 * @param sourceID start point.
+	 * @param sinkID end point.
+	 * @param returnList list with all possible paths
+	 * @return E_OK on success(0 or more paths) or E_NOT_POSSIBLE on failure.
+	 */
+	am_Error_e getRouteFromLoadedNodes(const am_sourceID_t sourceID, const am_sinkID_t sinkID, std::vector<am_Route_s> & returnList);
+	am_Error_e getRouteFromLoadedNodes(const am_Source_s & aSource, const am_Sink_s & aSink, std::vector<am_Route_s> & listRoutes);
+
+	/**
+	 * Find first mMaxPathCount paths between given source and sink. This method should be called only after 'load' has been called.
+	 *
+	 * @param source start point.
+	 * @param sink end point.
+	 * @param returnList list with all possible paths.
+	 * @return E_OK on success(0 or more paths) or E_NOT_POSSIBLE on failure.
+	 */
+	am_Error_e getFirstNShortestPaths(CAmRoutingNode & source, CAmRoutingNode & sink, std::vector<am_Route_s> & resultPath);
+
+	/**
+	 * Find the shortest path between given source and sink. This method should be called only after 'load' has been called.
+	 *
+	 * @param source start point.
+	 * @param sink end point.
+	 * @param returnList list with the connection format permutations of the shortest path.
+	 * @return E_OK on success(0 or more paths) or E_NOT_POSSIBLE on failure.
+	 */
+	am_Error_e getShortestPath(CAmRoutingNode & source, CAmRoutingNode & sink, std::vector<am_Route_s> & resultPath);
 
 	static bool  getAllowedFormatsFromConvMatrix(	const std::vector<bool> & convertionMatrix,
 			const std::vector<am_CustomConnectionFormat_t> & listSourceFormats,
@@ -274,8 +304,8 @@ public:
 			std::vector<CAmRoutingNode*>::iterator iteratorSink,
 			std::vector<am_CustomConnectionFormat_t> & outConnectionFormats);
 
-	static bool shouldGoInDomain(const std::vector<am_domainID_t> & visitedDomains, const am_domainID_t nodeDomainID);
-
+	static bool shouldGoInDomain(const std::vector<am_domainID_t> & visitedDomains, const am_domainID_t nodeDomainID, const unsigned maxCyclesNumber);
+	bool shouldGoInDomain(const std::vector<am_domainID_t> & visitedDomains, const am_domainID_t nodeDomainID);
 	/**
 	 * Returns a sink node with given sinkID.
 	 *
@@ -313,6 +343,20 @@ public:
 
 	void load(const bool onlyFree);
 	void clear();
+
+	/**
+	 * DEPRECATED!
+	 */
+public:
+	am_Error_e getAllPaths(CAmRoutingNode & aSource,
+						   CAmRoutingNode & aSink,
+						   std::vector<am_Route_s> & resultPath,
+						   std::vector<std::vector<CAmRoutingNode*>> & resultNodesPath,
+						   const bool includeCycles = false)
+	__attribute__((deprecated("You should use am_Error_e getFirstNShortestPaths(CAmRoutingNode &, CAmRoutingNode &, std::vector<am_Route_s> &) instead!")));
+
+	void getShortestPath(CAmRoutingNode & aSource, CAmRoutingNode & aSink, am_Route_s & resultPath, std::vector<CAmRoutingNode*> & resultNodesPath)
+	__attribute__((deprecated("You should use am_Error_e getShortestPath(CAmRoutingNode &, CAmRoutingNode &, std::vector<am_Route_s> &) instead!")));
 };
 } /* namespace am */
 #endif /* ROUTER_H_ */

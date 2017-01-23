@@ -167,12 +167,16 @@ void CAmRouterMapTest::enterConverterDB(const std::string & gwName,
 	ASSERT_EQ(E_OK, pDatabaseHandler.enterConverterDB(converter,converterID));
 }
 
-void CAmRouterMapTest::getRoute(const bool onlyfree, const am_Source_s & aSource, const am_Sink_s & aSink, std::vector<am_Route_s> & listRoutes)
+void CAmRouterMapTest::getRoute(const bool onlyfree, const bool shouldReload, const am_Source_s & aSource, const am_Sink_s & aSink, std::vector<am_Route_s> & listRoutes, const unsigned countCycles, const unsigned pathsCount)
 {
+	pRouter.setMaxAllowedCycles(countCycles);
+	pRouter.setMaxPathCount(pathsCount);
 	std::ios_base::fmtflags oldflags = std::cout.flags();
 	std::streamsize oldprecision = std::cout.precision();
 	auto t_start = std::chrono::high_resolution_clock::now();
-	ASSERT_EQ(E_OK, pRouter.getRoute(onlyfree, aSource, aSink, listRoutes));
+	if(shouldReload)
+		 pRouter.load(onlyfree);
+	ASSERT_EQ(E_OK, pRouter.getRouteFromLoadedNodes(aSource, aSink, listRoutes));
 	auto t_end = std::chrono::high_resolution_clock::now();
 	std::cout << std::fixed << std::setprecision(2);
 	std::cout << listRoutes.size() <<" routes from " << aSource.sourceID << " to " << aSink.sinkID;
@@ -181,12 +185,16 @@ void CAmRouterMapTest::getRoute(const bool onlyfree, const am_Source_s & aSource
 	std::cout.precision (oldprecision);
 }
 
-void CAmRouterMapTest::getRoute(const bool onlyfree, const am_sourceID_t sourceID, const am_sinkID_t sinkID, std::vector<am_Route_s>& returnList)
+void CAmRouterMapTest::getRoute(const bool onlyfree, const bool shouldReload, const am_sourceID_t sourceID, const am_sinkID_t sinkID, std::vector<am_Route_s>& returnList, const unsigned countCycles, const unsigned pathsCount)
 {
+	pRouter.setMaxAllowedCycles(countCycles);
+	pRouter.setMaxPathCount(pathsCount);
 	std::ios_base::fmtflags oldflags = std::cout.flags();
 	std::streamsize oldprecision = std::cout.precision();
 	auto t_start = std::chrono::high_resolution_clock::now();
-	ASSERT_EQ(E_OK, pRouter.getRoute(onlyfree, sourceID, sinkID, returnList));
+	if(shouldReload)
+		 pRouter.load(onlyfree);
+	ASSERT_EQ(E_OK, pRouter.getRouteFromLoadedNodes(sourceID, sinkID, returnList));
 	auto t_end = std::chrono::high_resolution_clock::now();
 	std::cout << std::fixed << std::setprecision(2);
 	std::cout << returnList.size() <<" routes from " << sourceID << " to " << sinkID;
@@ -195,16 +203,14 @@ void CAmRouterMapTest::getRoute(const bool onlyfree, const am_sourceID_t sourceI
 	std::cout.precision (oldprecision);
 }
 
-void CAmRouterMapTest::getAllPaths(CAmRoutingNode & aSource,
-										 CAmRoutingNode & aSink,
-										 std::vector<am_Route_s> & resultPath,
-										 std::vector<std::vector<CAmRoutingNode*>> & resultNodesPath,
-										 const bool includeCycles)
+void CAmRouterMapTest::getAllPaths(CAmRoutingNode & aSource, CAmRoutingNode & aSink, std::vector<am_Route_s> & resultPath, const unsigned countCycles, const unsigned pathsCount)
 {
+	pRouter.setMaxAllowedCycles(countCycles);
+	pRouter.setMaxPathCount(pathsCount);
 	std::ios_base::fmtflags oldflags = std::cout.flags();
 	std::streamsize oldprecision = std::cout.precision();
 	auto t_start = std::chrono::high_resolution_clock::now();
-	ASSERT_EQ(E_OK, pRouter.getAllPaths(aSource, aSink, resultPath, resultNodesPath, includeCycles));
+	ASSERT_EQ(E_OK, pRouter.getFirstNShortestPaths(aSource, aSink, resultPath));
 	auto t_end = std::chrono::high_resolution_clock::now();
 	std::cout << std::fixed << std::setprecision(2);
 	std::cout << resultPath.size()
@@ -218,19 +224,19 @@ void CAmRouterMapTest::getAllPaths(CAmRoutingNode & aSource,
 TEST_F(CAmRouterMapTest,checkInsertedDomain)
 {
 	std::vector<am_domainID_t> domains;
-	ASSERT_TRUE(CAmRouter::shouldGoInDomain(domains, 22));
+	ASSERT_TRUE(CAmRouter::shouldGoInDomain(domains, 22, 0));
 	domains.push_back(22);
-	ASSERT_TRUE(CAmRouter::shouldGoInDomain(domains, 22));
+	ASSERT_TRUE(CAmRouter::shouldGoInDomain(domains, 22, 0));
 	domains.push_back(22);
-	ASSERT_TRUE(CAmRouter::shouldGoInDomain(domains, 22));
-	ASSERT_TRUE(CAmRouter::shouldGoInDomain(domains, 50));
+	ASSERT_TRUE(CAmRouter::shouldGoInDomain(domains, 22, 0));
+	ASSERT_TRUE(CAmRouter::shouldGoInDomain(domains, 50, 0));
 	domains.push_back(30);
-	ASSERT_TRUE(CAmRouter::shouldGoInDomain(domains, 30));
-	ASSERT_FALSE(CAmRouter::shouldGoInDomain(domains, 22));
+	ASSERT_TRUE(CAmRouter::shouldGoInDomain(domains, 30, 0));
+	ASSERT_FALSE(CAmRouter::shouldGoInDomain(domains, 22, 0));
 	domains.push_back(30);
-	ASSERT_TRUE(CAmRouter::shouldGoInDomain(domains, 30));
-	ASSERT_FALSE(CAmRouter::shouldGoInDomain(domains, 22));
-	ASSERT_TRUE(CAmRouter::shouldGoInDomain(domains, 60));
+	ASSERT_TRUE(CAmRouter::shouldGoInDomain(domains, 30, 0));
+	ASSERT_FALSE(CAmRouter::shouldGoInDomain(domains, 22, 0));
+	ASSERT_TRUE(CAmRouter::shouldGoInDomain(domains, 60, 0));
 }
 
 //test that checks just sinks and source in a domain but connectionformats do not match
@@ -304,7 +310,7 @@ TEST_F(CAmRouterMapTest,simpleRoute2withDomainNoMatchFormats)
 	pDatabaseHandler.getSinkInfoDB(sinkID, sinkDb);
 	pDatabaseHandler.getSourceInfoDB(sourceID, sourceDb);
 	listRoutes.clear();
-	getRoute(true, sourceDb, sinkDb, listRoutes);
+	getRoute(true, true, sourceDb, sinkDb, listRoutes);
 	ASSERT_EQ(static_cast<uint>(0), listRoutes.size());
 }
 
@@ -379,7 +385,7 @@ TEST_F(CAmRouterMapTest,simpleRoute2withDomain)
 	pDatabaseHandler.getSinkInfoDB(sinkID, sinkDb);
 	pDatabaseHandler.getSourceInfoDB(sourceID, sourceDb);
 	listRoutes.clear();
-	getRoute(true, sourceDb, sinkDb, listRoutes);
+	getRoute(true, true, sourceDb, sinkDb, listRoutes);
 	ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
 	ASSERT_TRUE(pCF.compareRoute(compareRoute,listRoutes[0]));
 }
@@ -498,7 +504,7 @@ TEST_F(CAmRouterMapTest,simpleRoute2DomainsOnlyFree)
     pDatabaseHandler.getSinkInfoDB(sinkID, sinkDb);
     pDatabaseHandler.getSourceInfoDB(sourceID, sourceDb);
 
-    getRoute(true,sourceID,sinkID,listRoutes);
+    getRoute(true, true,sourceID,sinkID,listRoutes);
     ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
     ASSERT_TRUE(pCF.compareRoute(compareRoute,listRoutes[0]));
 }
@@ -633,11 +639,11 @@ TEST_F(CAmRouterMapTest,simpleRoute2DomainsOnlyFreeNotFree)
 	pDatabaseHandler.getSinkInfoDB(sinkID, sinkDb);
 	pDatabaseHandler.getSourceInfoDB(sourceID, sourceDb);
 	listRoutes.clear();
-	getRoute(true, sourceDb, sinkDb, listRoutes);
+	getRoute(true, true, sourceDb, sinkDb, listRoutes);
 	ASSERT_EQ(static_cast<uint>(0), listRoutes.size());
 
 	listRoutes.clear();
-	getRoute(false, sourceDb, sinkDb, listRoutes);
+	getRoute(false, true, sourceDb, sinkDb, listRoutes);
 	ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
 	ASSERT_TRUE(pCF.compareRoute(compareRoute,listRoutes[0]));
 }
@@ -784,7 +790,7 @@ TEST_F(CAmRouterMapTest,simpleRoute2DomainsCircularGWOnlyFree)
 	pDatabaseHandler.getSinkInfoDB(sinkID, sinkDb);
 	pDatabaseHandler.getSourceInfoDB(sourceID, sourceDb);
 	listRoutes.clear();
-	getRoute(true, sourceDb, sinkDb, listRoutes);
+	getRoute(true, true, sourceDb, sinkDb, listRoutes);
 	ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
 	ASSERT_TRUE(pCF.compareRoute(compareRoute,listRoutes[0]));
 }
@@ -957,7 +963,7 @@ TEST_F(CAmRouterMapTest,simpleRoute3DomainsListConnectionFormats_2)
 	am::am_Sink_s sinkDb;
 	pDatabaseHandler.getSinkInfoDB(sinkID, sinkDb);
 	pDatabaseHandler.getSourceInfoDB(sourceID, sourceDb);
-	getRoute(false, sourceDb, sinkDb, listRoutes);
+	getRoute(false, true, sourceDb, sinkDb, listRoutes, 0);
 	ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
 	ASSERT_TRUE(pCF.compareRoute(compareRoute,listRoutes[0]));
 }
@@ -1124,11 +1130,10 @@ TEST_F(CAmRouterMapTest,simpleRoute3DomainsListConnectionFormats_1)
 	am::am_Sink_s sinkDb;
 	pDatabaseHandler.getSinkInfoDB(sinkID, sinkDb);
 	pDatabaseHandler.getSourceInfoDB(sourceID, sourceDb);
-	getRoute(false, sourceDb, sinkDb, listRoutes);
+	getRoute(false, true, sourceDb, sinkDb, listRoutes, 0);
 	ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
 	ASSERT_TRUE(pCF.compareRoute(compareRoute,listRoutes[0]));
 }
-
 
 //test that checks 3 domains, one sink one source, longer lists of connectionformats.
 TEST_F(CAmRouterMapTest,simpleRoute3DomainsListConnectionFormats)
@@ -1287,11 +1292,10 @@ TEST_F(CAmRouterMapTest,simpleRoute3DomainsListConnectionFormats)
 	am::am_Sink_s sinkDb;
 	pDatabaseHandler.getSinkInfoDB(sinkID, sinkDb);
 	pDatabaseHandler.getSourceInfoDB(sourceID, sourceDb);
-	getRoute(false, sourceDb, sinkDb, listRoutes);
+	getRoute(false, true, sourceDb, sinkDb, listRoutes, 0);
 	ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
 	ASSERT_TRUE(pCF.compareRoute(compareRoute,listRoutes[0]));
 }
-
 
 //test that checks 4 domains, one sink and one source but there are 2 routes because there are 2 gateways
 TEST_F(CAmRouterMapTest,simpleRoute4Domains2Routes)
@@ -1534,7 +1538,7 @@ TEST_F(CAmRouterMapTest,simpleRoute4Domains2Routes)
 	am::am_Sink_s sinkDb;
 	pDatabaseHandler.getSinkInfoDB(sinkID, sinkDb);
 	pDatabaseHandler.getSourceInfoDB(sourceID, sourceDb);
-	getRoute(false, sourceDb, sinkDb, listRoutes);
+	getRoute(false, true, sourceDb, sinkDb, listRoutes, 0);
 	ASSERT_EQ(static_cast<uint>(2), listRoutes.size());
 
     bool containsRoute1 = std::find_if(listRoutes.begin(), listRoutes.end(), [&](const am_Route_s & ref) {
@@ -1702,9 +1706,10 @@ TEST_F(CAmRouterMapTest,simpleRoute3DomainsNoConnection)
  	pDatabaseHandler.getSinkInfoDB(sinkID, sinkDb);
  	pDatabaseHandler.getSourceInfoDB(sourceID, sourceDb);
  	listRoutes.clear();
- 	getRoute(false, sourceDb, sinkDb, listRoutes);
+ 	getRoute(false, true, sourceDb, sinkDb, listRoutes, 0);
  	ASSERT_EQ(static_cast<uint>(0), listRoutes.size());
 }
+
 //test that checks just 2 domains, one sink one source with only one connection format each
 TEST_F(CAmRouterMapTest,simpleRoute2Domains)
 {
@@ -1820,7 +1825,7 @@ TEST_F(CAmRouterMapTest,simpleRoute2Domains)
  	am::am_Sink_s sinkDb;
  	pDatabaseHandler.getSinkInfoDB(sinkID, sinkDb);
  	pDatabaseHandler.getSourceInfoDB(sourceID, sourceDb);
- 	getRoute(false, sourceDb, sinkDb, listRoutes);
+ 	getRoute(false, true, sourceDb, sinkDb, listRoutes, 0);
  	ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
  	ASSERT_TRUE(pCF.compareRoute(compareRoute,listRoutes[0]));
 }
@@ -1917,7 +1922,7 @@ TEST_F(CAmRouterMapTest,simpleRoute2DomainsNoMatchConnectionFormats)
  	am::am_Sink_s sinkDb;
  	pDatabaseHandler.getSinkInfoDB(sinkID, sinkDb);
  	pDatabaseHandler.getSourceInfoDB(sourceID, sourceDb);
- 	getRoute(false, sourceDb, sinkDb, listRoutes);
+ 	getRoute(false, true, sourceDb, sinkDb, listRoutes, 0);
  	ASSERT_EQ(static_cast<uint>(0), listRoutes.size());
  }
 
@@ -2076,7 +2081,7 @@ TEST_F(CAmRouterMapTest,simpleRoute3Domains)
    	pDatabaseHandler.getSinkInfoDB(sinkID, sinkDb);
    	pDatabaseHandler.getSourceInfoDB(sourceID, sourceDb);
    	listRoutes.clear();
-   	getRoute(false, sourceDb, sinkDb, listRoutes);
+   	getRoute(false, true, sourceDb, sinkDb, listRoutes, 0);
    	ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
    	ASSERT_TRUE(pCF.compareRoute(compareRoute,listRoutes[0]));
 }
@@ -2275,7 +2280,7 @@ TEST_F(CAmRouterMapTest,simpleRoute4Domains)
    	pDatabaseHandler.getSinkInfoDB(sinkID, sinkDb);
    	pDatabaseHandler.getSourceInfoDB(sourceID, sourceDb);
    	listRoutes.clear();
-   	getRoute(false, sourceDb, sinkDb, listRoutes);
+   	getRoute(false, true, sourceDb, sinkDb, listRoutes, 0);
    	ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
    	ASSERT_TRUE(pCF.compareRoute(compareRoute,listRoutes[0]));
 }
@@ -2400,7 +2405,7 @@ TEST_F(CAmRouterMapTest,route1Domain1Source1Sink)
 	compareRoute.sinkID = sinkID;
 	compareRoute.sourceID = sourceID;
 
-   	getRoute(false, source, sink, listRoutes);
+   	getRoute(false, true, source, sink, listRoutes, 0);
    	ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
    	ASSERT_TRUE(pCF.compareRoute(compareRoute,listRoutes[0]));
 }
@@ -2485,7 +2490,7 @@ TEST_F(CAmRouterMapTest,route1Domain1Source1Converter1Sink)
 	compareRoute.sinkID = sinkID1;
 	compareRoute.sourceID = sourceID;
 
-   	getRoute(false, source, sink, listRoutes);
+   	getRoute(false, true, source, sink, listRoutes, 0);
    	ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
    	ASSERT_TRUE(pCF.compareRoute(compareRoute,listRoutes[0]));
 }
@@ -2600,7 +2605,7 @@ TEST_F(CAmRouterMapTest,route1Domain1Source3Converters1Sink)
 	compareRoute1.sinkID = sinkID;
 	compareRoute1.sourceID = sourceID;
 
-	getRoute(false, source, sink, listRoutes);
+	getRoute(false, true, source, sink, listRoutes, 0);
 	ASSERT_EQ(static_cast<uint>(2), listRoutes.size());
 	ASSERT_TRUE(pCF.compareRoute(compareRoute1,listRoutes[0])||pCF.compareRoute(compareRoute1,listRoutes[1]));
 
@@ -2665,7 +2670,7 @@ TEST_F(CAmRouterMapTest,route2Domains1Source1Sink)
     pDatabaseHandler.getSourceInfoDB(sourceID, source);
     std::vector<am_Route_s> listRoutes;
 
-	getRoute(false, source, sink, listRoutes);
+	getRoute(false, true, source, sink, listRoutes, 0);
 	ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
 
 	am_Route_s compareRoute1;
@@ -2741,7 +2746,7 @@ TEST_F(CAmRouterMapTest,route3Domains1Source1Sink)
 
     std::vector<am_Route_s> listRoutes;
 
-	getRoute(false, source, sink, listRoutes);
+	getRoute(false, true, source, sink, listRoutes, 0);
 	ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
 
 	am_Route_s compareRoute1;
@@ -2822,7 +2827,7 @@ TEST_F(CAmRouterMapTest,routeSource1Sink2PathThroughConv1Gate1)
 
     std::vector<am_Route_s> listRoutes;
 
-	getRoute(false, source, sink1, listRoutes);
+	getRoute(false, true, source, sink1, listRoutes, 0);
 	ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
 
  	am_Route_s compareRoute1;
@@ -2834,7 +2839,7 @@ TEST_F(CAmRouterMapTest,routeSource1Sink2PathThroughConv1Gate1)
 	ASSERT_TRUE(pCF.compareRoute(compareRoute1,listRoutes[0]));
 
 	listRoutes.clear();
-	getRoute(false, source, sink2, listRoutes);
+	getRoute(false, true, source, sink2, listRoutes, 0);
 	ASSERT_EQ(static_cast<uint>(0), listRoutes.size());
 }
 
@@ -2900,13 +2905,13 @@ TEST_F(CAmRouterMapTest, routeSource1Sink1PathThroughDomain2)
     pDatabaseHandler.getSinkInfoDB(sink1ID, sink1);
     pDatabaseHandler.getSourceInfoDB(sourceID, source);
 
-	getRoute(false, source, sink1, listRoutes);
+	getRoute(false, true, source, sink1, listRoutes, 0);
 	ASSERT_EQ(static_cast<uint>(0), listRoutes.size());
 
     am::am_Sink_s sink2;
     pDatabaseHandler.getSinkInfoDB(sink2ID, sink2);
 
-	getRoute(false, source, sink2, listRoutes);
+	getRoute(false, true, source, sink2, listRoutes, 0);
 	ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
 
  	am_Route_s compareRoute1;
@@ -2993,12 +2998,12 @@ TEST_F(CAmRouterMapTest, routeSource1Sink1PathThroughGate1Conv2Gate2)
 
     std::vector<am_Route_s> listRoutes;
 
-	getRoute(false, source, sink, listRoutes);
+	getRoute(false, true, source, sink, listRoutes, 0);
 	ASSERT_EQ(static_cast<uint>(0), listRoutes.size());
 
     am::am_Sink_s sink1;
     pDatabaseHandler.getSinkInfoDB(sink2ID, sink1);
-	getRoute(false, source, sink1, listRoutes);
+	getRoute(false, true, source, sink1, listRoutes, 0);
 
 	ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
  	am_Route_s compareRoute1;
@@ -3107,12 +3112,12 @@ TEST_F(CAmRouterMapTest, routeSource1Sink1PathThroughConv1Gate1Conv2Gate2)
 
     std::vector<am_Route_s> listRoutes;
 
-	getRoute(false, source, sink, listRoutes);
+	getRoute(false, true, source, sink, listRoutes, 0);
 	ASSERT_EQ(static_cast<uint>(0), listRoutes.size());
 
     am::am_Sink_s sink2;
     pDatabaseHandler.getSinkInfoDB(coSinkID21, sink2);
-	pRouter.getRoute(false, source, sink2, listRoutes);
+	getRoute(false, true, source, sink2, listRoutes, 0);
 	ASSERT_EQ(static_cast<uint>(2), listRoutes.size());
 
  	am_Route_s compareRoute1;
@@ -3217,7 +3222,6 @@ TEST_F(CAmRouterMapTest,route3Domains1Source1SinkGwCycles)
 	ASSERT_TRUE(sinkNode);
 
 	std::vector<am_Route_s> listRoutes;
-	std::vector<std::vector<CAmRoutingNode*>> resultNodesPath;
 
 	am_Route_s compareRoute1;
 	compareRoute1.sinkID = sink1ID;
@@ -3231,8 +3235,7 @@ TEST_F(CAmRouterMapTest,route3Domains1Source1SinkGwCycles)
 	ASSERT_TRUE(didMatch); \
 		}
 
-#ifdef ROUTING_BUILD_CONNECTIONS
-	getAllPaths(*sourceNode, *sinkNode, listRoutes, resultNodesPath, true);
+	getAllPaths(*sourceNode, *sinkNode, listRoutes, UINT_MAX, 10);
 	ASSERT_EQ(static_cast<uint>(9), listRoutes.size());
 
 	compareRoute1.route.clear();
@@ -3303,16 +3306,166 @@ TEST_F(CAmRouterMapTest,route3Domains1Source1SinkGwCycles)
 	compareRoute1.route.push_back({source1ID, gw5SinkID, domain1ID, CF_GENIVI_STEREO});
 	compareRoute1.route.push_back({gw5SourceID, sink1ID, domain3ID, CF_GENIVI_STEREO});
 	DO_ASSERT()
-#else
+
+	listRoutes.clear();
+
+	getAllPaths(*sourceNode, *sinkNode, listRoutes, 1, 10);
+	ASSERT_EQ(static_cast<uint>(5), listRoutes.size());
+
+	compareRoute1.route.clear();
+	compareRoute1.route.push_back({source1ID, gw2SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw2SourceID, gw4SinkID, domain2ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw4SourceID, gw5SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw5SourceID, sink1ID, domain3ID, CF_GENIVI_STEREO});
+	DO_ASSERT()
+
+	compareRoute1.route.clear();
+	compareRoute1.route.push_back({source1ID, gw1SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw1SourceID, gw3SinkID, domain2ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw3SourceID, gw5SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw5SourceID, sink1ID, domain3ID, CF_GENIVI_STEREO});
+	DO_ASSERT()
+
+	compareRoute1.route.clear();
+	compareRoute1.route.push_back({source1ID, gw2SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw2SourceID, gw3SinkID, domain2ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw3SourceID, gw5SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw5SourceID, sink1ID, domain3ID, CF_GENIVI_STEREO});
+	DO_ASSERT()
+
+	compareRoute1.route.clear();
+	compareRoute1.route.push_back({source1ID, gw1SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw1SourceID, gw4SinkID, domain2ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw4SourceID, gw5SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw5SourceID, sink1ID, domain3ID, CF_GENIVI_STEREO});
+	DO_ASSERT()
+
 	compareRoute1.route.clear();
 	compareRoute1.route.push_back({source1ID, gw5SinkID, domain1ID, CF_GENIVI_STEREO});
 	compareRoute1.route.push_back({gw5SourceID, sink1ID, domain3ID, CF_GENIVI_STEREO});
-#endif
+	DO_ASSERT()
 
 	listRoutes.clear();
-	resultNodesPath.clear();
-	getAllPaths(*sourceNode, *sinkNode, listRoutes, resultNodesPath, false);
+
+	getAllPaths(*sourceNode, *sinkNode, listRoutes);
 	ASSERT_EQ(static_cast<uint>(1), listRoutes.size());
+	DO_ASSERT()
+}
+
+TEST_F(CAmRouterMapTest,route3Domains1Source1SinkGwCycles2)
+{
+	EXPECT_CALL(pMockControlInterface,getConnectionFormatChoice(_,_,_,_,_)).WillRepeatedly(DoAll(returnConnectionFormat(), Return(E_OK)));
+
+    am_SourceClass_s sourceclass;
+
+    sourceclass.name="sClass";
+    sourceclass.sourceClassID=5;
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceClassDB(sourceclass.sourceClassID,sourceclass));
+
+    am_SinkClass_s sinkclass;
+    sinkclass.sinkClassID=5;
+    sinkclass.name="sname";
+
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkClassDB(sinkclass,sinkclass.sinkClassID));
+
+	am_domainID_t domain1ID, domain2ID, domain3ID;
+	enterDomainDB("domain1", domain1ID);
+	enterDomainDB("domain2", domain2ID);
+	enterDomainDB("domain3", domain3ID);
+
+	//just make so many cycles as possible
+	std::vector<am_CustomConnectionFormat_t> cfStereo;
+	cfStereo.push_back(CF_GENIVI_STEREO);
+	std::vector<am_CustomConnectionFormat_t> cfOther;
+	cfOther.push_back(CF_GENIVI_AUTO);
+	std::vector<am_CustomConnectionFormat_t> cfMono;
+	cfMono.push_back(CF_GENIVI_MONO);
+
+	am_sourceID_t source1ID;
+	enterSourceDB("source1", domain1ID, cfMono, source1ID);
+	am_sinkID_t gw1SinkID;
+	enterSinkDB("gw1Sink", domain1ID, cfStereo, gw1SinkID);
+	am_sinkID_t gw2SinkID;
+	enterSinkDB("gw2Sink", domain1ID, cfMono, gw2SinkID);
+	am_sourceID_t gw3SourceID;
+	enterSourceDB("gw3Source", domain1ID, cfStereo, gw3SourceID);
+	am_sourceID_t gw4SourceID;
+	enterSourceDB("gw4Source", domain1ID, cfStereo, gw4SourceID);
+	am_sinkID_t gw5SinkID;
+	enterSinkDB("gw5Sink", domain1ID, cfStereo, gw5SinkID);
+
+	am_sourceID_t gw1SourceID;
+	enterSourceDB("gw1Source", domain2ID, cfStereo, gw1SourceID);
+	am_sourceID_t gw2SourceID;
+	enterSourceDB("gw2Source", domain2ID, cfStereo, gw2SourceID);
+	am_sinkID_t gw3SinkID;
+	enterSinkDB("gw3Sink", domain2ID, cfStereo, gw3SinkID);
+	am_sinkID_t gw4SinkID;
+	enterSinkDB("gw4Sink", domain2ID, cfStereo, gw4SinkID);
+
+	am_sourceID_t gw5SourceID;
+	enterSourceDB("gw5Source", domain3ID, cfOther, gw5SourceID);
+	am_sinkID_t sink1ID;
+	enterSinkDB("sink1", domain3ID, cfOther, sink1ID);
+
+	std::vector<bool> matrixT;
+	matrixT.push_back(true);
+	std::vector<bool> matrixF;
+	matrixF.push_back(false);
+
+	am_gatewayID_t gateway1ID;
+	enterGatewayDB("gateway1", domain2ID, domain1ID, cfStereo, cfStereo, matrixT, gw1SourceID, gw1SinkID, gateway1ID);
+	am_gatewayID_t gateway2ID;
+	enterGatewayDB("gateway2", domain2ID, domain1ID, cfStereo, cfMono, matrixT, gw2SourceID, gw2SinkID, gateway2ID);
+	am_gatewayID_t gateway3ID;
+	enterGatewayDB("gateway3", domain1ID, domain2ID, cfStereo, cfStereo, matrixT, gw3SourceID, gw3SinkID, gateway3ID);
+	am_gatewayID_t gateway4ID;
+	enterGatewayDB("gateway4", domain1ID, domain2ID, cfStereo, cfStereo, matrixT, gw4SourceID, gw4SinkID, gateway4ID);
+	am_gatewayID_t gateway5ID;
+	enterGatewayDB("gateway5", domain3ID, domain1ID, cfOther, cfStereo, matrixT, gw5SourceID, gw5SinkID, gateway5ID);
+
+	pRouter.load(false);
+
+	CAmRoutingNode* sourceNode = pRouter.sourceNodeWithID(source1ID);
+	CAmRoutingNode* sinkNode = pRouter.sinkNodeWithID(sink1ID);
+
+	ASSERT_TRUE(sourceNode);
+	ASSERT_TRUE(sinkNode);
+
+	std::vector<am_Route_s> listRoutes;
+
+	am_Route_s compareRoute1;
+	compareRoute1.sinkID = sink1ID;
+	compareRoute1.sourceID = source1ID;
+
+#define DO_ASSERT()	 \
+		{\
+	bool didMatch = false; \
+	for(auto it = listRoutes.begin(); it!=listRoutes.end(); it++) \
+	didMatch|=pCF.compareRoute(compareRoute1,*it); \
+	ASSERT_TRUE(didMatch); \
+		}
+
+	getRoute(false, false, source1ID, sink1ID, listRoutes, 0, 10);
+	ASSERT_EQ(static_cast<uint>(0), listRoutes.size());
+
+	getRoute(false, false, source1ID, sink1ID, listRoutes, 1, 10);
+	ASSERT_EQ(static_cast<uint>(2), listRoutes.size());
+
+	compareRoute1.route.clear();
+	compareRoute1.route.push_back({source1ID, gw2SinkID, domain1ID, CF_GENIVI_MONO});
+	compareRoute1.route.push_back({gw2SourceID, gw4SinkID, domain2ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw4SourceID, gw5SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw5SourceID, sink1ID, domain3ID, CF_GENIVI_AUTO});
+	DO_ASSERT()
+
+	compareRoute1.route.clear();
+	compareRoute1.route.push_back({source1ID, gw2SinkID, domain1ID, CF_GENIVI_MONO});
+	compareRoute1.route.push_back({gw2SourceID, gw3SinkID, domain2ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw3SourceID, gw5SinkID, domain1ID, CF_GENIVI_STEREO});
+	compareRoute1.route.push_back({gw5SourceID, sink1ID, domain3ID, CF_GENIVI_AUTO});
 	DO_ASSERT()
 }
 
@@ -3403,7 +3556,7 @@ TEST_F(CAmRouterMapTest,route3Domains1Source3Gateways3Convertres1Sink)
 
     std::vector<am_Route_s> listRoutes;
 
-	getRoute(false, source, sink, listRoutes);
+	getRoute(false, true, source, sink, listRoutes);
 	ASSERT_EQ(static_cast<uint>(4), listRoutes.size());
 
  	am_Route_s compareRoute1;
@@ -3519,7 +3672,7 @@ TEST_F(CAmRouterMapTest, routeTunerHeadphonePathThroughGWPlus2OtherSinks)
     pDatabaseHandler.getSourceInfoDB(tunerID, source);
 
     std::vector<am_Route_s> listRoutes;
-	getRoute(false, source, sink, listRoutes);
+	getRoute(false, true, source, sink, listRoutes);
 	ASSERT_EQ(listRoutes.size(), static_cast<uint>(1));
 
  	am_Route_s compareRoute1;
@@ -3536,7 +3689,7 @@ TEST_F(CAmRouterMapTest, routeTunerHeadphonePathThroughGWPlus2OtherSinks)
 	am::am_Sink_s sink2;
 	pDatabaseHandler.getSinkInfoDB(rseHeadphoneID, sink2);
 	pDatabaseHandler.getSourceInfoDB(gwSourceID1, gwSource);
-	getRoute(false, gwSource, sink2, listRoutes);
+	getRoute(false, true, gwSource, sink2, listRoutes);
 	ASSERT_GT(listRoutes.size(), static_cast<uint>(0));
 
 	am_Route_s compareRoute2;

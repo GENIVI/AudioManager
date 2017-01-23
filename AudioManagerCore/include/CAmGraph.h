@@ -89,6 +89,7 @@ namespace am
 		 * Setters and getters.
 		 */
 		NodeData & getData() { return mData; }
+		const NodeData & getData() const { return mData; }
 		uint16_t getIndex() const { return mIndex; }
 		void setIndex(uint16_t index) { mIndex = index; }
 	};
@@ -120,13 +121,13 @@ namespace am
         typedef typename std::vector<CAmNode<T>*>                 			CAmListNodePtrs;
         typedef typename std::list<CAmVertex<T,V>>                 			CAmListVertices;
 		typedef typename std::list<CAmVertex<T,V>>::iterator       			CAmListVerticesItr;
-		typedef typename std::list<CAmVertex<T,V>>::const_iterator  			CAmListVerticesItrConst;
-        typedef typename std::list<CAmListVertices>         					CAmNodesAdjList;
-		typedef typename std::list<CAmListVertices>::iterator       			CAmNodesAdjListItr;
-		typedef typename std::list<CAmListVertices>::const_iterator 			CAmNodesAdjListItrConst;
-		typedef typename std::list<CAmNode<T>>                                CAmListNodes;
-		typedef typename std::list<CAmNode<T>>::iterator                      CAmListNodesItr;
-		typedef typename std::list<CAmNode<T>>::const_iterator  				CAmListNodesItrConst;
+		typedef typename std::list<CAmVertex<T,V>>::const_iterator  		CAmListVerticesItrConst;
+        typedef typename std::list<CAmListVertices>         				CAmNodesAdjList;
+		typedef typename std::list<CAmListVertices>::iterator       		CAmNodesAdjListItr;
+		typedef typename std::list<CAmListVertices>::const_iterator 		CAmNodesAdjListItrConst;
+		typedef typename std::list<CAmNode<T>>                              CAmListNodes;
+		typedef typename std::list<CAmNode<T>>::iterator                    CAmListNodesItr;
+		typedef typename std::list<CAmNode<T>>::const_iterator  			CAmListNodesItrConst;
         typedef typename std::vector<CAmNode<T>*>                 			CAmNodeReferenceList;
         typedef typename std::vector<CAmListVertices*>                 		CAmVertexReferenceList;
 
@@ -135,6 +136,24 @@ namespace am
 		CAmNodeReferenceList 	mPointersNodes;		//!< CAmNodeReferenceList vector with pointers to nodes for direct access
         CAmVertexReferenceList 	mPointersAdjList;	//!< CAmVertexReferenceList vector with pointers to vertices for direct access
 		bool          		 	mIsCyclic;			//!< bool the graph has cycles or not
+
+		struct IterateThroughAllNodesDelegate
+		{
+			CAmNode<T> * source;
+			CAmNode<T> * destination;
+			CAmNodeReferenceList visited;
+			std::function<bool(const CAmNode<T> * )> shouldVisitNode;
+			std::function<void(const CAmNode<T> *)> willVisitNode;
+			std::function<void(const CAmNode<T> *)> didVisitNode;
+			std::function<void(const CAmNodeReferenceList & path)> didFindPath;
+		};
+
+		struct VisitNodeDelegate
+		{
+			CAmNode<T> * source;
+			CAmNode<T> * destination;
+			std::function<void(const am_GraphPathPosition_e, CAmNode<T> &)> visitedNode;
+		};
 
 		/**
 		 * Updates the node indexes after adding or removing nodes.
@@ -162,7 +181,7 @@ namespace am
 		typedef uint16_t vertex_t;
 		typedef uint16_t weight_t;
 
-		void findShortestsPathsFromNode(const CAmNode<T> & node, std::vector<weight_t> &minDistance, std::vector<CAmNode<T> *> &previous)
+		void findShortestPathsFromNode(const CAmNode<T> & node, std::vector<weight_t> &minDistance, std::vector<CAmNode<T> *> &previous)
 		{
 			typename CAmListVertices::const_iterator nIter;
 			CAmListVertices * neighbors;
@@ -256,32 +275,40 @@ namespace am
 		}
 
 		/**
-		 * Generates list with all possible paths to given destination node after findShortestsPathsFromNode has been called.
-		 * Finding paths is observed through the callback. The caller is informed after a new path has been found.
+		 * Iterate through the nodes and generate all paths to given node.
 		 *
 		 * @param dst end node.
 		 * @param visited vector with current path.
-		 * @param cb callback which is mostly used for constructing.
+		 * @param delegate enumeration delegate.
 		 */
-		void goThroughAllPaths(const CAmNode<T> & dst, std::vector<CAmNode<T>*> & visited, std::function<void(const CAmNodeReferenceList & path)> cb)
+		void findAllPaths(IterateThroughAllNodesDelegate & delegate)
 		{
-			CAmListVertices * nodes = mPointersAdjList[visited.back()->getIndex()];
+			CAmListVertices * nodes = mPointersAdjList[delegate.visited.back()->getIndex()];
 			CAmListVerticesItrConst vItr(nodes->begin());
+
+			CAmVertex<T,V> * pNextVertex;
+			CAmNode<T> * pNextNode;
 			for (; vItr != nodes->end(); ++vItr)
 			{
-				const CAmVertex<T,V> & vertex = (*vItr);
-				if(vertex.getNode()->getStatus()!=GES_NOT_VISITED)
+				pNextVertex = (CAmVertex<T,V> *)&(*vItr);
+				pNextNode = pNextVertex->getNode();
+				if(
+					pNextNode->getStatus()!=GES_NOT_VISITED ||
+					!delegate.shouldVisitNode(pNextNode)
+				  )
 					continue;
-				if (vertex.getNode()==&dst)
+				if (pNextNode==delegate.destination)
 				{
-					vertex.getNode()->setStatus(GES_IN_PROGRESS);
-					visited.push_back(vertex.getNode());
+					delegate.willVisitNode(pNextNode);
+					pNextNode->setStatus(GES_IN_PROGRESS);
+					delegate.visited.push_back(pNextNode);
 					//notify observer
-					cb(visited);
+					delegate.didFindPath(delegate.visited);
 					//remove last node from the list
-					auto last = visited.end()-1;
-					visited.erase(last);
-					vertex.getNode()->setStatus(GES_NOT_VISITED);
+					auto last = delegate.visited.end()-1;
+					delegate.visited.erase(last);
+					pNextNode->setStatus(GES_NOT_VISITED);
+					delegate.didVisitNode(pNextNode);
 					break;
 				}
 			}
@@ -289,20 +316,28 @@ namespace am
 			//bfs like loop
 			for (; vItr != nodes->end(); ++vItr)
 			{
-				const CAmVertex<T,V> & vertex = (*vItr);
-				if(vertex.getNode()->getStatus()!=GES_NOT_VISITED||vertex.getNode()==&dst)
+				pNextVertex = (CAmVertex<T,V> *)&(*vItr);
+				pNextNode = pNextVertex->getNode();
+
+				if(pNextNode->getStatus()!=GES_NOT_VISITED ||
+						pNextNode==delegate.destination ||
+				   !delegate.shouldVisitNode(pNextNode)
+					)
 					continue;
-				vertex.getNode()->setStatus(GES_IN_PROGRESS);
-				visited.push_back(vertex.getNode());
-				goThroughAllPaths(dst, visited, cb);
+				delegate.willVisitNode(pNextNode);
+				pNextNode->setStatus(GES_IN_PROGRESS);
+				delegate.visited.push_back(pNextNode);
+				findAllPaths(delegate);
 				//remove last node from the list
-				auto last = visited.end()-1;
-				visited.erase(last);
-				vertex.getNode()->setStatus(GES_NOT_VISITED);
+				auto last = delegate.visited.end()-1;
+				delegate.visited.erase(last);
+				pNextNode->setStatus(GES_NOT_VISITED);
+				delegate.didVisitNode(pNextNode);
 			}
 		}
 
 	public:
+
 		explicit CAmGraph(const std::vector<T> &v):mStoreNodes(), mStoreAdjList(), mPointersNodes(), mPointersAdjList()
 		{
 			typedef typename std::vector<T>::const_iterator inItr;
@@ -524,7 +559,7 @@ namespace am
 
 			std::vector<weight_t> min_distance;
 			std::vector<CAmNode<T>*> previous;
-			findShortestsPathsFromNode(source, min_distance, previous);
+			findShortestPathsFromNode(source, min_distance, previous);
 
 			for(auto it=listTargets.begin(); it!=listTargets.end(); it++)
 			{
@@ -554,7 +589,7 @@ namespace am
 				return;
 			std::vector<weight_t> min_distance;
 			std::vector<CAmNode<T>*> previous;
-			findShortestsPathsFromNode(source, min_distance, previous);
+			findShortestPathsFromNode(source, min_distance, previous);
 			constructShortestPathTo(destination, previous, resultPath);
 		}
 
@@ -576,7 +611,7 @@ namespace am
 
 			std::vector<weight_t> min_distance;
 			std::vector<CAmNode<T>*> previous;
-			findShortestsPathsFromNode(source, min_distance, previous);
+			findShortestPathsFromNode(source, min_distance, previous);
 
 			for(auto it=listTargets.begin(); it!=listTargets.end(); it++)
 			{
@@ -603,7 +638,7 @@ namespace am
 
 			std::vector<weight_t> min_distance;
 			std::vector<CAmNode<T>*> previous;
-			findShortestsPathsFromNode(source, min_distance, previous);
+			findShortestPathsFromNode(source, min_distance, previous);
 			constructShortestPathTo(destination, previous, cb);
 		}
 
@@ -613,15 +648,29 @@ namespace am
 		 *
 		 * @param src start node.
 		 * @param dst destination node.
-		 * @param cb callabck.
+		 * @param cbShouldVisitNode ask the delegate if we should proceed with the current node.
+		 * @param cbWillVisitNode tell the delegate the current node will be visited.
+		 * @param cbDidVisitNode tell the delegate the current node was visited.
+		 * @param cbDidFindPath return the path to the delegate.
 		 */
-		void getAllPaths(const CAmNode<T> & src, const CAmNode<T> & dst, std::function<void(const CAmNodeReferenceList & path)> cb)
+		void getAllPaths(CAmNode<T> & src,
+						 CAmNode<T> & dst,
+						 std::function<bool(const CAmNode<T> * )> cbShouldVisitNode,
+						 std::function<void(const CAmNode<T> *)> cbWillVisitNode,
+						 std::function<void(const CAmNode<T> *)> cbDidVisitNode,
+						 std::function<void(const CAmNodeReferenceList & path)> cbDidFindPath)
 		{
-			CAmNodeReferenceList visited;
-			visited.push_back((CAmNode<T>*)&src);
+			IterateThroughAllNodesDelegate delegate;
+			delegate.source = &src;
+			delegate.destination = &dst;
+			delegate.shouldVisitNode = cbShouldVisitNode;
+			delegate.willVisitNode = cbWillVisitNode;
+			delegate.didVisitNode = cbDidVisitNode;
+			delegate.didFindPath = cbDidFindPath;
+			delegate.visited.push_back((CAmNode<T>*)&src);
 			((CAmNode<T>*)&src)->setStatus(GES_VISITED);
-			goThroughAllPaths(dst, visited, cb);
-			reset();
+			findAllPaths(delegate);
+			((CAmNode<T>*)&src)->setStatus(GES_NOT_VISITED);
 		}
 	};
 

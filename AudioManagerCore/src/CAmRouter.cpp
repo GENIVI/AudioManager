@@ -57,6 +57,8 @@ CAmRouter::CAmRouter(IAmDatabaseHandler* iDatabaseHandler, CAmControlSender* iSe
         mpDatabaseHandler(iDatabaseHandler), //
         mpControlSender(iSender),
         mOnlyFreeConversionNodes(false),
+		mMaxAllowedCycles(MAX_ALLOWED_DOMAIN_CYCLES),
+		mMaxPathCount(MAX_ROUTING_PATHS),
 		mRoutingGraph(),
 		mNodeListSources(),
 		mNodeListSinks(),
@@ -81,30 +83,90 @@ CAmRouter::~CAmRouter()
  */
 am_Error_e CAmRouter::getRoute(const bool onlyfree, const am_sourceID_t sourceID, const am_sinkID_t sinkID, std::vector<am_Route_s> & returnList)
 {
-    returnList.clear();
-    am_Source_s source;
-    am_Sink_s sink;
-    am_Error_e error = mpDatabaseHandler->getSourceInfoDB(sourceID, source);
-    if(error!=E_OK)
-    	return error;
-    error = mpDatabaseHandler->getSinkInfoDB(sinkID, sink);
-    if(error!=E_OK)
-        return error;
-    error = getRoute(onlyfree, source, sink, returnList);
-    return error;
+	load(onlyfree);
+    return getRouteFromLoadedNodes(sourceID, sinkID, returnList);
 }
 
 
 am_Error_e CAmRouter::getRoute(const bool onlyfree, const am_Source_s & aSource, const am_Sink_s & aSink, std::vector<am_Route_s> & listRoutes)
 {
-	am_Error_e error;
-	load(onlyfree);
+	return getRoute(onlyfree, aSource.sourceID, aSink.sinkID, listRoutes);
+}
 
-	CAmRoutingNode* pRootSource = sourceNodeWithID(aSource.sourceID);
-	CAmRoutingNode* pRootSink = sinkNodeWithID(aSink.sinkID);
+am_Error_e CAmRouter::getRouteFromLoadedNodes(const am_sourceID_t sourceID, const am_sinkID_t sinkID, std::vector<am_Route_s> & returnList)
+{
+	returnList.clear();
 
-	assert(pRootSource);
-	assert(pRootSink);
+	CAmRoutingNode* pRootSource = sourceNodeWithID(sourceID);
+	CAmRoutingNode* pRootSink = sinkNodeWithID(sinkID);
+
+    if(!pRootSource || !pRootSink)
+    	return E_NON_EXISTENT;
+
+    //try to find paths without cycles
+    const unsigned cycles = mMaxAllowedCycles;
+    mMaxAllowedCycles = 0;
+
+    am_Error_e error = getFirstNShortestPaths(*pRootSource, *pRootSink, returnList);
+
+    mMaxAllowedCycles = cycles;
+
+    //if no paths have been found, we start a second search with cycles.
+    if( !returnList.size() && cycles>0 )
+    {
+    	error = getFirstNShortestPaths(*pRootSource, *pRootSink, returnList);
+    }
+
+	/* For shortest path use the following call:
+	 *
+	 *   error = getShortestPath(*pRootSource, *pRootSink, listRoutes);
+     */
+    return error;
+}
+
+
+am_Error_e CAmRouter::getRouteFromLoadedNodes(const am_Source_s & aSource, const am_Sink_s & aSink, std::vector<am_Route_s> & listRoutes)
+{
+	return getRouteFromLoadedNodes(aSource.sourceID, aSink.sinkID, listRoutes);
+}
+
+void CAmRouter::load(const bool onlyFree)
+{
+	clear();
+	mOnlyFreeConversionNodes = onlyFree;
+
+	am_RoutingNodeData_s nodeDataSrc;
+	nodeDataSrc.type = CAmNodeDataType::SOURCE;
+	mpDatabaseHandler->enumerateSources([&](const am_Source_s & obj){
+		nodeDataSrc.data.source = (am_Source_s*)&obj;
+		auto node = &mRoutingGraph.addNode(nodeDataSrc);
+		mNodeListSources[nodeDataSrc.data.source->domainID].push_back(node);
+	});
+	am_RoutingNodeData_s nodeDataSink;
+	nodeDataSink.type = CAmNodeDataType::SINK;
+	mpDatabaseHandler->enumerateSinks([&](const am_Sink_s & obj){
+		nodeDataSink.data.sink = (am_Sink_s*)&obj;
+		auto node = &mRoutingGraph.addNode(nodeDataSink);
+		mNodeListSinks[nodeDataSink.data.sink->domainID].push_back(node);
+	});
+	am_RoutingNodeData_s nodeDataGateway;
+	nodeDataGateway.type = CAmNodeDataType::GATEWAY;
+	mpDatabaseHandler->enumerateGateways([&](const am_Gateway_s & obj){
+		nodeDataGateway.data.gateway = (am_Gateway_s*)&obj;
+		auto node = &mRoutingGraph.addNode(nodeDataGateway);
+		mNodeListGateways[nodeDataGateway.data.gateway->controlDomainID].push_back(node);
+	});
+	am_RoutingNodeData_s nodeDataConverter;
+	nodeDataConverter.type = CAmNodeDataType::CONVERTER;
+	mpDatabaseHandler->enumerateConverters([&](const am_Converter_s & obj){
+		nodeDataConverter.data.converter = (am_Converter_s*)&obj;
+		auto node = &mRoutingGraph.addNode(nodeDataConverter);
+		mNodeListConverters[nodeDataConverter.data.converter->domainID].push_back(node);
+	});
+
+	constructConverterConnections();
+	constructGatewayConnections();
+	constructSourceSinkConnections();
 
 #ifdef TRACE_GRAPH
 	mRoutingGraph.trace([&](const CAmRoutingNode & node, const std::vector<CAmVertex<am_RoutingNodeData_s,uint16_t>*> & list) {
@@ -124,46 +186,6 @@ am_Error_e CAmRouter::getRoute(const bool onlyfree, const am_Source_s & aSource,
 			});
 #endif
 
-	std::vector<std::vector<CAmRoutingNode*>> pathNodes;
-	error = getAllPaths(*pRootSource, *pRootSink, listRoutes, pathNodes);
-	return error;
-}
-
-void CAmRouter::load(const bool onlyFree)
-{
-	clear();
-	mOnlyFreeConversionNodes = onlyFree;
-
-	am_RoutingNodeData_s nodeDataSrc;
-	nodeDataSrc.type = CAmNodeDataType::SOURCE;
-	mpDatabaseHandler->enumerateSources([&](const am_Source_s & obj){
-		nodeDataSrc.data.source = (am_Source_s*)&obj;
-		mNodeListSources[nodeDataSrc.data.source->domainID].push_back(&mRoutingGraph.addNode(nodeDataSrc));
-		});
-	am_RoutingNodeData_s nodeDataSink;
-	nodeDataSink.type = CAmNodeDataType::SINK;
-	mpDatabaseHandler->enumerateSinks([&](const am_Sink_s & obj){
-		nodeDataSink.data.sink = (am_Sink_s*)&obj;
-		mNodeListSinks[nodeDataSink.data.sink->domainID].push_back(&mRoutingGraph.addNode(nodeDataSink));
-		});
-	am_RoutingNodeData_s nodeDataGateway;
-	nodeDataGateway.type = CAmNodeDataType::GATEWAY;
-	mpDatabaseHandler->enumerateGateways([&](const am_Gateway_s & obj){
-		nodeDataGateway.data.gateway = (am_Gateway_s*)&obj;
-		mNodeListGateways[nodeDataGateway.data.gateway->controlDomainID].push_back(&mRoutingGraph.addNode(nodeDataGateway));
-	});
-	am_RoutingNodeData_s nodeDataConverter;
-	nodeDataConverter.type = CAmNodeDataType::CONVERTER;
-	mpDatabaseHandler->enumerateConverters([&](const am_Converter_s & obj){
-		nodeDataConverter.data.converter = (am_Converter_s*)&obj;
-		mNodeListConverters[nodeDataConverter.data.converter->domainID].push_back(&mRoutingGraph.addNode(nodeDataConverter));
-	});
-
-#ifdef ROUTING_BUILD_CONNECTIONS
-	constructConverterConnections();
-	constructGatewayConnections();
-	constructSourceSinkConnections();
-#endif
 }
 
 void CAmRouter::clear()
@@ -248,8 +270,6 @@ CAmRoutingNode* CAmRouter::gatewayNodeWithSinkID(const am_sinkID_t sinkID)
 	}
 	return NULL;
 }
-
-#ifdef ROUTING_BUILD_CONNECTIONS
 
 void CAmRouter::constructSourceSinkConnections()
 {
@@ -353,7 +373,6 @@ void CAmRouter::constructConverterConnections()
 		}
 	}
 }
-#else
 
 void CAmRouter::getVerticesForSource(const CAmRoutingNode & node, CAmRoutingListVertices & list)
 {
@@ -470,8 +489,6 @@ void CAmRouter::getVerticesForNode(
 	}
 }
 
-#endif
-
 am_Error_e CAmRouter::determineConnectionFormatsForPath(am_Route_s & routeObjects, std::vector<CAmRoutingNode*> & nodes, std::vector<am_Route_s> & result)
 {
 	std::vector<am_RoutingElement_s>::iterator routingElementIterator = routeObjects.route.begin();
@@ -570,31 +587,66 @@ am_Error_e CAmRouter::doConnectionFormatsForPath(am_Route_s & routeObjects,
 	}
 }
 
-#ifdef ROUTING_BUILD_CONNECTIONS
-
-void CAmRouter::getShortestPath(const CAmRoutingNode & source,
-											   const CAmRoutingNode & destination,
-											   std::vector<CAmRoutingNode*> & resultPath)
+am_Error_e CAmRouter::cfPermutationsForPath(am_Route_s shortestRoute, std::vector<CAmRoutingNode*> resultNodesPath, std::vector<am_Route_s>& resultPath)
 {
-	mRoutingGraph.getShortestPath(source, destination, resultPath);
+	std::vector<am_Route_s> result;
+	am_Error_e err = determineConnectionFormatsForPath(shortestRoute, resultNodesPath, result);
+	if (err != E_UNKNOWN)
+	{
+		resultPath.insert(resultPath.end(), result.begin(), result.end());
+#ifdef TRACE_GRAPH
+		std::cout
+				<< "Successfully determined connection formats for path from source:"
+				<< shortestRoute.sourceID << " to sink:" << shortestRoute.sinkID
+				<< "\n";
+		for (auto routeConnectionFormats : result)
+		{
+			std::cout << "[";
+			for (auto it = routeConnectionFormats.route.begin();it != routeConnectionFormats.route.end(); it++)
+			{
+				am_RoutingElement_s& routingElement = *it;
+				if (it - routeConnectionFormats.route.begin() > 0)
+					std::cout << " -> ";
+
+				std::cout << routingElement.sourceID << ":"
+						<< routingElement.sinkID << " CF:"
+						<< routingElement.connectionFormat << " D:"
+						<< routingElement.domainID;
+			}
+			std::cout << "]\n";
+		}
+#endif
+	}
+#ifdef TRACE_GRAPH
+	else
+	{
+		std::cout
+				<< "Error by determining connection formats for path from source:"
+				<< shortestRoute.sourceID << " to sink:" << shortestRoute.sinkID
+				<< "\n";
+	}
+#endif
+	return err;
 }
 
-void CAmRouter::getShortestPath(CAmRoutingNode & aSource, CAmRoutingNode & aSink,
-									am_Route_s & resultPath, std::vector<CAmRoutingNode*> & resultNodesPath)
+am_Error_e CAmRouter::getShortestPath(CAmRoutingNode & aSource, CAmRoutingNode & aSink, std::vector<am_Route_s> & resultPath)
 {
-	am_RoutingElement_s * element;
+	am_Error_e err = E_OK;
+	am_Route_s shortestRoute;
+	std::vector<CAmRoutingNode*> resultNodesPath;
 	am_RoutingNodeData_s & sinkNodeData = aSink.getData();
 	am_RoutingNodeData_s & sourceNodeData = aSource.getData();
-	resultPath.sinkID = sinkNodeData.data.sink->sinkID;
-	resultPath.sourceID = sourceNodeData.data.source->sourceID;
+	shortestRoute.sinkID = sinkNodeData.data.sink->sinkID;
+	shortestRoute.sourceID = sourceNodeData.data.source->sourceID;
 
-	std::function<void(const am_GraphPathPosition_e, CAmRoutingNode &)> cb = [&](const am_GraphPathPosition_e, CAmRoutingNode & object)
-	{
+	mRoutingGraph.getShortestPath(aSource, aSink, [&shortestRoute, &resultNodesPath](const am_GraphPathPosition_e position, CAmRoutingNode & object){
+		am_RoutingElement_s * element;
+		//reverse order
 		resultNodesPath.insert(resultNodesPath.begin(), (CAmRoutingNode*)&object);
 		am_RoutingNodeData_s & routingData =  object.getData();
 		if(routingData.type==CAmNodeDataType::SINK)
 		{
-			auto iter = resultPath.route.emplace(resultPath.route.begin());
+			auto iter = shortestRoute.route.emplace(shortestRoute.route.begin());
 			element = &(*iter);
 			element->domainID = routingData.data.sink->domainID;
 			element->sinkID = routingData.data.sink->sinkID;
@@ -606,87 +658,134 @@ void CAmRouter::getShortestPath(CAmRoutingNode & aSource, CAmRoutingNode & aSink
 			element->sourceID = routingData.data.source->sourceID;
 			element->connectionFormat = CF_UNKNOWN;
 		}
-	};
-	mRoutingGraph.getShortestPath(aSource, aSink, cb);
+	});
+
+	if(shortestRoute.route.size())
+	{
+		err = cfPermutationsForPath(shortestRoute, resultNodesPath, resultPath);
+	}
+	return err;
 }
 
-#endif
-
-am_Error_e CAmRouter::getAllPaths(CAmRoutingNode & aSource,
-									 CAmRoutingNode & aSink,
-									 std::vector<am_Route_s> & resultPath,
-									 std::vector<std::vector<CAmRoutingNode*>> & resultNodesPath,
-									 const bool includeCycles)
+void CAmRouter::getShortestPath(CAmRoutingNode & aSource, CAmRoutingNode & aSink, am_Route_s & path, std::vector<CAmRoutingNode*> & resultNodesPath)
 {
-#ifndef ROUTING_BUILD_CONNECTIONS
-	bool cycles = false;
-#else
-	bool cycles = includeCycles;
-#endif
-	if(((CAmRoutingNode*)&aSource)->getData().type!=CAmNodeDataType::SOURCE ||
-		((CAmRoutingNode*)&aSink)->getData().type!=CAmNodeDataType::SINK)
-		return E_NOT_POSSIBLE;
+	am_Route_s shortestRoute;
+	am_RoutingNodeData_s & sinkNodeData = aSink.getData();
+	am_RoutingNodeData_s & sourceNodeData = aSource.getData();
+	shortestRoute.sinkID = sinkNodeData.data.sink->sinkID;
+	shortestRoute.sourceID = sourceNodeData.data.source->sourceID;
 
-	uint8_t errorsCount = 0, successCount = 0;
-	generateAllPaths(aSource, aSink, cycles, [&](const std::vector<CAmRoutingNode*> & path) {
-		resultNodesPath.push_back(path);
-		am_Route_s nextRoute;
-		nextRoute.sinkID = aSink.getData().data.sink->sinkID;
-		nextRoute.sourceID = aSource.getData().data.source->sourceID;
+	mRoutingGraph.getShortestPath(aSource, aSink, [&shortestRoute, &resultNodesPath](const am_GraphPathPosition_e position, CAmRoutingNode & object){
 		am_RoutingElement_s * element;
-		for(auto it = path.begin(); it!=path.end(); it++)
+		//reverse order
+		resultNodesPath.insert(resultNodesPath.begin(), (CAmRoutingNode*)&object);
+		am_RoutingNodeData_s & routingData =  object.getData();
+		if(routingData.type==CAmNodeDataType::SINK)
 		{
-			am_RoutingNodeData_s & routingData =  (*it)->getData();
-			if(routingData.type==CAmNodeDataType::SOURCE)
-			{
-				auto iter = nextRoute.route.emplace(nextRoute.route.end());
-				element = &(*iter);
-				element->domainID = routingData.data.source->domainID;
-				element->sourceID = routingData.data.source->sourceID;
-				element->connectionFormat = CF_UNKNOWN;
-			}
-			else if(routingData.type==CAmNodeDataType::SINK)
-			{
-				element->domainID = routingData.data.sink->domainID;
-				element->sinkID = routingData.data.sink->sinkID;
-				element->connectionFormat = CF_UNKNOWN;
-			}
+			auto iter = shortestRoute.route.emplace(shortestRoute.route.begin());
+			element = &(*iter);
+			element->domainID = routingData.data.sink->domainID;
+			element->sinkID = routingData.data.sink->sinkID;
+			element->connectionFormat = CF_UNKNOWN;
 		}
-		std::vector<am_Route_s> result;
-		am_Error_e err = determineConnectionFormatsForPath(nextRoute, (std::vector<CAmRoutingNode*> &)path, result);
-		if(err==E_UNKNOWN)
+		else if(routingData.type==CAmNodeDataType::SOURCE)
 		{
-			errorsCount++;
-#ifdef TRACE_GRAPH
-			std::cout<<"Error by determining connection formats for path from source:"<<nextRoute.sourceID<<" to sink:"<<nextRoute.sinkID<<"\n";
-#endif
-		}
-		else
-		{
-			resultPath.insert(resultPath.end(), result.begin(), result.end());
-#ifdef TRACE_GRAPH
-			std::cout<<"Successfully determined connection formats for path from source:"<<nextRoute.sourceID<<" to sink:"<<nextRoute.sinkID<<"\n";
-			for(auto routeConnectionFormats: result)
-			{
-				for(auto it = routeConnectionFormats.route.begin(); it!=routeConnectionFormats.route.end(); it++)
-				{
-					am_RoutingElement_s & routingElement =  *it;
-					std::cout<<"["
-							 <<routingElement.sourceID
-							 <<"->"
-							 <<routingElement.sinkID
-							 <<" CF:"
-							 <<routingElement.connectionFormat
-							 <<" D:"
-							 <<routingElement.domainID
-							 <<"]";
-				}
-				std::cout<<"\n";
-			}
-#endif
-			successCount++;
+			element->domainID = routingData.data.source->domainID;
+			element->sourceID = routingData.data.source->sourceID;
+			element->connectionFormat = CF_UNKNOWN;
 		}
 	});
+
+	if(shortestRoute.route.size())
+	{
+		std::vector<am_Route_s> resultPath;
+		cfPermutationsForPath(shortestRoute, resultNodesPath, resultPath);
+		if(resultPath.size())
+			path = resultPath.front();
+	}
+}
+
+int CAmRouter::insertPostion(const std::vector<CAmRoutingNode*>& path, const std::vector<std::vector<CAmRoutingNode*> >& nodes)
+{
+	int index = 0;
+	if (!nodes.empty()) {
+		auto itNodes = nodes.begin();
+		for (; itNodes != nodes.end(); itNodes++) {
+			if (itNodes->size() > path.size())
+				break;
+		}
+		if (itNodes == nodes.end())
+			index = nodes.size();
+		else
+			index = itNodes - nodes.begin();
+	}
+	return index;
+}
+
+am_Error_e CAmRouter::getAllPaths(CAmRoutingNode & aSource,
+						   CAmRoutingNode & aSink,
+						   std::vector<am_Route_s> & resultPath,
+						   std::vector<std::vector<CAmRoutingNode*>> & resultNodesPath,
+						   const bool includeCycles)
+{
+
+	if( aSource.getData().type!=CAmNodeDataType::SOURCE || aSink.getData().type!=CAmNodeDataType::SINK )
+			return E_NOT_POSSIBLE;
+
+	unsigned cycles;
+	if(includeCycles)
+		cycles = UINT_MAX;
+	else
+		cycles = 0;
+
+	uint8_t errorsCount = 0, successCount = 0;
+	const am_sinkID_t sinkID = aSink.getData().data.sink->sinkID;
+	const am_sourceID_t sourceID = aSource.getData().data.source->sourceID;
+	std::vector<am_Route_s>  paths;
+	std::vector<am_domainID_t> visitedDomains;
+	visitedDomains.push_back(((CAmRoutingNode*)&aSource)->getData().domainID());
+	mRoutingGraph.getAllPaths(aSource,
+							  aSink,
+							  [&visitedDomains, &cycles](const CAmRoutingNode * node)->bool{ return CAmRouter::shouldGoInDomain(visitedDomains, node->getData().domainID(), cycles); },
+							  [&visitedDomains](const CAmRoutingNode * node){ visitedDomains.push_back(node->getData().domainID()); },
+							  [&visitedDomains](const CAmRoutingNode * node){ visitedDomains.erase(visitedDomains.end()-1); },
+							  [&resultPath, &resultNodesPath, &paths, &errorsCount, &successCount, &sinkID, &sourceID](const std::vector<CAmRoutingNode*> & path) {
+								int index = CAmRouter::insertPostion(path, resultNodesPath);
+								resultNodesPath.emplace(resultNodesPath.begin()+index);
+								paths.emplace(paths.begin()+index);
+								resultNodesPath[index] = path;
+								am_Route_s & nextRoute = paths[index];
+								nextRoute.sinkID = sinkID;
+								nextRoute.sourceID = sourceID;
+								am_RoutingElement_s * element;
+								for(auto it = path.begin(); it!=path.end(); it++)
+								{
+									am_RoutingNodeData_s & routingData =  (*it)->getData();
+									if(routingData.type==CAmNodeDataType::SOURCE)
+									{
+										auto iter = nextRoute.route.emplace(nextRoute.route.end());
+										element = &(*iter);
+										element->domainID = routingData.data.source->domainID;
+										element->sourceID = routingData.data.source->sourceID;
+										element->connectionFormat = CF_UNKNOWN;
+									}
+									else if(routingData.type==CAmNodeDataType::SINK)
+									{
+										element->domainID = routingData.data.sink->domainID;
+										element->sinkID = routingData.data.sink->sinkID;
+										element->connectionFormat = CF_UNKNOWN;
+									}
+								}
+	});
+
+	for(auto it = paths.begin(); successCount<mMaxPathCount && it!=paths.end(); it++)
+	{
+		if(cfPermutationsForPath(*it, resultNodesPath[it-paths.begin()], resultPath)==E_UNKNOWN)
+			errorsCount++;
+		else
+			successCount++;
+	}
+
 	if(successCount)
 		return E_OK;
 	if(errorsCount)
@@ -694,92 +793,96 @@ am_Error_e CAmRouter::getAllPaths(CAmRoutingNode & aSource,
 	return E_OK;
 }
 
-bool CAmRouter::shouldGoInDomain(const std::vector<am_domainID_t> & visitedDomains, const am_domainID_t nodeDomainID)
+am_Error_e CAmRouter::getFirstNShortestPaths(CAmRoutingNode & aSource, CAmRoutingNode & aSink, std::vector<am_Route_s> & resultPath)
 {
+	if( aSource.getData().type!=CAmNodeDataType::SOURCE || aSink.getData().type!=CAmNodeDataType::SINK )
+		return E_NOT_POSSIBLE;
+	const unsigned cycles = mMaxAllowedCycles;
+	uint8_t errorsCount = 0, successCount = 0;
+	const am_sinkID_t sinkID = aSink.getData().data.sink->sinkID;
+	const am_sourceID_t sourceID = aSource.getData().data.source->sourceID;
+	std::vector<am_Route_s>  paths;
+	std::vector<std::vector<CAmRoutingNode*>> nodes;
+	std::vector<am_domainID_t> visitedDomains;
+	visitedDomains.push_back(((CAmRoutingNode*)&aSource)->getData().domainID());
+	mRoutingGraph.getAllPaths(aSource,
+							  aSink,
+							  [&visitedDomains, &cycles](const CAmRoutingNode * node)->bool{ return CAmRouter::shouldGoInDomain(visitedDomains, node->getData().domainID(), cycles); },
+							  [&visitedDomains](const CAmRoutingNode * node){ visitedDomains.push_back(node->getData().domainID()); },
+							  [&visitedDomains](const CAmRoutingNode * node){ visitedDomains.erase(visitedDomains.end()-1); },
+							  [&resultPath, &nodes, &paths, &errorsCount, &successCount, &sinkID, &sourceID](const std::vector<CAmRoutingNode*> & path) {
+								int index = CAmRouter::insertPostion(path, nodes);
+								nodes.emplace(nodes.begin()+index);
+								paths.emplace(paths.begin()+index);
+								nodes[index] = path;
+								am_Route_s & nextRoute = paths[index];
+								nextRoute.sinkID = sinkID;
+								nextRoute.sourceID = sourceID;
+								am_RoutingElement_s * element;
+								for(auto it = path.begin(); it!=path.end(); it++)
+								{
+									am_RoutingNodeData_s & routingData =  (*it)->getData();
+									if(routingData.type==CAmNodeDataType::SOURCE)
+									{
+										auto iter = nextRoute.route.emplace(nextRoute.route.end());
+										element = &(*iter);
+										element->domainID = routingData.data.source->domainID;
+										element->sourceID = routingData.data.source->sourceID;
+										element->connectionFormat = CF_UNKNOWN;
+									}
+									else if(routingData.type==CAmNodeDataType::SINK)
+									{
+										element->domainID = routingData.data.sink->domainID;
+										element->sinkID = routingData.data.sink->sinkID;
+										element->connectionFormat = CF_UNKNOWN;
+									}
+								}
+	});
+
+	for(auto it = paths.begin(); successCount<mMaxPathCount && it!=paths.end(); it++)
+	{
+		if(cfPermutationsForPath(*it, nodes[it-paths.begin()], resultPath)==E_UNKNOWN)
+			errorsCount++;
+		else
+			successCount++;
+	}
+
+	if(successCount)
+		return E_OK;
+	if(errorsCount)
+		return E_NOT_POSSIBLE;
+	return E_OK;
+}
+
+bool CAmRouter::shouldGoInDomain(const std::vector<am_domainID_t> & visitedDomains, const am_domainID_t nodeDomainID, const unsigned maxCyclesNumber)
+{
+	unsigned  recourseCounter(0);
 	if(visitedDomains.size())
 	{
 		if(visitedDomains.back()==nodeDomainID)
 			return true;
-
-		for(auto it=visitedDomains.begin();it!=visitedDomains.end()-1; it++)
+		unsigned count = 0;
+		am_domainID_t lastDomain = 0;
+		for(auto it=visitedDomains.begin(); it!=visitedDomains.end()-1; it++)
 		{
-			if(nodeDomainID==*it)
-				return false;
+			if(lastDomain!=*it)
+			{
+				if(nodeDomainID==*it)
+				{
+					recourseCounter++;
+					if (recourseCounter>maxCyclesNumber)
+						return false;
+				}
+				lastDomain=*it;
+			}
 		}
 	}
 	return true;
 }
 
-void CAmRouter::generateAllPaths(const CAmRoutingNode & src,
-									  const CAmRoutingNode & dst,
-									  const bool includeCycles,
-									  std::function<void(const std::vector<CAmRoutingNode*> & path)> cb)
+bool CAmRouter::shouldGoInDomain(const std::vector<am_domainID_t> & visitedDomains, const am_domainID_t nodeDomainID)
 {
-	if(!includeCycles)
-	{
-		std::vector<CAmRoutingNode*> visited;
-		std::vector<am_domainID_t> visitedDomains;
-		visited.push_back((CAmRoutingNode*)&src);
-		visitedDomains.push_back(((CAmRoutingNode*)&src)->getData().domainID());
-		((CAmRoutingNode*)&src)->setStatus(GES_VISITED);
-		goThroughAllPaths(dst, visited, visitedDomains, cb);
-	}
-	else
-		mRoutingGraph.getAllPaths(src, dst, cb);
-}
-
-void CAmRouter::goThroughAllPaths(const CAmRoutingNode & dst,
-									  std::vector<CAmRoutingNode*> & visited,
-									  std::vector<am_domainID_t> & visitedDomains,
-									  std::function<void(const std::vector<CAmRoutingNode*> & path)> cb)
-{
-#ifndef ROUTING_BUILD_CONNECTIONS
-	CAmRoutingListVertices vertices;
-	getVerticesForNode(*visited.back(), vertices);
-	const CAmRoutingListVertices * nodes = &vertices;
-#else
-	const CAmRoutingListVertices * nodes = mRoutingGraph.getVertexList()[visited.back()->getIndex()];
-#endif
-	CAmRoutingListVertices::const_iterator vItr(nodes->begin());
-	for (; vItr != nodes->end(); ++vItr)
-	{
-		const CAmRoutingVertex & vertex = (*vItr);
-		if(vertex.getNode()->getStatus()!=GES_NOT_VISITED || !shouldGoInDomain(visitedDomains, vertex.getNode()->getData().domainID()))
-			continue;
-		if (vertex.getNode()==&dst)
-		{
-			vertex.getNode()->setStatus(GES_IN_PROGRESS);
-			visited.push_back(vertex.getNode());
-			visitedDomains.push_back(vertex.getNode()->getData().domainID());
-			//notify observer
-			cb(visited);
-			//remove last node from the list
-			auto last = visited.end()-1;
-			visited.erase(last);
-			visitedDomains.erase(visitedDomains.end()-1);
-			vertex.getNode()->setStatus(GES_NOT_VISITED);
-			break;
-		}
-	}
-	vItr = nodes->begin();
-	//bfs like loop
-	for (; vItr != nodes->end(); ++vItr)
-	{
-		const CAmRoutingVertex & vertex = (*vItr);
-		if(vertex.getNode()->getStatus()!=GES_NOT_VISITED
-			||vertex.getNode()==&dst ||
-			!shouldGoInDomain(visitedDomains, vertex.getNode()->getData().domainID()))
-			continue;
-		vertex.getNode()->setStatus(GES_IN_PROGRESS);
-		visited.push_back(vertex.getNode());
-		visitedDomains.push_back(vertex.getNode()->getData().domainID());
-		goThroughAllPaths(dst, visited, visitedDomains, cb);
-		//remove last node from the list
-		auto last = visited.end()-1;
-		visited.erase(last);
-		visitedDomains.erase(visitedDomains.end()-1);
-		vertex.getNode()->setStatus(GES_NOT_VISITED);
-	}
+	 return CAmRouter::shouldGoInDomain(visitedDomains, nodeDomainID, mMaxAllowedCycles);
 }
 
 bool  CAmRouter::getAllowedFormatsFromConvMatrix(	const std::vector<bool> & convertionMatrix,
@@ -871,5 +974,6 @@ am_Error_e CAmRouter::getSourceSinkPossibleConnectionFormats(std::vector<CAmRout
 	listPossibleConnectionFormats(source->listConnectionFormats, sink->listConnectionFormats, outConnectionFormats);
 	return (E_OK);
 }
+
 
 }
