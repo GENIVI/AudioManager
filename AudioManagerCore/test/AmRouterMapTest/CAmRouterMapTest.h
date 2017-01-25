@@ -94,9 +94,9 @@ public:
 							  const am_sourceID_t & sourceID,
 							  const am_sinkID_t & sinkID,
 							  am_converterID_t & converterID);
-	void getRoute(const bool onlyfree, const bool shouldReload, const am_sourceID_t sourceID, const am_sinkID_t sinkID, std::vector<am_Route_s>& returnList, const unsigned countCycles=0, const unsigned pathsCount=MAX_ROUTING_PATHS);
-	void getRoute(const bool onlyfree, const bool shouldReload, const am_Source_s & aSource, const am_Sink_s & aSink, std::vector<am_Route_s> & listRoutes, const unsigned countCycles=0, const unsigned pathsCount=MAX_ROUTING_PATHS);
-	void getAllPaths(CAmRoutingNode & aSource, CAmRoutingNode & aSink, std::vector<am_Route_s> & resultPath, const unsigned countCycles=0, const unsigned pathsCount=MAX_ROUTING_PATHS);
+    am_Error_e getRoute(const bool onlyfree, const bool shouldReload, const am_sourceID_t sourceID, const am_sinkID_t sinkID, std::vector<am_Route_s>& returnList, const unsigned countCycles=0, const unsigned pathsCount=MAX_ROUTING_PATHS);
+    am_Error_e getRoute(const bool onlyfree, const bool shouldReload, const am_Source_s & aSource, const am_Sink_s & aSink, std::vector<am_Route_s> & listRoutes, const unsigned countCycles=0, const unsigned pathsCount=MAX_ROUTING_PATHS);
+    am_Error_e getAllPaths(CAmRoutingNode & aSource, CAmRoutingNode & aSink, std::vector<am_Route_s> & resultPath, const unsigned countCycles=0, const unsigned pathsCount=MAX_ROUTING_PATHS);
 };
 
 }

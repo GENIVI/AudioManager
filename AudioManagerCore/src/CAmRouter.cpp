@@ -596,7 +596,7 @@ am_Error_e CAmRouter::cfPermutationsForPath(am_Route_s shortestRoute, std::vecto
 		resultPath.insert(resultPath.end(), result.begin(), result.end());
 #ifdef TRACE_GRAPH
 		std::cout
-				<< "Successfully determined connection formats for path from source:"
+				<< "Determined connection formats for path from source:"
 				<< shortestRoute.sourceID << " to sink:" << shortestRoute.sinkID
 				<< "\n";
 		for (auto routeConnectionFormats : result)
@@ -798,7 +798,6 @@ am_Error_e CAmRouter::getFirstNShortestPaths(CAmRoutingNode & aSource, CAmRoutin
 	if( aSource.getData().type!=CAmNodeDataType::SOURCE || aSink.getData().type!=CAmNodeDataType::SINK )
 		return E_NOT_POSSIBLE;
 	const unsigned cycles = mMaxAllowedCycles;
-	uint8_t errorsCount = 0, successCount = 0;
 	const am_sinkID_t sinkID = aSink.getData().data.sink->sinkID;
 	const am_sourceID_t sourceID = aSource.getData().data.source->sourceID;
 	std::vector<am_Route_s>  paths;
@@ -810,7 +809,7 @@ am_Error_e CAmRouter::getFirstNShortestPaths(CAmRoutingNode & aSource, CAmRoutin
 							  [&visitedDomains, &cycles](const CAmRoutingNode * node)->bool{ return CAmRouter::shouldGoInDomain(visitedDomains, node->getData().domainID(), cycles); },
 							  [&visitedDomains](const CAmRoutingNode * node){ visitedDomains.push_back(node->getData().domainID()); },
 							  [&visitedDomains](const CAmRoutingNode * node){ visitedDomains.erase(visitedDomains.end()-1); },
-							  [&resultPath, &nodes, &paths, &errorsCount, &successCount, &sinkID, &sourceID](const std::vector<CAmRoutingNode*> & path) {
+							  [&resultPath, &nodes, &paths, &sinkID, &sourceID](const std::vector<CAmRoutingNode*> & path) {
 								int index = CAmRouter::insertPostion(path, nodes);
 								nodes.emplace(nodes.begin()+index);
 								paths.emplace(paths.begin()+index);
@@ -838,20 +837,20 @@ am_Error_e CAmRouter::getFirstNShortestPaths(CAmRoutingNode & aSource, CAmRoutin
 									}
 								}
 	});
-
-	for(auto it = paths.begin(); successCount<mMaxPathCount && it!=paths.end(); it++)
+	unsigned pathsFound = 0;
+	am_Error_e cfError = E_OK;
+	for(auto it = paths.begin(); pathsFound<mMaxPathCount && it!=paths.end(); it++)
 	{
-		if(cfPermutationsForPath(*it, nodes[it-paths.begin()], resultPath)==E_UNKNOWN)
-			errorsCount++;
-		else
-			successCount++;
+		cfError = cfPermutationsForPath(*it, nodes[it-paths.begin()], resultPath);
+		 if(E_OK==cfError)
+		{
+			pathsFound += (resultPath.size()>0);
+		}
 	}
-
-	if(successCount)
+	if(pathsFound)
 		return E_OK;
-	if(errorsCount)
+	else
 		return E_NOT_POSSIBLE;
-	return E_OK;
 }
 
 bool CAmRouter::shouldGoInDomain(const std::vector<am_domainID_t> & visitedDomains, const am_domainID_t nodeDomainID, const unsigned maxCyclesNumber)
