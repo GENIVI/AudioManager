@@ -219,6 +219,8 @@ class CAmRouter
 
 	/**
 	 * Connection format permutations.
+	 *
+	 * @return E_OK on success(1 or more paths),  E_NOT_POSSIBLE if the CF couldn't be matached or E_UNKNOWN in any other error case.
 	 */
 	am_Error_e determineConnectionFormatsForPath(am_Route_s & routeObjects, std::vector<CAmRoutingNode*> & nodes, std::vector<am_Route_s> & result);
 	am_Error_e doConnectionFormatsForPath(am_Route_s & routeObjects,
@@ -251,7 +253,7 @@ public:
 	 * @param sourceID start point.
 	 * @param sinkID end point.
 	 * @param returnList list with all possible paths
-	 * @return E_OK on success(0 or more paths) or E_NOT_POSSIBLE on failure.
+	 * @return E_OK on success(1 or more paths),  E_NOT_POSSIBLE if the CF couldn't be matached or E_UNKNOWN in any other error case.
 	 */
 	am_Error_e getRoute(const bool onlyfree, const am_sourceID_t sourceID, const am_sinkID_t sinkID, std::vector<am_Route_s>& returnList);
 	am_Error_e getRoute(const bool onlyfree, const am_Source_s & source, const am_Sink_s & sink, std::vector<am_Route_s> & listRoutes);
@@ -262,7 +264,7 @@ public:
 	 * @param sourceID start point.
 	 * @param sinkID end point.
 	 * @param returnList list with all possible paths
-	 * @return E_OK on success(0 or more paths) or E_NOT_POSSIBLE on failure.
+	 * @return E_OK on success(1 or more paths),  E_NOT_POSSIBLE if the CF couldn't be matached or E_UNKNOWN in any other error case.
 	 */
 	am_Error_e getRouteFromLoadedNodes(const am_sourceID_t sourceID, const am_sinkID_t sinkID, std::vector<am_Route_s> & returnList);
 	am_Error_e getRouteFromLoadedNodes(const am_Source_s & aSource, const am_Sink_s & aSink, std::vector<am_Route_s> & listRoutes);
@@ -273,17 +275,18 @@ public:
 	 * @param source start point.
 	 * @param sink end point.
 	 * @param returnList list with all possible paths.
-	 * @return E_OK on success(0 or more paths) or E_NOT_POSSIBLE on failure.
+	 * @return E_OK on success(1 or more paths),  E_NOT_POSSIBLE if the CF couldn't be matached or E_UNKNOWN in any other error case.
 	 */
 	am_Error_e getFirstNShortestPaths(CAmRoutingNode & source, CAmRoutingNode & sink, std::vector<am_Route_s> & resultPath);
 
 	/**
 	 * Find the shortest path between given source and sink. This method should be called only after 'load' has been called.
+	 * This method do not pay attention on the parameter mMaxAllowedCycles and go through all possible paths.
 	 *
 	 * @param source start point.
 	 * @param sink end point.
 	 * @param returnList list with the connection format permutations of the shortest path.
-	 * @return E_OK on success(0 or more paths) or E_NOT_POSSIBLE on failure.
+	 * @return E_OK on success(1 or more paths),  E_NOT_POSSIBLE if the CF couldn't be matached or E_UNKNOWN in any other error case.
 	 */
 	am_Error_e getShortestPath(CAmRoutingNode & source, CAmRoutingNode & sink, std::vector<am_Route_s> & resultPath);
 

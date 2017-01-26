@@ -558,23 +558,19 @@ am_Error_e CAmRouter::doConnectionFormatsForPath(am_Route_s & routeObjects,
     										  listMergeConnectionFormats, listPriorityConnectionFormats))!= E_OK)
     	return (returnError);
 
+	if (listPriorityConnectionFormats.empty())
+		return (E_NOT_POSSIBLE);
     //we have the list sorted after priors - now we try one after the other with the next part of the route
 	std::vector<am_CustomConnectionFormat_t>::iterator connectionFormatIterator = listPriorityConnectionFormats.begin();
 	//here we need to check if we are at the end and stop
 	 std::vector<am_RoutingElement_s>::iterator nextIterator = currentRoutingElementIterator + 1;//next pair source and sink
 	if (nextIterator == routeObjects.route.end())
 	{
-		if (!listPriorityConnectionFormats.empty())
+		for (; connectionFormatIterator != listPriorityConnectionFormats.end(); ++connectionFormatIterator)
 		{
-			for (; connectionFormatIterator != listPriorityConnectionFormats.end(); ++connectionFormatIterator)
-			{
-				currentRoutingElementIterator->connectionFormat = *connectionFormatIterator;
-				result.push_back(routeObjects);
-			}
-			return (E_OK);
+			currentRoutingElementIterator->connectionFormat = *connectionFormatIterator;
+			result.push_back(routeObjects);
 		}
-		else
-			return (E_NOT_POSSIBLE);
 	}
 	else
 	{
@@ -583,8 +579,8 @@ am_Error_e CAmRouter::doConnectionFormatsForPath(am_Route_s & routeObjects,
 			currentRoutingElementIterator->connectionFormat = *connectionFormatIterator;
 			doConnectionFormatsForPath(routeObjects, nodes, nextIterator, currentNodeIterator, result);
 		}
-		return (E_OK);
 	}
+	return (E_OK);
 }
 
 am_Error_e CAmRouter::cfPermutationsForPath(am_Route_s shortestRoute, std::vector<CAmRoutingNode*> resultNodesPath, std::vector<am_Route_s>& resultPath)

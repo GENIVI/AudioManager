@@ -143,7 +143,7 @@ TEST_F(CAmRouterTest,simpleRoute2withDomainNoMatchFormats)
     compareRoute.sinkID = sinkID;
     compareRoute.sourceID = sourceID;
 
-    ASSERT_EQ(E_OK, pRouter.getRoute(true,sourceID,sinkID,listRoutes));
+    ASSERT_EQ(E_NOT_POSSIBLE, pRouter.getRoute(true,sourceID,sinkID,listRoutes));
     ASSERT_EQ(static_cast<uint>(0), listRoutes.size());
 
 }
@@ -435,7 +435,7 @@ TEST_F(CAmRouterTest,simpleRoute2DomainsOnlyFreeNotFree)
     ASSERT_EQ(E_OK,pDatabaseHandler.enterConnectionDB(connection,id1));
     ASSERT_EQ(E_OK,pDatabaseHandler.enterConnectionDB(connection1,id2));
 
-    ASSERT_EQ(E_OK, pRouter.getRoute(true,sourceID,sinkID,listRoutes));
+    ASSERT_EQ(E_NOT_POSSIBLE, pRouter.getRoute(true,sourceID,sinkID,listRoutes));
     ASSERT_EQ(static_cast<uint>(0), listRoutes.size());
 
     ASSERT_EQ(E_OK, pRouter.getRoute(false,sourceID,sinkID,listRoutes));
@@ -1416,7 +1416,7 @@ TEST_F(CAmRouterTest,simpleRoute3DomainsNoConnection)
     compareRoute.sinkID = sinkID;
     compareRoute.sourceID = sourceID;
 
-    ASSERT_EQ(E_OK, pRouter.getRoute(false,sourceID,sinkID,listRoutes));
+    ASSERT_EQ(E_NOT_POSSIBLE, pRouter.getRoute(false,sourceID,sinkID,listRoutes));
     ASSERT_EQ(static_cast<uint>(0), listRoutes.size());
 }
 //test that checks just 2 domains, one sink one source with only one connection format each
@@ -1629,7 +1629,7 @@ TEST_F(CAmRouterTest,simpleRoute2DomainsNoMatchConnectionFormats)
     compareRoute.sinkID = sinkID;
     compareRoute.sourceID = sourceID;
 
-    ASSERT_EQ(E_OK, pRouter.getRoute(false,sourceID,sinkID,listRoutes));
+    ASSERT_EQ(E_NOT_POSSIBLE, pRouter.getRoute(false,sourceID,sinkID,listRoutes));
     ASSERT_EQ(static_cast<uint>(0),  listRoutes.size());
 }
 
