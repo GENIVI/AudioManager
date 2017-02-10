@@ -55,7 +55,6 @@
 #include "CAmRoutingReceiver.h"
 #include "CAmCommandReceiver.h"
 #include "CAmControlReceiver.h"
-#include "CAmDatabaseObserver.h"
 #include "CAmDltWrapper.h"
 #include "CAmSocketHandler.h"
 #include "CAmCommandLineSingleton.h"
@@ -284,10 +283,10 @@ void mainProgram(int argc, char *argv[])
     //later when the plugins are started, the commandline is already parsed and the objects defined before can be used to get the neccesary information
     
     CAmDatabaseHandlerMap iDatabaseHandler;
-	IAmDatabaseHandler *pDatabaseHandler = dynamic_cast<IAmDatabaseHandler*>( &iDatabaseHandler );
+    IAmDatabaseHandler *pDatabaseHandler = dynamic_cast<IAmDatabaseHandler*>( &iDatabaseHandler );
 
     CAmRoutingSender iRoutingSender(listRoutingPluginDirs,pDatabaseHandler);
-    CAmCommandSender iCommandSender(listCommandPluginDirs);
+    CAmCommandSender iCommandSender(listCommandPluginDirs, &iSocketHandler);
     CAmControlSender iControlSender(controllerPlugin.getValue(),&iSocketHandler);
 
     try
@@ -332,11 +331,10 @@ CAmRouter iRouter(pDatabaseHandler, &iControlSender);
 #endif /*WITH_DBUS_WRAPPER*/
 
 CAmControlReceiver iControlReceiver(pDatabaseHandler,&iRoutingSender,&iCommandSender,&iSocketHandler, &iRouter);
-CAmDatabaseObserver iObserver(&iCommandSender,&iRoutingSender, &iSocketHandler);
 
-
-iDatabaseHandler.registerObserver(&iObserver);
-
+iDatabaseHandler.registerObserver(&iRoutingSender);
+iDatabaseHandler.registerObserver(&iCommandSender);
+iDatabaseHandler.registerObserver(&iRouter);
 //startup all the Plugins and Interfaces
 //at this point, commandline arguments can be parsed
 iControlSender.startupController(&iControlReceiver);

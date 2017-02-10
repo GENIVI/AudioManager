@@ -34,7 +34,6 @@
 #include "CAmDatabaseHandlerMap.h"
 #include "CAmControlReceiver.h"
 #include "CAmControlSender.h"
-#include "CAmDatabaseObserver.h"
 #include "CAmRoutingSender.h"
 #include "CAmRouter.h"
 #include "CAmSocketHandler.h"
@@ -67,7 +66,6 @@ public:
     IAmCommandBackdoor pCommandInterfaceBackdoor;
     IAmControlBackdoor pControlInterfaceBackdoor;
     CAmControlReceiver pControlReceiver;
-    CAmDatabaseObserver pObserver;
     CAmCommonFunctions pCF;
     void SetUp();
     void TearDown();

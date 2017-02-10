@@ -54,6 +54,7 @@ template <class X> void getMergeConnectionFormats(const X * element,
 
 
 CAmRouter::CAmRouter(IAmDatabaseHandler* iDatabaseHandler, CAmControlSender* iSender) :
+		CAmDatabaseHandlerMap::AmDatabaseObserverCallbacks(),
         mpDatabaseHandler(iDatabaseHandler), //
         mpControlSender(iSender),
         mOnlyFreeConversionNodes(false),

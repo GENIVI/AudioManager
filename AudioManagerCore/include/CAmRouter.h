@@ -31,7 +31,7 @@
 #include <functional>
 #include "audiomanagertypes.h"
 #include "CAmGraph.h"
-#include "IAmDatabaseHandler.h"
+#include "CAmDatabaseHandlerMap.h"
 
 
 namespace am
@@ -151,7 +151,7 @@ class CAmControlSender;
 /**
  * Implements an autorouting algorithm for connecting sinks and sources via different audio domains.
  */
-class CAmRouter
+class CAmRouter: public CAmDatabaseHandlerMap::AmDatabaseObserverCallbacks
 {
 	IAmDatabaseHandler* mpDatabaseHandler; 									 //!< pointer to database handler
 	CAmControlSender* mpControlSender; 										 //!< pointer the controlsender - is used to retrieve information for the optimal route
@@ -281,7 +281,7 @@ public:
 
 	/**
 	 * Find the shortest path between given source and sink. This method should be called only after 'load' has been called.
-	 * This method do not pay attention on the parameter mMaxAllowedCycles and go through all possible paths.
+	 * This method do not pay attention on the parameter mMaxAllowedCycles and goes through all possible paths.
 	 *
 	 * @param source start point.
 	 * @param sink end point.

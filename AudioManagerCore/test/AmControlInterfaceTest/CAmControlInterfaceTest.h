@@ -26,11 +26,9 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
-//#include "CAmDatabaseHandlerSQLite.h"
 #include "CAmDatabaseHandlerMap.h"
 #include "CAmControlReceiver.h"
 #include "CAmRoutingReceiver.h"
-#include "CAmDatabaseObserver.h"
 #include "CAmControlSender.h"
 #include "CAmRoutingSender.h"
 #include "CAmRouter.h"
@@ -65,7 +63,6 @@ public:
     IAmControlBackdoor pControlInterfaceBackdoor;
     CAmControlSender pControlSender;
     CAmRouter pRouter;
-    CAmDatabaseObserver pDatabaseObserver;
     CAmControlReceiver pControlReceiver;
     CAmRoutingReceiver pRoutingReceiver;
     CAmCommonFunctions pCF;

@@ -32,16 +32,17 @@
 #include "../test/IAmRoutingBackdoor.h"
 #endif
 
+#include "CAmDatabaseHandlerMap.h"
+
 namespace am
 {
 
 class CAmRoutingReceiver;
-class IAmDatabaseHandler;
 
 /**
  * Implements the RoutingSendInterface. Loads all plugins and dispatches calls to the plugins
  */
-class CAmRoutingSender
+class CAmRoutingSender: public CAmDatabaseHandlerMap::AmDatabaseObserverCallbacks
 {
 public:
     CAmRoutingSender(const std::vector<std::string>& listOfPluginDirectories, IAmDatabaseHandler* databaseHandler);

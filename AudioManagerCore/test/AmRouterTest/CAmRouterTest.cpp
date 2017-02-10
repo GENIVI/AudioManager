@@ -38,16 +38,16 @@ CAmRouterTest::CAmRouterTest() :
 		pDatabaseHandler(),
         pRouter(&pDatabaseHandler, &pControlSender), //
         pRoutingSender(plistRoutingPluginDirs,dynamic_cast<IAmDatabaseHandler*>( &pDatabaseHandler )), //
-        pCommandSender(plistCommandPluginDirs), //
+        pCommandSender(plistCommandPluginDirs, &pSocketHandler), //
         pMockInterface(), //
         pMockControlInterface(), //
         pRoutingInterfaceBackdoor(), //
         pCommandInterfaceBackdoor(), //
         pControlInterfaceBackdoor(), //
-        pControlReceiver(&pDatabaseHandler, &pRoutingSender, &pCommandSender,&pSocketHandler, &pRouter), //
-        pObserver(&pCommandSender, &pRoutingSender, &pSocketHandler)
+        pControlReceiver(&pDatabaseHandler, &pRoutingSender, &pCommandSender,&pSocketHandler, &pRouter)
 {
-    pDatabaseHandler.registerObserver(&pObserver);
+    pDatabaseHandler.registerObserver(&pRoutingSender);
+    pDatabaseHandler.registerObserver(&pCommandSender);
     pCommandInterfaceBackdoor.injectInterface(&pCommandSender, &pMockInterface);
     pControlInterfaceBackdoor.replaceController(&pControlSender, &pMockControlInterface);
 }

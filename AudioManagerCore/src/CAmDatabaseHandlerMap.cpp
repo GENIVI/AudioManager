@@ -30,7 +30,6 @@
 #include <string>
 #include <limits>
 #include "CAmDatabaseHandlerMap.h"
-#include "CAmDatabaseObserver.h"
 #include "CAmRouter.h"
 #include "CAmDltWrapper.h"
 
@@ -56,6 +55,30 @@
 		(true)
 #endif
 
+#define NOTIFY_OBSERVERS(CALL)\
+    for(AmDatabaseObserverCallbacks * nextObserver: mDatabaseObservers)\
+            	if(nextObserver->CALL)\
+    				nextObserver->CALL();
+
+#define NOTIFY_OBSERVERS1(CALL, ARG1)\
+    for(AmDatabaseObserverCallbacks * nextObserver: mDatabaseObservers)\
+            	if(nextObserver->CALL)\
+    				nextObserver->CALL(ARG1);
+
+#define NOTIFY_OBSERVERS2(CALL, ARG1, ARG2)\
+    for(AmDatabaseObserverCallbacks * nextObserver: mDatabaseObservers)\
+            	if(nextObserver->CALL)\
+    				nextObserver->CALL(ARG1, ARG2);
+
+#define NOTIFY_OBSERVERS3(CALL, ARG1, ARG2, ARG3)\
+    for(AmDatabaseObserverCallbacks * nextObserver: mDatabaseObservers)\
+            	if(nextObserver->CALL)\
+    				nextObserver->CALL(ARG1, ARG2, ARG3);
+
+#define NOTIFY_OBSERVERS4(CALL, ARG1, ARG2, ARG3, ARG4)\
+    for(AmDatabaseObserverCallbacks * nextObserver: mDatabaseObservers)\
+            	if(nextObserver->CALL)\
+    				nextObserver->CALL(ARG1, ARG2, ARG3, ARG4);
 
 namespace am
 {
@@ -117,7 +140,7 @@ template <class TReturn, typename TIdentifier> const TReturn *  objectMatchingPr
 
 /* Domain */
 
-void CAmDatabaseHandlerMap::CAmDomain::getDescription (std::string & outString) const
+void CAmDatabaseHandlerMap::AmDomain::getDescription (std::string & outString) const
 {
 	std::ostringstream fmt;
 	fmt << "Domain(" << name.c_str() << ") id(" << domainID << ")" << std::endl <<
@@ -133,7 +156,7 @@ void CAmDatabaseHandlerMap::CAmDomain::getDescription (std::string & outString) 
 
 /* Source */
 
-void CAmDatabaseHandlerMap::CAmSource::getSourceType(am_SourceType_s & sourceType) const
+void CAmDatabaseHandlerMap::AmSource::getSourceType(am_SourceType_s & sourceType) const
 {
 	sourceType.name = name;
 	sourceType.sourceClassID = sourceClassID;
@@ -141,7 +164,7 @@ void CAmDatabaseHandlerMap::CAmSource::getSourceType(am_SourceType_s & sourceTyp
 	sourceType.sourceID = sourceID;
 }
 
-void CAmDatabaseHandlerMap::CAmSource::getDescription (std::string & outString) const
+void CAmDatabaseHandlerMap::AmSource::getDescription (std::string & outString) const
 {
 	std::ostringstream fmt;
 	fmt << "Source(" << name.c_str() << ") id(" << sourceID << ")" << std::endl <<
@@ -179,7 +202,7 @@ void CAmDatabaseHandlerMap::CAmSource::getDescription (std::string & outString) 
 
 /* Sink */
 
-void CAmDatabaseHandlerMap::CAmSink::getDescription (std::string & outString) const
+void CAmDatabaseHandlerMap::AmSink::getDescription (std::string & outString) const
 {
 	std::ostringstream fmt;
 	fmt << "Sink(" << name.c_str() << ") id(" << sinkID << ")" << std::endl <<
@@ -215,7 +238,7 @@ void CAmDatabaseHandlerMap::CAmSink::getDescription (std::string & outString) co
 	outString = fmt.str();
 }
 
-void CAmDatabaseHandlerMap::CAmSink::getSinkType(am_SinkType_s & sinkType) const
+void CAmDatabaseHandlerMap::AmSink::getSinkType(am_SinkType_s & sinkType) const
 {
 	sinkType.name = name;
 	sinkType.sinkID = sinkID;
@@ -227,7 +250,7 @@ void CAmDatabaseHandlerMap::CAmSink::getSinkType(am_SinkType_s & sinkType) const
 
 /* Connection */
 
-void CAmDatabaseHandlerMap::CAmConnection::getDescription (std::string & outString) const
+void CAmDatabaseHandlerMap::AmConnection::getDescription (std::string & outString) const
 {
 	std::ostringstream fmt;
 	fmt << "Connection id(" << connectionID << ") " << std::endl <<
@@ -241,7 +264,7 @@ void CAmDatabaseHandlerMap::CAmConnection::getDescription (std::string & outStri
 
 /* Main Connection */
 
-void CAmDatabaseHandlerMap::CAmMainConnection::getDescription (std::string & outString) const
+void CAmDatabaseHandlerMap::AmMainConnection::getDescription (std::string & outString) const
 {
 	std::ostringstream fmt;
 	fmt << "MainConnection id(" << mainConnectionID << ") " << std::endl <<
@@ -268,7 +291,7 @@ void CAmDatabaseHandlerMap::am_MainConnection_Database_s::getMainConnectionType(
 
 /* Source Class */
 
-void CAmDatabaseHandlerMap::CAmSourceClass::getDescription (std::string & outString) const
+void CAmDatabaseHandlerMap::AmSourceClass::getDescription (std::string & outString) const
 {
 	std::ostringstream fmt;
 	fmt << "Source class(" << name.c_str() << ") id(" << sourceClassID << ")\n" <<
@@ -282,7 +305,7 @@ void CAmDatabaseHandlerMap::CAmSourceClass::getDescription (std::string & outStr
 
 /* Sink Class */
 
-void CAmDatabaseHandlerMap::CAmSinkClass::getDescription (std::string & outString) const
+void CAmDatabaseHandlerMap::AmSinkClass::getDescription (std::string & outString) const
 {
 	std::ostringstream fmt;
 	fmt << "Sink class(" << name.c_str() << ") id(" << sinkClassID << ")\n" <<
@@ -297,7 +320,7 @@ void CAmDatabaseHandlerMap::CAmSinkClass::getDescription (std::string & outStrin
 
 /* Gateway */
 
-void CAmDatabaseHandlerMap::CAmGateway::getDescription (std::string & outString) const
+void CAmDatabaseHandlerMap::AmGateway::getDescription (std::string & outString) const
 {
 	std::ostringstream fmt;
 	fmt << "Gateway(" << name.c_str() << ") id(" << gatewayID << ")\n" <<
@@ -322,9 +345,34 @@ void CAmDatabaseHandlerMap::CAmGateway::getDescription (std::string & outString)
 	outString = fmt.str();
 }
 
+/* Converter */
+
+void CAmDatabaseHandlerMap::AmConverter::getDescription (std::string & outString) const
+{
+	std::ostringstream fmt;
+	fmt << "Converter(" << name.c_str() << ") id(" << converterID << ")\n" <<
+			"sinkID(" << sinkID <<
+			") sourceID(" << sourceID <<
+			") domainSinkID(" << domainID <<
+			") listSourceFormats (";
+			std::for_each(listSourceFormats.begin(), listSourceFormats.end(), [&](const am_CustomConnectionFormat_t & ref) {
+				fmt << "[" << ref << "]";
+			});
+			fmt << ") listSinkFormats (";
+			std::for_each(listSinkFormats.begin(), listSinkFormats.end(), [&](const am_CustomConnectionFormat_t & ref) {
+				fmt << "[" << ref << "]";
+			});
+			fmt << ") convertionMatrix (";
+			std::for_each(convertionMatrix.begin(), convertionMatrix.end(), [&](const bool & ref) {
+				fmt << "[" << ref << "]";
+			});
+			fmt << ")" << std::endl;
+	outString = fmt.str();
+}
+
 /* Crossfader */
 
-void CAmDatabaseHandlerMap::CAmCrossfader::getDescription (std::string & outString) const
+void CAmDatabaseHandlerMap::AmCrossfader::getDescription (std::string & outString) const
 {
 	std::ostringstream fmt;
 	fmt << "Crossfader(" << name.c_str() << ") id(" << crossfaderID << ")\n" <<
@@ -336,7 +384,7 @@ void CAmDatabaseHandlerMap::CAmCrossfader::getDescription (std::string & outStri
 	outString = fmt.str();
 }
 
-bool CAmDatabaseHandlerMap::CAmMappedData::increaseID(int16_t & resultID, am_Identifier_s & sourceID,
+bool CAmDatabaseHandlerMap::AmMappedData::increaseID(int16_t & resultID, AmIdentifier & sourceID,
 															 int16_t const desiredStaticID = 0)
 {
 	if( desiredStaticID > 0 && desiredStaticID < sourceID.mMin )
@@ -356,7 +404,7 @@ bool CAmDatabaseHandlerMap::CAmMappedData::increaseID(int16_t & resultID, am_Ide
 	}
  }
 
-template <typename TMapKey,class TMapObject> bool CAmDatabaseHandlerMap::CAmMappedData::getNextConnectionID(int16_t & resultID, am_Identifier_s & sourceID,
+template <typename TMapKey,class TMapObject> bool CAmDatabaseHandlerMap::AmMappedData::getNextConnectionID(int16_t & resultID, AmIdentifier & sourceID,
 																			  	  	  	  	  	  	  	  	  	  	  	  const std::unordered_map<TMapKey, TMapObject> & map)
 {
 	TMapKey nextID;
@@ -393,27 +441,28 @@ template <typename TMapKey,class TMapObject> bool CAmDatabaseHandlerMap::CAmMapp
 	return true;
 }
 
-bool CAmDatabaseHandlerMap::CAmMappedData::increaseMainConnectionID(int16_t & resultID)
+bool CAmDatabaseHandlerMap::AmMappedData::increaseMainConnectionID(int16_t & resultID)
 {
 	return getNextConnectionID(resultID, mCurrentMainConnectionID, mMainConnectionMap);
 }
 
-bool CAmDatabaseHandlerMap::CAmMappedData::increaseConnectionID(int16_t & resultID)
+bool CAmDatabaseHandlerMap::AmMappedData::increaseConnectionID(int16_t & resultID)
 {
 	return getNextConnectionID(resultID, mCurrentConnectionID, mConnectionMap);
 }
 
 
-CAmDatabaseHandlerMap::CAmDatabaseHandlerMap():	mFirstStaticSink(true), //
-														mFirstStaticSource(true), //
-														mFirstStaticGateway(true), //
-														mFirstStaticConverter(true), //
-														mFirstStaticSinkClass(true), //
-														mFirstStaticSourceClass(true), //
-														mFirstStaticCrossfader(true), //
-														mpDatabaseObserver(NULL), //
-														mListConnectionFormat(), //
-														mMappedData()
+CAmDatabaseHandlerMap::CAmDatabaseHandlerMap():	IAmDatabaseHandler(),
+		mFirstStaticSink(true), //
+		mFirstStaticSource(true), //
+		mFirstStaticGateway(true), //
+		mFirstStaticConverter(true), //
+		mFirstStaticSinkClass(true), //
+		mFirstStaticSourceClass(true), //
+		mFirstStaticCrossfader(true), //
+		mListConnectionFormat(), //
+		mMappedData(),
+		mDatabaseObservers()
 {
 	logVerbose(__METHOD_NAME__,"Init ");
 }
@@ -421,7 +470,8 @@ CAmDatabaseHandlerMap::CAmDatabaseHandlerMap():	mFirstStaticSink(true), //
 CAmDatabaseHandlerMap::~CAmDatabaseHandlerMap()
 {
     logVerbose(__METHOD_NAME__,"Destroy");
-    mpDatabaseObserver = NULL;
+	for(AmDatabaseObserverCallbacks * ptr: mDatabaseObservers)
+		ptr->mpDatabaseHandler=nullptr;
 }
 
 am_Error_e CAmDatabaseHandlerMap::enterDomainDB(const am_Domain_s & domainData, am_domainID_t & domainID)
@@ -442,7 +492,7 @@ am_Error_e CAmDatabaseHandlerMap::enterDomainDB(const am_Domain_s & domainData, 
     	return (E_NOT_POSSIBLE);
     }
     //first check for a reserved domain
-    am_Domain_s const *reservedDomain = objectMatchingPredicate<CAmDomain, am_domainID_t>(mMappedData.mDomainMap, [&](const CAmDomain & obj){
+    am_Domain_s const *reservedDomain = objectMatchingPredicate<AmDomain, am_domainID_t>(mMappedData.mDomainMap, [&](const AmDomain & obj){
     	return domainData.name.compare(obj.name)==0;
     });
 
@@ -456,8 +506,9 @@ am_Error_e CAmDatabaseHandlerMap::enterDomainDB(const am_Domain_s & domainData, 
     	mMappedData.mDomainMap[nextID].domainID = nextID;
     	mMappedData.mDomainMap[nextID].reserved = 0;
     	logVerbose("DatabaseHandler::enterDomainDB entered reserved domain with name=", domainData.name, "busname=", domainData.busname, "nodename=", domainData.nodename, "reserved ID:", domainID);
-        if (mpDatabaseObserver)
-            mpDatabaseObserver->newDomain(mMappedData.mDomainMap[nextID]);
+
+    	NOTIFY_OBSERVERS1(dboNewDomain, mMappedData.mDomainMap[nextID])
+
     	return (E_OK);
     }
     else
@@ -468,8 +519,9 @@ am_Error_e CAmDatabaseHandlerMap::enterDomainDB(const am_Domain_s & domainData, 
 			mMappedData.mDomainMap[nextID] = domainData;
 			mMappedData.mDomainMap[nextID].domainID = nextID;
 			logVerbose("DatabaseHandler::enterDomainDB entered new domain with name=", domainData.name, "busname=", domainData.busname, "nodename=", domainData.nodename, "assigned ID:", domainID);
-			if (mpDatabaseObserver)
-				mpDatabaseObserver->newDomain(mMappedData.mDomainMap[nextID]);
+
+			NOTIFY_OBSERVERS1(dboNewDomain, mMappedData.mDomainMap[nextID])
+
 			return (E_OK);
 		}
 		else
@@ -543,12 +595,14 @@ am_Error_e CAmDatabaseHandlerMap::enterMainConnectionDB(const am_MainConnection_
     delay = calculateDelayForRoute(mainConnectionData.listConnectionID);
     logVerbose("DatabaseHandler::enterMainConnectionDB entered new mainConnection with sourceID", mainConnectionData.sourceID, "sinkID:", mainConnectionData.sinkID, "delay:", delay, "assigned ID:", connectionID);
 
-    if (mpDatabaseObserver)
+
+    if (mDatabaseObservers.size())
     {
-        am_MainConnectionType_s mainConnection;
-        mMappedData.mMainConnectionMap[nextID].getMainConnectionType(mainConnection);
-        mpDatabaseObserver->newMainConnection(mainConnection);
-        mpDatabaseObserver->mainConnectionStateChanged(connectionID, mMappedData.mMainConnectionMap[nextID].connectionState);
+    	am_MainConnectionType_s mainConnection;
+		mMappedData.mMainConnectionMap[nextID].getMainConnectionType(mainConnection);
+
+        NOTIFY_OBSERVERS1(dboNewMainConnection, mainConnection)
+        NOTIFY_OBSERVERS2(dboMainConnectionStateChanged, connectionID, mMappedData.mMainConnectionMap[nextID].connectionState)
     }
 
     //finally, we update the delay value for the maintable
@@ -615,7 +669,7 @@ am_Error_e CAmDatabaseHandlerMap::enterSinkDB(const am_Sink_s & sinkData, am_sin
     am_sinkID_t temp_SinkID = 0;
     am_sinkID_t temp_SinkIndex = 0;
 	//if sinkID is zero and the first Static Sink was already entered, the ID is created
-    am_Sink_s const *reservedDomain = objectMatchingPredicate<CAmSink, am_sinkID_t>(mMappedData.mSinkMap, [&](const CAmSink & obj){
+    am_Sink_s const *reservedDomain = objectMatchingPredicate<AmSink, am_sinkID_t>(mMappedData.mSinkMap, [&](const AmSink & obj){
 		return true==obj.reserved && obj.name.compare(sinkData.name)==0;
     });
     if( NULL!=reservedDomain )
@@ -654,11 +708,9 @@ am_Error_e CAmDatabaseHandlerMap::enterSinkDB(const am_Sink_s & sinkData, am_sin
     am_Sink_s & sink = mMappedData.mSinkMap[temp_SinkID];
     logVerbose("DatabaseHandler::enterSinkDB entered new sink with name", sink.name, "domainID:", sink.domainID, "classID:", sink.sinkClassID, "volume:", sink.volume, "assigned ID:", sink.sinkID);
 
-    if (mpDatabaseObserver != NULL)
-    {
-        sink.sinkID=sinkID;
-        mpDatabaseObserver->newSink(sink);
-    }
+	sink.sinkID=sinkID;
+	NOTIFY_OBSERVERS1(dboNewSink, sink)
+
     return (E_OK);
 }
 
@@ -744,8 +796,8 @@ am_Error_e CAmDatabaseHandlerMap::enterCrossfaderDB(const am_Crossfader_s & cros
    crossfaderID = temp_CrossfaderID;
    logVerbose("DatabaseHandler::enterCrossfaderDB entered new crossfader with name=", crossfaderData.name, "sinkA= ", crossfaderData.sinkID_A, "sinkB=", crossfaderData.sinkID_B, "source=", crossfaderData.sourceID, "assigned ID:", crossfaderID);
 
-    if (mpDatabaseObserver)
-        mpDatabaseObserver->newCrossfader(mMappedData.mCrossfaderMap[temp_CrossfaderIndex]);
+   NOTIFY_OBSERVERS1(dboNewCrossfader, mMappedData.mCrossfaderMap[temp_CrossfaderIndex])
+
     return (E_OK);
 }
 
@@ -819,8 +871,8 @@ am_Error_e CAmDatabaseHandlerMap::enterGatewayDB(const am_Gateway_s & gatewayDat
     gatewayID = temp_GatewayID;
 
     logVerbose("DatabaseHandler::enterGatewayDB entered new gateway with name", gatewayData.name, "sourceID:", gatewayData.sourceID, "sinkID:", gatewayData.sinkID, "assigned ID:", gatewayID);
-    if (mpDatabaseObserver)
-        mpDatabaseObserver->newGateway(mMappedData.mGatewayMap[temp_GatewayIndex]);
+
+    NOTIFY_OBSERVERS1(dboNewGateway, mMappedData.mGatewayMap[temp_GatewayIndex])
     return (E_OK);
 }
 
@@ -905,24 +957,24 @@ am_Error_e CAmDatabaseHandlerMap::enterConverterDB(const am_Converter_s & conver
     converterID = tempID;
 
     logVerbose("DatabaseHandler::enterConverterDB entered new converter with name", converterData.name, "sourceID:", converterData.sourceID, "sinkID:", converterData.sinkID, "assigned ID:", converterID);
-    if (mpDatabaseObserver)
-        mpDatabaseObserver->newConverter(mMappedData.mConverterMap[tempIndex]);
+    NOTIFY_OBSERVERS1(dboNewConverter, mMappedData.mConverterMap[tempIndex])
+
     return (E_OK);
 }
 
 void CAmDatabaseHandlerMap::dump( std::ostream & output ) const
 {
 	output << std::endl << "****************** DUMP START ******************" << std::endl;
-	CAmMappedData::printMap(mMappedData.mDomainMap, output);
-	CAmMappedData::printMap(mMappedData.mSourceMap, output);
-	CAmMappedData::printMap(mMappedData.mSinkMap, output);
-	CAmMappedData::printMap(mMappedData.mSourceClassesMap, output);
-	CAmMappedData::printMap(mMappedData.mSinkClassesMap, output);
-	CAmMappedData::printMap(mMappedData.mConnectionMap, output);
-	CAmMappedData::printMap(mMappedData.mMainConnectionMap, output);
-	CAmMappedData::printMap(mMappedData.mCrossfaderMap, output);
-	CAmMappedData::printMap(mMappedData.mGatewayMap, output);
-	CAmVectorSystemProperties::const_iterator iter = mMappedData.mSystemProperties.begin();
+	AmMappedData::printMap(mMappedData.mDomainMap, output);
+	AmMappedData::printMap(mMappedData.mSourceMap, output);
+	AmMappedData::printMap(mMappedData.mSinkMap, output);
+	AmMappedData::printMap(mMappedData.mSourceClassesMap, output);
+	AmMappedData::printMap(mMappedData.mSinkClassesMap, output);
+	AmMappedData::printMap(mMappedData.mConnectionMap, output);
+	AmMappedData::printMap(mMappedData.mMainConnectionMap, output);
+	AmMappedData::printMap(mMappedData.mCrossfaderMap, output);
+	AmMappedData::printMap(mMappedData.mGatewayMap, output);
+	AmVectorSystemProperties::const_iterator iter = mMappedData.mSystemProperties.begin();
 	output << "System properties" << "\n";
 	for(; iter!=mMappedData.mSystemProperties.end(); iter++)
 		output << "[type:" << iter->type << " value:" << iter->value << "]";
@@ -981,7 +1033,7 @@ am_Error_e CAmDatabaseHandlerMap::enterSourceDB(const am_Source_s & sourceData, 
     bool isFirstStatic = sourceData.sourceID == 0 && mFirstStaticSource;
     am_sourceID_t temp_SourceID = 0;
     am_sourceID_t temp_SourceIndex = 0;
-    CAmSource const *reservedSource = objectMatchingPredicate<CAmSource, am_sourceID_t>(mMappedData.mSourceMap, [&](const CAmSource & obj){
+    AmSource const *reservedSource = objectMatchingPredicate<AmSource, am_sourceID_t>(mMappedData.mSourceMap, [&](const AmSource & obj){
 		return true==obj.reserved && obj.name.compare(sourceData.name)==0;
     });
 	if( NULL != reservedSource )
@@ -1020,8 +1072,8 @@ am_Error_e CAmDatabaseHandlerMap::enterSourceDB(const am_Source_s & sourceData, 
 
     logVerbose("DatabaseHandler::enterSourceDB entered new source with name", sourceData.name, "domainID:", sourceData.domainID, "classID:", sourceData.sourceClassID, "visible:", sourceData.visible, "assigned ID:", sourceID);
 
-    if (mpDatabaseObserver)
-        mpDatabaseObserver->newSource(mMappedData.mSourceMap[temp_SourceIndex]);
+    NOTIFY_OBSERVERS1(dboNewSource, mMappedData.mSourceMap[temp_SourceIndex])
+
     return (E_OK);
 }
 
@@ -1124,8 +1176,7 @@ am_Error_e CAmDatabaseHandlerMap::enterSinkClassDB(const am_SinkClass_s & sinkCl
 
     //todo:change last_insert implementations for multithreaded usage...
     logVerbose("DatabaseHandler::enterSinkClassDB entered new sinkClass");
-    if (mpDatabaseObserver)
-        mpDatabaseObserver->numberOfSinkClassesChanged();
+    NOTIFY_OBSERVERS(dboNumberOfSinkClassesChanged)
     return (E_OK);
 }
 
@@ -1192,8 +1243,8 @@ am_Error_e CAmDatabaseHandlerMap::enterSourceClassDB(am_sourceClass_t & sourceCl
 
     logVerbose("DatabaseHandler::enterSourceClassDB entered new sourceClass");
 
-    if (mpDatabaseObserver)
-        mpDatabaseObserver->numberOfSourceClassesChanged();
+    NOTIFY_OBSERVERS(dboNumberOfSourceClassesChanged)
+
     return (E_OK);
 }
 
@@ -1260,8 +1311,7 @@ am_Error_e CAmDatabaseHandlerMap::changeMainConnectionStateDB(const am_mainConne
     DB_COND_UPDATE_RIE(mMappedData.mMainConnectionMap[mainconnectionID].connectionState, connectionState);
 
     logVerbose("DatabaseHandler::changeMainConnectionStateDB changed mainConnectionState of MainConnection:", mainconnectionID, "to:", connectionState);
-    if (mpDatabaseObserver)
-        mpDatabaseObserver->mainConnectionStateChanged(mainconnectionID, connectionState);
+    NOTIFY_OBSERVERS2(dboMainConnectionStateChanged, mainconnectionID, connectionState)
     return (E_OK);
 }
 
@@ -1277,8 +1327,7 @@ am_Error_e CAmDatabaseHandlerMap::changeSinkMainVolumeDB(const am_mainVolume_t m
 
     logVerbose("DatabaseHandler::changeSinkMainVolumeDB changed mainVolume of sink:", sinkID, "to:", mainVolume);
 
-    if (mpDatabaseObserver)
-        mpDatabaseObserver->volumeChanged(sinkID, mainVolume);
+    NOTIFY_OBSERVERS2(dboVolumeChanged, sinkID, mainVolume)
 
     return (E_OK);
 }
@@ -1301,8 +1350,10 @@ am_Error_e CAmDatabaseHandlerMap::changeSinkAvailabilityDB(const am_Availability
 
     logVerbose("DatabaseHandler::changeSinkAvailabilityDB changed sinkAvailability of sink:", sinkID, "to:", availability.availability, "Reason:", availability.availabilityReason);
 
-    if (mpDatabaseObserver && sinkVisible(sinkID))
-        mpDatabaseObserver->sinkAvailabilityChanged(sinkID, availability);
+    if (sinkVisible(sinkID))
+    {
+    	NOTIFY_OBSERVERS2(dboSinkAvailabilityChanged,sinkID, availability)
+    }
     return (E_OK);
 }
 
@@ -1346,8 +1397,7 @@ am_Error_e CAmDatabaseHandlerMap::changeSinkMuteStateDB(const am_MuteState_e mut
 
     logVerbose("DatabaseHandler::changeSinkMuteStateDB changed sinkMuteState of sink:", sinkID, "to:", muteState);
 
-    if (mpDatabaseObserver)
-        mpDatabaseObserver->sinkMuteStateChanged(sinkID, muteState);
+    NOTIFY_OBSERVERS2(dboSinkMuteStateChanged, sinkID, muteState)
 
     return (E_OK);
 }
@@ -1374,8 +1424,7 @@ am_Error_e CAmDatabaseHandlerMap::changeMainSinkSoundPropertyDB(const am_MainSou
 	}
 
     logVerbose("DatabaseHandler::changeMainSinkSoundPropertyDB changed MainSinkSoundProperty of sink:", sinkID, "type:", soundProperty.type, "to:", soundProperty.value);
-    if (mpDatabaseObserver)
-        mpDatabaseObserver->mainSinkSoundPropertyChanged(sinkID, soundProperty);
+    NOTIFY_OBSERVERS2(dboMainSinkSoundPropertyChanged, sinkID, soundProperty)
     return (E_OK);
 }
 
@@ -1402,8 +1451,7 @@ am_Error_e CAmDatabaseHandlerMap::changeMainSourceSoundPropertyDB(const am_MainS
 
     logVerbose("DatabaseHandler::changeMainSourceSoundPropertyDB changed MainSinkSoundProperty of source:", sourceID, "type:", soundProperty.type, "to:", soundProperty.value);
 
-    if (mpDatabaseObserver)
-        mpDatabaseObserver->mainSourceSoundPropertyChanged(sourceID, soundProperty);
+    NOTIFY_OBSERVERS2(dboMainSourceSoundPropertyChanged, sourceID, soundProperty)
     return (E_OK);
 }
 
@@ -1425,8 +1473,10 @@ am_Error_e CAmDatabaseHandlerMap::changeSourceAvailabilityDB(const am_Availabili
 
     logVerbose("DatabaseHandler::changeSourceAvailabilityDB changed changeSourceAvailabilityDB of source:", sourceID, "to:", availability.availability, "Reason:", availability.availabilityReason);
 
-    if (mpDatabaseObserver && sourceVisible(sourceID))
-        mpDatabaseObserver->sourceAvailabilityChanged(sourceID, availability);
+    if (sourceVisible(sourceID))
+    {
+    	NOTIFY_OBSERVERS2(dboSourceAvailabilityChanged, sourceID, availability)
+    }
     return (E_OK);
 }
 
@@ -1441,8 +1491,7 @@ am_Error_e CAmDatabaseHandlerMap::changeSystemPropertyDB(const am_SystemProperty
 
     logVerbose("DatabaseHandler::changeSystemPropertyDB changed system property");
 
-    if (mpDatabaseObserver)
-        mpDatabaseObserver->systemPropertyChanged(property);
+    NOTIFY_OBSERVERS1(dboSystemPropertyChanged, property)
 
     return (E_OK);
 }
@@ -1459,11 +1508,10 @@ am_Error_e CAmDatabaseHandlerMap::removeMainConnectionDB(const am_mainConnection
     mMappedData.mMainConnectionMap.erase(mainConnectionID);
 
     logVerbose("DatabaseHandler::removeMainConnectionDB removed:", mainConnectionID);
-    if (mpDatabaseObserver)
-    {
-        mpDatabaseObserver->mainConnectionStateChanged(mainConnectionID, CS_DISCONNECTED);
-        mpDatabaseObserver->removedMainConnection(mainConnectionID);
-    }
+
+	NOTIFY_OBSERVERS2(dboMainConnectionStateChanged, mainConnectionID, CS_DISCONNECTED)
+	NOTIFY_OBSERVERS1(dboRemovedMainConnection, mainConnectionID)
+
     return (E_OK);
 }
 
@@ -1483,8 +1531,7 @@ am_Error_e CAmDatabaseHandlerMap::removeSinkDB(const am_sinkID_t sinkID)
     //if visible is true then delete SinkMainSoundProperty and SinkMainNotificationConfiguration ????
     logVerbose("DatabaseHandler::removeSinkDB removed:", sinkID);
 
-    if (mpDatabaseObserver != NULL)
-        mpDatabaseObserver->removedSink(sinkID, visible);
+    NOTIFY_OBSERVERS2(dboRemovedSink, sinkID, visible)
 
     return (E_OK);
 }
@@ -1506,8 +1553,7 @@ am_Error_e CAmDatabaseHandlerMap::removeSourceDB(const am_sourceID_t sourceID)
     //if visible is true then delete SourceMainSoundProperty and SourceMainNotificationConfiguration ????
 
     logVerbose("DatabaseHandler::removeSourceDB removed:", sourceID);
-    if (mpDatabaseObserver)
-        mpDatabaseObserver->removedSource(sourceID, visible);
+    NOTIFY_OBSERVERS2(dboRemovedSource, sourceID, visible)
     return (E_OK);
 }
 
@@ -1523,8 +1569,7 @@ am_Error_e CAmDatabaseHandlerMap::removeGatewayDB(const am_gatewayID_t gatewayID
     mMappedData.mGatewayMap.erase(gatewayID);
 
     logVerbose("DatabaseHandler::removeGatewayDB removed:", gatewayID);
-    if (mpDatabaseObserver)
-        mpDatabaseObserver->removeGateway(gatewayID);
+    NOTIFY_OBSERVERS1(dboRemoveGateway, gatewayID)
     return (E_OK);
 }
 
@@ -1540,8 +1585,7 @@ am_Error_e CAmDatabaseHandlerMap::removeConverterDB(const am_converterID_t conve
     mMappedData.mConverterMap.erase(converterID);
 
     logVerbose("DatabaseHandler::removeConverterDB removed:", converterID);
-    if (mpDatabaseObserver)
-        mpDatabaseObserver->removeConverter(converterID);
+    NOTIFY_OBSERVERS1(dboRemoveConverter, converterID)
     return (E_OK);
 }
 
@@ -1556,8 +1600,8 @@ am_Error_e CAmDatabaseHandlerMap::removeCrossfaderDB(const am_crossfaderID_t cro
     mMappedData.mCrossfaderMap.erase(crossfaderID);
 
     logVerbose("DatabaseHandler::removeCrossfaderDB removed:", crossfaderID);
-    if (mpDatabaseObserver)
-        mpDatabaseObserver->removeCrossfader(crossfaderID);
+    NOTIFY_OBSERVERS1(dboRemoveCrossfader, crossfaderID)
+
     return (E_OK);
 }
 
@@ -1572,8 +1616,8 @@ am_Error_e CAmDatabaseHandlerMap::removeDomainDB(const am_domainID_t domainID)
     mMappedData.mDomainMap.erase(domainID);
 
     logVerbose("DatabaseHandler::removeDomainDB removed:", domainID);
-    if (mpDatabaseObserver)
-        mpDatabaseObserver->removeDomain(domainID);
+    NOTIFY_OBSERVERS1(dboRemoveDomain, domainID)
+
     return (E_OK);
 }
 
@@ -1589,9 +1633,7 @@ am_Error_e CAmDatabaseHandlerMap::removeSinkClassDB(const am_sinkClass_t sinkCla
     mMappedData.mSinkClassesMap.erase(sinkClassID);
 
     logVerbose("DatabaseHandler::removeSinkClassDB removed:", sinkClassID);
-    if (mpDatabaseObserver)
-        mpDatabaseObserver->numberOfSinkClassesChanged();
-
+    NOTIFY_OBSERVERS(dboNumberOfSinkClassesChanged)
     return (E_OK);
 }
 
@@ -1606,8 +1648,7 @@ am_Error_e CAmDatabaseHandlerMap::removeSourceClassDB(const am_sourceClass_t sou
 
     mMappedData.mSourceClassesMap.erase(sourceClassID);
     logVerbose("DatabaseHandler::removeSourceClassDB removed:", sourceClassID);
-    if (mpDatabaseObserver)
-        mpDatabaseObserver->numberOfSourceClassesChanged();
+    NOTIFY_OBSERVERS(dboNumberOfSourceClassesChanged)
     return (E_OK);
 }
 
@@ -1825,7 +1866,7 @@ am_Error_e CAmDatabaseHandlerMap::getListSourcesOfDomain(const am_domainID_t dom
     	logWarning(__METHOD_NAME__,"domainID must exist");
         return (E_NON_EXISTENT);
     }
-     CAmMapSource::const_iterator elementIterator = mMappedData.mSourceMap.begin();
+     AmMapSource::const_iterator elementIterator = mMappedData.mSourceMap.begin();
 	for (;elementIterator != mMappedData.mSourceMap.end(); ++elementIterator)
 	{
 		if (0==elementIterator->second.reserved && domainID==elementIterator->second.domainID)
@@ -1844,12 +1885,12 @@ am_Error_e CAmDatabaseHandlerMap::getListCrossfadersOfDomain(const am_domainID_t
         return (E_NON_EXISTENT);
     }
 
-    CAmMapSource::const_iterator sourceIterator = mMappedData.mSourceMap.begin();
+    AmMapSource::const_iterator sourceIterator = mMappedData.mSourceMap.begin();
 	for (;sourceIterator != mMappedData.mSourceMap.end(); ++sourceIterator)
 	{
 		if (domainID==sourceIterator->second.domainID)
 		{
-			CAmMapCrossfader::const_iterator elementIterator = mMappedData.mCrossfaderMap.begin();
+			AmMapCrossfader::const_iterator elementIterator = mMappedData.mCrossfaderMap.begin();
 			for (;elementIterator != mMappedData.mCrossfaderMap.end(); ++elementIterator)
 			{
 				if ( sourceIterator->second.sourceID==elementIterator->second.sourceID )
@@ -1871,7 +1912,7 @@ am_Error_e CAmDatabaseHandlerMap::getListGatewaysOfDomain(const am_domainID_t do
         return (E_NON_EXISTENT);
     }
 
-    CAmMapGateway::const_iterator elementIterator = mMappedData.mGatewayMap.begin();
+    AmMapGateway::const_iterator elementIterator = mMappedData.mGatewayMap.begin();
  	for (;elementIterator != mMappedData.mGatewayMap.end(); ++elementIterator)
  	{
  		if (domainID==elementIterator->second.controlDomainID)
@@ -1889,7 +1930,7 @@ am_Error_e CAmDatabaseHandlerMap::getListConvertersOfDomain(const am_domainID_t 
         return (E_NON_EXISTENT);
     }
 
-    CAmMapConverter::const_iterator elementIterator = mMappedData.mConverterMap.begin();
+    AmMapConverter::const_iterator elementIterator = mMappedData.mConverterMap.begin();
  	for (;elementIterator != mMappedData.mConverterMap.end(); ++elementIterator)
  	{
  		if (domainID==elementIterator->second.domainID)
@@ -1902,7 +1943,7 @@ am_Error_e CAmDatabaseHandlerMap::getListMainConnections(std::vector<am_MainConn
 {
     listMainConnections.clear();
 
-    CAmMapMainConnection::const_iterator elementIterator = mMappedData.mMainConnectionMap.begin();
+    AmMapMainConnection::const_iterator elementIterator = mMappedData.mMainConnectionMap.begin();
     for (;elementIterator != mMappedData.mMainConnectionMap.end(); ++elementIterator)
     {
     	listMainConnections.push_back(elementIterator->second);
@@ -1915,7 +1956,7 @@ am_Error_e CAmDatabaseHandlerMap::getListDomains(std::vector<am_Domain_s> & list
 {
     listDomains.clear();
 
-    CAmMapDomain::const_iterator elementIterator = mMappedData.mDomainMap.begin();
+    AmMapDomain::const_iterator elementIterator = mMappedData.mDomainMap.begin();
      for (;elementIterator != mMappedData.mDomainMap.end(); ++elementIterator)
      {
     	 if( 0==elementIterator->second.reserved )
@@ -1929,7 +1970,7 @@ am_Error_e CAmDatabaseHandlerMap::getListConnections(std::vector<am_Connection_s
 {
     listConnections.clear();
 
-    CAmMapConnection::const_iterator elementIterator = mMappedData.mConnectionMap.begin();
+    AmMapConnection::const_iterator elementIterator = mMappedData.mConnectionMap.begin();
 	for (;elementIterator != mMappedData.mConnectionMap.end(); ++elementIterator)
 	{
 		if( 0==elementIterator->second.reserved )
@@ -1943,7 +1984,7 @@ am_Error_e CAmDatabaseHandlerMap::getListConnectionsReserved(std::vector<am_Conn
 {
     listConnections.clear();
 
-    CAmMapConnection::const_iterator elementIterator = mMappedData.mConnectionMap.begin();
+    AmMapConnection::const_iterator elementIterator = mMappedData.mConnectionMap.begin();
 	for (;elementIterator != mMappedData.mConnectionMap.end(); ++elementIterator)
 	{
 		if( elementIterator->second.reserved )
@@ -2205,8 +2246,7 @@ am_Error_e CAmDatabaseHandlerMap::changeDelayMainConnection(const am_timeSync_t 
  		return E_NON_EXISTENT;
     }
     DB_COND_UPDATE_RIE(mMappedData.mMainConnectionMap[connectionID].delay, delay);
-    if (mpDatabaseObserver)
-        mpDatabaseObserver->timingInformationChanged(connectionID, delay);
+    NOTIFY_OBSERVERS2(dboTimingInformationChanged, connectionID, delay)
     return (E_OK);
 }
 
@@ -2263,7 +2303,7 @@ bool CAmDatabaseHandlerMap::existSourceName(const std::string & name) const
 bool CAmDatabaseHandlerMap::existSink(const am_sinkID_t sinkID) const
 {
 	bool returnVal = false;
-	CAmMapSink::const_iterator elementIterator = mMappedData.mSinkMap.begin();
+	AmMapSink::const_iterator elementIterator = mMappedData.mSinkMap.begin();
 	for (;elementIterator != mMappedData.mSinkMap.end(); ++elementIterator)
 	{
 		if( 0==elementIterator->second.reserved &&
@@ -2429,7 +2469,7 @@ am_Error_e CAmDatabaseHandlerMap::changeConnectionTimingInformation(const am_con
 
     //first get all route tables for all mainconnections
     am_Error_e error = E_OK;
-    CAmMapMainConnection::const_iterator iter = mMappedData.mMainConnectionMap.begin();
+    AmMapMainConnection::const_iterator iter = mMappedData.mMainConnectionMap.begin();
     for(; iter != mMappedData.mMainConnectionMap.end(); ++iter)
     {
         const am_MainConnection_s & mainConnection = iter->second;
@@ -2477,11 +2517,6 @@ am_timeSync_t CAmDatabaseHandlerMap::calculateMainConnectionDelay(const am_mainC
  * registers the Observer at the Database
  * @param iObserver pointer to the observer
  */
-void CAmDatabaseHandlerMap::registerObserver(CAmDatabaseObserver *iObserver)
-{
-    assert(iObserver!=NULL);
-    mpDatabaseObserver = iObserver;
-}
 
 /**
  * gives information about the visibility of a source
@@ -3038,10 +3073,8 @@ am_Error_e CAmDatabaseHandlerMap::changeSourceDB(const am_sourceID_t sourceID, c
     {
         logVerbose("DatabaseHandler::changeSource changed changeSource of source:", sourceID);
 
-        if (mpDatabaseObserver != NULL)
-        {
-            mpDatabaseObserver->sourceUpdated(sourceID,sourceClassOut,listMainSoundPropertiesOut,sourceVisible(sourceID));
-        }
+        NOTIFY_OBSERVERS4(dboSourceUpdated, sourceID,sourceClassOut,listMainSoundPropertiesOut,sourceVisible(sourceID))
+
     }
 
     return (E_OK);
@@ -3109,10 +3142,7 @@ am_Error_e CAmDatabaseHandlerMap::changeSinkDB(const am_sinkID_t sinkID, const a
     {
         logVerbose("DatabaseHandler::changeSink changed changeSink of sink:", sinkID);
 
-        if (mpDatabaseObserver != NULL)
-        {
-            mpDatabaseObserver->sinkUpdated(sinkID,sinkClassOut,listMainSoundPropertiesOut,sinkVisible(sinkID));
-        }
+        NOTIFY_OBSERVERS4(dboSinkUpdated, sinkID,sinkClassOut,listMainSoundPropertiesOut,sinkVisible(sinkID))
     }
 
     return (E_OK);
@@ -3179,8 +3209,8 @@ am_Error_e CAmDatabaseHandlerMap::changeMainSinkNotificationConfigurationDB(cons
 
     logVerbose("DatabaseHandler::changeMainSinkNotificationConfigurationDB changed MainNotificationConfiguration of source:", sinkID, "type:", mainNotificationConfiguration.type, "to status=", mainNotificationConfiguration.status, "and parameter=",mainNotificationConfiguration.parameter);
 
-    if (mpDatabaseObserver)
-        mpDatabaseObserver->sinkMainNotificationConfigurationChanged(sinkID, mainNotificationConfiguration);
+    NOTIFY_OBSERVERS2(dboSinkMainNotificationConfigurationChanged, sinkID, mainNotificationConfiguration)
+
     return (E_OK);
 }
 
@@ -3198,8 +3228,8 @@ am_Error_e CAmDatabaseHandlerMap::changeMainSourceNotificationConfigurationDB(co
 
     logVerbose("DatabaseHandler::changeMainSourceNotificationConfigurationDB changed MainNotificationConfiguration of source:", sourceID, "type:", mainNotificationConfiguration.type, "to status=", mainNotificationConfiguration.status, "and parameter=",mainNotificationConfiguration.parameter);
 
-    if (mpDatabaseObserver)
-        mpDatabaseObserver->sourceMainNotificationConfigurationChanged(sourceID, mainNotificationConfiguration);
+    NOTIFY_OBSERVERS2(dboSourceMainNotificationConfigurationChanged, sourceID, mainNotificationConfiguration)
+
     return (E_OK);
 }
 
@@ -3356,6 +3386,33 @@ am_Error_e CAmDatabaseHandlerMap::enumerateConverters(std::function<void(const a
 		cb(*pObject);
 	}
 	return E_OK;
+}
+
+bool CAmDatabaseHandlerMap::registerObserver(IAmDatabaseObserver * iObserver) {
+	assert(iObserver!=NULL);
+	if (std::find(mDatabaseObservers.begin(), mDatabaseObservers.end(),
+			iObserver) == mDatabaseObservers.end()) {
+		mDatabaseObservers.push_back(
+				dynamic_cast<AmDatabaseObserverCallbacks*>(iObserver)), dynamic_cast<AmDatabaseObserverCallbacks*>(iObserver)->mpDatabaseHandler =
+				nullptr;
+		return true;
+	}
+	return false;
+}
+bool CAmDatabaseHandlerMap::unregisterObserver(IAmDatabaseObserver * iObserver) {
+	assert(iObserver!=NULL);
+	auto it = std::find(mDatabaseObservers.begin(), mDatabaseObservers.end(),
+			iObserver);
+	if (it != mDatabaseObservers.end()) {
+		mDatabaseObservers.erase(it), dynamic_cast<AmDatabaseObserverCallbacks*>(iObserver)->mpDatabaseHandler =
+				nullptr;
+		return true;
+	}
+	return false;
+}
+
+unsigned CAmDatabaseHandlerMap::countObservers() {
+	return mDatabaseObservers.size();
 }
 
 }

@@ -21,78 +21,75 @@
  *
  */
 
-#include "CAmDatabaseObserver.h"
+#include "CAmTestDatabaseObserver.h"
 #include "MockDatabaseObserver.h"
 
 namespace am {
 
-CAmDatabaseObserver::CAmDatabaseObserver(CAmCommandSender *iCommandSender, CAmRoutingSender *iRoutingSender, CAmSocketHandler *iSocketHandler) :
-mCommandSender(iCommandSender), //
-mRoutingSender(iRoutingSender), //
-mTelnetServer(NULL), //
-mSerializer(iSocketHandler) //
-{}
+CAmDatabaseObserver::CAmDatabaseObserver()
+{
+		dboNumberOfSinkClassesChanged = [&]()
+		{ MockDatabaseObserver::getMockObserverObject()->numberOfSinkClassesChanged(); };
+		dboNumberOfSourceClassesChanged = [&]()
+		{ MockDatabaseObserver::getMockObserverObject()->numberOfSourceClassesChanged(); };
+		dboNewSink = [&](const am_Sink_s& sink)
+		{ MockDatabaseObserver::getMockObserverObject()->newSink(sink); };
+		dboNewSource = [&](const am_Source_s& source)
+		{ MockDatabaseObserver::getMockObserverObject()->newSource(source); };
+		dboNewDomain = [&](const am_Domain_s& domain)
+		{ MockDatabaseObserver::getMockObserverObject()->newDomain(domain); };
+		dboNewGateway = [&](const am_Gateway_s& gateway)
+		{ MockDatabaseObserver::getMockObserverObject()->newGateway(gateway); };
+		dboNewConverter = [&](const am_Converter_s& coverter)
+		{ MockDatabaseObserver::getMockObserverObject()->newConverter(coverter); };
+		dboNewCrossfader = [&](const am_Crossfader_s& crossfader)
+		{ MockDatabaseObserver::getMockObserverObject()->newCrossfader(crossfader); };
+		dboNewMainConnection = [&](const am_MainConnectionType_s& mainConnection)
+		{ MockDatabaseObserver::getMockObserverObject()->newMainConnection(mainConnection); };
+		dboRemovedMainConnection = [&](const am_mainConnectionID_t mainConnection)
+		{ MockDatabaseObserver::getMockObserverObject()->removedMainConnection(mainConnection); };
+		dboRemovedSink = [&](const am_sinkID_t sinkID, const bool visible)
+		{ MockDatabaseObserver::getMockObserverObject()->removedSink(sinkID, visible); };
+		dboRemovedSource = [&](const am_sourceID_t sourceID, const bool visible)
+		{ MockDatabaseObserver::getMockObserverObject()->removedSource(sourceID, visible); };
+		dboRemoveDomain = [&](const am_domainID_t domainID)
+		{ MockDatabaseObserver::getMockObserverObject()->removeDomain(domainID); };
+		dboRemoveGateway = [&](const am_gatewayID_t gatewayID)
+		{ MockDatabaseObserver::getMockObserverObject()->removeGateway(gatewayID); };
+		dboRemoveConverter = [&](const am_converterID_t converterID)
+		{ MockDatabaseObserver::getMockObserverObject()->removeConverter(converterID); };
+		dboRemoveCrossfader = [&](const am_crossfaderID_t crossfaderID)
+		{ MockDatabaseObserver::getMockObserverObject()->removeCrossfader(crossfaderID); };
+		dboMainConnectionStateChanged = [&](const am_mainConnectionID_t connectionID, const am_ConnectionState_e connectionState)
+		{ MockDatabaseObserver::getMockObserverObject()->mainConnectionStateChanged(connectionID, connectionState); };
+		dboMainSinkSoundPropertyChanged = [&](const am_sinkID_t sinkID, const am_MainSoundProperty_s& SoundProperty)
+		{ MockDatabaseObserver::getMockObserverObject()->mainSinkSoundPropertyChanged(sinkID, SoundProperty); };
+		dboMainSourceSoundPropertyChanged = [&](const am_sourceID_t sourceID, const am_MainSoundProperty_s& SoundProperty)
+		{ MockDatabaseObserver::getMockObserverObject()->mainSourceSoundPropertyChanged(sourceID, SoundProperty); };
+		dboSinkAvailabilityChanged = [&](const am_sinkID_t sinkID, const am_Availability_s& availability)
+		{ MockDatabaseObserver::getMockObserverObject()->sinkAvailabilityChanged(sinkID, availability); };
+		dboSourceAvailabilityChanged = [&](const am_sourceID_t sourceID, const am_Availability_s& availability)
+		{ MockDatabaseObserver::getMockObserverObject()->sourceAvailabilityChanged(sourceID, availability); };
+		dboVolumeChanged = [&](const am_sinkID_t sinkID, const am_mainVolume_t volume)
+		{ MockDatabaseObserver::getMockObserverObject()->volumeChanged(sinkID, volume); };
+		dboSinkMuteStateChanged = [&](const am_sinkID_t sinkID, const am_MuteState_e muteState)
+		{ MockDatabaseObserver::getMockObserverObject()->sinkMuteStateChanged(sinkID, muteState); };
+		dboSystemPropertyChanged = [&](const am_SystemProperty_s& SystemProperty)
+		{ MockDatabaseObserver::getMockObserverObject()->systemPropertyChanged(SystemProperty); };
+		dboTimingInformationChanged = [&](const am_mainConnectionID_t mainConnection, const am_timeSync_t time)
+		{ MockDatabaseObserver::getMockObserverObject()->timingInformationChanged(mainConnection,time); };
+		dboSinkUpdated = [&](const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties, const bool visible)
+		{ MockDatabaseObserver::getMockObserverObject()->sinkUpdated(sinkID,sinkClassID,listMainSoundProperties, visible); };
+		dboSourceUpdated = [&](const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties, const bool visible)
+		{ MockDatabaseObserver::getMockObserverObject()->sourceUpdated(sourceID,sourceClassID,listMainSoundProperties, visible); };
+		dboSinkMainNotificationConfigurationChanged = [&](const am_sinkID_t sinkID, const am_NotificationConfiguration_s mainNotificationConfiguration)
+		{ MockDatabaseObserver::getMockObserverObject()->sinkMainNotificationConfigurationChanged(sinkID,mainNotificationConfiguration); };
+		dboSourceMainNotificationConfigurationChanged = [&](const am_sourceID_t sourceID, const am_NotificationConfiguration_s mainNotificationConfiguration)
+		{ MockDatabaseObserver::getMockObserverObject()->sourceMainNotificationConfigurationChanged(sourceID,mainNotificationConfiguration); };
+
+}
 
 CAmDatabaseObserver::~CAmDatabaseObserver() {}
 
-
-void CAmDatabaseObserver::numberOfSinkClassesChanged()
-{ MockDatabaseObserver::getMockObserverObject()->numberOfSinkClassesChanged(); }
-void CAmDatabaseObserver::numberOfSourceClassesChanged()
-{ MockDatabaseObserver::getMockObserverObject()->numberOfSourceClassesChanged(); }
-void CAmDatabaseObserver::newSink(const am_Sink_s& sink)
-{ MockDatabaseObserver::getMockObserverObject()->newSink(sink); }
-void CAmDatabaseObserver::newSource(const am_Source_s& source)
-{ MockDatabaseObserver::getMockObserverObject()->newSource(source); }
-void CAmDatabaseObserver::newDomain(const am_Domain_s& domain)
-{ MockDatabaseObserver::getMockObserverObject()->newDomain(domain); }
-void CAmDatabaseObserver::newGateway(const am_Gateway_s& gateway)
-{ MockDatabaseObserver::getMockObserverObject()->newGateway(gateway); }
-void CAmDatabaseObserver::newConverter(const am_Converter_s& coverter)
-{ MockDatabaseObserver::getMockObserverObject()->newConverter(coverter); }
-void CAmDatabaseObserver::newCrossfader(const am_Crossfader_s& crossfader)
-{ MockDatabaseObserver::getMockObserverObject()->newCrossfader(crossfader); }
-void CAmDatabaseObserver::newMainConnection(const am_MainConnectionType_s& mainConnection)
-{ MockDatabaseObserver::getMockObserverObject()->newMainConnection(mainConnection); }
-void CAmDatabaseObserver::removedMainConnection(const am_mainConnectionID_t mainConnection)
-{ MockDatabaseObserver::getMockObserverObject()->removedMainConnection(mainConnection); }
-void CAmDatabaseObserver::removedSink(const am_sinkID_t sinkID, const bool visible)
-{ MockDatabaseObserver::getMockObserverObject()->removedSink(sinkID, visible); }
-void CAmDatabaseObserver::removedSource(const am_sourceID_t sourceID, const bool visible)
-{ MockDatabaseObserver::getMockObserverObject()->removedSource(sourceID, visible); }
-void CAmDatabaseObserver::removeDomain(const am_domainID_t domainID)
-{ MockDatabaseObserver::getMockObserverObject()->removeDomain(domainID); }
-void CAmDatabaseObserver::removeGateway(const am_gatewayID_t gatewayID)
-{ MockDatabaseObserver::getMockObserverObject()->removeGateway(gatewayID); }
-void CAmDatabaseObserver::removeConverter(const am_converterID_t converterID)
-{ MockDatabaseObserver::getMockObserverObject()->removeConverter(converterID); }
-void CAmDatabaseObserver::removeCrossfader(const am_crossfaderID_t crossfaderID)
-{ MockDatabaseObserver::getMockObserverObject()->removeCrossfader(crossfaderID); }
-void CAmDatabaseObserver::mainConnectionStateChanged(const am_mainConnectionID_t connectionID, const am_ConnectionState_e connectionState)
-{ MockDatabaseObserver::getMockObserverObject()->mainConnectionStateChanged(connectionID, connectionState); }
-void CAmDatabaseObserver::mainSinkSoundPropertyChanged(const am_sinkID_t sinkID, const am_MainSoundProperty_s& SoundProperty)
-{ MockDatabaseObserver::getMockObserverObject()->mainSinkSoundPropertyChanged(sinkID, SoundProperty); }
-void CAmDatabaseObserver::mainSourceSoundPropertyChanged(const am_sourceID_t sourceID, const am_MainSoundProperty_s& SoundProperty)
-{ MockDatabaseObserver::getMockObserverObject()->mainSourceSoundPropertyChanged(sourceID, SoundProperty); }
-void CAmDatabaseObserver::sinkAvailabilityChanged(const am_sinkID_t sinkID, const am_Availability_s& availability)
-{ MockDatabaseObserver::getMockObserverObject()->sinkAvailabilityChanged(sinkID, availability); }
-void CAmDatabaseObserver::sourceAvailabilityChanged(const am_sourceID_t sourceID, const am_Availability_s& availability)
-{ MockDatabaseObserver::getMockObserverObject()->sourceAvailabilityChanged(sourceID, availability); }
-void CAmDatabaseObserver::volumeChanged(const am_sinkID_t sinkID, const am_mainVolume_t volume)
-{ MockDatabaseObserver::getMockObserverObject()->volumeChanged(sinkID, volume); }
-void CAmDatabaseObserver::sinkMuteStateChanged(const am_sinkID_t sinkID, const am_MuteState_e muteState)
-{ MockDatabaseObserver::getMockObserverObject()->sinkMuteStateChanged(sinkID, muteState); }
-void CAmDatabaseObserver::systemPropertyChanged(const am_SystemProperty_s& SystemProperty)
-{ MockDatabaseObserver::getMockObserverObject()->systemPropertyChanged(SystemProperty); }
-void CAmDatabaseObserver::timingInformationChanged(const am_mainConnectionID_t mainConnection, const am_timeSync_t time)
-{ MockDatabaseObserver::getMockObserverObject()->timingInformationChanged(mainConnection,time); }
-void CAmDatabaseObserver::sinkUpdated(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties, const bool visible)
-{ MockDatabaseObserver::getMockObserverObject()->sinkUpdated(sinkID,sinkClassID,listMainSoundProperties, visible); }
-void CAmDatabaseObserver::sourceUpdated(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties, const bool visible)
-{ MockDatabaseObserver::getMockObserverObject()->sourceUpdated(sourceID,sourceClassID,listMainSoundProperties, visible); }
-void CAmDatabaseObserver::sinkMainNotificationConfigurationChanged(const am_sinkID_t sinkID, const am_NotificationConfiguration_s mainNotificationConfiguration)
-{ MockDatabaseObserver::getMockObserverObject()->sinkMainNotificationConfigurationChanged(sinkID,mainNotificationConfiguration); }
-void CAmDatabaseObserver::sourceMainNotificationConfigurationChanged(const am_sourceID_t sourceID, const am_NotificationConfiguration_s mainNotificationConfiguration)
-{ MockDatabaseObserver::getMockObserverObject()->sourceMainNotificationConfigurationChanged(sourceID,mainNotificationConfiguration); }
 }
 

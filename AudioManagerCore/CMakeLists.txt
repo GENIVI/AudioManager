@@ -46,7 +46,6 @@ set(AUDIOMAN_CORE_SRCS_CXX
     src/CAmCommandSender.cpp
     src/CAmControlReceiver.cpp
     src/CAmControlSender.cpp
-    src/CAmDatabaseObserver.cpp
     src/CAmRoutingReceiver.cpp
     src/CAmRoutingSender.cpp
     src/CAmRouter.cpp
