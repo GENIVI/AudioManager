@@ -409,12 +409,12 @@ namespace am
 		 */
 		CAmNode<T> & addNode(const T & in)
 		{
-            size_t index = mStoreNodes.size();
-            mStoreNodes.emplace_back(in, index);
-            mStoreAdjList.emplace_back();
-            mPointersNodes.push_back(&mStoreNodes.back());
-            mPointersAdjList.push_back(&mStoreAdjList.back());
-			return mStoreNodes.back();
+                    size_t index = mStoreNodes.size();
+                    mStoreNodes.emplace_back(in, index);
+                    mStoreAdjList.emplace_back();
+                    mPointersNodes.push_back(&mStoreNodes.back());
+                    mPointersAdjList.push_back(&mStoreAdjList.back());
+                    return mStoreNodes.back();
 		}
 
 		/**
@@ -463,16 +463,16 @@ namespace am
 		 */
 		void removeNode(const CAmNode<T> & node)
 		{
-            uint16_t index = node.getIndex();
-            removeAllVerticesToNode(node);
-            mPointersAdjList.erase(mPointersAdjList.begin()+index);
-            mPointersNodes.erase(mPointersNodes.begin()+index);
-            auto iter = std::find_if(mStoreNodes.begin(), mStoreNodes.end(), [&node](const CAmNode<T> & otherNode){
-                return &otherNode==&node;
-            });
-            if(iter!=mStoreNodes.end())
-                mStoreNodes.erase(iter);
-            updateIndexes(index);
+                    uint16_t index = node.getIndex();
+                    removeAllVerticesToNode(node);
+                    mPointersAdjList.erase(mPointersAdjList.begin()+index);
+                    mPointersNodes.erase(mPointersNodes.begin()+index);
+                    auto iter = std::find_if(mStoreNodes.begin(), mStoreNodes.end(), [&node](const CAmNode<T> & otherNode){
+                        return &otherNode==&node;
+                    });
+                    if(iter!=mStoreNodes.end())
+                        mStoreNodes.erase(iter);
+                    updateIndexes(index);
 		}
 
 		/**
