@@ -72,7 +72,7 @@ cxx_library(gtest_main "${cxx_strict}" src/gtest_main.cc)
 target_link_libraries(gtest_main gtest)
 
 INSTALL(TARGETS gtest gtest_main
-        ARCHIVE DESTINATION lib
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         COMPONENT dev)
 INSTALL(DIRECTORY "${CMAKE_SOURCE_DIR}/googleMock/gtest/include/gtest"
         DESTINATION ${CMAKE_INSTALL_PREFIX}/include/
