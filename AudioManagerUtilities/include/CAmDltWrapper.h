@@ -161,10 +161,11 @@ public:
     bool checkLogLevel(DltLogLevelType logLevel)
     {
 #ifdef WITH_DLT
-    #if (DLT_MAJOR_VERSION >= 2 && DLT_MINOR_VERSION >= 16)
-        return (1 == dlt_user_is_logLevel_enabled(&mDltContext,logLevel)? true: false);
+    #ifdef DLT_IS_LOG_LEVEL_ENABLED
+        return (dlt_user_is_logLevel_enabled(&mDltContext, logLevel) == DLT_RETURN_TRUE);
     #else
-        return false;
+        (void)logLevel;
+        return true;
     #endif
 #else
         return (logLevel <= mDltContext.log_level_user);
