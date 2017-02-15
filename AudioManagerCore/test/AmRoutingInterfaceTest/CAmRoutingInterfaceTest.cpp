@@ -546,6 +546,103 @@ TEST_F(CAmRoutingInterfaceTest,nothingTodisconnect)
     ASSERT_TRUE(listHandles.empty());
 }
 
+TEST_F(CAmRoutingInterfaceTest,handleOverflow)
+{
+    am_Handle_s handle,handleOverflow1,handleOverflow2,handleOverflowCheck1,handleOverflowCheck2;	
+    am_sinkID_t sinkID;
+    am_Sink_s sink;
+    am_Domain_s domain;
+    am_domainID_t domainID;
+   
+    pCF.createSink(sink);
+    pCF.createDomain(domain);
+    domain.name = "mock";
+    domain.busname = "mock";
+    sink.sinkID = 2;
+    sink.domainID = DYNAMIC_ID_BOUNDARY;
+    am_SoundProperty_s soundProperty;
+    soundProperty.type = SP_GENIVI_TREBLE;
+    soundProperty.value = 23;
+
+    sink.listSoundProperties.push_back(soundProperty);
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
+
+
+    
+    EXPECT_CALL(pMockInterface,asyncSetSinkSoundProperty(_,sinkID,_)).WillRepeatedly(Return(E_OK));
+    
+    //open handles till 50
+    for(int i=0;i<50;i++) 
+    {
+		handle.handle=0;
+		soundProperty.value = i;
+		ASSERT_EQ(E_OK, pControlReceiver.setSinkSoundProperty(handle,sinkID,soundProperty));
+	}
+	//now we ack 2 handles
+	EXPECT_CALL(pMockControlInterface,cbAckSetSinkSoundProperty(_,E_OK));
+	ASSERT_EQ(E_OK, pControlReceiver.setSinkSoundProperty(handleOverflow1,sinkID,soundProperty));
+	pRoutingReceiver.ackSetSinkSoundProperty(handleOverflow1,E_OK);
+	
+	EXPECT_CALL(pMockControlInterface,cbAckSetSinkSoundProperty(_,E_OK));
+	ASSERT_EQ(E_OK, pControlReceiver.setSinkSoundProperty(handleOverflow2,sinkID,soundProperty));
+	pRoutingReceiver.ackSetSinkSoundProperty(handleOverflow2,E_OK);
+	    
+	for(int i=52;i<1023;i++) //now we get into the overflow areay
+    {
+		handle.handle=0;
+		soundProperty.value = i;
+		ASSERT_EQ(E_OK, pControlReceiver.setSinkSoundProperty(handle,sinkID,soundProperty));
+	}
+	
+	//the next two handles must be the one we already acked
+	ASSERT_EQ(E_OK, pControlReceiver.setSinkSoundProperty(handleOverflowCheck1,sinkID,soundProperty));
+	ASSERT_EQ(handleOverflow1.handle,handleOverflowCheck1.handle);
+	
+	ASSERT_EQ(E_OK, pControlReceiver.setSinkSoundProperty(handleOverflowCheck2,sinkID,soundProperty));
+	ASSERT_EQ(handleOverflow2.handle,handleOverflowCheck2.handle);
+	
+}
+
+TEST_F(CAmRoutingInterfaceTest,handleOverflowAbsolute)
+{
+    am_Handle_s handle,handleOverflow1,handleOverflow2,handleOverflowCheck1,handleOverflowCheck2;	
+    am_sinkID_t sinkID;
+    am_Sink_s sink;
+    am_Domain_s domain;
+    am_domainID_t domainID;
+   
+    pCF.createSink(sink);
+    pCF.createDomain(domain);
+    domain.name = "mock";
+    domain.busname = "mock";
+    sink.sinkID = 2;
+    sink.domainID = DYNAMIC_ID_BOUNDARY;
+    am_SoundProperty_s soundProperty;
+    soundProperty.type = SP_GENIVI_TREBLE;
+    soundProperty.value = 23;
+
+    sink.listSoundProperties.push_back(soundProperty);
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
+
+
+    
+    EXPECT_CALL(pMockInterface,asyncSetSinkSoundProperty(_,sinkID,_)).WillRepeatedly(Return(E_OK));
+    
+    
+	for(int i=0;i<1023;i++) //we fill up the handles
+    {
+		handle.handle=0;
+		soundProperty.value = i;
+		ASSERT_EQ(E_OK, pControlReceiver.setSinkSoundProperty(handle,sinkID,soundProperty));
+	}
+	
+	//the next handle must return 0!
+	ASSERT_EQ(E_OK, pControlReceiver.setSinkSoundProperty(handleOverflowCheck1,sinkID,soundProperty));
+	ASSERT_EQ(handleOverflowCheck1.handle,0);	
+}
+
 
 
 int main(int argc, char **argv)
