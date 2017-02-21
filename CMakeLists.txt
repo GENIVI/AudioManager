@@ -59,7 +59,10 @@ option ( WITH_SHARED_UTILITIES
 
 option ( WITH_SHARED_CORE
     "Build audio manager core as dynamic library" OFF)
-
+    
+option ( WITH_TIMERFD
+    "Build with the linux specific TIMERFD feature to support timing without using signals" ON)
+    
 
 set(DBUS_SERVICE_PREFIX "org.genivi.audiomanager"
     CACHE PROPERTY "The dbus service prefix for the AM - only changable for legacy dbus")
@@ -219,6 +222,7 @@ message(STATUS "WITH_CAPI_WRAPPER             = ${WITH_CAPI_WRAPPER}")
 message(STATUS "WITH_DBUS_WRAPPER             = ${WITH_DBUS_WRAPPER}")
 message(STATUS "WITH_SHARED_UTILITIES         = ${WITH_SHARED_UTILITIES}")
 message(STATUS "WITH_SHARED_CORE              = ${WITH_SHARED_CORE}")
+message(STATUS "WITH_TIMERFD                  = ${WITH_TIMERFD}")
 message(STATUS "DYNAMIC_ID_BOUNDARY           = ${DYNAMIC_ID_BOUNDARY}")
 message(STATUS "LIB_INSTALL_SUFFIX            = ${LIB_INSTALL_SUFFIX}")
 message(STATUS "TEST_EXECUTABLE_INSTALL_PATH  = ${TEST_EXECUTABLE_INSTALL_PATH}")
