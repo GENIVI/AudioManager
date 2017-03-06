@@ -26,8 +26,10 @@
 #include <set>
 #include <signal.h>
 #include <vector>
+#include <functional>
 #include <audiomanagerconfig.h>
 #include "audiomanagertypes.h"
+
 
 #ifdef WITH_TIMERFD
 
@@ -43,11 +45,11 @@ namespace am
 {
 
 #define MAX_NS 1000000000L
-#define MAX_TIMERHANDLE INT16_MAX
-#define MAX_POLLHANDLE INT16_MAX
+#define MAX_TIMERHANDLE UINT16_MAX
+#define MAX_POLLHANDLE UINT16_MAX
 
-    typedef uint16_t sh_timerHandle_t; //!<this is a handle for a timer to be used with the SocketHandler
     typedef uint16_t sh_pollHandle_t; //!<this is a handle for a filedescriptor to be used with the SocketHandler
+    typedef sh_pollHandle_t sh_timerHandle_t; //!<this is a handle for a timer to be used with the SocketHandler
 
     /**
      * prototype for poll prepared callback
@@ -214,21 +216,22 @@ namespace am
     /**
      * template for a callback
      */
+
     template<class TClass> class TAmShPollPrepare: public IAmShPollPrepare
     {
     private:
         TClass* mInstance;
-        void (TClass::*mFunction)(const sh_timerHandle_t handle, void* userData);
+        void (TClass::*mFunction)(const sh_pollHandle_t handle, void* userData);
 
     public:
-        TAmShPollPrepare(TClass* instance, void (TClass::*function)(const sh_timerHandle_t handle, void* userData)) :
+        TAmShPollPrepare(TClass* instance, void (TClass::*function)(const sh_pollHandle_t handle, void* userData)) :
                 mInstance(instance), //
                 mFunction(function)
         {
         }
         ;
 
-        virtual void Call(const sh_timerHandle_t handle, void* userData)
+        virtual void Call(const sh_pollHandle_t handle, void* userData)
         {
             (*mInstance.*mFunction)(handle, userData);
         }
@@ -245,12 +248,17 @@ namespace am
         struct sh_poll_s //!<struct that holds information about polls
         {
             sh_pollHandle_t handle; //!<handle to uniquely adress a filedesriptor
-            IAmShPollPrepare *prepareCB; //!<pointer to preperation callback
-            IAmShPollFired *firedCB; //!<pointer to fired callback
-            IAmShPollCheck *checkCB; //!< pointer to check callback
-            IAmShPollDispatch *dispatchCB; //!<pointer to dispatch callback
             pollfd pollfdValue; //!<the array for polling the filedescriptors
-            void *userData; //!<userdata saved together with the callback.
+            std::function<void(const sh_pollHandle_t handle, void* userData)> prepareCB; //preperation callback
+            std::function<void(const pollfd pollfd, const sh_pollHandle_t handle, void* userData)> firedCB; //fired callback
+            std::function<bool(const sh_pollHandle_t handle, void* userData)> checkCB; //check callback
+            std::function<bool(const sh_pollHandle_t handle, void* userData)> dispatchCB; //dispatch callback
+            void* userData;
+
+            sh_poll_s() :
+                    handle(0), pollfdValue(), prepareCB(), firedCB(), checkCB(), dispatchCB(), userData(0)
+            {
+            }
         };
 
         struct sh_timer_s //!<struct that holds information of timers
@@ -262,56 +270,42 @@ namespace am
 #else
             timespec countdown; //!<the countdown, this value is decreased every time the timer is up
 #endif        
-            IAmShTimerCallBack* callback; //!<the callbackfunction
-            void * userData; //!<saves a void pointer together with the rest.
+            std::function<void(const sh_timerHandle_t handle, void* userData)> callback; //timer callback
+            void* userData;
+            sh_timer_s() :
+                    handle(0)
+#ifdef WITH_TIMERFD
+                            , fd(0)
+#endif
+                            , countdown(), callback(), userData(0)
+            {
+            }
         };
 
         typedef std::reverse_iterator<sh_timer_s> rListTimerIter; //!<typedef for reverseiterator on timer lists
 
-        typedef std::vector<pollfd> mListPollfd_t; //!<vector of filedescriptors
-        typedef std::vector<sh_poll_s> mListPoll_t; //!<list for the callbacks
+        typedef std::vector<pollfd> VectorListPollfd_t; //!<vector of filedescriptors
+        typedef std::vector<sh_poll_s> VectorListPoll_t; //!<list for the callbacks
 
-#ifdef WITH_TIMERFD  
-        /**
-         * Wrapper for IAmShTimerCallBack.
-         * Timerfds are normal file descriptors and therefore they should be added to the handler through the method addFDPoll.
-         */
-        class TAmShPollTimerFired: public IAmShPollFired, public IAmShPollCheck
-        {
-            IAmShTimerCallBack* mCallback;
-            uint64_t mExpirations;
-        public:
-            TAmShPollTimerFired(IAmShTimerCallBack * cb) :
-                    mCallback(cb), mExpirations(0)
-            {
-            }
-
-            void Call(const pollfd pollfd, const sh_pollHandle_t handle, void* userData)
-            {
-                if (read(pollfd.fd, &mExpirations, sizeof(uint64_t)) == -1)
-                {
-                    //error received...try again
-                    read(pollfd.fd, &mExpirations, sizeof(uint64_t));
-                }
-            }
-
-            bool Call(const sh_pollHandle_t handle, void* userData)
-            {
-                mCallback->Call(handle, userData);
-                return false;
-            }
-        };
-#endif   
     public:
 
         CAmSocketHandler();
         ~CAmSocketHandler();
 
-        am_Error_e addFDPoll(const int fd, const short event, IAmShPollPrepare *prepare, IAmShPollFired *fired, IAmShPollCheck *check,
-                IAmShPollDispatch *dispatch, void* userData, sh_pollHandle_t& handle);
+        am_Error_e addFDPoll(const int fd, const short event, std::function<void(const sh_pollHandle_t handle, void* userData)> prepare, std::function<void(const pollfd pollfd, const sh_pollHandle_t handle, void* userData)> fired,
+                std::function<bool(const sh_pollHandle_t handle, void* userData)> check, std::function<bool(const sh_pollHandle_t handle, void* userData)> dispatch, void* userData, sh_pollHandle_t& handle);
+
+        am_Error_e addFDPoll(const int fd, const short event, IAmShPollPrepare *prepare, IAmShPollFired *fired, IAmShPollCheck *check, IAmShPollDispatch *dispatch, void* userData, sh_pollHandle_t& handle);
         am_Error_e removeFDPoll(const sh_pollHandle_t handle);
         am_Error_e updateEventFlags(const sh_pollHandle_t handle, const short events);
-        am_Error_e addTimer(const timespec timeouts, IAmShTimerCallBack* callback, sh_timerHandle_t& handle, void* userData,
+        am_Error_e addTimer(const timespec & timeouts, IAmShTimerCallBack* callback, sh_timerHandle_t& handle, void * userData,
+#ifndef WITH_TIMERFD
+                const bool __attribute__((__unused__)) repeats = false
+#else
+                const bool repeats = false
+#endif
+                );
+        am_Error_e addTimer(const timespec & timeouts, std::function<void(const sh_timerHandle_t handle, void* userData)> callback, sh_timerHandle_t& handle, void* userData,
 #ifndef WITH_TIMERFD
                 const bool __attribute__((__unused__)) repeats = false
 #else
@@ -325,26 +319,8 @@ namespace am
         void start_listenting();
         void stop_listening();
         void exit_mainloop();
-        void receiverCallback(const pollfd pollfd, const sh_pollHandle_t handle, void* userData)
-        {
-            (void) pollfd;
-            (void) handle;
-            (void) userData;
-        }
-
-        bool checkerCallback(const sh_pollHandle_t handle, void* userData)
-        {
-            (void) handle;
-            (void) userData;
-            return (false);
-        }
 
     private:
-        TAmShPollFired<CAmSocketHandler> mReceiverCallbackT;
-        TAmShPollCheck<CAmSocketHandler> mCheckerCallbackT;
-#ifdef WITH_TIMERFD
-        std::list<TAmShPollTimerFired> mTimerCallbackT;
-#endif
 
         static CAmSocketHandler* mInstance;
         int mPipe[2];
@@ -444,121 +420,54 @@ namespace am
             return (0);
         }
 #endif  
+
+        /**
+         * functor to prepare all fire events
+         * @param a
+         * @return
+         */
+        inline static void prepare(am::CAmSocketHandler::sh_poll_s& row);
+    
         /**
          * functor to return all fired events
          * @param a
          * @return
          */
-        inline static bool eventFired(const pollfd& a)
-        {
-            return (a.revents == 0 ? false : true);
-        }
+        inline static void fire(sh_poll_s* a);
+
+
+        /**
+         * functor to return all fired events
+         * @param a
+         * @return
+         */
+        inline static bool eventFired(const pollfd& a);
+ 
 
         /**
          * functor to help find the items that do not need dispatching
          * @param a
          * @return
          */
-        inline static bool noDispatching(const sh_poll_s& a)
-        {
-            //remove from list of there is no checkCB
-            if (!a.checkCB)
-                return (true);
-            return (!a.checkCB->Call(a.handle, a.userData));
-        }
+        inline static bool noDispatching(const sh_poll_s* a);
 
         /**
          * checks if dispatching is already finished
          * @param a
          * @return
          */
-        inline static bool dispatchingFinished(const sh_poll_s& a)
-        {
-            //remove from list of there is no dispatchCB
-            if (!a.dispatchCB)
-                return (true);
-            return (!a.dispatchCB->Call(a.handle, a.userData));
-        }
+        inline static bool dispatchingFinished(const sh_poll_s* a);
 
-        class CAmShCopyPollfd //!< functor to copy filedescriptors into the poll array
-        {
-        private:
-            mListPollfd_t& mArray;
-        public:
-            CAmShCopyPollfd(mListPollfd_t& dest) :
-                    mArray(dest)
-            {
-            }
-            void operator()(const sh_poll_s& row);
-        };
-
-        class CAmShCallFire //!< functor to call the firecallbacks
-        {
-        public:
-            CAmShCallFire()
-            {
-            }
-            ;
-            void operator()(sh_poll_s& row);
-        };
-
-        class CAmShCallPrep //!< functor to call the preparation callbacks
-        {
-        public:
-            CAmShCallPrep()
-            {
-            }
-            ;
-            void operator()(sh_poll_s& row);
-        };
-
-        class CAmShCallTimer //!<functor to call a timer
-        {
-        public:
-            CAmShCallTimer()
-            {
-            }
-            ;
-            void operator()(sh_timer_s& row);
-        };
-
-        class CAmShCountdownUp //!<functor that checks if a timer is up
-        {
-        private:
-            timespec mDiffTime;
-        public:
-            CAmShCountdownUp(const timespec& differenceTime) :
-                    mDiffTime(differenceTime)
-            {
-            }
-            ;
-            bool operator()(const sh_timer_s& row);
-        };
-#ifndef WITH_TIMERFD
-        class CAmShCountdownZero //!<functor that checks if a timer is zero
-        {
-        public:
-            CAmShCountdownZero()
-            {};
-            bool operator()(const sh_timer_s& row);
-        };
-
-        class CAmShSubstractTime //!<functor to easy substract from each countdown value
-        {
-        private:
-            timespec param;
-        public:
-            CAmShSubstractTime(timespec param) : param(param)
-            {}
-            inline void operator()(sh_timer_s& t)
-            {
-                t.countdown = timespecSub(t.countdown, param);
-            }
-        };
-#endif
-        mListPollfd_t mfdPollingArray; //!<the polling array for ppoll
+        /**
+         * timer fire callback
+         * @param a
+         * @return
+         */
+        inline static void callTimer(sh_timer_s& a);
+ 
+        VectorListPollfd_t mfdPollingArray; //!<the polling array for ppoll
         std::set<sh_pollHandle_t> mSetPollKeys; //!A set of all used ppoll keys
-        mListPoll_t mListPoll; //!<list that holds all information for the ppoll
+        VectorListPoll_t mListPoll; //!<list that holds all information for the ppoll
         std::set<sh_timerHandle_t> mSetTimerKeys; //!A set of all used timer keys
         std::list<sh_timer_s> mListTimer; //!<list of all timers
         std::list<sh_timer_s> mListActiveTimer; //!<list of all currently active timers

@@ -25,14 +25,52 @@
 
 #define WITH_DLT
 
+#include <ctime>
+#include <chrono>
 #include "gtest/gtest.h"
+#include "gmock/gmock.h"
 #include <queue>
 #include "CAmSocketHandler.h"
 
+#undef ENABLED_SOCKETHANDLER_TEST_OUTPUT
+#undef ENABLED_TIMERS_TEST_OUTPUT
+#define TIMERS_CB_TOLERANCE 10.f
+
 namespace am
 {
+  class IAmTimerCb
+  {
+  public:
+    virtual void timerCallback(sh_timerHandle_t handle, void * userData)=0;
+  };
+  
+  class IAmSocketHandlerCb
+  {
+  public:
+    virtual void receiveData(const pollfd pollfd, const sh_pollHandle_t handle, void* userData)=0;
+    virtual bool dispatchData(const sh_pollHandle_t handle, void* userData)=0;
+    virtual bool check(const sh_pollHandle_t handle, void* userData)=0;
+  };
 
-class CAmSamplePlugin
+  class MockIAmTimerCb : public IAmTimerCb 
+  {
+    public:    
+        MOCK_CONST_METHOD2(timerCallback,
+            void(sh_timerHandle_t handle, void *userData));
+  };
+  
+  class MockSocketHandlerCb : public IAmSocketHandlerCb 
+  {
+    public:    
+        MOCK_CONST_METHOD3(receiveData,
+            void(const pollfd pollfd, const sh_pollHandle_t handle, void* userData));
+        MOCK_CONST_METHOD2(dispatchData,
+            void(const sh_pollHandle_t handle, void* userData));
+        MOCK_CONST_METHOD2(check,
+            void(const sh_pollHandle_t handle, void* userData));
+    };
+    
+class CAmSamplePlugin : public MockSocketHandlerCb
 {
 public:
     enum sockType_e
@@ -52,26 +90,56 @@ public:
     TAmShPollFired<CAmSamplePlugin> receiveFiredCB;
     TAmShPollDispatch<CAmSamplePlugin> sampleDispatchCB;
     TAmShPollCheck<CAmSamplePlugin> sampleCheckCB;
+
 private:
     CAmSocketHandler *mSocketHandler;
     sh_pollHandle_t mConnecthandle, mReceiveHandle;
     std::queue<std::string> msgList;
 };
 
-class CAmTimerCb
+class CAmTimerSockethandlerController: public MockIAmTimerCb
 {
+    CAmSocketHandler *mpSocketHandler;
+    timespec mUpdateTimeout;
 public:
-    CAmTimerCb(CAmSocketHandler *SocketHandler);
-    virtual ~CAmTimerCb();
-    void timer1Callback(sh_timerHandle_t handle, void * userData);
-    void timer2Callback(sh_timerHandle_t handle, void * userData);
-    void timer3Callback(sh_timerHandle_t handle, void * userData);
-    void timer4Callback(sh_timerHandle_t handle, void * userData);
-    TAmShTimerCallBack<CAmTimerCb> pTimer1Callback;
-    TAmShTimerCallBack<CAmTimerCb> pTimer2Callback;
-    TAmShTimerCallBack<CAmTimerCb> pTimer3Callback;
-    TAmShTimerCallBack<CAmTimerCb> pTimer4Callback;
+    explicit CAmTimerSockethandlerController(CAmSocketHandler *SocketHandler, const timespec &timeout);
+    virtual ~CAmTimerSockethandlerController();
+
+    void timerCallback(sh_timerHandle_t handle, void * userData);
+    
+    TAmShTimerCallBack<CAmTimerSockethandlerController> pTimerCallback;
+};
+
+class CAmTimer: public MockIAmTimerCb
+{
+    CAmSocketHandler *mpSocketHandler;
+    timespec mUpdateTimeout;
+    int32_t mRepeats;
+public:
+    explicit CAmTimer(CAmSocketHandler *SocketHandler, const timespec &timeout, const int32_t repeats = 0u);
+    virtual ~CAmTimer();
+
+    void timerCallback(sh_timerHandle_t handle, void * userData);
+    
+    TAmShTimerCallBack<CAmTimer> pTimerCallback;
+};
+
+class CAmTimerMeasurment: public MockIAmTimerCb
+{
     CAmSocketHandler *mSocketHandler;
+    timespec mUpdateTimeout;
+    std::chrono::time_point<std::chrono::high_resolution_clock>  mUpdateTimePoint;
+    std::chrono::time_point<std::chrono::high_resolution_clock> mLastInvocationTime;
+    std::chrono::duration<long, std::ratio<1l, 1000000000l>> mExpected;
+    int32_t mRepeats;
+    void * mpUserData; 
+    std::string mDebugText;
+public:
+    explicit CAmTimerMeasurment(CAmSocketHandler *SocketHandler, const timespec &timeout, const std::string & label, const int32_t repeats = 0u, void * userData = NULL);
+    virtual ~CAmTimerMeasurment();
+
+    void timerCallback(sh_timerHandle_t handle, void * userData);
+    TAmShTimerCallBack<CAmTimerMeasurment> pTimerCallback;
 };
 
 class CAmSocketHandlerTest: public ::testing::Test
