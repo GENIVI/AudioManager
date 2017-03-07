@@ -27,7 +27,7 @@
 
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
-#include "CAmDatabaseObserver.h"
+#include "CAmTestDatabaseObserver.h"
 
 class CAmCommandSender;
 class CAmRoutingSender;

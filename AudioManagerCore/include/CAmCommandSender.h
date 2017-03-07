@@ -29,21 +29,24 @@
 #endif
 
 #include "IAmCommand.h"
+#include "CAmDatabaseHandlerMap.h"
+#include "CAmSerializer.h"
 
 namespace am
 {
 
 class CAmCommandReceiver;
+class CAmCommandSender;
 
 
 /**
  * This class is used to send data to the CommandInterface.
  * All loaded plugins will be called when a callback is invoked.
  */
-class CAmCommandSender
+class CAmCommandSender: public CAmDatabaseHandlerMap::AmDatabaseObserverCallbacks
 {
 public:
-    CAmCommandSender(const std::vector<std::string>& listOfPluginDirectories);
+    CAmCommandSender(const std::vector<std::string>& listOfPluginDirectories, CAmSocketHandler *iSocketHandler);
     ~CAmCommandSender();
     am_Error_e startupInterfaces(CAmCommandReceiver* iCommandReceiver);
     void setCommandReady();
@@ -78,13 +81,17 @@ public:
     friend class IAmCommandBackdoor; //this is to get access to the loaded plugins and be able to exchange the interfaces
 #endif
 private:
+    
     void unloadLibraries(void); //!< unload the shared libraries
     std::vector<IAmCommandSend*> mListInterfaces; //!< list of all interfaces
     std::vector<void*> mListLibraryHandles; //!< list of all library handles. This information is used to unload the plugins correctly.
     std::vector<std::string> mListLibraryNames; //!< list of all library names. This information is used for getListPlugins.
-
+    
     CAmCommandReceiver *mCommandReceiver;
+    CAmSerializer mSerializer;
 };
+
+
 
 }
 

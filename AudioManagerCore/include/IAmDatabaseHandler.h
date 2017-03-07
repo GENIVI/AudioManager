@@ -30,17 +30,13 @@
 #include <string>
 #include <iostream>
 #include <functional>
+#include <memory>
+#include <assert.h>
+#include <algorithm>
 #include "audiomanagerconfig.h"
 
 namespace am
 {
-
-class CAmDatabaseObserver;
-class CAmRoutingTree;
-class CAmRoutingTreeItem;
-
-
-//enum { DYNAMIC_ID_BOUNDARY = 100 }; //!< the value below is reserved for staticIDs, the value above will be assigned to dynamically registered items
 
 //todo: check the enum values before entering & changing in the database.
 //todo: change asserts for dynamic boundary checks into failure answers.#
@@ -59,8 +55,12 @@ typedef std::map<am_gatewayID_t, std::vector<bool> > ListConnectionFormat; //!< 
 class IAmDatabaseHandler
 {
 public:
-	IAmDatabaseHandler () {};
-	virtual ~IAmDatabaseHandler () {};
+    IAmDatabaseHandler (){}
+    virtual ~IAmDatabaseHandler (){}
+
+    /**
+      * The following interface methods must be implemented by the subclass.
+      */
     virtual am_Error_e enterDomainDB(const am_Domain_s& domainData, am_domainID_t& domainID) = 0;
     virtual am_Error_e enterMainConnectionDB(const am_MainConnection_s& mainConnectionData, am_mainConnectionID_t& connectionID) = 0;
     virtual am_Error_e enterSinkDB(const am_Sink_s& sinkData, am_sinkID_t& sinkID) = 0;
@@ -117,7 +117,7 @@ public:
     virtual am_Error_e getSourceVolume(const am_sourceID_t sourceID, am_volume_t& volume) const = 0;
     virtual am_Error_e getSinkSoundPropertyValue(const am_sinkID_t sinkID, const am_CustomSoundPropertyType_t propertyType, int16_t& value) const = 0;
     virtual am_Error_e getSourceSoundPropertyValue(const am_sourceID_t sourceID, const am_CustomSoundPropertyType_t propertyType, int16_t& value) const = 0;
-	virtual am_Error_e getListSinkSoundProperties(const am_sinkID_t sinkID, std::vector<am_SoundProperty_s>& listSoundproperties) const =0;
+    virtual am_Error_e getListSinkSoundProperties(const am_sinkID_t sinkID, std::vector<am_SoundProperty_s>& listSoundproperties) const =0;
     virtual am_Error_e getListSourceSoundProperties(const am_sourceID_t sourceID, std::vector<am_SoundProperty_s>& listSoundproperties) const =0;
     virtual am_Error_e getMainSinkSoundPropertyValue(const am_sinkID_t sinkID, const am_CustomMainSoundPropertyType_t propertyType, int16_t& value) const = 0;
     virtual am_Error_e getMainSourceSoundPropertyValue(const am_sourceID_t sourceID, const am_CustomMainSoundPropertyType_t propertyType, int16_t& value) const = 0;
@@ -166,7 +166,6 @@ public:
     virtual am_Error_e changeConverterDB(const am_converterID_t converterID, const std::vector<am_CustomConnectionFormat_t>& listSourceConnectionFormats, const std::vector<am_CustomConnectionFormat_t>& listSinkConnectionFormats, const std::vector<bool>& convertionMatrix) = 0;
     virtual am_Error_e changeSinkNotificationConfigurationDB(const am_sinkID_t sinkID,const am_NotificationConfiguration_s notificationConfiguration) = 0;
     virtual am_Error_e changeSourceNotificationConfigurationDB(const am_sourceID_t sourceID,const am_NotificationConfiguration_s notificationConfiguration) = 0;
-
     virtual bool existMainConnection(const am_mainConnectionID_t mainConnectionID) const = 0;
     virtual bool existCrossFader(const am_crossfaderID_t crossfaderID) const = 0;
     virtual bool existConnection(const am_Connection_s & connection) const = 0;
@@ -181,7 +180,6 @@ public:
     virtual bool existGateway(const am_gatewayID_t gatewayID) const = 0;
     virtual bool existSinkClass(const am_sinkClass_t sinkClassID) const = 0;
     virtual bool existSourceClass(const am_sourceClass_t sourceClassID) const = 0;
-    virtual void registerObserver(CAmDatabaseObserver *iObserver) = 0;
     virtual bool sourceVisible(const am_sourceID_t sourceID) const = 0;
     virtual bool sinkVisible(const am_sinkID_t sinkID) const = 0;
     virtual bool isComponentConnected(const am_Gateway_s & gateway) const = 0;
@@ -192,7 +190,19 @@ public:
     virtual am_Error_e enumerateSinks(std::function<void(const am_Sink_s & element)> cb) const = 0 ;
     virtual am_Error_e enumerateGateways(std::function<void(const am_Gateway_s & element)> cb) const = 0 ;
     virtual am_Error_e enumerateConverters(std::function<void(const am_Converter_s & element)> cb) const = 0 ;
+    /**
+      * Database observer protocol
+      */
+    class IAmDatabaseObserver
+    {
+    public:
+      IAmDatabaseObserver() {}
+      virtual ~IAmDatabaseObserver(){}
+    };
 
+    virtual bool registerObserver(IAmDatabaseObserver * iObserver) = 0;
+    virtual bool unregisterObserver(IAmDatabaseObserver * iObserver) = 0;
+    virtual unsigned countObservers()  = 0;
 };
 
 

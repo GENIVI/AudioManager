@@ -33,16 +33,17 @@
 #include "CAmDatabaseHandlerMap.h"
 #include "CAmControlReceiver.h"
 #include "CAmControlSender.h"
-#include "CAmDatabaseObserver.h"
+#include "CAmTestDatabaseObserver.h"
 #include "CAmRoutingSender.h"
 #include "CAmRouter.h"
 #include "CAmControlSender.h"
+#include "MockDatabaseObserver.h"
 #include "../IAmControlBackdoor.h"
 #include "../IAmCommandBackdoor.h"
 #include "../CAmCommonFunctions.h"
 #include "../MockIAmControlSend.h"
 #include "../MockIAmCommandSend.h"
-#include "MockDatabaseObserver.h"
+
 
 namespace am
 {
@@ -50,15 +51,15 @@ namespace am
 class CAmMapBasicTest : public ::testing::Test
 {
 public:
-	CAmMapBasicTest();
+    CAmMapBasicTest();
     ~CAmMapBasicTest();
+    CAmSocketHandler pSocketHandler;
     std::vector<std::string> plistRoutingPluginDirs;
     std::vector<std::string> plistCommandPluginDirs;
     CAmRoutingSender pRoutingSender;
     CAmCommandSender pCommandSender;
     IAmRoutingBackdoor pRoutingInterfaceBackdoor;
     IAmCommandBackdoor pCommandInterfaceBackdoor;
-    CAmSocketHandler pSocketHandler;
     CAmDatabaseHandlerMap pDatabaseHandler;
     CAmControlSender pControlSender;
     CAmRouter pRouter;
@@ -75,17 +76,8 @@ public:
 	CAmMapHandlerTest();
 	~CAmMapHandlerTest();
     MockIAmCommandSend pMockInterface;
-    CAmDatabaseObserver pObserver;
+    CAmDatabaseObserver mMockObserver;
 };
-
-class CAmMapHandlerObserverCallbacksTest : public CAmMapBasicTest
-{
-public:
-    CAmMapHandlerObserverCallbacksTest();
-    ~CAmMapHandlerObserverCallbacksTest();
-	CAmDatabaseObserver mMockObserver;
-};
-
 
 }
 

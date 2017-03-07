@@ -74,6 +74,51 @@ class CAmDatabaseHandlerMap : public IAmDatabaseHandler
 public:
 	CAmDatabaseHandlerMap();
     virtual ~CAmDatabaseHandlerMap();
+
+    /**
+      * Database observer.
+      */
+    struct AmDatabaseObserverCallbacks: public IAmDatabaseObserver
+    {
+    protected:
+    	std::function<void()> dboNumberOfSinkClassesChanged;
+    	std::function<void()> dboNumberOfSourceClassesChanged;
+    	std::function<void(const am_Sink_s&)> dboNewSink;
+    	std::function<void(const am_Source_s&)> dboNewSource;
+    	std::function<void(const am_Domain_s& )> dboNewDomain;
+    	std::function<void (const am_Gateway_s& )> dboNewGateway;
+    	std::function<void (const am_Converter_s& )> dboNewConverter;
+    	std::function<void (const am_Crossfader_s& )> dboNewCrossfader;
+    	std::function<void (const am_MainConnectionType_s& )> dboNewMainConnection;
+    	std::function<void (const am_mainConnectionID_t )> dboRemovedMainConnection;
+    	std::function<void (const am_sinkID_t , const bool )> dboRemovedSink;
+    	std::function<void (const am_sourceID_t , const bool )> dboRemovedSource;
+    	std::function<void (const am_domainID_t )> dboRemoveDomain;
+    	std::function<void (const am_gatewayID_t )> dboRemoveGateway;
+    	std::function<void (const am_converterID_t )> dboRemoveConverter;
+    	std::function<void (const am_crossfaderID_t )> dboRemoveCrossfader;
+    	std::function<void (const am_mainConnectionID_t , const am_ConnectionState_e )> dboMainConnectionStateChanged;
+    	std::function<void (const am_sinkID_t , const am_MainSoundProperty_s& )> dboMainSinkSoundPropertyChanged;
+    	std::function<void (const am_sourceID_t , const am_MainSoundProperty_s& )> dboMainSourceSoundPropertyChanged;
+    	std::function<void (const am_sinkID_t , const am_Availability_s& )> dboSinkAvailabilityChanged;
+    	std::function<void (const am_sourceID_t , const am_Availability_s& )> dboSourceAvailabilityChanged;
+    	std::function<void (const am_sinkID_t , const am_mainVolume_t )> dboVolumeChanged;
+    	std::function<void (const am_sinkID_t , const am_MuteState_e )> dboSinkMuteStateChanged;
+    	std::function<void (const am_SystemProperty_s& )>dboSystemPropertyChanged;
+    	std::function<void (const am_mainConnectionID_t , const am_timeSync_t )>dboTimingInformationChanged;
+    	std::function<void (const am_sinkID_t , const am_sinkClass_t , const std::vector<am_MainSoundProperty_s>& , const bool )>dboSinkUpdated;
+    	std::function<void (const am_sourceID_t , const am_sourceClass_t , const std::vector<am_MainSoundProperty_s>& , const bool )>dboSourceUpdated;
+    	std::function<void (const am_sinkID_t , const am_NotificationConfiguration_s )> dboSinkMainNotificationConfigurationChanged;
+    	std::function<void (const am_sourceID_t , const am_NotificationConfiguration_s )> dboSourceMainNotificationConfigurationChanged;
+    public:
+    	friend class CAmDatabaseHandlerMap;
+    	AmDatabaseObserverCallbacks():IAmDatabaseObserver(), mpDatabaseHandler(nullptr) {}
+        virtual ~AmDatabaseObserverCallbacks(){ if(mpDatabaseHandler) mpDatabaseHandler->unregisterObserver(this);}
+    protected:
+	CAmDatabaseHandlerMap *mpDatabaseHandler;
+
+    };
+
     am_Error_e enterDomainDB(const am_Domain_s& domainData, am_domainID_t& domainID);
     am_Error_e enterMainConnectionDB(const am_MainConnection_s& mainConnectionData, am_mainConnectionID_t& connectionID);
     am_Error_e enterSinkDB(const am_Sink_s& sinkData, am_sinkID_t& sinkID);
@@ -196,7 +241,6 @@ public:
     bool existConverter(const am_converterID_t converterID) const;
     bool existSinkClass(const am_sinkClass_t sinkClassID) const;
     bool existSourceClass(const am_sourceClass_t sourceClassID) const;
-    void registerObserver(CAmDatabaseObserver *iObserver);
     bool sourceVisible(const am_sourceID_t sourceID) const;
     bool sinkVisible(const am_sinkID_t sinkID) const;
     bool isComponentConnected(const am_Gateway_s & gateway) const;
@@ -206,6 +250,11 @@ public:
     am_Error_e enumerateSinks(std::function<void(const am_Sink_s & element)> cb) const;
     am_Error_e enumerateGateways(std::function<void(const am_Gateway_s & element)> cb) const;
     am_Error_e enumerateConverters(std::function<void(const am_Converter_s & element)> cb) const;
+
+    bool registerObserver(IAmDatabaseObserver * iObserver);
+   	bool unregisterObserver(IAmDatabaseObserver * iObserver);
+    unsigned countObservers();
+
     /**
      * The following structures extend the base structures with the field 'reserved'.
      */
@@ -276,55 +325,55 @@ public:
 		AM_SUBCLASS_COPY_OP_END()\
 		AM_SUBCLASS_OP(Subclass, Class)\
 
-
+private:
     AM_TYPEDEF_SUBCLASS_RESERVED_FLAG_BEGIN(am_Domain_Database_s,am_Domain_s)
-    AM_SUBCLASS_END(CAmDomain)
+    AM_SUBCLASS_END(AmDomain)
 
     AM_TYPEDEF_SUBCLASS_SOUND_PROPERTIES_BEGIN(am_Sink_Database_s,am_Sink_s)
     	void getSinkType(am_SinkType_s & sinkType) const;\
-    AM_SUBCLASS_END(CAmSink)
+    AM_SUBCLASS_END(AmSink)
 
     AM_TYPEDEF_SUBCLASS_SOUND_PROPERTIES_BEGIN(am_Source_Database_s,am_Source_s)
     	void getSourceType(am_SourceType_s & sourceType) const;\
-    AM_SUBCLASS_END(CAmSource)
+    AM_SUBCLASS_END(AmSource)
 
     AM_TYPEDEF_SUBCLASS_RESERVED_FLAG_BEGIN(am_Connection_Database_s,am_Connection_s)
-    AM_SUBCLASS_END(CAmConnection)
+    AM_SUBCLASS_END(AmConnection)
 
     /**
       * The following structures extend the base structures with print capabilities.
     */
     AM_TYPEDEF_SUBCLASS_BEGIN(am_MainConnection_Database_s, am_MainConnection_s)
     	void getMainConnectionType(am_MainConnectionType_s & connectionType) const;\
-    AM_SUBCLASS_END(CAmMainConnection)
+    AM_SUBCLASS_END(AmMainConnection)
 
 	AM_TYPEDEF_SUBCLASS_BEGIN(am_SourceClass_Database_s, am_SourceClass_s)
-	AM_SUBCLASS_END(CAmSourceClass)
+	AM_SUBCLASS_END(AmSourceClass)
 
 	AM_TYPEDEF_SUBCLASS_BEGIN(am_SinkClass_Database_s, am_SinkClass_s)
-	AM_SUBCLASS_END(CAmSinkClass)
+	AM_SUBCLASS_END(AmSinkClass)
 
 	AM_TYPEDEF_SUBCLASS_BEGIN(am_Gateway_Database_s, am_Gateway_s)
-	AM_SUBCLASS_END(CAmGateway)
+	AM_SUBCLASS_END(AmGateway)
 
 	AM_TYPEDEF_SUBCLASS_BEGIN(am_Converter_Database_s, am_Converter_s)
-	AM_SUBCLASS_END(CAmConverter)
+	AM_SUBCLASS_END(AmConverter)
 
 	AM_TYPEDEF_SUBCLASS_BEGIN(am_Crossfader_Database_s, am_Crossfader_s)
-	AM_SUBCLASS_END(CAmCrossfader)
+	AM_SUBCLASS_END(AmCrossfader)
 
-    private:
-    typedef std::unordered_map<am_domainID_t, CAmDomain>  		  			 	 CAmMapDomain;
-    typedef std::unordered_map<am_sourceClass_t, CAmSourceClass> 				 CAmMapSourceClass;
-    typedef std::unordered_map<am_sinkClass_t, CAmSinkClass> 		  	  	     CAmMapSinkClass;
-    typedef std::unordered_map<am_sinkID_t, CAmSink> 			   				 CAmMapSink;
-    typedef std::unordered_map<am_sourceID_t, CAmSource> 		 			 	 CAmMapSource;
-    typedef std::unordered_map<am_gatewayID_t, CAmGateway> 			 	 		 CAmMapGateway;
-    typedef std::unordered_map<am_converterID_t, CAmConverter> 			 	 	 CAmMapConverter;
-    typedef std::unordered_map<am_crossfaderID_t, CAmCrossfader> 		    	 CAmMapCrossfader;
-    typedef std::unordered_map<am_connectionID_t, CAmConnection>				 CAmMapConnection;
-    typedef std::unordered_map<am_mainConnectionID_t, CAmMainConnection> 	 	 CAmMapMainConnection;
-    typedef std::vector<am_SystemProperty_s> 	   				  			     CAmVectorSystemProperties;
+
+    typedef std::unordered_map<am_domainID_t, AmDomain>  		  			 	 AmMapDomain;
+    typedef std::unordered_map<am_sourceClass_t, AmSourceClass> 				 AmMapSourceClass;
+    typedef std::unordered_map<am_sinkClass_t, AmSinkClass> 		  	  	     AmMapSinkClass;
+    typedef std::unordered_map<am_sinkID_t, AmSink> 			   				 AmMapSink;
+    typedef std::unordered_map<am_sourceID_t, AmSource> 		 			 	 AmMapSource;
+    typedef std::unordered_map<am_gatewayID_t, AmGateway> 			 	 		 AmMapGateway;
+    typedef std::unordered_map<am_converterID_t, AmConverter> 			 	 	 AmMapConverter;
+    typedef std::unordered_map<am_crossfaderID_t, AmCrossfader> 		    	 AmMapCrossfader;
+    typedef std::unordered_map<am_connectionID_t, AmConnection>				 	 AmMapConnection;
+    typedef std::unordered_map<am_mainConnectionID_t, AmMainConnection> 	 	 AmMapMainConnection;
+    typedef std::vector<am_SystemProperty_s> 	   				  			     AmVectorSystemProperties;
     /**
      * The following structure groups the map objects needed for the implementation.
      * Every map object is coupled with an identifier, which hold the current value.
@@ -332,46 +381,46 @@ public:
      * The IDs can be increased through the method increaseID(...), which follows the AudioManager logic.
      * For more information about the static and dynamic IDs, please see the documentation.
      */
-    typedef struct CAmMappedData
+    struct AmMappedData
     {
         /**
          * The structure encapsulates the id boundary and the current id value.
          * It defines a range within the id can vary.
          */
-    	struct am_Identifier_s
+    	struct AmIdentifier
     	{
     		int16_t mMin;			//!< min possible value
     		int16_t mMax;			//!< max possible value
     		int16_t mCurrentValue;	//!< current value
 
-    		am_Identifier_s():mMin(DYNAMIC_ID_BOUNDARY), mMax(SHRT_MAX), mCurrentValue(mMin){};
-    		am_Identifier_s(const int16_t & min, const int16_t &  max):mMin(min), mMax(max), mCurrentValue(mMin){assert(min<max);};
+    		AmIdentifier():mMin(DYNAMIC_ID_BOUNDARY), mMax(SHRT_MAX), mCurrentValue(mMin){};
+    		AmIdentifier(const int16_t & min, const int16_t &  max):mMin(min), mMax(max), mCurrentValue(mMin){assert(min<max);};
     	};
 
-    	am_Identifier_s mCurrentDomainID;			//!< domain ID
-    	am_Identifier_s mCurrentSourceClassesID;	//!< source classes ID
-    	am_Identifier_s mCurrentSinkClassesID;		//!< sink classes ID
-    	am_Identifier_s mCurrentSinkID;				//!< sink ID
-    	am_Identifier_s mCurrentSourceID;			//!< source ID
-    	am_Identifier_s mCurrentGatewayID;			//!< gateway ID
-    	am_Identifier_s mCurrentConverterID;		//!< converter ID
-    	am_Identifier_s mCurrentCrossfaderID;		//!< crossfader ID
-    	am_Identifier_s mCurrentConnectionID;		//!< connection ID
-    	am_Identifier_s mCurrentMainConnectionID;	//!< mainconnection ID
+    	AmIdentifier mCurrentDomainID;			//!< domain ID
+    	AmIdentifier mCurrentSourceClassesID;	//!< source classes ID
+    	AmIdentifier mCurrentSinkClassesID;		//!< sink classes ID
+    	AmIdentifier mCurrentSinkID;				//!< sink ID
+    	AmIdentifier mCurrentSourceID;			//!< source ID
+    	AmIdentifier mCurrentGatewayID;			//!< gateway ID
+    	AmIdentifier mCurrentConverterID;		//!< converter ID
+    	AmIdentifier mCurrentCrossfaderID;		//!< crossfader ID
+    	AmIdentifier mCurrentConnectionID;		//!< connection ID
+    	AmIdentifier mCurrentMainConnectionID;	//!< mainconnection ID
 
-    	CAmVectorSystemProperties mSystemProperties; //!< vector with system properties
-    	CAmMapDomain mDomainMap;					 //!< map for domain structures
-    	CAmMapSourceClass mSourceClassesMap;		 //!< map for source classes structures
-    	CAmMapSinkClass mSinkClassesMap;			 //!< map for sink classes structures
-    	CAmMapSink mSinkMap;						 //!< map for sink structures
-    	CAmMapSource mSourceMap;					 //!< map for source structures
-    	CAmMapGateway mGatewayMap;					 //!< map for gateway structures
-    	CAmMapConverter mConverterMap;				 //!< map for converter structures
-    	CAmMapCrossfader mCrossfaderMap;			 //!< map for crossfader structures
-    	CAmMapConnection mConnectionMap;			 //!< map for connection structures
-    	CAmMapMainConnection mMainConnectionMap;	 //!< map for main connection structures
+    	AmVectorSystemProperties mSystemProperties; //!< vector with system properties
+    	AmMapDomain mDomainMap;					 //!< map for domain structures
+    	AmMapSourceClass mSourceClassesMap;		 //!< map for source classes structures
+    	AmMapSinkClass mSinkClassesMap;			 //!< map for sink classes structures
+    	AmMapSink mSinkMap;						 //!< map for sink structures
+    	AmMapSource mSourceMap;					 //!< map for source structures
+    	AmMapGateway mGatewayMap;					 //!< map for gateway structures
+    	AmMapConverter mConverterMap;				 //!< map for converter structures
+    	AmMapCrossfader mCrossfaderMap;			 //!< map for crossfader structures
+    	AmMapConnection mConnectionMap;			 //!< map for connection structures
+    	AmMapMainConnection mMainConnectionMap;	 //!< map for main connection structures
 
-    	CAmMappedData(): //For Domain, MainConnections, Connections we don't have static IDs.
+    	AmMappedData(): //For Domain, MainConnections, Connections we don't have static IDs.
     		mCurrentDomainID(DYNAMIC_ID_BOUNDARY, SHRT_MAX),
     		mCurrentSourceClassesID(DYNAMIC_ID_BOUNDARY, SHRT_MAX),
     		mCurrentSinkClassesID(DYNAMIC_ID_BOUNDARY, SHRT_MAX),
@@ -399,7 +448,7 @@ public:
     	 * @param preferedStaticIDBoundary A limit for a given dynamic ID. Default is DYNAMIC_ID_BOUNDARY.
     	 * @return TRUE on successfully changed ID.
     	 */
-    	bool increaseID(int16_t & resultID, am_Identifier_s & sourceID, int16_t const desiredStaticID);
+    	bool increaseID(int16_t & resultID, AmIdentifier & sourceID, int16_t const desiredStaticID);
       	/**
 		 * \brief Increases the main connection ID.
 		 *
@@ -426,12 +475,13 @@ public:
         {
         	typename std::unordered_map<TPrintMapKey, TPrintMapObject>::const_iterator iter = t.begin();
         	for(; iter!=t.end(); iter++)
-        		CAmMappedData::print(iter->second, output);
+        		AmMappedData::print(iter->second, output);
         }
     private:
-        template <typename TMapKey,class TMapObject> bool getNextConnectionID(int16_t & resultID, am_Identifier_s & sourceID,
+        template <typename TMapKey,class TMapObject> bool getNextConnectionID(int16_t & resultID, AmIdentifier & sourceID,
         																			  const std::unordered_map<TMapKey, TMapObject> & map);
-    } CAmMappedData;
+    };
+
     /*
      * Helper methods.
      */
@@ -469,9 +519,9 @@ public:
 			} );
 	}
 
-    CAmDatabaseObserver *mpDatabaseObserver; //!< pointer to the Observer
     ListConnectionFormat mListConnectionFormat; //!< list of connection formats
-    CAmMappedData mMappedData; //!< Internal structure encapsulating all the maps used in this class
+    AmMappedData mMappedData; //!< Internal structure encapsulating all the maps used in this class
+    std::vector<AmDatabaseObserverCallbacks*> mDatabaseObservers;
 
 #ifdef UNIT_TEST
     public:
