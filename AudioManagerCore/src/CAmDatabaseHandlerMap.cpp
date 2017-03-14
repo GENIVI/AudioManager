@@ -639,7 +639,7 @@ bool CAmDatabaseHandlerMap::insertSinkDB(const am_Sink_s & sinkData, am_sinkID_t
 
 am_Error_e CAmDatabaseHandlerMap::enterSinkDB(const am_Sink_s & sinkData, am_sinkID_t & sinkID)
 {
-    if(sinkData.sinkID>DYNAMIC_ID_BOUNDARY)
+    if(sinkData.sinkID>=DYNAMIC_ID_BOUNDARY)
     {
     	logError(__METHOD_NAME__,"sinkID must be below:",DYNAMIC_ID_BOUNDARY);
     	return (E_NOT_POSSIBLE);
@@ -734,7 +734,7 @@ bool CAmDatabaseHandlerMap::insertCrossfaderDB(const am_Crossfader_s & crossfade
 
 am_Error_e CAmDatabaseHandlerMap::enterCrossfaderDB(const am_Crossfader_s & crossfaderData, am_crossfaderID_t & crossfaderID)
 {
-    if(crossfaderData.crossfaderID>DYNAMIC_ID_BOUNDARY)
+    if(crossfaderData.crossfaderID>=DYNAMIC_ID_BOUNDARY)
     {
     	logError(__METHOD_NAME__,"crossfaderID must be below:",DYNAMIC_ID_BOUNDARY);
     	return (E_NOT_POSSIBLE);
@@ -822,7 +822,7 @@ bool CAmDatabaseHandlerMap::insertGatewayDB(const am_Gateway_s & gatewayData, am
 am_Error_e CAmDatabaseHandlerMap::enterGatewayDB(const am_Gateway_s & gatewayData, am_gatewayID_t & gatewayID)
 {
 
-    if(gatewayData.gatewayID>DYNAMIC_ID_BOUNDARY)
+    if(gatewayData.gatewayID>=DYNAMIC_ID_BOUNDARY)
     {
     	logError(__METHOD_NAME__,"gatewayID must be below:",DYNAMIC_ID_BOUNDARY);
     	return (E_NOT_POSSIBLE);
@@ -896,7 +896,7 @@ bool CAmDatabaseHandlerMap::insertConverterDB(const am_Converter_s & converteDat
 
 am_Error_e CAmDatabaseHandlerMap::enterConverterDB(const am_Converter_s & converterData, am_converterID_t & converterID)
 {
-    if(converterData.converterID>DYNAMIC_ID_BOUNDARY)
+    if(converterData.converterID>=DYNAMIC_ID_BOUNDARY)
     {
     	logError(__METHOD_NAME__,"converterID must be below:",DYNAMIC_ID_BOUNDARY);
     	return (E_NOT_POSSIBLE);
@@ -1003,7 +1003,7 @@ bool CAmDatabaseHandlerMap::insertSourceDB(const am_Source_s & sourceData, am_so
 
 am_Error_e CAmDatabaseHandlerMap::enterSourceDB(const am_Source_s & sourceData, am_sourceID_t & sourceID)
 {
-    if(sourceData.sourceID>DYNAMIC_ID_BOUNDARY)
+    if(sourceData.sourceID>=DYNAMIC_ID_BOUNDARY)
     {
     	logError(__METHOD_NAME__,"sourceID must be below:",DYNAMIC_ID_BOUNDARY);
     	return (E_NOT_POSSIBLE);
@@ -1136,7 +1136,7 @@ bool CAmDatabaseHandlerMap::insertSinkClassDB(const am_SinkClass_s & sinkClass, 
 
 am_Error_e CAmDatabaseHandlerMap::enterSinkClassDB(const am_SinkClass_s & sinkClass, am_sinkClass_t & sinkClassID)
 {
-    if(sinkClass.sinkClassID>DYNAMIC_ID_BOUNDARY)
+    if(sinkClass.sinkClassID>=DYNAMIC_ID_BOUNDARY)
     {
     	logError(__METHOD_NAME__,"sinkClassID must be <",DYNAMIC_ID_BOUNDARY);
     	return (E_NOT_POSSIBLE);
@@ -1200,7 +1200,7 @@ bool CAmDatabaseHandlerMap::insertSourceClassDB(am_sourceClass_t & sourceClassID
 
 am_Error_e CAmDatabaseHandlerMap::enterSourceClassDB(am_sourceClass_t & sourceClassID, const am_SourceClass_s & sourceClass)
 {
-    if(sourceClass.sourceClassID>DYNAMIC_ID_BOUNDARY)
+    if(sourceClass.sourceClassID>=DYNAMIC_ID_BOUNDARY)
     {
     	logError(__METHOD_NAME__,"sourceClassID must be <",DYNAMIC_ID_BOUNDARY);
     	return (E_NOT_POSSIBLE);
