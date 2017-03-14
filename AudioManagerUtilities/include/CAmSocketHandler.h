@@ -30,7 +30,6 @@
 #include <audiomanagerconfig.h>
 #include "audiomanagertypes.h"
 
-
 #ifdef WITH_TIMERFD
 
 #include <stdio.h>
@@ -427,7 +426,7 @@ namespace am
          * @return
          */
         inline static void prepare(am::CAmSocketHandler::sh_poll_s& row);
-    
+
         /**
          * functor to return all fired events
          * @param a
@@ -435,14 +434,12 @@ namespace am
          */
         inline static void fire(sh_poll_s* a);
 
-
         /**
          * functor to return all fired events
          * @param a
          * @return
          */
         inline static bool eventFired(const pollfd& a);
- 
 
         /**
          * functor to help find the items that do not need dispatching
@@ -464,7 +461,7 @@ namespace am
          * @return
          */
         inline static void callTimer(sh_timer_s& a);
- 
+
         VectorListPollfd_t mfdPollingArray; //!<the polling array for ppoll
         std::set<sh_pollHandle_t> mSetPollKeys; //!A set of all used ppoll keys
         VectorListPoll_t mListPoll; //!<list that holds all information for the ppoll

@@ -63,7 +63,9 @@ namespace am
         short event = 0;
         sh_pollHandle_t handle;
         event |= POLLIN;
-        addFDPoll(mPipe[0], event, NULL, [](const pollfd pollfd, const sh_pollHandle_t, void*){}, [](const sh_pollHandle_t, void*){   return (false);}, NULL, NULL, handle);
+        addFDPoll(mPipe[0], event, NULL, [](const pollfd pollfd, const sh_pollHandle_t, void*)
+        {}, [](const sh_pollHandle_t, void*)
+        {   return (false);}, NULL, NULL, handle);
     }
 
     CAmSocketHandler::~CAmSocketHandler()
@@ -102,6 +104,7 @@ namespace am
         //freeze mListPoll by copying it - otherwise we get problems when we want to manipulate it during the next lines
         std::list<sh_poll_s*> listPoll;
         VectorListPoll_t::iterator listmPollIt;
+        VectorListPollfd_t::iterator itMfdPollingArray;
 
         auto preparePollfd = [&](const sh_poll_s& row)
         {
@@ -149,7 +152,7 @@ namespace am
                 //todo: here could be a timer that makes sure naughty plugins return!
                 listPoll.clear();
                 //stage 0+1, call firedCB
-                for (VectorListPollfd_t::iterator itMfdPollingArray = mfdPollingArray.begin(); itMfdPollingArray != mfdPollingArray.end(); itMfdPollingArray++)
+                for (itMfdPollingArray = mfdPollingArray.begin(); itMfdPollingArray != mfdPollingArray.end(); itMfdPollingArray++)
                 {
                     if (CAmSocketHandler::eventFired(*itMfdPollingArray))
                     {
@@ -409,8 +412,9 @@ namespace am
             mListTimer.pop_back();
             return err;
         }
-        
-        static auto actionPoll = [](const pollfd pollfd, const sh_pollHandle_t handle, void* userData){
+
+        static auto actionPoll = [](const pollfd pollfd, const sh_pollHandle_t handle, void* userData)
+        {
             uint64_t mExpirations;
             if (read(pollfd.fd, &mExpirations, sizeof(uint64_t)) == -1)
             {
@@ -418,8 +422,9 @@ namespace am
                 read(pollfd.fd, &mExpirations, sizeof(uint64_t));
             }
         };
-        
-        err = addFDPoll(timerItem.fd, POLLIN, NULL, actionPoll, [callback](const sh_pollHandle_t handle, void* userData)->bool{
+
+        err = addFDPoll(timerItem.fd, POLLIN, NULL, actionPoll, [callback](const sh_pollHandle_t handle, void* userData)->bool
+        {
             callback(handle, userData);
             return false;
         },
@@ -794,69 +799,68 @@ namespace am
         }
     }
 #endif
-      
-      /**
-       * prepare for poll
-       */
-        void CAmSocketHandler::prepare(am::CAmSocketHandler::sh_poll_s& row)
-        {
-            if (row.prepareCB)
-            {
-                try
-                {
-                    row.prepareCB(row.handle, row.userData);
-                } catch (std::exception& e)
-                {
-                    logError("Sockethandler: Exception in Preparecallback,caught", e.what());
-                }
-            }
-        }
-        
 
-        /**
-         * fire callback
-         */
-        void CAmSocketHandler::fire(sh_poll_s* a)
+    /**
+     * prepare for poll
+     */
+    void CAmSocketHandler::prepare(am::CAmSocketHandler::sh_poll_s& row)
+    {
+        if (row.prepareCB)
         {
             try
             {
-                a->firedCB(a->pollfdValue, a->handle, a->userData);
+                row.prepareCB(row.handle, row.userData);
             } catch (std::exception& e)
             {
-                logError("Sockethandler: Exception in FireCallback,caught", e.what());
+                logError("Sockethandler: Exception in Preparecallback,caught", e.what());
             }
         }
-        
-        /**
-         * event triggered
-         */
-        bool CAmSocketHandler::eventFired(const pollfd& a)
-        {
-            return (a.revents == 0 ? false : true);
-        }
+    }
 
-        /**
-         * should disptach
-         */
-        bool CAmSocketHandler::noDispatching(const sh_poll_s* a)
+    /**
+     * fire callback
+     */
+    void CAmSocketHandler::fire(sh_poll_s* a)
+    {
+        try
         {
-            //remove from list of there is no checkCB
-            if (!a->checkCB)
-                return (true);
-            return (!a->checkCB(a->handle, a->userData));
+            a->firedCB(a->pollfdValue, a->handle, a->userData);
+        } catch (std::exception& e)
+        {
+            logError("Sockethandler: Exception in FireCallback,caught", e.what());
         }
+    }
 
-        /**
-         * disptach
-         */        
-        bool CAmSocketHandler::dispatchingFinished(const sh_poll_s* a) 
-        {
-            //remove from list of there is no dispatchCB
-            if (!a->dispatchCB)
-                return (true);
-            return (!a->dispatchCB(a->handle, a->userData));
-        }
-        
+    /**
+     * event triggered
+     */
+    bool CAmSocketHandler::eventFired(const pollfd& a)
+    {
+        return (a.revents == 0 ? false : true);
+    }
+
+    /**
+     * should disptach
+     */
+    bool CAmSocketHandler::noDispatching(const sh_poll_s* a)
+    {
+        //remove from list of there is no checkCB
+        if (!a->checkCB)
+            return (true);
+        return (!a->checkCB(a->handle, a->userData));
+    }
+
+    /**
+     * disptach
+     */
+    bool CAmSocketHandler::dispatchingFinished(const sh_poll_s* a)
+    {
+        //remove from list of there is no dispatchCB
+        if (!a->dispatchCB)
+            return (true);
+        return (!a->dispatchCB(a->handle, a->userData));
+    }
+
     /**
      * is used to set the pointer for the ppoll command
      * @param buffertime
