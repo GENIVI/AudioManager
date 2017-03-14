@@ -384,17 +384,17 @@ void CAmDatabaseHandlerMap::AmCrossfader::getDescription (std::string & outStrin
 	outString = fmt.str();
 }
 
-bool CAmDatabaseHandlerMap::AmMappedData::increaseID(int16_t & resultID, AmIdentifier & sourceID,
+bool CAmDatabaseHandlerMap::AmMappedData::increaseID(int16_t & resultID, AmIdentifier & elementID,
 															 int16_t const desiredStaticID = 0)
 {
-	if( desiredStaticID > 0 && desiredStaticID < sourceID.mMin )
+	if( desiredStaticID > 0 && desiredStaticID < elementID.mMin )
 	{
 		resultID = desiredStaticID;
 		return true;
 	}
-	else if( sourceID.mCurrentValue < sourceID.mMax ) //The last used value is 'limit' - 1. e.g. SHRT_MAX - 1, SHRT_MAX is reserved.
+	else if( elementID.mCurrentValue < elementID.mMax ) //The last used value is 'limit' - 1. e.g. SHRT_MAX - 1, SHRT_MAX is reserved.
 	{
-		resultID = sourceID.mCurrentValue++;
+		resultID = elementID.mCurrentValue++;
 		return true;
 	}
 	else
@@ -402,31 +402,31 @@ bool CAmDatabaseHandlerMap::AmMappedData::increaseID(int16_t & resultID, AmIdent
 		resultID = -1;
 		return false;
 	}
- }
+}
 
-template <typename TMapKey,class TMapObject> bool CAmDatabaseHandlerMap::AmMappedData::getNextConnectionID(int16_t & resultID, AmIdentifier & sourceID,
+template <typename TMapKey,class TMapObject> bool CAmDatabaseHandlerMap::AmMappedData::getNextConnectionID(int16_t & resultID, AmIdentifier & connID,
 																			  	  	  	  	  	  	  	  	  	  	  	  const std::unordered_map<TMapKey, TMapObject> & map)
 {
 	TMapKey nextID;
-	int16_t const lastID = sourceID.mCurrentValue;
-	if( sourceID.mCurrentValue < sourceID.mMax )
-		nextID = sourceID.mCurrentValue++;
+	int16_t const lastID = connID.mCurrentValue;
+	if( connID.mCurrentValue < connID.mMax )
+		nextID = connID.mCurrentValue++;
 	else
-		nextID = sourceID.mCurrentValue = sourceID.mMin;
+		nextID = connID.mCurrentValue = connID.mMin;
 
 	bool notFreeIDs = false;
 	while( existsObjectWithKeyInMap(nextID, map) )
 	{
 
-		if( sourceID.mCurrentValue < sourceID.mMax )
-			nextID = sourceID.mCurrentValue++;
+		if( connID.mCurrentValue < connID.mMax )
+			nextID = connID.mCurrentValue++;
 		else
 		{
-			sourceID.mCurrentValue = sourceID.mMin;
-			nextID = sourceID.mCurrentValue++;
+			connID.mCurrentValue = connID.mMin;
+			nextID = connID.mCurrentValue;
 		}
 
-		if( sourceID.mCurrentValue == lastID )
+		if( connID.mCurrentValue == lastID )
 		{
 			notFreeIDs = true;
 			break;
