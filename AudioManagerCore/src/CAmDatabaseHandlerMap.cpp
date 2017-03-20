@@ -55,6 +55,7 @@
 		(true)
 #endif
 
+
 #define NOTIFY_OBSERVERS(CALL)\
     for(AmDatabaseObserverCallbacks * nextObserver: mDatabaseObservers)\
             	if(nextObserver->CALL)\
@@ -1505,12 +1506,14 @@ am_Error_e CAmDatabaseHandlerMap::removeMainConnectionDB(const am_mainConnection
         return (E_NON_EXISTENT);
     }
 
+    DB_COND_UPDATE_INIT;
+    DB_COND_UPDATE(mMappedData.mMainConnectionMap[mainConnectionID].mainConnectionID, CS_DISCONNECTED);
+    if (DB_COND_ISMODIFIED)
+        NOTIFY_OBSERVERS2(dboMainConnectionStateChanged, mainConnectionID, CS_DISCONNECTED)
+
     mMappedData.mMainConnectionMap.erase(mainConnectionID);
-
     logVerbose("DatabaseHandler::removeMainConnectionDB removed:", mainConnectionID);
-
-	NOTIFY_OBSERVERS2(dboMainConnectionStateChanged, mainConnectionID, CS_DISCONNECTED)
-	NOTIFY_OBSERVERS1(dboRemovedMainConnection, mainConnectionID)
+    NOTIFY_OBSERVERS1(dboRemovedMainConnection, mainConnectionID)
 
     return (E_OK);
 }
