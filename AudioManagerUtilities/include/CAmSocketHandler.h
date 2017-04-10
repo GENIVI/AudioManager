@@ -27,6 +27,7 @@
 #include <signal.h>
 #include <vector>
 #include <functional>
+#include <sys/signalfd.h>
 #include <audiomanagerconfig.h>
 #include "audiomanagertypes.h"
 
@@ -281,50 +282,59 @@ namespace am
             }
         };
 
-        typedef std::reverse_iterator<sh_timer_s> rListTimerIter; //!<typedef for reverseiterator on timer lists
+        struct sh_signal_s
+        {
+            sh_pollHandle_t handle; //!<handle to uniquely adress a filedesriptor
+            std::function<void(const sh_pollHandle_t handle, const signalfd_siginfo & info, void* userData)> callback;
+            void* userData;
+            sh_signal_s() :
+                    handle(0), callback(), userData(0)
+            {
+            }
+        };
 
+        struct sh_identifier_s
+        {
+            std::set<sh_pollHandle_t> pollHandles;
+            uint16_t limit;
+            uint16_t lastUsedID;
+            sh_identifier_s(const uint16_t pollLimit = UINT16_MAX) :
+                    pollHandles(), limit(pollLimit), lastUsedID(0)
+            {
+            }
+        };
+
+        typedef std::reverse_iterator<sh_timer_s> rListTimerIter; //!<typedef for reverseiterator on timer lists
         typedef std::vector<pollfd> VectorListPollfd_t; //!<vector of filedescriptors
         typedef std::vector<sh_poll_s> VectorListPoll_t; //!<list for the callbacks
+        typedef std::vector<sh_signal_s> VectorSignalHandlers_t; //!<list for the callbacks
 
-    public:
+        typedef enum:uint8_t
+        {
+            NO_ERROR = 0u,   // OK
+            PIPE_ERROR = 1u, // Pipe error
+            FD_ERROR = 2u,   // Invalid file descriptor
+            SFD_ERROR = 4u   // Signal file descriptor error
+        } internal_error_codes_e;
+        typedef uint8_t internal_error_codes_t;
 
-        CAmSocketHandler();
-        ~CAmSocketHandler();
-
-        am_Error_e addFDPoll(const int fd, const short event, std::function<void(const sh_pollHandle_t handle, void* userData)> prepare, std::function<void(const pollfd pollfd, const sh_pollHandle_t handle, void* userData)> fired,
-                std::function<bool(const sh_pollHandle_t handle, void* userData)> check, std::function<bool(const sh_pollHandle_t handle, void* userData)> dispatch, void* userData, sh_pollHandle_t& handle);
-
-        am_Error_e addFDPoll(const int fd, const short event, IAmShPollPrepare *prepare, IAmShPollFired *fired, IAmShPollCheck *check, IAmShPollDispatch *dispatch, void* userData, sh_pollHandle_t& handle);
-        am_Error_e removeFDPoll(const sh_pollHandle_t handle);
-        am_Error_e updateEventFlags(const sh_pollHandle_t handle, const short events);
-        am_Error_e addTimer(const timespec & timeouts, IAmShTimerCallBack* callback, sh_timerHandle_t& handle, void * userData,
-#ifndef WITH_TIMERFD
-                const bool __attribute__((__unused__)) repeats = false
-#else
-                const bool repeats = false
-#endif
-                );
-        am_Error_e addTimer(const timespec & timeouts, std::function<void(const sh_timerHandle_t handle, void* userData)> callback, sh_timerHandle_t& handle, void* userData,
-#ifndef WITH_TIMERFD
-                const bool __attribute__((__unused__)) repeats = false
-#else
-                const bool repeats = false
-#endif
-                );
-        am_Error_e removeTimer(const sh_timerHandle_t handle);
-        am_Error_e restartTimer(const sh_timerHandle_t handle);
-        am_Error_e updateTimer(const sh_timerHandle_t handle, const timespec & timeouts);
-        am_Error_e stopTimer(const sh_timerHandle_t handle);
-        void start_listenting();
-        void stop_listening();
-        void exit_mainloop();
-
-    private:
-
-        static CAmSocketHandler* mInstance;
         int mPipe[2];
         int mDispatchDone; //this starts / stops the mainloop
 
+        VectorListPollfd_t mfdPollingArray; //!<the polling array for ppoll
+        sh_identifier_s mSetPollKeys; //!A set of all used ppoll keys
+        VectorListPoll_t mListPoll; //!<list that holds all information for the ppoll
+        sh_identifier_s mSetTimerKeys; //!A set of all used timer keys
+        std::list<sh_timer_s> mListTimer; //!<list of all timers
+        std::list<sh_timer_s> mListActiveTimer; //!<list of all currently active timers
+        sh_identifier_s mSetSignalhandlerKeys; //!A set of all used signal handler keys
+        VectorSignalHandlers_t mSignalHandlers;
+        bool mRecreatePollfds; //!<when this is true, the poll list needs to be recreated
+        internal_error_codes_t mError;
+#ifndef WITH_TIMERFD
+        timespec mStartTime; //!<here the actual time is saved for timecorrection
+#endif
+    private:
         bool fdIsValid(const int fd) const;
 
         timespec* insertTime(timespec& buffertime);
@@ -462,18 +472,54 @@ namespace am
          */
         inline static void callTimer(sh_timer_s& a);
 
-        VectorListPollfd_t mfdPollingArray; //!<the polling array for ppoll
-        std::set<sh_pollHandle_t> mSetPollKeys; //!A set of all used ppoll keys
-        VectorListPoll_t mListPoll; //!<list that holds all information for the ppoll
-        std::set<sh_timerHandle_t> mSetTimerKeys; //!A set of all used timer keys
-        std::list<sh_timer_s> mListTimer; //!<list of all timers
-        std::list<sh_timer_s> mListActiveTimer; //!<list of all currently active timers
-        sh_timerHandle_t mLastInsertedHandle; //!<keeps track of the last inserted timer handle
-        sh_pollHandle_t mLastInsertedPollHandle; //!<keeps track of the last inserted poll handle
-        bool mRecreatePollfds; //!<when this is true, the poll list needs to be recreated
+        /**
+         * install the signal fd
+         */
+
+        am_Error_e addSignalFd();
+        /**
+         * next handle id
+         * @param std::set handles
+         * @return handle
+         */
+        bool nextHandle(sh_identifier_s & handle);
+
+    public:
+
+        CAmSocketHandler();
+        ~CAmSocketHandler();
+
+        am_Error_e addFDPoll(const int fd, const short event, std::function<void(const sh_pollHandle_t handle, void* userData)> prepare, std::function<void(const pollfd pollfd, const sh_pollHandle_t handle, void* userData)> fired,
+                std::function<bool(const sh_pollHandle_t handle, void* userData)> check, std::function<bool(const sh_pollHandle_t handle, void* userData)> dispatch, void* userData, sh_pollHandle_t& handle);
+
+        am_Error_e addFDPoll(const int fd, const short event, IAmShPollPrepare *prepare, IAmShPollFired *fired, IAmShPollCheck *check, IAmShPollDispatch *dispatch, void* userData, sh_pollHandle_t& handle);
+        am_Error_e removeFDPoll(const sh_pollHandle_t handle);
+        am_Error_e updateEventFlags(const sh_pollHandle_t handle, const short events);
+        am_Error_e addSignalHandler(std::function<void(const sh_pollHandle_t handle, const signalfd_siginfo & info, void* userData)> callback, sh_pollHandle_t& handle, void * userData);
+        am_Error_e removeSignalHandler(const sh_pollHandle_t handle);
+        am_Error_e addTimer(const timespec & timeouts, IAmShTimerCallBack* callback, sh_timerHandle_t& handle, void * userData,
 #ifndef WITH_TIMERFD
-        timespec mStartTime; //!<here the actual time is saved for timecorrection
+                const bool __attribute__((__unused__)) repeats = false
+#else
+                const bool repeats = false
 #endif
+                );
+        am_Error_e addTimer(const timespec & timeouts, std::function<void(const sh_timerHandle_t handle, void* userData)> callback, sh_timerHandle_t& handle, void* userData,
+#ifndef WITH_TIMERFD
+                const bool __attribute__((__unused__)) repeats = false
+#else
+                const bool repeats = false
+#endif
+                );
+        am_Error_e removeTimer(const sh_timerHandle_t handle);
+        am_Error_e restartTimer(const sh_timerHandle_t handle);
+        am_Error_e updateTimer(const sh_timerHandle_t handle, const timespec & timeouts);
+        am_Error_e stopTimer(const sh_timerHandle_t handle);
+        void start_listenting();
+        void stop_listening();
+        void exit_mainloop();
+
+        bool fatalErrorOccurred() { return ((mError&internal_error_codes_e::PIPE_ERROR)>0)||((mError&internal_error_codes_e::FD_ERROR)>0); }
     };
 
 } /* namespace am */

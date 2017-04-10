@@ -179,45 +179,6 @@ void printCmdInformation()
 	exit(0);
 }
 
-/**
- * the signal handler
- * @param sig
- * @param siginfo
- * @param context
- */
-static void signalHandler(int sig, siginfo_t *siginfo, void *context)
-{
-    (void) sig;
-    (void) siginfo;
-    (void) context;
-    logInfo("signal handler was called, signal",sig);
-
-    switch (sig)
-    {
-        /*ctl +c lets call direct controllerRundown, because we might be blocked at the moment.
-        But there is the risk of interrupting something important */https://asc.bmwgroup.net/wiki/display/MGUROTO/Lastest+and+greatest
-        case SIGINT:
-            CAmControlSender::CallsetControllerRundown(sig);
-            break;
-
-        /* huch- we are getting killed. Better take the fast but risky way: */
-        case SIGQUIT:
-            CAmControlSender::CallsetControllerRundown(sig);
-            break;
-
-        /* more friendly here assuming systemd wants to stop us, so we can use the mainloop */
-        case SIGTERM:
-            CAmControlSender::CallsetControllerRundownSafe(sig);
-            break;
-
-        /* looks friendly, too, so lets take the long run */
-        case SIGHUP:
-            CAmControlSender::CallsetControllerRundownSafe(sig);
-            break;
-        default:
-            break;
-    }
-}
 
 void mainProgram(int argc, char *argv[])
 {
@@ -255,6 +216,45 @@ void mainProgram(int argc, char *argv[])
 
     //Instantiate all classes. Keep in same order !
     CAmSocketHandler iSocketHandler;
+    if(iSocketHandler.fatalErrorOccurred())
+    {
+        throw std::runtime_error(std::string("CAmSocketHandler: Could not create pipe or file descriptor is invalid."));
+    }
+    //Register signal handler
+    sh_pollHandle_t signalHandler;
+    iSocketHandler.addSignalHandler([&](const sh_pollHandle_t handle, const signalfd_siginfo & info, void* userData){
+
+        unsigned sig = info.ssi_signo;
+        unsigned user = info.ssi_uid;
+
+        logInfo("signal handler was called from user", user, "with signal ",sig);
+
+        switch (sig)
+        {
+            /*ctl +c lets call direct controllerRundown, because we might be blocked at the moment.
+            But there is the risk of interrupting something important */
+            case SIGINT:
+                CAmControlSender::CallsetControllerRundown(sig);
+                break;
+
+            /* huch- we are getting killed. Better take the fast but risky way: */
+            case SIGQUIT:
+                CAmControlSender::CallsetControllerRundown(sig);
+                break;
+
+            /* more friendly here assuming systemd wants to stop us, so we can use the mainloop */
+            case SIGTERM:
+                CAmControlSender::CallsetControllerRundownSafe(sig);
+                break;
+
+            /* looks friendly, too, so lets take the long run */
+            case SIGHUP:
+                CAmControlSender::CallsetControllerRundownSafe(sig);
+                break;
+            default:
+                break;
+        }
+    },signalHandler,NULL);
 
     if(commandPluginDir.isSet())
     {
@@ -363,21 +363,6 @@ int main(int argc, char *argv[], char** envp)
     (void) envp;
     listCommandPluginDirs.push_back(std::string(DEFAULT_PLUGIN_COMMAND_DIR));
     listRoutingPluginDirs.push_back(std::string(DEFAULT_PLUGIN_ROUTING_DIR));
-
-    //now the signal handler:
-    struct sigaction signalAction;
-    memset(&signalAction, '\0', sizeof(signalAction));
-    signalAction.sa_sigaction = &signalHandler;
-    signalAction.sa_flags = SA_SIGINFO;
-    sigaction(SIGINT, &signalAction, NULL);
-    sigaction(SIGQUIT, &signalAction, NULL);
-    sigaction(SIGTERM, &signalAction, NULL);
-    sigaction(SIGHUP, &signalAction, NULL);
-
-    struct sigaction signalChildAction;
-    memset(&signalChildAction, '\0', sizeof(signalChildAction));
-    signalChildAction.sa_flags = SA_NOCLDWAIT;
-    sigaction(SIGCHLD, &signalChildAction, NULL);
 
     //register new out of memory handler
     std::set_new_handler(&OutOfMemoryHandler);

@@ -47,6 +47,15 @@ namespace am
         virtual void timerCallback(sh_timerHandle_t handle, void * userData)=0;
     };
 
+    class IAmSignalHandler
+    {
+    public:
+        virtual ~IAmSignalHandler()
+        {
+        }
+        virtual void signalHandlerAction(const sh_pollHandle_t handle, const unsigned sig, void* userData)=0;
+    };
+
     class IAmSocketHandlerCb
     {
     public:
@@ -63,6 +72,12 @@ namespace am
     public:
         MOCK_CONST_METHOD2(timerCallback,
                 void(sh_timerHandle_t handle, void *userData));
+    };
+
+    class MockIAmSignalHandler: public IAmSignalHandler
+    {
+    public:
+        MOCK_METHOD3(signalHandlerAction, void (const sh_pollHandle_t handle, const unsigned sig, void* userData));
     };
 
     class MockSocketHandlerCb: public IAmSocketHandlerCb
@@ -114,6 +129,21 @@ namespace am
         void timerCallback(sh_timerHandle_t handle, void * userData);
 
         TAmShTimerCallBack<CAmTimerSockethandlerController> pTimerCallback;
+    };
+
+    class CAmTimerSignalHandler: public MockIAmTimerCb
+    {
+        unsigned mIndex;
+        std::set<unsigned> mSignals;
+        CAmSocketHandler *mpSocketHandler;
+        timespec mUpdateTimeout;
+    public:
+        explicit CAmTimerSignalHandler(CAmSocketHandler *SocketHandler, const timespec &timeout, const std::set<unsigned> & signals);
+        virtual ~CAmTimerSignalHandler();
+
+        void timerCallback(sh_timerHandle_t handle, void * userData);
+
+        TAmShTimerCallBack<CAmTimerSignalHandler> pTimerCallback;
     };
 
     class CAmTimer: public MockIAmTimerCb

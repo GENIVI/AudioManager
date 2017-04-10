@@ -80,6 +80,35 @@ void am::CAmTimerSockethandlerController::timerCallback(sh_timerHandle_t handle,
     mpSocketHandler->stop_listening();
 }
 
+CAmTimerSignalHandler::CAmTimerSignalHandler(CAmSocketHandler *myHandler, const timespec &timeout, const std::set<unsigned> & signals) :
+        MockIAmTimerCb(), mIndex(0), mSignals(signals), mpSocketHandler(myHandler), mUpdateTimeout(timeout), pTimerCallback(this, &CAmTimerSignalHandler::timerCallback)
+{
+
+}
+
+am::CAmTimerSignalHandler::~CAmTimerSignalHandler()
+{
+}
+
+void am::CAmTimerSignalHandler::timerCallback(sh_timerHandle_t handle, void* userData)
+{
+    MockIAmTimerCb::timerCallback(handle, userData);
+    if(mIndex<mSignals.size())
+    {
+        std::set<unsigned>::iterator it = mSignals.begin();
+        std::advance(it, mIndex);
+        kill(getpid(), *it);
+        mIndex++;
+        
+#ifndef WITH_TIMERFD
+         mpSocketHandler->updateTimer( handle, mUpdateTimeout);
+#endif
+    }
+    else
+        mpSocketHandler->stop_listening();
+    
+}
+
 CAmTimer::CAmTimer(CAmSocketHandler *myHandler, const timespec &timeout, const int32_t repeats) :
         MockIAmTimerCb(), mpSocketHandler(myHandler), mUpdateTimeout(timeout), pTimerCallback(this, &CAmTimer::timerCallback), mRepeats(repeats)
 {
@@ -178,6 +207,7 @@ void* playWithUnixSocketServer(void* data)
 TEST(CAmSocketHandlerTest, timersOneshot)
 {
     CAmSocketHandler myHandler;
+    ASSERT_FALSE(myHandler.fatalErrorOccurred());
     timespec timeoutTime;
     timeoutTime.tv_sec = 1;
     timeoutTime.tv_nsec = 0;
@@ -194,7 +224,11 @@ TEST(CAmSocketHandlerTest, timersOneshot)
 
     sh_timerHandle_t handle;
     myHandler.addTimer(timeoutTime, &testCallback1.pTimerCallback, handle, &userData);
-
+#ifndef WITH_TIMERFD
+    ASSERT_EQ(handle, 1);
+#else
+    ASSERT_EQ(handle, 3);
+#endif
     EXPECT_CALL(testCallback1,timerCallback(handle,&userData)).Times(1);
 
     timespec timeout4;
@@ -203,6 +237,11 @@ TEST(CAmSocketHandlerTest, timersOneshot)
     CAmTimerSockethandlerController testCallback4(&myHandler, timeout4);
 
     myHandler.addTimer(timeout4, &testCallback4.pTimerCallback, handle, NULL);
+#ifndef WITH_TIMERFD
+    ASSERT_EQ(handle, 2);
+#else
+    ASSERT_EQ(handle, 4);
+#endif
     EXPECT_CALL(testCallback4,timerCallback(handle,NULL)).Times(1);
     myHandler.start_listenting();
 }
@@ -210,6 +249,7 @@ TEST(CAmSocketHandlerTest, timersOneshot)
 TEST(CAmSocketHandlerTest, timersStop)
 {
     CAmSocketHandler myHandler;
+    ASSERT_FALSE(myHandler.fatalErrorOccurred());
     timespec timeoutTime;
     timeoutTime.tv_sec = 1;
     timeoutTime.tv_nsec = 0;
@@ -226,7 +266,11 @@ TEST(CAmSocketHandlerTest, timersStop)
 
     sh_timerHandle_t handle;
     myHandler.addTimer(timeoutTime, &testCallback1.pTimerCallback, handle, &userData, true);
-
+#ifndef WITH_TIMERFD
+    ASSERT_EQ(handle, 1);
+#else
+    ASSERT_EQ(handle, 3);
+#endif
     EXPECT_CALL(testCallback1,timerCallback(handle,&userData)).Times(4);
 
     timespec timeout4;
@@ -235,6 +279,11 @@ TEST(CAmSocketHandlerTest, timersStop)
     CAmTimerSockethandlerController testCallback4(&myHandler, timeout4);
 
     myHandler.addTimer(timeout4, &testCallback4.pTimerCallback, handle, NULL);
+#ifndef WITH_TIMERFD
+    ASSERT_EQ(handle, 2);
+#else
+    ASSERT_EQ(handle, 4);
+#endif
     EXPECT_CALL(testCallback4,timerCallback(handle,NULL)).Times(1);
     myHandler.start_listenting();
 }
@@ -242,6 +291,8 @@ TEST(CAmSocketHandlerTest, timersStop)
 TEST(CAmSocketHandlerTest, timersGeneral)
 {
     CAmSocketHandler myHandler;
+    ASSERT_FALSE(myHandler.fatalErrorOccurred());
+
     timespec timeoutTime;
     timeoutTime.tv_sec = 1;
     timeoutTime.tv_nsec = 0;
@@ -258,7 +309,11 @@ TEST(CAmSocketHandlerTest, timersGeneral)
 
     sh_timerHandle_t handle;
     myHandler.addTimer(timeoutTime, &testCallback1.pTimerCallback, handle, &userData, true);
-
+#ifndef WITH_TIMERFD
+    ASSERT_EQ(handle, 1);
+#else
+    ASSERT_EQ(handle, 3);
+#endif
     EXPECT_CALL(testCallback1,timerCallback(handle,&userData)).Times(4); //+1 because of measurment
 
     timespec timeout4;
@@ -267,6 +322,11 @@ TEST(CAmSocketHandlerTest, timersGeneral)
     CAmTimerSockethandlerController testCallback4(&myHandler, timeout4);
 
     myHandler.addTimer(timeout4, &testCallback4.pTimerCallback, handle, NULL);
+#ifndef WITH_TIMERFD
+    ASSERT_EQ(handle, 2);
+#else
+    ASSERT_EQ(handle, 4);
+#endif
     EXPECT_CALL(testCallback4,timerCallback(handle,NULL)).Times(1);
     myHandler.start_listenting();
 }
@@ -274,7 +334,7 @@ TEST(CAmSocketHandlerTest, timersGeneral)
 TEST(CAmSocketHandlerTest,playWithTimers)
 {
     CAmSocketHandler myHandler;
-
+    ASSERT_FALSE(myHandler.fatalErrorOccurred());
     timespec timeoutTime, timeout2, timeout3, timeout4;
     timeoutTime.tv_sec = 1;
     timeoutTime.tv_nsec = 34000000;
@@ -293,17 +353,90 @@ TEST(CAmSocketHandlerTest,playWithTimers)
 
     sh_timerHandle_t handle;
     myHandler.addTimer(timeoutTime, &testCallback1.pTimerCallback, handle, NULL, true);
+#ifndef WITH_TIMERFD
+    ASSERT_EQ(handle, 1);
+#else
+    ASSERT_EQ(handle, 3);
+#endif
     EXPECT_CALL(testCallback1,timerCallback(handle,NULL)).Times(AnyNumber());
 
     myHandler.addTimer(timeout2, &testCallback2.pTimerCallback, handle, NULL, true);
+#ifndef WITH_TIMERFD
+    ASSERT_EQ(handle, 2);
+#else
+    ASSERT_EQ(handle, 4);
+#endif
     EXPECT_CALL(testCallback2,timerCallback(handle,NULL)).Times(AnyNumber());
 
     myHandler.addTimer(timeout3, &testCallback3.pTimerCallback, handle, NULL);
+#ifndef WITH_TIMERFD
+    ASSERT_EQ(handle, 3);
+#else
+    ASSERT_EQ(handle, 5);
+#endif
     EXPECT_CALL(testCallback3,timerCallback(handle,NULL)).Times(2); //+1 because of measurment
 
     myHandler.addTimer(timeout4, &testCallback4.pTimerCallback, handle, NULL);
+#ifndef WITH_TIMERFD
+    ASSERT_EQ(handle, 4);
+#else
+    ASSERT_EQ(handle, 6);
+#endif
     EXPECT_CALL(testCallback4,timerCallback(handle,NULL)).Times(1);
 
+    myHandler.start_listenting();
+}
+
+TEST(CAmSocketHandlerTest, signalHandler)
+{
+    CAmSocketHandler myHandler;
+    ASSERT_FALSE(myHandler.fatalErrorOccurred());
+    sh_pollHandle_t signalHandler1, signalHandler2;
+    MockIAmSignalHandler mock;
+    std::string userData = "User data";
+    myHandler.addSignalHandler([&](const sh_pollHandle_t handle, const signalfd_siginfo & info, void* userData)
+    {
+        unsigned sig = info.ssi_signo;
+        mock.signalHandlerAction(handle, sig, userData);
+#ifdef ENABLED_SOCKETHANDLER_TEST_OUTPUT
+        unsigned user = info.ssi_uid;
+        std::cout<<"signal handler was called from user "<< user << " with signal " << sig << std::endl;
+#endif
+    }, signalHandler1, &userData);
+    ASSERT_EQ(signalHandler1, 1);
+    myHandler.addSignalHandler([&](const sh_pollHandle_t handle, const signalfd_siginfo & info, void* userData)
+        {
+            unsigned sig = info.ssi_signo;
+            mock.signalHandlerAction(handle, sig, userData);
+    #ifdef ENABLED_SOCKETHANDLER_TEST_OUTPUT
+            unsigned user = info.ssi_uid;
+            std::cout<<"signal handler was called from user "<< user << " with signal " << sig << std::endl;
+    #endif
+        }, signalHandler2, &userData);
+    ASSERT_EQ(signalHandler2, 2);
+    timespec timeout4;
+    timeout4.tv_nsec = 200000000;
+    timeout4.tv_sec = 0;
+    std::set<unsigned> signals;
+    signals.insert(SIGHUP);
+    signals.insert(SIGINT);
+    signals.insert(SIGTERM);
+    signals.insert(SIGQUIT);
+
+    CAmTimerSignalHandler testCallback4(&myHandler, timeout4, signals);
+    sh_timerHandle_t handle;
+
+    myHandler.addTimer(timeout4, &testCallback4.pTimerCallback, handle, NULL, true);
+#ifndef WITH_TIMERFD
+    ASSERT_EQ(handle, 1);
+#else
+    ASSERT_EQ(handle, 3);
+#endif
+    EXPECT_CALL(testCallback4,timerCallback(handle,NULL)).Times(signals.size()+1);
+    for(auto it: signals)
+        EXPECT_CALL(mock,signalHandlerAction(signalHandler1,it,&userData)).Times(1);
+    for(auto it: signals)
+        EXPECT_CALL(mock,signalHandlerAction(signalHandler2,it,&userData)).Times(1);
     myHandler.start_listenting();
 }
 
@@ -314,6 +447,7 @@ TEST(CAmSocketHandlerTest,playWithUNIXSockets)
     int socket_;
 
     CAmSocketHandler myHandler;
+    ASSERT_FALSE(myHandler.fatalErrorOccurred());
     CAmSamplePlugin::sockType_e type = CAmSamplePlugin::UNIX;
     CAmSamplePlugin myplugin(&myHandler, type);
 
@@ -360,6 +494,7 @@ TEST(CAmSocketHandlerTest,playWithSockets)
     int socket_;
 
     CAmSocketHandler myHandler;
+    ASSERT_FALSE(myHandler.fatalErrorOccurred());
     CAmSamplePlugin::sockType_e type = CAmSamplePlugin::INET;
     CAmSamplePlugin myplugin(&myHandler, type);
 

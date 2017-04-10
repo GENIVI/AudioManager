@@ -31,6 +31,7 @@
 #include <features.h>
 #include <csignal>
 #include <unistd.h>
+
 #include "CAmDltWrapper.h"
 #include "CAmSocketHandler.h"
 
@@ -44,38 +45,44 @@ namespace am
     CAmSocketHandler::CAmSocketHandler() :
             mPipe(), //
                     mDispatchDone(1), //
+                    mfdPollingArray(), //
+                    mSetPollKeys(MAX_POLLHANDLE), //
                     mListPoll(), //
+                    mSetTimerKeys(MAX_TIMERHANDLE),
                     mListTimer(), //
                     mListActiveTimer(), //
-                    mLastInsertedHandle(0), //
-                    mLastInsertedPollHandle(0), //
-                    mRecreatePollfds(true)
+                    mSetSignalhandlerKeys(MAX_POLLHANDLE), //
+                    mSignalHandlers(), //
+                    mRecreatePollfds(true),
+                    mError(internal_error_codes_e::NO_ERROR)
 #ifndef WITH_TIMERFD
     ,mStartTime() //
 #endif
     {
         if (pipe(mPipe) == -1)
         {
+            mError = internal_error_codes_e::PIPE_ERROR;
             logError("Sockethandler could not create pipe!");
         }
 
-        //add the pipe to the poll - nothing needs to be proccessed here we just need the pipe to trigger the ppoll
+        //add the pipe to the poll - nothing needs to be processed here we just need the pipe to trigger the ppoll
         short event = 0;
         sh_pollHandle_t handle;
         event |= POLLIN;
-        addFDPoll(mPipe[0], event, NULL, [](const pollfd pollfd, const sh_pollHandle_t, void*)
+        if (addFDPoll(mPipe[0], event, NULL, [](const pollfd pollfd, const sh_pollHandle_t, void*)
         {}, [](const sh_pollHandle_t, void*)
-        {   return (false);}, NULL, NULL, handle);
+        {   return (false);}, NULL, NULL, handle) != E_OK)
+            mError |= internal_error_codes_e::FD_ERROR;
+        if (addSignalFd() != E_OK)
+            mError |= internal_error_codes_e::SFD_ERROR;
     }
 
     CAmSocketHandler::~CAmSocketHandler()
     {
-#ifdef WITH_TIMERFD
-        for (auto it : mListTimer)
+        for (auto it : mListPoll)
         {
-            close(it.fd);
+            close(it.pollfdValue.fd);
         }
-#endif
         close(mPipe[0]);
         close(mPipe[1]);
     }
@@ -214,6 +221,72 @@ namespace am
     }
 
     /**
+     * Adds a signal handler filedescriptor to the polling loop
+     *
+     */
+    am_Error_e CAmSocketHandler::addSignalFd()
+    {
+        sh_pollHandle_t handle;
+        int fdErr;
+        sigset_t sigset;
+
+        /* Create a sigset of all the signals that we're interested in */
+        fdErr = sigemptyset(&sigset);
+        if (fdErr != 0)
+        {
+            logError("Could not create sigset!");
+            return (E_NOT_POSSIBLE);
+        }
+        fdErr = sigaddset(&sigset, SIGINT);
+        if (fdErr != 0)
+            logWarning("Could not add SIGINT");
+        fdErr = sigaddset(&sigset, SIGHUP);
+        if (fdErr != 0)
+            logWarning("Could not add SIGHUP");
+        fdErr = sigaddset(&sigset, SIGQUIT);
+        if (fdErr != 0)
+            logWarning("Could not add SIGQUIT");
+        fdErr = sigaddset(&sigset, SIGTERM);
+        if (fdErr != 0)
+            logWarning("Could not add SIGTERM");
+        fdErr = sigaddset(&sigset, SIGCHLD);
+        if (fdErr != 0)
+            logWarning("Could not add SIGCHLD");
+
+        /* We must block the signals in order for signalfd to receive them */
+        fdErr = sigprocmask(SIG_BLOCK, &sigset, NULL);
+        if (fdErr != 0)
+        {
+            logError("Could not block signals! They must be blocked in order to receive them!");
+            return (E_NOT_POSSIBLE);
+        }
+
+        /* Create the signalfd */
+        int signalHandlerFd = signalfd(-1, &sigset, 0);
+        if (signalHandlerFd == -1)
+        {
+            logError("Could not open signal fd!");
+            return (E_NOT_POSSIBLE);
+        }
+
+        auto actionPoll = [this](const pollfd pollfd, const sh_pollHandle_t, void*)
+        {
+            const VectorSignalHandlers_t & signalHandlers = mSignalHandlers;
+            /* We have a valid signal, read the info from the fd */
+            struct signalfd_siginfo info;
+            ssize_t bytes = read(pollfd.fd, &info, sizeof(info));
+            assert(bytes == sizeof(info));
+
+            /* We have a valid signal, read the info from the fd */
+            for(auto it: signalHandlers)
+            it.callback(it.handle, info, it.userData);
+        };
+        /* We're going to add the signal fd through addFDPoll. At this point we don't have any signal listeners. */
+        return addFDPoll(signalHandlerFd, POLLIN | POLLERR | POLLHUP, NULL, actionPoll, [](const sh_pollHandle_t, void*)
+        {   return (false);}, NULL, NULL, handle);
+    }
+
+    /**
      * Adds a filedescriptor to the polling loop
      * @param fd the filedescriptor
      * @param event the event flags
@@ -234,27 +307,15 @@ namespace am
             return (E_NON_EXISTENT);
 
         //create a new handle for the poll
-        sh_pollHandle_t lastHandle(mLastInsertedPollHandle);
-        do
+        if (!nextHandle(mSetPollKeys))
         {
-            ++mLastInsertedPollHandle;
-            if (mLastInsertedPollHandle == MAX_POLLHANDLE)
-            {
-                mLastInsertedPollHandle = 1;
-            }
-            if (mLastInsertedPollHandle == lastHandle)
-            {
-                logError("Could not create new polls, too many open!");
-                return (E_NOT_POSSIBLE);
-            }
-
-        } while (mSetPollKeys.find(mLastInsertedPollHandle) != mSetPollKeys.end());
-
-        mSetPollKeys.insert(mLastInsertedPollHandle);
+            logError("Could not create new polls, too many open!");
+            return (E_NOT_POSSIBLE);
+        }
 
         sh_poll_s pollData;
         pollData.pollfdValue.fd = fd;
-        pollData.handle = mLastInsertedPollHandle;
+        pollData.handle = mSetPollKeys.lastUsedID;
         pollData.pollfdValue.events = event;
         pollData.pollfdValue.revents = 0;
         pollData.prepareCB = prepare;
@@ -269,6 +330,7 @@ namespace am
 
         handle = pollData.handle;
         return (E_OK);
+
     }
 
     /**
@@ -317,8 +379,52 @@ namespace am
             if (iterator->handle == handle)
             {
                 iterator = mListPoll.erase(iterator);
-                mSetPollKeys.erase(handle);
+                mSetPollKeys.pollHandles.erase(handle);
                 mRecreatePollfds = true;
+                return (E_OK);
+            }
+        }
+        return (E_UNKNOWN);
+    }
+
+    /**
+     * Adds a callback for any signals
+     * @param callback
+     * @param handle the handle of this poll
+     * @param userData a pointer to userdata that is always passed around
+     * @return E_OK if the descriptor was added, E_NON_EXISTENT if the fd is not valid
+     */
+    am_Error_e CAmSocketHandler::addSignalHandler(std::function<void(const sh_pollHandle_t handle, const signalfd_siginfo & info, void* userData)> callback, sh_pollHandle_t& handle, void * userData)
+    {
+        if (!nextHandle(mSetSignalhandlerKeys))
+        {
+            logError("Could not create new polls, too many open!");
+            return (E_NOT_POSSIBLE);
+        }
+
+        mSignalHandlers.emplace_back();
+        mSignalHandlers.back().callback = callback;
+        mSignalHandlers.back().handle = mSetSignalhandlerKeys.lastUsedID;
+        mSignalHandlers.back().userData = userData;
+        handle = mSetSignalhandlerKeys.lastUsedID;
+
+        return E_OK;
+    }
+
+    /**
+     * removes a signal handler from the list
+     * @param handle is signal handler id
+     * @return E_OK in case of success, E_UNKNOWN if the handler was not found.
+     */
+    am_Error_e CAmSocketHandler::removeSignalHandler(const sh_pollHandle_t handle)
+    {
+        VectorSignalHandlers_t::iterator it(mSignalHandlers.begin());
+        for (; it != mSignalHandlers.end(); ++it)
+        {
+            if (it->handle == handle)
+            {
+                it = mSignalHandlers.erase(it);
+                mSetSignalhandlerKeys.pollHandles.erase(handle);
                 return (E_OK);
             }
         }
@@ -356,25 +462,14 @@ namespace am
 
 #ifndef WITH_TIMERFD 
         //create a new handle for the timer
-        sh_timerHandle_t lastTimerHandle(mLastInsertedHandle);
-        do
+        if (!nextHandle(mSetTimerKeys))
         {
-            ++mLastInsertedHandle;
-            if (mLastInsertedHandle == MAX_TIMERHANDLE)
-            {
-                mLastInsertedHandle = 1;
-            }
-            if (lastTimerHandle==mLastInsertedHandle)
-            {
-                logError("Could not create new timers, too many open!");
-                mListTimer.pop_back();
-                return (E_NOT_POSSIBLE);
-            }
-
-        }while (mSetTimerKeys.find(mLastInsertedHandle) != mSetTimerKeys.end());
-
-        mSetTimerKeys.insert(mLastInsertedHandle);
-        handle=mLastInsertedHandle;
+            logError("Could not create new timers, too many open!");
+            mListTimer.pop_back();
+            return (E_NOT_POSSIBLE);
+        }
+        //create a new handle for the timer
+        handle = mSetTimerKeys.lastUsedID;
 
         timerItem.countdown = timeouts;
         timerItem.callback = callback;
@@ -473,7 +568,7 @@ namespace am
             if (it->handle == handle)
             {
                 it = mListTimer.erase(it);
-                mSetTimerKeys.erase(handle);
+                mSetTimerKeys.pollHandles.erase(handle);
                 return (E_OK);
             }
         }
@@ -909,6 +1004,30 @@ namespace am
         {
             logError("Sockethandler: Exception in Timercallback,caught", e.what());
         }
+    }
+
+    bool CAmSocketHandler::nextHandle(sh_identifier_s & handle)
+    {
+        //create a new handle for the poll
+        const sh_pollHandle_t lastHandle(handle.lastUsedID);
+        do
+        {
+            ++handle.lastUsedID;
+            if (handle.lastUsedID == handle.limit)
+            {
+                handle.lastUsedID = 1;
+            }
+            if (handle.lastUsedID == lastHandle)
+            {
+                logError("Could not create new polls, too many open!");
+                return (false);
+            }
+
+        } while (handle.pollHandles.find(handle.lastUsedID) != handle.pollHandles.end());
+
+        handle.pollHandles.insert(handle.lastUsedID);
+
+        return (true);
     }
 
 }
