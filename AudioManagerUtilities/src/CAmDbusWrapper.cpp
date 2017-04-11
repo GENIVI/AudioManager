@@ -293,18 +293,18 @@ dbus_bool_t CAmDbusWrapper::addWatchDelegate(DBusWatch * watch, void* userData)
             event |= POLLIN;
         if (flags & DBUS_WATCH_WRITABLE)
             event |= POLLOUT;
-    }
 
-    logInfo("DBusWrapper::addWatchDelegate entered new watch, fd=", dbus_watch_get_unix_fd(watch), "event flag=", event);
-    am_Error_e error = mpSocketHandler->addFDPoll(dbus_watch_get_unix_fd(watch), event, &pDbusPrepareCallback, &pDbusFireCallback, &pDbusCheckCallback, &pDbusDispatchCallback, watch, handle);
+        logInfo("DBusWrapper::addWatchDelegate entered new watch, fd=", dbus_watch_get_unix_fd(watch), "event flag=", event);
+        am_Error_e error = mpSocketHandler->addFDPoll(dbus_watch_get_unix_fd(watch), event, &pDbusPrepareCallback, &pDbusFireCallback, &pDbusCheckCallback, &pDbusDispatchCallback, watch, handle);
 
-    //if everything is alright, add the watch and the handle to our map so we know this relationship
-    if (error == E_OK && handle != 0)
-    {
-        mMapHandleWatch.insert(std::make_pair(watch, handle));
-        return (true);
+        //if everything is alright, add the watch and the handle to our map so we know this relationship
+        if (error == E_OK && handle != 0)
+        {
+            mMapHandleWatch.insert(std::make_pair(watch, handle));
+            return (true);
+        }
+        logError("DBusWrapper::addWatchDelegate entering watch failed");
     }
-    logError("DBusWrapper::addWatchDelegate entering watch failed");
     return (true);
 }
 
