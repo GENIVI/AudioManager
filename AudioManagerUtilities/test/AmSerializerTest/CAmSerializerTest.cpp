@@ -76,7 +76,7 @@ struct SerializerData
     int result;
     MockIAmSerializerCb *pSerCb;
     CAmSocketHandler *pSocketHandler;
-    CAmSerializer *pSerializer;
+    V2::CAmSerializer *pSerializer;
 };
 
 void* ptSerializer(void* data)
@@ -120,7 +120,7 @@ TEST(CAmSerializerTest, serializerTest)
     MockIAmSerializerCb serCb;
     CAmSocketHandler myHandler;
     std::string testStr("testStr");
-    CAmSerializer serializer(&myHandler);
+    V2::CAmSerializer serializer(&myHandler);
     sh_timerHandle_t handle;
     timespec timeout4;
     timeout4.tv_nsec = 0;

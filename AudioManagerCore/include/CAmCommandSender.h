@@ -88,7 +88,7 @@ private:
     std::vector<std::string> mListLibraryNames; //!< list of all library names. This information is used for getListPlugins.
     
     CAmCommandReceiver *mCommandReceiver;
-    CAmSerializer mSerializer;
+    V2::CAmSerializer mSerializer;
 };
 
 
