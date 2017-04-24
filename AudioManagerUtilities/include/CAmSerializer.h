@@ -77,6 +77,12 @@ namespace am
      * PluginRoutingInterfaceAsync.
      *
      */
+
+    /**
+     * \defgroup Deprecated Obsolete class!
+     * @{
+     */
+
     namespace V1
     {
         class CAmSerializer
@@ -842,7 +848,9 @@ namespace am
             }
         };
 
-    }
+    } /* namespace V1 */
+
+    /**@}*/
 
     namespace V2
     {
@@ -967,16 +975,16 @@ namespace am
             int mReturnPipe[2]; //!< pipe handling returns
             sh_pollHandle_t mHandle;
             CAmSocketHandler* mpSocketHandler;
-            std::deque<CAmDelegagePtr> mListDelegatePoiters; //!< intermediate queue to store the pipe results
+            std::deque<CAmDelegagePtr> mListDelegatePointers; //!< intermediate queue to store the pipe results
 
         public:
 
             /**
              * get the size of delegate pointers
              */
-            int getListDelegatePoiters()
+            size_t getListDelegatePointers()
             {
-                return mListDelegatePoiters.size();
+                return mListDelegatePointers.size();
             }
 
             /**
@@ -1057,7 +1065,7 @@ namespace am
 
             /**
              * calls a function with variadic arguments threadsafe
-             * @param invocation is a type is produced by std::bind
+             * @param invocation is a type produced by std::bind
              * \section ex Example:
              * @code
              * CAmSerializer serial(&Sockethandler);
@@ -1125,7 +1133,7 @@ namespace am
                     logError("CAmSerializer::receiverCallback could not read pipe!");
                     throw std::runtime_error("CAmSerializer Could not read pipe!");
                 }
-                mListDelegatePoiters.assign(listPointers, listPointers + (numReads / sizeof(CAmDelegagePtr)));
+                mListDelegatePointers.assign(listPointers, listPointers + (numReads / sizeof(CAmDelegagePtr)));
             }
 
             /**
@@ -1135,7 +1143,7 @@ namespace am
             {
                 (void) handle;
                 (void) userData;
-                if (mListDelegatePoiters.empty())
+                if (mListDelegatePointers.empty())
                     return (false);
                 return (true);
             }
@@ -1147,11 +1155,11 @@ namespace am
             {
                 (void) handle;
                 (void) userData;
-                CAmDelegagePtr delegatePoiter = mListDelegatePoiters.front();
-                mListDelegatePoiters.pop_front();
+                CAmDelegagePtr delegatePoiter = mListDelegatePointers.front();
+                mListDelegatePointers.pop_front();
                 if (delegatePoiter->call(mReturnPipe))
                     delete delegatePoiter;
-                if (mListDelegatePoiters.empty())
+                if (mListDelegatePointers.empty())
                     return (false);
                 return (true);
             }
@@ -1169,7 +1177,7 @@ namespace am
                             mReturnPipe(), //
                             mHandle(),
                             mpSocketHandler(iSocketHandler),
-                            mListDelegatePoiters(), //
+                            mListDelegatePointers(), //
                             receiverCallbackT(this, &CAmSerializer::receiverCallback), //
                             dispatcherCallbackT(this, &CAmSerializer::dispatcherCallback), //
                             checkerCallbackT(this, &CAmSerializer::checkerCallback)
@@ -1205,5 +1213,6 @@ namespace am
     } /* namespace V2 */
 
     typedef V1::CAmSerializer CAmSerializer DEPRECATED("You should use V2::CAmSerializer instead!");
+
 } /* namespace am */
 #endif /* CAMSERIALIZER_H_ */

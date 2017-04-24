@@ -321,7 +321,6 @@ namespace am
         int mPipe[2];
         int mDispatchDone; //this starts / stops the mainloop
 
-        VectorListPollfd_t mfdPollingArray; //!<the polling array for ppoll
         sh_identifier_s mSetPollKeys; //!A set of all used ppoll keys
         VectorListPoll_t mListPoll; //!<list that holds all information for the ppoll
         sh_identifier_s mSetTimerKeys; //!A set of all used timer keys
@@ -435,14 +434,14 @@ namespace am
          * @param a
          * @return
          */
-        inline static void prepare(am::CAmSocketHandler::sh_poll_s& row);
-
+        inline static void prepare(sh_poll_s& row);
+    
         /**
          * functor to return all fired events
          * @param a
          * @return
          */
-        inline static void fire(sh_poll_s* a);
+        inline static void fire(sh_poll_s& a);
 
         /**
          * functor to return all fired events
@@ -456,14 +455,14 @@ namespace am
          * @param a
          * @return
          */
-        inline static bool noDispatching(const sh_poll_s* a);
+        inline static bool noDispatching(const sh_poll_s& a);
 
         /**
          * checks if dispatching is already finished
          * @param a
          * @return
          */
-        inline static bool dispatchingFinished(const sh_poll_s* a);
+        inline static bool dispatchingFinished(const sh_poll_s& a);
 
         /**
          * timer fire callback

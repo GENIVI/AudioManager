@@ -79,7 +79,7 @@ struct SerializerData
     V2::CAmSerializer *pSerializer;
 };
 
-void* ptSerializer(void* data)
+void* ptSerializerSync(void* data)
 {
     SerializerData *pData = (SerializerData*) data;
     std::string testStr(pData->testStr);
@@ -91,11 +91,27 @@ void* ptSerializer(void* data)
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     pData->pSerializer->syncCall(pData->pSerCb, &MockIAmSerializerCb::check);
     pData->pSerializer->syncCall(pData->pSerCb, &MockIAmSerializerCb::checkInt, pData->result);
-    pData->pSerializer->syncCall(pData->pSerCb, &MockIAmSerializerCb::dispatchData, result, ten, pData->testStr);
+    pData->pSerializer->syncCall(pData->pSerCb, &MockIAmSerializerCb::dispatchData, result, ten, pData->testStr);        
+#pragma GCC diagnostic pop
+    return (NULL);
+}
 
+void* ptSerializerASync(void* data)
+{
+    SerializerData *pData = (SerializerData*) data;
+    std::string testStr;
+    bool result = false;
+    int r = 0;
+    const uint32_t ten = 10;
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     for (uint32_t i = 0; i < 5; i++)
+    {
+        testStr = pData->testStr;
         pData->pSerializer->asyncCall(pData->pSerCb, &MockIAmSerializerCb::dispatchData, i, testStr);
-
+    }
+    pData->testStr = testStr;
     pData->pSerializer->asyncInvocation(std::bind([]()->bool
     {   return 1;}));
     pData->pSerializer->asyncInvocation(std::bind([](const int i, int & result)
@@ -105,6 +121,7 @@ void* ptSerializer(void* data)
     pData->pSerializer->asyncCall(pData->pSerCb, &MockIAmSerializerCb::check);
 
     pData->pSerializer->asyncCall(pData->pSerCb, &MockIAmSerializerCb::checkInt);
+        
 #pragma GCC diagnostic pop
     return (NULL);
 }
@@ -113,7 +130,7 @@ ACTION(ActionDispatchData){
 arg1="DispatchData";
 }
 
-TEST(CAmSerializerTest, serializerTest)
+TEST(CAmSerializerTest, syncTest)
 {
     pthread_t serThread;
 
@@ -135,19 +152,51 @@ TEST(CAmSerializerTest, serializerTest)
     serializerData.pSerCb = &serCb;
     serializerData.pSocketHandler = &myHandler;
     serializerData.pSerializer = &serializer;
-    pthread_create(&serThread, NULL, ptSerializer, &serializerData);
+    pthread_create(&serThread, NULL, ptSerializerSync, &serializerData);
 
-    EXPECT_CALL(serCb,check()).Times(3);
-    EXPECT_CALL(serCb,checkInt()).Times(2).WillRepeatedly(Return(100));
+    EXPECT_CALL(serCb,check()).Times(1);
+    EXPECT_CALL(serCb,checkInt()).Times(1).WillRepeatedly(Return(100));
+    EXPECT_CALL(serCb,dispatchData(10,testStr)).Times(1).WillRepeatedly(DoAll(ActionDispatchData(), Return(true)));
 
-    EXPECT_CALL(serCb,dispatchData(10,testStr)).WillOnce(DoAll(ActionDispatchData(), Return(true)));
-    for (int i = 0; i < 5; i++)
-        EXPECT_CALL(serCb,dispatchData(i,testStr)).WillOnce(DoAll(ActionDispatchData(), Return(true)));
     myHandler.start_listenting();
 
     pthread_join(serThread, NULL);
     ASSERT_TRUE(serializerData.testStr == "DispatchData");
     ASSERT_TRUE(serializerData.result == 100);
+}
+
+TEST(CAmSerializerTest, asyncTest)
+{
+    pthread_t serThread;
+
+    MockIAmSerializerCb serCb;
+    CAmSocketHandler myHandler;
+    std::string testStr("testStr");
+    V2::CAmSerializer serializer(&myHandler);
+    sh_timerHandle_t handle;
+    timespec timeout4;
+    timeout4.tv_nsec = 0;
+    timeout4.tv_sec = 3;
+    CAmTimerSockethandlerController testCallback4(&myHandler, timeout4);
+    myHandler.addTimer(timeout4, &testCallback4.pTimerCallback, handle, NULL);
+    EXPECT_CALL(testCallback4,timerCallback(handle,NULL)).Times(1);
+
+    SerializerData serializerData;
+    serializerData.result = 0;
+    serializerData.testStr = testStr;
+    serializerData.pSerCb = &serCb;
+    serializerData.pSocketHandler = &myHandler;
+    serializerData.pSerializer = &serializer;
+    pthread_create(&serThread, NULL, ptSerializerASync, &serializerData);
+
+    EXPECT_CALL(serCb,check()).Times(2);
+    EXPECT_CALL(serCb,checkInt()).Times(1).WillRepeatedly(Return(100));
+    for (int i = 0; i < 5; i++)
+        EXPECT_CALL(serCb,dispatchData(i,testStr)).WillOnce(DoAll(ActionDispatchData(), Return(true)));
+
+    myHandler.start_listenting();
+
+    pthread_join(serThread, NULL);
 }
 
 int main(int argc, char **argv)

@@ -45,7 +45,6 @@ namespace am
     CAmSocketHandler::CAmSocketHandler() :
             mPipe(), //
                     mDispatchDone(1), //
-                    mfdPollingArray(), //
                     mSetPollKeys(MAX_POLLHANDLE), //
                     mListPoll(), //
                     mSetTimerKeys(MAX_TIMERHANDLE),
@@ -108,39 +107,44 @@ namespace am
         clock_gettime(CLOCK_MONOTONIC, &mStartTime);
 #endif    
         timespec buffertime;
-        //freeze mListPoll by copying it - otherwise we get problems when we want to manipulate it during the next lines
-        std::list<sh_poll_s*> listPoll;
+        
+        std::list<sh_poll_s> listPoll;
+        VectorListPoll_t cloneListPoll;
         VectorListPoll_t::iterator listmPollIt;
         VectorListPollfd_t::iterator itMfdPollingArray;
-
+        VectorListPollfd_t fdPollingArray; //!<the polling array for ppoll
+        
         auto preparePollfd = [&](const sh_poll_s& row)
         {
             CAmSocketHandler::prepare((sh_poll_s&)row);
             pollfd temp = row.pollfdValue;
             temp.revents = 0;
-            mfdPollingArray.push_back(temp);
+            fdPollingArray.push_back(temp);
         };
 
         while (!mDispatchDone)
         {
             if (mRecreatePollfds)
             {
-                mfdPollingArray.clear();
+                fdPollingArray.clear();
+                //freeze mListPoll by copying it - otherwise we get problems when we want to manipulate it during the next lines
+                cloneListPoll = mListPoll;
                 //there was a change in the setup, so we need to recreate the fdarray from the list
-                std::for_each(mListPoll.begin(), mListPoll.end(), preparePollfd);
+                std::for_each(cloneListPoll.begin(), cloneListPoll.end(), preparePollfd);
                 mRecreatePollfds = false;
             }
             else
             {
                 //first we go through the registered filedescriptors and check if someone needs preparation:
-                std::for_each(mListPoll.begin(), mListPoll.end(), CAmSocketHandler::prepare);
+                std::for_each(cloneListPoll.begin(), cloneListPoll.end(), CAmSocketHandler::prepare);
             }
+
 #ifndef WITH_TIMERFD
             timerCorrection();
 #endif
             //block until something is on a filedescriptor
 
-            if ((pollStatus = ppoll(&mfdPollingArray[0], mfdPollingArray.size(), insertTime(buffertime), &sigmask)) < 0)
+            if ((pollStatus = ppoll(&fdPollingArray[0], fdPollingArray.size(), insertTime(buffertime), &sigmask)) < 0)
             {
                 if (errno == EINTR)
                 {
@@ -159,24 +163,25 @@ namespace am
                 //todo: here could be a timer that makes sure naughty plugins return!
                 listPoll.clear();
                 //stage 0+1, call firedCB
-                for (itMfdPollingArray = mfdPollingArray.begin(); itMfdPollingArray != mfdPollingArray.end(); itMfdPollingArray++)
+                for (itMfdPollingArray = fdPollingArray.begin(); itMfdPollingArray != fdPollingArray.end(); itMfdPollingArray++)
                 {
                     if (CAmSocketHandler::eventFired(*itMfdPollingArray))
-                    {
-                        listmPollIt = mListPoll.begin() + (itMfdPollingArray - mfdPollingArray.begin());
-                        am::CAmSocketHandler::sh_poll_s * pollItem = &((am::CAmSocketHandler::sh_poll_s&) (*listmPollIt));
-                        listPoll.push_back(pollItem);
-                        CAmSocketHandler::fire(pollItem);
+                    {                        
+                        listmPollIt = cloneListPoll.begin();
+                        std::advance(listmPollIt, std::distance(fdPollingArray.begin(), itMfdPollingArray));
+                       
+                        listPoll.push_back(*listmPollIt);
+                        CAmSocketHandler::fire(*listmPollIt);
                     }
                 }
-
+                
                 //stage 2, lets ask around if some dispatching is necessary, the ones who need stay on the list
-                listPoll.erase(std::remove_if(listPoll.begin(), listPoll.end(), CAmSocketHandler::noDispatching), listPoll.end());
+                listPoll.remove_if(CAmSocketHandler::noDispatching);
 
                 //stage 3, the ones left need to dispatch, we do this as long as there is something to dispatch..
                 do
                 {
-                    listPoll.erase(std::remove_if(listPoll.begin(), listPoll.end(), CAmSocketHandler::dispatchingFinished), listPoll.end());
+                    listPoll.remove_if(CAmSocketHandler::dispatchingFinished);
                 } while (!listPoll.empty());
 
             }
@@ -915,15 +920,37 @@ namespace am
     /**
      * fire callback
      */
-    void CAmSocketHandler::fire(sh_poll_s* a)
+    void CAmSocketHandler::fire(sh_poll_s& a)
     {
         try
         {
-            a->firedCB(a->pollfdValue, a->handle, a->userData);
+            a.firedCB(a.pollfdValue, a.handle, a.userData);
         } catch (std::exception& e)
         {
-            logError("Sockethandler: Exception in FireCallback,caught", e.what());
+            logError("Sockethandler: Exception in Preparecallback,caught", e.what());
         }
+    }
+
+    /**
+     * should disptach
+     */
+    bool CAmSocketHandler::noDispatching(const sh_poll_s& a)
+    {
+        //remove from list of there is no checkCB
+        if (nullptr == a.checkCB)
+            return (true);
+        return (!a.checkCB(a.handle, a.userData));
+    }
+
+    /**
+     * disptach
+     */
+    bool CAmSocketHandler::dispatchingFinished(const sh_poll_s& a)
+    {
+        //remove from list of there is no dispatchCB
+        if (nullptr == a.dispatchCB)
+            return (true);
+        return (!a.dispatchCB(a.handle, a.userData));
     }
 
     /**
@@ -932,28 +959,6 @@ namespace am
     bool CAmSocketHandler::eventFired(const pollfd& a)
     {
         return (a.revents == 0 ? false : true);
-    }
-
-    /**
-     * should disptach
-     */
-    bool CAmSocketHandler::noDispatching(const sh_poll_s* a)
-    {
-        //remove from list of there is no checkCB
-        if (!a->checkCB)
-            return (true);
-        return (!a->checkCB(a->handle, a->userData));
-    }
-
-    /**
-     * disptach
-     */
-    bool CAmSocketHandler::dispatchingFinished(const sh_poll_s* a)
-    {
-        //remove from list of there is no dispatchCB
-        if (!a->dispatchCB)
-            return (true);
-        return (!a->dispatchCB(a->handle, a->userData));
     }
 
     /**
