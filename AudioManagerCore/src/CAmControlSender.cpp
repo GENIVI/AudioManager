@@ -115,7 +115,7 @@ CAmControlSender::CAmControlSender(std::string controlPluginFile,CAmSocketHandle
         createFunc = getCreateFunction<IAmControlSend*()>(controlPluginFile, mlibHandle);
         assert(createFunc!=NULL);
         mController = createFunc();
-
+        mControlPluginFile = controlPluginFile;
         //check libversion
         std::string version, cVersion(ControlVersion);
         mController->getInterfaceVersion(version);
@@ -155,8 +155,18 @@ CAmControlSender::~CAmControlSender()
 {
 	close(mPipe[0]);
 	close(mPipe[1]);
-    //if (mlibHandle)
-    //    dlclose(mlibHandle);
+    void (*destroyFunc)(IAmControlSend*);
+    destroyFunc = getDestroyFunction<void(IAmControlSend*)>(mControlPluginFile,mlibHandle);
+    assert(destroyFunc!=NULL);
+    destroyFunc(mController);
+    if(mlibHandle)
+    {
+        dlclose(mlibHandle);
+    }
+    else
+    {
+        logError("CAmControlSender Dtor: mlibHandle is invalid");
+    }
 }
 
 am_Error_e CAmControlSender::hookUserConnectionRequest(const am_sourceID_t sourceID, const am_sinkID_t sinkID, am_mainConnectionID_t & mainConnectionID)

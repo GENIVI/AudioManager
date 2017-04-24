@@ -86,6 +86,40 @@ template<class T> T* getCreateFunction(const std::string& libname, void*& librar
     return (createFunction);
 }
 
+/**
+ *  * This template tries to destroy
+ * @param libname the full path to the library to be loaded
+ *
+ */
+template<class T> T* getDestroyFunction(const std::string& libname,void* libraryHandle)
+{
+    logInfo("destroy : Trying to destroy : ",libname);
+    // cut off directories
+    char* fileWithPath = const_cast<char*>(libname.c_str());
+    std::string libFileName = basename(fileWithPath);
+    // cut off "lib" in front and cut off .so end"
+    std::string destroyFunctionName = "destroy" + libFileName.substr(3, libFileName.length() - 6);
+    dlerror(); // Clear any existing error
+    union
+    {
+        void* voidPointer;
+        T* typedPointer;
+    } functionPointer;
+    functionPointer.voidPointer = dlsym(libraryHandle, destroyFunctionName.c_str());
+    T* destroyFunction = functionPointer.typedPointer;
+    const char* dlsym_error = dlerror();
+    if (!destroyFunction || dlsym_error)
+    {
+        logError("getDestroyFunction: Failed to load shared lib entry point function name=",
+                                            destroyFunctionName, "error=",dlsym_error);
+    }
+    else
+    {
+        logInfo("getDestroyFunction: loaded successfully plugin", destroyFunctionName);
+    }
+    return (destroyFunction);
+}
+
 }
 
 #endif /* PLUGINTEMPLATE_H_ */
