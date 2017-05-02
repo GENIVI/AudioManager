@@ -67,8 +67,8 @@ set(DBUS_SERVICE_PREFIX "org.genivi.audiomanager"
 set(DBUS_SERVICE_OBJECT_PATH "/org/genivi/audiomanager"
     CACHE PROPERTY "The service object path of the AM - only changable for legacy dbus")
 
-set(DYNAMIC_ID_BOUNDARY 100
-    CACHE INTEGER "The ID boundary between static and dynamic ID ranges")
+set(DYNAMIC_ID_BOUNDARY 101
+    CACHE INTEGER "The ID boundary defines the starting point of the dynamic ID range")
 
 set(LIB_INSTALL_SUFFIX "audiomanager"
     CACHE STRINGS "The suffix used for installation of the plugins")

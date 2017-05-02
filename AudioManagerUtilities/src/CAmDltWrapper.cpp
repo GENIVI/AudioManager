@@ -157,6 +157,15 @@ CAmDltWrapper* CAmDltWrapper::instanctiateOnce(const char *appid, const char * d
 
 CAmDltWrapper* CAmDltWrapper::instance()
 {
+	if (!mpDLTWrapper)
+	{
+		// an application seems not to use our CAmDltWrapper class therefore create default
+		std::ostringstream description;
+		description << "PID=" << getpid() << " _=" << getenv("_");
+		mpDLTWrapper = new CAmDltWrapper("AMDL", description.str().c_str());
+		std::cerr << "Application doesn't call CAmDltWrapper::instanciateOnce!!!" << std::endl;
+		std::cerr << "-> CAmDltWrapper::instance registers DLT application [ AMDL | " << description.str() << " ]" << std::endl;
+	}
 	return mpDLTWrapper;
 }
 

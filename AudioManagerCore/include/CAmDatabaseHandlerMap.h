@@ -442,13 +442,12 @@ private:
     	 * A common method implementing the logic for static and dynamic IDs except main connection ID.
     	 *
     	 * @param resultID Pointer to an output variable.
-    	 * @param sourceID Pointer to ID, which will be manipulated.
+    	 * @param elementID Pointer to ID, which will be manipulated.
     	 * @param desiredStaticID Not 0 for static IDs and 0 for dynamic IDs.
-    	 * 						  Usually the static IDs are in interval [1 , DYNAMIC_ID_BOUNDARY]. Default is 0.
-    	 * @param preferedStaticIDBoundary A limit for a given dynamic ID. Default is DYNAMIC_ID_BOUNDARY.
+    	 * 						  Usually the static IDs are in interval [1 , DYNAMIC_ID_BOUNDARY-1]. Default is 0.
     	 * @return TRUE on successfully changed ID.
     	 */
-    	bool increaseID(int16_t & resultID, AmIdentifier & sourceID, int16_t const desiredStaticID);
+    	bool increaseID(int16_t & resultID, AmIdentifier & elementID, int16_t const desiredStaticID);
       	/**
 		 * \brief Increases the main connection ID.
 		 *
@@ -478,7 +477,7 @@ private:
         		AmMappedData::print(iter->second, output);
         }
     private:
-        template <typename TMapKey,class TMapObject> bool getNextConnectionID(int16_t & resultID, AmIdentifier & sourceID,
+        template <typename TMapKey,class TMapObject> bool getNextConnectionID(int16_t & resultID, AmIdentifier & connID,
         																			  const std::unordered_map<TMapKey, TMapObject> & map);
     };
 

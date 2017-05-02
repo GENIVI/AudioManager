@@ -55,6 +55,7 @@
 		(true)
 #endif
 
+
 #define NOTIFY_OBSERVERS(CALL)\
     for(AmDatabaseObserverCallbacks * nextObserver: mDatabaseObservers)\
             	if(nextObserver->CALL)\
@@ -384,17 +385,17 @@ void CAmDatabaseHandlerMap::AmCrossfader::getDescription (std::string & outStrin
 	outString = fmt.str();
 }
 
-bool CAmDatabaseHandlerMap::AmMappedData::increaseID(int16_t & resultID, AmIdentifier & sourceID,
+bool CAmDatabaseHandlerMap::AmMappedData::increaseID(int16_t & resultID, AmIdentifier & elementID,
 															 int16_t const desiredStaticID = 0)
 {
-	if( desiredStaticID > 0 && desiredStaticID < sourceID.mMin )
+	if( desiredStaticID > 0 && desiredStaticID < elementID.mMin )
 	{
 		resultID = desiredStaticID;
 		return true;
 	}
-	else if( sourceID.mCurrentValue < sourceID.mMax ) //The last used value is 'limit' - 1. e.g. SHRT_MAX - 1, SHRT_MAX is reserved.
+	else if( elementID.mCurrentValue < elementID.mMax ) //The last used value is 'limit' - 1. e.g. SHRT_MAX - 1, SHRT_MAX is reserved.
 	{
-		resultID = sourceID.mCurrentValue++;
+		resultID = elementID.mCurrentValue++;
 		return true;
 	}
 	else
@@ -402,31 +403,31 @@ bool CAmDatabaseHandlerMap::AmMappedData::increaseID(int16_t & resultID, AmIdent
 		resultID = -1;
 		return false;
 	}
- }
+}
 
-template <typename TMapKey,class TMapObject> bool CAmDatabaseHandlerMap::AmMappedData::getNextConnectionID(int16_t & resultID, AmIdentifier & sourceID,
+template <typename TMapKey,class TMapObject> bool CAmDatabaseHandlerMap::AmMappedData::getNextConnectionID(int16_t & resultID, AmIdentifier & connID,
 																			  	  	  	  	  	  	  	  	  	  	  	  const std::unordered_map<TMapKey, TMapObject> & map)
 {
 	TMapKey nextID;
-	int16_t const lastID = sourceID.mCurrentValue;
-	if( sourceID.mCurrentValue < sourceID.mMax )
-		nextID = sourceID.mCurrentValue++;
+	int16_t const lastID = connID.mCurrentValue;
+	if( connID.mCurrentValue < connID.mMax )
+		nextID = connID.mCurrentValue++;
 	else
-		nextID = sourceID.mCurrentValue = sourceID.mMin;
+		nextID = connID.mCurrentValue = connID.mMin;
 
 	bool notFreeIDs = false;
 	while( existsObjectWithKeyInMap(nextID, map) )
 	{
 
-		if( sourceID.mCurrentValue < sourceID.mMax )
-			nextID = sourceID.mCurrentValue++;
+		if( connID.mCurrentValue < connID.mMax )
+			nextID = connID.mCurrentValue++;
 		else
 		{
-			sourceID.mCurrentValue = sourceID.mMin;
-			nextID = sourceID.mCurrentValue++;
+			connID.mCurrentValue = connID.mMin;
+			nextID = connID.mCurrentValue;
 		}
 
-		if( sourceID.mCurrentValue == lastID )
+		if( connID.mCurrentValue == lastID )
 		{
 			notFreeIDs = true;
 			break;
@@ -639,7 +640,7 @@ bool CAmDatabaseHandlerMap::insertSinkDB(const am_Sink_s & sinkData, am_sinkID_t
 
 am_Error_e CAmDatabaseHandlerMap::enterSinkDB(const am_Sink_s & sinkData, am_sinkID_t & sinkID)
 {
-    if(sinkData.sinkID>DYNAMIC_ID_BOUNDARY)
+    if(sinkData.sinkID>=DYNAMIC_ID_BOUNDARY)
     {
     	logError(__METHOD_NAME__,"sinkID must be below:",DYNAMIC_ID_BOUNDARY);
     	return (E_NOT_POSSIBLE);
@@ -734,7 +735,7 @@ bool CAmDatabaseHandlerMap::insertCrossfaderDB(const am_Crossfader_s & crossfade
 
 am_Error_e CAmDatabaseHandlerMap::enterCrossfaderDB(const am_Crossfader_s & crossfaderData, am_crossfaderID_t & crossfaderID)
 {
-    if(crossfaderData.crossfaderID>DYNAMIC_ID_BOUNDARY)
+    if(crossfaderData.crossfaderID>=DYNAMIC_ID_BOUNDARY)
     {
     	logError(__METHOD_NAME__,"crossfaderID must be below:",DYNAMIC_ID_BOUNDARY);
     	return (E_NOT_POSSIBLE);
@@ -822,7 +823,7 @@ bool CAmDatabaseHandlerMap::insertGatewayDB(const am_Gateway_s & gatewayData, am
 am_Error_e CAmDatabaseHandlerMap::enterGatewayDB(const am_Gateway_s & gatewayData, am_gatewayID_t & gatewayID)
 {
 
-    if(gatewayData.gatewayID>DYNAMIC_ID_BOUNDARY)
+    if(gatewayData.gatewayID>=DYNAMIC_ID_BOUNDARY)
     {
     	logError(__METHOD_NAME__,"gatewayID must be below:",DYNAMIC_ID_BOUNDARY);
     	return (E_NOT_POSSIBLE);
@@ -896,7 +897,7 @@ bool CAmDatabaseHandlerMap::insertConverterDB(const am_Converter_s & converteDat
 
 am_Error_e CAmDatabaseHandlerMap::enterConverterDB(const am_Converter_s & converterData, am_converterID_t & converterID)
 {
-    if(converterData.converterID>DYNAMIC_ID_BOUNDARY)
+    if(converterData.converterID>=DYNAMIC_ID_BOUNDARY)
     {
     	logError(__METHOD_NAME__,"converterID must be below:",DYNAMIC_ID_BOUNDARY);
     	return (E_NOT_POSSIBLE);
@@ -1003,7 +1004,7 @@ bool CAmDatabaseHandlerMap::insertSourceDB(const am_Source_s & sourceData, am_so
 
 am_Error_e CAmDatabaseHandlerMap::enterSourceDB(const am_Source_s & sourceData, am_sourceID_t & sourceID)
 {
-    if(sourceData.sourceID>DYNAMIC_ID_BOUNDARY)
+    if(sourceData.sourceID>=DYNAMIC_ID_BOUNDARY)
     {
     	logError(__METHOD_NAME__,"sourceID must be below:",DYNAMIC_ID_BOUNDARY);
     	return (E_NOT_POSSIBLE);
@@ -1136,7 +1137,7 @@ bool CAmDatabaseHandlerMap::insertSinkClassDB(const am_SinkClass_s & sinkClass, 
 
 am_Error_e CAmDatabaseHandlerMap::enterSinkClassDB(const am_SinkClass_s & sinkClass, am_sinkClass_t & sinkClassID)
 {
-    if(sinkClass.sinkClassID>DYNAMIC_ID_BOUNDARY)
+    if(sinkClass.sinkClassID>=DYNAMIC_ID_BOUNDARY)
     {
     	logError(__METHOD_NAME__,"sinkClassID must be <",DYNAMIC_ID_BOUNDARY);
     	return (E_NOT_POSSIBLE);
@@ -1200,7 +1201,7 @@ bool CAmDatabaseHandlerMap::insertSourceClassDB(am_sourceClass_t & sourceClassID
 
 am_Error_e CAmDatabaseHandlerMap::enterSourceClassDB(am_sourceClass_t & sourceClassID, const am_SourceClass_s & sourceClass)
 {
-    if(sourceClass.sourceClassID>DYNAMIC_ID_BOUNDARY)
+    if(sourceClass.sourceClassID>=DYNAMIC_ID_BOUNDARY)
     {
     	logError(__METHOD_NAME__,"sourceClassID must be <",DYNAMIC_ID_BOUNDARY);
     	return (E_NOT_POSSIBLE);
@@ -1505,12 +1506,14 @@ am_Error_e CAmDatabaseHandlerMap::removeMainConnectionDB(const am_mainConnection
         return (E_NON_EXISTENT);
     }
 
+    DB_COND_UPDATE_INIT;
+    DB_COND_UPDATE(mMappedData.mMainConnectionMap[mainConnectionID].mainConnectionID, CS_DISCONNECTED);
+    if (DB_COND_ISMODIFIED)
+        NOTIFY_OBSERVERS2(dboMainConnectionStateChanged, mainConnectionID, CS_DISCONNECTED)
+
     mMappedData.mMainConnectionMap.erase(mainConnectionID);
-
     logVerbose("DatabaseHandler::removeMainConnectionDB removed:", mainConnectionID);
-
-	NOTIFY_OBSERVERS2(dboMainConnectionStateChanged, mainConnectionID, CS_DISCONNECTED)
-	NOTIFY_OBSERVERS1(dboRemovedMainConnection, mainConnectionID)
+    NOTIFY_OBSERVERS1(dboRemovedMainConnection, mainConnectionID)
 
     return (E_OK);
 }
