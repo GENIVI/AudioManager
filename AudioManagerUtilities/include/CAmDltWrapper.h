@@ -341,7 +341,7 @@ public:
     template<typename T> void append(T value)
     {
         std::ostringstream ss;
-        ss << std::dec << value;
+        ss << std::dec << static_cast<int>(value);
         append(ss.str().c_str());
     }
 
