@@ -141,6 +141,7 @@ if(WITH_TESTS)
 	#check if we can find the google stuff
 	pkg_check_modules (GTEST "gtest >= 1.6.0")
 	pkg_check_modules (GMOCK "gmock >= 1.6.0")
+	find_package (Threads)
 	if (NOT("${GTEST_FOUND}" AND "${GMOCK_FOUND}"))
 		message (STATUS "Building and installing with shipped sources")
 		add_subdirectory(googleMock)

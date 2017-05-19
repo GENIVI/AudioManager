@@ -33,6 +33,7 @@ ADD_EXECUTABLE(AmSocketHandlerTest ${Socket_SRCS_CXX})
 TARGET_LINK_LIBRARIES(AmSocketHandlerTest 
     ${GTEST_LIBRARIES}
     ${GMOCK_LIBRARIES}
+    ${CMAKE_THREAD_LIBS_INIT}
     AudioManagerUtilities
 )
 

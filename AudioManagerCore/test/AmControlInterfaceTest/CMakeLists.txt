@@ -37,6 +37,7 @@ add_executable(AmControlInterfaceTest ${CONTROL_INTERFACE_SRCS_CXX})
 TARGET_LINK_LIBRARIES(AmControlInterfaceTest 
     ${GTEST_LIBRARIES}
     ${GMOCK_LIBRARIES}
+    ${CMAKE_THREAD_LIBS_INIT}
 	AudioManagerCore
 )
 

@@ -38,6 +38,7 @@ ADD_TEST(AmRoutingInterfaceTest AmRoutingInterfaceTest)
 TARGET_LINK_LIBRARIES(AmRoutingInterfaceTest 
         ${GTEST_LIBRARIES}
 	${GMOCK_LIBRARIES}
+	${CMAKE_THREAD_LIBS_INIT}
     	AudioManagerCore
 )
 
