@@ -32,9 +32,10 @@ file(GLOB ROUTINGMAP_SRCS_CXX
 ADD_EXECUTABLE( AmRouterMapTest ${ROUTINGMAP_SRCS_CXX})
 
 TARGET_LINK_LIBRARIES(AmRouterMapTest 
-        ${GTEST_LIBRARIES}
+    ${GTEST_LIBRARIES}
 	${GMOCK_LIBRARIES}
-    	AudioManagerCore
+	${CMAKE_THREAD_LIBS_INIT}
+    AudioManagerCore
 )
 
 ADD_TEST(AmRouterMapTest AmRouterMapTest)

@@ -54,6 +54,7 @@ namespace am
         {
         }
         virtual void signalHandlerAction(const sh_pollHandle_t handle, const unsigned sig, void* userData)=0;
+        virtual void signalHandler(int sig, siginfo_t *siginfo, void *context)=0;
     };
 
     class IAmSocketHandlerCb
@@ -78,6 +79,7 @@ namespace am
     {
     public:
         MOCK_METHOD3(signalHandlerAction, void (const sh_pollHandle_t handle, const unsigned sig, void* userData));
+        MOCK_METHOD3(signalHandler, void(int sig, siginfo_t *siginfo, void *context));
     };
 
     class MockSocketHandlerCb: public IAmSocketHandlerCb

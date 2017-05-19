@@ -33,6 +33,7 @@ ADD_EXECUTABLE(AmSerializerTest ${Socket_SRCS_CXX})
 TARGET_LINK_LIBRARIES(AmSerializerTest 
     ${GTEST_LIBRARIES}
     ${GMOCK_LIBRARIES}
+    ${CMAKE_THREAD_LIBS_INIT}
     AudioManagerUtilities
 )
 
