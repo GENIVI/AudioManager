@@ -89,7 +89,7 @@ install(FILES ${CMAKE_BINARY_DIR}/audiomanagercore.pc DESTINATION ${CMAKE_INSTAL
 
 configure_package_config_file (
 	${CMAKE_SOURCE_DIR}/cmake/AudioManagerCoreConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/AudioManagerCoreConfig.cmake
-	INSTALL_DESTINATION lib/${LIB_INSTALL_SUFFIX}/cmake
+	INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/${LIB_INSTALL_SUFFIX}/cmake
 	PATH_VARS AUDIO_INCLUDE_FOLDER )
 
 write_basic_package_version_file(
