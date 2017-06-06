@@ -153,19 +153,22 @@ CAmControlSender::CAmControlSender(std::string controlPluginFile,CAmSocketHandle
 
 CAmControlSender::~CAmControlSender()
 {
-	close(mPipe[0]);
-	close(mPipe[1]);
-    void (*destroyFunc)(IAmControlSend*);
-    destroyFunc = getDestroyFunction<void(IAmControlSend*)>(mControlPluginFile,mlibHandle);
-    assert(destroyFunc!=NULL);
-    destroyFunc(mController);
-    if(mlibHandle)
+    close(mPipe[0]);
+    close(mPipe[1]);
+
+    if (mlibHandle)
     {
+        void (*destroyFunc)(IAmControlSend*);
+        destroyFunc = getDestroyFunction<void(IAmControlSend*)>(mControlPluginFile, mlibHandle);
+        if (destroyFunc)
+        {
+            destroyFunc(mController);
+        }
+        else
+        {
+            logError("CAmControlSender Dtor: destroyFunc is invalid or not found");
+        }
         dlclose(mlibHandle);
-    }
-    else
-    {
-        logError("CAmControlSender Dtor: mlibHandle is invalid");
     }
 }
 
