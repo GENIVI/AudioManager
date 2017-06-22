@@ -29,6 +29,7 @@
 #include <string.h>
 #include <chrono>
 #include <ctime>
+#include <unistd.h>
 
 namespace am
 {

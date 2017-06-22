@@ -18,7 +18,6 @@
 #ifndef CAMSERIALIZER_H_
 #define CAMSERIALIZER_H_
 
-#include <pthread.h>
 #include <deque>
 #include <cassert>
 #include <memory>
