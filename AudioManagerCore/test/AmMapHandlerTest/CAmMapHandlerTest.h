@@ -54,13 +54,14 @@ public:
     CAmMapBasicTest();
     ~CAmMapBasicTest();
     CAmSocketHandler pSocketHandler;
+    CAmDatabaseHandlerMap pDatabaseHandler;
     std::vector<std::string> plistRoutingPluginDirs;
     std::vector<std::string> plistCommandPluginDirs;
     CAmRoutingSender pRoutingSender;
     CAmCommandSender pCommandSender;
     IAmRoutingBackdoor pRoutingInterfaceBackdoor;
     IAmCommandBackdoor pCommandInterfaceBackdoor;
-    CAmDatabaseHandlerMap pDatabaseHandler;
+    
     CAmControlSender pControlSender;
     CAmRouter pRouter;
     CAmControlReceiver pControlReceiver;

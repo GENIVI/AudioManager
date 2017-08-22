@@ -3393,22 +3393,20 @@ am_Error_e CAmDatabaseHandlerMap::enumerateConverters(std::function<void(const a
 
 bool CAmDatabaseHandlerMap::registerObserver(IAmDatabaseObserver * iObserver) {
 	assert(iObserver!=NULL);
-	if (std::find(mDatabaseObservers.begin(), mDatabaseObservers.end(),
-			iObserver) == mDatabaseObservers.end()) {
-		mDatabaseObservers.push_back(
-				dynamic_cast<AmDatabaseObserverCallbacks*>(iObserver)), dynamic_cast<AmDatabaseObserverCallbacks*>(iObserver)->mpDatabaseHandler =
-				nullptr;
+	if (std::find(mDatabaseObservers.begin(), mDatabaseObservers.end(), iObserver) == mDatabaseObservers.end()) 
+        {
+		mDatabaseObservers.push_back(static_cast<AmDatabaseObserverCallbacks*>(iObserver));
+                static_cast<AmDatabaseObserverCallbacks*>(iObserver)->mpDatabaseHandler = this;
 		return true;
 	}
 	return false;
 }
 bool CAmDatabaseHandlerMap::unregisterObserver(IAmDatabaseObserver * iObserver) {
 	assert(iObserver!=NULL);
-	auto it = std::find(mDatabaseObservers.begin(), mDatabaseObservers.end(),
-			iObserver);
+	auto it = std::find(mDatabaseObservers.begin(), mDatabaseObservers.end(), iObserver);
 	if (it != mDatabaseObservers.end()) {
-		mDatabaseObservers.erase(it), dynamic_cast<AmDatabaseObserverCallbacks*>(iObserver)->mpDatabaseHandler =
-				nullptr;
+		mDatabaseObservers.erase(it);
+                static_cast<AmDatabaseObserverCallbacks*>(iObserver)->mpDatabaseHandler = nullptr;
 		return true;
 	}
 	return false;

@@ -17,36 +17,32 @@
 
 cmake_minimum_required(VERSION 3.0)
 
-project (AmRoutingInterfaceTest LANGUAGES CXX VERSION ${DAEMONVERSION})
-
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUNIT_TEST=1 -DDLT_CONTEXT=AudioManager")
+project(AmSerializerTest LANGUAGES CXX VERSION ${DAEMONVERSION})
 
 INCLUDE_DIRECTORIES(   
-    ${AUDIOMANAGER_CORE_INCLUDE} 
+    ${AUDIOMANAGER_UTILITIES_INCLUDE}
     ${GMOCK_INCLUDE_DIRS}
     ${GTEST_INCLUDE_DIRS})
-   
-file(GLOB ROUTING_INTERFACE_SRCS_CXX 
-     "../CAmCommonFunctions.cpp"
-     "*.cpp"
+
+file(GLOB Socket_SRCS_CXX
+    "*.cpp"    
 )
 
-ADD_EXECUTABLE(AmRoutingInterfaceTest ${ROUTING_INTERFACE_SRCS_CXX})
+ADD_EXECUTABLE(AmSerializerTest ${Socket_SRCS_CXX})
 
-ADD_TEST(AmRoutingInterfaceTest AmRoutingInterfaceTest)
-
-TARGET_LINK_LIBRARIES(AmRoutingInterfaceTest 
-        ${GTEST_LIBRARIES}
-	${GMOCK_LIBRARIES}
-	${CMAKE_THREAD_LIBS_INIT}
-    	AudioManagerCore
+TARGET_LINK_LIBRARIES(AmSerializerTest 
+    ${GTEST_LIBRARIES}
+    ${GMOCK_LIBRARIES}
+    ${CMAKE_THREAD_LIBS_INIT}
+    AudioManagerUtilities
 )
 
-ADD_DEPENDENCIES(AmRoutingInterfaceTest AudioManagerCore)
+ADD_DEPENDENCIES(AmSerializerTest AudioManagerUtilities)
 
-INSTALL(TARGETS AmRoutingInterfaceTest 
+INSTALL(TARGETS AmSerializerTest 
         DESTINATION ${TEST_EXECUTABLE_INSTALL_PATH}
         PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
         COMPONENT tests
 )
+
 

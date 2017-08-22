@@ -120,7 +120,7 @@ am_Error_e CAmCommandReceiver::setMainSourceSoundProperty(const am_MainSoundProp
 
 am_Error_e CAmCommandReceiver::setSystemProperty(const am_SystemProperty_s & property)
 {
-    logInfo(__METHOD_NAME__,"type=", property.type, "soundPropertyValue=", property.value);
+    logInfo(__METHOD_NAME__,"type=", property.type, "systemPropertyValue=", property.value);
     return (mControlSender->hookUserSetSystemProperty(property));
 }
 

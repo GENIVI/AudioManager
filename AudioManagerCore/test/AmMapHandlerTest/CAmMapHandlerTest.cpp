@@ -47,10 +47,10 @@ TCLAP::SwitchArg enableDebug ("V","logDlt","print DLT logs to stdout or dlt-daem
 
 
 CAmMapBasicTest::CAmMapBasicTest() :
+                pSocketHandler(),//   
                 pDatabaseHandler(), //
                 plistRoutingPluginDirs(), //
                 plistCommandPluginDirs(), //
-                pSocketHandler(),//                
                 pRoutingSender(plistRoutingPluginDirs,dynamic_cast<IAmDatabaseHandler*>( &pDatabaseHandler )), //
                 pCommandSender(plistCommandPluginDirs, &pSocketHandler), //
                 pRoutingInterfaceBackdoor(), //

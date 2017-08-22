@@ -163,10 +163,10 @@ CAmCommandSender::CAmCommandSender(const std::vector<std::string>& listOfPluginD
     }
 
 	dboNewMainConnection = [&](const am_MainConnectionType_s& mainConnection) {
-		mSerializer.asyncCall<CAmCommandSender, const am_MainConnectionType_s>(this, &CAmCommandSender::cbNewMainConnection, mainConnection);
+		mSerializer.asyncCall(this, &CAmCommandSender::cbNewMainConnection, mainConnection);
 	};
 	dboRemovedMainConnection = [&](const am_mainConnectionID_t mainConnection) {
-		mSerializer.asyncCall<CAmCommandSender, const am_mainConnectionID_t>(this, &CAmCommandSender::cbRemovedMainConnection, mainConnection);
+		mSerializer.asyncCall(this, &CAmCommandSender::cbRemovedMainConnection, mainConnection);
 	};
 	dboNewSink = [&](const am_Sink_s& sink) {
 		if (sink.visible)
@@ -178,7 +178,8 @@ CAmCommandSender::CAmCommandSender(const std::vector<std::string>& listOfPluginD
 			s.sinkClassID = sink.sinkClassID;
 			s.sinkID = sink.sinkID;
 			s.volume = sink.mainVolume;
-			mSerializer.asyncCall<CAmCommandSender, const am_SinkType_s>(this, &CAmCommandSender::cbNewSink, s);
+                        typedef void(CAmCommandSender::*TMeth)(am::am_SinkType_s) ;
+			mSerializer.asyncCall<CAmCommandSender, TMeth, am::am_SinkType_s>(this, &CAmCommandSender::cbNewSink, s);
 		}
 	};
 	dboNewSource = [&](const am_Source_s& source) {
@@ -189,64 +190,65 @@ CAmCommandSender::CAmCommandSender(const std::vector<std::string>& listOfPluginD
 			s.name = source.name;
 			s.sourceClassID = source.sourceClassID;
 			s.sourceID = source.sourceID;
-			mSerializer.asyncCall<CAmCommandSender, const am_SourceType_s>(this, &CAmCommandSender::cbNewSource, s);
+                        typedef void(CAmCommandSender::*TMeth)(am::am_SourceType_s) ;
+			mSerializer.asyncCall<CAmCommandSender, TMeth, am::am_SourceType_s>(this, &CAmCommandSender::cbNewSource, s);
 		}
 	};
 
 	dboRemovedSink = [&](const am_sinkID_t sinkID, const bool visible) {
 		if (visible)
-		mSerializer.asyncCall<CAmCommandSender, const am_sinkID_t>(this, &CAmCommandSender::cbRemovedSink, sinkID);
+		mSerializer.asyncCall(this, &CAmCommandSender::cbRemovedSink, sinkID);
 	};
 	dboRemovedSource = [&](const am_sourceID_t sourceID, const bool visible) {
 		if (visible)
-		mSerializer.asyncCall<CAmCommandSender, const am_sourceID_t>(this, &CAmCommandSender::cbRemovedSource, sourceID);
+		mSerializer.asyncCall(this, &CAmCommandSender::cbRemovedSource, sourceID);
 	};
 	dboNumberOfSinkClassesChanged = [&]() {
-		mSerializer.asyncCall<CAmCommandSender>(this, &CAmCommandSender::cbNumberOfSinkClassesChanged);
+		mSerializer.asyncCall(this, &CAmCommandSender::cbNumberOfSinkClassesChanged);
 	};
 	dboNumberOfSourceClassesChanged = [&]() {
-		mSerializer.asyncCall<CAmCommandSender>(this, &CAmCommandSender::cbNumberOfSourceClassesChanged);
+		mSerializer.asyncCall(this, &CAmCommandSender::cbNumberOfSourceClassesChanged);
 	};
 	dboMainConnectionStateChanged = [&](const am_mainConnectionID_t connectionID, const am_ConnectionState_e connectionState) {
-		mSerializer.asyncCall<CAmCommandSender, const am_connectionID_t, const am_ConnectionState_e>(this, &CAmCommandSender::cbMainConnectionStateChanged, connectionID, connectionState);
+		mSerializer.asyncCall(this, &CAmCommandSender::cbMainConnectionStateChanged, connectionID, connectionState);
 	};
 	dboMainSinkSoundPropertyChanged = [&](const am_sinkID_t sinkID, const am_MainSoundProperty_s& SoundProperty) {
-		mSerializer.asyncCall<CAmCommandSender, const am_sinkID_t, const am_MainSoundProperty_s>(this, &CAmCommandSender::cbMainSinkSoundPropertyChanged, sinkID, SoundProperty);
+		mSerializer.asyncCall(this, &CAmCommandSender::cbMainSinkSoundPropertyChanged, sinkID, SoundProperty);
 	};
 	dboMainSourceSoundPropertyChanged = [&](const am_sourceID_t sourceID, const am_MainSoundProperty_s& SoundProperty) {
-		mSerializer.asyncCall<CAmCommandSender, const am_sourceID_t, const am_MainSoundProperty_s>(this, &CAmCommandSender::cbMainSourceSoundPropertyChanged, sourceID, SoundProperty);
+		mSerializer.asyncCall(this, &CAmCommandSender::cbMainSourceSoundPropertyChanged, sourceID, SoundProperty);
 	};
 	dboSinkAvailabilityChanged = [&](const am_sinkID_t sinkID, const am_Availability_s & availability) {
-		mSerializer.asyncCall<CAmCommandSender, const am_sinkID_t, const am_Availability_s>(this, &CAmCommandSender::cbSinkAvailabilityChanged, sinkID, availability);
+		mSerializer.asyncCall(this, &CAmCommandSender::cbSinkAvailabilityChanged, sinkID, availability);
 	};
 	dboSourceAvailabilityChanged = [&](const am_sourceID_t sourceID, const am_Availability_s & availability) {
-		mSerializer.asyncCall<CAmCommandSender, const am_sourceID_t, const am_Availability_s>(this, &CAmCommandSender::cbSourceAvailabilityChanged, sourceID, availability);
+		mSerializer.asyncCall(this, &CAmCommandSender::cbSourceAvailabilityChanged, sourceID, availability);
 	};
 	dboVolumeChanged = [&](const am_sinkID_t sinkID, const am_mainVolume_t volume) {
-		mSerializer.asyncCall<CAmCommandSender, const am_sinkID_t, const am_mainVolume_t>(this, &CAmCommandSender::cbVolumeChanged, sinkID, volume);
+		mSerializer.asyncCall(this, &CAmCommandSender::cbVolumeChanged, sinkID, volume);
 	};
 	dboSinkMuteStateChanged = [&](const am_sinkID_t sinkID, const am_MuteState_e muteState) {
-		mSerializer.asyncCall<CAmCommandSender, const am_sinkID_t, const am_MuteState_e>(this, &CAmCommandSender::cbSinkMuteStateChanged, sinkID, muteState);
+		mSerializer.asyncCall(this, &CAmCommandSender::cbSinkMuteStateChanged, sinkID, muteState);
 	};
 	dboSystemPropertyChanged = [&](const am_SystemProperty_s& SystemProperty) {
-		mSerializer.asyncCall<CAmCommandSender, const am_SystemProperty_s>(this, &CAmCommandSender::cbSystemPropertyChanged, SystemProperty);
+		mSerializer.asyncCall(this, &CAmCommandSender::cbSystemPropertyChanged, SystemProperty);
 	};
 	dboTimingInformationChanged = [&](const am_mainConnectionID_t mainConnection, const am_timeSync_t time) {
-		mSerializer.asyncCall<CAmCommandSender, const am_mainConnectionID_t, const am_timeSync_t>(this, &CAmCommandSender::cbTimingInformationChanged, mainConnection, time);
+		mSerializer.asyncCall(this, &CAmCommandSender::cbTimingInformationChanged, mainConnection, time);
 	};
 	dboSinkUpdated = [&](const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties, const bool visible) {
 		if (visible)
-		mSerializer.asyncCall<CAmCommandSender, const am_sinkID_t, const am_sinkClass_t, const std::vector<am_MainSoundProperty_s> >(this, &CAmCommandSender::cbSinkUpdated, sinkID, sinkClassID, listMainSoundProperties);
+		mSerializer.asyncCall(this, &CAmCommandSender::cbSinkUpdated, sinkID, sinkClassID, listMainSoundProperties);
 	};
 	dboSourceUpdated = [&](const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties, const bool visible) {
 		if (visible)
-		mSerializer.asyncCall<CAmCommandSender, const am_sourceID_t, const am_sourceClass_t, const std::vector<am_MainSoundProperty_s> >(this, &CAmCommandSender::cbSinkUpdated, sourceID, sourceClassID, listMainSoundProperties);
+		mSerializer.asyncCall(this, &CAmCommandSender::cbSinkUpdated, sourceID, sourceClassID, listMainSoundProperties);
 	};
 	dboSinkMainNotificationConfigurationChanged = [&](const am_sinkID_t sinkID, const am_NotificationConfiguration_s mainNotificationConfiguration) {
-		mSerializer.asyncCall<CAmCommandSender, const am_sinkID_t, const am_NotificationConfiguration_s> (this, &CAmCommandSender::cbSinkMainNotificationConfigurationChanged, sinkID, mainNotificationConfiguration);
+		mSerializer.asyncCall(this, &CAmCommandSender::cbSinkMainNotificationConfigurationChanged, sinkID, mainNotificationConfiguration);
 	};
 	dboSourceMainNotificationConfigurationChanged = [&](const am_sourceID_t sourceID, const am_NotificationConfiguration_s mainNotificationConfiguration) {
-		mSerializer.asyncCall<CAmCommandSender, const am_sourceID_t, const am_NotificationConfiguration_s>(this, &CAmCommandSender::cbSourceMainNotificationConfigurationChanged, sourceID, mainNotificationConfiguration);
+		mSerializer.asyncCall(this, &CAmCommandSender::cbSourceMainNotificationConfigurationChanged, sourceID, mainNotificationConfiguration);
 	};
 }
 
