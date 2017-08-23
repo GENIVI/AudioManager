@@ -162,11 +162,14 @@ public:
     {
 #ifdef WITH_DLT
     #ifdef DLT_IS_LOG_LEVEL_ENABLED
-        return (dlt_user_is_logLevel_enabled(&mDltContext, logLevel) == DLT_RETURN_TRUE);
+        if (mlogDestination == logDestination::DAEMON)
+        {
+            return (dlt_user_is_logLevel_enabled(&mDltContext, logLevel) == DLT_RETURN_TRUE);
+        }
     #else
         (void)logLevel;
-        return true;
     #endif
+        return true;
 #else
         return (logLevel <= mDltContext.log_level_user);
 #endif
