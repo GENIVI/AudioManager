@@ -244,10 +244,11 @@ class CAmSocketHandler
         sh_timer_s() :
                 handle(0)
 #ifdef WITH_TIMERFD
-                        , fd(0)
+                        , fd(-1)
 #endif
                         , countdown(), callback(), userData(0)
         {}
+                
     };
 
     struct sh_signal_s
@@ -291,7 +292,11 @@ class CAmSocketHandler
     VectorListPoll_t mListPoll; //!<list that holds all information for the ppoll
     sh_identifier_s mSetTimerKeys; //!A set of all used timer keys
     std::list<sh_timer_s> mListTimer; //!<list of all timers
+#ifndef WITH_TIMERFD    
     std::list<sh_timer_s> mListActiveTimer; //!<list of all currently active timers
+#else
+    std::list<sh_timer_s> mListRemovedTimers;
+#endif    
     sh_identifier_s mSetSignalhandlerKeys; //!A set of all used signal handler keys
     VectorSignalHandlers_t mSignalHandlers;
     bool mRecreatePollfds; //!<when this is true, the poll list needs to be recreated
@@ -306,7 +311,7 @@ private:
     timespec* insertTime(timespec& buffertime);
 #ifdef WITH_TIMERFD      
     am_Error_e createTimeFD(const itimerspec & timeouts, int & fd);
-
+    void closeRemovedTimers();
 #else 
     void timerUp();
     void timerCorrection();
@@ -446,7 +451,7 @@ private:
     bool nextHandle(sh_identifier_s & handle);
     
     am_Error_e getFDPollData(const sh_pollHandle_t handle, sh_poll_s & outPollData);
-    
+
 public:
 
     CAmSocketHandler();
