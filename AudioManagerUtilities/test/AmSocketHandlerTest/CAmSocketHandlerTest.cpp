@@ -36,9 +36,12 @@
 //todo: expand test, implement more usecases
 //todo: test removeFD
 
+#undef ENABLED_SOCKETHANDLER_TEST_OUTPUT
+#undef ENABLED_TIMERS_TEST_OUTPUT
+
 #define SOCK_PATH "/tmp/mysock"
 
-#define SOCKET_TEST_LOOPS_COUNT 10
+#define SOCKET_TEST_LOOPS_COUNT 50
 #define TIMERS_TO_TEST 500  
 
 using namespace testing;
@@ -464,7 +467,7 @@ TEST(CAmSocketHandlerTest, timersStressTest)
     
     timespec timeoutTime;
     timeoutTime.tv_sec = 0;
-    timeoutTime.tv_nsec = 50000000;// 0,05 
+    timeoutTime.tv_nsec = 10000000;// 0,01 
     
     std::vector<CAmTimerStressTest*> timers; 
    
@@ -896,7 +899,7 @@ CAmSamplePluginStressTest::CAmSamplePluginStressTest(CAmSocketHandler *mySocketH
     userData.f = 1.f;
     timespec timeoutTime;
     timeoutTime.tv_sec = 0;
-    timeoutTime.tv_nsec = 500000000;// 0,5 
+    timeoutTime.tv_nsec = 10000000;// 0,01 
     for(int i=0;i<TIMERS_TO_TEST;i++)
     {
         CAmTimerStressTest2 *ptestCallback1 = new CAmTimerStressTest2(mySocketHandler, timeoutTime, 0);
