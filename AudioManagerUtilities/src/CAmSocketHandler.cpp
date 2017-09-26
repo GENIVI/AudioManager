@@ -58,7 +58,8 @@ CAmSocketHandler::CAmSocketHandler() :
         mSignalHandlers(), //
         mRecreatePollfds(true),
         mInternalCodes(internal_codes_e::NO_ERROR),
-        mSignalFdHandle(0)
+        mSignalFdHandle(0),
+        mListActivePolls()
         #ifndef WITH_TIMERFD
         ,mStartTime() //
         #endif
@@ -106,8 +107,7 @@ void CAmSocketHandler::start_listenting()
 #endif    
     timespec buffertime;
     
-    std::list<sh_poll_s> listPoll;
-    VectorListPoll_t cloneListPoll;
+    std::list<sh_poll_s*> listPoll;
     VectorListPoll_t::iterator listmPollIt;
     VectorListPollfd_t::iterator itMfdPollingArray;
     VectorListPollfd_t fdPollingArray; //!<the polling array for ppoll
@@ -129,15 +129,15 @@ void CAmSocketHandler::start_listenting()
             #endif
             fdPollingArray.clear();
             //freeze mListPoll by copying it - otherwise we get problems when we want to manipulate it during the next lines
-            cloneListPoll = mListPoll;
+            mListActivePolls = mListPoll;
             //there was a change in the setup, so we need to recreate the fdarray from the list
-            std::for_each(cloneListPoll.begin(), cloneListPoll.end(), preparePollfd);
+            std::for_each(mListActivePolls.begin(), mListActivePolls.end(), preparePollfd);
             mRecreatePollfds = false;
         }
         else
         {
             //first we go through the registered filedescriptors and check if someone needs preparation:
-            std::for_each(cloneListPoll.begin(), cloneListPoll.end(), CAmSocketHandler::prepare);
+            std::for_each(mListActivePolls.begin(), mListActivePolls.end(), CAmSocketHandler::prepare);
         }
 
 #ifndef WITH_TIMERFD
@@ -168,14 +168,16 @@ void CAmSocketHandler::start_listenting()
             {
                 if (CAmSocketHandler::eventFired(*itMfdPollingArray))
                 {                        
-                    listmPollIt = cloneListPoll.begin();
+                    listmPollIt = mListActivePolls.begin();
                     std::advance(listmPollIt, std::distance(fdPollingArray.begin(), itMfdPollingArray));
                     
-                    listPoll.push_back(*listmPollIt);
-                    CAmSocketHandler::fire(*listmPollIt);
+                    sh_poll_s & pollObj = *listmPollIt;
+                    
+                    listPoll.push_back(&pollObj);
+                    CAmSocketHandler::fire(&pollObj);
                 }
             }
-            
+ 
             //stage 2, lets ask around if some dispatching is necessary, the ones who need stay on the list
             listPoll.remove_if(CAmSocketHandler::noDispatching);
 
@@ -434,7 +436,7 @@ am::am_Error_e CAmSocketHandler::addFDPoll(const int fd, const short event, IAmS
 am_Error_e CAmSocketHandler::removeFDPoll(const sh_pollHandle_t handle)
 {
     VectorListPoll_t::iterator iterator = mListPoll.begin();
-
+    
     for (; iterator != mListPoll.end(); ++iterator)
     {
         if (iterator->handle == handle)
@@ -442,10 +444,24 @@ am_Error_e CAmSocketHandler::removeFDPoll(const sh_pollHandle_t handle)
             iterator = mListPoll.erase(iterator);
             mSetPollKeys.pollHandles.erase(handle);
             mRecreatePollfds = true;
-            return (E_OK);
+            break;
         }
     }
-    return (E_UNKNOWN);
+    
+    if (iterator == mListPoll.end())
+        return (E_UNKNOWN);
+    
+    VectorListPoll_t::iterator iteratorActivePolls = mListActivePolls.begin();
+    for (; iteratorActivePolls != mListActivePolls.end(); ++iteratorActivePolls)
+    {
+        if (iteratorActivePolls->handle == handle)
+        {
+            iteratorActivePolls->isValid = false;
+            break;
+        }
+    }
+    
+    return (E_OK);
 }
 
 /**
@@ -985,11 +1001,11 @@ void CAmSocketHandler::prepare(am::CAmSocketHandler::sh_poll_s& row)
 /**
   * fire callback
   */
-void CAmSocketHandler::fire(sh_poll_s& a)
+void CAmSocketHandler::fire(const sh_poll_s* a)
 {
     try
     {
-        a.firedCB(a.pollfdValue, a.handle, a.userData);
+        a->firedCB(a->pollfdValue, a->handle, a->userData);
     } catch (std::exception& e)
     {
         logError("Sockethandler: Exception in Preparecallback,caught", e.what());
@@ -999,23 +1015,23 @@ void CAmSocketHandler::fire(sh_poll_s& a)
 /**
   * should disptach
   */
-bool CAmSocketHandler::noDispatching(const sh_poll_s& a)
+bool CAmSocketHandler::noDispatching(const sh_poll_s* a)
 {
     //remove from list of there is no checkCB
-    if (nullptr == a.checkCB)
+    if (nullptr == a->checkCB || false==a->isValid )
         return (true);
-    return (!a.checkCB(a.handle, a.userData));
+    return (!a->checkCB(a->handle, a->userData));
 }
 
 /**
   * disptach
   */
-bool CAmSocketHandler::dispatchingFinished(const sh_poll_s& a)
+bool CAmSocketHandler::dispatchingFinished(const sh_poll_s* a)
 {
     //remove from list of there is no dispatchCB
-    if (nullptr == a.dispatchCB)
+    if (nullptr == a->dispatchCB || false==a->isValid )
         return (true);
-    return (!a.dispatchCB(a.handle, a.userData));
+    return (!a->dispatchCB(a->handle, a->userData));
 }
 
 /**
