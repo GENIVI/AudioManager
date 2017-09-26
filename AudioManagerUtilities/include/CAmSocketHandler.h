@@ -217,6 +217,7 @@ class CAmSocketHandler
 {
     struct sh_poll_s //!<struct that holds information about polls
     {
+        bool isValid;
         sh_pollHandle_t handle; //!<handle to uniquely adress a filedesriptor
         pollfd pollfdValue; //!<the array for polling the filedescriptors
         std::function<void(const sh_pollHandle_t handle, void* userData)> prepareCB; //preperation callback
@@ -226,7 +227,7 @@ class CAmSocketHandler
         void* userData;
 
         sh_poll_s() :
-                handle(0), pollfdValue(), prepareCB(), firedCB(), checkCB(), dispatchCB(), userData(0)
+                isValid(true), handle(0), pollfdValue(), prepareCB(), firedCB(), checkCB(), dispatchCB(), userData(0)
         {}
     };
 
@@ -302,9 +303,11 @@ class CAmSocketHandler
     bool mRecreatePollfds; //!<when this is true, the poll list needs to be recreated
     internal_codes_t mInternalCodes;
     sh_pollHandle_t mSignalFdHandle;
+    VectorListPoll_t mListActivePolls;
 #ifndef WITH_TIMERFD
     timespec mStartTime; //!<here the actual time is saved for timecorrection
 #endif
+    
 private:
     bool fdIsValid(const int fd) const;
 
@@ -413,7 +416,7 @@ private:
       * @param a
       * @return
       */
-    inline static void fire(sh_poll_s& a);
+    inline static void fire(const sh_poll_s* a);
 
     /**
       * functor to return all fired events
@@ -427,14 +430,14 @@ private:
       * @param a
       * @return
       */
-    inline static bool noDispatching(const sh_poll_s& a);
+    inline static bool noDispatching(const sh_poll_s* a);
 
     /**
       * checks if dispatching is already finished
       * @param a
       * @return
       */
-    inline static bool dispatchingFinished(const sh_poll_s& a);
+    inline static bool dispatchingFinished(const sh_poll_s* a);
 
     /**
       * timer fire callback
