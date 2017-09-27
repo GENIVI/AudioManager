@@ -27,6 +27,7 @@
 #include <signal.h>
 #include <vector>
 #include <functional>
+#include <thread>
 #include <sys/signalfd.h>
 #include <audiomanagerconfig.h>
 #include "audiomanagertypes.h"
@@ -309,6 +310,9 @@ class CAmSocketHandler
 #endif
     
 private:
+    
+    static void checkCallerThreadId(void);
+    
     bool fdIsValid(const int fd) const;
 
     timespec* insertTime(timespec& buffertime);
@@ -496,6 +500,8 @@ public:
     void exit_mainloop();
     
     bool fatalErrorOccurred();
+    
+    static const std::thread::id SOCKETHANDLER_THREAD_ID;
 };
 
 } /* namespace am */

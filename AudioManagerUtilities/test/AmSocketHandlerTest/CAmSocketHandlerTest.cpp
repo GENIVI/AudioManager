@@ -252,16 +252,64 @@ void am::CAmTimerMeasurment::timerCallback(sh_timerHandle_t handle, void* userDa
 
 void* playWithSocketServer(void* data)
 {
-    CAmSocketHandler *pSockethandler = (CAmSocketHandler*) data;
-    pSockethandler->start_listenting();
+    int socket_ = *((int*)data);
+    struct sockaddr_in servAddr;
+    unsigned short servPort = 6060;
+    struct hostent *host;
+    
+    if ((host = (struct hostent*) gethostbyname("localhost")) == 0)
+    {
+        std::cout << "ERROR: gethostbyname() failed\n" << std::endl;
+        exit(1);
+    }
+
+    memset(&servAddr, 0, sizeof(servAddr));
+    servAddr.sin_family = AF_INET;
+    servAddr.sin_addr.s_addr = inet_addr(inet_ntoa(*(struct in_addr*) (host->h_addr_list[0])));
+    servAddr.sin_port = htons(servPort);
+    sleep(1);
+    
+    if (connect(socket_, (struct sockaddr *) &servAddr, sizeof(servAddr)) < 0)
+    {
+        std::cout << "ERROR: connect() failed\n" << std::endl;
+    }
+
+    for (int i = 1; i <= SOCKET_TEST_LOOPS_COUNT; i++)
+    {
+        std::string string(TEST_SOCKET_DATA);
+        send(socket_, string.c_str(), string.size(), 0);
+    }
+    std::string string(TEST_SOCKET_DATA_FINAL);
+    send(socket_, string.c_str(), string.size(), 0);
+    
     return (NULL);
 }
 
 void* playWithUnixSocketServer(void* data)
 {
-    CAmSocketHandler *pSockethandler = (CAmSocketHandler*) data;
-    pSockethandler->start_listenting();
+    int socket_ = *((int*)data);
+    struct sockaddr_un servAddr;
+    memset(&servAddr, 0, sizeof(servAddr));
+    strcpy(servAddr.sun_path, SOCK_PATH);
+    servAddr.sun_family = AF_UNIX;
+    sleep(1);
+    
+    if (connect(socket_, (struct sockaddr *) &servAddr, sizeof(servAddr)) < 0)
+    {
+        std::cout << "ERROR: connect() failed\n" << std::endl;
+    }
+
+    for (int i = 1; i <= SOCKET_TEST_LOOPS_COUNT; i++)
+    {
+        std::string stringToSend(TEST_SOCKET_DATA);
+        send(socket_, stringToSend.c_str(), stringToSend.size(), 0);
+    }
+    std::string stringToSend(TEST_SOCKET_DATA_FINAL);
+    send(socket_, stringToSend.c_str(), stringToSend.size(), 0);
+    
     return (NULL);
+    
+    
 }
 
 void* threadCallbackUnixSocketAndTimers(void* data)
@@ -660,32 +708,16 @@ TEST(CAmSocketHandlerTest,playWithUNIXSockets)
     EXPECT_CALL(myplugin,dispatchData(_,_)).Times(SOCKET_TEST_LOOPS_COUNT + 1);
     EXPECT_CALL(myplugin,check(_,_)).Times(SOCKET_TEST_LOOPS_COUNT + 1);
 
-    //creates a thread that handles the serverpart
-    pthread_create(&serverThread, NULL, playWithUnixSocketServer, &myHandler);
-
-    sleep(1); //we need that here because the port needs to be opened
     if ((socket_ = socket(AF_UNIX, SOCK_STREAM, 0)) < 0)
     {
         std::cout << "socket problem" << std::endl;
-
     }
+    
+    //creates a thread that handles the serverpart
+    pthread_create(&serverThread, NULL, playWithUnixSocketServer, &socket_);
 
-    memset(&servAddr, 0, sizeof(servAddr));
-    strcpy(servAddr.sun_path, SOCK_PATH);
-    servAddr.sun_family = AF_UNIX;
-    if (connect(socket_, (struct sockaddr *) &servAddr, sizeof(servAddr)) < 0)
-    {
-        std::cout << "ERROR: connect() failed\n" << std::endl;
-    }
-
-    for (int i = 1; i <= SOCKET_TEST_LOOPS_COUNT; i++)
-    {
-        std::string stringToSend(TEST_SOCKET_DATA);
-        send(socket_, stringToSend.c_str(), stringToSend.size(), 0);
-    }
-    std::string stringToSend(TEST_SOCKET_DATA_FINAL);
-    send(socket_, stringToSend.c_str(), stringToSend.size(), 0);
-
+    myHandler.start_listenting();
+    
     pthread_join(serverThread, NULL);
 
 }
@@ -693,9 +725,6 @@ TEST(CAmSocketHandlerTest,playWithUNIXSockets)
 TEST(CAmSocketHandlerTest,playWithSockets)
 {
     pthread_t serverThread;
-    struct sockaddr_in servAddr;
-    unsigned short servPort = 6060;
-    struct hostent *host;
     int socket_;
 
     CAmSocketHandler myHandler;
@@ -707,39 +736,16 @@ TEST(CAmSocketHandlerTest,playWithSockets)
     EXPECT_CALL(myplugin,dispatchData(_,_)).Times(SOCKET_TEST_LOOPS_COUNT + 1);
     EXPECT_CALL(myplugin,check(_,_)).Times(SOCKET_TEST_LOOPS_COUNT + 1);
 
-    //creates a thread that handles the serverpart
-    pthread_create(&serverThread, NULL, playWithSocketServer, &myHandler);
-
-    sleep(1); //we need that here because the port needs to be opened
     if ((socket_ = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
     {
         std::cout << "socket problem" << std::endl;
 
     }
 
-    if ((host = (struct hostent*) gethostbyname("localhost")) == 0)
-    {
-        std::cout << "ERROR: gethostbyname() failed\n" << std::endl;
-        exit(1);
-    }
-
-    memset(&servAddr, 0, sizeof(servAddr));
-    servAddr.sin_family = AF_INET;
-    servAddr.sin_addr.s_addr = inet_addr(inet_ntoa(*(struct in_addr*) (host->h_addr_list[0])));
-    servAddr.sin_port = htons(servPort);
-
-    if (connect(socket_, (struct sockaddr *) &servAddr, sizeof(servAddr)) < 0)
-    {
-        std::cout << "ERROR: connect() failed\n" << std::endl;
-    }
-
-    for (int i = 1; i <= SOCKET_TEST_LOOPS_COUNT; i++)
-    {
-        std::string string(TEST_SOCKET_DATA);
-        send(socket_, string.c_str(), string.size(), 0);
-    }
-    std::string string(TEST_SOCKET_DATA_FINAL);
-    send(socket_, string.c_str(), string.size(), 0);
+        //creates a thread that handles the serverpart
+    pthread_create(&serverThread, NULL, playWithSocketServer, &socket_);
+    
+    myHandler.start_listenting();
 
     pthread_join(serverThread, NULL);
 
