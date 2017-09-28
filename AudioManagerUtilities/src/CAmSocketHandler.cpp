@@ -43,8 +43,15 @@
 namespace am
 {
 
-const std::thread::id CAmSocketHandler::SOCKETHANDLER_THREAD_ID = std::this_thread::get_id();
-    
+#define CHECK_CALLER_THREAD_ID()\
+    if(std::this_thread::get_id() != mThreadID)\
+    {\
+        logError("Sockethandler: Call from another thread detected!");\
+        assert(false);\
+    }
+
+
+
     
 CAmSocketHandler::CAmSocketHandler() :
         mPipe(), //
@@ -63,7 +70,8 @@ CAmSocketHandler::CAmSocketHandler() :
         mRecreatePollfds(true),
         mInternalCodes(internal_codes_e::NO_ERROR),
         mSignalFdHandle(0),
-        mListActivePolls()
+        mListActivePolls(),
+        mThreadID(std::this_thread::get_id())
         #ifndef WITH_TIMERFD
         ,mStartTime() //
         #endif
@@ -106,7 +114,7 @@ void CAmSocketHandler::start_listenting()
     mDispatchDone = false;
     int16_t pollStatus;
 
-    checkCallerThreadId();
+    CHECK_CALLER_THREAD_ID()
     
 #ifndef WITH_TIMERFD 
     clock_gettime(CLOCK_MONOTONIC, &mStartTime);
@@ -181,6 +189,8 @@ void CAmSocketHandler::start_listenting()
                     
                     listPoll.push_back(&pollObj);
                     CAmSocketHandler::fire(&pollObj);
+                    
+                    itMfdPollingArray->revents = 0;
                 }
             }
  
@@ -259,7 +269,7 @@ am_Error_e CAmSocketHandler::getFDPollData(const sh_pollHandle_t handle, sh_poll
   */
 am_Error_e CAmSocketHandler::listenToSignals(const std::vector<uint8_t> & listSignals)
 {
-    checkCallerThreadId();
+    CHECK_CALLER_THREAD_ID()
     
     int fdErr;
     uint8_t addedSignals = 0;
@@ -374,7 +384,7 @@ am_Error_e CAmSocketHandler::addFDPoll(const int fd,
                                        void* userData, 
                                        sh_pollHandle_t& handle)
 {
-    checkCallerThreadId();
+    CHECK_CALLER_THREAD_ID()
     
     if (!fdIsValid(fd))
         return (E_NON_EXISTENT);
@@ -445,7 +455,7 @@ am::am_Error_e CAmSocketHandler::addFDPoll(const int fd, const short event, IAmS
   */
 am_Error_e CAmSocketHandler::removeFDPoll(const sh_pollHandle_t handle)
 {
-    checkCallerThreadId();
+    CHECK_CALLER_THREAD_ID()
     
     VectorListPoll_t::iterator iterator = mListPoll.begin();
     
@@ -485,7 +495,7 @@ am_Error_e CAmSocketHandler::removeFDPoll(const sh_pollHandle_t handle)
   */
 am_Error_e CAmSocketHandler::addSignalHandler(std::function<void(const sh_pollHandle_t handle, const signalfd_siginfo & info, void* userData)> callback, sh_pollHandle_t& handle, void * userData)
 {
-    checkCallerThreadId();
+    CHECK_CALLER_THREAD_ID()
     
     if (!nextHandle(mSetSignalhandlerKeys))
     {
@@ -509,7 +519,7 @@ am_Error_e CAmSocketHandler::addSignalHandler(std::function<void(const sh_pollHa
   */
 am_Error_e CAmSocketHandler::removeSignalHandler(const sh_pollHandle_t handle)
 {
-    checkCallerThreadId();
+    CHECK_CALLER_THREAD_ID()
     
     VectorSignalHandlers_t::iterator it(mSignalHandlers.begin());
     for (; it != mSignalHandlers.end(); ++it)
@@ -548,7 +558,7 @@ am_Error_e CAmSocketHandler::addTimer(const timespec & timeouts, IAmShTimerCallB
 
 am_Error_e CAmSocketHandler::addTimer(const timespec & timeouts, std::function<void(const sh_timerHandle_t handle, void* userData)> callback, sh_timerHandle_t& handle, void * userData, const bool repeats)
 {
-    checkCallerThreadId();
+    CHECK_CALLER_THREAD_ID()
     assert(!((timeouts.tv_sec == 0) && (timeouts.tv_nsec == 0)));
 
     mListTimer.emplace_back();
@@ -642,7 +652,7 @@ am_Error_e CAmSocketHandler::addTimer(const timespec & timeouts, std::function<v
   */
 am_Error_e CAmSocketHandler::removeTimer(const sh_timerHandle_t handle)
 {
-    checkCallerThreadId();
+    CHECK_CALLER_THREAD_ID()
     assert(handle != 0);
 
     //stop the current timer
@@ -685,7 +695,7 @@ am_Error_e CAmSocketHandler::removeTimer(const sh_timerHandle_t handle)
   */
 am_Error_e CAmSocketHandler::updateTimer(const sh_timerHandle_t handle, const timespec & timeouts)
 {
-    checkCallerThreadId();
+    CHECK_CALLER_THREAD_ID()
     
 #ifdef WITH_TIMERFD
     std::list<sh_timer_s>::iterator it = mListTimer.begin();
@@ -771,7 +781,7 @@ am_Error_e CAmSocketHandler::updateTimer(const sh_timerHandle_t handle, const ti
   */
 am_Error_e CAmSocketHandler::restartTimer(const sh_timerHandle_t handle)
 {
-    checkCallerThreadId();
+    CHECK_CALLER_THREAD_ID()
 #ifdef WITH_TIMERFD
     std::list<sh_timer_s>::iterator it = mListTimer.begin();
     for (; it != mListTimer.end(); ++it)
@@ -850,7 +860,7 @@ am_Error_e CAmSocketHandler::restartTimer(const sh_timerHandle_t handle)
   */
 am_Error_e CAmSocketHandler::stopTimer(const sh_timerHandle_t handle)
 {
-    checkCallerThreadId();
+    CHECK_CALLER_THREAD_ID()
 #ifdef WITH_TIMERFD
     std::list<sh_timer_s>::iterator it = mListTimer.begin();
     for (; it != mListTimer.end(); ++it)
@@ -897,7 +907,7 @@ am_Error_e CAmSocketHandler::stopTimer(const sh_timerHandle_t handle)
   */
 am_Error_e CAmSocketHandler::updateEventFlags(const sh_pollHandle_t handle, const short events)
 {
-    checkCallerThreadId();
+    CHECK_CALLER_THREAD_ID()
     VectorListPoll_t::iterator iterator = mListPoll.begin();
 
     for (; iterator != mListPoll.end(); ++iterator)
@@ -910,14 +920,6 @@ am_Error_e CAmSocketHandler::updateEventFlags(const sh_pollHandle_t handle, cons
         }
     }
     return (E_UNKNOWN);
-}
-
-void CAmSocketHandler::checkCallerThreadId(void)
-{
-    bool bSameThread = (std::this_thread::get_id() == CAmSocketHandler::SOCKETHANDLER_THREAD_ID);
-    if(!bSameThread)
-        logError("Sockethandler: Call from another thread detected!");
-    assert(bSameThread);
 }
 
 /**

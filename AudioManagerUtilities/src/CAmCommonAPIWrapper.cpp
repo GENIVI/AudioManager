@@ -156,7 +156,7 @@ void CAmCommonAPIWrapper::commonFireCallback(const pollfd pollfd, const sh_pollH
       return;
     }
 
-    mWatchToCheck->dispatch(pollfd.events);
+    mWatchToCheck->dispatch(pollfd.revents);
 }
 
 void CAmCommonAPIWrapper::commonPrepareCallback(const sh_pollHandle_t, void*)

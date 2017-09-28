@@ -305,13 +305,12 @@ class CAmSocketHandler
     internal_codes_t mInternalCodes;
     sh_pollHandle_t mSignalFdHandle;
     VectorListPoll_t mListActivePolls;
+    const std::thread::id mThreadID; //!< Socket handler thread id used to check if the calls come from the same thread
 #ifndef WITH_TIMERFD
     timespec mStartTime; //!<here the actual time is saved for timecorrection
 #endif
     
 private:
-    
-    static void checkCallerThreadId(void);
     
     bool fdIsValid(const int fd) const;
 
@@ -500,8 +499,6 @@ public:
     void exit_mainloop();
     
     bool fatalErrorOccurred();
-    
-    static const std::thread::id SOCKETHANDLER_THREAD_ID;
 };
 
 } /* namespace am */
