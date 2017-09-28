@@ -22,7 +22,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 include ( MacroVersionFromGit )
 include ( MacroInterfaceVersions )
 
-project(AudioManager LANGUAGES CXX VERSION ${DAEMONVERSION})
+project(AudioManager LANGUAGES C CXX VERSION ${DAEMONVERSION})
 
 include ( CMakeDependentOption )
 include ( CMakePackageConfigHelpers )
