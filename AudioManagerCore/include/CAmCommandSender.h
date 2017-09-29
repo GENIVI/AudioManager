@@ -81,7 +81,7 @@ public:
     friend class IAmCommandBackdoor; //this is to get access to the loaded plugins and be able to exchange the interfaces
 #endif
 private:
-    
+    void loadPlugins(const std::vector<std::string>& listOfPluginDirectories);
     void unloadLibraries(void); //!< unload the shared libraries
     std::vector<IAmCommandSend*> mListInterfaces; //!< list of all interfaces
     std::vector<void*> mListLibraryHandles; //!< list of all library handles. This information is used to unload the plugins correctly.

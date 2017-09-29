@@ -59,146 +59,154 @@ CAmRoutingSender::CAmRoutingSender(
 		mpRoutingReceiver(), //
 		mpDatabaseHandler(databaseHandler) {
 
-	if (listOfPluginDirectories.empty()) {
-		logError(__METHOD_NAME__,"List of routingplugins is empty");
-	}
+    loadPlugins(listOfPluginDirectories);
 
-	std::vector<std::string> sharedLibraryNameList;
-	std::vector<std::string>::const_iterator dirIter = listOfPluginDirectories.begin();
-	std::vector<std::string>::const_iterator dirIterEnd = listOfPluginDirectories.end();
+    dboNewSink = [&](const am_Sink_s& sink) {
+        addSinkLookup(sink);
+    };
+    dboNewSource = [&](const am_Source_s& source) {
+        addSourceLookup(source);
+    };
+    dboNewDomain = [&](const am_Domain_s& domain) {
+        addDomainLookup(domain);
+    };
+    //todo: newGateway implement something
+    //todo: newConverter implement something
+    dboNewCrossfader = [&](const am_Crossfader_s& crossfader) {
+        addCrossfaderLookup(crossfader);
+    };
+    dboRemovedSink = [&](const am_sinkID_t sinkID, const bool visible) {
+        removeSinkLookup(sinkID);
+    };
+    dboRemovedSource = [&](const am_sourceID_t sourceID, const bool visible) {
+        removeSourceLookup(sourceID);
+    };
+    dboRemoveDomain = [&](const am_domainID_t domainID) {
+        removeDomainLookup(domainID);
+    };
+    //todo: removeGateway implement something
+    //todo: removeConverter implement something
+    dboRemoveCrossfader = [&](const am_crossfaderID_t crossfaderID) {
+        removeCrossfaderLookup(crossfaderID);
+    };
+}
 
-	// search communicator plugins in configured directories
-	for (; dirIter < dirIterEnd; ++dirIter)
-	{
-		const char* directoryName = dirIter->c_str();
-		logInfo(__METHOD_NAME__,"Searching for HookPlugins in", directoryName);
-		DIR *directory = opendir(directoryName);
+void CAmRoutingSender::loadPlugins(const std::vector<std::string>& listOfPluginDirectories)
+{
+    if (listOfPluginDirectories.empty())
+    {
+        logError(__METHOD_NAME__,"List of routingplugins is empty");
+    }
 
-		if (!directory)
-		{
-			logError(__METHOD_NAME__,"Error opening directory: ", directoryName);
-			continue;
-		}
+    std::vector<std::string> sharedLibraryNameList;
+    std::vector<std::string>::const_iterator dirIter = listOfPluginDirectories.begin();
+    std::vector<std::string>::const_iterator dirIterEnd = listOfPluginDirectories.end();
 
-		// iterate content of directory
-		struct dirent *itemInDirectory = 0;
-		while ((itemInDirectory = readdir(directory)))
-		{
-			unsigned char entryType = itemInDirectory->d_type;
-			std::string entryName = itemInDirectory->d_name;
-			std::string fullName = *dirIter + "/" + entryName;
+    // search communicator plugins in configured directories
+    for (; dirIter < dirIterEnd; ++dirIter)
+    {
+        const char* directoryName = dirIter->c_str();
+        logInfo(__METHOD_NAME__,"Searching for HookPlugins in", directoryName);
+        DIR *directory = opendir(directoryName);
 
-			bool regularFile = (entryType == DT_REG || entryType == DT_LNK);
-			bool sharedLibExtension = ("so" == entryName.substr(entryName.find_last_of(".") + 1));
+        if (!directory)
+        {
+            logError(__METHOD_NAME__,"Error opening directory: ", directoryName);
+            continue;
+        }
 
-			// Handle cases where readdir() could not determine the file type
-			if (entryType == DT_UNKNOWN) {
-				struct stat buf;
+        // iterate content of directory
+        struct dirent *itemInDirectory = 0;
+        while ((itemInDirectory = readdir(directory)))
+        {
+            unsigned char entryType = itemInDirectory->d_type;
+            std::string entryName = itemInDirectory->d_name;
+            std::string fullName = *dirIter + "/" + entryName;
 
-				if (stat(fullName.c_str(), &buf)) {
-					logInfo(__METHOD_NAME__,"Failed to stat file: ", entryName, errno);
-					continue;
-				}
+            bool regularFile = (entryType == DT_REG || entryType == DT_LNK);
+            bool sharedLibExtension = ("so" == entryName.substr(entryName.find_last_of(".") + 1));
 
-				regularFile = S_ISREG(buf.st_mode);
-			}
+            // Handle cases where readdir() could not determine the file type
+            if (entryType == DT_UNKNOWN)
+            {
+                struct stat buf;
 
-			if (regularFile && sharedLibExtension)
-			{
-				logInfo(__METHOD_NAME__,"adding file: ", entryName);
-				std::string name(directoryName);
-				sharedLibraryNameList.push_back(name + "/" + entryName);
-			}
-			else
-			{
-				logInfo(__METHOD_NAME__, "plugin search ignoring file :", entryName);
-			}
-		}
+                if (stat(fullName.c_str(), &buf))
+                {
+                    logInfo(__METHOD_NAME__,"Failed to stat file: ", entryName, errno);
+                    continue;
+                }
 
-		closedir(directory);
-	}
+                regularFile = S_ISREG(buf.st_mode);
+            }
 
-	// iterate all communicator plugins and start them
-	std::vector<std::string>::iterator iter = sharedLibraryNameList.begin();
-	std::vector<std::string>::iterator iterEnd = sharedLibraryNameList.end();
+            if (regularFile && sharedLibExtension)
+            {
+                logInfo(__METHOD_NAME__,"adding file: ", entryName);
+                std::string name(directoryName);
+                sharedLibraryNameList.push_back(name + "/" + entryName);
+            }
+            else
+            {
+                logInfo(__METHOD_NAME__, "plugin search ignoring file :", entryName);
+            }
+        }
 
-	for (; iter != iterEnd; ++iter)
-	{
-		logInfo(__METHOD_NAME__,"try loading: ", *iter);
+        closedir(directory);
+    }
 
-		IAmRoutingSend* (*createFunc)();
-		void* tempLibHandle = NULL;
-		createFunc = getCreateFunction<IAmRoutingSend*()>(*iter, tempLibHandle);
+    // iterate all communicator plugins and start them
+    std::vector<std::string>::iterator iter = sharedLibraryNameList.begin();
+    std::vector<std::string>::iterator iterEnd = sharedLibraryNameList.end();
 
-		if (!createFunc)
-		{
-			logError(__METHOD_NAME__,"Entry point of RoutingPlugin not found");
-			continue;
-		}
+    for (; iter != iterEnd; ++iter)
+    {
+        logInfo(__METHOD_NAME__,"try loading: ", *iter);
 
-		IAmRoutingSend* router = createFunc();
+        IAmRoutingSend* (*createFunc)();
+        void* tempLibHandle = NULL;
+        createFunc = getCreateFunction<IAmRoutingSend*()>(*iter, tempLibHandle);
 
-		if (!router)
-		{
-			logError(__METHOD_NAME__,"initialization of plugin ",*iter,"failed. Entry Function not callable");
-			dlclose(tempLibHandle);
-			continue;
-		}
+        if (!createFunc)
+        {
+            logError(__METHOD_NAME__,"Entry point of RoutingPlugin not found");
+            continue;
+        }
 
-		InterfaceNamePairs routerInterface;
-		routerInterface.routingInterface = router;
+        IAmRoutingSend* router = createFunc();
 
-		//check libversion
-		std::string version, cVersion(RoutingVersion);
-		router->getInterfaceVersion(version);
-		uint16_t minorVersion, majorVersion, cMinorVersion, cMajorVersion;
-		std::istringstream(version.substr(0, 1)) >> majorVersion;
-		std::istringstream(version.substr(2, 1)) >> minorVersion;
-		std::istringstream(cVersion.substr(0, 1)) >> cMajorVersion;
-		std::istringstream(cVersion.substr(2, 1)) >> cMinorVersion;
+        if (!router)
+        {
+            logError(__METHOD_NAME__,"initialization of plugin ",*iter,"failed. Entry Function not callable");
+            dlclose(tempLibHandle);
+            continue;
+        }
 
-		if (majorVersion < cMajorVersion || ((majorVersion == cMajorVersion) && (minorVersion > cMinorVersion)))
-		{
-			logError(__METHOD_NAME__,"Routing initialization failed. Version of Interface to old");
-			dlclose(tempLibHandle);
-			continue;
-		}
+        InterfaceNamePairs routerInterface;
+        routerInterface.routingInterface = router;
 
-		//here, the busname is saved together with the interface. Later The domains will register with the name and sinks, sources etc with the domain....
-		router->returnBusName(routerInterface.busName);
-		assert(!routerInterface.busName.empty());
-		mListInterfaces.push_back(routerInterface);
-		mListLibraryHandles.push_back(tempLibHandle);
-	}
+        //check libversion
+        std::string version, cVersion(RoutingVersion);
+        router->getInterfaceVersion(version);
+        uint16_t minorVersion, majorVersion, cMinorVersion, cMajorVersion;
+        std::istringstream(version.substr(0, 1)) >> majorVersion;
+        std::istringstream(version.substr(2, 1)) >> minorVersion;
+        std::istringstream(cVersion.substr(0, 1)) >> cMajorVersion;
+        std::istringstream(cVersion.substr(2, 1)) >> cMinorVersion;
 
-	dboNewSink = [&](const am_Sink_s& sink) {
-		addSinkLookup(sink);
-	};
-	dboNewSource = [&](const am_Source_s& source) {
-		addSourceLookup(source);
-	};
-	dboNewDomain = [&](const am_Domain_s& domain) {
-		addDomainLookup(domain);
-	};
-	//todo: newGateway implement something
-	//todo: newConverter implement something
-	dboNewCrossfader = [&](const am_Crossfader_s& crossfader) {
-		addCrossfaderLookup(crossfader);
-	};
-	dboRemovedSink = [&](const am_sinkID_t sinkID, const bool visible) {
-		removeSinkLookup(sinkID);
-	};
-	dboRemovedSource = [&](const am_sourceID_t sourceID, const bool visible) {
-		removeSourceLookup(sourceID);
-	};
-	dboRemoveDomain = [&](const am_domainID_t domainID) {
-		removeDomainLookup(domainID);
-	};
-	//todo: removeGateway implement something
-	//todo: removeConverter implement something
-	dboRemoveCrossfader = [&](const am_crossfaderID_t crossfaderID) {
-		removeCrossfaderLookup(crossfaderID);
-	};
+        if (majorVersion < cMajorVersion || ((majorVersion == cMajorVersion) && (minorVersion > cMinorVersion)))
+        {
+            logError(__METHOD_NAME__,"Routing initialization failed. Version of Interface to old");
+            dlclose(tempLibHandle);
+            continue;
+        }
+
+        //here, the busname is saved together with the interface. Later The domains will register with the name and sinks, sources etc with the domain....
+        router->returnBusName(routerInterface.busName);
+        assert(!routerInterface.busName.empty());
+        mListInterfaces.push_back(routerInterface);
+        mListLibraryHandles.push_back(tempLibHandle);
+    }
 }
 
 CAmRoutingSender::~CAmRoutingSender()
