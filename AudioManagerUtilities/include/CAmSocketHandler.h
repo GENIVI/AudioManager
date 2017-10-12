@@ -422,13 +422,6 @@ private:
     inline static void fire(const sh_poll_s* a);
 
     /**
-      * functor to return all fired events
-      * @param a
-      * @return
-      */
-    inline static bool eventFired(const pollfd& a);
-
-    /**
       * functor to help find the items that do not need dispatching
       * @param a
       * @return
