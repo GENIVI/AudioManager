@@ -22,6 +22,7 @@
 #include <string>
 #include <list>
 #include <map>
+#include <unordered_map>
 #include <queue>
 #include <memory>
 #include <cassert>
@@ -48,29 +49,37 @@ class CAmSocketHandler;
 
 class CAmCommonAPIWrapper
 {
-    void commonPrepareCallback(const sh_pollHandle_t handle, void* userData);
+    void commonPrepareCallback ( const sh_pollHandle_t, void* );
 	TAmShPollPrepare<CAmCommonAPIWrapper> pCommonPrepareCallback;
-
-    bool commonDispatchCallback(const sh_pollHandle_t handle, void* userData);
-    TAmShPollDispatch<CAmCommonAPIWrapper> pCommonDispatchCallback;
 
     void commonFireCallback(const pollfd pollfd, const sh_pollHandle_t, void*);
     TAmShPollFired<CAmCommonAPIWrapper> pCommonFireCallback;
 
     bool commonCheckCallback(const sh_pollHandle_t handle, void*);
     TAmShPollCheck<CAmCommonAPIWrapper> pCommonCheckCallback;
+    
+    bool commonDispatchCallback(const sh_pollHandle_t handle, void* userData);
+    TAmShPollDispatch<CAmCommonAPIWrapper> pCommonDispatchCallback;
 
     void commonTimerCallback(sh_timerHandle_t handle, void* userData);
     TAmShTimerCallBack<CAmCommonAPIWrapper> pCommonTimerCallback;
 
-     struct timerHandles
-    {
-        sh_timerHandle_t handle;
-        CommonAPI::Timeout* timeout;
-    };
-
     CAmSocketHandler *mpSocketHandler; //!< pointer to the sockethandler
 
+    typedef std::vector<CommonAPI::DispatchSource*> ArrayDispatchSources;
+    typedef ArrayDispatchSources::iterator IteratorArrayDispatchSources;
+    typedef std::unordered_map<am::sh_pollHandle_t, CommonAPI::Watch*> MapWatches;
+    typedef MapWatches::iterator IteratorMapWatches;
+    typedef std::unordered_map<am::sh_pollHandle_t,std::list<CommonAPI::DispatchSource*>> MapDispatchSources;
+    typedef MapDispatchSources::iterator IteratorDispatchSources;
+    typedef std::unordered_map<am::sh_pollHandle_t, CommonAPI::Timeout*> MapTimeouts;
+    typedef MapTimeouts::iterator IteratorMapTimeouts;
+    
+    ArrayDispatchSources mRegisteredDispatchSources;
+    MapWatches mMapWatches;
+    MapDispatchSources mSourcesToDispatch;
+    MapTimeouts mListTimerhandles;
+    
     std::shared_ptr<CommonAPI::Runtime> mRuntime;
     std::shared_ptr<CommonAPI::MainLoopContext> mContext;
 
@@ -78,22 +87,23 @@ class CAmCommonAPIWrapper
     CommonAPI::WatchListenerSubscription mWatchListenerSubscription;
     CommonAPI::TimeoutSourceListenerSubscription mTimeoutSourceListenerSubscription;
     CommonAPI::WakeupListenerSubscription mWakeupListenerSubscription;
-    std::multimap<CommonAPI::DispatchPriority, CommonAPI::DispatchSource*> mRegisteredDispatchSources;
-    std::map<int,CommonAPI::Watch*> mMapWatches;
-    CommonAPI::Watch* mWatchToCheck;
-    std::list<CommonAPI::DispatchSource*> mSourcesToDispatch;
-    std::vector<timerHandles> mpListTimerhandles;
+
 
 	void registerDispatchSource(CommonAPI::DispatchSource* dispatchSource, const CommonAPI::DispatchPriority dispatchPriority);
 	void deregisterDispatchSource(CommonAPI::DispatchSource* dispatchSource);
+    void deregisterAllDispatchSource();
 	void registerWatch(CommonAPI::Watch* watch, const CommonAPI::DispatchPriority dispatchPriority);
 	void deregisterWatch(CommonAPI::Watch* watch);
+    void deregisterAllWatches();
 	void registerTimeout(CommonAPI::Timeout* timeout, const CommonAPI::DispatchPriority dispatchPriority);
 	void deregisterTimeout(CommonAPI::Timeout* timeout);
-	void wakeup();
-
+    void deregisterAllTimeouts();
+    
+    CommonAPI::Watch* watchWithHandle(const sh_pollHandle_t handle); 
+    CommonAPI::Timeout* timeoutWithHandle(const sh_pollHandle_t handle);
+    
 protected:
-    CAmCommonAPIWrapper(CAmSocketHandler* socketHandler, const std::string & applicationName = "") ;
+    CAmCommonAPIWrapper ( CAmSocketHandler* socketHandler, const std::string& applicationName = "" ) ;
 
 public:
 
