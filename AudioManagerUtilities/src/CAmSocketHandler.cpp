@@ -31,7 +31,7 @@
 #include <features.h>
 #include <csignal>
 #include <unistd.h>
-
+#include <string.h>
 
 #include "CAmDltWrapper.h"
 #include "CAmSocketHandler.h"
@@ -180,7 +180,8 @@ void CAmSocketHandler::start_listenting()
             //stage 0+1, call firedCB
             for (itMfdPollingArray = fdPollingArray.begin(); itMfdPollingArray != fdPollingArray.end(); itMfdPollingArray++)
             {
-                if (CAmSocketHandler::eventFired(*itMfdPollingArray))
+                itMfdPollingArray->revents &= itMfdPollingArray->events | POLLERR | POLLHUP;
+                if ( itMfdPollingArray->revents!=0 )
                 {                        
                     listmPollIt = mListActivePolls.begin();
                     std::advance(listmPollIt, std::distance(fdPollingArray.begin(), itMfdPollingArray));
@@ -189,7 +190,6 @@ void CAmSocketHandler::start_listenting()
                     
                     listPoll.push_back(&pollObj);
                     CAmSocketHandler::fire(&pollObj);
-                    
                     itMfdPollingArray->revents = 0;
                 }
             }
@@ -312,31 +312,19 @@ am_Error_e CAmSocketHandler::listenToSignals(const std::vector<uint8_t> & listSi
         return (E_NOT_POSSIBLE);
     }
 
-    int signalHandlerFd;
+    sh_poll_s sgPollData;
     if(mSignalFdHandle)
     {
-      sh_poll_s sgPollData;
       if(E_OK!=getFDPollData(mSignalFdHandle, sgPollData))
       {
-         removeFDPoll(mSignalFdHandle);
-         mSignalFdHandle = 0;
-      }
-      else 
-      {
-        int signalHandlerFd = signalfd(sgPollData.pollfdValue.fd, &sigset, 0);
-        if (signalHandlerFd == -1)
-        {
-            logError("Could not update signal fd!");
-            return (E_NOT_POSSIBLE);
-        }
-        return E_OK;
+          mSignalFdHandle = 0;
       }
     }
     
     if(0==mSignalFdHandle)
     {
       /* Create the signalfd */
-      signalHandlerFd = signalfd(-1, &sigset, 0);
+      int signalHandlerFd = signalfd(-1, &sigset, 0);
       if (signalHandlerFd == -1)
       {
           logError("Could not open signal fd!");
@@ -356,10 +344,19 @@ am_Error_e CAmSocketHandler::listenToSignals(const std::vector<uint8_t> & listSi
           it.callback(it.handle, info, it.userData);
       };
       /* We're going to add the signal fd through addFDPoll. At this point we don't have any signal listeners. */
-      am_Error_e shFdError = addFDPoll(signalHandlerFd, POLLIN | POLLERR | POLLHUP, NULL, actionPoll, [](const sh_pollHandle_t, void*)
+      return addFDPoll(signalHandlerFd, POLLIN | POLLERR | POLLHUP, NULL, actionPoll, [](const sh_pollHandle_t, void*)
                                         {   return (false);}, NULL, NULL, mSignalFdHandle);
-      return shFdError;
     }    
+    else 
+    {
+        int signalHandlerFd = signalfd(sgPollData.pollfdValue.fd, &sigset, 0);
+        if (signalHandlerFd == -1)
+        {
+            logError("Could not update signal fd!", strerror(errno));
+            return (E_NOT_POSSIBLE);
+        }
+        return E_OK;
+    }
 }
 
 /**
@@ -611,7 +608,7 @@ am_Error_e CAmSocketHandler::addTimer(const timespec & timeouts, std::function<v
         return err;
     }
 
-    static auto actionPoll = [](const pollfd pollfd, const sh_pollHandle_t handle, void* userData)
+    auto actionPoll = [](const pollfd pollfd, const sh_pollHandle_t handle, void* userData)
     {
         uint64_t mExpirations;
         if (read(pollfd.fd, &mExpirations, sizeof(uint64_t)) == -1)
@@ -1068,14 +1065,6 @@ bool CAmSocketHandler::dispatchingFinished(const sh_poll_s* a)
 }
 
 /**
-  * event triggered
-  */
-bool CAmSocketHandler::eventFired(const pollfd& a)
-{
-    return (a.revents == 0 ? false : true);
-}
-
-/**
   * is used to set the pointer for the ppoll command
   * @param buffertime
   * @return
@@ -1088,8 +1077,8 @@ inline timespec* CAmSocketHandler::insertTime(timespec& buffertime)
         buffertime = mListActiveTimer.front().countdown;
         return (&buffertime);
     }
-    else
-#endif    
+    else   
+#endif         
     {
         return (NULL);
     }
