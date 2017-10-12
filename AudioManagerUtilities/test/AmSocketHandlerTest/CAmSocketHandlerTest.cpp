@@ -42,7 +42,7 @@
 #define SOCK_PATH "/tmp/mysock"
 
 #define SOCKET_TEST_LOOPS_COUNT 50
-#define TIMERS_TO_TEST 500  
+#define TIMERS_TO_TEST 100
 
 using namespace testing;
 using namespace am;
@@ -194,10 +194,16 @@ void am::CAmTimerStressTest2::timerCallback(sh_timerHandle_t handle, void* pUser
 
 
 CAmTimerMeasurment::CAmTimerMeasurment(CAmSocketHandler *myHandler, const timespec &timeout, const std::string & label, const int32_t repeats, void * userData) :
-        MockIAmTimerCb(), pTimerCallback(this, &CAmTimerMeasurment::timerCallback), //
-        mSocketHandler(myHandler), mUpdateTimeout(timeout), mUpdateTimePoint(std::chrono::seconds
-        { mUpdateTimeout.tv_sec } + std::chrono::nanoseconds
-        { mUpdateTimeout.tv_nsec }), mLastInvocationTime(), mExpected(mUpdateTimePoint - TP_ZERO), mRepeats(repeats), mpUserData(userData), mDebugText(label)
+        MockIAmTimerCb()
+        , pTimerCallback(this, &CAmTimerMeasurment::timerCallback)
+        , mSocketHandler(myHandler)
+        , mUpdateTimeout(timeout)
+        , mUpdateTimePoint(std::chrono::seconds{ mUpdateTimeout.tv_sec } + std::chrono::nanoseconds{ mUpdateTimeout.tv_nsec })
+        , mLastInvocationTime()
+        , mExpected(mUpdateTimePoint - TP_ZERO)
+        , mRepeats(repeats)
+        , mpUserData(userData)
+        , mDebugText(label)
 {
 }
 
@@ -245,7 +251,7 @@ void am::CAmTimerMeasurment::timerCallback(sh_timerHandle_t handle, void* userDa
         std::cout << mDebugText << " Init measurment " << std::endl;
 #endif
         mLastInvocationTime = t_end;
-        mSocketHandler->updateTimer(handle, mUpdateTimeout);
+        mSocketHandler->updateTimer( handle, mUpdateTimeout);
     }
 
 }
@@ -531,17 +537,17 @@ TEST(CAmSocketHandlerTest, timersStressTest)
     timespec timeoutTime11, timeout12, timeout13;
     timeoutTime11.tv_sec = 1;
     timeoutTime11.tv_nsec = 34000000;
-    CAmTimerMeasurment testCallback11(&myHandler, timeoutTime11, "repeatedCallback 1", std::numeric_limits<int32_t>::max());
+    CAmTimerMeasurment testCallback11(&myHandler, timeoutTime11, "repeated 1", std::numeric_limits<int32_t>::max());
 
-    timeout12.tv_nsec = 2000000;
+    timeout12.tv_nsec = 100000000;
     timeout12.tv_sec = 0;
-    CAmTimerMeasurment testCallback12(&myHandler, timeout12, "repeatedCallback 2", std::numeric_limits<int32_t>::max());
+    CAmTimerMeasurment testCallback12(&myHandler, timeout12, "repeated 2", std::numeric_limits<int32_t>::max());
 
     timeout13.tv_nsec = 333000000;
     timeout13.tv_sec = 3;
-    CAmTimerMeasurment testCallback13(&myHandler, timeout13, "oneshotCallback 3");
+    CAmTimerMeasurment testCallback13(&myHandler, timeout13, "oneshot 3");
 
-    myHandler.addTimer(timeoutTime, &testCallback11.pTimerCallback, handle, NULL, true);
+    myHandler.addTimer(timeoutTime11, &testCallback11.pTimerCallback, handle, NULL, true);
     EXPECT_CALL(testCallback11,timerCallback(_,NULL)).Times(AnyNumber());
 
     myHandler.addTimer(timeout12, &testCallback12.pTimerCallback, handle, NULL, true);
@@ -557,8 +563,8 @@ TEST(CAmSocketHandlerTest, timersStressTest)
 
     EXPECT_CALL(testCallback4,timerCallback(_,NULL)).Times(1);
     myHandler.start_listenting();
-        
-    for(int i=0;i<TIMERS_TO_TEST;i++)
+     
+    for(int i=0;i<timers.size();i++)
     {
         if(timers[i])
             delete timers[i], timers[i]=NULL;    
@@ -573,15 +579,15 @@ TEST(CAmSocketHandlerTest,playWithTimers)
     timespec timeoutTime, timeout2, timeout3, timeout4;
     timeoutTime.tv_sec = 1;
     timeoutTime.tv_nsec = 34000000;
-    CAmTimerMeasurment testCallback1(&myHandler, timeoutTime, "repeatedCallback 1", std::numeric_limits<int32_t>::max());
+    CAmTimerMeasurment testCallback1(&myHandler, timeoutTime, "repeated 1", std::numeric_limits<int32_t>::max());
 
     timeout2.tv_nsec = 2000000;
     timeout2.tv_sec = 0;
-    CAmTimerMeasurment testCallback2(&myHandler, timeout2, "repeatedCallback 2", std::numeric_limits<int32_t>::max());
+    CAmTimerMeasurment testCallback2(&myHandler, timeout2, "repeated 2", std::numeric_limits<int32_t>::max());
 
     timeout3.tv_nsec = 333000000;
     timeout3.tv_sec = 3;
-    CAmTimerMeasurment testCallback3(&myHandler, timeout3, "oneshotCallback 3");
+    CAmTimerMeasurment testCallback3(&myHandler, timeout3, "oneshot 3");
     timeout4.tv_nsec = 0;
     timeout4.tv_sec = 8;
     CAmTimerSockethandlerController testCallback4(&myHandler, timeout4);
@@ -609,7 +615,7 @@ TEST(CAmSocketHandlerTest,playWithTimers)
 #else
     ASSERT_EQ(handle, 4);
 #endif
-    EXPECT_CALL(testCallback3,timerCallback(handle,NULL)).Times(2); //+1 because of measurment
+    EXPECT_CALL(testCallback3,timerCallback(handle,NULL)).Times(2); 
 
     myHandler.addTimer(timeout4, &testCallback4.pTimerCallback, handle, NULL);
 #ifndef WITH_TIMERFD
@@ -753,6 +759,14 @@ TEST(CAmSocketHandlerTest,playWithSockets)
 
 int main(int argc, char **argv)
 {
+    struct sched_param param;
+    param.sched_priority = 50;//mid rt proprity
+    if (sched_setscheduler(0, SCHED_FIFO, & param) != 0) 
+    {
+        std::cerr <<"sched_setscheduler:"<<strerror(errno)<<std::endl;
+        std::cerr << "Try running as root"<<std::endl;
+    }
+    
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
