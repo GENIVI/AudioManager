@@ -22,7 +22,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 include ( MacroVersionFromGit )
 include ( MacroInterfaceVersions )
 
-project(AudioManager LANGUAGES CXX VERSION ${DAEMONVERSION})
+project(AudioManager LANGUAGES C CXX VERSION ${DAEMONVERSION})
 
 include ( CMakeDependentOption )
 include ( CMakePackageConfigHelpers )
@@ -76,13 +76,13 @@ set(DYNAMIC_ID_BOUNDARY 101
 set(LIB_INSTALL_SUFFIX "audiomanager"
     CACHE STRINGS "The suffix used for installation of the plugins")
 
-set(TEST_EXECUTABLE_INSTALL_PATH ${CMAKE_INSTALL_PREFIX}/bin
+set(TEST_EXECUTABLE_INSTALL_PATH ${CMAKE_INSTALL_BINDIR}
     CACHE STRINGS "The test binaries will be installed here")
 
 set(DOC_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/doc/AudioManager
     CACHE STRINGS "The doxygen documentation will be placed here")
 
-set(AM_SHARE_FOLDER ${CMAKE_INSTALL_PREFIX}/share/audiomanager
+set(AM_SHARE_FOLDER ${CMAKE_INSTALL_DATAROOTDIR}/audiomanager
     CACHE STRINGS "The share folder for the AM. Some DBus xmls will be placed here and so on")
 
 set(AM_MAP_CAPACITY 10

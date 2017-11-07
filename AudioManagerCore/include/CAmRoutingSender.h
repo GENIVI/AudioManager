@@ -306,6 +306,7 @@ private:
         }
     };
 
+    void loadPlugins(const std::vector<std::string>& listOfPluginDirectories);
     am_Handle_s createHandle(std::shared_ptr<handleDataBase> handleData, const am_Handle_e type); //!< creates a handle
     void unloadLibraries(void); //!< unloads all loaded plugins
 

@@ -69,10 +69,13 @@ CAmSocketHandler::CAmSocketHandler() :
     short event = 0;
     sh_pollHandle_t handle;
     event |= POLLIN;
-    if (addFDPoll(mPipe[0], event, NULL, [](const pollfd pollfd, const sh_pollHandle_t, void*)
-    {}, [](const sh_pollHandle_t, void*)
-    {   return (false);}, NULL, NULL, handle) != E_OK)
+    if (addFDPoll(mPipe[0], event, NULL,
+                [](const pollfd, const sh_pollHandle_t, void*){},
+                [](const sh_pollHandle_t, void*) { return (false); },
+            NULL, NULL, handle) != E_OK)
+    {
         mInternalCodes |= internal_codes_e::FD_ERROR;
+    }
 }
 
 CAmSocketHandler::~CAmSocketHandler()
@@ -99,10 +102,8 @@ void CAmSocketHandler::start_listenting()
 #endif    
     timespec buffertime;
     
-    std::list<sh_poll_s> listPoll;
     VectorListPoll_t cloneListPoll;
     VectorListPoll_t::iterator listmPollIt;
-    VectorListPollfd_t::iterator itMfdPollingArray;
     VectorListPollfd_t fdPollingArray; //!<the polling array for ppoll
     
     auto preparePollfd = [&](const sh_poll_s& row)
@@ -151,19 +152,23 @@ void CAmSocketHandler::start_listenting()
 
         if (pollStatus != 0) //only check filedescriptors if there was a change
         {
+            std::list<sh_poll_s> listPoll;
             //todo: here could be a timer that makes sure naughty plugins return!
-            listPoll.clear();
             //stage 0+1, call firedCB
-            for (itMfdPollingArray = fdPollingArray.begin(); itMfdPollingArray != fdPollingArray.end(); itMfdPollingArray++)
+            listmPollIt = cloneListPoll.begin();
+            for (auto it : fdPollingArray)
             {
-                if (CAmSocketHandler::eventFired(*itMfdPollingArray))
-                {                        
-                    listmPollIt = cloneListPoll.begin();
-                    std::advance(listmPollIt, std::distance(fdPollingArray.begin(), itMfdPollingArray));
-                    
+                if (CAmSocketHandler::eventFired(it))
+                {
+                    listmPollIt->pollfdValue.revents = it.revents;
                     listPoll.push_back(*listmPollIt);
                     CAmSocketHandler::fire(*listmPollIt);
                 }
+                else
+                {
+                    listmPollIt->pollfdValue.revents = 0;
+                }
+                listmPollIt++;
             }
             
             //stage 2, lets ask around if some dispatching is necessary, the ones who need stay on the list
@@ -395,7 +400,7 @@ am::am_Error_e CAmSocketHandler::addFDPoll(const int fd, const short event, IAmS
 {
 
     std::function<void(const sh_pollHandle_t handle, void* userData)> prepareCB; //preperation callback
-    std::function<void(const pollfd pollfd, const sh_pollHandle_t handle, void* userData)> firedCB; //fired callback
+    std::function<void(const pollfd poll, const sh_pollHandle_t handle, void* userData)> firedCB; //fired callback
     std::function<bool(const sh_pollHandle_t handle, void* userData)> checkCB; //check callback
     std::function<bool(const sh_pollHandle_t handle, void* userData)> dispatchCB; //check callback
 

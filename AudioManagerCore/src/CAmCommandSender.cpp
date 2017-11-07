@@ -59,6 +59,100 @@ CAmCommandSender::CAmCommandSender(const std::vector<std::string>& listOfPluginD
         mCommandReceiver(),
 		mSerializer(iSocketHandler)
 {
+    loadPlugins(listOfPluginDirectories);
+
+    dboNewMainConnection = [&](const am_MainConnectionType_s& mainConnection) {
+        mSerializer.asyncCall(this, &CAmCommandSender::cbNewMainConnection, mainConnection);
+    };
+    dboRemovedMainConnection = [&](const am_mainConnectionID_t mainConnection) {
+        mSerializer.asyncCall(this, &CAmCommandSender::cbRemovedMainConnection, mainConnection);
+    };
+    dboNewSink = [&](const am_Sink_s& sink) {
+        if (sink.visible)
+        {
+            am_SinkType_s s;
+            s.availability = sink.available;
+            s.muteState = sink.muteState;
+            s.name = sink.name;
+            s.sinkClassID = sink.sinkClassID;
+            s.sinkID = sink.sinkID;
+            s.volume = sink.mainVolume;
+            typedef void(CAmCommandSender::*TMeth)(am::am_SinkType_s);
+            mSerializer.asyncCall<CAmCommandSender, TMeth, am::am_SinkType_s>(this, &CAmCommandSender::cbNewSink, s);
+        }
+    };
+    dboNewSource = [&](const am_Source_s& source) {
+        if (source.visible)
+        {
+            am_SourceType_s s;
+            s.availability = source.available;
+            s.name = source.name;
+            s.sourceClassID = source.sourceClassID;
+            s.sourceID = source.sourceID;
+            typedef void(CAmCommandSender::*TMeth)(am::am_SourceType_s);
+            mSerializer.asyncCall<CAmCommandSender, TMeth, am::am_SourceType_s>(this, &CAmCommandSender::cbNewSource, s);
+        }
+    };
+
+    dboRemovedSink = [&](const am_sinkID_t sinkID, const bool visible) {
+        if (visible)
+        mSerializer.asyncCall(this, &CAmCommandSender::cbRemovedSink, sinkID);
+    };
+    dboRemovedSource = [&](const am_sourceID_t sourceID, const bool visible) {
+        if (visible)
+        mSerializer.asyncCall(this, &CAmCommandSender::cbRemovedSource, sourceID);
+    };
+    dboNumberOfSinkClassesChanged = [&]() {
+        mSerializer.asyncCall(this, &CAmCommandSender::cbNumberOfSinkClassesChanged);
+    };
+    dboNumberOfSourceClassesChanged = [&]() {
+        mSerializer.asyncCall(this, &CAmCommandSender::cbNumberOfSourceClassesChanged);
+    };
+    dboMainConnectionStateChanged = [&](const am_mainConnectionID_t connectionID, const am_ConnectionState_e connectionState) {
+        mSerializer.asyncCall(this, &CAmCommandSender::cbMainConnectionStateChanged, connectionID, connectionState);
+    };
+    dboMainSinkSoundPropertyChanged = [&](const am_sinkID_t sinkID, const am_MainSoundProperty_s& SoundProperty) {
+        mSerializer.asyncCall(this, &CAmCommandSender::cbMainSinkSoundPropertyChanged, sinkID, SoundProperty);
+    };
+    dboMainSourceSoundPropertyChanged = [&](const am_sourceID_t sourceID, const am_MainSoundProperty_s& SoundProperty) {
+        mSerializer.asyncCall(this, &CAmCommandSender::cbMainSourceSoundPropertyChanged, sourceID, SoundProperty);
+    };
+    dboSinkAvailabilityChanged = [&](const am_sinkID_t sinkID, const am_Availability_s & availability) {
+        mSerializer.asyncCall(this, &CAmCommandSender::cbSinkAvailabilityChanged, sinkID, availability);
+    };
+    dboSourceAvailabilityChanged = [&](const am_sourceID_t sourceID, const am_Availability_s & availability) {
+        mSerializer.asyncCall(this, &CAmCommandSender::cbSourceAvailabilityChanged, sourceID, availability);
+    };
+    dboVolumeChanged = [&](const am_sinkID_t sinkID, const am_mainVolume_t volume) {
+        mSerializer.asyncCall(this, &CAmCommandSender::cbVolumeChanged, sinkID, volume);
+    };
+    dboSinkMuteStateChanged = [&](const am_sinkID_t sinkID, const am_MuteState_e muteState) {
+        mSerializer.asyncCall(this, &CAmCommandSender::cbSinkMuteStateChanged, sinkID, muteState);
+    };
+    dboSystemPropertyChanged = [&](const am_SystemProperty_s& SystemProperty) {
+        mSerializer.asyncCall(this, &CAmCommandSender::cbSystemPropertyChanged, SystemProperty);
+    };
+    dboTimingInformationChanged = [&](const am_mainConnectionID_t mainConnection, const am_timeSync_t time) {
+        mSerializer.asyncCall(this, &CAmCommandSender::cbTimingInformationChanged, mainConnection, time);
+    };
+    dboSinkUpdated = [&](const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties, const bool visible) {
+        if (visible)
+        mSerializer.asyncCall(this, &CAmCommandSender::cbSinkUpdated, sinkID, sinkClassID, listMainSoundProperties);
+    };
+    dboSourceUpdated = [&](const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties, const bool visible) {
+        if (visible)
+        mSerializer.asyncCall(this, &CAmCommandSender::cbSinkUpdated, sourceID, sourceClassID, listMainSoundProperties);
+    };
+    dboSinkMainNotificationConfigurationChanged = [&](const am_sinkID_t sinkID, const am_NotificationConfiguration_s mainNotificationConfiguration) {
+        mSerializer.asyncCall(this, &CAmCommandSender::cbSinkMainNotificationConfigurationChanged, sinkID, mainNotificationConfiguration);
+    };
+    dboSourceMainNotificationConfigurationChanged = [&](const am_sourceID_t sourceID, const am_NotificationConfiguration_s mainNotificationConfiguration) {
+        mSerializer.asyncCall(this, &CAmCommandSender::cbSourceMainNotificationConfigurationChanged, sourceID, mainNotificationConfiguration);
+    };
+}
+
+void CAmCommandSender::loadPlugins(const std::vector<std::string>& listOfPluginDirectories)
+{
     if (listOfPluginDirectories.empty())
     {
         logError(__METHOD_NAME__,"List of commandplugins is empty");
@@ -93,16 +187,18 @@ CAmCommandSender::CAmCommandSender(const std::vector<std::string>& listOfPluginD
             bool sharedLibExtension = ("so" == entryName.substr(entryName.find_last_of(".") + 1));
 
             // Handle cases where readdir() could not determine the file type
-	        if (entryType == DT_UNKNOWN) {
-	            struct stat buf;
+            if (entryType == DT_UNKNOWN)
+            {
+                struct stat buf;
 
-	            if (stat(fullName.c_str(), &buf)) {
-	                logInfo(__METHOD_NAME__,"Failed to stat file: ", entryName, errno);
-	                continue;
-	            }
+                if (stat(fullName.c_str(), &buf))
+                {
+                    logInfo(__METHOD_NAME__,"Failed to stat file: ", entryName, errno);
+                    continue;
+                }
 
-	            regularFile = S_ISREG(buf.st_mode);
-	        }
+                regularFile = S_ISREG(buf.st_mode);
+            }
 
             if (regularFile && sharedLibExtension)
             {
@@ -147,8 +243,6 @@ CAmCommandSender::CAmCommandSender(const std::vector<std::string>& listOfPluginD
         std::istringstream(version.substr(2, 1)) >> minorVersion;
         std::istringstream(cVersion.substr(0, 1)) >> cMajorVersion;
         std::istringstream(cVersion.substr(2, 1)) >> cMinorVersion;
-        
-        
 
         if (majorVersion < cMajorVersion || ((majorVersion == cMajorVersion) && (minorVersion > cMinorVersion)))
         {
@@ -161,95 +255,6 @@ CAmCommandSender::CAmCommandSender(const std::vector<std::string>& listOfPluginD
         mListLibraryHandles.push_back(tempLibHandle);
         mListLibraryNames.push_back(iter->c_str());
     }
-
-	dboNewMainConnection = [&](const am_MainConnectionType_s& mainConnection) {
-		mSerializer.asyncCall(this, &CAmCommandSender::cbNewMainConnection, mainConnection);
-	};
-	dboRemovedMainConnection = [&](const am_mainConnectionID_t mainConnection) {
-		mSerializer.asyncCall(this, &CAmCommandSender::cbRemovedMainConnection, mainConnection);
-	};
-	dboNewSink = [&](const am_Sink_s& sink) {
-		if (sink.visible)
-		{
-			am_SinkType_s s;
-			s.availability = sink.available;
-			s.muteState = sink.muteState;
-			s.name = sink.name;
-			s.sinkClassID = sink.sinkClassID;
-			s.sinkID = sink.sinkID;
-			s.volume = sink.mainVolume;
-                        typedef void(CAmCommandSender::*TMeth)(am::am_SinkType_s) ;
-			mSerializer.asyncCall<CAmCommandSender, TMeth, am::am_SinkType_s>(this, &CAmCommandSender::cbNewSink, s);
-		}
-	};
-	dboNewSource = [&](const am_Source_s& source) {
-		if (source.visible)
-		{
-			am_SourceType_s s;
-			s.availability = source.available;
-			s.name = source.name;
-			s.sourceClassID = source.sourceClassID;
-			s.sourceID = source.sourceID;
-                        typedef void(CAmCommandSender::*TMeth)(am::am_SourceType_s) ;
-			mSerializer.asyncCall<CAmCommandSender, TMeth, am::am_SourceType_s>(this, &CAmCommandSender::cbNewSource, s);
-		}
-	};
-
-	dboRemovedSink = [&](const am_sinkID_t sinkID, const bool visible) {
-		if (visible)
-		mSerializer.asyncCall(this, &CAmCommandSender::cbRemovedSink, sinkID);
-	};
-	dboRemovedSource = [&](const am_sourceID_t sourceID, const bool visible) {
-		if (visible)
-		mSerializer.asyncCall(this, &CAmCommandSender::cbRemovedSource, sourceID);
-	};
-	dboNumberOfSinkClassesChanged = [&]() {
-		mSerializer.asyncCall(this, &CAmCommandSender::cbNumberOfSinkClassesChanged);
-	};
-	dboNumberOfSourceClassesChanged = [&]() {
-		mSerializer.asyncCall(this, &CAmCommandSender::cbNumberOfSourceClassesChanged);
-	};
-	dboMainConnectionStateChanged = [&](const am_mainConnectionID_t connectionID, const am_ConnectionState_e connectionState) {
-		mSerializer.asyncCall(this, &CAmCommandSender::cbMainConnectionStateChanged, connectionID, connectionState);
-	};
-	dboMainSinkSoundPropertyChanged = [&](const am_sinkID_t sinkID, const am_MainSoundProperty_s& SoundProperty) {
-		mSerializer.asyncCall(this, &CAmCommandSender::cbMainSinkSoundPropertyChanged, sinkID, SoundProperty);
-	};
-	dboMainSourceSoundPropertyChanged = [&](const am_sourceID_t sourceID, const am_MainSoundProperty_s& SoundProperty) {
-		mSerializer.asyncCall(this, &CAmCommandSender::cbMainSourceSoundPropertyChanged, sourceID, SoundProperty);
-	};
-	dboSinkAvailabilityChanged = [&](const am_sinkID_t sinkID, const am_Availability_s & availability) {
-		mSerializer.asyncCall(this, &CAmCommandSender::cbSinkAvailabilityChanged, sinkID, availability);
-	};
-	dboSourceAvailabilityChanged = [&](const am_sourceID_t sourceID, const am_Availability_s & availability) {
-		mSerializer.asyncCall(this, &CAmCommandSender::cbSourceAvailabilityChanged, sourceID, availability);
-	};
-	dboVolumeChanged = [&](const am_sinkID_t sinkID, const am_mainVolume_t volume) {
-		mSerializer.asyncCall(this, &CAmCommandSender::cbVolumeChanged, sinkID, volume);
-	};
-	dboSinkMuteStateChanged = [&](const am_sinkID_t sinkID, const am_MuteState_e muteState) {
-		mSerializer.asyncCall(this, &CAmCommandSender::cbSinkMuteStateChanged, sinkID, muteState);
-	};
-	dboSystemPropertyChanged = [&](const am_SystemProperty_s& SystemProperty) {
-		mSerializer.asyncCall(this, &CAmCommandSender::cbSystemPropertyChanged, SystemProperty);
-	};
-	dboTimingInformationChanged = [&](const am_mainConnectionID_t mainConnection, const am_timeSync_t time) {
-		mSerializer.asyncCall(this, &CAmCommandSender::cbTimingInformationChanged, mainConnection, time);
-	};
-	dboSinkUpdated = [&](const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties, const bool visible) {
-		if (visible)
-		mSerializer.asyncCall(this, &CAmCommandSender::cbSinkUpdated, sinkID, sinkClassID, listMainSoundProperties);
-	};
-	dboSourceUpdated = [&](const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties, const bool visible) {
-		if (visible)
-		mSerializer.asyncCall(this, &CAmCommandSender::cbSinkUpdated, sourceID, sourceClassID, listMainSoundProperties);
-	};
-	dboSinkMainNotificationConfigurationChanged = [&](const am_sinkID_t sinkID, const am_NotificationConfiguration_s mainNotificationConfiguration) {
-		mSerializer.asyncCall(this, &CAmCommandSender::cbSinkMainNotificationConfigurationChanged, sinkID, mainNotificationConfiguration);
-	};
-	dboSourceMainNotificationConfigurationChanged = [&](const am_sourceID_t sourceID, const am_NotificationConfiguration_s mainNotificationConfiguration) {
-		mSerializer.asyncCall(this, &CAmCommandSender::cbSourceMainNotificationConfigurationChanged, sourceID, mainNotificationConfiguration);
-	};
 }
 
 CAmCommandSender::~CAmCommandSender()
