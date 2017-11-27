@@ -101,10 +101,7 @@ namespace am
             UNIX, INET
         };
         CAmSamplePlugin(CAmSocketHandler *mySocketHandler, sockType_e socketType);
-        virtual ~CAmSamplePlugin()
-        {
-        }
-        ;
+        virtual ~CAmSamplePlugin(){ shutdown(mSocket, SHUT_RDWR); }
         void connectSocket(const pollfd pollfd, const sh_pollHandle_t handle, void* userData);
         virtual void receiveData(const pollfd pollfd, const sh_pollHandle_t handle, void* userData);
         virtual bool dispatchData(const sh_pollHandle_t handle, void* userData);
@@ -113,11 +110,12 @@ namespace am
         TAmShPollFired<CAmSamplePlugin> receiveFiredCB;
         TAmShPollDispatch<CAmSamplePlugin> sampleDispatchCB;
         TAmShPollCheck<CAmSamplePlugin> sampleCheckCB;
-
+        bool isSocketOpened() { return mSocket>-1; }
     protected:
         CAmSocketHandler *mSocketHandler;
         sh_pollHandle_t mConnecthandle, mReceiveHandle;
         std::queue<std::string> msgList;
+        int mSocket;
     };
 
     class CAmTimerSockethandlerController: public MockIAmTimerCb
@@ -242,11 +240,11 @@ namespace am
         std::vector<CAmTimerStressTest2*> mTimers;
     public:
         CAmSamplePluginStressTest(CAmSocketHandler *mySocketHandler, sockType_e socketType);
-        ~CAmSamplePluginStressTest();
+        virtual ~CAmSamplePluginStressTest();
         
-        virtual void receiveData(const pollfd pollfd, const sh_pollHandle_t handle, void* userData);
-        virtual bool dispatchData(const sh_pollHandle_t handle, void* userData);
-        virtual bool check(const sh_pollHandle_t handle, void* userData);
+        void receiveData(const pollfd pollfd, const sh_pollHandle_t handle, void* userData) final;
+        bool dispatchData(const sh_pollHandle_t handle, void* userData) final;
+        bool check(const sh_pollHandle_t handle, void* userData) final;
         
         std::vector<CAmTimerStressTest2*> & getTimers() { return  mTimers; }
     };

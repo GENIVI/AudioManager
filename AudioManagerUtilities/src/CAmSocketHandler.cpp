@@ -246,8 +246,21 @@ void CAmSocketHandler::exit_mainloop()
 
 bool CAmSocketHandler::fatalErrorOccurred() 
 { 
-    return ((mInternalCodes&internal_codes_e::PIPE_ERROR)>0)||((mInternalCodes&internal_codes_e::FD_ERROR)>0); 
+    return ((mInternalCodes&internal_codes_e::PIPE_ERROR)>0)||((mInternalCodes&internal_codes_e::FD_ERROR)>0);
 }
+
+#ifdef WITH_REALTIME_SCHEDULER
+int CAmSocketHandler::setRuntimeScheduler(const pid_t pid, const int policy, const int priority)
+{
+    //The following structure is used to set a processes priority
+    struct sched_param param;
+    //Set the priority of the process
+    param.sched_priority = priority;
+
+    int ret = sched_setscheduler(pid, policy, & param);
+    return ret;
+}
+#endif
 
 am_Error_e CAmSocketHandler::getFDPollData(const sh_pollHandle_t handle, sh_poll_s & outPollData)
 {
@@ -324,7 +337,7 @@ am_Error_e CAmSocketHandler::listenToSignals(const std::vector<uint8_t> & listSi
     if(0==mSignalFdHandle)
     {
       /* Create the signalfd */
-      int signalHandlerFd = signalfd(-1, &sigset, 0);
+      int signalHandlerFd = signalfd(-1, &sigset, SFD_NONBLOCK);
       if (signalHandlerFd == -1)
       {
           logError("Could not open signal fd!");
@@ -337,8 +350,13 @@ am_Error_e CAmSocketHandler::listenToSignals(const std::vector<uint8_t> & listSi
           /* We have a valid signal, read the info from the fd */
           struct signalfd_siginfo info;
           ssize_t bytes = read(pollfd.fd, &info, sizeof(info));
-          assert(bytes == sizeof(info));
-
+          if(bytes != sizeof(info))
+          {
+            //error received...
+            logError("Failed to read from signal fd");
+            throw std::runtime_error(std::string("Failed to read from signal fd."));
+          }
+          
           /* Notify all listeners */
           for(auto it: signalHandlers)
           it.callback(it.handle, info, it.userData);
@@ -608,13 +626,14 @@ am_Error_e CAmSocketHandler::addTimer(const timespec & timeouts, std::function<v
         return err;
     }
 
-    auto actionPoll = [](const pollfd pollfd, const sh_pollHandle_t handle, void* userData)
+    auto actionPoll = [this](const pollfd pollfd, const sh_pollHandle_t handle, void* userData)
     {
         uint64_t mExpirations;
-        if (read(pollfd.fd, &mExpirations, sizeof(uint64_t)) == -1)
+        if(read(pollfd.fd, &mExpirations, sizeof(uint64_t))!=sizeof(uint64_t))
         {
-            //error received...try again
-            read(pollfd.fd, &mExpirations, sizeof(uint64_t));
+            //error received...
+            logError("Failed to read from timer fd");
+            throw std::runtime_error(std::string("Failed to read from timer fd."));
         }
     };
 

@@ -61,8 +61,13 @@ option ( WITH_SHARED_CORE
     "Build audio manager core as dynamic library" OFF)
     
 option ( WITH_TIMERFD
-    "Build with the linux specific TIMERFD feature to support timing without using signals" ON)
+    "Build with timer fd support" ON )
+
+option ( WITH_REALTIME_SCHEDULER
+    "Use real time scheduler" OFF )
     
+option( WITH_TESTS
+        "Build together with all available unitTest" ON )
 
 set(DBUS_SERVICE_PREFIX "org.genivi.audiomanager"
     CACHE PROPERTY "The dbus service prefix for the AM - only changable for legacy dbus")
@@ -94,6 +99,12 @@ set(AM_MAX_CONNECTIONS 0x1000
 set(AM_MAX_MAIN_CONNECTIONS 0x1000
     CACHE INTEGER "Number of max Mainconnections before rollover")
     
+set(AM_PROCESS_PRIORITY 50
+    CACHE INTEGER "Set the priority of the process. The priority is between 1 and 99.")
+
+set(AM_REALTIME_POLICY SCHED_FIFO
+    CACHE PROPERTY "The real-time policies that may be specified. See the sched_setscheduler documentation for more details.")
+
 set(AUDIOMANGER_APP_ID "AUDI"
     CACHE PROPERTY "The application ID that is used by the audiomanager")   
     
@@ -209,7 +220,6 @@ if(WITH_DOCUMENTATION)
 		PATTERN "def" EXCLUDE)
 endif(WITH_DOCUMENTATION)
 
-
 message(STATUS)
 message(STATUS "${PROJECT_NAME} Configuration:")
 message(STATUS "CMAKE_BUILD_TYPE              = ${CMAKE_BUILD_TYPE}")
@@ -224,6 +234,7 @@ message(STATUS "WITH_DBUS_WRAPPER             = ${WITH_DBUS_WRAPPER}")
 message(STATUS "WITH_SHARED_UTILITIES         = ${WITH_SHARED_UTILITIES}")
 message(STATUS "WITH_SHARED_CORE              = ${WITH_SHARED_CORE}")
 message(STATUS "WITH_TIMERFD                  = ${WITH_TIMERFD}")
+message(STATUS "WITH_REALTIME_SCHEDULER       = ${WITH_REALTIME_SCHEDULER}")
 message(STATUS "DYNAMIC_ID_BOUNDARY           = ${DYNAMIC_ID_BOUNDARY}")
 message(STATUS "LIB_INSTALL_SUFFIX            = ${LIB_INSTALL_SUFFIX}")
 message(STATUS "TEST_EXECUTABLE_INSTALL_PATH  = ${TEST_EXECUTABLE_INSTALL_PATH}")
@@ -235,6 +246,8 @@ message(STATUS "AM_SHARE_FOLDER               = ${AM_SHARE_FOLDER}")
 message(STATUS "AM_MAP_CAPACITY               = ${AM_MAP_CAPACITY}")
 message(STATUS "AM_MAX_CONNECTIONS            = ${AM_MAX_CONNECTIONS}")
 message(STATUS "AM_MAX_MAIN_CONNECTIONS       = ${AM_MAX_MAIN_CONNECTIONS}")
+message(STATUS "AM_PROCESS_PRIORITY           = ${AM_PROCESS_PRIORITY}")
+message(STATUS "AM_REALTIME_POLICY            = ${AM_REALTIME_POLICY}")
 message(STATUS "BUILD_TESTING                 = ${BUILD_TESTING}")
 message(STATUS "CMAKE_INSTALL_DOCDIR          = ${CMAKE_INSTALL_DOCDIR}")
 message(STATUS "AUDIOMANGER_APP_ID            = ${AUDIOMANGER_APP_ID}")
