@@ -30,11 +30,9 @@
 #include <fcntl.h>
 #include <sys/un.h>
 #include <sys/poll.h>
-
+#include "CAmDltWrapper.h"
 #include "CAmSocketHandler.h"
 
-//todo: expand test, implement more usecases
-//todo: test removeFD
 
 #undef ENABLED_SOCKETHANDLER_TEST_OUTPUT
 #undef ENABLED_TIMERS_TEST_OUTPUT
@@ -274,10 +272,11 @@ void* playWithSocketServer(void* data)
     servAddr.sin_addr.s_addr = inet_addr(inet_ntoa(*(struct in_addr*) (host->h_addr_list[0])));
     servAddr.sin_port = htons(servPort);
     sleep(1);
-    
-    if (connect(socket_, (struct sockaddr *) &servAddr, sizeof(servAddr)) < 0)
+    int ret =  connect(socket_, (struct sockaddr *) &servAddr, sizeof(servAddr));
+    if (ret < 0)
     {
-        std::cout << "ERROR: connect() failed\n" << std::endl;
+        std::cerr << "ERROR: connect() failed\n" << std::endl;
+        return (NULL);
     }
 
     for (int i = 1; i <= SOCKET_TEST_LOOPS_COUNT; i++)
@@ -299,10 +298,11 @@ void* playWithUnixSocketServer(void* data)
     strcpy(servAddr.sun_path, SOCK_PATH);
     servAddr.sun_family = AF_UNIX;
     sleep(1);
-    
-    if (connect(socket_, (struct sockaddr *) &servAddr, sizeof(servAddr)) < 0)
+    int ret = connect(socket_, (struct sockaddr *) &servAddr, sizeof(servAddr));
+    if ( ret < 0)
     {
-        std::cout << "ERROR: connect() failed\n" << std::endl;
+        std::cerr << "ERROR: connect() failed\n" << std::endl;
+        return (NULL);
     }
 
     for (int i = 1; i <= SOCKET_TEST_LOOPS_COUNT; i++)
@@ -314,8 +314,6 @@ void* playWithUnixSocketServer(void* data)
     send(socket_, stringToSend.c_str(), stringToSend.size(), 0);
     
     return (NULL);
-    
-    
 }
 
 void* threadCallbackUnixSocketAndTimers(void* data)
@@ -326,9 +324,11 @@ void* threadCallbackUnixSocketAndTimers(void* data)
     strcpy(servAddr.sun_path, SOCK_PATH);
     servAddr.sun_family = AF_UNIX;
     sleep(1);
-    if (connect(socket_, (struct sockaddr *) &servAddr, sizeof(servAddr)) < 0)
+    int ret = connect(socket_, (struct sockaddr *) &servAddr, sizeof(servAddr));
+    if ( ret < 0)
     {
-        std::cout << "ERROR: connect() failed\n" << std::endl;
+        std::cerr << "ERROR: connect() failed\n" << std::endl;
+        return (NULL);
     }
 
     for (int i = 1; i <= SOCKET_TEST_LOOPS_COUNT; i++)
@@ -369,6 +369,7 @@ TEST(CAmSocketHandlerTest, stressTestUnixSocketAndTimers)
     {
         std::cout << "socket problem" << std::endl;
     }
+    ASSERT_GT(socket_, -1);
     
     //creates a thread that handles the serverpart
     pthread_create(&serverThread, NULL, threadCallbackUnixSocketAndTimers, &socket_);
@@ -376,6 +377,7 @@ TEST(CAmSocketHandlerTest, stressTestUnixSocketAndTimers)
     myHandler.start_listenting();
     
     pthread_join(serverThread, NULL);
+    shutdown(socket_, SHUT_RDWR);
 }
 
 TEST(CAmSocketHandlerTest, timersOneshot)
@@ -709,6 +711,7 @@ TEST(CAmSocketHandlerTest,playWithUNIXSockets)
     ASSERT_FALSE(myHandler.fatalErrorOccurred());
     CAmSamplePlugin::sockType_e type = CAmSamplePlugin::UNIX;
     CAmSamplePlugin myplugin(&myHandler, type);
+    ASSERT_TRUE(myplugin.isSocketOpened());
 
     EXPECT_CALL(myplugin,receiveData(_,_,_)).Times(SOCKET_TEST_LOOPS_COUNT + 1);
     EXPECT_CALL(myplugin,dispatchData(_,_)).Times(SOCKET_TEST_LOOPS_COUNT + 1);
@@ -718,14 +721,14 @@ TEST(CAmSocketHandlerTest,playWithUNIXSockets)
     {
         std::cout << "socket problem" << std::endl;
     }
-    
+    ASSERT_GT(socket_, -1);
     //creates a thread that handles the serverpart
     pthread_create(&serverThread, NULL, playWithUnixSocketServer, &socket_);
 
     myHandler.start_listenting();
     
     pthread_join(serverThread, NULL);
-
+    shutdown(socket_, SHUT_RDWR);
 }
 
 TEST(CAmSocketHandlerTest,playWithSockets)
@@ -737,7 +740,7 @@ TEST(CAmSocketHandlerTest,playWithSockets)
     ASSERT_FALSE(myHandler.fatalErrorOccurred());
     CAmSamplePlugin::sockType_e type = CAmSamplePlugin::INET;
     CAmSamplePlugin myplugin(&myHandler, type);
-
+    ASSERT_TRUE(myplugin.isSocketOpened());
     EXPECT_CALL(myplugin,receiveData(_,_,_)).Times(SOCKET_TEST_LOOPS_COUNT + 1);
     EXPECT_CALL(myplugin,dispatchData(_,_)).Times(SOCKET_TEST_LOOPS_COUNT + 1);
     EXPECT_CALL(myplugin,check(_,_)).Times(SOCKET_TEST_LOOPS_COUNT + 1);
@@ -745,28 +748,24 @@ TEST(CAmSocketHandlerTest,playWithSockets)
     if ((socket_ = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
     {
         std::cout << "socket problem" << std::endl;
-
     }
-
+    ASSERT_GT(socket_, -1);
         //creates a thread that handles the serverpart
     pthread_create(&serverThread, NULL, playWithSocketServer, &socket_);
     
     myHandler.start_listenting();
 
     pthread_join(serverThread, NULL);
-
+    shutdown(socket_, SHUT_RDWR);
 }
 
 int main(int argc, char **argv)
 {
-    struct sched_param param;
-    param.sched_priority = 50;//mid rt proprity
-    if (sched_setscheduler(0, SCHED_FIFO, & param) != 0) 
-    {
-        std::cerr <<"sched_setscheduler:"<<strerror(errno)<<std::endl;
-        std::cerr << "Try running as root"<<std::endl;
-    }
-    
+    //Set runtime-scheduler with priority and policy for all threads. You can define the priority and policy via cmake.
+    //If the cmake option WITH_REALTIME_SCHEDULER is OFF the following macro is empty.
+    //If a thread needs other settings you can use CAmSocketHandler::setRuntimeScheduler(...)
+    SET_REALTIME_SCHEDULER()
+
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
@@ -779,11 +778,11 @@ am::CAmSamplePlugin::CAmSamplePlugin(CAmSocketHandler *mySocketHandler, sockType
         mSocketHandler(mySocketHandler), //
         mConnecthandle(), //
                 mReceiveHandle(), //
-                msgList()
+                msgList(),
+                mSocket(-1)
 {
     int yes = 1;
 
-    int socketHandle;
     struct sockaddr_in servAddr;
     struct sockaddr_un unixAddr;
     unsigned int servPort = 6060;
@@ -791,26 +790,30 @@ am::CAmSamplePlugin::CAmSamplePlugin(CAmSocketHandler *mySocketHandler, sockType
     switch (socketType)
     {
         case UNIX:
-            socketHandle = socket(AF_UNIX, SOCK_STREAM, 0);
+            mSocket = socket(AF_UNIX, SOCK_STREAM, 0);
+            if(mSocket==-1)
+                return;
             unixAddr.sun_family = AF_UNIX;
             strcpy(unixAddr.sun_path, SOCK_PATH);
             unlink(unixAddr.sun_path);
-            bind(socketHandle, (struct sockaddr *) &unixAddr, strlen(unixAddr.sun_path) + sizeof(unixAddr.sun_family));
+            bind(mSocket, (struct sockaddr *) &unixAddr, strlen(unixAddr.sun_path) + sizeof(unixAddr.sun_family));
             break;
         case INET:
-            socketHandle = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
-            setsockopt(socketHandle, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int));
+            mSocket = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+            if(mSocket==-1)
+                return;
+            setsockopt(mSocket, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int));
             memset(&servAddr, 0, sizeof(servAddr));
             servAddr.sin_family = AF_INET;
             servAddr.sin_addr.s_addr = INADDR_ANY;
             servAddr.sin_port = htons(servPort);
-            bind(socketHandle, (struct sockaddr *) &servAddr, sizeof(servAddr));
+            bind(mSocket, (struct sockaddr *) &servAddr, sizeof(servAddr));
             break;
         default:
             break;
     }
 
-    if (listen(socketHandle, 3) < 0)
+    if (listen(mSocket, 3) < 0)
     {
 #ifdef ENABLED_SOCKETHANDLER_TEST_OUTPUT
         std::cout << "listen ok" << std::endl;
@@ -818,12 +821,12 @@ am::CAmSamplePlugin::CAmSamplePlugin(CAmSocketHandler *mySocketHandler, sockType
     } /* if */
 
     int a = 1;
-    ioctl(socketHandle, FIONBIO, (char *) &a);
-    setsockopt(socketHandle, SOL_SOCKET, SO_KEEPALIVE, (char *) &a, sizeof(a));
+    ioctl(mSocket, FIONBIO, (char *) &a);
+    setsockopt(mSocket, SOL_SOCKET, SO_KEEPALIVE, (char *) &a, sizeof(a));
 
     short events = 0;
     events |= POLLIN;
-    mySocketHandler->addFDPoll(socketHandle, events, NULL, &connectFiredCB, NULL, NULL, NULL, mConnecthandle);
+    mySocketHandler->addFDPoll(mSocket, events, NULL, &connectFiredCB, NULL, NULL, NULL, mConnecthandle);
 #ifdef ENABLED_SOCKETHANDLER_TEST_OUTPUT
     std::cout << "setup server - listening" << std::endl;
 #endif
