@@ -75,6 +75,9 @@ using namespace am;
 std::vector<std::string> listCommandPluginDirs;
 std::vector<std::string> listRoutingPluginDirs;
 
+// List of signals to be handled with signalfd
+std::vector<uint8_t> listOfSignalsFD = {SIGHUP, SIGTERM, SIGCHLD};
+
 //commandline options used by the Audiomanager itself
 TCLAP::ValueArg<std::string> controllerPlugin("c","controllerPlugin","use controllerPlugin full path with .so ending",false,CONTROLLER_PLUGIN_DIR,"string");
 TCLAP::ValueArg<std::string> additionalCommandPluginDirs("L","additionalCommandPluginDirs","additional path for looking for command plugins, can be used after -l option",false," ","string");
@@ -251,7 +254,7 @@ void mainProgram(int argc, char *argv[])
         throw std::runtime_error(std::string("CAmSocketHandler: Could not create pipe or file descriptor is invalid."));
     }
 
-    if( E_OK!=iSocketHandler.listenToSignals({SIGHUP, SIGTERM, SIGCHLD}) )
+    if(E_OK != iSocketHandler.listenToSignals(listOfSignalsFD))
     {
       logWarning("CAmSocketHandler failed to register itself as signal handler.");
     }
@@ -399,8 +402,20 @@ int main(int argc, char *argv[], char** envp)
     //register new out of memory handler
     std::set_new_handler(&OutOfMemoryHandler);
 
+    sigset_t signal_mask;
+    sigemptyset(&signal_mask);
+    for (auto it : listOfSignalsFD)
+    {
+        sigaddset(&signal_mask, it);
+    }
+
     try
     {
+        if (pthread_sigmask(SIG_BLOCK, &signal_mask, NULL) != 0)
+        {
+            throw std::runtime_error(std::string("Couldn't set mask for potential future threads"));
+        }
+
         //we do this to catch all exceptions and have a graceful ending just in case
         mainProgram(argc,argv);
     }
