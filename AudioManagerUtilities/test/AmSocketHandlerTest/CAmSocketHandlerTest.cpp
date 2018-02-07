@@ -761,11 +761,6 @@ TEST(CAmSocketHandlerTest,playWithSockets)
 
 int main(int argc, char **argv)
 {
-    //Set runtime-scheduler with priority and policy for all threads. You can define the priority and policy via cmake.
-    //If the cmake option WITH_REALTIME_SCHEDULER is OFF the following macro is empty.
-    //If a thread needs other settings you can use CAmSocketHandler::setRuntimeScheduler(...)
-    SET_REALTIME_SCHEDULER()
-
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }

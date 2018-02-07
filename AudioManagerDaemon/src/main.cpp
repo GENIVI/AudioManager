@@ -387,11 +387,6 @@ iControlSender.setControllerReady();
  */
 int main(int argc, char *argv[], char** envp)
 {
-    //Set runtime-scheduler with priority and policy for all threads. You can define the priority and policy via cmake.
-    //If the cmake option WITH_REALTIME_SCHEDULER is OFF the following macro is empty.
-    //If a thread needs other settings you can use CAmSocketHandler::setRuntimeScheduler(...)
-    SET_REALTIME_SCHEDULER()
-
     (void) envp;
     listCommandPluginDirs.push_back(std::string(DEFAULT_PLUGIN_COMMAND_DIR));
     listRoutingPluginDirs.push_back(std::string(DEFAULT_PLUGIN_ROUTING_DIR));
