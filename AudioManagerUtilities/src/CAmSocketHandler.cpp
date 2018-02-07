@@ -249,19 +249,6 @@ bool CAmSocketHandler::fatalErrorOccurred()
     return ((mInternalCodes&internal_codes_e::PIPE_ERROR)>0)||((mInternalCodes&internal_codes_e::FD_ERROR)>0);
 }
 
-#ifdef WITH_REALTIME_SCHEDULER
-int CAmSocketHandler::setRuntimeScheduler(const pid_t pid, const int policy, const int priority)
-{
-    //The following structure is used to set a processes priority
-    struct sched_param param;
-    //Set the priority of the process
-    param.sched_priority = priority;
-
-    int ret = sched_setscheduler(pid, policy, & param);
-    return ret;
-}
-#endif
-
 am_Error_e CAmSocketHandler::getFDPollData(const sh_pollHandle_t handle, sh_poll_s & outPollData)
 {
     VectorListPoll_t::iterator iterator = mListPoll.begin();
