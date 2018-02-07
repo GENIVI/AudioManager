@@ -176,7 +176,6 @@ void CAmDbusWrapper::registerCallback(const DBusObjectPathVTable* vtable, const 
 
     std::string completePath = prefix + "/" + path;
     dbus_error_init(&mDBusError);
-    mpDbusConnection = dbus_bus_get(mDbusType, &mDBusError);
     dbus_connection_register_object_path(mpDbusConnection, completePath.c_str(), vtable, userdata);
     if (dbus_error_is_set(&mDBusError))
     {
@@ -196,7 +195,6 @@ void CAmDbusWrapper::registerSignalWatch(DBusHandleMessageFunction handler, cons
 {
     logInfo("DBusWrapper::registerSignalWatch register callback:", rule);
     dbus_error_init(&mDBusError);
-    mpDbusConnection = dbus_bus_get(mDbusType, &mDBusError);
     dbus_bus_add_match(mpDbusConnection, rule.c_str(), &mDBusError);
     dbus_connection_flush(mpDbusConnection);
     dbus_connection_add_filter(mpDbusConnection, handler, userdata, 0);
@@ -389,8 +387,6 @@ dbus_bool_t CAmDbusWrapper::addTimeoutDelegate(DBusTimeout *timeout, void* userD
     //save the handle with dbus context
     dbus_timeout_set_data(timeout, handle, NULL);
 
-    //save timeout in Socket context
-    userData = timeout;
     return (true);
 }
 
@@ -516,11 +512,19 @@ void CAmDbusWrapper::toggleTimeoutDelegate(DBusTimeout *timeout, void* userData)
 void CAmDbusWrapper::dbusTimerCallback(sh_timerHandle_t handle, void *userData)
 {
     assert(userData!=NULL);
-    if (dbus_timeout_get_enabled((DBusTimeout*) userData))
+    for (auto && timerHandle : mpListTimerhandles)
     {
-        mpSocketHandler->restartTimer(handle);
+        if (*timerHandle == handle)
+        {
+            if (dbus_timeout_get_enabled((DBusTimeout*) userData))
+            {
+                mpSocketHandler->restartTimer(handle);
+            }
+            dbus_timeout_handle((DBusTimeout*) userData);
+            return;
+        }
     }
-    dbus_timeout_handle((DBusTimeout*) userData);
+    logWarning("CAmDbusWrapper::dbusTimerCallback Unknown timer handle");
 }
 }
 
