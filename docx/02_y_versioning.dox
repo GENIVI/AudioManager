@@ -17,6 +17,8 @@
  
  /*!
 \page ver Versioning
+\section mec_ver Versioning Mechanism
+Versioning should not strictly depend on Version Control System (e.g. git) information. Best approach is to have a dedicated resource exposing the Version of the project. This is achieved via the \c VERSION file in the main folder of the AudioManager, which content is read by CMake and used in the whole component. Optionally, the flag \c EXTRAVERSIONINFO can be used to append additional information to the version. \c VERSION is reporting with the format  <\c Major>.<\c Minor>.<\c Revision>. Maintainer of the component should take care of keeping the information aligned with release cycle. \c Revision should be maintained once patches/fixes are merged to a stabilization branch.
 \section new_ver New versioning scheme
 Due to the unclearness in the versioning scheme, the versioning scheme changed with release 7.0.
 Beginning with the 7.0 version, the versioning changed to the semantic versioning described here: <a href="http://semver.org/">http://semver.org/</a>.

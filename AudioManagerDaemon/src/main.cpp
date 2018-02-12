@@ -162,7 +162,7 @@ void daemonize()
 void printCmdInformation()
 {
 	printf("\n\n\nCurrent settings:\n\n");
-	printf("\tAudioManagerDaemon Version:\t\t%s\n", DAEMONVERSION);
+	printf("\tAudioManagerDaemon Version:\t\t%s\n", DAEMONVERSION EXTRAVERSIONINFO);
 	printf("\tControllerPlugin: \t\t\t%s\n", controllerPlugin.getValue().c_str());
 	printf("\tDirectories of CommandPlugins: \t\t\n");
     std::vector<std::string>::const_iterator dirIter = listCommandPluginDirs.begin();
@@ -219,19 +219,19 @@ void mainProgram(int argc, char *argv[])
 	//initialize the commandline parser, and add all neccessary commands
     try
     {
-    	TCLAP::CmdLine* cmd(CAmCommandLineSingleton::instanciateOnce("The team of the AudioManager wishes you a nice day!",' ',DAEMONVERSION,true));
-    	cmd->add(controllerPlugin);
-    	cmd->add(additionalCommandPluginDirs);
-    	cmd->add(commandPluginDir);
-    	cmd->add(additionalRoutingPluginDirs);
-    	cmd->add(routingPluginDir);
-    	cmd->add(currentSettings);
-    	cmd->add(daemonizeAM);
-    	cmd->add(dltEnable);
-    	cmd->add(dltLogFilename);
-    	cmd->add(dltOutput);
+        TCLAP::CmdLine* cmd(CAmCommandLineSingleton::instanciateOnce("The team of the AudioManager wishes you a nice day!",' ', DAEMONVERSION EXTRAVERSIONINFO,true));
+        cmd->add(controllerPlugin);
+        cmd->add(additionalCommandPluginDirs);
+        cmd->add(commandPluginDir);
+        cmd->add(additionalRoutingPluginDirs);
+        cmd->add(routingPluginDir);
+        cmd->add(currentSettings);
+        cmd->add(daemonizeAM);
+        cmd->add(dltEnable);
+        cmd->add(dltLogFilename);
+        cmd->add(dltOutput);
 #ifdef WITH_DBUS_WRAPPER
-    	cmd->add(dbusWrapperTypeBool);
+        cmd->add(dbusWrapperTypeBool);
 #endif
     }
     catch (TCLAP::ArgException &e)  // catch any exceptions
@@ -330,7 +330,7 @@ void mainProgram(int argc, char *argv[])
     { std::cerr << "error: " << e.error() << " for arg " << e.argId() << std::endl; }
 
     logInfo("The Audiomanager is started");
-    logInfo("The version of the Audiomanager", DAEMONVERSION);
+    logInfo("The version of the Audiomanager", DAEMONVERSION EXTRAVERSIONINFO);
 
 #ifdef WITH_CAPI_WRAPPER
     //We instantiate a singleton with the current socket handler, which loads the common-api runtime.
