@@ -492,29 +492,7 @@ public:
     void exit_mainloop();
     
     bool fatalErrorOccurred();
-#ifdef WITH_REALTIME_SCHEDULER
-    /**
-      * Set scheduling algorithm and/or parameters for a thread whose ID is specified in pid.
-      * If pid equals zero, the scheduling policy and parameters of the calling thread will be set.
-      * @param pid_t pid thread id
-      * @param int policy equals specified policies in sched_setscheduler documentation
-      * @param int priority between 1 and 99
-      * @return on success 0 and on error -1
-      */
-    static int setRuntimeScheduler(const pid_t pid, const int policy, const int priority);
-#endif
 };
-
-#ifdef WITH_REALTIME_SCHEDULER
-#define SET_REALTIME_SCHEDULER()\
-    if ( CAmSocketHandler::setRuntimeScheduler(0, AM_REALTIME_POLICY, AM_PROCESS_PRIORITY) != 0 )\
-    {\
-        std::cerr <<"sched_setscheduler:"<<strerror(errno)<<std::endl;\
-        std::cerr << "Try running as root"<<std::endl;\
-    }
-#else
-#define SET_REALTIME_SCHEDULER()
-#endif
 
 } /* namespace am */
 #endif /* SOCKETHANDLER_H_ */

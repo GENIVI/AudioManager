@@ -36,10 +36,10 @@ ADD_EXECUTABLE(AmRoutingInterfaceTest ${ROUTING_INTERFACE_SRCS_CXX})
 ADD_TEST(AmRoutingInterfaceTest AmRoutingInterfaceTest)
 
 TARGET_LINK_LIBRARIES(AmRoutingInterfaceTest 
-        ${GTEST_LIBRARIES}
-	${GMOCK_LIBRARIES}
-	${CMAKE_THREAD_LIBS_INIT}
-    	AudioManagerCore
+    ${GTEST_LIBRARIES}
+    ${GMOCK_LIBRARIES}
+    ${CMAKE_THREAD_LIBS_INIT}
+    AudioManagerCore
 )
 
 ADD_DEPENDENCIES(AmRoutingInterfaceTest AudioManagerCore)

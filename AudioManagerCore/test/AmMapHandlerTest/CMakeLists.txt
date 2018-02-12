@@ -34,10 +34,10 @@ file(GLOB DATABASE_SRCS_CXX
 ADD_EXECUTABLE( AmMapHandlerTest ${DATABASE_SRCS_CXX})
 
 TARGET_LINK_LIBRARIES( AmMapHandlerTest 
-        ${GTEST_LIBRARIES}
-	${GMOCK_LIBRARIES}
-	${CMAKE_THREAD_LIBS_INIT}
-    	AudioManagerCore
+    ${GTEST_LIBRARIES}
+    ${GMOCK_LIBRARIES}
+    ${CMAKE_THREAD_LIBS_INIT}
+    AudioManagerCore
 )
 
 ADD_TEST(AmMapHandlerTest AmMapHandlerTest)
