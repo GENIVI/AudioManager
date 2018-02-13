@@ -1,6 +1,6 @@
 var classam_1_1CAmCommandSender =
 [
-    [ "CAmCommandSender", "classam_1_1CAmCommandSender.html#abbedccae32f275a12bff41f36c75da79", null ],
+    [ "CAmCommandSender", "classam_1_1CAmCommandSender.html#adb321354cf3c1aaa3491a0f26743e8eb", null ],
     [ "~CAmCommandSender", "classam_1_1CAmCommandSender.html#ae9f595010ba8731fa8b62ac911d4a674", null ],
     [ "cbMainConnectionStateChanged", "classam_1_1CAmCommandSender.html#a32aa8ab84632805a876e023a7aead810", null ],
     [ "cbMainSinkSoundPropertyChanged", "classam_1_1CAmCommandSender.html#adea8f5188fee5967bae000706f3bf1bc", null ],

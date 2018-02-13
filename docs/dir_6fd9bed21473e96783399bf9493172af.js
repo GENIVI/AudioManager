@@ -8,12 +8,10 @@ var dir_6fd9bed21473e96783399bf9493172af =
       [ "CAmDbusWrapper", "classam_1_1CAmDbusWrapper.html", "classam_1_1CAmDbusWrapper" ]
     ] ],
     [ "CAmDltWrapper.h", "CAmDltWrapper_8h.html", "CAmDltWrapper_8h" ],
-    [ "CAmSerializer.h", "CAmSerializer_8h.html", [
-      [ "CAmSerializer", "classam_1_1CAmSerializer.html", "classam_1_1CAmSerializer" ]
-    ] ],
+    [ "CAmSerializer.h", "CAmSerializer_8h.html", "CAmSerializer_8h" ],
     [ "CAmSocketHandler.h", "CAmSocketHandler_8h.html", "CAmSocketHandler_8h" ],
     [ "CAmWatchdog.h", "CAmWatchdog_8h.html", [
       [ "CAmWatchdog", "classam_1_1CAmWatchdog.html", "classam_1_1CAmWatchdog" ]
     ] ],
-    [ "TAmPluginTemplate.h", "AudioManagerUtilities_2include_2TAmPluginTemplate_8h.html", "AudioManagerUtilities_2include_2TAmPluginTemplate_8h" ]
+    [ "TAmPluginTemplate.h", "TAmPluginTemplate_8h.html", "TAmPluginTemplate_8h" ]
 ];

@@ -17,7 +17,6 @@ var searchData=
   ['am_5fgraphpathposition_5fe',['am_GraphPathPosition_e',['../namespaceam.html#a5ddc1de5c77502d9fd136f30a5ebbd7c',1,'am']]],
   ['am_5fmainconnectionid_5ft',['am_mainConnectionID_t',['../namespaceam.html#a33a5bb7641f58ab3a5f3b86400ad804c',1,'am']]],
   ['am_5fmainvolume_5ft',['am_mainVolume_t',['../namespaceam.html#a834886e7c3e4a2d6745ef2b59b485b00',1,'am']]],
-  ['am_5fnodedatatype_5fe',['am_NodeDataType_e',['../structam_1_1am__RoutingNodeData__s.html#a3471203a8947a27acf94ea7e6b1f7d2f',1,'am::am_RoutingNodeData_s']]],
   ['am_5fsinkclass_5ft',['am_sinkClass_t',['../namespaceam.html#a2aa2a1e9d9c5a5cc4cb48b5b9c9a222f',1,'am']]],
   ['am_5fsinkid_5ft',['am_sinkID_t',['../namespaceam.html#aac2b901ff83ee381fbe99913753e2416',1,'am']]],
   ['am_5fsourceclass_5ft',['am_sourceClass_t',['../namespaceam.html#a8b8fc2ab1ac4d427ca85fe8549e6afd0',1,'am']]],
