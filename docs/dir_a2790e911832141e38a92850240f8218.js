@@ -13,9 +13,6 @@ var dir_a2790e911832141e38a92850240f8218 =
       [ "CAmControlSender", "classam_1_1CAmControlSender.html", "classam_1_1CAmControlSender" ]
     ] ],
     [ "CAmDatabaseHandlerMap.h", "CAmDatabaseHandlerMap_8h.html", "CAmDatabaseHandlerMap_8h" ],
-    [ "CAmDatabaseObserver.h", "CAmDatabaseObserver_8h.html", [
-      [ "CAmDatabaseObserver", "classam_1_1CAmDatabaseObserver.html", "classam_1_1CAmDatabaseObserver" ]
-    ] ],
     [ "CAmGraph.h", "CAmGraph_8h.html", "CAmGraph_8h" ],
     [ "CAmLog.h", "CAmLog_8h.html", "CAmLog_8h" ],
     [ "CAmRouter.h", "CAmRouter_8h.html", "CAmRouter_8h" ],
@@ -41,12 +38,5 @@ var dir_a2790e911832141e38a92850240f8218 =
       [ "handleSetSinkNotificationConfiguration", "classam_1_1CAmRoutingSender_1_1handleSetSinkNotificationConfiguration.html", "classam_1_1CAmRoutingSender_1_1handleSetSinkNotificationConfiguration" ],
       [ "handleSetSourceNotificationConfiguration", "classam_1_1CAmRoutingSender_1_1handleSetSourceNotificationConfiguration.html", "classam_1_1CAmRoutingSender_1_1handleSetSourceNotificationConfiguration" ]
     ] ],
-    [ "CAmTelnetMenuHelper.h", "CAmTelnetMenuHelper_8h.html", [
-      [ "CAmTelnetMenuHelper", "classam_1_1CAmTelnetMenuHelper.html", "classam_1_1CAmTelnetMenuHelper" ]
-    ] ],
-    [ "CAmTelnetServer.h", "CAmTelnetServer_8h.html", [
-      [ "CAmTelnetServer", "classam_1_1CAmTelnetServer.html", "classam_1_1CAmTelnetServer" ]
-    ] ],
-    [ "IAmDatabaseHandler.h", "IAmDatabaseHandler_8h.html", "IAmDatabaseHandler_8h" ],
-    [ "TAmPluginTemplate.h", "AudioManagerCore_2include_2TAmPluginTemplate_8h.html", "AudioManagerCore_2include_2TAmPluginTemplate_8h" ]
+    [ "IAmDatabaseHandler.h", "IAmDatabaseHandler_8h.html", "IAmDatabaseHandler_8h" ]
 ];

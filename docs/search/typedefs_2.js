@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['listconnectionformat',['ListConnectionFormat',['../namespaceam.html#af1483e9f2fc14b224e95addc9c68749a',1,'am']]]
+  ['deprecated',['DEPRECATED',['../namespaceam.html#abd71bd6ab41e8654bbed756eab3c6c89',1,'am']]]
 ];

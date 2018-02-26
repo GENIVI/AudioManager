@@ -2,6 +2,7 @@
 #define _CONFIG_H
 
 #cmakedefine DAEMONVERSION "@DAEMONVERSION@"
+#cmakedefine EXTRAVERSIONINFO "@EXTRAVERSIONINFO@"
 
 #cmakedefine WITH_CAPI_WRAPPER
 #cmakedefine WITH_DBUS_WRAPPER

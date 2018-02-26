@@ -24,6 +24,10 @@ include ( MacroInterfaceVersions )
 
 project(AudioManager LANGUAGES C CXX VERSION ${DAEMONVERSION})
 
+IF (NOT EXTRAVERSIONINFO)
+    ADD_DEFINITIONS(-DEXTRAVERSIONINFO="")
+ENDIF (NOT EXTRAVERSIONINFO)
+
 include ( CMakeDependentOption )
 include ( CMakePackageConfigHelpers )
 include ( GNUInstallDirs )

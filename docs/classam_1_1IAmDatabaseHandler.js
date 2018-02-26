@@ -1,5 +1,6 @@
 var classam_1_1IAmDatabaseHandler =
 [
+    [ "IAmDatabaseObserver", "classam_1_1IAmDatabaseHandler_1_1IAmDatabaseObserver.html", "classam_1_1IAmDatabaseHandler_1_1IAmDatabaseObserver" ],
     [ "IAmDatabaseHandler", "classam_1_1IAmDatabaseHandler.html#adfb44d955abb5daf2f88a94e348a7d0a", null ],
     [ "~IAmDatabaseHandler", "classam_1_1IAmDatabaseHandler.html#ac32159495655fcc57dfd8def42ccc29b", null ],
     [ "calculateMainConnectionDelay", "classam_1_1IAmDatabaseHandler.html#a38b7f33579ed597822a599ad87d9b4b2", null ],
@@ -27,11 +28,13 @@ var classam_1_1IAmDatabaseHandler =
     [ "changeSourceAvailabilityDB", "classam_1_1IAmDatabaseHandler.html#a3071b4ddea4a724c3bc134e30f2ff0b4", null ],
     [ "changeSourceClassInfoDB", "classam_1_1IAmDatabaseHandler.html#af7e0be6ef2f4261a28b5eccc40202342", null ],
     [ "changeSourceDB", "classam_1_1IAmDatabaseHandler.html#a6acd02bdacfbe2e430761e2122c12bb8", null ],
+    [ "changeSourceInterruptState", "classam_1_1IAmDatabaseHandler.html#aabd5097cfe3288060fe6266c6ea98e21", null ],
     [ "changeSourceNotificationConfigurationDB", "classam_1_1IAmDatabaseHandler.html#aeb89c0c0367dd74821a091244c074ea7", null ],
     [ "changeSourceSoundPropertyDB", "classam_1_1IAmDatabaseHandler.html#a945cc8f11a6e732abcd2d8e69e5494cb", null ],
     [ "changeSourceState", "classam_1_1IAmDatabaseHandler.html#a21b4b7666daff2933b5135c3f265829b", null ],
     [ "changeSourceVolume", "classam_1_1IAmDatabaseHandler.html#acf61797535b856c0cbfda1cd70240869", null ],
     [ "changeSystemPropertyDB", "classam_1_1IAmDatabaseHandler.html#a04227468ea5dcdf59541e1e8c5c6cfb5", null ],
+    [ "countObservers", "classam_1_1IAmDatabaseHandler.html#a5c8ece0eeb3015a8dd8aacb7964fa8e5", null ],
     [ "dump", "classam_1_1IAmDatabaseHandler.html#a4db0c750db30bd000741aa3b0f27c1e8", null ],
     [ "enterConnectionDB", "classam_1_1IAmDatabaseHandler.html#ae1b1befa8114143f034a9d23a3d342e7", null ],
     [ "enterConverterDB", "classam_1_1IAmDatabaseHandler.html#af4413c8086ff28f647d453950af8abdb", null ],
@@ -118,7 +121,7 @@ var classam_1_1IAmDatabaseHandler =
     [ "peekSinkClassID", "classam_1_1IAmDatabaseHandler.html#a19cd3bb5c5f9765c26d9c1e1ce446a72", null ],
     [ "peekSource", "classam_1_1IAmDatabaseHandler.html#a18abbf4a18868fd04a330b5095bca2ab", null ],
     [ "peekSourceClassID", "classam_1_1IAmDatabaseHandler.html#abaabbe4618ac1ec746f8666825bbd269", null ],
-    [ "registerObserver", "classam_1_1IAmDatabaseHandler.html#aee61f6e9eb3ff6d9e4acbe915d3e1058", null ],
+    [ "registerObserver", "classam_1_1IAmDatabaseHandler.html#aee69388bc7764175215cfc6676d9fd4d", null ],
     [ "removeConnection", "classam_1_1IAmDatabaseHandler.html#a93c7c508341de77c91cad7a9f3e454fd", null ],
     [ "removeConverterDB", "classam_1_1IAmDatabaseHandler.html#a5356cdea1f1f955bf27f995df657493a", null ],
     [ "removeCrossfaderDB", "classam_1_1IAmDatabaseHandler.html#aa173c99dc2928eb3da3f5db884cb2e82", null ],
@@ -130,5 +133,6 @@ var classam_1_1IAmDatabaseHandler =
     [ "removeSourceClassDB", "classam_1_1IAmDatabaseHandler.html#a00856a07a8e7f245717f6f0b61a137b7", null ],
     [ "removeSourceDB", "classam_1_1IAmDatabaseHandler.html#a98ddefe6bb14feab48c1964e999a5ac0", null ],
     [ "sinkVisible", "classam_1_1IAmDatabaseHandler.html#a9c05032e7af8306e1147dd5a0474351a", null ],
-    [ "sourceVisible", "classam_1_1IAmDatabaseHandler.html#a04f6501896ef2534b02c0a3ae9a0073e", null ]
+    [ "sourceVisible", "classam_1_1IAmDatabaseHandler.html#a04f6501896ef2534b02c0a3ae9a0073e", null ],
+    [ "unregisterObserver", "classam_1_1IAmDatabaseHandler.html#a868a9221b044f19fa8c845a192b7e8b0", null ]
 ];
