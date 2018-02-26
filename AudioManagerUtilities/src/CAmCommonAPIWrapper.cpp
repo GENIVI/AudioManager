@@ -52,7 +52,7 @@ bool timeoutToTimespec(const int64_t & localTimeout, timespec & pollTimeout)
         else
         {
             pollTimeout.tv_sec = localTimeout / 1000;
-            pollTimeout.tv_nsec = (localTimeout % 1000) * 1000000;   
+            pollTimeout.tv_nsec = (localTimeout % 1000) * 1000000;
         }
         return true;
     }
