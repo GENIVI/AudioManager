@@ -34,6 +34,7 @@ var classam_1_1CAmDltWrapper =
     [ "append", "classam_1_1CAmDltWrapper.html#a4ee292cf564e4cfb1e4e7960bdd8f128", null ],
     [ "append", "classam_1_1CAmDltWrapper.html#ae5721881a2c1410bff54d0cf7fff00cd", null ],
     [ "appendNoDLT", "classam_1_1CAmDltWrapper.html#ae6d0001fff0e8c6104b1d9804a836a9c", null ],
+    [ "checkLogLevel", "classam_1_1CAmDltWrapper.html#affa24a985251893ffd6c2c1292153057", null ],
     [ "deinit", "classam_1_1CAmDltWrapper.html#ab8cf157539a67ad655a99d6e22bf8141", null ],
     [ "getEnabled", "classam_1_1CAmDltWrapper.html#a7fd97ab7edeee9db85fcd261ef163570", null ],
     [ "init", "classam_1_1CAmDltWrapper.html#ad4701439636cce87db15324a20ed420e", null ],

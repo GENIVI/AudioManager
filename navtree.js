@@ -1,217 +1,3 @@
-var NAVTREE =
-[
-  [ "AudioManager", "index.html", [
-    [ "License", "lic.html", [
-      [ "Open Source Projects in the source tree", "lic.html#proj", null ],
-      [ "License Split", "lic.html#split", null ],
-      [ "Mozilla Public License, v. 2.0", "lic.html#mpl", null ],
-      [ "MIT license", "lic.html#mit", null ]
-    ] ],
-    [ "Dependencies", "dep.html", [
-      [ "Dependency Graph", "dep.html#deps", null ],
-      [ "Depedency Graph for Tests", "dep.html#deptest", null ],
-      [ "Generated Dependency Graph", "dep.html#depgen", null ]
-    ] ],
-    [ "Versioning", "ver.html", [
-      [ "New versioning scheme", "ver.html#new_ver", null ],
-      [ "The versioning scheme until 7.0", "ver.html#ver_graph", null ]
-    ] ],
-    [ "Architecture Overview", "architecturepage.html", [
-      [ "Audio Domains", "architecturepage.html#domains", null ],
-      [ "Routing Adapter", "architecturepage.html#routing_adaptor", null ],
-      [ "Gateway", "architecturepage.html#gateway", null ],
-      [ "Converter", "architecturepage.html#converter", null ]
-    ] ],
-    [ "UML Model auf the AudioManager", "uml.html", [
-      [ "Audio Manager Branch", "uml.html#svn", null ]
-    ] ],
-    [ "AudioManager Components", "audiomanagercomponentspage.html", [
-      [ "AudioManagerDaemon", "audiomanagercomponentspage.html#audiomanagercomponents", [
-        [ "Daemon Overview", "audiomanagercomponentspage.html#daemonover", null ]
-      ] ],
-      [ "AudioManagerCommandPlugin", "audiomanagercomponentspage.html#commander", [
-        [ "Interfaces", "audiomanagercomponentspage.html#commandIface", null ]
-      ] ],
-      [ "AudioManagerController", "audiomanagercomponentspage.html#controller", [
-        [ "Interfaces", "audiomanagercomponentspage.html#controlIface", null ]
-      ] ],
-      [ "Routing AudioManagerRoutingPlugin", "audiomanagercomponentspage.html#router", [
-        [ "Interfaces", "audiomanagercomponentspage.html#routingIface", null ],
-        [ "Bus topology", "audiomanagercomponentspage.html#subrouter", null ],
-        [ "Busname", "audiomanagercomponentspage.html#busname", null ],
-        [ "CommonAPI plugins", "audiomanagercomponentspage.html#CAPIplugins", null ]
-      ] ]
-    ] ],
-    [ "AudioManager and CommonAPI", "comminAPI.html", null ],
-    [ "Elements of the AudioManagement", "elementspage.html", [
-      [ "Overview Class Diagram", "elementspage.html#cDiag", null ],
-      [ "Sources", "elementspage.html#source", [
-        [ "Attributes", "elementspage.html#sourceattributes", null ]
-      ] ],
-      [ "Sinks", "elementspage.html#sinks", [
-        [ "Attributes", "elementspage.html#sinkattributes", null ]
-      ] ],
-      [ "Gateways", "elementspage.html#gw", [
-        [ "Attributes", "elementspage.html#gwattributes", null ]
-      ] ],
-      [ "Crossfaders", "elementspage.html#crossfaders", [
-        [ "Attributes", "elementspage.html#cfattributes", null ]
-      ] ]
-    ] ],
-    [ "The relation of sources & sinks with the AudioManager", "sourcesink.html", [
-      [ "Class diagramm of the relation between sources, sinks and the AudioManager", "sourcesink.html#claDi", null ],
-      [ "The REAL interaction", "sourcesink.html#boil", null ],
-      [ "Connection Formats", "sourcesink.html#conFormats", null ],
-      [ "Source States", "sourcesink.html#sstates", null ],
-      [ "Availability", "sourcesink.html#avail", null ],
-      [ "Volumes", "sourcesink.html#vol", null ],
-      [ "SoundProperties", "sourcesink.html#SoundProperties", null ],
-      [ "Interrupt States", "sourcesink.html#in", null ]
-    ] ],
-    [ "About unique IDs : Static vs Dynamic IDs", "uniquepage.html", [
-      [ "Why having two different kinds of ids?", "uniquepage.html#why", null ],
-      [ "The setup", "uniquepage.html#setup", null ]
-    ] ],
-    [ "Classification of Sinks and Sources", "classficationpage.html", [
-      [ "Classification", "classficationpage.html#classification", null ],
-      [ "Attributes", "classficationpage.html#attributes", null ]
-    ] ],
-    [ "Interrups & Low Level Interrupts", "interrupts.html", [
-      [ "Differences", "interrupts.html#diff", null ],
-      [ "Criterias", "interrupts.html#crit", null ]
-    ] ],
-    [ "Connections & MainConnections", "connpage.html", [
-      [ "Connections", "connpage.html#con", null ],
-      [ "Mainconnections", "connpage.html#maincon", null ],
-      [ "Attributes", "connpage.html#att", null ]
-    ] ],
-    [ "Lipsync", "lip.html", [
-      [ "The Task of the Audiomanager", "lip.html#t", null ],
-      [ "Example", "lip.html#ex", null ]
-    ] ],
-    [ "Early Audio", "early.html", [
-      [ "The Requirement", "early.html#req", null ],
-      [ "Early Startup", "early.html#earlys", null ],
-      [ "Late Rundown", "early.html#late", null ]
-    ] ],
-    [ "The two views of the AudioManager", "views.html", [
-      [ "The CommandInterface View View", "views.html#command", null ],
-      [ "RoutingInterface View", "views.html#route", null ],
-      [ "Overview", "views.html#over", null ]
-    ] ],
-    [ "Volumes & MainVolumes", "vol.html", [
-      [ "MainVolumes", "vol.html#mainVol", null ],
-      [ "Volumes", "vol.html#volv", null ]
-    ] ],
-    [ "Properties", "prop.html", [
-      [ "SoundProperties & MainSoundProperties", "prop.html#soundprop", null ],
-      [ "SystemProperties", "prop.html#sys", null ]
-    ] ],
-    [ "Notifications", "notifi.html", [
-      [ "What are notifications?", "notifi.html#notifi_ex", null ],
-      [ "Overview", "notifi.html#notifi_overview", null ],
-      [ "CommandInterface", "notifi.html#notifi_command", null ],
-      [ "ControlInterface", "notifi.html#notifi_control", null ],
-      [ "RoutingInterface", "notifi.html#notifi_routing", null ],
-      [ "Notification Levels", "notifi.html#notifi_levels", null ]
-    ] ],
-    [ "Miscellaneous", "misc.html", [
-      [ "Connection Formats", "misc.html#misc_connfor", null ],
-      [ "Persistence", "misc.html#misc_pers", null ],
-      [ "Speed dependent volume", "misc.html#misc_speed", null ]
-    ] ],
-    [ "Last User Mode", "luc.html", [
-      [ "Last User Mode concept", "luc.html#luc_concept", null ],
-      [ "The handling in the rundown context:", "luc.html#luc_rundown", null ],
-      [ "The next startup:", "luc.html#luc_startup", null ]
-    ] ],
-    [ "Mainloop concept", "mainl.html", [
-      [ "Mainloop", "mainl.html#mconcept", null ],
-      [ "Using the Mainloop", "mainl.html#sec", null ],
-      [ "Utilizing The Mainloop as Threadsafe Call Method", "mainl.html#util", [
-        [ "Asynchronous calls", "mainl.html#async", null ],
-        [ "Synchronous calls", "mainl.html#sync", null ]
-      ] ]
-    ] ],
-    [ "The watchdog", "watchd.html", [
-      [ "The watchdog concept", "watchd.html#watchdconcept", null ],
-      [ "Watchdog configuration", "watchd.html#configwatch", null ],
-      [ "Integration with systemd", "watchd.html#winteg", null ]
-    ] ],
-    [ "Startup and Rundown", "start.html", [
-      [ "Startup", "start.html#start_Start", null ],
-      [ "Rundown", "start.html#start_Rundown", null ],
-      [ "Cancelled Rundown", "start.html#start_Cancel", null ]
-    ] ],
-    [ "CommandLineParsing", "cmdline.html", [
-      [ "TCLAP", "cmdline.html#tclap", null ],
-      [ "CommandLine Parsing in the Plugins", "cmdline.html#cmdplugins", null ]
-    ] ],
-    [ "Dlt support", "dlt.html", [
-      [ "Compilerswitch", "dlt.html#compile", null ]
-    ] ],
-    [ "Download Compile Debug", "eclip.html", [
-      [ "Get the source", "eclip.html#dw", null ],
-      [ "Compile", "eclip.html#build", null ],
-      [ "Using Eclipse", "eclip.html#ec", null ],
-      [ "Debugging with eclipse", "eclip.html#deb", null ]
-    ] ],
-    [ "Compiling & Co", "comp.html", null ],
-    [ "Namespaces", null, [
-      [ "Namespace List", "namespaces.html", "namespaces" ],
-      [ "Namespace Members", "namespacemembers.html", [
-        [ "All", "namespacemembers.html", null ],
-        [ "Functions", "namespacemembers_func.html", null ],
-        [ "Variables", "namespacemembers_vars.html", null ],
-        [ "Typedefs", "namespacemembers_type.html", null ],
-        [ "Enumerations", "namespacemembers_enum.html", null ],
-        [ "Enumerator", "namespacemembers_eval.html", null ]
-      ] ]
-    ] ],
-    [ "Classes", null, [
-      [ "Class List", "annotated.html", "annotated" ],
-      [ "Class Index", "classes.html", null ],
-      [ "Class Hierarchy", "hierarchy.html", "hierarchy" ],
-      [ "Class Members", "functions.html", [
-        [ "All", "functions.html", "functions_dup" ],
-        [ "Functions", "functions_func.html", "functions_func" ],
-        [ "Variables", "functions_vars.html", null ],
-        [ "Typedefs", "functions_type.html", null ],
-        [ "Enumerations", "functions_enum.html", null ],
-        [ "Enumerator", "functions_eval.html", null ]
-      ] ]
-    ] ],
-    [ "Files", null, [
-      [ "File List", "files.html", "files" ],
-      [ "File Members", "globals.html", [
-        [ "All", "globals.html", null ],
-        [ "Functions", "globals_func.html", null ],
-        [ "Variables", "globals_vars.html", null ],
-        [ "Enumerations", "globals_enum.html", null ],
-        [ "Enumerator", "globals_eval.html", null ],
-        [ "Macros", "globals_defs.html", null ]
-      ] ]
-    ] ]
-  ] ]
-];
-
-var NAVTREEINDEX =
-[
-"AudioManagerCore_2include_2TAmPluginTemplate_8h.html",
-"audiomanagertypes_8h.html#a58a230b5da10699a7ce1b1f2a1c550e6",
-"classam_1_1CAmControlReceiver.html#a9d6eae2312f5629f748ec293ef8ef118",
-"classam_1_1CAmDatabaseObserver.html#a3ab11ede15d50e01ed57d135192cc05d",
-"classam_1_1CAmRoutingSender_1_1handleDisconnect.html#aca4d52488579bf52e45e313c7e6b351a",
-"classam_1_1IAmControlReceive.html#a55b0c17d87150f44659bf2bb8a668408",
-"classam_1_1IAmDatabaseHandler.html#af7e0be6ef2f4261a28b5eccc40202342",
-"main_8cpp.html#acc628ca4f61759495f09289b8418d358",
-"ver.html#new_ver"
-];
-
-var SYNCONMSG = 'click to disable panel synchronisation';
-var SYNCOFFMSG = 'click to enable panel synchronisation';
-var SYNCONMSG = 'click to disable panel synchronisation';
-var SYNCOFFMSG = 'click to enable panel synchronisation';
 var navTreeSubIndices = new Array();
 
 function getData(varName)
@@ -232,6 +18,21 @@ function stripPath2(uri)
   var s = uri.substring(i+1);
   var m = uri.substring(0,i+1).match(/\/d\w\/d\w\w\/$/);
   return m ? uri.substring(i-6) : s;
+}
+
+function hashValue()
+{
+  return $(location).attr('hash').substring(1).replace(/[^\w\-]/g,'');
+}
+
+function hashUrl()
+{
+  return '#'+hashValue();
+}
+
+function pathName()
+{
+  return $(location).attr('pathname').replace(/[^-A-Za-z0-9+&@#/%?=~_|!:,.;\(\)]/g, '');
 }
 
 function localStorageSupported()
@@ -256,7 +57,7 @@ function deleteLink()
 {
   if (localStorageSupported()) {
     window.localStorage.setItem('navpath','');
-  } 
+  }
 }
 
 function cachedLink()
@@ -304,7 +105,7 @@ function createIndent(o,domNode,node,level)
     node.expandToggle.onclick = function() {
       if (node.expanded) {
         $(node.getChildrenUL()).slideUp("fast");
-        node.plus_img.src = node.relpath+"ftv2pnode.png";
+        node.plus_img.src = node.relpath+"arrowright.png";
         node.expanded = false;
       } else {
         expandNode(o, node, false, false);
@@ -312,7 +113,7 @@ function createIndent(o,domNode,node,level)
     }
     node.expandToggle.appendChild(imgNode);
     domNode.appendChild(node.expandToggle);
-    imgNode.src = node.relpath+"ftv2pnode.png";
+    imgNode.src = node.relpath+"arrowright.png";
   } else {
     var span = document.createElement("span");
     span.style.display = 'inline-block';
@@ -328,11 +129,13 @@ var animationInProgress = false;
 function gotoAnchor(anchor,aname,updateLocation)
 {
   var pos, docContent = $('#doc-content');
-  if (anchor.parent().attr('class')=='memItemLeft' ||
-      anchor.parent().attr('class')=='fieldtype' ||
-      anchor.parent().is(':header')) 
+  var ancParent = $(anchor.parent());
+  if (ancParent.hasClass('memItemLeft') ||
+      ancParent.hasClass('fieldname') ||
+      ancParent.hasClass('fieldtype') ||
+      ancParent.is(':header'))
   {
-    pos = anchor.parent().position().top;
+    pos = ancParent.position().top;
   } else if (anchor.position()) {
     pos = anchor.position().top;
   }
@@ -390,7 +193,7 @@ function newNode(o, po, text, link, childrenData, lastNode)
     a.className = stripPath(link.replace('#',':'));
     if (link.indexOf('#')!=-1) {
       var aname = '#'+link.split('#')[1];
-      var srcPage = stripPath($(location).attr('pathname'));
+      var srcPage = stripPath(pathName());
       var targetPage = stripPath(link.split('#')[0]);
       a.href = srcPage!=targetPage ? url : "javascript:void(0)"; 
       a.onclick = function(){
@@ -466,9 +269,9 @@ function expandNode(o, node, imm, showRoot)
         $(node.getChildrenUL()).slideDown("fast");
       }
       if (node.isLast) {
-        node.plus_img.src = node.relpath+"ftv2mlastnode.png";
+        node.plus_img.src = node.relpath+"arrowdown.png";
       } else {
-        node.plus_img.src = node.relpath+"ftv2mnode.png";
+        node.plus_img.src = node.relpath+"arrowdown.png";
       }
       node.expanded = true;
     }
@@ -484,14 +287,13 @@ function glowEffect(n,duration)
 
 function highlightAnchor()
 {
-  var aname = $(location).attr('hash');
+  var aname = hashUrl();
   var anchor = $(aname);
   if (anchor.parent().attr('class')=='memItemLeft'){
-    var rows = $('.memberdecls tr[class$="'+
-               window.location.hash.substring(1)+'"]');
+    var rows = $('.memberdecls tr[class$="'+hashValue()+'"]');
     glowEffect(rows.children(),300); // member without details
-  } else if (anchor.parents().slice(2).prop('tagName')=='TR') {
-    glowEffect(anchor.parents('div.memitem'),1000); // enum value
+  } else if (anchor.parent().attr('class')=='fieldname'){
+    glowEffect(anchor.parent().parent(),1000); // enum value
   } else if (anchor.parent().attr('class')=='fieldtype'){
     glowEffect(anchor.parent().parent(),1000); // struct field
   } else if (anchor.parent().is(":header")) {
@@ -506,7 +308,7 @@ function selectAndHighlight(hash,n)
 {
   var a;
   if (hash) {
-    var link=stripPath($(location).attr('pathname'))+':'+hash.substring(1);
+    var link=stripPath(pathName())+':'+hash.substring(1);
     a=$('.item a[class$="'+link+'"]');
   }
   if (a && a.length) {
@@ -539,11 +341,7 @@ function showNode(o, node, index, hash)
         getNode(o, node);
       }
       $(node.getChildrenUL()).css({'display':'block'});
-      if (node.isLast) {
-        node.plus_img.src = node.relpath+"ftv2mlastnode.png";
-      } else {
-        node.plus_img.src = node.relpath+"ftv2mnode.png";
-      }
+      node.plus_img.src = node.relpath+"arrowdown.png";
       node.expanded = true;
       var n = node.children[o.breadcrumbs[index]];
       if (index+1<o.breadcrumbs.length) {
@@ -617,14 +415,13 @@ function navTo(o,root,hash,relpath)
   if (link) {
     var parts = link.split('#');
     root = parts[0];
-    if (parts.length>1) hash = '#'+parts[1];
+    if (parts.length>1) hash = '#'+parts[1].replace(/[^\w\-]/g,'');
     else hash='';
   }
   if (hash.match(/^#l\d+$/)) {
     var anchor=$('a[name='+hash.substring(1)+']');
     glowEffect(anchor.parent(),1000); // line number
     hash=''; // strip line number anchors
-    //root=root.replace(/_source\./,'.'); // source link to doc link
   }
   var url=root+hash;
   var i=-1;
@@ -658,7 +455,7 @@ function toggleSyncButton(relpath)
   if (navSync.hasClass('sync')) {
     navSync.removeClass('sync');
     showSyncOff(navSync,relpath);
-    storeLink(stripPath2($(location).attr('pathname'))+$(location).attr('hash'));
+    storeLink(stripPath2(pathName())+hashUrl());
   } else {
     navSync.addClass('sync');
     showSyncOn(navSync,relpath);
@@ -682,7 +479,7 @@ function initNavTree(toroot,relpath)
   o.node.expanded = false;
   o.node.isLast = true;
   o.node.plus_img = document.createElement("img");
-  o.node.plus_img.src = relpath+"ftv2pnode.png";
+  o.node.plus_img.src = relpath+"arrowright.png";
   o.node.plus_img.width = 16;
   o.node.plus_img.height = 22;
 
@@ -698,7 +495,7 @@ function initNavTree(toroot,relpath)
   }
 
   $(window).load(function(){
-    navTo(o,toroot,window.location.hash,relpath);
+    navTo(o,toroot,hashUrl(),relpath);
     showRoot();
   });
 
@@ -706,21 +503,20 @@ function initNavTree(toroot,relpath)
      if (window.location.hash && window.location.hash.length>1){
        var a;
        if ($(location).attr('hash')){
-         var clslink=stripPath($(location).attr('pathname'))+':'+
-                               $(location).attr('hash').substring(1);
-         a=$('.item a[class$="'+clslink+'"]');
+         var clslink=stripPath(pathName())+':'+hashValue();
+         a=$('.item a[class$="'+clslink.replace(/</g,'\\3c ')+'"]');
        }
        if (a==null || !$(a).parent().parent().hasClass('selected')){
          $('.item').removeClass('selected');
          $('.item').removeAttr('id');
        }
-       var link=stripPath2($(location).attr('pathname'));
-       navTo(o,link,$(location).attr('hash'),relpath);
+       var link=stripPath2(pathName());
+       navTo(o,link,hashUrl(),relpath);
      } else if (!animationInProgress) {
        $('#doc-content').scrollTop(0);
        $('.item').removeClass('selected');
        $('.item').removeAttr('id');
-       navTo(o,toroot,window.location.hash,relpath);
+       navTo(o,toroot,hashUrl(),relpath);
      }
   })
 }

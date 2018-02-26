@@ -1,7 +1,8 @@
 var CAmDatabaseHandlerMap_8h =
 [
     [ "CAmDatabaseHandlerMap", "classam_1_1CAmDatabaseHandlerMap.html", "classam_1_1CAmDatabaseHandlerMap" ],
-    [ "am_Identifier_s", "structam_1_1CAmDatabaseHandlerMap_1_1CAmMappedData_1_1am__Identifier__s.html", "structam_1_1CAmDatabaseHandlerMap_1_1CAmMappedData_1_1am__Identifier__s" ],
+    [ "AmDatabaseObserverCallbacks", "structam_1_1CAmDatabaseHandlerMap_1_1AmDatabaseObserverCallbacks.html", "structam_1_1CAmDatabaseHandlerMap_1_1AmDatabaseObserverCallbacks" ],
+    [ "AmIdentifier", "structam_1_1CAmDatabaseHandlerMap_1_1AmMappedData_1_1AmIdentifier.html", "structam_1_1CAmDatabaseHandlerMap_1_1AmMappedData_1_1AmIdentifier" ],
     [ "AM_MAP_CAPACITY", "CAmDatabaseHandlerMap_8h.html#a9874ef994570805aee6e6e5218ef9231", null ],
     [ "AM_MAX_CONNECTIONS", "CAmDatabaseHandlerMap_8h.html#a25f3e5baa79593267f819107c7cfc843", null ],
     [ "AM_MAX_MAIN_CONNECTIONS", "CAmDatabaseHandlerMap_8h.html#a9a553628ce79cee143abba2a572485e4", null ],

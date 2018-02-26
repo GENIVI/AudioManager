@@ -8,7 +8,7 @@ var classam_1_1CAmGraph =
     [ "connectNodes", "classam_1_1CAmGraph.html#a54afa84a6cedb9558108352b551d4cf3", null ],
     [ "findNode", "classam_1_1CAmGraph.html#af0e39bdae53e986e3ac7c389e4cf4a4e", null ],
     [ "findVertex", "classam_1_1CAmGraph.html#aa6d7ba3750918b17e245238c40d2aaa9", null ],
-    [ "getAllPaths", "classam_1_1CAmGraph.html#a6f71bf9b109ef82cb914ccef7094b8f2", null ],
+    [ "getAllPaths", "classam_1_1CAmGraph.html#a82af8323ee0df0fa83294e340ddac83a", null ],
     [ "getNodes", "classam_1_1CAmGraph.html#abeffbe1d02adc086d48896c6afababea", null ],
     [ "getShortestPath", "classam_1_1CAmGraph.html#afbaea2860663d3266a7b4d25e5041b5d", null ],
     [ "getShortestPath", "classam_1_1CAmGraph.html#a78ba788e4f24d0307375cf3d5f2e1add", null ],

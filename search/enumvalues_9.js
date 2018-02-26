@@ -1,8 +1,10 @@
 var searchData=
 [
-  ['ss_5fmax',['SS_MAX',['../namespaceam.html#af966cbbc3b1d6e637d81a46eaa7dd358ab23978754eea5bc91cc65642d8e15806',1,'am']]],
-  ['ss_5foff',['SS_OFF',['../namespaceam.html#af966cbbc3b1d6e637d81a46eaa7dd358ada6fb80ed2b7b5cddf11cd54526551b9',1,'am']]],
-  ['ss_5fon',['SS_ON',['../namespaceam.html#af966cbbc3b1d6e637d81a46eaa7dd358ae826caf911268a1f382293763af982cf',1,'am']]],
-  ['ss_5fpaused',['SS_PAUSED',['../namespaceam.html#af966cbbc3b1d6e637d81a46eaa7dd358ab6decc7446d331a2611eb21aec341a1d',1,'am']]],
-  ['ss_5funknnown',['SS_UNKNNOWN',['../namespaceam.html#af966cbbc3b1d6e637d81a46eaa7dd358a3f4d4cdfa4a68a99f45304086dfb15d6',1,'am']]]
+  ['ns_5fchange',['NS_CHANGE',['../namespaceam.html#a0ee627be6336efc1a44378ecdc972cd3aecf366563ad28afb4ded6271d9009c69',1,'am']]],
+  ['ns_5fmax',['NS_MAX',['../namespaceam.html#a0ee627be6336efc1a44378ecdc972cd3af183d43f7ee143ea3bcec0ba2b9665d8',1,'am']]],
+  ['ns_5fmaximum',['NS_MAXIMUM',['../namespaceam.html#a0ee627be6336efc1a44378ecdc972cd3a7ecad9a029702bb65384709b792a8062',1,'am']]],
+  ['ns_5fminimum',['NS_MINIMUM',['../namespaceam.html#a0ee627be6336efc1a44378ecdc972cd3a301ddce280fe0db598e9c26cc90776cd',1,'am']]],
+  ['ns_5foff',['NS_OFF',['../namespaceam.html#a0ee627be6336efc1a44378ecdc972cd3a9724eba6224c74fba05ded52ee5e8c7e',1,'am']]],
+  ['ns_5fperiodic',['NS_PERIODIC',['../namespaceam.html#a0ee627be6336efc1a44378ecdc972cd3a78d6102fcf61795385168c2e78db9a5c',1,'am']]],
+  ['ns_5funknown',['NS_UNKNOWN',['../namespaceam.html#a0ee627be6336efc1a44378ecdc972cd3ac13e6ff447491293221844554236c802',1,'am']]]
 ];

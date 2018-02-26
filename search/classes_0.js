@@ -11,7 +11,6 @@ var searchData=
   ['am_5fearlydata_5fu',['am_EarlyData_u',['../unionam_1_1am__EarlyData__u.html',1,'am']]],
   ['am_5fgateway_5fs',['am_Gateway_s',['../structam_1_1am__Gateway__s.html',1,'am']]],
   ['am_5fhandle_5fs',['am_Handle_s',['../structam_1_1am__Handle__s.html',1,'am']]],
-  ['am_5fidentifier_5fs',['am_Identifier_s',['../structam_1_1CAmDatabaseHandlerMap_1_1CAmMappedData_1_1am__Identifier__s.html',1,'am::CAmDatabaseHandlerMap::CAmMappedData']]],
   ['am_5fmainconnection_5fs',['am_MainConnection_s',['../structam_1_1am__MainConnection__s.html',1,'am']]],
   ['am_5fmainconnectiontype_5fs',['am_MainConnectionType_s',['../structam_1_1am__MainConnectionType__s.html',1,'am']]],
   ['am_5fmainsoundproperty_5fs',['am_MainSoundProperty_s',['../structam_1_1am__MainSoundProperty__s.html',1,'am']]],
@@ -28,5 +27,7 @@ var searchData=
   ['am_5fsourceclass_5fs',['am_SourceClass_s',['../structam_1_1am__SourceClass__s.html',1,'am']]],
   ['am_5fsourcetype_5fs',['am_SourceType_s',['../structam_1_1am__SourceType__s.html',1,'am']]],
   ['am_5fsystemproperty_5fs',['am_SystemProperty_s',['../structam_1_1am__SystemProperty__s.html',1,'am']]],
-  ['am_5fvolumes_5fs',['am_Volumes_s',['../structam_1_1am__Volumes__s.html',1,'am']]]
+  ['am_5fvolumes_5fs',['am_Volumes_s',['../structam_1_1am__Volumes__s.html',1,'am']]],
+  ['amdatabaseobservercallbacks',['AmDatabaseObserverCallbacks',['../structam_1_1CAmDatabaseHandlerMap_1_1AmDatabaseObserverCallbacks.html',1,'am::CAmDatabaseHandlerMap']]],
+  ['amidentifier',['AmIdentifier',['../structam_1_1CAmDatabaseHandlerMap_1_1AmMappedData_1_1AmIdentifier.html',1,'am::CAmDatabaseHandlerMap::AmMappedData']]]
 ];

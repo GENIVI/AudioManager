@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['obsolete_20class_21',['Obsolete class!',['../group__Deprecated.html',1,'']]],
   ['objectforkeyifexistsinmap',['objectForKeyIfExistsInMap',['../namespaceam.html#acabdcd0d4a17f00bfaa64ad1b0992263',1,'am']]],
   ['objectmatchingpredicate',['objectMatchingPredicate',['../namespaceam.html#a37383d81d9cd2e5410edc5faea6a42a5',1,'am']]],
   ['operator_3c_3c',['operator&lt;&lt;',['../classCAmLog.html#a8df1ff9ba100e2f7e3544aeb70024504',1,'CAmLog']]],

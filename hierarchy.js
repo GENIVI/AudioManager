@@ -11,7 +11,6 @@ var hierarchy =
     [ "am::am_EarlyData_u", "unionam_1_1am__EarlyData__u.html", null ],
     [ "am::am_Gateway_s", "structam_1_1am__Gateway__s.html", null ],
     [ "am::am_Handle_s", "structam_1_1am__Handle__s.html", null ],
-    [ "am::CAmDatabaseHandlerMap::CAmMappedData::am_Identifier_s", "structam_1_1CAmDatabaseHandlerMap_1_1CAmMappedData_1_1am__Identifier__s.html", null ],
     [ "am::am_MainConnection_s", "structam_1_1am__MainConnection__s.html", null ],
     [ "am::am_MainConnectionType_s", "structam_1_1am__MainConnectionType__s.html", null ],
     [ "am::am_MainSoundProperty_s", "structam_1_1am__MainSoundProperty__s.html", null ],
@@ -29,11 +28,11 @@ var hierarchy =
     [ "am::am_SourceType_s", "structam_1_1am__SourceType__s.html", null ],
     [ "am::am_SystemProperty_s", "structam_1_1am__SystemProperty__s.html", null ],
     [ "am::am_Volumes_s", "structam_1_1am__Volumes__s.html", null ],
+    [ "am::CAmDatabaseHandlerMap::AmMappedData::AmIdentifier", "structam_1_1CAmDatabaseHandlerMap_1_1AmMappedData_1_1AmIdentifier.html", null ],
+    [ "build_indices< N, Is >", "structbuild__indices.html", null ],
     [ "am::CAmCommandLineSingleton", "classam_1_1CAmCommandLineSingleton.html", null ],
-    [ "am::CAmCommandSender", "classam_1_1CAmCommandSender.html", null ],
     [ "am::CAmCommonAPIWrapper", "classam_1_1CAmCommonAPIWrapper.html", null ],
     [ "am::CAmControlSender", "classam_1_1CAmControlSender.html", null ],
-    [ "am::CAmDatabaseObserver", "classam_1_1CAmDatabaseObserver.html", null ],
     [ "am::CAmDbusWrapper", "classam_1_1CAmDbusWrapper.html", null ],
     [ "am::CAmDltWrapper", "classam_1_1CAmDltWrapper.html", null ],
     [ "am::CAmGraph< T, V >", "classam_1_1CAmGraph.html", null ],
@@ -45,12 +44,9 @@ var hierarchy =
       [ "am::CAmNode< T >", "classam_1_1CAmNode.html", null ]
     ] ],
     [ "CAmLog", "classCAmLog.html", null ],
-    [ "am::CAmRouter", "classam_1_1CAmRouter.html", null ],
-    [ "am::CAmRoutingSender", "classam_1_1CAmRoutingSender.html", null ],
-    [ "am::CAmSerializer", "classam_1_1CAmSerializer.html", null ],
+    [ "am::V1::CAmSerializer", "classam_1_1V1_1_1CAmSerializer.html", null ],
+    [ "am::V2::CAmSerializer", "classam_1_1V2_1_1CAmSerializer.html", null ],
     [ "am::CAmSocketHandler", "classam_1_1CAmSocketHandler.html", null ],
-    [ "am::CAmTelnetMenuHelper", "classam_1_1CAmTelnetMenuHelper.html", null ],
-    [ "am::CAmTelnetServer", "classam_1_1CAmTelnetServer.html", null ],
     [ "am::CAmWatchdog", "classam_1_1CAmWatchdog.html", null ],
     [ "DltContext", "structDltContext.html", null ],
     [ "DltContextData", "structDltContextData.html", null ],
@@ -82,37 +78,41 @@ var hierarchy =
     [ "am::IAmDatabaseHandler", "classam_1_1IAmDatabaseHandler.html", [
       [ "am::CAmDatabaseHandlerMap", "classam_1_1CAmDatabaseHandlerMap.html", null ]
     ] ],
+    [ "am::IAmDatabaseHandler::IAmDatabaseObserver", "classam_1_1IAmDatabaseHandler_1_1IAmDatabaseObserver.html", null ],
+    [ "IAmDatabaseObserver", null, [
+      [ "am::CAmDatabaseHandlerMap::AmDatabaseObserverCallbacks", "structam_1_1CAmDatabaseHandlerMap_1_1AmDatabaseObserverCallbacks.html", [
+        [ "am::CAmCommandSender", "classam_1_1CAmCommandSender.html", null ],
+        [ "am::CAmRouter", "classam_1_1CAmRouter.html", null ],
+        [ "am::CAmRoutingSender", "classam_1_1CAmRoutingSender.html", null ]
+      ] ]
+    ] ],
     [ "am::IAmRoutingReceive", "classam_1_1IAmRoutingReceive.html", [
       [ "am::CAmRoutingReceiver", "classam_1_1CAmRoutingReceiver.html", null ]
     ] ],
     [ "am::IAmRoutingSend", "classam_1_1IAmRoutingSend.html", null ],
     [ "am::IAmShPollCheck", "classam_1_1IAmShPollCheck.html", [
-      [ "am::CAmSocketHandler::TAmShPollCheck< TClass >", "classam_1_1CAmSocketHandler_1_1TAmShPollCheck.html", null ],
       [ "am::TAmShPollCheck< TClass >", "classam_1_1TAmShPollCheck.html", null ],
       [ "am::TAmShPollCheck< am::CAmCommonAPIWrapper >", "classam_1_1TAmShPollCheck.html", null ],
       [ "am::TAmShPollCheck< am::CAmControlSender >", "classam_1_1TAmShPollCheck.html", null ],
       [ "am::TAmShPollCheck< am::CAmDbusWrapper >", "classam_1_1TAmShPollCheck.html", null ],
-      [ "am::TAmShPollCheck< am::CAmSerializer >", "classam_1_1TAmShPollCheck.html", null ],
-      [ "am::CAmSocketHandler::TAmShPollCheck< am::CAmSocketHandler >", "classam_1_1CAmSocketHandler_1_1TAmShPollCheck.html", null ],
-      [ "am::TAmShPollCheck< am::CAmTelnetServer >", "classam_1_1TAmShPollCheck.html", null ]
+      [ "am::TAmShPollCheck< am::V1::CAmSerializer >", "classam_1_1TAmShPollCheck.html", null ],
+      [ "am::TAmShPollCheck< am::V2::CAmSerializer >", "classam_1_1TAmShPollCheck.html", null ]
     ] ],
     [ "am::IAmShPollDispatch", "classam_1_1IAmShPollDispatch.html", [
       [ "am::TAmShPollDispatch< TClass >", "classam_1_1TAmShPollDispatch.html", null ],
       [ "am::TAmShPollDispatch< am::CAmCommonAPIWrapper >", "classam_1_1TAmShPollDispatch.html", null ],
       [ "am::TAmShPollDispatch< am::CAmControlSender >", "classam_1_1TAmShPollDispatch.html", null ],
       [ "am::TAmShPollDispatch< am::CAmDbusWrapper >", "classam_1_1TAmShPollDispatch.html", null ],
-      [ "am::TAmShPollDispatch< am::CAmSerializer >", "classam_1_1TAmShPollDispatch.html", null ],
-      [ "am::TAmShPollDispatch< am::CAmTelnetServer >", "classam_1_1TAmShPollDispatch.html", null ]
+      [ "am::TAmShPollDispatch< am::V1::CAmSerializer >", "classam_1_1TAmShPollDispatch.html", null ],
+      [ "am::TAmShPollDispatch< am::V2::CAmSerializer >", "classam_1_1TAmShPollDispatch.html", null ]
     ] ],
     [ "am::IAmShPollFired", "classam_1_1IAmShPollFired.html", [
-      [ "am::CAmSocketHandler::TAmShPollFired< TClass >", "classam_1_1CAmSocketHandler_1_1TAmShPollFired.html", null ],
       [ "am::TAmShPollFired< TClass >", "classam_1_1TAmShPollFired.html", null ],
       [ "am::TAmShPollFired< am::CAmCommonAPIWrapper >", "classam_1_1TAmShPollFired.html", null ],
       [ "am::TAmShPollFired< am::CAmControlSender >", "classam_1_1TAmShPollFired.html", null ],
       [ "am::TAmShPollFired< am::CAmDbusWrapper >", "classam_1_1TAmShPollFired.html", null ],
-      [ "am::TAmShPollFired< am::CAmSerializer >", "classam_1_1TAmShPollFired.html", null ],
-      [ "am::CAmSocketHandler::TAmShPollFired< am::CAmSocketHandler >", "classam_1_1CAmSocketHandler_1_1TAmShPollFired.html", null ],
-      [ "am::TAmShPollFired< am::CAmTelnetServer >", "classam_1_1TAmShPollFired.html", null ]
+      [ "am::TAmShPollFired< am::V1::CAmSerializer >", "classam_1_1TAmShPollFired.html", null ],
+      [ "am::TAmShPollFired< am::V2::CAmSerializer >", "classam_1_1TAmShPollFired.html", null ]
     ] ],
     [ "am::IAmShPollPrepare", "classam_1_1IAmShPollPrepare.html", [
       [ "am::TAmShPollPrepare< TClass >", "classam_1_1TAmShPollPrepare.html", null ],
@@ -125,6 +125,14 @@ var hierarchy =
       [ "am::TAmShTimerCallBack< am::CAmDbusWrapper >", "classam_1_1TAmShTimerCallBack.html", null ],
       [ "am::TAmShTimerCallBack< am::CAmWatchdog >", "classam_1_1TAmShTimerCallBack.html", null ]
     ] ],
+    [ "indices< Is >", "structindices.html", null ],
+    [ "indices< Is... >", "structindices.html", [
+      [ "build_indices< 0, Is... >", "structbuild__indices_3_010_00_01Is_8_8_8_01_4.html", null ]
+    ] ],
+    [ "integral_constant", null, [
+      [ "std::is_placeholder<::placeholder< I > >", "structstd_1_1is__placeholder_3_1_1placeholder_3_01I_01_4_01_4.html", null ]
+    ] ],
     [ "am::CAmRoutingSender::InterfaceNamePairs", "structam_1_1CAmRoutingSender_1_1InterfaceNamePairs.html", null ],
-    [ "am::CAmDltWrapper::NoDltContextData", "structam_1_1CAmDltWrapper_1_1NoDltContextData.html", null ]
+    [ "am::CAmDltWrapper::NoDltContextData", "structam_1_1CAmDltWrapper_1_1NoDltContextData.html", null ],
+    [ "placeholder< I >", "structplaceholder.html", null ]
 ];
