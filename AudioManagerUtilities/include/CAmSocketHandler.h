@@ -27,7 +27,6 @@
 #include <signal.h>
 #include <vector>
 #include <functional>
-#include <thread>
 #include <sys/signalfd.h>
 #include <audiomanagerconfig.h>
 #include "audiomanagertypes.h"
@@ -218,7 +217,6 @@ class CAmSocketHandler
 {
     struct sh_poll_s //!<struct that holds information about polls
     {
-        bool isValid;
         sh_pollHandle_t handle; //!<handle to uniquely adress a filedesriptor
         pollfd pollfdValue; //!<the array for polling the filedescriptors
         std::function<void(const sh_pollHandle_t handle, void* userData)> prepareCB; //preperation callback
@@ -228,7 +226,7 @@ class CAmSocketHandler
         void* userData;
 
         sh_poll_s() :
-                isValid(true), handle(0), pollfdValue(), prepareCB(), firedCB(), checkCB(), dispatchCB(), userData(0)
+                handle(0), pollfdValue(), prepareCB(), firedCB(), checkCB(), dispatchCB(), userData(0)
         {}
     };
 
@@ -246,11 +244,10 @@ class CAmSocketHandler
         sh_timer_s() :
                 handle(0)
 #ifdef WITH_TIMERFD
-                        , fd(-1)
+                        , fd(0)
 #endif
                         , countdown(), callback(), userData(0)
         {}
-                
     };
 
     struct sh_signal_s
@@ -294,30 +291,22 @@ class CAmSocketHandler
     VectorListPoll_t mListPoll; //!<list that holds all information for the ppoll
     sh_identifier_s mSetTimerKeys; //!A set of all used timer keys
     std::list<sh_timer_s> mListTimer; //!<list of all timers
-#ifndef WITH_TIMERFD    
     std::list<sh_timer_s> mListActiveTimer; //!<list of all currently active timers
-#else
-    std::list<sh_timer_s> mListRemovedTimers;
-#endif    
     sh_identifier_s mSetSignalhandlerKeys; //!A set of all used signal handler keys
     VectorSignalHandlers_t mSignalHandlers;
     bool mRecreatePollfds; //!<when this is true, the poll list needs to be recreated
     internal_codes_t mInternalCodes;
     sh_pollHandle_t mSignalFdHandle;
-    VectorListPoll_t mListActivePolls;
-    const std::thread::id mThreadID; //!< Socket handler thread id used to check if the calls come from the same thread
 #ifndef WITH_TIMERFD
     timespec mStartTime; //!<here the actual time is saved for timecorrection
 #endif
-    
 private:
-    
     bool fdIsValid(const int fd) const;
 
     timespec* insertTime(timespec& buffertime);
 #ifdef WITH_TIMERFD      
     am_Error_e createTimeFD(const itimerspec & timeouts, int & fd);
-    void closeRemovedTimers();
+
 #else 
     void timerUp();
     void timerCorrection();
@@ -419,21 +408,28 @@ private:
       * @param a
       * @return
       */
-    inline static void fire(const sh_poll_s* a);
+    inline static void fire(sh_poll_s& a);
+
+    /**
+      * functor to return all fired events
+      * @param a
+      * @return
+      */
+    inline static bool eventFired(const pollfd& a);
 
     /**
       * functor to help find the items that do not need dispatching
       * @param a
       * @return
       */
-    inline static bool noDispatching(const sh_poll_s* a);
+    inline static bool noDispatching(const sh_poll_s& a);
 
     /**
       * checks if dispatching is already finished
       * @param a
       * @return
       */
-    inline static bool dispatchingFinished(const sh_poll_s* a);
+    inline static bool dispatchingFinished(const sh_poll_s& a);
 
     /**
       * timer fire callback
@@ -450,7 +446,7 @@ private:
     bool nextHandle(sh_identifier_s & handle);
     
     am_Error_e getFDPollData(const sh_pollHandle_t handle, sh_poll_s & outPollData);
-
+    
 public:
 
     CAmSocketHandler();

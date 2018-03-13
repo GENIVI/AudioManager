@@ -23,14 +23,13 @@
  */
 
 
+#include "CAmDltWrapper.h"
 #include <string>
 #include <iostream>
 #include <string.h>
 #include <chrono>
 #include <ctime>
-#include <sys/types.h>
 #include <unistd.h>
-#include "CAmDltWrapper.h"
 
 namespace am
 {
@@ -626,7 +625,7 @@ bool CAmDltWrapper::initNoDlt(DltLogLevelType loglevel, DltContext* context)
 	bool CAmDltWrapper::init(DltLogLevelType loglevel, DltContext* context)
 	{
 		pthread_mutex_lock(&mMutex);
-		return initNoDlt(loglevel,context);
+		initNoDlt(loglevel,context);
 	}
 	
 	void CAmDltWrapper::send()

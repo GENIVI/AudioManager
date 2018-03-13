@@ -31,7 +31,6 @@
 #include <features.h>
 #include <csignal>
 #include <unistd.h>
-#include <string.h>
 
 #include "CAmDltWrapper.h"
 #include "CAmSocketHandler.h"
@@ -43,38 +42,22 @@
 namespace am
 {
 
-#define CHECK_CALLER_THREAD_ID()\
-    if(std::this_thread::get_id() != mThreadID)\
-    {\
-        logError("Sockethandler: Call from another thread detected!");\
-        assert(false);\
-    }
-
-
-
-    
 CAmSocketHandler::CAmSocketHandler() :
         mPipe(), //
-        mDispatchDone(true), //
-        mSetPollKeys(MAX_POLLHANDLE), //
-        mListPoll(), //
-        mSetTimerKeys(MAX_TIMERHANDLE),
-        mListTimer(), //
-        #ifndef WITH_TIMERFD  
-        mListActiveTimer(), //
-        #else
-        mListRemovedTimers(),
-        #endif
-        mSetSignalhandlerKeys(MAX_POLLHANDLE), //
-        mSignalHandlers(), //
-        mRecreatePollfds(true),
-        mInternalCodes(internal_codes_e::NO_ERROR),
-        mSignalFdHandle(0),
-        mListActivePolls(),
-        mThreadID(std::this_thread::get_id())
-        #ifndef WITH_TIMERFD
-        ,mStartTime() //
-        #endif
+                mDispatchDone(true), //
+                mSetPollKeys(MAX_POLLHANDLE), //
+                mListPoll(), //
+                mSetTimerKeys(MAX_TIMERHANDLE),
+                mListTimer(), //
+                mListActiveTimer(), //
+                mSetSignalhandlerKeys(MAX_POLLHANDLE), //
+                mSignalHandlers(), //
+                mRecreatePollfds(true),
+                mInternalCodes(internal_codes_e::NO_ERROR),
+                mSignalFdHandle(0)
+#ifndef WITH_TIMERFD
+,mStartTime() //
+#endif
 {
     if (pipe(mPipe) == -1)
     {
@@ -86,17 +69,17 @@ CAmSocketHandler::CAmSocketHandler() :
     short event = 0;
     sh_pollHandle_t handle;
     event |= POLLIN;
-    if (addFDPoll(mPipe[0], event, NULL, [](const pollfd pollfd, const sh_pollHandle_t, void*)
-    {}, [](const sh_pollHandle_t, void*)
-    {   return (false);}, NULL, NULL, handle) != E_OK)
+    if (addFDPoll(mPipe[0], event, NULL,
+                [](const pollfd, const sh_pollHandle_t, void*){},
+                [](const sh_pollHandle_t, void*) { return (false); },
+            NULL, NULL, handle) != E_OK)
+    {
         mInternalCodes |= internal_codes_e::FD_ERROR;
+    }
 }
 
 CAmSocketHandler::~CAmSocketHandler()
 {
-#ifdef WITH_TIMERFD
-    closeRemovedTimers();
-#endif    
     for (auto it : mListPoll)
     {
         close(it.pollfdValue.fd);
@@ -114,16 +97,13 @@ void CAmSocketHandler::start_listenting()
     mDispatchDone = false;
     int16_t pollStatus;
 
-    CHECK_CALLER_THREAD_ID()
-    
 #ifndef WITH_TIMERFD 
     clock_gettime(CLOCK_MONOTONIC, &mStartTime);
 #endif    
     timespec buffertime;
     
-    std::list<sh_poll_s*> listPoll;
+    VectorListPoll_t cloneListPoll;
     VectorListPoll_t::iterator listmPollIt;
-    VectorListPollfd_t::iterator itMfdPollingArray;
     VectorListPollfd_t fdPollingArray; //!<the polling array for ppoll
     
     auto preparePollfd = [&](const sh_poll_s& row)
@@ -138,20 +118,17 @@ void CAmSocketHandler::start_listenting()
     {
         if (mRecreatePollfds)
         {
-#ifdef WITH_TIMERFD
-            closeRemovedTimers();
-#endif
             fdPollingArray.clear();
             //freeze mListPoll by copying it - otherwise we get problems when we want to manipulate it during the next lines
-            mListActivePolls = mListPoll;
+            cloneListPoll = mListPoll;
             //there was a change in the setup, so we need to recreate the fdarray from the list
-            std::for_each(mListActivePolls.begin(), mListActivePolls.end(), preparePollfd);
+            std::for_each(cloneListPoll.begin(), cloneListPoll.end(), preparePollfd);
             mRecreatePollfds = false;
         }
         else
         {
             //first we go through the registered filedescriptors and check if someone needs preparation:
-            std::for_each(mListActivePolls.begin(), mListActivePolls.end(), CAmSocketHandler::prepare);
+            std::for_each(cloneListPoll.begin(), cloneListPoll.end(), CAmSocketHandler::prepare);
         }
 
 #ifndef WITH_TIMERFD
@@ -175,25 +152,25 @@ void CAmSocketHandler::start_listenting()
 
         if (pollStatus != 0) //only check filedescriptors if there was a change
         {
+            std::list<sh_poll_s> listPoll;
             //todo: here could be a timer that makes sure naughty plugins return!
-            listPoll.clear();
             //stage 0+1, call firedCB
-            for (itMfdPollingArray = fdPollingArray.begin(); itMfdPollingArray != fdPollingArray.end(); ++itMfdPollingArray)
+            listmPollIt = cloneListPoll.begin();
+            for (auto it : fdPollingArray)
             {
-                itMfdPollingArray->revents &= itMfdPollingArray->events | POLLERR | POLLHUP;
-                if ( itMfdPollingArray->revents!=0 )
+                if (CAmSocketHandler::eventFired(it))
                 {
-                    listmPollIt = mListActivePolls.begin();
-                    std::advance(listmPollIt, std::distance(fdPollingArray.begin(), itMfdPollingArray));
-
-                    sh_poll_s & pollObj = *listmPollIt;
-
-                    listPoll.push_back(&pollObj);
-                    CAmSocketHandler::fire(&pollObj);
-                    itMfdPollingArray->revents = 0;
+                    listmPollIt->pollfdValue.revents = it.revents;
+                    listPoll.push_back(*listmPollIt);
+                    CAmSocketHandler::fire(*listmPollIt);
                 }
+                else
+                {
+                    listmPollIt->pollfdValue.revents = 0;
+                }
+                listmPollIt++;
             }
- 
+            
             //stage 2, lets ask around if some dispatching is necessary, the ones who need stay on the list
             listPoll.remove_if(CAmSocketHandler::noDispatching);
 
@@ -246,7 +223,7 @@ void CAmSocketHandler::exit_mainloop()
 
 bool CAmSocketHandler::fatalErrorOccurred() 
 { 
-    return ((mInternalCodes&internal_codes_e::PIPE_ERROR)>0)||((mInternalCodes&internal_codes_e::FD_ERROR)>0);
+    return ((mInternalCodes&internal_codes_e::PIPE_ERROR)>0)||((mInternalCodes&internal_codes_e::FD_ERROR)>0); 
 }
 
 am_Error_e CAmSocketHandler::getFDPollData(const sh_pollHandle_t handle, sh_poll_s & outPollData)
@@ -269,8 +246,6 @@ am_Error_e CAmSocketHandler::getFDPollData(const sh_pollHandle_t handle, sh_poll
   */
 am_Error_e CAmSocketHandler::listenToSignals(const std::vector<uint8_t> & listSignals)
 {
-    CHECK_CALLER_THREAD_ID()
-    
     int fdErr;
     uint8_t addedSignals = 0;
     sigset_t sigset;
@@ -312,19 +287,31 @@ am_Error_e CAmSocketHandler::listenToSignals(const std::vector<uint8_t> & listSi
         return (E_NOT_POSSIBLE);
     }
 
-    sh_poll_s sgPollData;
+    int signalHandlerFd;
     if(mSignalFdHandle)
     {
+      sh_poll_s sgPollData;
       if(E_OK!=getFDPollData(mSignalFdHandle, sgPollData))
       {
-          mSignalFdHandle = 0;
+         removeFDPoll(mSignalFdHandle);
+         mSignalFdHandle = 0;
+      }
+      else 
+      {
+        int signalHandlerFd = signalfd(sgPollData.pollfdValue.fd, &sigset, 0);
+        if (signalHandlerFd == -1)
+        {
+            logError("Could not update signal fd!");
+            return (E_NOT_POSSIBLE);
+        }
+        return E_OK;
       }
     }
     
     if(0==mSignalFdHandle)
     {
       /* Create the signalfd */
-      int signalHandlerFd = signalfd(-1, &sigset, SFD_NONBLOCK);
+      signalHandlerFd = signalfd(-1, &sigset, 0);
       if (signalHandlerFd == -1)
       {
           logError("Could not open signal fd!");
@@ -333,40 +320,21 @@ am_Error_e CAmSocketHandler::listenToSignals(const std::vector<uint8_t> & listSi
 
       auto actionPoll = [this](const pollfd pollfd, const sh_pollHandle_t, void*)
       {
-            const VectorSignalHandlers_t & signalHandlers = mSignalHandlers;
-            /* We have a valid signal, read the info from the fd */
-            struct signalfd_siginfo info;
-            ssize_t bytes = read(pollfd.fd, &info, sizeof(info));
-            if(bytes == -1)
-            {
-                if (errno == EAGAIN) //Something wrong, check for EAGAIN
-                    bytes = read(pollfd.fd, &info, sizeof(info)); 
-            }  
-            if(bytes != sizeof(info))
-            {
-                //Failed to read from fd...
-                logError("Failed to read from signal fd");
-                throw std::runtime_error(std::string("Failed to read from signal fd."));
-            }
+          const VectorSignalHandlers_t & signalHandlers = mSignalHandlers;
+          /* We have a valid signal, read the info from the fd */
+          struct signalfd_siginfo info;
+          ssize_t bytes = read(pollfd.fd, &info, sizeof(info));
+          assert(bytes == sizeof(info));
 
-            /* Notify all listeners */
-            for(auto it: signalHandlers)
-                it.callback(it.handle, info, it.userData);
+          /* Notify all listeners */
+          for(auto it: signalHandlers)
+          it.callback(it.handle, info, it.userData);
       };
       /* We're going to add the signal fd through addFDPoll. At this point we don't have any signal listeners. */
-      return addFDPoll(signalHandlerFd, POLLIN | POLLERR | POLLHUP, NULL, actionPoll, [](const sh_pollHandle_t, void*)
+      am_Error_e shFdError = addFDPoll(signalHandlerFd, POLLIN | POLLERR | POLLHUP, NULL, actionPoll, [](const sh_pollHandle_t, void*)
                                         {   return (false);}, NULL, NULL, mSignalFdHandle);
+      return shFdError;
     }    
-    else
-    {
-        int signalHandlerFd = signalfd(sgPollData.pollfdValue.fd, &sigset, 0);
-        if (signalHandlerFd == -1)
-        {
-            logError("Could not update signal fd!", strerror(errno));
-            return (E_NOT_POSSIBLE);
-        }
-        return E_OK;
-    }
 }
 
 /**
@@ -382,17 +350,10 @@ am_Error_e CAmSocketHandler::listenToSignals(const std::vector<uint8_t> & listSi
   * @return E_OK if the descriptor was added, E_NON_EXISTENT if the fd is not valid
   */
 
-am_Error_e CAmSocketHandler::addFDPoll(const int fd, 
-                                       const short event, 
-                                       std::function<void(const sh_pollHandle_t handle, void* userData)> prepare,
-                                       std::function<void(const pollfd pollfd, const sh_pollHandle_t handle, void* userData)> fired, 
-                                       std::function<bool(const sh_pollHandle_t handle, void* userData)> check,
-                                       std::function<bool(const sh_pollHandle_t handle, void* userData)> dispatch, 
-                                       void* userData, 
-                                       sh_pollHandle_t& handle)
+am_Error_e CAmSocketHandler::addFDPoll(const int fd, const short event, std::function<void(const sh_pollHandle_t handle, void* userData)> prepare,
+        std::function<void(const pollfd pollfd, const sh_pollHandle_t handle, void* userData)> fired, std::function<bool(const sh_pollHandle_t handle, void* userData)> check,
+        std::function<bool(const sh_pollHandle_t handle, void* userData)> dispatch, void* userData, sh_pollHandle_t& handle)
 {
-    CHECK_CALLER_THREAD_ID()
-    
     if (!fdIsValid(fd))
         return (E_NON_EXISTENT);
 
@@ -439,7 +400,7 @@ am::am_Error_e CAmSocketHandler::addFDPoll(const int fd, const short event, IAmS
 {
 
     std::function<void(const sh_pollHandle_t handle, void* userData)> prepareCB; //preperation callback
-    std::function<void(const pollfd pollfd, const sh_pollHandle_t handle, void* userData)> firedCB; //fired callback
+    std::function<void(const pollfd poll, const sh_pollHandle_t handle, void* userData)> firedCB; //fired callback
     std::function<bool(const sh_pollHandle_t handle, void* userData)> checkCB; //check callback
     std::function<bool(const sh_pollHandle_t handle, void* userData)> dispatchCB; //check callback
 
@@ -462,36 +423,19 @@ am::am_Error_e CAmSocketHandler::addFDPoll(const int fd, const short event, IAmS
   */
 am_Error_e CAmSocketHandler::removeFDPoll(const sh_pollHandle_t handle)
 {
-    CHECK_CALLER_THREAD_ID()
+    VectorListPoll_t::iterator iterator = mListPoll.begin();
 
-    bool handleRemoved = false;
-
-    for (auto it = mListPoll.begin(); it != mListPoll.end(); ++it)
+    for (; iterator != mListPoll.end(); ++iterator)
     {
-        if (it->handle == handle)
+        if (iterator->handle == handle)
         {
-            it = mListPoll.erase(it);
+            iterator = mListPoll.erase(iterator);
             mSetPollKeys.pollHandles.erase(handle);
-            handleRemoved = true;
-            break;
+            mRecreatePollfds = true;
+            return (E_OK);
         }
     }
-
-    if ( false == handleRemoved )
-        return (E_UNKNOWN);
-
-    mRecreatePollfds = true;
-
-    for (auto it = mListActivePolls.begin(); it != mListActivePolls.end(); ++it)
-    {
-        if (it->handle == handle)
-        {
-            it->isValid = false;
-            break;
-        }
-    }
-
-    return (E_OK);
+    return (E_UNKNOWN);
 }
 
 /**
@@ -503,8 +447,6 @@ am_Error_e CAmSocketHandler::removeFDPoll(const sh_pollHandle_t handle)
   */
 am_Error_e CAmSocketHandler::addSignalHandler(std::function<void(const sh_pollHandle_t handle, const signalfd_siginfo & info, void* userData)> callback, sh_pollHandle_t& handle, void * userData)
 {
-    CHECK_CALLER_THREAD_ID()
-    
     if (!nextHandle(mSetSignalhandlerKeys))
     {
         logError("Could not create new polls, too many open!");
@@ -527,8 +469,6 @@ am_Error_e CAmSocketHandler::addSignalHandler(std::function<void(const sh_pollHa
   */
 am_Error_e CAmSocketHandler::removeSignalHandler(const sh_pollHandle_t handle)
 {
-    CHECK_CALLER_THREAD_ID()
-    
     VectorSignalHandlers_t::iterator it(mSignalHandlers.begin());
     for (; it != mSignalHandlers.end(); ++it)
     {
@@ -566,7 +506,6 @@ am_Error_e CAmSocketHandler::addTimer(const timespec & timeouts, IAmShTimerCallB
 
 am_Error_e CAmSocketHandler::addTimer(const timespec & timeouts, std::function<void(const sh_timerHandle_t handle, void* userData)> callback, sh_timerHandle_t& handle, void * userData, const bool repeats)
 {
-    CHECK_CALLER_THREAD_ID()
     assert(!((timeouts.tv_sec == 0) && (timeouts.tv_nsec == 0)));
 
     mListTimer.emplace_back();
@@ -594,6 +533,7 @@ am_Error_e CAmSocketHandler::addTimer(const timespec & timeouts, std::function<v
     clock_gettime(CLOCK_MONOTONIC, &currentTime);
     if (!mDispatchDone)//the mainloop is started
     timerItem.countdown = timespecAdd(timeouts, timespecSub(currentTime, mStartTime));
+    mListTimer.push_back(timerItem);
     mListActiveTimer.push_back(timerItem);
     mListActiveTimer.sort(compareCountdown);
     return (E_OK);
@@ -619,35 +559,22 @@ am_Error_e CAmSocketHandler::addTimer(const timespec & timeouts, std::function<v
         return err;
     }
 
-    auto actionPoll = [this](const pollfd pollfd, const sh_pollHandle_t handle, void* userData)
+    static auto actionPoll = [](const pollfd pollfd, const sh_pollHandle_t handle, void* userData)
     {
         uint64_t mExpirations;
-        ssize_t bytes = read(pollfd.fd, &mExpirations, sizeof(mExpirations));
-        if(bytes == -1)
-        { 
-            if (errno == EAGAIN)//Something wrong, check for EAGAIN
-                bytes = read(pollfd.fd, &mExpirations, sizeof(mExpirations));
-        }
-
-        if(bytes != sizeof(mExpirations))
+        if (read(pollfd.fd, &mExpirations, sizeof(uint64_t)) == -1)
         {
-            //Failed to read from fd...
-            logError("Failed to read from timer fd");
-            throw std::runtime_error(std::string("Failed to read from timer fd."));
+            //error received...try again
+            read(pollfd.fd, &mExpirations, sizeof(uint64_t));
         }
     };
 
-    err = addFDPoll(timerItem.fd, 
-                    POLLIN, 
-                    NULL, 
-                    actionPoll, 
-                    [callback](const sh_pollHandle_t handle, void* userData)->bool{
-                        callback(handle, userData);
-                        return false;
-                    },
-                    NULL, 
-                    userData, 
-                    handle);
+    err = addFDPoll(timerItem.fd, POLLIN, NULL, actionPoll, [callback](const sh_pollHandle_t handle, void* userData)->bool
+    {
+        callback(handle, userData);
+        return false;
+    },
+    NULL, userData, handle);
     if (E_OK == err)
     {
         timerItem.handle = handle;
@@ -668,7 +595,6 @@ am_Error_e CAmSocketHandler::addTimer(const timespec & timeouts, std::function<v
   */
 am_Error_e CAmSocketHandler::removeTimer(const sh_timerHandle_t handle)
 {
-    CHECK_CALLER_THREAD_ID()
     assert(handle != 0);
 
     //stop the current timer
@@ -682,22 +608,20 @@ am_Error_e CAmSocketHandler::removeTimer(const sh_timerHandle_t handle)
     if (it == mListTimer.end())
         return (E_NON_EXISTENT);
 
-    mListRemovedTimers.push_back(*it);
+    close(it->fd);
     mListTimer.erase(it);
     return removeFDPoll(handle);
 #else
     stopTimer(handle);
     std::list<sh_timer_s>::iterator it(mListTimer.begin());
-    while (it != mListTimer.end())
+    for (; it != mListTimer.end(); ++it)
     {
         if (it->handle == handle)
         {
-            it = mListTimer.erase(it);            
+            it = mListTimer.erase(it);
             mSetTimerKeys.pollHandles.erase(handle);
             return (E_OK);
         }
-        else
-            ++it;
     }
     return (E_UNKNOWN);
 #endif
@@ -711,8 +635,6 @@ am_Error_e CAmSocketHandler::removeTimer(const sh_timerHandle_t handle)
   */
 am_Error_e CAmSocketHandler::updateTimer(const sh_timerHandle_t handle, const timespec & timeouts)
 {
-    CHECK_CALLER_THREAD_ID()
-    
 #ifdef WITH_TIMERFD
     std::list<sh_timer_s>::iterator it = mListTimer.begin();
     for (; it != mListTimer.end(); ++it)
@@ -735,7 +657,7 @@ am_Error_e CAmSocketHandler::updateTimer(const sh_timerHandle_t handle, const ti
     }
     else
     {
-        if (timerfd_settime(it->fd, 0, &it->countdown, NULL)<0)
+        if (timerfd_settime(it->fd, 0, &it->countdown, NULL))
         {
             logError("Failed to set timer duration");
             return E_NOT_POSSIBLE;
@@ -797,7 +719,6 @@ am_Error_e CAmSocketHandler::updateTimer(const sh_timerHandle_t handle, const ti
   */
 am_Error_e CAmSocketHandler::restartTimer(const sh_timerHandle_t handle)
 {
-    CHECK_CALLER_THREAD_ID()
 #ifdef WITH_TIMERFD
     std::list<sh_timer_s>::iterator it = mListTimer.begin();
     for (; it != mListTimer.end(); ++it)
@@ -816,7 +737,7 @@ am_Error_e CAmSocketHandler::restartTimer(const sh_timerHandle_t handle)
     }
     else
     {
-        if (timerfd_settime(it->fd, 0, &it->countdown, NULL)<0)
+        if (timerfd_settime(it->fd, 0, &it->countdown, NULL))
         {
             logError("Failed to set timer duration");
             return E_NOT_POSSIBLE;
@@ -876,7 +797,6 @@ am_Error_e CAmSocketHandler::restartTimer(const sh_timerHandle_t handle)
   */
 am_Error_e CAmSocketHandler::stopTimer(const sh_timerHandle_t handle)
 {
-    CHECK_CALLER_THREAD_ID()
 #ifdef WITH_TIMERFD
     std::list<sh_timer_s>::iterator it = mListTimer.begin();
     for (; it != mListTimer.end(); ++it)
@@ -891,7 +811,7 @@ am_Error_e CAmSocketHandler::stopTimer(const sh_timerHandle_t handle)
     countdown.it_value.tv_nsec = 0;
     countdown.it_value.tv_sec = 0;
 
-    if (timerfd_settime(it->fd, 0, &countdown, NULL)<0)
+    if (timerfd_settime(it->fd, 0, &countdown, NULL))
     {
         logError("Failed to set timer duration");
         return E_NOT_POSSIBLE;
@@ -900,16 +820,13 @@ am_Error_e CAmSocketHandler::stopTimer(const sh_timerHandle_t handle)
 #else   
     //go through the list and remove the timer with the handle
     std::list<sh_timer_s>::iterator it(mListActiveTimer.begin());
-    
-    while (it != mListActiveTimer.end())
+    for (; it != mListActiveTimer.end(); ++it)
     {
         if (it->handle == handle)
         {
             it = mListActiveTimer.erase(it);
             return (E_OK);
         }
-        else
-            it++;
     }
     return (E_NON_EXISTENT);
 #endif
@@ -923,7 +840,6 @@ am_Error_e CAmSocketHandler::stopTimer(const sh_timerHandle_t handle)
   */
 am_Error_e CAmSocketHandler::updateEventFlags(const sh_pollHandle_t handle, const short events)
 {
-    CHECK_CALLER_THREAD_ID()
     VectorListPoll_t::iterator iterator = mListPoll.begin();
 
     for (; iterator != mListPoll.end(); ++iterator)
@@ -1050,11 +966,11 @@ void CAmSocketHandler::prepare(am::CAmSocketHandler::sh_poll_s& row)
 /**
   * fire callback
   */
-void CAmSocketHandler::fire(const sh_poll_s* a)
+void CAmSocketHandler::fire(sh_poll_s& a)
 {
     try
     {
-        a->firedCB(a->pollfdValue, a->handle, a->userData);
+        a.firedCB(a.pollfdValue, a.handle, a.userData);
     } catch (std::exception& e)
     {
         logError("Sockethandler: Exception in Preparecallback,caught", e.what());
@@ -1064,23 +980,31 @@ void CAmSocketHandler::fire(const sh_poll_s* a)
 /**
   * should disptach
   */
-bool CAmSocketHandler::noDispatching(const sh_poll_s* a)
+bool CAmSocketHandler::noDispatching(const sh_poll_s& a)
 {
     //remove from list of there is no checkCB
-    if (nullptr == a->checkCB || false == a->isValid)
+    if (nullptr == a.checkCB)
         return (true);
-    return (!a->checkCB(a->handle, a->userData));
+    return (!a.checkCB(a.handle, a.userData));
 }
 
 /**
   * disptach
   */
-bool CAmSocketHandler::dispatchingFinished(const sh_poll_s* a)
+bool CAmSocketHandler::dispatchingFinished(const sh_poll_s& a)
 {
     //remove from list of there is no dispatchCB
-    if (nullptr == a->dispatchCB || false == a->isValid)
+    if (nullptr == a.dispatchCB)
         return (true);
-    return (!a->dispatchCB(a->handle, a->userData));
+    return (!a.dispatchCB(a.handle, a.userData));
+}
+
+/**
+  * event triggered
+  */
+bool CAmSocketHandler::eventFired(const pollfd& a)
+{
+    return (a.revents == 0 ? false : true);
 }
 
 /**
@@ -1097,41 +1021,30 @@ inline timespec* CAmSocketHandler::insertTime(timespec& buffertime)
         return (&buffertime);
     }
     else
-#endif
+#endif    
     {
         return (NULL);
     }
 }
 
-#ifdef WITH_TIMERFD
+#ifdef WITH_TIMERFD   
 am_Error_e CAmSocketHandler::createTimeFD(const itimerspec & timeouts, int & fd)
 {
     fd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
-    if (fd < 0)
+    if (fd <= 0)
     {
         logError("Failed to create timer");
         return E_NOT_POSSIBLE;
     }
 
-    if (timerfd_settime(fd, 0, &timeouts, NULL) < 0)
+    if (timerfd_settime(fd, 0, &timeouts, NULL))
     {
         logError("Failed to set timer duration");
         return E_NOT_POSSIBLE;
     }
     return E_OK;
 }
-
-void CAmSocketHandler::closeRemovedTimers()
-{
-    for (auto it : mListRemovedTimers)
-    {
-        if( it.fd > -1 )
-            close( it.fd );
-    }
-    mListRemovedTimers.clear();
-}
-
-#endif
+#endif 
 
 void CAmSocketHandler::callTimer(sh_timer_s& a)
 {
