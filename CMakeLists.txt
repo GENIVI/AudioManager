@@ -65,10 +65,8 @@ option ( WITH_SHARED_CORE
     "Build audio manager core as dynamic library" OFF)
     
 option ( WITH_TIMERFD
-    "Build with timer fd support" ON )
+    "Build with the linux specific TIMERFD feature to support timing without using signals" ON)
     
-option( WITH_TESTS
-        "Build together with all available unitTest" ON )
 
 set(DBUS_SERVICE_PREFIX "org.genivi.audiomanager"
     CACHE PROPERTY "The dbus service prefix for the AM - only changable for legacy dbus")
@@ -214,6 +212,7 @@ if(WITH_DOCUMENTATION)
 		PATTERN "Doxyfile" EXCLUDE
 		PATTERN "def" EXCLUDE)
 endif(WITH_DOCUMENTATION)
+
 
 message(STATUS)
 message(STATUS "${PROJECT_NAME} Configuration:")

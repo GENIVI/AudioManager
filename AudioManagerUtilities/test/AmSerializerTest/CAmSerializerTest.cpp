@@ -79,8 +79,6 @@ struct SerializerData
     V2::CAmSerializer *pSerializer;
 };
 
-#define ASYNCLOOP 100
-
 void* ptSerializerSync(void* data)
 {
     SerializerData *pData = (SerializerData*) data;
@@ -98,7 +96,6 @@ void* ptSerializerSync(void* data)
     return (NULL);
 }
 
-
 void* ptSerializerASync(void* data)
 {
     SerializerData *pData = (SerializerData*) data;
@@ -109,7 +106,7 @@ void* ptSerializerASync(void* data)
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-    for (uint32_t i = 0; i < ASYNCLOOP; i++)
+    for (uint32_t i = 0; i < 5; i++)
     {
         testStr = pData->testStr;
         pData->pSerializer->asyncCall(pData->pSerCb, &MockIAmSerializerCb::dispatchData, i, testStr);
@@ -194,7 +191,7 @@ TEST(CAmSerializerTest, asyncTest)
 
     EXPECT_CALL(serCb,check()).Times(2);
     EXPECT_CALL(serCb,checkInt()).Times(1).WillRepeatedly(Return(100));
-    for (int i = 0; i < ASYNCLOOP; i++)
+    for (int i = 0; i < 5; i++)
         EXPECT_CALL(serCb,dispatchData(i,testStr)).WillOnce(DoAll(ActionDispatchData(), Return(true)));
 
     myHandler.start_listenting();
