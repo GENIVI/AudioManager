@@ -22,6 +22,7 @@
 #include <string>
 #include <list>
 #include <map>
+#include <unordered_map>
 #include <queue>
 #include <memory>
 #include <cassert>
@@ -48,29 +49,37 @@ class CAmSocketHandler;
 
 class CAmCommonAPIWrapper
 {
-    void commonPrepareCallback(const sh_pollHandle_t handle, void* userData);
+    void commonPrepareCallback ( const sh_pollHandle_t, void* );
 	TAmShPollPrepare<CAmCommonAPIWrapper> pCommonPrepareCallback;
-
-    bool commonDispatchCallback(const sh_pollHandle_t handle, void* userData);
-    TAmShPollDispatch<CAmCommonAPIWrapper> pCommonDispatchCallback;
 
     void commonFireCallback(const pollfd pollfd, const sh_pollHandle_t, void*);
     TAmShPollFired<CAmCommonAPIWrapper> pCommonFireCallback;
 
     bool commonCheckCallback(const sh_pollHandle_t handle, void*);
     TAmShPollCheck<CAmCommonAPIWrapper> pCommonCheckCallback;
+    
+    bool commonDispatchCallback(const sh_pollHandle_t handle, void* userData);
+    TAmShPollDispatch<CAmCommonAPIWrapper> pCommonDispatchCallback;
 
     void commonTimerCallback(sh_timerHandle_t handle, void* userData);
     TAmShTimerCallBack<CAmCommonAPIWrapper> pCommonTimerCallback;
 
-     struct timerHandles
-    {
-        sh_timerHandle_t handle;
-        CommonAPI::Timeout* timeout;
-    };
-
     CAmSocketHandler *mpSocketHandler; //!< pointer to the sockethandler
 
+    typedef std::vector<CommonAPI::DispatchSource*> ArrayDispatchSources;
+    typedef ArrayDispatchSources::iterator IteratorArrayDispatchSources;
+    typedef std::unordered_map<am::sh_pollHandle_t, CommonAPI::Watch*> MapWatches;
+    typedef MapWatches::iterator IteratorMapWatches;
+    typedef std::unordered_map<am::sh_pollHandle_t,std::list<CommonAPI::DispatchSource*>> MapDispatchSources;
+    typedef MapDispatchSources::iterator IteratorDispatchSources;
+    typedef std::unordered_map<am::sh_pollHandle_t, CommonAPI::Timeout*> MapTimeouts;
+    typedef MapTimeouts::iterator IteratorMapTimeouts;
+    
+    ArrayDispatchSources mRegisteredDispatchSources;
+    MapWatches mMapWatches;
+    MapDispatchSources mSourcesToDispatch;
+    MapTimeouts mListTimerhandles;
+    
     std::shared_ptr<CommonAPI::Runtime> mRuntime;
     std::shared_ptr<CommonAPI::MainLoopContext> mContext;
 
@@ -78,22 +87,23 @@ class CAmCommonAPIWrapper
     CommonAPI::WatchListenerSubscription mWatchListenerSubscription;
     CommonAPI::TimeoutSourceListenerSubscription mTimeoutSourceListenerSubscription;
     CommonAPI::WakeupListenerSubscription mWakeupListenerSubscription;
-    std::multimap<CommonAPI::DispatchPriority, CommonAPI::DispatchSource*> mRegisteredDispatchSources;
-    std::map<int,CommonAPI::Watch*> mMapWatches;
-    CommonAPI::Watch* mWatchToCheck;
-    std::list<CommonAPI::DispatchSource*> mSourcesToDispatch;
-    std::vector<timerHandles> mpListTimerhandles;
+
 
 	void registerDispatchSource(CommonAPI::DispatchSource* dispatchSource, const CommonAPI::DispatchPriority dispatchPriority);
 	void deregisterDispatchSource(CommonAPI::DispatchSource* dispatchSource);
+    void deregisterAllDispatchSource();
 	void registerWatch(CommonAPI::Watch* watch, const CommonAPI::DispatchPriority dispatchPriority);
 	void deregisterWatch(CommonAPI::Watch* watch);
+    void deregisterAllWatches();
 	void registerTimeout(CommonAPI::Timeout* timeout, const CommonAPI::DispatchPriority dispatchPriority);
 	void deregisterTimeout(CommonAPI::Timeout* timeout);
-	void wakeup();
+    void deregisterAllTimeouts();
+
+    CommonAPI::Watch* watchWithHandle(const sh_pollHandle_t handle);
+    CommonAPI::Timeout* timeoutWithHandle(const sh_pollHandle_t handle);
 
 protected:
-    CAmCommonAPIWrapper(CAmSocketHandler* socketHandler, const std::string & applicationName = "") ;
+    CAmCommonAPIWrapper(CAmSocketHandler* socketHandler, const std::string& applicationName = "") ;
 
 public:
 
@@ -133,24 +143,25 @@ public:
 	* @return Pointer to the socket handler.
 	*/
 	CAmSocketHandler *getSocketHandler() const { return mpSocketHandler; }
-#if COMMONAPI_VERSION_NUMBER >= 300
-	/**
-	* \brief Register stub objects.
-	*
-	* Example: std::shared_ptr<ConcreteStubClass> aStub;
-	* 		   registerService(	aStub, "local", "com.your_company.instance_name", "service-name");
-	*
-	* @param shStub: Shared pointer to a stub instance
-	* @param domain: A string with the domain name, usually "local"
-	* @param instance: Common-api instance string as example "com.your_company.instance_name"
-	* @param connectionId: A string connection id, which is used by CommonAPI to group applications
-	*
-	*/
-	template <class TStubImp> bool registerService(const std::shared_ptr<TStubImp> & shStub, const std::string & domain, const std::string & instance, const CommonAPI::ConnectionId_t & connectionId)
-	{
-		return mRuntime->registerService(domain, instance, shStub, connectionId);
-	}
-#endif
+
+    /** 
+    * \brief Deprecated method. This class is used only in single connection applications and no connectionId is needed. Instead you should use bool registerService(const std::shared_ptr<TStubImp> & shStub, const std::string & domain, const std::string & instance). 
+    * 
+    * 
+    * Example: std::shared_ptr<ConcreteStubClass> aStub; 
+    *        registerService(  aStub, "local", "com.your_company.instance_name", "service-name"); 
+    * 
+    * @param shStub: Shared pointer to a stub instance 
+    * @param domain: A string with the domain name, usually "local" 
+    * @param instance: Common-api instance string as example "com.your_company.instance_name" 
+    * @param connectionId: A string connection id, which is used by CommonAPI to group applications 
+    * 
+    */ 
+    template <class TStubImp> bool __attribute__((deprecated)) registerService(const std::shared_ptr<TStubImp> & shStub, const std::string & domain, const std::string & instance, const CommonAPI::ConnectionId_t __attribute__((__unused__)) & /*connectionId*/) 
+    { 
+        return mRuntime->registerService(domain, instance, shStub, mContext); 
+    } 
+	
 	/**
 	* \brief Register stub objects.
 	*
@@ -180,96 +191,93 @@ public:
 		return mRuntime->unregisterService(domain, interface, instance);
 	}
 
-	/**
-	* \brief Deprecated method. Instead you should use bool registerService(const std::shared_ptr<TStubImp> & shStub, const std::string & domain, const std::string & instance).
-	*
-	* Register stub objects.
-	*
-	* Example: std::shared_ptr<ConcreteStubClass> aStub;
-	* 		   registerService(	aStub, "local:com.your_company.interface_name:com.your_company.instance_name");
-	*
-	* @param shStub: Shared pointer to a stub instance
-	* @param address: Complete common-api address as example "local:com.your_company.interface_name:com.your_company.instance_name"
-	*
-	*/
-	template <class TStubImp> bool __attribute__((deprecated)) registerStub(const std::shared_ptr<TStubImp> & shStub, const std::string & address)
- 	{
-		std::vector<std::string> parts = CommonAPI::split(address, ':');
-		assert(parts.size()==3);
+    /**
+    * \brief Deprecated method. Instead you should use bool registerService(const std::shared_ptr<TStubImp> & shStub, const std::string & domain, const std::string & instance). 
+    * 
+    * Register stub objects. 
+    * 
+    * Example: std::shared_ptr<ConcreteStubClass> aStub; 
+    *        registerService(  aStub, "local:com.your_company.interface_name:com.your_company.instance_name"); 
+    * 
+    * @param shStub: Shared pointer to a stub instance 
+    * @param address: Complete common-api address as example "local:com.your_company.interface_name:com.your_company.instance_name" 
+    * 
+    */ 
+    template <class TStubImp> bool __attribute__((deprecated)) registerStub(const std::shared_ptr<TStubImp> & shStub, const std::string & address) 
+    { 
+        std::vector<std::string> parts = CommonAPI::split(address, ':'); 
+        assert(parts.size()==3); 
 
-		return registerService(shStub, parts[0], parts[2]);
- 	}
+        return registerService(shStub, parts[0], parts[2]); 
+    }
 
-	/**
-	* \brief Deprecated method. Instead you should use bool unregisterService(const std::string &domain, const std::string &interface, const std::string &instance).
-	*
-	* Unregister stub objects.
-	*
-	* @param address: Complete common-api address as example "local:com.your_company.interface_name:com.your_company.instance_name"
-	*
-	*/
-	bool __attribute__((deprecated)) unregisterStub(const std::string & address)
-	{
-		std::vector<std::string> parts = CommonAPI::split(address, ':');
-		assert(parts.size()==3);
+    /** 
+    * \brief Deprecated method. Instead you should use bool unregisterService(const std::string &domain, const std::string &interface, const std::string &instance). 
+    * 
+    * Unregister stub objects. 
+    * 
+    * @param address: Complete common-api address as example "local:com.your_company.interface_name:com.your_company.instance_name" 
+    * 
+    */ 
+    bool __attribute__((deprecated)) unregisterStub(const std::string & address) 
+    {
+        std::vector<std::string> parts = CommonAPI::split(address, ':'); 
+        assert(parts.size()==3); 
 
-		return unregisterService(parts[0], parts[1], parts[2]);
- 	}
+        return unregisterService(parts[0], parts[1], parts[2]); 
+    }
 
-#if COMMONAPI_VERSION_NUMBER >= 300
-	/**
-	* \brief Build proxy objects.
-	*
-	* Example: std::shared_ptr<AProxyClass<>> aProxy = buildProxy<AProxyClass>("local", "com.your_company.instance_name", "client-name");
-	*
-	* @param domain: A string with the domain name, usually "local"
-	* @param instance: Common-api instance string as example "com.your_company.instance_name"
-	* @param connectionId: A string connection id, which is used by CommonAPI to group applications
-	*
-	* @return A proxy object.
-	*/
-	template<template<typename ...> class ProxyClass, typename ... AttributeExtensions>
-	std::shared_ptr<ProxyClass<AttributeExtensions...>> buildProxy(const std::string &domain, const std::string &instance, const CommonAPI::ConnectionId_t & connectionId)
-	{
-		return mRuntime->buildProxy<ProxyClass>(domain, instance, connectionId);
-	}
-#endif
-
-	/**
-	* \brief Build proxy objects.
-	*
-	* Example: std::shared_ptr<AProxyClass<>> aProxy = buildProxy<AProxyClass>("local", "com.your_company.instance_name");
-	*
-	* @param domain: A string with the domain name, usually "local"
-	* @param instance: Common-api instance string as example "com.your_company.instance_name"
-	*
-	* @return A proxy object.
-	*/
+    /** 
+    * \brief  Deprecated method. This class is used only in single connection applications and no connectionId is needed. Instead you should use buildProxy(const std::string &domain, const std::string &instance). 
+    * 
+    * Example: std::shared_ptr<AProxyClass<>> aProxy = buildProxy<AProxyClass>("local", "com.your_company.instance_name", "client-name"); 
+    * 
+    * @param domain: A string with the domain name, usually "local" 
+    * @param instance: Common-api instance string as example "com.your_company.instance_name" 
+    * @param connectionId: A string connection id, which is used by CommonAPI to group applications 
+    * 
+    * @return A proxy object. 
+    */ 
+    template<template<typename ...> class ProxyClass, typename ... AttributeExtensions> 
+    std::shared_ptr<ProxyClass<AttributeExtensions...>> __attribute__((deprecated)) buildProxy(const std::string &domain, const std::string &instance, const CommonAPI::ConnectionId_t __attribute__((__unused__)) & /*connectionId*/) 
+    { 
+        return mRuntime->buildProxy<ProxyClass>(domain, instance, mContext);
+    } 
+ 
+    /** 
+    * \brief Build proxy objects.
+    *
+    * Example: std::shared_ptr<AProxyClass<>> aProxy = buildProxy<AProxyClass>("local", "com.your_company.instance_name");
+    *
+    * @param domain: A string with the domain name, usually "local"
+    * @param instance: Common-api instance string as example "com.your_company.instance_name"
+    *
+    * @return A proxy object.
+    */
 	template<template<typename ...> class ProxyClass, typename ... AttributeExtensions>
 	std::shared_ptr<ProxyClass<AttributeExtensions...>> buildProxy(const std::string &domain, const std::string &instance)
 	{
 		return mRuntime->buildProxy<ProxyClass>(domain, instance, mContext);
 	}
 
-
-	/**
-	* \brief  Deprecated method. Instead you should use buildProxy(const std::string &domain, const std::string &instance).
-	*
-	* Build proxy objects.
-	* Example: std::shared_ptr<AProxyClass<>> aProxy = buildProxy<AProxyClass>("local:com.your_company.interface_name:com.your_company.instance_name");
-	*
-	* @param address: Complete common-api address as example "local:com.your_company.interface_name:com.your_company.instance_name"
-	*
-	* @return A proxy object.
-	*/
-	template<template<typename ...> class ProxyClass, typename ... AttributeExtensions>
-	std::shared_ptr<ProxyClass<AttributeExtensions...>> __attribute__((deprecated)) buildProxy(const std::string & address)
-	{
-		std::vector<std::string> parts=CommonAPI::split(address, ':');
-		assert(parts.size()==3);
-
-		return buildProxy<ProxyClass>(parts[0], parts[2]);
-	}
+    /** 
+    * \brief  Deprecated method. Instead you should use buildProxy(const std::string &domain, const std::string &instance). 
+    * 
+    * Build proxy objects. 
+    * Example: std::shared_ptr<AProxyClass<>> aProxy = buildProxy<AProxyClass>("local:com.your_company.interface_name:com.your_company.instance_name"); 
+    * 
+    * @param address: Complete common-api address as example "local:com.your_company.interface_name:com.your_company.instance_name" 
+    * 
+    * @return A proxy object. 
+    */ 
+    template<template<typename ...> class ProxyClass, typename ... AttributeExtensions> 
+    std::shared_ptr<ProxyClass<AttributeExtensions...>> __attribute__((deprecated)) buildProxy(const std::string & address) 
+    { 
+        std::vector<std::string> parts=CommonAPI::split(address, ':'); 
+        assert(parts.size()==3); 
+    
+        return buildProxy<ProxyClass>(parts[0], parts[2]); 
+    }
 
 };
 

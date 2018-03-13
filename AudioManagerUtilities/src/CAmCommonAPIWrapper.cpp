@@ -36,21 +36,47 @@ namespace am
 static CAmCommonAPIWrapper* pSingleCommonAPIInstance = NULL;
 
 
+bool timeoutToTimespec(const int64_t & localTimeout, timespec & pollTimeout)
+{    
+    if(CommonAPI::TIMEOUT_INFINITE == localTimeout)//dispatch never
+    {
+        return false;
+    }
+    else
+    {
+        if(CommonAPI::TIMEOUT_NONE==localTimeout)//dispatch immediately
+        {
+            pollTimeout.tv_sec = 0;
+            pollTimeout.tv_nsec = 5000000;//5 ms
+        }
+        else
+        {
+            pollTimeout.tv_sec = localTimeout / 1000;
+            pollTimeout.tv_nsec = (localTimeout % 1000) * 1000000;
+        }
+        return true;
+    }
+}
+
+
 CAmCommonAPIWrapper::CAmCommonAPIWrapper(CAmSocketHandler* socketHandler, const std::string & applicationName):
 				pCommonPrepareCallback(this,&CAmCommonAPIWrapper::commonPrepareCallback), //
-		        pCommonDispatchCallback(this, &CAmCommonAPIWrapper::commonDispatchCallback), //
 		        pCommonFireCallback(this, &CAmCommonAPIWrapper::commonFireCallback), //
 		        pCommonCheckCallback(this, &CAmCommonAPIWrapper::commonCheckCallback), //
+                pCommonDispatchCallback(this, &CAmCommonAPIWrapper::commonDispatchCallback), //
 		        pCommonTimerCallback(this, &CAmCommonAPIWrapper::commonTimerCallback), //
-		        mpSocketHandler(socketHandler), //
-		        mWatchToCheck(NULL)
+                mpSocketHandler(socketHandler),
+                mRegisteredDispatchSources(),
+                mMapWatches(),
+                mSourcesToDispatch(),
+                mListTimerhandles()
 {
 	assert(NULL!=socketHandler);
 //Get the runtime
 	mRuntime = CommonAPI::Runtime::get();
 	assert(NULL!=mRuntime);
 
-	//Create the context
+//Create the context
 	if(applicationName.size())
 		mContext = std::make_shared<CommonAPI::MainLoopContext>(applicationName);
 	else
@@ -75,9 +101,11 @@ CAmCommonAPIWrapper::~CAmCommonAPIWrapper()
 	mContext->unsubscribeForDispatchSources(mDispatchSourceListenerSubscription);
 	mContext->unsubscribeForWatches(mWatchListenerSubscription);
 	mContext->unsubscribeForTimeouts(mTimeoutSourceListenerSubscription);
+    deregisterAllDispatchSource();
+    deregisterAllTimeouts();
+    deregisterAllWatches();
 	mContext.reset();
 	mpSocketHandler = NULL;
-	mWatchToCheck = NULL;
 }
 
 CAmCommonAPIWrapper* CAmCommonAPIWrapper::instantiateOnce(CAmSocketHandler* socketHandler, const std::string & applicationName)
@@ -115,123 +143,105 @@ CAmCommonAPIWrapper* CAmCommonAPIWrapper::getInstance()
 	return pSingleCommonAPIInstance;
 }
 
-bool CAmCommonAPIWrapper::commonDispatchCallback(const sh_pollHandle_t handle, void *userData)
-{
-    (void) handle;
-    (void) userData;
-
-    std::list<CommonAPI::DispatchSource*>::iterator iterator(mSourcesToDispatch.begin());
-    for(;iterator!=mSourcesToDispatch.end();)
-    {
-    	CommonAPI::DispatchSource* source = *iterator;
-        if (!source->dispatch()) {
-            iterator=mSourcesToDispatch.erase(iterator);
-        }
-        else
-            iterator++;
-    }
-    if (!mSourcesToDispatch.empty())
-        return (true);
-
-    return false;
-}
-
-bool CAmCommonAPIWrapper::commonCheckCallback(const sh_pollHandle_t, void *)
-{
-    std::vector<CommonAPI::DispatchSource*> vecDispatch=mWatchToCheck->getDependentDispatchSources();
-    mSourcesToDispatch.insert(mSourcesToDispatch.end(), vecDispatch.begin(), vecDispatch.end());
-
-    return (mWatchToCheck || !mSourcesToDispatch.empty());
-}
-
-void CAmCommonAPIWrapper::commonFireCallback(const pollfd pollfd, const sh_pollHandle_t, void *)
-{
-    mWatchToCheck=NULL;
-    try
-    {
-        mWatchToCheck=mMapWatches.at(pollfd.fd);
-    }
-    catch (const std::out_of_range& error) {
-      logInfo(__PRETTY_FUNCTION__,error.what());
-      return;
-    }
-
-    mWatchToCheck->dispatch(pollfd.events);
-}
-
 void CAmCommonAPIWrapper::commonPrepareCallback(const sh_pollHandle_t, void*)
 {
     for (auto dispatchSourceIterator = mRegisteredDispatchSources.begin();
-                            dispatchSourceIterator != mRegisteredDispatchSources.end();
-                            dispatchSourceIterator++)
+            dispatchSourceIterator != mRegisteredDispatchSources.end();
+            dispatchSourceIterator++)
     {
         int64_t dispatchTimeout(CommonAPI::TIMEOUT_INFINITE);
-        if(dispatchSourceIterator->second->prepare(dispatchTimeout))
+        if((*dispatchSourceIterator)->prepare(dispatchTimeout))
         {
-            while (dispatchSourceIterator->second->dispatch());
+            while ((*dispatchSourceIterator)->dispatch());
         }
     }
 }
 
-void CAmCommonAPIWrapper::registerDispatchSource(CommonAPI::DispatchSource* dispatchSource, const CommonAPI::DispatchPriority dispatchPriority)
+void CAmCommonAPIWrapper::commonFireCallback(const pollfd pollfd, const sh_pollHandle_t handle, void *)
 {
-    mRegisteredDispatchSources.insert({dispatchPriority, dispatchSource});
+    CommonAPI::Watch* pWatchToCheck = watchWithHandle(handle);
+    if( pWatchToCheck )   
+        pWatchToCheck->dispatch(pollfd.revents);
+}
+
+bool CAmCommonAPIWrapper::commonCheckCallback(const sh_pollHandle_t handle, void *)
+{
+    CommonAPI::Watch* pWatchToCheck = watchWithHandle(handle);
+    if( pWatchToCheck )
+    {
+        const ArrayDispatchSources & vecDispatch = pWatchToCheck->getDependentDispatchSources();
+        if(vecDispatch.size()>0)
+        {
+            mSourcesToDispatch[handle].insert(mSourcesToDispatch[handle].end(), vecDispatch.begin(), vecDispatch.end());
+            return true;
+        }
+    }
+    return false;
+}
+
+bool CAmCommonAPIWrapper::commonDispatchCallback(const sh_pollHandle_t handle, void *)
+{
+    CommonAPI::Watch* pWatchToCheck = watchWithHandle(handle);
+    if( pWatchToCheck )
+    {        
+        std::list<CommonAPI::DispatchSource*> & srcList = mSourcesToDispatch[handle];
+        for(auto it = srcList.begin();it!=srcList.end();)
+        {
+            if (false==(*it)->dispatch())
+                it=srcList.erase(it);
+            else
+                it++;
+        }
+        if (!srcList.empty())
+            return (true);
+    }
+    mSourcesToDispatch.erase(handle);
+    return false;
+}
+
+void CAmCommonAPIWrapper::commonTimerCallback(sh_timerHandle_t handle, void *)
+{
+    CommonAPI::Timeout* pTimeout = timeoutWithHandle(handle);
+    
+    if( NULL==pTimeout )
+    {
+        //erroneous call because deregisterTimeout has been called, so try to remove the timer from the sockethandler
+        mpSocketHandler->removeTimer(handle);
+    }
+    else
+    {
+        if ( false==pTimeout->dispatch() ) //it should be removed
+        {               
+            mpSocketHandler->removeTimer(handle);
+            mListTimerhandles.erase(handle);
+        }
+    #ifndef WITH_TIMERFD
+        else //the timeout should be rescheduled 
+            mpSocketHandler->restartTimer(handle);           
+    #endif        
+    }
+}
+
+void CAmCommonAPIWrapper::registerDispatchSource(CommonAPI::DispatchSource* dispatchSource, const CommonAPI::DispatchPriority)
+{
+    mRegisteredDispatchSources.push_back(dispatchSource);
 }
 
 void CAmCommonAPIWrapper::deregisterDispatchSource(CommonAPI::DispatchSource* dispatchSource)
 {
-    for(auto dispatchSourceIterator = mRegisteredDispatchSources.begin();
-            dispatchSourceIterator != mRegisteredDispatchSources.end();
-            dispatchSourceIterator++) {
-
-        if(dispatchSourceIterator->second == dispatchSource) {
+    for(IteratorArrayDispatchSources dispatchSourceIterator = mRegisteredDispatchSources.begin(); dispatchSourceIterator != mRegisteredDispatchSources.end(); dispatchSourceIterator++) 
+    {
+        if( *dispatchSourceIterator == dispatchSource ) 
+        {
             mRegisteredDispatchSources.erase(dispatchSourceIterator);
             break;
         }
     }
 }
 
-void CAmCommonAPIWrapper::deregisterWatch(CommonAPI::Watch* watch)
+void CAmCommonAPIWrapper::deregisterAllDispatchSource()
 {
-    for(std::map<int,CommonAPI::Watch*>::iterator iter(mMapWatches.begin());iter!=mMapWatches.end();iter++)
-    {
-        if (iter->second == watch)
-        {
-            mMapWatches.erase(iter);
-            break;
-        }
-    }
-}
-
-void CAmCommonAPIWrapper::registerTimeout(CommonAPI::Timeout* timeout, const CommonAPI::DispatchPriority)
-{
-    timespec pollTimeout;
-    int64_t localTimeout = timeout->getTimeoutInterval();
-
-    pollTimeout.tv_sec = localTimeout / 1000;
-    pollTimeout.tv_nsec = (localTimeout % 1000) * 1000000;
-
-    //prepare handle and callback. new is eval, but there is no other choice because we need the pointer!
-    sh_timerHandle_t handle;
-
-    //add the timer to the pollLoop
-    mpSocketHandler->addTimer(pollTimeout, &pCommonTimerCallback, handle, timeout);
-
-    timerHandles myHandle({handle,timeout});
-    mpListTimerhandles.push_back(myHandle);
-
-    return;
-}
-
-void CAmCommonAPIWrapper::deregisterTimeout(CommonAPI::Timeout* timeout)
-{
-    for( std::vector<timerHandles>::iterator iter(mpListTimerhandles.begin());iter!=mpListTimerhandles.end();iter++)
-    {
-        if(iter->timeout==timeout)
-        {
-            mpSocketHandler->removeTimer(iter->handle);
-        }
-    }
+    mRegisteredDispatchSources.clear();
 }
 
 void CAmCommonAPIWrapper::registerWatch(CommonAPI::Watch* watch, const CommonAPI::DispatchPriority)
@@ -243,22 +253,103 @@ void CAmCommonAPIWrapper::registerWatch(CommonAPI::Watch* watch, const CommonAPI
     am_Error_e error = mpSocketHandler->addFDPoll(pollfd_.fd, pollfd_.events, &pCommonPrepareCallback, &pCommonFireCallback, &pCommonCheckCallback, &pCommonDispatchCallback, watch, handle);
 
     //if everything is alright, add the watch and the handle to our map so we know this relationship
-    if (error == !am_Error_e::E_OK || handle == 0)
+    if (error != am_Error_e::E_OK || handle == 0)
+    {
         logError(__func__,"entering watch failed");
-
-    mMapWatches.insert(std::make_pair(pollfd_.fd,watch));
+    }
+    else
+        mMapWatches.insert(std::make_pair(handle,watch));
 }
 
-void CAmCommonAPIWrapper::commonTimerCallback(sh_timerHandle_t handle, void *)
+void CAmCommonAPIWrapper::deregisterWatch(CommonAPI::Watch* watch)
 {
-    for( std::vector<timerHandles>::iterator iter(mpListTimerhandles.begin());iter!=mpListTimerhandles.end();iter++)
+    for(IteratorMapWatches iter=mMapWatches.begin();iter!=mMapWatches.end();iter++)
     {
-        if(iter->handle==handle)
+        if (iter->second == watch)
         {
-            iter->timeout->dispatch();
+            mpSocketHandler->removeFDPoll(iter->first);
+            mMapWatches.erase(iter);
+            break;
         }
     }
 }
+
+void CAmCommonAPIWrapper::deregisterAllWatches()
+{
+    for(IteratorMapWatches iter=mMapWatches.begin();iter!=mMapWatches.end();iter++)
+        mpSocketHandler->removeFDPoll(iter->first);
+    mMapWatches.clear();
+}
+
+void CAmCommonAPIWrapper::registerTimeout(CommonAPI::Timeout* timeout, const CommonAPI::DispatchPriority)
+{
+    timespec pollTimeout;
+    if(timeoutToTimespec(timeout->getTimeoutInterval(), pollTimeout))
+    {
+        //prepare handle and callback. new is eval, but there is no other choice because we need the pointer!
+        sh_timerHandle_t handle;
+
+        //add the timer to the pollLoop
+        am_Error_e error = mpSocketHandler->addTimer(pollTimeout, &pCommonTimerCallback, handle, timeout, true);
+        if (error != am_Error_e::E_OK || handle == 0)
+        {
+            logError(__func__,"adding timer failed");
+        }
+        else
+        {
+            mListTimerhandles.insert(std::make_pair(handle,timeout));
+        }
+    }
+}
+
+void CAmCommonAPIWrapper::deregisterTimeout(CommonAPI::Timeout* timeout)
+{
+    for( IteratorMapTimeouts iter=mListTimerhandles.begin();iter!= mListTimerhandles.end();iter++)
+    {
+        if(iter->second==timeout)
+        {
+            mpSocketHandler->removeTimer(iter->first);
+            mListTimerhandles.erase(iter->first);
+            break;
+        }
+    }
+}
+
+void CAmCommonAPIWrapper::deregisterAllTimeouts()
+{
+    for( IteratorMapTimeouts iter=mListTimerhandles.begin();iter!= mListTimerhandles.end();iter++)
+        mpSocketHandler->removeTimer(iter->first);
+    mListTimerhandles.clear();
+}
+
+CommonAPI::Watch* CAmCommonAPIWrapper::watchWithHandle(const sh_pollHandle_t handle)
+{
+    CommonAPI::Watch* pWatchToCheck = NULL;
+    try
+    {
+        pWatchToCheck = mMapWatches.at(handle);        
+    }
+    catch (const std::out_of_range& error) 
+    {
+        logInfo(__PRETTY_FUNCTION__,error.what());
+    } 
+    return pWatchToCheck;
+}
+
+CommonAPI::Timeout* CAmCommonAPIWrapper::timeoutWithHandle(const sh_pollHandle_t handle)
+{
+    CommonAPI::Timeout* pTimeout = NULL;
+    try
+    {
+        pTimeout = mListTimerhandles.at(handle);        
+    }
+    catch (const std::out_of_range& error) 
+    {
+        logInfo(__PRETTY_FUNCTION__,error.what());
+    } 
+    return pTimeout;
+}
+
 
 CAmCommonAPIWrapper* (*getCAPI)()  = CAmCommonAPIWrapper::getInstance;
 
