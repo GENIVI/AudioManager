@@ -49,7 +49,9 @@ CAmSocketHandler::CAmSocketHandler() :
                 mListPoll(), //
                 mSetTimerKeys(MAX_TIMERHANDLE),
                 mListTimer(), //
+#ifndef WITH_TIMERFD
                 mListActiveTimer(), //
+#endif
                 mSetSignalhandlerKeys(MAX_POLLHANDLE), //
                 mSignalHandlers(), //
                 mRecreatePollfds(true),
@@ -516,17 +518,17 @@ am_Error_e CAmSocketHandler::addTimer(const timespec & timeouts, std::function<v
 {
     assert(!((timeouts.tv_sec == 0) && (timeouts.tv_nsec == 0)));
 
-    mListTimer.emplace_back();
-    sh_timer_s & timerItem = mListTimer.back();
-
 #ifndef WITH_TIMERFD 
     //create a new handle for the timer
     if (!nextHandle(mSetTimerKeys))
     {
-        logError("Could not create new timers, too many open!");
-        mListTimer.pop_back();
+        logError("CAmSocketHandler::addTimer Could not create new timers, too many open!");
         return (E_NOT_POSSIBLE);
     }
+
+    mListTimer.emplace_back();
+    sh_timer_s & timerItem = mListTimer.back();
+
     //create a new handle for the timer
     handle = mSetTimerKeys.lastUsedID;
 
@@ -541,12 +543,13 @@ am_Error_e CAmSocketHandler::addTimer(const timespec & timeouts, std::function<v
     clock_gettime(CLOCK_MONOTONIC, &currentTime);
     if (!mDispatchDone)//the mainloop is started
     timerItem.countdown = timespecAdd(timeouts, timespecSub(currentTime, mStartTime));
-    mListTimer.push_back(timerItem);
     mListActiveTimer.push_back(timerItem);
     mListActiveTimer.sort(compareCountdown);
     return (E_OK);
 
 #else   
+    sh_timer_s timerItem;
+
     timerItem.countdown.it_value = timeouts;
     if (repeats)
         timerItem.countdown.it_interval = timeouts;
@@ -562,10 +565,7 @@ am_Error_e CAmSocketHandler::addTimer(const timespec & timeouts, std::function<v
     timerItem.userData = userData;
     am_Error_e err = createTimeFD(timerItem.countdown, timerItem.fd);
     if (err != E_OK)
-    {
-        mListTimer.pop_back();
         return err;
-    }
 
     auto actionPoll = [this](const pollfd pollfd, const sh_pollHandle_t handle, void* userData)
     {
@@ -594,10 +594,7 @@ am_Error_e CAmSocketHandler::addTimer(const timespec & timeouts, std::function<v
     if (err == E_OK)
     {
         timerItem.handle = handle;
-    }
-    else
-    {
-        mListTimer.pop_back();
+        mListTimer.push_back(timerItem);
     }
     return err;
 #endif    
@@ -615,29 +612,30 @@ am_Error_e CAmSocketHandler::removeTimer(const sh_timerHandle_t handle)
 
     //stop the current timer
 #ifdef WITH_TIMERFD 
-    std::list<sh_timer_s>::iterator it = mListTimer.begin();
-    for (; it != mListTimer.end(); ++it)
-    {
-        if (it->handle == handle)
-            break;
-    }
-    if (it == mListTimer.end())
-        return (E_NON_EXISTENT);
-
-    close(it->fd);
-    mListTimer.erase(it);
-    return removeFDPoll(handle);
-#else
-    stopTimer(handle);
     std::list<sh_timer_s>::iterator it(mListTimer.begin());
-    for (; it != mListTimer.end(); ++it)
+    while (it != mListTimer.end())
     {
         if (it->handle == handle)
         {
-            it = mListTimer.erase(it);
+            mListTimer.erase(it);
+            return removeFDPoll(handle);
+        }
+        ++it;
+    }
+    return (E_NON_EXISTENT);
+
+#else
+    stopTimer(handle);
+    std::list<sh_timer_s>::iterator it(mListTimer.begin());
+    while (it != mListTimer.end())
+    {
+        if (it->handle == handle)
+        {
+            mListTimer.erase(it);
             mSetTimerKeys.pollHandles.erase(handle);
             return (E_OK);
         }
+        ++it;
     }
     return (E_UNKNOWN);
 #endif
@@ -814,38 +812,38 @@ am_Error_e CAmSocketHandler::restartTimer(const sh_timerHandle_t handle)
 am_Error_e CAmSocketHandler::stopTimer(const sh_timerHandle_t handle)
 {
 #ifdef WITH_TIMERFD
-    std::list<sh_timer_s>::iterator it = mListTimer.begin();
-    for (; it != mListTimer.end(); ++it)
+    for (auto elem : mListTimer)
     {
-        if (it->handle == handle)
-            break;
-    }
-    if (it == mListTimer.end())
-        return (E_NON_EXISTENT);
+        if (elem.handle != handle)
+            continue;
 
-    itimerspec countdown = it->countdown;
-    countdown.it_value.tv_nsec = 0;
-    countdown.it_value.tv_sec = 0;
+        itimerspec countdown = elem.countdown;
+        countdown.it_value.tv_nsec = 0;
+        countdown.it_value.tv_sec = 0;
 
-    if (timerfd_settime(it->fd, 0, &countdown, NULL))
-    {
-        logError("Failed to set timer duration");
-        return E_NOT_POSSIBLE;
+        if (timerfd_settime(elem.fd, 0, &countdown, NULL) < 0)
+        {
+            logError("Failed to set timer duration");
+            return E_NOT_POSSIBLE;
+        }
+
+        return E_OK;
     }
-    return (E_OK);
-#else   
+#else
     //go through the list and remove the timer with the handle
     std::list<sh_timer_s>::iterator it(mListActiveTimer.begin());
-    for (; it != mListActiveTimer.end(); ++it)
+    while (it != mListActiveTimer.end())
     {
         if (it->handle == handle)
         {
-            it = mListActiveTimer.erase(it);
-            return (E_OK);
+            mListActiveTimer.erase(it);
+            return E_OK;
         }
+        ++it;
     }
-    return (E_NON_EXISTENT);
 #endif
+
+    return E_NON_EXISTENT;
 }
 
 /**
@@ -1047,15 +1045,17 @@ inline timespec* CAmSocketHandler::insertTime(timespec& buffertime)
 am_Error_e CAmSocketHandler::createTimeFD(const itimerspec & timeouts, int & fd)
 {
     fd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
-    if (fd <= 0)
+    if (fd < 0)
     {
-        logError("Failed to create timer");
+        logError("CAmSocketHandler::createTimeFD Failed with", static_cast<const char*>(std::strerror(errno)));
         return E_NOT_POSSIBLE;
     }
 
-    if (timerfd_settime(fd, 0, &timeouts, NULL))
+    if (timerfd_settime(fd, 0, &timeouts, NULL) < 0)
     {
-        logError("Failed to set timer duration");
+        logError("CAmSocketHandler::createTimeFD Failed to set duration for", fd);
+        close(fd);
+        fd = -1;
         return E_NOT_POSSIBLE;
     }
     return E_OK;
