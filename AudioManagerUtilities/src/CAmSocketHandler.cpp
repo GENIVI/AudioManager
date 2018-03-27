@@ -287,31 +287,19 @@ am_Error_e CAmSocketHandler::listenToSignals(const std::vector<uint8_t> & listSi
         return (E_NOT_POSSIBLE);
     }
 
-    int signalHandlerFd;
+    sh_poll_s sgPollData;
     if(mSignalFdHandle)
     {
-      sh_poll_s sgPollData;
       if(E_OK!=getFDPollData(mSignalFdHandle, sgPollData))
       {
-         removeFDPoll(mSignalFdHandle);
-         mSignalFdHandle = 0;
-      }
-      else 
-      {
-        int signalHandlerFd = signalfd(sgPollData.pollfdValue.fd, &sigset, 0);
-        if (signalHandlerFd == -1)
-        {
-            logError("Could not update signal fd!");
-            return (E_NOT_POSSIBLE);
-        }
-        return E_OK;
+          mSignalFdHandle = 0;
       }
     }
     
     if(0==mSignalFdHandle)
     {
       /* Create the signalfd */
-      signalHandlerFd = signalfd(-1, &sigset, 0);
+      int signalHandlerFd = signalfd(-1, &sigset, SFD_NONBLOCK);
       if (signalHandlerFd == -1)
       {
           logError("Could not open signal fd!");
@@ -345,6 +333,16 @@ am_Error_e CAmSocketHandler::listenToSignals(const std::vector<uint8_t> & listSi
       return addFDPoll(signalHandlerFd, POLLIN | POLLERR | POLLHUP, NULL, actionPoll,
               [](const sh_pollHandle_t, void*) { return (false); }, NULL, NULL, mSignalFdHandle);
     }    
+    else
+    {
+        int signalHandlerFd = signalfd(sgPollData.pollfdValue.fd, &sigset, 0);
+        if (signalHandlerFd == -1)
+        {
+            logError("Could not update signal fd!", std::strerror(errno));
+            return (E_NOT_POSSIBLE);
+        }
+        return E_OK;
+    }
 }
 
 /**
@@ -459,7 +457,7 @@ am_Error_e CAmSocketHandler::addSignalHandler(std::function<void(const sh_pollHa
 {
     if (!nextHandle(mSetSignalhandlerKeys))
     {
-        logError("Could not create new polls, too many open!");
+        logError("CAmSocketHandler::addSignalHandler Could not create new polls, too many open!");
         return (E_NOT_POSSIBLE);
     }
 
@@ -484,7 +482,7 @@ am_Error_e CAmSocketHandler::removeSignalHandler(const sh_pollHandle_t handle)
     {
         if (it->handle == handle)
         {
-            it = mSignalHandlers.erase(it);
+            mSignalHandlers.erase(it);
             mSetSignalhandlerKeys.pollHandles.erase(handle);
             return (E_OK);
         }
