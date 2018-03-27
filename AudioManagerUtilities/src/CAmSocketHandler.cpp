@@ -1027,15 +1027,16 @@ void CAmSocketHandler::timerCorrection()
   */
 void CAmSocketHandler::prepare(am::CAmSocketHandler::sh_poll_s& row)
 {
-    if (row.prepareCB)
+    if (!row.prepareCB)
+        return;
+
+    try
     {
-        try
-        {
-            row.prepareCB(row.handle, row.userData);
-        } catch (std::exception& e)
-        {
-            logError("Sockethandler: Exception in Preparecallback,caught", e.what());
-        }
+        row.prepareCB(row.handle, row.userData);
+    }
+    catch (std::exception& e)
+    {
+        logError("CAmSocketHandler::prepare Exception caught", e.what());
     }
 }
 
@@ -1047,9 +1048,10 @@ void CAmSocketHandler::fire(const sh_poll_s& a)
     try
     {
         a.firedCB(a.pollfdValue, a.handle, a.userData);
-    } catch (std::exception& e)
+    }
+    catch (std::exception& e)
     {
-        logError("Sockethandler: Exception in Preparecallback,caught", e.what());
+        logError("CAmSocketHandler::fire Exception caught", e.what());
     }
 }
 
@@ -1122,9 +1124,10 @@ void CAmSocketHandler::callTimer(sh_timer_s& a)
     try
     {
         a.callback(a.handle, a.userData);
-    } catch (std::exception& e)
+    }
+    catch (std::exception& e)
     {
-        logError("Sockethandler: Exception in Timercallback,caught", e.what());
+        logError("CAmSocketHandler::callTimer() Exception caught", e.what());
     }
 }
 
@@ -1141,7 +1144,6 @@ bool CAmSocketHandler::nextHandle(sh_identifier_s & handle)
         }
         if (handle.lastUsedID == lastHandle)
         {
-            logError("Could not create new polls, too many open!");
             return (false);
         }
 
