@@ -480,7 +480,7 @@ TEST(CAmSocketHandlerTest,playWithUNIXSockets)
     CAmSamplePlugin::sockType_e type = CAmSamplePlugin::UNIX;
     CAmSamplePlugin myplugin(&myHandler, type);
 
-    EXPECT_CALL(myplugin,receiveData(_,_,_)).Times(Exactly(SOCKET_TEST_LOOPS_COUNT));
+    EXPECT_CALL(myplugin,receiveData(Field(&pollfd::revents, Eq(POLL_IN)),_,_)).Times(Exactly(SOCKET_TEST_LOOPS_COUNT));
     EXPECT_CALL(myplugin,dispatchData(_,_)).Times(Exactly(SOCKET_TEST_LOOPS_COUNT));
     EXPECT_CALL(myplugin,check(_,_)).Times(Exactly(SOCKET_TEST_LOOPS_COUNT));
 
@@ -527,7 +527,7 @@ TEST(CAmSocketHandlerTest,playWithSockets)
     CAmSamplePlugin::sockType_e type = CAmSamplePlugin::INET;
     CAmSamplePlugin myplugin(&myHandler, type);
 
-    EXPECT_CALL(myplugin,receiveData(_,_,_)).Times(Exactly(SOCKET_TEST_LOOPS_COUNT));
+    EXPECT_CALL(myplugin,receiveData(Field(&pollfd::revents, Eq(POLL_IN)),_,_)).Times(Exactly(SOCKET_TEST_LOOPS_COUNT));
     EXPECT_CALL(myplugin,dispatchData(_,_)).Times(Exactly(SOCKET_TEST_LOOPS_COUNT));
     EXPECT_CALL(myplugin,check(_,_)).Times(Exactly(SOCKET_TEST_LOOPS_COUNT));
 
