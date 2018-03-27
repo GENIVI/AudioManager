@@ -50,6 +50,7 @@ namespace am
 
 typedef uint16_t sh_pollHandle_t; //!<this is a handle for a filedescriptor to be used with the SocketHandler
 typedef sh_pollHandle_t sh_timerHandle_t; //!<this is a handle for a timer to be used with the SocketHandler
+typedef enum:uint8_t { RMV_ONLY, RMV_N_CLS } sh_rmv_e;
 
 /**
   * prototype for poll prepared callback
@@ -220,7 +221,8 @@ class CAmSocketHandler
         UNINIT = 0u, // new, uninitialized element which needs to be inserted to ppoll array
         VALID  = 1u, // it is a valid element in ppoll array
         UPDATE = 2u, // update of event information therefore update ppoll array
-        REMOVE = 3u  // remove from ppoll array and internal map
+        REMOVE = 3u, // remove from ppoll array and internal map
+        CLOSE  = 4u  // close and remove from ppoll array and internal map
     } poll_states_e;
 
     struct sh_poll_s //!<struct that holds information about polls
@@ -462,7 +464,7 @@ public:
             std::function<bool(const sh_pollHandle_t handle, void* userData)> check, std::function<bool(const sh_pollHandle_t handle, void* userData)> dispatch, void* userData, sh_pollHandle_t& handle);
 
     am_Error_e addFDPoll(const int fd, const short event, IAmShPollPrepare *prepare, IAmShPollFired *fired, IAmShPollCheck *check, IAmShPollDispatch *dispatch, void* userData, sh_pollHandle_t& handle);
-    am_Error_e removeFDPoll(const sh_pollHandle_t handle);
+    am_Error_e removeFDPoll(const sh_pollHandle_t handle, const sh_rmv_e rmv = RMV_ONLY);
     am_Error_e updateEventFlags(const sh_pollHandle_t handle, const short events);
     am_Error_e addSignalHandler(std::function<void(const sh_pollHandle_t handle, const signalfd_siginfo & info, void* userData)> callback, sh_pollHandle_t& handle, void * userData);
     am_Error_e removeSignalHandler(const sh_pollHandle_t handle);

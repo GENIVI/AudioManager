@@ -40,6 +40,9 @@
 #include <sys/timerfd.h>
 #endif
 
+#define SHPOLL_IS_ACTIVE(state)    (!(state == poll_states_e::REMOVE || state == poll_states_e::CLOSE))
+
+
 namespace am
 {
 
@@ -73,7 +76,7 @@ CAmSocketHandler::CAmSocketHandler() :
               {
                   for (auto & elem : mMapShPoll)
                   {
-                      if (elem.second.state != poll_states_e::REMOVE)
+                      if (SHPOLL_IS_ACTIVE(elem.second.state))
                           elem.second.state = poll_states_e::UNINIT;
                   }
                   mDispatchDone = true;
@@ -137,8 +140,11 @@ void CAmSocketHandler::start_listenting()
             auto& elem = it->second;
             switch (elem.state)
             {
-                case poll_states_e::REMOVE:
+                case poll_states_e::CLOSE:
                     close(elem.pollfdValue.fd);
+                    // fallthrough
+
+                case poll_states_e::REMOVE:
                     fdPollIt = fdPollingArray.erase(fdPollIt);
                     it = mMapShPoll.erase(it);
                     continue;
@@ -402,7 +408,7 @@ am_Error_e CAmSocketHandler::addFDPoll(const int fd,
         return E_NON_EXISTENT;
 
     const auto elem = mMapShPoll.find(fd);
-    if (elem != mMapShPoll.end() && elem->second.state != poll_states_e::REMOVE)
+    if (elem != mMapShPoll.end() && SHPOLL_IS_ACTIVE(elem->second.state))
     {
         logError("CAmSocketHandler::addFDPoll fd", fd, "already registered!");
         return E_ALREADY_EXISTS;
@@ -472,15 +478,16 @@ am::am_Error_e CAmSocketHandler::addFDPoll(const int fd, const short event, IAmS
 /**
   * removes a filedescriptor from the poll loop
   * @param handle
+  * @param [rmv] default RMV_ONLY_FDPOLL
   * @return
   */
-am_Error_e CAmSocketHandler::removeFDPoll(const sh_pollHandle_t handle)
+am_Error_e CAmSocketHandler::removeFDPoll(const sh_pollHandle_t handle, const sh_rmv_e rmv)
 {
     for (auto& it : mMapShPoll)
     {
         if (it.second.handle == handle)
         {
-            it.second.state = poll_states_e::REMOVE;
+            it.second.state = (rmv == sh_rmv_e::RMV_N_CLS ? poll_states_e::CLOSE : poll_states_e::REMOVE);
 
             static uint64_t events(1);
             if (write(mEventFd, &(++events), sizeof(events)) < 0)
@@ -673,7 +680,7 @@ am_Error_e CAmSocketHandler::removeTimer(const sh_timerHandle_t handle)
         if (it->handle == handle)
         {
             mListTimer.erase(it);
-            return removeFDPoll(handle);
+            return removeFDPoll(handle, sh_rmv_e::RMV_N_CLS);
         }
         ++it;
     }
@@ -912,7 +919,7 @@ am_Error_e CAmSocketHandler::updateEventFlags(const sh_pollHandle_t handle, cons
     for (auto& it : mMapShPoll)
     {
         auto& elem = it.second;
-        if (elem.handle == handle && elem.state != poll_states_e::REMOVE)
+        if (elem.handle == handle && SHPOLL_IS_ACTIVE(elem.state))
         {
             elem.pollfdValue.events = events;
             elem.pollfdValue.revents = 0;
