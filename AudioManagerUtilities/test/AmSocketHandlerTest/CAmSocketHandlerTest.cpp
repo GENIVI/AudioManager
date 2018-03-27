@@ -168,7 +168,7 @@ void am::CAmTimerMeasurment::timerCallback(sh_timerHandle_t handle, void* userDa
     std::chrono::time_point<std::chrono::high_resolution_clock> t_end = std::chrono::high_resolution_clock::now();
     if (TP_ZERO != mLastInvocationTime)
     {
-        auto durationLast = t_end - mLastInvocationTime;
+        std::chrono::duration<double, std::milli> durationLast = t_end - mLastInvocationTime;
         double diff = (std::chrono::duration<double, std::milli>(mExpected - durationLast).count());
 
 #ifdef ENABLED_TIMERS_TEST_OUTPUT

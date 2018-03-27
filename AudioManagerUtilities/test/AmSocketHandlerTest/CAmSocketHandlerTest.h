@@ -168,7 +168,7 @@ namespace am
         timespec mUpdateTimeout;
         std::chrono::time_point<std::chrono::high_resolution_clock> mUpdateTimePoint;
         std::chrono::time_point<std::chrono::high_resolution_clock> mLastInvocationTime;
-        std::chrono::duration<long, std::ratio<1l, 1000000000l>> mExpected;
+        std::chrono::duration<uint64_t, std::nano> mExpected;
         int32_t mRepeats;
         void * mpUserData;
         std::string mDebugText;
