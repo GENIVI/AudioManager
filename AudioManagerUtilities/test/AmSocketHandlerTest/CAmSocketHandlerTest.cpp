@@ -233,7 +233,7 @@ TEST(CAmSocketHandlerTest, timersOneshot)
     userData.f = 1.f;
 
     sh_timerHandle_t handle;
-    myHandler.addTimer(timeoutTime, &testCallback1.pTimerCallback, handle, &userData);
+    ASSERT_EQ(myHandler.addTimer(timeoutTime, &testCallback1.pTimerCallback, handle, &userData), E_OK);
 #ifndef WITH_TIMERFD
     ASSERT_EQ(handle, 1);
 #else
@@ -246,7 +246,7 @@ TEST(CAmSocketHandlerTest, timersOneshot)
     timeout4.tv_sec = 3;
     CAmTimerSockethandlerController testCallback4(&myHandler, timeout4);
 
-    myHandler.addTimer(timeout4, &testCallback4.pTimerCallback, handle, NULL);
+    ASSERT_EQ(myHandler.addTimer(timeout4, &testCallback4.pTimerCallback, handle, NULL), E_OK);
 #ifndef WITH_TIMERFD
     ASSERT_EQ(handle, 2);
 #else
@@ -275,7 +275,7 @@ TEST(CAmSocketHandlerTest, timersStop)
     userData.f = 1.f;
 
     sh_timerHandle_t handle;
-    myHandler.addTimer(timeoutTime, &testCallback1.pTimerCallback, handle, &userData, true);
+    ASSERT_EQ(myHandler.addTimer(timeoutTime, &testCallback1.pTimerCallback, handle, &userData, true), E_OK);
 #ifndef WITH_TIMERFD
     ASSERT_EQ(handle, 1);
 #else
@@ -288,7 +288,7 @@ TEST(CAmSocketHandlerTest, timersStop)
     timeout4.tv_sec = 6;
     CAmTimerSockethandlerController testCallback4(&myHandler, timeout4);
 
-    myHandler.addTimer(timeout4, &testCallback4.pTimerCallback, handle, NULL);
+    ASSERT_EQ(myHandler.addTimer(timeout4, &testCallback4.pTimerCallback, handle, NULL), E_OK);
 #ifndef WITH_TIMERFD
     ASSERT_EQ(handle, 2);
 #else
@@ -318,7 +318,7 @@ TEST(CAmSocketHandlerTest, timersGeneral)
     userData.f = 1.f;
 
     sh_timerHandle_t handle;
-    myHandler.addTimer(timeoutTime, &testCallback1.pTimerCallback, handle, &userData, true);
+    ASSERT_EQ(myHandler.addTimer(timeoutTime, &testCallback1.pTimerCallback, handle, &userData, true), E_OK);
 #ifndef WITH_TIMERFD
     ASSERT_EQ(handle, 1);
 #else
@@ -331,7 +331,7 @@ TEST(CAmSocketHandlerTest, timersGeneral)
     timeout4.tv_sec = 5;
     CAmTimerSockethandlerController testCallback4(&myHandler, timeout4);
 
-    myHandler.addTimer(timeout4, &testCallback4.pTimerCallback, handle, NULL);
+    ASSERT_EQ(myHandler.addTimer(timeout4, &testCallback4.pTimerCallback, handle, NULL), E_OK);
 #ifndef WITH_TIMERFD
     ASSERT_EQ(handle, 2);
 #else
@@ -362,7 +362,7 @@ TEST(CAmSocketHandlerTest,playWithTimers)
     CAmTimerSockethandlerController testCallback4(&myHandler, timeout4);
 
     sh_timerHandle_t handle;
-    myHandler.addTimer(timeoutTime, &testCallback1.pTimerCallback, handle, NULL, true);
+    ASSERT_EQ(myHandler.addTimer(timeoutTime, &testCallback1.pTimerCallback, handle, NULL, true), E_OK);
 #ifndef WITH_TIMERFD
     ASSERT_EQ(handle, 1);
 #else
@@ -370,7 +370,7 @@ TEST(CAmSocketHandlerTest,playWithTimers)
 #endif
     EXPECT_CALL(testCallback1,timerCallback(handle,NULL)).Times(AnyNumber());
 
-    myHandler.addTimer(timeout2, &testCallback2.pTimerCallback, handle, NULL, true);
+    ASSERT_EQ(myHandler.addTimer(timeout2, &testCallback2.pTimerCallback, handle, NULL, true), E_OK);
 #ifndef WITH_TIMERFD
     ASSERT_EQ(handle, 2);
 #else
@@ -378,7 +378,7 @@ TEST(CAmSocketHandlerTest,playWithTimers)
 #endif
     EXPECT_CALL(testCallback2,timerCallback(handle,NULL)).Times(AnyNumber());
 
-    myHandler.addTimer(timeout3, &testCallback3.pTimerCallback, handle, NULL);
+    ASSERT_EQ(myHandler.addTimer(timeout3, &testCallback3.pTimerCallback, handle, NULL), E_OK);
 #ifndef WITH_TIMERFD
     ASSERT_EQ(handle, 3);
 #else
@@ -386,7 +386,7 @@ TEST(CAmSocketHandlerTest,playWithTimers)
 #endif
     EXPECT_CALL(testCallback3,timerCallback(handle,NULL)).Times(Exactly(1));
 
-    myHandler.addTimer(timeout4, &testCallback4.pTimerCallback, handle, NULL);
+    ASSERT_EQ(myHandler.addTimer(timeout4, &testCallback4.pTimerCallback, handle, NULL), E_OK);
 #ifndef WITH_TIMERFD
     ASSERT_EQ(handle, 4);
 #else
@@ -404,8 +404,9 @@ TEST(CAmSocketHandlerTest, signalHandlerPrimaryPlusSecondary)
     pMockSignalHandler = new MockIAmSignalHandler;
     CAmSocketHandler myHandler;
     ASSERT_FALSE(myHandler.fatalErrorOccurred());
-    ASSERT_TRUE(myHandler.listenToSignals({SIGHUP})==E_OK);
-    ASSERT_TRUE(myHandler.listenToSignals({SIGHUP, SIGTERM, SIGCHLD})==E_OK);
+    ASSERT_EQ(myHandler.listenToSignals({SIGHUP}), E_OK);
+    ASSERT_EQ(myHandler.listenToSignals({SIGHUP, SIGTERM, SIGCHLD}), E_OK);
+
     sh_pollHandle_t signalHandler1, signalHandler2;
  
     std::string userData = "User data";
@@ -450,7 +451,7 @@ TEST(CAmSocketHandlerTest, signalHandlerPrimaryPlusSecondary)
     CAmTimerSignalHandler testCallback4(&myHandler, timeout4, signals);
     sh_timerHandle_t handle;
 
-    myHandler.addTimer(timeout4, &testCallback4.pTimerCallback, handle, NULL, true);
+    ASSERT_EQ(myHandler.addTimer(timeout4, &testCallback4.pTimerCallback, handle, NULL, true), E_OK);
 #ifndef WITH_TIMERFD
    ASSERT_EQ(handle, 1);
 #else
