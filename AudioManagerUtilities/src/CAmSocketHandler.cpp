@@ -48,20 +48,20 @@ namespace am
 
 CAmSocketHandler::CAmSocketHandler() :
         mEventFd(-1), //
-                mDispatchDone(true), //
-                mSetPollKeys(MAX_POLLHANDLE), //
+        mDispatchDone(true), //
+        mSetPollKeys(MAX_POLLHANDLE), //
         mMapShPoll(), //
-                mSetTimerKeys(MAX_TIMERHANDLE),
-                mListTimer(), //
+        mSetTimerKeys(MAX_TIMERHANDLE),
+        mListTimer(), //
 #ifndef WITH_TIMERFD
-                mListActiveTimer(), //
+        mListActiveTimer(), //
 #endif
-                mSetSignalhandlerKeys(MAX_POLLHANDLE), //
-                mSignalHandlers(), //
-                mInternalCodes(internal_codes_e::NO_ERROR),
-                mSignalFdHandle(0)
+        mSetSignalhandlerKeys(MAX_POLLHANDLE), //
+        mSignalHandlers(), //
+        mInternalCodes(internal_codes_e::NO_ERROR),
+        mSignalFdHandle(0)
 #ifndef WITH_TIMERFD
-,mStartTime() //
+        ,mStartTime() //
 #endif
 {
 

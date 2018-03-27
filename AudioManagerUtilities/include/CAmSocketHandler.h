@@ -449,7 +449,7 @@ private:
     bool nextHandle(sh_identifier_s & handle);
     
     am_Error_e getFDPollData(const sh_pollHandle_t handle, sh_poll_s & outPollData);
-    
+
 public:
 
     CAmSocketHandler();

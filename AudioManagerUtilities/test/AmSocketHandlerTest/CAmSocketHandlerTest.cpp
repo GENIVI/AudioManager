@@ -65,7 +65,7 @@ static void signalHandler(int sig, siginfo_t *siginfo, void *context)
 
     if(pMockSignalHandler!=NULL)
       pMockSignalHandler->signalHandler(sig, siginfo, context);
-    
+
 #ifdef ENABLED_SOCKETHANDLER_TEST_OUTPUT
         std::cout<<"signal handler was called with signal " << sig << std::endl;
 #endif
@@ -122,14 +122,14 @@ void am::CAmTimerSignalHandler::timerCallback(sh_timerHandle_t handle, void* use
         std::advance(it, mIndex);
         kill(getpid(), *it);
         mIndex++;
-        
+
 #ifndef WITH_TIMERFD
          mpSocketHandler->updateTimer( handle, mUpdateTimeout);
 #endif
     }
     else
         mpSocketHandler->stop_listening();
-    
+
 }
 
 CAmTimer::CAmTimer(CAmSocketHandler *myHandler, const timespec &timeout, const int32_t repeats) :
@@ -604,7 +604,6 @@ TEST(CAmSocketHandlerTest, signalHandlerPrimaryPlusSecondary)
     ASSERT_EQ(myHandler.listenToSignals({SIGHUP, SIGTERM, SIGCHLD}), E_OK);
 
     sh_pollHandle_t signalHandler1, signalHandler2;
- 
     std::string userData = "User data";
 
 //     critical signals are registered here:
@@ -614,27 +613,29 @@ TEST(CAmSocketHandlerTest, signalHandlerPrimaryPlusSecondary)
     signalAction.sa_flags = SA_RESETHAND | SA_NODEFER| SA_SIGINFO;
     sigaction(SIGINT, &signalAction, NULL);
     sigaction(SIGQUIT, &signalAction, NULL);
-    
-   myHandler.addSignalHandler([&](const sh_pollHandle_t handle, const signalfd_siginfo & info, void* userData)
-   {
-       unsigned sig = info.ssi_signo;
-       pMockSignalHandler->signalHandlerAction(handle, sig, userData);
+
+    myHandler.addSignalHandler([&](const sh_pollHandle_t handle, const signalfd_siginfo & info, void* userData)
+    {
+        unsigned sig = info.ssi_signo;
+        pMockSignalHandler->signalHandlerAction(handle, sig, userData);
 #ifdef ENABLED_SOCKETHANDLER_TEST_OUTPUT
-       unsigned user = info.ssi_uid;
-       std::cout<<"signal handler was called from user "<< user << " with signal " << sig << std::endl;
+        unsigned user = info.ssi_uid;
+        std::cout<<"signal handler was called from user "<< user << " with signal " << sig << std::endl;
 #endif
-   }, signalHandler1, &userData);
-   ASSERT_EQ(signalHandler1, 1);
-   myHandler.addSignalHandler([&](const sh_pollHandle_t handle, const signalfd_siginfo & info, void* userData)
-       {
-           unsigned sig = info.ssi_signo;
-           pMockSignalHandler->signalHandlerAction(handle, sig, userData);
+    }, signalHandler1, &userData);
+    ASSERT_EQ(signalHandler1, 1);
+
+    myHandler.addSignalHandler([&](const sh_pollHandle_t handle, const signalfd_siginfo & info, void* userData)
+    {
+        unsigned sig = info.ssi_signo;
+        pMockSignalHandler->signalHandlerAction(handle, sig, userData);
 #ifdef ENABLED_SOCKETHANDLER_TEST_OUTPUT
-           unsigned user = info.ssi_uid;
-           std::cout<<"signal handler was called from user "<< user << " with signal " << sig << std::endl;
+        unsigned user = info.ssi_uid;
+        std::cout<<"signal handler was called from user "<< user << " with signal " << sig << std::endl;
 #endif
-       }, signalHandler2, &userData);
-   ASSERT_EQ(signalHandler2, 2);
+    }, signalHandler2, &userData);
+    ASSERT_EQ(signalHandler2, 2);
+
     timespec timeout4;
     timeout4.tv_nsec = 200000000;
     timeout4.tv_sec = 0;
@@ -660,7 +661,7 @@ TEST(CAmSocketHandlerTest, signalHandlerPrimaryPlusSecondary)
        EXPECT_CALL(*pMockSignalHandler,signalHandlerAction(signalHandler2,it,&userData)).Times(1);
    for(auto it: primarySignals)
        EXPECT_CALL(*pMockSignalHandler,signalHandler(it,_,_)).Times(1);
-   
+
     myHandler.start_listenting();
    delete pMockSignalHandler;
 }
