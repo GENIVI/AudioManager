@@ -30,7 +30,7 @@
 #include <algorithm>
 #include <features.h>
 #include <csignal>
-#include <unistd.h>
+#include <cstring>
 
 #include "CAmDltWrapper.h"
 #include "CAmSocketHandler.h"
@@ -320,20 +320,30 @@ am_Error_e CAmSocketHandler::listenToSignals(const std::vector<uint8_t> & listSi
 
       auto actionPoll = [this](const pollfd pollfd, const sh_pollHandle_t, void*)
       {
-          const VectorSignalHandlers_t & signalHandlers = mSignalHandlers;
-          /* We have a valid signal, read the info from the fd */
-          struct signalfd_siginfo info;
-          ssize_t bytes = read(pollfd.fd, &info, sizeof(info));
-          assert(bytes == sizeof(info));
+            const VectorSignalHandlers_t& signalHandlers = mSignalHandlers;
+            /* We have a valid signal, read the info from the fd */
+            struct signalfd_siginfo info;
+            ssize_t bytes = read(pollfd.fd, &info, sizeof(info));
+            if (bytes == sizeof(info))
+            {
+                /* Notify all listeners */
+                for(auto it: signalHandlers)
+                    it.callback(it.handle, info, it.userData);
+                return;
+            }
 
-          /* Notify all listeners */
-          for(auto it: signalHandlers)
-          it.callback(it.handle, info, it.userData);
+            // ppoll on EAGAIN
+            if ((bytes == -1) && (errno == EAGAIN))
+                return;
+
+            //Failed to read from fd...
+            std::ostringstream msg;
+            msg << "Failed to read from signal fd: " << pollfd.fd << " errno: " << std::strerror(errno);
+            throw std::runtime_error(msg.str());
       };
       /* We're going to add the signal fd through addFDPoll. At this point we don't have any signal listeners. */
-      am_Error_e shFdError = addFDPoll(signalHandlerFd, POLLIN | POLLERR | POLLHUP, NULL, actionPoll, [](const sh_pollHandle_t, void*)
-                                        {   return (false);}, NULL, NULL, mSignalFdHandle);
-      return shFdError;
+      return addFDPoll(signalHandlerFd, POLLIN | POLLERR | POLLHUP, NULL, actionPoll,
+              [](const sh_pollHandle_t, void*) { return (false); }, NULL, NULL, mSignalFdHandle);
     }    
 }
 
@@ -559,23 +569,31 @@ am_Error_e CAmSocketHandler::addTimer(const timespec & timeouts, std::function<v
         return err;
     }
 
-    static auto actionPoll = [](const pollfd pollfd, const sh_pollHandle_t handle, void* userData)
+    auto actionPoll = [this](const pollfd pollfd, const sh_pollHandle_t handle, void* userData)
     {
-        uint64_t mExpirations;
-        if (read(pollfd.fd, &mExpirations, sizeof(uint64_t)) == -1)
-        {
-            //error received...try again
-            read(pollfd.fd, &mExpirations, sizeof(uint64_t));
-        }
+        uint64_t expCnt;
+        ssize_t bytes = read(pollfd.fd, &expCnt, sizeof(expCnt));
+        if (bytes == sizeof(expCnt))
+            return;
+
+        // ppoll has to be called again in following case
+        if ((bytes == -1) && (errno == EAGAIN))
+            return;
+
+        // failed to read data from timer_fd...
+        std::ostringstream msg;
+        msg << "Failed to read from timer fd: " << pollfd.fd << " errno: " << std::strerror(errno);
+        throw std::runtime_error(msg.str());
     };
 
-    err = addFDPoll(timerItem.fd, POLLIN, NULL, actionPoll, [callback](const sh_pollHandle_t handle, void* userData)->bool
-    {
-        callback(handle, userData);
-        return false;
-    },
-    NULL, userData, handle);
-    if (E_OK == err)
+    err = addFDPoll(timerItem.fd, POLLIN | POLLERR, NULL, actionPoll,
+                        [callback](const sh_pollHandle_t handle, void* userData)->bool {
+                                callback(handle, userData);
+                                return false;
+                            },
+                        NULL, userData, handle);
+
+    if (err == E_OK)
     {
         timerItem.handle = handle;
     }
