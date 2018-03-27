@@ -150,10 +150,16 @@ void am::CAmTimer::timerCallback(sh_timerHandle_t handle, void* userData)
 }
 
 CAmTimerMeasurment::CAmTimerMeasurment(CAmSocketHandler *myHandler, const timespec &timeout, const std::string & label, const int32_t repeats, void * userData) :
-        MockIAmTimerCb(), pTimerCallback(this, &CAmTimerMeasurment::timerCallback), //
-        mSocketHandler(myHandler), mUpdateTimeout(timeout), mUpdateTimePoint(std::chrono::seconds
-        { mUpdateTimeout.tv_sec } + std::chrono::nanoseconds
-        { mUpdateTimeout.tv_nsec }), mLastInvocationTime(), mExpected(mUpdateTimePoint - TP_ZERO), mRepeats(repeats), mpUserData(userData), mDebugText(label)
+        MockIAmTimerCb()
+        , pTimerCallback(this, &CAmTimerMeasurment::timerCallback)
+        , mSocketHandler(myHandler)
+        , mUpdateTimeout(timeout)
+        , mUpdateTimePoint(std::chrono::seconds{ mUpdateTimeout.tv_sec } + std::chrono::nanoseconds{ mUpdateTimeout.tv_nsec })
+        , mLastInvocationTime(std::chrono::high_resolution_clock::now())
+        , mExpected(mUpdateTimePoint - TP_ZERO)
+        , mRepeats(repeats)
+        , mpUserData(userData)
+        , mDebugText(label)
 {
 }
 
@@ -165,45 +171,33 @@ void am::CAmTimerMeasurment::timerCallback(sh_timerHandle_t handle, void* userDa
 {
     MockIAmTimerCb::timerCallback(handle, userData);
 
-    std::chrono::time_point<std::chrono::high_resolution_clock> t_end = std::chrono::high_resolution_clock::now();
-    if (TP_ZERO != mLastInvocationTime)
-    {
-        std::chrono::duration<double, std::milli> durationLast = t_end - mLastInvocationTime;
-        double diff = (std::chrono::duration<double, std::milli>(mExpected - durationLast).count());
+    auto t_end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> durationLast = t_end - mLastInvocationTime;
+    double diff = (std::chrono::duration<double, std::milli>(mExpected - durationLast).count());
 
 #ifdef ENABLED_TIMERS_TEST_OUTPUT
-        std::cout << mDebugText <<
-        " [ expected:" <<std::chrono::duration<double, std::milli>(mExpected).count() << "ms"
-        " , current:" << std::chrono::duration<double, std::milli>(durationLast).count() << "ms"
-        ", diff:" << diff << "ms ] " <<
-        std::endl;
+    std::cout << mDebugText <<
+    " [ expected:" <<std::chrono::duration<double, std::milli>(mExpected).count() << "ms"
+    " , current:" << std::chrono::duration<double, std::milli>(durationLast).count() << "ms"
+    ", diff:" << diff << "ms ] " <<
+    std::endl;
 #endif
-        if (diff > TIMERS_CB_TOLERANCE)
-            std::cout << mDebugText << " Warning [ expected:" << std::chrono::duration<double, std::milli>(mExpected).count() << "ms, current:" << std::chrono::duration<double, std::milli>(durationLast).count() << "ms ]" << std::endl;
-        if (diff < -TIMERS_CB_TOLERANCE)
-            std::cout << mDebugText << " Warning [ expected:" << std::chrono::duration<double, std::milli>(mExpected).count() << "ms, current:" << std::chrono::duration<double, std::milli>(durationLast).count() << "ms ]" << std::endl;
+    if (diff > TIMERS_CB_TOLERANCE)
+        std::cout << mDebugText << " Warning [ expected:" << std::chrono::duration<double, std::milli>(mExpected).count() << "ms, current:" << std::chrono::duration<double, std::milli>(durationLast).count() << "ms ]" << std::endl;
+    if (diff < -TIMERS_CB_TOLERANCE)
+        std::cout << mDebugText << " Warning [ expected:" << std::chrono::duration<double, std::milli>(mExpected).count() << "ms, current:" << std::chrono::duration<double, std::milli>(durationLast).count() << "ms ]" << std::endl;
 
-        mLastInvocationTime = t_end;
-        if (--mRepeats > 0)
-        {
+    mLastInvocationTime = t_end;
+    if (--mRepeats > 0)
+    {
 #ifndef WITH_TIMERFD
-            mSocketHandler->updateTimer( handle, mUpdateTimeout);
+        mSocketHandler->updateTimer( handle, mUpdateTimeout);
 #endif
-        }
-        else
-        {
-            mSocketHandler->stopTimer(handle);
-        }
     }
     else
     {
-#ifdef ENABLED_TIMERS_TEST_OUTPUT
-        std::cout << mDebugText << " Init measurment " << std::endl;
-#endif
-        mLastInvocationTime = t_end;
-        mSocketHandler->updateTimer(handle, mUpdateTimeout);
+        mSocketHandler->stopTimer(handle);
     }
-
 }
 
 void* playWithSocketServer(void* data)
@@ -245,7 +239,7 @@ TEST(CAmSocketHandlerTest, timersOneshot)
 #else
     ASSERT_EQ(handle, 2);
 #endif
-    EXPECT_CALL(testCallback1,timerCallback(handle,&userData)).Times(1);
+    EXPECT_CALL(testCallback1,timerCallback(handle,&userData)).Times(Exactly(1));
 
     timespec timeout4;
     timeout4.tv_nsec = 0;
@@ -258,7 +252,7 @@ TEST(CAmSocketHandlerTest, timersOneshot)
 #else
     ASSERT_EQ(handle, 3);
 #endif
-    EXPECT_CALL(testCallback4,timerCallback(handle,NULL)).Times(1);
+    EXPECT_CALL(testCallback4,timerCallback(handle,NULL)).Times(Exactly(1));
     myHandler.start_listenting();
 }
 
@@ -390,7 +384,7 @@ TEST(CAmSocketHandlerTest,playWithTimers)
 #else
     ASSERT_EQ(handle, 4);
 #endif
-    EXPECT_CALL(testCallback3,timerCallback(handle,NULL)).Times(2); //+1 because of measurment
+    EXPECT_CALL(testCallback3,timerCallback(handle,NULL)).Times(Exactly(1));
 
     myHandler.addTimer(timeout4, &testCallback4.pTimerCallback, handle, NULL);
 #ifndef WITH_TIMERFD
@@ -485,9 +479,9 @@ TEST(CAmSocketHandlerTest,playWithUNIXSockets)
     CAmSamplePlugin::sockType_e type = CAmSamplePlugin::UNIX;
     CAmSamplePlugin myplugin(&myHandler, type);
 
-    EXPECT_CALL(myplugin,receiveData(_,_,_)).Times(SOCKET_TEST_LOOPS_COUNT + 1);
-    EXPECT_CALL(myplugin,dispatchData(_,_)).Times(SOCKET_TEST_LOOPS_COUNT + 1);
-    EXPECT_CALL(myplugin,check(_,_)).Times(SOCKET_TEST_LOOPS_COUNT + 1);
+    EXPECT_CALL(myplugin,receiveData(_,_,_)).Times(Exactly(SOCKET_TEST_LOOPS_COUNT));
+    EXPECT_CALL(myplugin,dispatchData(_,_)).Times(Exactly(SOCKET_TEST_LOOPS_COUNT));
+    EXPECT_CALL(myplugin,check(_,_)).Times(Exactly(SOCKET_TEST_LOOPS_COUNT));
 
     //creates a thread that handles the serverpart
     pthread_create(&serverThread, NULL, playWithUnixSocketServer, &myHandler);
@@ -507,7 +501,7 @@ TEST(CAmSocketHandlerTest,playWithUNIXSockets)
         std::cout << "ERROR: connect() failed\n" << std::endl;
     }
 
-    for (int i = 1; i <= SOCKET_TEST_LOOPS_COUNT; i++)
+    for (int i = 1; i < SOCKET_TEST_LOOPS_COUNT; i++)
     {
         std::string stringToSend(TEST_SOCKET_DATA);
         send(socket_, stringToSend.c_str(), stringToSend.size(), 0);
@@ -532,9 +526,9 @@ TEST(CAmSocketHandlerTest,playWithSockets)
     CAmSamplePlugin::sockType_e type = CAmSamplePlugin::INET;
     CAmSamplePlugin myplugin(&myHandler, type);
 
-    EXPECT_CALL(myplugin,receiveData(_,_,_)).Times(SOCKET_TEST_LOOPS_COUNT + 1);
-    EXPECT_CALL(myplugin,dispatchData(_,_)).Times(SOCKET_TEST_LOOPS_COUNT + 1);
-    EXPECT_CALL(myplugin,check(_,_)).Times(SOCKET_TEST_LOOPS_COUNT + 1);
+    EXPECT_CALL(myplugin,receiveData(_,_,_)).Times(Exactly(SOCKET_TEST_LOOPS_COUNT));
+    EXPECT_CALL(myplugin,dispatchData(_,_)).Times(Exactly(SOCKET_TEST_LOOPS_COUNT));
+    EXPECT_CALL(myplugin,check(_,_)).Times(Exactly(SOCKET_TEST_LOOPS_COUNT));
 
     //creates a thread that handles the serverpart
     pthread_create(&serverThread, NULL, playWithSocketServer, &myHandler);
@@ -562,7 +556,7 @@ TEST(CAmSocketHandlerTest,playWithSockets)
         std::cout << "ERROR: connect() failed\n" << std::endl;
     }
 
-    for (int i = 1; i <= SOCKET_TEST_LOOPS_COUNT; i++)
+    for (int i = 1; i < SOCKET_TEST_LOOPS_COUNT; i++)
     {
         std::string string(TEST_SOCKET_DATA);
         send(socket_, string.c_str(), string.size(), 0);
