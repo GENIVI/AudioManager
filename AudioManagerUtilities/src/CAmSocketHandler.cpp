@@ -40,8 +40,8 @@
 #include <sys/timerfd.h>
 #endif
 
+#define END_EVENT                  (UINT64_MAX >> 1)
 #define SHPOLL_IS_ACTIVE(state)    (!(state == poll_states_e::REMOVE || state == poll_states_e::CLOSE))
-
 
 namespace am
 {
@@ -72,7 +72,7 @@ CAmSocketHandler::CAmSocketHandler() :
           ssize_t bytes = read(pollfd.fd, &events, sizeof(events));
           if (bytes == sizeof(events))
           {
-              if (events == UINT64_MAX-1)
+              if (events >= END_EVENT)
               {
                   for (auto & elem : mMapShPoll)
                   {
@@ -80,6 +80,7 @@ CAmSocketHandler::CAmSocketHandler() :
                           elem.second.state = poll_states_e::UNINIT;
                   }
                   mDispatchDone = true;
+              }
               return;
           }
 
@@ -145,7 +146,14 @@ void CAmSocketHandler::start_listenting()
                     // fallthrough
 
                 case poll_states_e::REMOVE:
-                    fdPollIt = fdPollingArray.erase(fdPollIt);
+                    /* The first check is needed for the restart behavior were an element is marked
+                     * as removed but not part of the polling array - which is stored on heap.
+                     * The second check is needed in case a map element was inserted newly but was
+                     * directly marked after as REMOVE but in between there was no sync. of the
+                     * polling array processed.
+                     */
+                    if (fdPollIt != fdPollingArray.end() && fdPollIt->fd == elem.pollfdValue.fd)
+                        fdPollIt = fdPollingArray.erase(fdPollIt);
                     it = mMapShPoll.erase(it);
                     continue;
 
@@ -246,7 +254,7 @@ void CAmSocketHandler::exit_mainloop()
     stop_listening();
 
     //fire the ending filedescriptor
-    const uint64_t events = UINT64_MAX-1;
+    const uint64_t events = END_EVENT;
     if (write(mEventFd, &events, sizeof(events)) < 0)
     {
         //Failed to write to event fd...

@@ -30,6 +30,7 @@
 #include <fcntl.h>
 #include <sys/un.h>
 #include <sys/poll.h>
+#include <sys/eventfd.h>
 #include "CAmDltWrapper.h"
 #include "CAmSocketHandler.h"
 
@@ -54,6 +55,12 @@ struct TestUserData
 {
     int i;
     float f;
+};
+
+struct TestStressUserData
+{
+    CAmSocketHandler &socket;
+    std::vector<sh_pollHandle_t> &handles;
 };
 
 MockIAmSignalHandler *pMockSignalHandler = NULL;
@@ -308,6 +315,22 @@ void* threadCallbackUnixSocketAndTimers(void* data)
     return sendTestData(sock, (struct sockaddr*)&servAddr, sizeof(servAddr), 500000);
 }
 
+void* threadRaceFd(void* pData)
+{
+    struct TestStressUserData data = *(struct TestStressUserData*)pData;
+    usleep(50000);
+    auto elem = data.handles.begin();
+    std::advance(elem, data.handles.size() / 2);
+    data.socket.removeFDPoll(*elem, sh_rmv_e::RMV_N_CLS);
+    data.handles.erase(elem);
+}
+void* threadEnd(void* pData)
+{
+    struct TestStressUserData data = *(struct TestStressUserData*)pData;
+    usleep(1000000);
+    data.socket.exit_mainloop();
+}
+
 TEST(CAmSocketHandlerTest, stressTestUnixSocketAndTimers)
 {
 
@@ -343,6 +366,58 @@ TEST(CAmSocketHandlerTest, stressTestUnixSocketAndTimers)
 
     pthread_join(serverThread, NULL);
     shutdown(socket_, SHUT_RDWR);
+}
+
+
+TEST(CAmSocketHandlerTest, fdStressTest)
+{
+    CAmSocketHandler myHandler;
+    ASSERT_FALSE(myHandler.fatalErrorOccurred());
+
+    //Check unkonw systemd fd ids
+    sh_pollHandle_t handle;
+    EXPECT_EQ(myHandler.addFDPoll(100, 0, NULL, NULL, NULL, NULL, NULL, handle), E_NON_EXISTENT);
+
+    int fd(-1);
+    std::vector<sh_pollHandle_t> handles(10);
+    for (auto& hndl : handles)
+    {
+        fd = eventfd(0, 0);
+        ASSERT_EQ(myHandler.addFDPoll(fd, POLL_IN, NULL, NULL, NULL, NULL, NULL, hndl), E_OK);
+    }
+
+    // remove/add check
+    ASSERT_EQ(myHandler.addFDPoll(fd, POLL_IN, NULL, NULL, NULL, NULL, NULL, handles.back()), E_ALREADY_EXISTS);
+    ASSERT_EQ(myHandler.removeFDPoll(handles.back()), E_OK);
+    ASSERT_EQ(myHandler.addFDPoll(fd, POLL_IN, NULL, NULL, NULL, NULL, NULL, handles.back()), E_OK);
+
+    // create a copy to check if all handles are removed
+    std::vector<sh_pollHandle_t> handlesCheckup(handles);
+
+    while (handles.size())
+    {
+        pthread_t tid1, tid2;
+
+        // this removes an element before starting the socket handler and we
+        // erase the last handle
+        myHandler.removeFDPoll(handles.back(), sh_rmv_e::RMV_N_CLS);
+        handles.erase(handles.end()-1);
+
+        TestStressUserData data = {myHandler, handles};
+        pthread_create(&tid1, NULL, threadEnd, &data);
+
+        // erase the handle in the middle
+        pthread_create(&tid2, NULL, threadRaceFd, &data);
+
+        myHandler.start_listenting();
+
+        pthread_join(tid2, NULL);
+        pthread_join(tid1, NULL);
+    }
+
+    // now do the check
+    for (auto& hndl : handlesCheckup)
+        EXPECT_EQ(myHandler.removeFDPoll(hndl), E_UNKNOWN) << "Handle " << hndl << " not correctly removed before";
 }
 
 TEST(CAmSocketHandlerTest, timersOneshot)
