@@ -215,6 +215,14 @@ public:
   */
 class CAmSocketHandler
 {
+    typedef enum:uint8_t
+    {
+        UNINIT = 0u, // new, uninitialized element which needs to be inserted to ppoll array
+        VALID  = 1u, // it is a valid element in ppoll array
+        UPDATE = 2u, // update of event information therefore update ppoll array
+        REMOVE = 3u  // remove from ppoll array and internal map
+    } poll_states_e;
+
     struct sh_poll_s //!<struct that holds information about polls
     {
         sh_pollHandle_t handle; //!<handle to uniquely adress a filedesriptor
@@ -224,9 +232,10 @@ class CAmSocketHandler
         std::function<bool(const sh_pollHandle_t handle, void* userData)> checkCB; //check callback
         std::function<bool(const sh_pollHandle_t handle, void* userData)> dispatchCB; //dispatch callback
         void* userData;
+        poll_states_e state;
 
         sh_poll_s() :
-                handle(0), pollfdValue(), prepareCB(), firedCB(), checkCB(), dispatchCB(), userData(0)
+            handle(0), pollfdValue(), prepareCB(), firedCB(), checkCB(), dispatchCB(), userData(0), state(UNINIT)
         {}
     };
 
@@ -271,8 +280,8 @@ class CAmSocketHandler
     };
 
     typedef std::reverse_iterator<sh_timer_s> rListTimerIter; //!<typedef for reverseiterator on timer lists
-    typedef std::vector<pollfd> VectorListPollfd_t; //!<vector of filedescriptors
-    typedef std::vector<sh_poll_s> VectorListPoll_t; //!<list for the callbacks
+    typedef std::vector<pollfd> VectorPollfd_t; //!<vector of filedescriptors
+    typedef std::map<int, sh_poll_s> MapShPoll_t; //!<list for the callbacks
     typedef std::vector<sh_signal_s> VectorSignalHandlers_t; //!<list for the callbacks
 
     typedef enum:uint8_t
@@ -284,9 +293,9 @@ class CAmSocketHandler
 
     int mEventFd;
     bool mDispatchDone; //this starts / stops the mainloop
+    MapShPoll_t mMapShPoll; //!<list that holds all information for the ppoll
 
     sh_identifier_s mSetPollKeys; //!A set of all used ppoll keys
-    VectorListPoll_t mListPoll; //!<list that holds all information for the ppoll
     sh_identifier_s mSetTimerKeys; //!A set of all used timer keys
     std::list<sh_timer_s> mListTimer; //!<list of all timers
 #ifndef WITH_TIMERFD
@@ -294,19 +303,18 @@ class CAmSocketHandler
 #endif
     sh_identifier_s mSetSignalhandlerKeys; //!A set of all used signal handler keys
     VectorSignalHandlers_t mSignalHandlers;
-    bool mRecreatePollfds; //!<when this is true, the poll list needs to be recreated
     internal_codes_t mInternalCodes;
     sh_pollHandle_t mSignalFdHandle;
 #ifndef WITH_TIMERFD
     timespec mStartTime; //!<here the actual time is saved for timecorrection
 #endif
+
 private:
     bool fdIsValid(const int fd) const;
 
     timespec* insertTime(timespec& buffertime);
 #ifdef WITH_TIMERFD      
     am_Error_e createTimeFD(const itimerspec & timeouts, int & fd);
-
 #else 
     void timerUp();
     void timerCorrection();
@@ -408,28 +416,21 @@ private:
       * @param a
       * @return
       */
-    inline static void fire(sh_poll_s& a);
-
-    /**
-      * functor to return all fired events
-      * @param a
-      * @return
-      */
-    inline static bool eventFired(const pollfd& a);
+    inline static void fire(const sh_poll_s& a);
 
     /**
       * functor to help find the items that do not need dispatching
       * @param a
       * @return
       */
-    inline static bool noDispatching(const sh_poll_s& a);
+    inline static bool noDispatching(const sh_poll_s* a);
 
     /**
       * checks if dispatching is already finished
       * @param a
       * @return
       */
-    inline static bool dispatchingFinished(const sh_poll_s& a);
+    inline static bool dispatchingFinished(const sh_poll_s* a);
 
     /**
       * timer fire callback
