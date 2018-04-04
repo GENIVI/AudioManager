@@ -277,14 +277,12 @@ class CAmSocketHandler
 
     typedef enum:uint8_t
     {
-        NO_ERROR = 0u,   // OK
-        PIPE_ERROR = 1u, // Pipe error
-        FD_ERROR = 2u,   // Invalid file descriptor
-        SFD_ERROR = 4u,
+        NO_ERROR  = 0u,   // OK
+        FD_ERROR  = 1u,   // Invalid file descriptor
     } internal_codes_e;
     typedef uint8_t internal_codes_t;
 
-    int mPipe[2];
+    int mEventFd;
     bool mDispatchDone; //this starts / stops the mainloop
 
     sh_identifier_s mSetPollKeys; //!A set of all used ppoll keys

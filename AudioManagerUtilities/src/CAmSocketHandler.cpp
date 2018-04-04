@@ -26,6 +26,7 @@
 #include <sys/fcntl.h>
 #include <sys/errno.h>
 #include <sys/poll.h>
+#include <sys/eventfd.h>
 #include <time.h>
 #include <algorithm>
 #include <features.h>
@@ -43,7 +44,7 @@ namespace am
 {
 
 CAmSocketHandler::CAmSocketHandler() :
-        mPipe(), //
+        mEventFd(-1), //
                 mDispatchDone(true), //
                 mSetPollKeys(MAX_POLLHANDLE), //
                 mListPoll(), //
@@ -61,18 +62,33 @@ CAmSocketHandler::CAmSocketHandler() :
 ,mStartTime() //
 #endif
 {
-    if (pipe(mPipe) == -1)
+
+    auto actionPoll = [this](const pollfd pollfd, const sh_pollHandle_t, void*)
     {
-        mInternalCodes = internal_codes_e::PIPE_ERROR;
-        logError("Sockethandler could not create pipe!");
-    }
+          /* We have a valid signal, read the info from the fd */
+          uint64_t events;
+          ssize_t bytes = read(pollfd.fd, &events, sizeof(events));
+          if (bytes == sizeof(events))
+          {
+              if (events == UINT64_MAX-1)
+                  mDispatchDone = true;
+              return;
+          }
+
+          // ppoll on EAGAIN
+          if ((bytes == -1) && (errno == EAGAIN))
+              return;
+
+          //Failed to read from event fd...
+          std::ostringstream msg;
+          msg << "Failed to read from event fd: " << pollfd.fd << " errno: " << std::strerror(errno);
+          throw std::runtime_error(msg.str());
+    };
 
     //add the pipe to the poll - nothing needs to be processed here we just need the pipe to trigger the ppoll
-    short event = 0;
     sh_pollHandle_t handle;
-    event |= POLLIN;
-    if (addFDPoll(mPipe[0], event, NULL,
-                [](const pollfd, const sh_pollHandle_t, void*){},
+    mEventFd = eventfd(1, EFD_NONBLOCK | EFD_CLOEXEC);
+    if (addFDPoll(mEventFd, POLLIN, NULL, actionPoll,
                 [](const sh_pollHandle_t, void*) { return (false); },
             NULL, NULL, handle) != E_OK)
     {
@@ -84,10 +100,11 @@ CAmSocketHandler::~CAmSocketHandler()
 {
     for (auto it : mListPoll)
     {
-        close(it.pollfdValue.fd);
+        // This check is needed to ensure that fd wasn't closed
+        // e.g. in the communication plugin's dtor's.
+        if (fdIsValid(mEventFd))
+            close(it.pollfdValue.fd);
     }
-    close(mPipe[0]);
-    close(mPipe[1]);
 }
 
 //todo: maybe have some: give me more time returned?
@@ -219,13 +236,19 @@ void CAmSocketHandler::exit_mainloop()
     stop_listening();
 
     //fire the ending filedescriptor
-    int p(1);
-    ssize_t result = write(mPipe[1], &p, sizeof(p));
+    const uint64_t events = UINT64_MAX-1;
+    if (write(mEventFd, &events, sizeof(events)) < 0)
+    {
+        //Failed to write to event fd...
+        std::ostringstream msg("CAmSocketHandler::exit_mainloop ");
+        msg << "Failed to write to event fd: " << mEventFd << " errno: " << std::strerror(errno);
+        throw std::runtime_error(msg.str());
+    }
 }
 
 bool CAmSocketHandler::fatalErrorOccurred() 
 { 
-    return ((mInternalCodes&internal_codes_e::PIPE_ERROR)>0)||((mInternalCodes&internal_codes_e::FD_ERROR)>0); 
+    return (mInternalCodes & internal_codes_e::FD_ERROR);
 }
 
 am_Error_e CAmSocketHandler::getFDPollData(const sh_pollHandle_t handle, sh_poll_s & outPollData)
