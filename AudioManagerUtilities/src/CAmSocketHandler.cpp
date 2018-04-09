@@ -97,9 +97,7 @@ CAmSocketHandler::CAmSocketHandler() :
     //add the pipe to the poll - nothing needs to be processed here we just need the pipe to trigger the ppoll
     sh_pollHandle_t handle;
     mEventFd = eventfd(1, EFD_NONBLOCK | EFD_CLOEXEC);
-    if (addFDPoll(mEventFd, POLLIN, NULL, actionPoll,
-                [](const sh_pollHandle_t, void*) { return (false); },
-            NULL, NULL, handle) != E_OK)
+    if (addFDPoll(mEventFd, POLLIN, NULL, actionPoll, NULL, NULL, NULL, handle) != E_OK)
     {
         mInternalCodes |= internal_codes_e::FD_ERROR;
     }
@@ -356,8 +354,7 @@ am_Error_e CAmSocketHandler::listenToSignals(const std::vector<uint8_t> & listSi
         };
         /* We're going to add the signal fd through addFDPoll. At this point we don't have any signal listeners. */
         sh_pollHandle_t handle;
-        return addFDPoll(mSignalFd, POLLIN | POLLERR | POLLHUP, NULL, actionPoll,
-              [](const sh_pollHandle_t, void*) { return (false); }, NULL, NULL, handle);
+        return addFDPoll(mSignalFd, POLLIN | POLLERR | POLLHUP, NULL, actionPoll, NULL, NULL, NULL, handle);
     }    
     else
     {
