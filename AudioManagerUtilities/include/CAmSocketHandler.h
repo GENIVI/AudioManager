@@ -313,6 +313,7 @@ class CAmSocketHandler
 
 private:
     bool fdIsValid(const int fd) const;
+    void wakeupWorker(const std::string & func, const uint64_t value = 1u);
 
     timespec* insertTime(timespec& buffertime);
 #ifdef WITH_TIMERFD      

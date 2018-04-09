@@ -125,7 +125,7 @@ void CAmSocketHandler::start_listenting()
     clock_gettime(CLOCK_MONOTONIC, &mStartTime);
 #endif    
     timespec buffertime;
-    
+
     VectorPollfd_t fdPollingArray; //!<the polling array for ppoll
 
     while (!mDispatchDone)
@@ -234,7 +234,12 @@ void CAmSocketHandler::start_listenting()
   */
 void CAmSocketHandler::stop_listening()
 {
-    mDispatchDone = true;
+    //fire the ending event
+    if (mDispatchDone)
+        return;
+
+    wakeupWorker("stop_listening", END_EVENT);
+
 #ifndef WITH_TIMERFD
     //this is for all running timers only - we need to handle the additional offset here
     if (!mListActiveTimer.empty())
@@ -252,14 +257,15 @@ void CAmSocketHandler::exit_mainloop()
 {
     //end the while loop
     stop_listening();
+}
 
-    //fire the ending filedescriptor
-    const uint64_t events = END_EVENT;
-    if (write(mEventFd, &events, sizeof(events)) < 0)
+void CAmSocketHandler::wakeupWorker(const std::string & func, const uint64_t value)
+{
+    if (write(mEventFd, &value, sizeof(value)) < 0)
     {
-        //Failed to write to event fd...
-        std::ostringstream msg("CAmSocketHandler::exit_mainloop ");
-        msg << "Failed to write to event fd: " << mEventFd << " errno: " << std::strerror(errno);
+        // no log message here, it is already done in main.cpp
+        std::ostringstream msg("CAmSocketHandler::");
+        msg << func << " Failed to write to event fd: " << mEventFd << " errno: " << std::strerror(errno);
         throw std::runtime_error(msg.str());
     }
 }
@@ -442,6 +448,7 @@ am_Error_e CAmSocketHandler::addFDPoll(const int fd,
 
     //add new data to the list
     mMapShPoll[fd] = pollData;
+    wakeupWorker("addFDPoll");
 
     handle = pollData.handle;
     return (E_OK);
@@ -496,14 +503,7 @@ am_Error_e CAmSocketHandler::removeFDPoll(const sh_pollHandle_t handle, const sh
         if (it.second.handle == handle)
         {
             it.second.state = (rmv == sh_rmv_e::RMV_N_CLS ? poll_states_e::CLOSE : poll_states_e::REMOVE);
-
-            static uint64_t events(1);
-            if (write(mEventFd, &(++events), sizeof(events)) < 0)
-            {
-                std::ostringstream msg("CAmSocketHandler::removeFDPoll ");
-                msg << "Failed to write to event fd: " << mEventFd << " errno: " << std::strerror(errno);
-                throw std::runtime_error(msg.str());
-            }
+            wakeupWorker("removeFDPoll");
             mSetPollKeys.pollHandles.erase(handle);
             return E_OK;
         }
