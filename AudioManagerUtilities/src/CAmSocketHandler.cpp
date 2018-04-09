@@ -48,6 +48,7 @@ namespace am
 
 CAmSocketHandler::CAmSocketHandler() :
         mEventFd(-1), //
+        mSignalFd(-1), //
         mDispatchDone(true), //
         mSetPollKeys(MAX_POLLHANDLE), //
         mMapShPoll(), //
@@ -58,8 +59,7 @@ CAmSocketHandler::CAmSocketHandler() :
 #endif
         mSetSignalhandlerKeys(MAX_POLLHANDLE), //
         mSignalHandlers(), //
-        mInternalCodes(internal_codes_e::NO_ERROR),
-        mSignalFdHandle(0)
+        mInternalCodes(internal_codes_e::NO_ERROR)
 #ifndef WITH_TIMERFD
         ,mStartTime() //
 #endif
@@ -275,19 +275,6 @@ bool CAmSocketHandler::fatalErrorOccurred()
     return (mInternalCodes & internal_codes_e::FD_ERROR);
 }
 
-am_Error_e CAmSocketHandler::getFDPollData(const sh_pollHandle_t handle, sh_poll_s & outPollData)
-{
-    for (auto it : mMapShPoll)
-    {
-        if (it.second.handle != handle)
-            continue;
-
-        outPollData = it.second;
-        return (E_OK);
-    }
-    return (E_UNKNOWN);
-}
-
 /**
   * Adds a signal handler filedescriptor to the polling loop
   *
@@ -335,35 +322,25 @@ am_Error_e CAmSocketHandler::listenToSignals(const std::vector<uint8_t> & listSi
         return (E_NOT_POSSIBLE);
     }
 
-    sh_poll_s sgPollData;
-    if(mSignalFdHandle)
+    if (mSignalFd < 0)
     {
-      if(E_OK!=getFDPollData(mSignalFdHandle, sgPollData))
-      {
-          mSignalFdHandle = 0;
-      }
-    }
-    
-    if(0==mSignalFdHandle)
-    {
-      /* Create the signalfd */
-      int signalHandlerFd = signalfd(-1, &sigset, SFD_NONBLOCK);
-      if (signalHandlerFd == -1)
-      {
-          logError("Could not open signal fd!");
-          return (E_NOT_POSSIBLE);
-      }
+        /* Create the signalfd */
+        mSignalFd = signalfd(-1, &sigset, SFD_NONBLOCK);
+        if (mSignalFd == -1)
+        {
+            logError("Could not open signal fd!", std::strerror(errno));
+            return (E_NOT_POSSIBLE);
+        }
 
-      auto actionPoll = [this](const pollfd pollfd, const sh_pollHandle_t, void*)
-      {
-            const VectorSignalHandlers_t& signalHandlers = mSignalHandlers;
+        auto actionPoll = [this](const pollfd pollfd, const sh_pollHandle_t, void*)
+        {
             /* We have a valid signal, read the info from the fd */
             struct signalfd_siginfo info;
             ssize_t bytes = read(pollfd.fd, &info, sizeof(info));
             if (bytes == sizeof(info))
             {
                 /* Notify all listeners */
-                for(auto it: signalHandlers)
+                for(const auto& it: mSignalHandlers)
                     it.callback(it.handle, info, it.userData);
                 return;
             }
@@ -376,15 +353,15 @@ am_Error_e CAmSocketHandler::listenToSignals(const std::vector<uint8_t> & listSi
             std::ostringstream msg;
             msg << "Failed to read from signal fd: " << pollfd.fd << " errno: " << std::strerror(errno);
             throw std::runtime_error(msg.str());
-      };
-      /* We're going to add the signal fd through addFDPoll. At this point we don't have any signal listeners. */
-      return addFDPoll(signalHandlerFd, POLLIN | POLLERR | POLLHUP, NULL, actionPoll,
-              [](const sh_pollHandle_t, void*) { return (false); }, NULL, NULL, mSignalFdHandle);
+        };
+        /* We're going to add the signal fd through addFDPoll. At this point we don't have any signal listeners. */
+        sh_pollHandle_t handle;
+        return addFDPoll(mSignalFd, POLLIN | POLLERR | POLLHUP, NULL, actionPoll,
+              [](const sh_pollHandle_t, void*) { return (false); }, NULL, NULL, handle);
     }    
     else
     {
-        int signalHandlerFd = signalfd(sgPollData.pollfdValue.fd, &sigset, 0);
-        if (signalHandlerFd == -1)
+        if (signalfd(mSignalFd, &sigset, 0) == -1)
         {
             logError("Could not update signal fd!", std::strerror(errno));
             return (E_NOT_POSSIBLE);

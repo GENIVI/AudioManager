@@ -294,6 +294,7 @@ class CAmSocketHandler
     typedef uint8_t internal_codes_t;
 
     int mEventFd;
+    int mSignalFd;
     bool mDispatchDone; //this starts / stops the mainloop
     MapShPoll_t mMapShPoll; //!<list that holds all information for the ppoll
 
@@ -306,7 +307,6 @@ class CAmSocketHandler
     sh_identifier_s mSetSignalhandlerKeys; //!A set of all used signal handler keys
     VectorSignalHandlers_t mSignalHandlers;
     internal_codes_t mInternalCodes;
-    sh_pollHandle_t mSignalFdHandle;
 #ifndef WITH_TIMERFD
     timespec mStartTime; //!<here the actual time is saved for timecorrection
 #endif
@@ -448,8 +448,6 @@ private:
       * @return handle
       */
     bool nextHandle(sh_identifier_s & handle);
-    
-    am_Error_e getFDPollData(const sh_pollHandle_t handle, sh_poll_s & outPollData);
 
 public:
 
