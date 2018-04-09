@@ -485,7 +485,7 @@ am_Error_e CAmSocketHandler::removeFDPoll(const sh_pollHandle_t handle, const sh
             return E_OK;
         }
     }
-    logError("CAmSocketHandler::removeFDPoll handle unknown", handle);
+    logWarning("CAmSocketHandler::removeFDPoll handle unknown", handle);
     return E_UNKNOWN;
 }
 
