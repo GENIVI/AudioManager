@@ -267,6 +267,8 @@ void* sendTestData(int sock, const struct sockaddr* servAddr, unsigned int size,
     }
     std::string string(TEST_SOCKET_DATA_FINAL);
     send(sock, string.c_str(), string.size(), 0);
+
+    return NULL;
 }
 
 void* playWithSocketServer(void* data)
@@ -323,12 +325,16 @@ void* threadRaceFd(void* pData)
     std::advance(elem, data.handles.size() / 2);
     data.socket.removeFDPoll(*elem, sh_rmv_e::RMV_N_CLS);
     data.handles.erase(elem);
+
+    return NULL;
 }
 void* threadEnd(void* pData)
 {
     struct TestStressUserData data = *(struct TestStressUserData*)pData;
     usleep(1000000);
     data.socket.exit_mainloop();
+
+    return NULL;
 }
 
 TEST(CAmSocketHandlerTest, stressTestUnixSocketAndTimers)
