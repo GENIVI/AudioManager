@@ -75,8 +75,7 @@ namespace am
      */
     struct am_RoutingNodeData_s
     {
-        typedef enum
-            :int
+        typedef enum:int
             {   SINK, SOURCE, GATEWAY, CONVERTER
         } am_NodeDataType_e;
         am_NodeDataType_e type;										//!< data type:sink, source, gateway or converter
@@ -114,18 +113,18 @@ namespace am
 
 #ifdef TRACE_GRAPH
 #define COUT_NODE(HEAD, NAME, ID) \
-	std::cout << HEAD << "(" << std::setfill('0') << std::setw(4) << ID << " " << NAME << ")";
+	std::cout << HEAD << "(" << std::setfill('0') << std::setw(4) << ID << " " << NAME << ")"
 
         void trace() const
         {
             if(type==SINK)
-            COUT_NODE("SI", data.sink->name, data.sink->sinkID )
+                COUT_NODE("SI", data.sink->name, data.sink->sinkID );
             else if(type==SOURCE)
-            COUT_NODE("SO", data.source->name, data.source->sourceID )
+                COUT_NODE("SO", data.source->name, data.source->sourceID );
             else if(type==GATEWAY)
-            COUT_NODE("GA", data.gateway->name, data.gateway->gatewayID )
+                COUT_NODE("GA", data.gateway->name, data.gateway->gatewayID );
             else if(type==CONVERTER)
-            COUT_NODE("CO", data.converter->name, data.converter->converterID )
+                COUT_NODE("CO", data.converter->name, data.converter->converterID );
         };
 #endif
 

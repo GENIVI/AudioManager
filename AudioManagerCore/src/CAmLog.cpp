@@ -42,7 +42,7 @@ CAmLog::CAmFileLogger::~CAmFileLogger()
 	{
 		std::ofstream* of = static_cast<std::ofstream*>(mOutputStream);
 		of->close();
-		DEL(mOutputStream)
+		DEL(mOutputStream);
 	}
 }
 
@@ -64,7 +64,7 @@ CAmLog::~CAmLog()
 void CAmLog::releaseLogger()
 {
 	if(mLogger)
-		DEL(mLogger)
+		DEL(mLogger);
 }
 
 void CAmLog::instantiateLogger( const eCAmLogType type)
