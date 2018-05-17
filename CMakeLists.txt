@@ -169,7 +169,7 @@ write_basic_package_version_file(
     COMPATIBILITY SameMajorVersion )
 
 configure_file( ${CMAKE_SOURCE_DIR}/docx/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/DoxyFile )
-configure_file( ${CMAKE_SOURCE_DIR}/cmake/config.cmake.in ${CMAKE_BINARY_DIR}/include/audiomanagerconfig.h )
+configure_file( ${CMAKE_SOURCE_DIR}/cmake/audiomanagerconfig.h.in ${CMAKE_BINARY_DIR}/include/audiomanagerconfig.h )
 configure_file( ${CMAKE_SOURCE_DIR}/cmake/audiomanager.pc.in ${CMAKE_BINARY_DIR}/audiomanager.pc @ONLY )
 
 add_subdirectory (AudioManagerUtilities)
