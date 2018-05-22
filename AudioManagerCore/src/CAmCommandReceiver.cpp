@@ -35,17 +35,17 @@ namespace am
 {
 
 CAmCommandReceiver::CAmCommandReceiver(IAmDatabaseHandler *iDatabaseHandler, CAmControlSender *iControlSender, CAmSocketHandler *iSocketHandler) :
-        mDatabaseHandler(iDatabaseHandler), //
-        mControlSender(iControlSender), //
-        mDBusWrapper(NULL), //
-        mSocketHandler(iSocketHandler), //
-        handleCount(0),//
-        mListStartupHandles(), //
-        mListRundownHandles(), //
-        mWaitStartup(false), //
+        mDatabaseHandler(iDatabaseHandler),
+        mControlSender(iControlSender),
+        mDBusWrapper(NULL),
+        mSocketHandler(iSocketHandler),
+        handleCount(0),
+        mListStartupHandles(),
+        mListRundownHandles(),
+        mWaitStartup(false),
         mWaitRundown(false),
-        mLastErrorStartup(E_OK), //
-        mLastErrorRundown(E_OK) //
+        mLastErrorStartup(E_OK),
+        mLastErrorRundown(E_OK)
 
 {
     assert(mDatabaseHandler!=NULL);
@@ -54,16 +54,16 @@ CAmCommandReceiver::CAmCommandReceiver(IAmDatabaseHandler *iDatabaseHandler, CAm
 }
 
 CAmCommandReceiver::CAmCommandReceiver(IAmDatabaseHandler *iDatabaseHandler, CAmControlSender *iControlSender, CAmSocketHandler *iSocketHandler, CAmDbusWrapper *iDBusWrapper) :
-        mDatabaseHandler(iDatabaseHandler), //
-        mControlSender(iControlSender), //
-        mDBusWrapper(iDBusWrapper), //
-        mSocketHandler(iSocketHandler), //
-        handleCount(0),//
-        mListStartupHandles(), //
-        mListRundownHandles(), //
-        mWaitStartup(false), //
-        mWaitRundown(false), //
-        mLastErrorStartup(E_UNKNOWN), //
+        mDatabaseHandler(iDatabaseHandler),
+        mControlSender(iControlSender),
+        mDBusWrapper(iDBusWrapper),
+        mSocketHandler(iSocketHandler),
+        handleCount(0),
+        mListStartupHandles(),
+        mListRundownHandles(),
+        mWaitStartup(false),
+        mWaitRundown(false),
+        mLastErrorStartup(E_UNKNOWN),
         mLastErrorRundown(E_UNKNOWN)
 {
     assert(mDatabaseHandler!=NULL);

@@ -48,15 +48,15 @@ namespace am
 CAmRoutingSender::CAmRoutingSender(
 		const std::vector<std::string>& listOfPluginDirectories,
 		IAmDatabaseHandler* databaseHandler) :
-		mHandleCount(0), //
-		mlistActiveHandles(), //
-		mListInterfaces(), //
-		mMapConnectionInterface(), //
-		mMapCrossfaderInterface(), //
-		mMapDomainInterface(), //
-		mMapSinkInterface(), //
-		mMapSourceInterface(), //
-		mpRoutingReceiver(), //
+		mHandleCount(0),
+		mlistActiveHandles(),
+		mListInterfaces(),
+		mMapConnectionInterface(),
+		mMapCrossfaderInterface(),
+		mMapDomainInterface(),
+		mMapSinkInterface(),
+		mMapSourceInterface(),
+		mpRoutingReceiver(),
 		mpDatabaseHandler(databaseHandler) {
 
     loadPlugins(listOfPluginDirectories);

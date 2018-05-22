@@ -37,12 +37,12 @@ static CAmCommonAPIWrapper* pSingleCommonAPIInstance = NULL;
 
 
 CAmCommonAPIWrapper::CAmCommonAPIWrapper(CAmSocketHandler* socketHandler, const std::string & applicationName):
-				pCommonPrepareCallback(this,&CAmCommonAPIWrapper::commonPrepareCallback), //
-		        pCommonDispatchCallback(this, &CAmCommonAPIWrapper::commonDispatchCallback), //
-		        pCommonFireCallback(this, &CAmCommonAPIWrapper::commonFireCallback), //
-		        pCommonCheckCallback(this, &CAmCommonAPIWrapper::commonCheckCallback), //
-		        pCommonTimerCallback(this, &CAmCommonAPIWrapper::commonTimerCallback), //
-		        mpSocketHandler(socketHandler), //
+				pCommonPrepareCallback(this,&CAmCommonAPIWrapper::commonPrepareCallback),
+		        pCommonDispatchCallback(this, &CAmCommonAPIWrapper::commonDispatchCallback),
+		        pCommonFireCallback(this, &CAmCommonAPIWrapper::commonFireCallback),
+		        pCommonCheckCallback(this, &CAmCommonAPIWrapper::commonCheckCallback),
+		        pCommonTimerCallback(this, &CAmCommonAPIWrapper::commonTimerCallback),
+		        mpSocketHandler(socketHandler),
 		        mWatchToCheck(NULL)
 {
 	assert(NULL!=socketHandler);

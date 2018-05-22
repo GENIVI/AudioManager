@@ -48,7 +48,7 @@ namespace am
 
     CAmRouter::CAmRouter(IAmDatabaseHandler* iDatabaseHandler, CAmControlSender* iSender) :
                     CAmDatabaseHandlerMap::AmDatabaseObserverCallbacks(),
-                    mpDatabaseHandler(iDatabaseHandler), //
+                    mpDatabaseHandler(iDatabaseHandler),
                     mpControlSender(iSender),
                     mUpdateGraphNodesAction(true),
                     mMaxAllowedCycles(MAX_ALLOWED_DOMAIN_CYCLES),

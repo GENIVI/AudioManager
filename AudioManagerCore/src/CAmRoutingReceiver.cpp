@@ -36,18 +36,18 @@ namespace am
 {
 
 CAmRoutingReceiver::CAmRoutingReceiver(IAmDatabaseHandler *iDatabaseHandler, CAmRoutingSender *iRoutingSender, CAmControlSender *iControlSender, CAmSocketHandler *iSocketHandler) :
-        mpDatabaseHandler(iDatabaseHandler), //
-        mpRoutingSender(iRoutingSender), //
-        mpControlSender(iControlSender), //
-        mpSocketHandler(iSocketHandler), //
-        mpDBusWrapper(NULL), //
-        mListStartupHandles(), //
-        mListRundownHandles(), //
-        handleCount(0), //
-        mWaitStartup(false), //
-        mWaitRundown(false), //
-	    mLastStartupError(E_OK), //
-	    mLastRundownError(E_OK) //
+        mpDatabaseHandler(iDatabaseHandler),
+        mpRoutingSender(iRoutingSender),
+        mpControlSender(iControlSender),
+        mpSocketHandler(iSocketHandler),
+        mpDBusWrapper(NULL),
+        mListStartupHandles(),
+        mListRundownHandles(),
+        handleCount(0),
+        mWaitStartup(false),
+        mWaitRundown(false),
+	    mLastStartupError(E_OK),
+	    mLastRundownError(E_OK)
 {
     assert(mpDatabaseHandler!=NULL);
     assert(mpRoutingSender!=NULL);
@@ -56,18 +56,18 @@ CAmRoutingReceiver::CAmRoutingReceiver(IAmDatabaseHandler *iDatabaseHandler, CAm
 }
 
 CAmRoutingReceiver::CAmRoutingReceiver(IAmDatabaseHandler *iDatabaseHandler, CAmRoutingSender *iRoutingSender, CAmControlSender *iControlSender, CAmSocketHandler *iSocketHandler, CAmDbusWrapper *iDBusWrapper) :
-        mpDatabaseHandler(iDatabaseHandler), //
-        mpRoutingSender(iRoutingSender), //
-        mpControlSender(iControlSender), //
-        mpSocketHandler(iSocketHandler), //
-        mpDBusWrapper(iDBusWrapper), //
-        mListStartupHandles(), //
-        mListRundownHandles(), //
-        handleCount(0), //
-        mWaitStartup(false), //
+        mpDatabaseHandler(iDatabaseHandler),
+        mpRoutingSender(iRoutingSender),
+        mpControlSender(iControlSender),
+        mpSocketHandler(iSocketHandler),
+        mpDBusWrapper(iDBusWrapper),
+        mListStartupHandles(),
+        mListRundownHandles(),
+        handleCount(0),
+        mWaitStartup(false),
         mWaitRundown(false),
-	    mLastStartupError(E_OK), //
-	    mLastRundownError(E_OK) //
+	    mLastStartupError(E_OK),
+	    mLastRundownError(E_OK)
 {
     assert(mpDatabaseHandler!=NULL);
     assert(mpRoutingSender!=NULL);

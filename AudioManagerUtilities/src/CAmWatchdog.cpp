@@ -33,9 +33,9 @@ namespace am
 {
 
 CAmWatchdog::CAmWatchdog(CAmSocketHandler* CAmSocketHandler) :
-        TimerCallback(this, &CAmWatchdog::timerCallback), //
-        mpCAmSocketHandler(CAmSocketHandler), //
-        mHandle(0) //
+        TimerCallback(this, &CAmWatchdog::timerCallback),
+        mpCAmSocketHandler(CAmSocketHandler),
+        mHandle(0)
 {
     assert(mpCAmSocketHandler);
 

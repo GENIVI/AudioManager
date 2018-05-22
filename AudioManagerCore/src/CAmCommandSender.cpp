@@ -53,9 +53,9 @@ namespace am
 
 CAmCommandSender::CAmCommandSender(const std::vector<std::string>& listOfPluginDirectories, CAmSocketHandler *iSocketHandler) :
 		CAmDatabaseHandlerMap::AmDatabaseObserverCallbacks(),
-        mListInterfaces(), //
-        mListLibraryHandles(), //
-        mListLibraryNames(), //
+        mListInterfaces(),
+        mListLibraryHandles(),
+        mListLibraryNames(),
         mCommandReceiver(),
 		mSerializer(iSocketHandler)
 {

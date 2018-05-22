@@ -43,12 +43,12 @@ namespace am
 CAmControlSender* CAmControlSender::mInstance=NULL;
 
 CAmControlSender::CAmControlSender(std::string controlPluginFile,CAmSocketHandler* sockethandler) :
-        receiverCallbackT(this, &CAmControlSender::receiverCallback),//
-        checkerCallbackT(this, &CAmControlSender::checkerCallback),//
-        dispatcherCallbackT(this, &CAmControlSender::dispatcherCallback), //
-        mPipe(), //
-        mlibHandle(NULL), //
-        mController(NULL), //
+        receiverCallbackT(this, &CAmControlSender::receiverCallback),
+        checkerCallbackT(this, &CAmControlSender::checkerCallback),
+        dispatcherCallbackT(this, &CAmControlSender::dispatcherCallback),
+        mPipe(),
+        mlibHandle(NULL),
+        mController(NULL),
         mSignal(0)
 {
     assert(sockethandler);
@@ -563,11 +563,11 @@ void CAmControlSender::hookSystemSingleTimingInformationChanged(const am_connect
  *
  */
 CAmControlSender::CAmControlSender() :
-    receiverCallbackT(this, &CAmControlSender::receiverCallback),//
-    checkerCallbackT(this, &CAmControlSender::checkerCallback),//
-    dispatcherCallbackT(this, &CAmControlSender::dispatcherCallback), //
-    mlibHandle(NULL), //
-    mController(NULL), //
+    receiverCallbackT(this, &CAmControlSender::receiverCallback),
+    checkerCallbackT(this, &CAmControlSender::checkerCallback),
+    dispatcherCallbackT(this, &CAmControlSender::dispatcherCallback),
+    mlibHandle(NULL),
+    mController(NULL),
     mSignal(0)
 {
     logInfo("CAmControlSender was loaded in test mode!");
