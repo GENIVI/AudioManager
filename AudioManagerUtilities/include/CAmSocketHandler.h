@@ -50,7 +50,6 @@ namespace am
 
 typedef uint16_t sh_pollHandle_t; //!<this is a handle for a filedescriptor to be used with the SocketHandler
 typedef sh_pollHandle_t sh_timerHandle_t; //!<this is a handle for a timer to be used with the SocketHandler
-typedef enum:uint8_t { RMV_ONLY, RMV_N_CLS } sh_rmv_e;
 
 /**
   * prototype for poll prepared callback
@@ -218,11 +217,11 @@ class CAmSocketHandler
 {
     typedef enum:uint8_t
     {
-        UNINIT = 0u, // new, uninitialized element which needs to be inserted to ppoll array
-        VALID  = 1u, // it is a valid element in ppoll array
-        UPDATE = 2u, // update of event information therefore update ppoll array
-        REMOVE = 3u, // remove from ppoll array and internal map
-        CLOSE  = 4u  // close and remove from ppoll array and internal map
+        ADD     = 0u, // new, uninitialized element which needs to be added to ppoll array
+        UPDATE  = 1u, // update of event information therefore update ppoll array
+        VALID   = 2u, // it is a valid element in ppoll array
+        REMOVE  = 3u, // remove from ppoll array and internal map
+        INVALID = 4u  // uninit element requested to be removed from internal map only
     } poll_states_e;
 
     struct sh_poll_s //!<struct that holds information about polls
@@ -237,7 +236,7 @@ class CAmSocketHandler
         poll_states_e state;
 
         sh_poll_s() :
-            handle(0), pollfdValue(), prepareCB(), firedCB(), checkCB(), dispatchCB(), userData(0), state(UNINIT)
+            handle(0), pollfdValue(), prepareCB(), firedCB(), checkCB(), dispatchCB(), userData(0), state(ADD)
         {}
     };
 
@@ -288,8 +287,9 @@ class CAmSocketHandler
 
     typedef enum:uint8_t
     {
-        NO_ERROR  = 0u,   // OK
-        FD_ERROR  = 1u,   // Invalid file descriptor
+        NO_ERROR = 0u,    // OK
+        FD_ERROR = 1u,    // Invalid file descriptor
+        MT_ERROR = 2u     // Multi-thread issue
     } internal_codes_e;
     typedef uint8_t internal_codes_t;
 
@@ -463,7 +463,7 @@ public:
             std::function<bool(const sh_pollHandle_t handle, void* userData)> check, std::function<bool(const sh_pollHandle_t handle, void* userData)> dispatch, void* userData, sh_pollHandle_t& handle);
 
     am_Error_e addFDPoll(const int fd, const short event, IAmShPollPrepare *prepare, IAmShPollFired *fired, IAmShPollCheck *check, IAmShPollDispatch *dispatch, void* userData, sh_pollHandle_t& handle);
-    am_Error_e removeFDPoll(const sh_pollHandle_t handle, const sh_rmv_e rmv = RMV_ONLY);
+    am_Error_e removeFDPoll(const sh_pollHandle_t handle);
     am_Error_e updateEventFlags(const sh_pollHandle_t handle, const short events);
     am_Error_e addSignalHandler(std::function<void(const sh_pollHandle_t handle, const signalfd_siginfo & info, void* userData)> callback, sh_pollHandle_t& handle, void * userData);
     am_Error_e removeSignalHandler(const sh_pollHandle_t handle);

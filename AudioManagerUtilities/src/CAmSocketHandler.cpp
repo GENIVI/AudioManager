@@ -41,7 +41,6 @@
 #endif
 
 #define END_EVENT                  (UINT64_MAX >> 1)
-#define SHPOLL_IS_ACTIVE(state)    (!(state == poll_states_e::REMOVE || state == poll_states_e::CLOSE))
 
 namespace am
 {
@@ -76,8 +75,11 @@ CAmSocketHandler::CAmSocketHandler() :
               {
                   for (auto & elem : mMapShPoll)
                   {
-                      if (SHPOLL_IS_ACTIVE(elem.second.state))
-                          elem.second.state = poll_states_e::UNINIT;
+                      if (elem.second.state == poll_states_e::UPDATE ||
+                          elem.second.state == poll_states_e::VALID)
+                      {
+                          elem.second.state = poll_states_e::ADD;
+                      }
                   }
                   mDispatchDone = true;
               }
@@ -135,44 +137,44 @@ void CAmSocketHandler::start_listenting()
         auto fdPollIt = fdPollingArray.begin();
         for (auto it = mMapShPoll.begin(); it != mMapShPoll.end(); )
         {
-            // NOTE: The order of the switch/case statement is important and should modified with care
+            // NOTE: The order of the switch/case statement reflects the state flow
             auto& elem = it->second;
             switch (elem.state)
             {
-                case poll_states_e::CLOSE:
-                    close(elem.pollfdValue.fd);
-                    // fallthrough
-
-                case poll_states_e::REMOVE:
-                    /* The first check is needed for the restart behavior were an element is marked
-                     * as removed but not part of the polling array - which is stored on heap.
-                     * The second check is needed in case a map element was inserted newly but was
-                     * directly marked after as REMOVE but in between there was no sync. of the
-                     * polling array processed.
-                     */
-                    if (fdPollIt != fdPollingArray.end() && fdPollIt->fd == elem.pollfdValue.fd)
-                        fdPollIt = fdPollingArray.erase(fdPollIt);
-                    it = mMapShPoll.erase(it);
-                    continue;
-
-                case poll_states_e::UNINIT:
+                case poll_states_e::ADD:
+                    elem.state = poll_states_e::UPDATE;
                     fdPollIt = fdPollingArray.emplace(fdPollIt);
-                    // fallthrough
+                    break;
 
                 case poll_states_e::UPDATE:
-                    CAmSocketHandler::prepare(elem);
                     elem.state = poll_states_e::VALID;
+                    CAmSocketHandler::prepare(elem);
                     *fdPollIt = elem.pollfdValue;
                     break;
 
                 case poll_states_e::VALID:
-                default:
+                    // check for multi-thread access
+                    assert(fdPollIt != fdPollingArray.end());
+                    ++fdPollIt;
+                    ++it;
+                    break;
+
+                case poll_states_e::REMOVE:
+                    elem.state = poll_states_e::INVALID;
+                    fdPollIt = fdPollingArray.erase(fdPollIt);
+                    break;
+
+                case poll_states_e::INVALID:
+                    it = mMapShPoll.erase(it);
                     break;
             }
-            // Ensures that fdPollIt will be never on its end before incrementing it further!
-            assert(fdPollIt != fdPollingArray.end());
-            ++fdPollIt;
-            ++it;
+        }
+
+        if (fdPollingArray.size() != mMapShPoll.size())
+        {
+            mInternalCodes |= internal_codes_e::MT_ERROR;
+            logError("CAmSocketHandler::start_listenting is NOT multi-thread safe!");
+            return;
         }
 
 #ifndef WITH_TIMERFD
@@ -269,8 +271,8 @@ void CAmSocketHandler::wakeupWorker(const std::string & func, const uint64_t val
 }
 
 bool CAmSocketHandler::fatalErrorOccurred() 
-{ 
-    return (mInternalCodes & internal_codes_e::FD_ERROR);
+{
+    return (mInternalCodes != internal_codes_e::NO_ERROR);
 }
 
 /**
@@ -392,14 +394,29 @@ am_Error_e CAmSocketHandler::addFDPoll(const int fd,
                                        void* userData,
                                        sh_pollHandle_t& handle)
 {
+    sh_poll_s pollData;
+
     if (!fdIsValid(fd))
         return E_NON_EXISTENT;
 
     const auto elem = mMapShPoll.find(fd);
-    if (elem != mMapShPoll.end() && SHPOLL_IS_ACTIVE(elem->second.state))
+    if (elem != mMapShPoll.end())
     {
-        logError("CAmSocketHandler::addFDPoll fd", fd, "already registered!");
-        return E_ALREADY_EXISTS;
+        // The fd was already in map therefore we need to trigger an update instead
+        switch (elem->second.state)
+        {
+            case poll_states_e::REMOVE:
+                pollData.state = poll_states_e::UPDATE;
+                break;
+
+            case poll_states_e::INVALID:
+                pollData.state = poll_states_e::ADD;
+                break;
+
+            default:
+                logError("CAmSocketHandler::addFDPoll fd", fd, "already registered!");
+                return E_ALREADY_EXISTS;
+        }
     }
 
     //create a new handle for the poll
@@ -409,7 +426,6 @@ am_Error_e CAmSocketHandler::addFDPoll(const int fd,
         return (E_NOT_POSSIBLE);
     }
 
-    sh_poll_s pollData;
     pollData.pollfdValue.fd = fd;
     pollData.handle = mSetPollKeys.lastUsedID;
     pollData.pollfdValue.events = event;
@@ -470,13 +486,13 @@ am::am_Error_e CAmSocketHandler::addFDPoll(const int fd, const short event, IAmS
   * @param [rmv] default RMV_ONLY_FDPOLL
   * @return
   */
-am_Error_e CAmSocketHandler::removeFDPoll(const sh_pollHandle_t handle, const sh_rmv_e rmv)
+am_Error_e CAmSocketHandler::removeFDPoll(const sh_pollHandle_t handle)
 {
     for (auto& it : mMapShPoll)
     {
         if (it.second.handle == handle)
         {
-            it.second.state = (rmv == sh_rmv_e::RMV_N_CLS ? poll_states_e::CLOSE : poll_states_e::REMOVE);
+            it.second.state = (it.second.state == poll_states_e::ADD ? poll_states_e::INVALID : poll_states_e::REMOVE);
             wakeupWorker("removeFDPoll");
             mSetPollKeys.pollHandles.erase(handle);
             return E_OK;
@@ -661,8 +677,10 @@ am_Error_e CAmSocketHandler::removeTimer(const sh_timerHandle_t handle)
     {
         if (it->handle == handle)
         {
+            am_Error_e err = removeFDPoll(handle);
+            close(it->fd);
             mListTimer.erase(it);
-            return removeFDPoll(handle, sh_rmv_e::RMV_N_CLS);
+            return err;
         }
         ++it;
     }
@@ -901,12 +919,25 @@ am_Error_e CAmSocketHandler::updateEventFlags(const sh_pollHandle_t handle, cons
     for (auto& it : mMapShPoll)
     {
         auto& elem = it.second;
-        if (elem.handle == handle && SHPOLL_IS_ACTIVE(elem.state))
+        if (elem.handle != handle)
+            continue;
+
+        switch (elem.state)
         {
-            elem.pollfdValue.events = events;
-            elem.pollfdValue.revents = 0;
-            elem.state = poll_states_e::UPDATE;
-            return (E_OK);
+            case poll_states_e::ADD:
+                elem.pollfdValue.events = events;
+                return (E_OK);
+
+            case poll_states_e::UPDATE:
+            case poll_states_e::VALID:
+                elem.state = poll_states_e::UPDATE;
+                elem.pollfdValue.revents = 0;
+                elem.pollfdValue.events = events;
+                return (E_OK);
+
+            default:
+                // This issue should never happen!
+                return (E_DATABASE_ERROR);
         }
     }
     return (E_UNKNOWN);
