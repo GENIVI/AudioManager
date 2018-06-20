@@ -156,7 +156,7 @@ void CAmCommonAPIWrapper::commonFireCallback(const pollfd pollfd, const sh_pollH
       return;
     }
 
-    mWatchToCheck->dispatch(pollfd.events);
+    mWatchToCheck->dispatch(pollfd.revents);
 }
 
 void CAmCommonAPIWrapper::commonPrepareCallback(const sh_pollHandle_t, void*)
@@ -207,20 +207,37 @@ void CAmCommonAPIWrapper::registerTimeout(CommonAPI::Timeout* timeout, const Com
 {
     timespec pollTimeout;
     int64_t localTimeout = timeout->getTimeoutInterval();
-
-    pollTimeout.tv_sec = localTimeout / 1000;
-    pollTimeout.tv_nsec = (localTimeout % 1000) * 1000000;
+    
+    if(CommonAPI::TIMEOUT_INFINITE==localTimeout)//dispatch never
+    {
+        pollTimeout.tv_sec = localTimeout;
+        pollTimeout.tv_nsec = 0;
+    }
+    else if(CommonAPI::TIMEOUT_NONE==localTimeout)//dispatch immediately
+    {
+        pollTimeout.tv_sec = 0;
+        pollTimeout.tv_nsec = 1000000;     
+    }
+    else 
+    {
+        pollTimeout.tv_sec = localTimeout / 1000;
+        pollTimeout.tv_nsec = (localTimeout % 1000) * 1000000;   
+    }
 
     //prepare handle and callback. new is eval, but there is no other choice because we need the pointer!
     sh_timerHandle_t handle;
 
     //add the timer to the pollLoop
-    mpSocketHandler->addTimer(pollTimeout, &pCommonTimerCallback, handle, timeout);
-
-    timerHandles myHandle({handle,timeout});
-    mpListTimerhandles.push_back(myHandle);
-
-    return;
+    am_Error_e error = mpSocketHandler->addTimer(pollTimeout, &pCommonTimerCallback, handle, timeout);
+    if (error != am_Error_e::E_OK || handle == 0)
+    {
+        logError(__func__,"adding timer failed");
+    }
+    else
+    {
+        timerHandles myHandle({handle,timeout});
+        mpListTimerhandles.push_back(myHandle); 
+    }
 }
 
 void CAmCommonAPIWrapper::deregisterTimeout(CommonAPI::Timeout* timeout)
@@ -243,10 +260,12 @@ void CAmCommonAPIWrapper::registerWatch(CommonAPI::Watch* watch, const CommonAPI
     am_Error_e error = mpSocketHandler->addFDPoll(pollfd_.fd, pollfd_.events, &pCommonPrepareCallback, &pCommonFireCallback, &pCommonCheckCallback, &pCommonDispatchCallback, watch, handle);
 
     //if everything is alright, add the watch and the handle to our map so we know this relationship
-    if (error == !am_Error_e::E_OK || handle == 0)
+    if (error != am_Error_e::E_OK || handle == 0)
+    {
         logError(__func__,"entering watch failed");
-
-    mMapWatches.insert(std::make_pair(pollfd_.fd,watch));
+    }
+    else
+        mMapWatches.insert(std::make_pair(pollfd_.fd,watch));
 }
 
 void CAmCommonAPIWrapper::commonTimerCallback(sh_timerHandle_t handle, void *)

@@ -23,6 +23,7 @@
 
 #include "CAmControlSender.h"
 #include <cassert>
+#include <cstring>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -565,12 +566,12 @@ CAmControlSender::CAmControlSender() :
     receiverCallbackT(this, &CAmControlSender::receiverCallback),//
     checkerCallbackT(this, &CAmControlSender::checkerCallback),//
     dispatcherCallbackT(this, &CAmControlSender::dispatcherCallback), //
-    mPipe(), //
     mlibHandle(NULL), //
     mController(NULL), //
     mSignal(0)
 {
     logInfo("CAmControlSender was loaded in test mode!");
+    std::memset(mPipe, -1, sizeof(mPipe));
 }
 
 bool CAmControlSender::dispatcherCallback(const sh_pollHandle_t handle, void* userData)

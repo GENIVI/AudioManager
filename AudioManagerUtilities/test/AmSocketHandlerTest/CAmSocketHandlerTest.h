@@ -101,23 +101,21 @@ namespace am
             UNIX, INET
         };
         CAmSamplePlugin(CAmSocketHandler *mySocketHandler, sockType_e socketType);
-        ~CAmSamplePlugin()
-        {
-        }
-        ;
+        virtual ~CAmSamplePlugin() { }
         void connectSocket(const pollfd pollfd, const sh_pollHandle_t handle, void* userData);
-        void receiveData(const pollfd pollfd, const sh_pollHandle_t handle, void* userData);
-        bool dispatchData(const sh_pollHandle_t handle, void* userData);
-        bool check(const sh_pollHandle_t handle, void* userData);
+        virtual void receiveData(const pollfd pollfd, const sh_pollHandle_t handle, void* userData);
+        virtual bool dispatchData(const sh_pollHandle_t handle, void* userData);
+        virtual bool check(const sh_pollHandle_t handle, void* userData);
         TAmShPollFired<CAmSamplePlugin> connectFiredCB;
         TAmShPollFired<CAmSamplePlugin> receiveFiredCB;
         TAmShPollDispatch<CAmSamplePlugin> sampleDispatchCB;
         TAmShPollCheck<CAmSamplePlugin> sampleCheckCB;
-
-    private:
+        bool isSocketOpened() { return mSocket>-1; }
+    protected:
         CAmSocketHandler *mSocketHandler;
         sh_pollHandle_t mConnecthandle, mReceiveHandle;
         std::queue<std::string> msgList;
+        int mSocket;
     };
 
     class CAmTimerSockethandlerController: public MockIAmTimerCb
@@ -162,13 +160,53 @@ namespace am
         TAmShTimerCallBack<CAmTimer> pTimerCallback;
     };
 
+    class CAmTimerStressTest: public MockIAmTimerCb
+    {
+        CAmSocketHandler *mpSocketHandler;
+        timespec mUpdateTimeout;
+        int32_t mRepeats;
+        int32_t mHandle;
+    public:
+        explicit CAmTimerStressTest(CAmSocketHandler *SocketHandler, const timespec &timeout, const int32_t repeats = 0u);
+        virtual ~CAmTimerStressTest();
+
+        int32_t getHandle() { return mHandle; }
+        void setHandle(const int32_t id) { mHandle=id; }
+
+        timespec getUpdateTimeout( ) { return mUpdateTimeout; }
+
+        void timerCallback(sh_timerHandle_t handle, void * userData);
+
+        TAmShTimerCallBack<CAmTimerStressTest> pTimerCallback;
+    };
+
+    class CAmTimerStressTest2: public MockIAmTimerCb
+    {
+        CAmSocketHandler *mpSocketHandler;
+        timespec mUpdateTimeout;
+        int32_t mRepeats;
+        int32_t mHandle;
+    public:
+        explicit CAmTimerStressTest2(CAmSocketHandler *SocketHandler, const timespec &timeout, const int32_t repeats = 0u);
+        virtual ~CAmTimerStressTest2();
+
+        int32_t getHandle() { return mHandle; }
+        void setHandle(const int32_t id) { mHandle=id; }
+
+        timespec getUpdateTimeout( ) { return mUpdateTimeout; }
+
+        void timerCallback(sh_timerHandle_t handle, void * userData);
+
+        TAmShTimerCallBack<CAmTimerStressTest2> pTimerCallback;
+    };
+
     class CAmTimerMeasurment: public MockIAmTimerCb
     {
         CAmSocketHandler *mSocketHandler;
         timespec mUpdateTimeout;
         std::chrono::time_point<std::chrono::high_resolution_clock> mUpdateTimePoint;
         std::chrono::time_point<std::chrono::high_resolution_clock> mLastInvocationTime;
-        std::chrono::duration<long, std::ratio<1l, 1000000000l>> mExpected;
+        std::chrono::duration<uint64_t, std::nano> mExpected;
         int32_t mRepeats;
         void * mpUserData;
         std::string mDebugText;
@@ -187,6 +225,20 @@ namespace am
         ~CAmSocketHandlerTest();
         void SetUp();
         void TearDown();
+    };
+
+    class CAmSamplePluginStressTest: public CAmSamplePlugin
+    {
+        std::vector<CAmTimerStressTest2*> mTimers;
+    public:
+        CAmSamplePluginStressTest(CAmSocketHandler *mySocketHandler, sockType_e socketType);
+        virtual ~CAmSamplePluginStressTest();
+
+        void receiveData(const pollfd pollfd, const sh_pollHandle_t handle, void* userData) final;
+        bool dispatchData(const sh_pollHandle_t handle, void* userData) final;
+        bool check(const sh_pollHandle_t handle, void* userData) final;
+
+        std::vector<CAmTimerStressTest2*> & getTimers() { return  mTimers; }
     };
 
 } /* namespace am */
