@@ -50,16 +50,16 @@ DBUS_INTROSPECT_1_0_XML_DOCTYPE_DECL_NODE								\
 CAmDbusWrapper* CAmDbusWrapper::mpReference = NULL;
 
 CAmDbusWrapper::CAmDbusWrapper(CAmSocketHandler* socketHandler, DBusBusType type, const std::string& prefix, const std::string& objectPath) :
-        pDbusPrepareCallback(this,&CAmDbusWrapper::dbusPrepareCallback), //
-        pDbusDispatchCallback(this, &CAmDbusWrapper::dbusDispatchCallback), //
-        pDbusFireCallback(this, &CAmDbusWrapper::dbusFireCallback), //
-        pDbusCheckCallback(this, &CAmDbusWrapper::dbusCheckCallback), //
-        pDbusTimerCallback(this, &CAmDbusWrapper::dbusTimerCallback), //
-        mpDbusConnection(0), //
-        mDBusError(), //
-        mListNodes(), //
-        mpListTimerhandles(), //
-        mpSocketHandler(socketHandler), //
+        pDbusPrepareCallback(this,&CAmDbusWrapper::dbusPrepareCallback),
+        pDbusDispatchCallback(this, &CAmDbusWrapper::dbusDispatchCallback),
+        pDbusFireCallback(this, &CAmDbusWrapper::dbusFireCallback),
+        pDbusCheckCallback(this, &CAmDbusWrapper::dbusCheckCallback),
+        pDbusTimerCallback(this, &CAmDbusWrapper::dbusTimerCallback),
+        mpDbusConnection(0),
+        mDBusError(),
+        mListNodes(),
+        mpListTimerhandles(),
+        mpSocketHandler(socketHandler),
         mDbusType(type)
 {
     assert(mpSocketHandler!=0);

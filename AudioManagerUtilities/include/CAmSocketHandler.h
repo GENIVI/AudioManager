@@ -113,7 +113,7 @@ private:
 
 public:
     TAmShPollFired(TClass* instance, void (TClass::*function)(const pollfd pollfd, const sh_pollHandle_t handle, void* userData)) :
-            mInstance(instance), //
+            mInstance(instance),
             mFunction(function)
     {}
 
@@ -134,7 +134,7 @@ private:
 
 public:
     TAmShPollCheck(TClass* instance, bool (TClass::*function)(const sh_pollHandle_t handle, void* userData)) :
-            mInstance(instance), //
+            mInstance(instance),
             mFunction(function)
     {}
 
@@ -155,7 +155,7 @@ private:
 
 public:
     TAmShPollDispatch(TClass* instance, bool (TClass::*function)(const sh_pollHandle_t handle, void* userData)) :
-            mInstance(instance), //
+            mInstance(instance),
             mFunction(function)
     {}
 
@@ -176,7 +176,7 @@ private:
 
 public:
     TAmShTimerCallBack(TClass* instance, void (TClass::*function)(sh_timerHandle_t handle, void* userData)) :
-            IAmShTimerCallBack(), mInstance(instance), //
+            IAmShTimerCallBack(), mInstance(instance),
             mFunction(function)
     {}
 
@@ -198,7 +198,7 @@ private:
 
 public:
     TAmShPollPrepare(TClass* instance, void (TClass::*function)(const sh_pollHandle_t handle, void* userData)) :
-            mInstance(instance), //
+            mInstance(instance),
             mFunction(function)
     {}
 

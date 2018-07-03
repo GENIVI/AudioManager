@@ -46,21 +46,21 @@ namespace am
 {
 
 CAmSocketHandler::CAmSocketHandler() :
-        mEventFd(-1), //
-        mSignalFd(-1), //
-        mDispatchDone(true), //
-        mSetPollKeys(MAX_POLLHANDLE), //
-        mMapShPoll(), //
+        mEventFd(-1),
+        mSignalFd(-1),
+        mDispatchDone(true),
+        mSetPollKeys(MAX_POLLHANDLE),
+        mMapShPoll(),
         mSetTimerKeys(MAX_TIMERHANDLE),
-        mListTimer(), //
+        mListTimer(),
 #ifndef WITH_TIMERFD
-        mListActiveTimer(), //
+        mListActiveTimer(),
 #endif
-        mSetSignalhandlerKeys(MAX_POLLHANDLE), //
-        mSignalHandlers(), //
+        mSetSignalhandlerKeys(MAX_POLLHANDLE),
+        mSignalHandlers(),
         mInternalCodes(internal_codes_e::NO_ERROR)
 #ifndef WITH_TIMERFD
-        ,mStartTime() //
+        ,mStartTime()
 #endif
 {
 

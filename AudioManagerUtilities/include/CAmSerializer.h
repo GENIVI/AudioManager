@@ -809,13 +809,13 @@ namespace am
              * @param iSocketHandler pointer to the CAmSocketHandler
              */
             CAmSerializer(CAmSocketHandler *iSocketHandler) :
-                    mPipe(), //
-                            mReturnPipe(), //
+                    mPipe(),
+                            mReturnPipe(),
                             mHandle(),
                             mpSocketHandler(iSocketHandler),
-                            mListDelegatePoiters(), //
-                            receiverCallbackT(this, &CAmSerializer::receiverCallback), //
-                            dispatcherCallbackT(this, &CAmSerializer::dispatcherCallback), //
+                            mListDelegatePoiters(),
+                            receiverCallbackT(this, &CAmSerializer::receiverCallback),
+                            dispatcherCallbackT(this, &CAmSerializer::dispatcherCallback),
                             checkerCallbackT(this, &CAmSerializer::checkerCallback)
             {
                 assert(NULL!=iSocketHandler);
@@ -1172,13 +1172,13 @@ namespace am
              * @param iSocketHandler pointer to the CAmSocketHandler
              */
             CAmSerializer(CAmSocketHandler *iSocketHandler) :
-                    mPipe(), //
-                            mReturnPipe(), //
+                    mPipe(),
+                            mReturnPipe(),
                             mHandle(),
                             mpSocketHandler(iSocketHandler),
-                            mListDelegatePointers(), //
-                            receiverCallbackT(this, &CAmSerializer::receiverCallback), //
-                            dispatcherCallbackT(this, &CAmSerializer::dispatcherCallback), //
+                            mListDelegatePointers(),
+                            receiverCallbackT(this, &CAmSerializer::receiverCallback),
+                            dispatcherCallbackT(this, &CAmSerializer::dispatcherCallback),
                             checkerCallbackT(this, &CAmSerializer::checkerCallback)
             {
                 assert(NULL!=iSocketHandler);

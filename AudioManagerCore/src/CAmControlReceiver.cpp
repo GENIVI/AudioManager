@@ -38,11 +38,11 @@ namespace am {
 #define __METHOD_NAME__ std::string (std::string("CAmControlReceiver::") + __func__)
 
 CAmControlReceiver::CAmControlReceiver(IAmDatabaseHandler *iDatabaseHandler, CAmRoutingSender *iRoutingSender, CAmCommandSender *iCommandSender, CAmSocketHandler *iSocketHandler, CAmRouter* iRouter) :
-        mDatabaseHandler(iDatabaseHandler), //
-        mRoutingSender(iRoutingSender), //
-        mCommandSender(iCommandSender), //
-        mSocketHandler(iSocketHandler), //
-        mRouter(iRouter), //
+        mDatabaseHandler(iDatabaseHandler),
+        mRoutingSender(iRoutingSender),
+        mCommandSender(iCommandSender),
+        mSocketHandler(iSocketHandler),
+        mRouter(iRouter),
         mNodeStateCommunicator(NULL)
 {
     assert(mDatabaseHandler!=NULL);

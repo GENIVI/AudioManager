@@ -454,14 +454,14 @@ bool CAmDatabaseHandlerMap::AmMappedData::increaseConnectionID(int16_t & resultI
 
 
 CAmDatabaseHandlerMap::CAmDatabaseHandlerMap():	IAmDatabaseHandler(),
-		mFirstStaticSink(true), //
-		mFirstStaticSource(true), //
-		mFirstStaticGateway(true), //
-		mFirstStaticConverter(true), //
-		mFirstStaticSinkClass(true), //
-		mFirstStaticSourceClass(true), //
-		mFirstStaticCrossfader(true), //
-		mListConnectionFormat(), //
+		mFirstStaticSink(true),
+		mFirstStaticSource(true),
+		mFirstStaticGateway(true),
+		mFirstStaticConverter(true),
+		mFirstStaticSinkClass(true),
+		mFirstStaticSourceClass(true),
+		mFirstStaticCrossfader(true),
+		mListConnectionFormat(),
 		mMappedData(),
 		mDatabaseObservers()
 {

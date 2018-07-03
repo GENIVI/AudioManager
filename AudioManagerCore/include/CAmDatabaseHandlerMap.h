@@ -258,109 +258,65 @@ public:
     /**
      * The following structures extend the base structures with the field 'reserved'.
      */
+#define AM_SUBCLASS(TYPE, SUBCLASS, CLASS, MEMBER, ASSIGN)  \
+    typedef struct SUBCLASS : public CLASS                  \
+    {                                                       \
+        MEMBER                                              \
+        bool reserved;                                      \
+        SUBCLASS() : CLASS(), reserved(false) {}            \
+        SUBCLASS & operator=(const SUBCLASS &anObject)      \
+        {                                                   \
+            if (this != &anObject)                          \
+            {                                               \
+                CLASS::operator=(anObject);                 \
+                reserved = anObject.reserved;               \
+                ASSIGN                                      \
+            }                                               \
+            return *this;                                   \
+        }                                                   \
+        SUBCLASS & operator=(const CLASS & anObject)        \
+        {                                                   \
+            if (this != &anObject) {                        \
+                CLASS::operator=(anObject);}                \
+            return *this;                                   \
+        }                                                   \
+        void getDescription(std::string & outString) const; \
+    } TYPE                                                  \
 
-#define AM_SUBCLASS_BEGIN(Subclass, Class) \
-	    typedef struct Subclass : public Class\
-	    {
-
-#define AM_SUBCLASS_CONSTR(Subclass, Class) \
-	        Subclass():Class()
-
-#define AM_SUBCLASS_CONSTR_BODY()\
-	        {};
-
-#define AM_SUBCLASS_COPY_OP_START(Subclass, Class) \
-	        Subclass & operator=(const Subclass & anObject)\
-	        {\
-	            if (this != &anObject)\
-	            {\
-	            	Class::operator=(anObject);
-
-#define AM_SUBCLASS_COPY_OP_END()\
-	            }\
-	            return *this;\
-	        };
-
-#define AM_SUBCLASS_OP(Subclass, Class) \
-    		Subclass & operator=(const Class & anObject)\
-    		{\
-    			if (this != &anObject)\
-    				Class::operator=(anObject);\
-    			return *this;\
-    		};
-
-#define AM_SUBCLASS_END(Typedef) \
-		void getDescription (std::string & outString) const;\
-	    } Typedef;
-
-#define AM_TYPEDEF_SUBCLASS_RESERVED_FLAG_BEGIN(Subclass, Class)\
-		AM_SUBCLASS_BEGIN(Subclass, Class)\
-    	bool reserved;\
-    	AM_SUBCLASS_CONSTR(Subclass, Class)\
-    	,reserved(false)\
-    	AM_SUBCLASS_CONSTR_BODY()\
-    	AM_SUBCLASS_COPY_OP_START(Subclass, Class)\
-    	reserved = anObject.reserved;\
-    	AM_SUBCLASS_COPY_OP_END()\
-    	AM_SUBCLASS_OP(Subclass, Class)\
-
-#define AM_TYPEDEF_SUBCLASS_SOUND_PROPERTIES_BEGIN(Subclass, Class)\
-		AM_SUBCLASS_BEGIN(Subclass, Class)\
-    	bool reserved;\
-    	std::unordered_map<am_CustomSoundPropertyType_t, int16_t> cacheSoundProperties;\
-    	std::unordered_map<am_CustomMainSoundPropertyType_t, int16_t> cacheMainSoundProperties;\
-    	AM_SUBCLASS_CONSTR(Subclass, Class)\
-    	,reserved(false), cacheSoundProperties(), cacheMainSoundProperties()\
-    	AM_SUBCLASS_CONSTR_BODY()\
-    	AM_SUBCLASS_COPY_OP_START(Subclass, Class)\
-    	reserved = anObject.reserved;\
-    	cacheSoundProperties = anObject.cacheSoundProperties;\
-    	cacheMainSoundProperties = anObject.cacheMainSoundProperties;\
-    	AM_SUBCLASS_COPY_OP_END()\
-    	AM_SUBCLASS_OP(Subclass, Class)\
-
-#define AM_TYPEDEF_SUBCLASS_BEGIN(Subclass, Class)\
-		AM_SUBCLASS_BEGIN(Subclass, Class)\
-		AM_SUBCLASS_COPY_OP_START(Subclass, Class)\
-		AM_SUBCLASS_COPY_OP_END()\
-		AM_SUBCLASS_OP(Subclass, Class)\
+#define AM_SUBLCASS_ADD_MAP_TYPE(TYPE, NAME) std::unordered_map<TYPE, int16_t> NAME;
+#define AM_SUBLCASS_ADD_ASSIGNMENT(NAME) NAME = anObject.NAME;
 
 private:
-    AM_TYPEDEF_SUBCLASS_RESERVED_FLAG_BEGIN(am_Domain_Database_s,am_Domain_s)
-    AM_SUBCLASS_END(AmDomain)
+    AM_SUBCLASS(AmDomain, am_Domain_Database_s, am_Domain_s, , );
 
-    AM_TYPEDEF_SUBCLASS_SOUND_PROPERTIES_BEGIN(am_Sink_Database_s,am_Sink_s)
-    	void getSinkType(am_SinkType_s & sinkType) const;\
-    AM_SUBCLASS_END(AmSink)
+    AM_SUBCLASS(AmSink, am_Sink_Database_s, am_Sink_s, \
+            void getSinkType(am_SinkType_s & sinkType) const; \
+            AM_SUBLCASS_ADD_MAP_TYPE(am_CustomSoundPropertyType_t, cacheSoundProperties) \
+            AM_SUBLCASS_ADD_MAP_TYPE(am_CustomMainSoundPropertyType_t, cacheMainSoundProperties), \
+            AM_SUBLCASS_ADD_ASSIGNMENT(cacheSoundProperties) \
+            AM_SUBLCASS_ADD_ASSIGNMENT(cacheMainSoundProperties) );
 
-    AM_TYPEDEF_SUBCLASS_SOUND_PROPERTIES_BEGIN(am_Source_Database_s,am_Source_s)
-    	void getSourceType(am_SourceType_s & sourceType) const;\
-    AM_SUBCLASS_END(AmSource)
+    AM_SUBCLASS(AmSource, am_Source_Database_s, am_Source_s,
+            void getSourceType(am_SourceType_s & sourceType) const; \
+            AM_SUBLCASS_ADD_MAP_TYPE(am_CustomSoundPropertyType_t, cacheSoundProperties) \
+            AM_SUBLCASS_ADD_MAP_TYPE(am_CustomMainSoundPropertyType_t, cacheMainSoundProperties), \
+            AM_SUBLCASS_ADD_ASSIGNMENT(cacheSoundProperties) \
+            AM_SUBLCASS_ADD_ASSIGNMENT(cacheMainSoundProperties) );
 
-    AM_TYPEDEF_SUBCLASS_RESERVED_FLAG_BEGIN(am_Connection_Database_s,am_Connection_s)
-    AM_SUBCLASS_END(AmConnection)
+    AM_SUBCLASS(AmConnection, am_Connection_Database_s, am_Connection_s, , );
 
-    /**
-      * The following structures extend the base structures with print capabilities.
-    */
-    AM_TYPEDEF_SUBCLASS_BEGIN(am_MainConnection_Database_s, am_MainConnection_s)
-    	void getMainConnectionType(am_MainConnectionType_s & connectionType) const;\
-    AM_SUBCLASS_END(AmMainConnection)
+    AM_SUBCLASS(AmMainConnection, am_MainConnection_Database_s, am_MainConnection_s,
+            void getMainConnectionType(am_MainConnectionType_s & connectionType) const;, );
 
-	AM_TYPEDEF_SUBCLASS_BEGIN(am_SourceClass_Database_s, am_SourceClass_s)
-	AM_SUBCLASS_END(AmSourceClass)
+    AM_SUBCLASS(AmSourceClass, am_SourceClass_Database_s, am_SourceClass_s, , );
 
-	AM_TYPEDEF_SUBCLASS_BEGIN(am_SinkClass_Database_s, am_SinkClass_s)
-	AM_SUBCLASS_END(AmSinkClass)
+    AM_SUBCLASS(AmSinkClass, am_SinkClass_Database_s, am_SinkClass_s, , );
 
-	AM_TYPEDEF_SUBCLASS_BEGIN(am_Gateway_Database_s, am_Gateway_s)
-	AM_SUBCLASS_END(AmGateway)
+    AM_SUBCLASS(AmGateway, am_Gateway_Database_s, am_Gateway_s, , );
 
-	AM_TYPEDEF_SUBCLASS_BEGIN(am_Converter_Database_s, am_Converter_s)
-	AM_SUBCLASS_END(AmConverter)
+    AM_SUBCLASS(AmConverter, am_Converter_Database_s, am_Converter_s, , );
 
-	AM_TYPEDEF_SUBCLASS_BEGIN(am_Crossfader_Database_s, am_Crossfader_s)
-	AM_SUBCLASS_END(AmCrossfader)
+    AM_SUBCLASS(AmCrossfader, am_Crossfader_Database_s, am_Crossfader_s, , );
 
 
     typedef std::unordered_map<am_domainID_t, AmDomain>  		  			 	 AmMapDomain;

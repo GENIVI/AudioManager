@@ -44,7 +44,7 @@
 #define DEFAULT_LOGFILE_PREFIX "am_dump_"
 #define DEFAULT_LOGFILE_EXT 	".log"
 
-#define DEL( aPointer ) delete aPointer, aPointer = NULL;
+#define DEL( aPointer ) delete aPointer, aPointer = NULL
 
 /* */
 typedef enum { eCAmLogNone = 0, eCAmLogStdout = 1, eCAmLogFile = 2 } eCAmLogType;
