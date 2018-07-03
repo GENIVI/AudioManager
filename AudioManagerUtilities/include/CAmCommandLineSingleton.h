@@ -21,7 +21,6 @@
  *
  */
 
-
 #ifndef AUDIOMANAGERUTILITIES_INCLUDE_CAMCOMMANDLINESINGLETON_H_
 #define AUDIOMANAGERUTILITIES_INCLUDE_CAMCOMMANDLINESINGLETON_H_
 
@@ -29,21 +28,22 @@
 
 namespace am {
 
-class CAmCommandLineSingleton {
+class CAmCommandLineSingleton
+{
 public:
-	static TCLAP::CmdLine* instanciateOnce(const std::string& message,
-			const char delimiter = ' ',
-			const std::string& version = "none",
-			bool helpAndVersion = true);
-			
-	static TCLAP::CmdLine* instance();
-	
-	static void deleteInstance();
-	
+    static TCLAP::CmdLine *instanciateOnce(const std::string &message,
+        const char delimiter       = ' ',
+        const std::string &version = "none",
+        bool helpAndVersion        = true);
+
+    static TCLAP::CmdLine *instance();
+
+    static void deleteInstance();
+
 private:
 
-	CAmCommandLineSingleton();
-	virtual ~CAmCommandLineSingleton();
+    CAmCommandLineSingleton();
+    virtual ~CAmCommandLineSingleton();
 };
 
 } /* namespace am */

@@ -40,78 +40,79 @@
 namespace am
 {
 
-#define REQUIRED_INTERFACE_VERSION_MAJOR 1  //!< major interface version. All versions smaller than this will be rejected
+#define REQUIRED_INTERFACE_VERSION_MAJOR 1 //!< major interface version. All versions smaller than this will be rejected
 #define REQUIRED_INTERFACE_VERSION_MINOR 0 //!< minor interface version. All versions smaller than this will be rejected
 
-#define __METHOD_NAME__ std::string (std::string("CAmRoutingSender::") + __func__)
+#define __METHOD_NAME__ std::string(std::string("CAmRoutingSender::") + __func__)
 
 CAmRoutingSender::CAmRoutingSender(
-		const std::vector<std::string>& listOfPluginDirectories,
-		IAmDatabaseHandler* databaseHandler) :
-		mHandleCount(0),
-		mlistActiveHandles(),
-		mListInterfaces(),
-		mMapConnectionInterface(),
-		mMapCrossfaderInterface(),
-		mMapDomainInterface(),
-		mMapSinkInterface(),
-		mMapSourceInterface(),
-		mpRoutingReceiver(),
-		mpDatabaseHandler(databaseHandler) {
+    const std::vector<std::string> &listOfPluginDirectories,
+    IAmDatabaseHandler *databaseHandler)
+    : mHandleCount(0)
+    , mlistActiveHandles()
+    , mListInterfaces()
+    , mMapConnectionInterface()
+    , mMapCrossfaderInterface()
+    , mMapDomainInterface()
+    , mMapSinkInterface()
+    , mMapSourceInterface()
+    , mpRoutingReceiver()
+    , mpDatabaseHandler(databaseHandler)
+{
 
     loadPlugins(listOfPluginDirectories);
 
-    dboNewSink = [&](const am_Sink_s& sink) {
-        addSinkLookup(sink);
-    };
-    dboNewSource = [&](const am_Source_s& source) {
-        addSourceLookup(source);
-    };
-    dboNewDomain = [&](const am_Domain_s& domain) {
-        addDomainLookup(domain);
-    };
-    //todo: newGateway implement something
-    //todo: newConverter implement something
-    dboNewCrossfader = [&](const am_Crossfader_s& crossfader) {
-        addCrossfaderLookup(crossfader);
-    };
+    dboNewSink = [&](const am_Sink_s &sink) {
+            addSinkLookup(sink);
+        };
+    dboNewSource = [&](const am_Source_s &source) {
+            addSourceLookup(source);
+        };
+    dboNewDomain = [&](const am_Domain_s &domain) {
+            addDomainLookup(domain);
+        };
+    // todo: newGateway implement something
+    // todo: newConverter implement something
+    dboNewCrossfader = [&](const am_Crossfader_s &crossfader) {
+            addCrossfaderLookup(crossfader);
+        };
     dboRemovedSink = [&](const am_sinkID_t sinkID, const bool visible) {
-        removeSinkLookup(sinkID);
-    };
+            removeSinkLookup(sinkID);
+        };
     dboRemovedSource = [&](const am_sourceID_t sourceID, const bool visible) {
-        removeSourceLookup(sourceID);
-    };
+            removeSourceLookup(sourceID);
+        };
     dboRemoveDomain = [&](const am_domainID_t domainID) {
-        removeDomainLookup(domainID);
-    };
-    //todo: removeGateway implement something
-    //todo: removeConverter implement something
+            removeDomainLookup(domainID);
+        };
+    // todo: removeGateway implement something
+    // todo: removeConverter implement something
     dboRemoveCrossfader = [&](const am_crossfaderID_t crossfaderID) {
-        removeCrossfaderLookup(crossfaderID);
-    };
+            removeCrossfaderLookup(crossfaderID);
+        };
 }
 
-void CAmRoutingSender::loadPlugins(const std::vector<std::string>& listOfPluginDirectories)
+void CAmRoutingSender::loadPlugins(const std::vector<std::string> &listOfPluginDirectories)
 {
     if (listOfPluginDirectories.empty())
     {
-        logError(__METHOD_NAME__,"List of routingplugins is empty");
+        logError(__METHOD_NAME__, "List of routingplugins is empty");
     }
 
-    std::vector<std::string> sharedLibraryNameList;
-    std::vector<std::string>::const_iterator dirIter = listOfPluginDirectories.begin();
+    std::vector<std::string>                 sharedLibraryNameList;
+    std::vector<std::string>::const_iterator dirIter    = listOfPluginDirectories.begin();
     std::vector<std::string>::const_iterator dirIterEnd = listOfPluginDirectories.end();
 
     // search communicator plugins in configured directories
     for (; dirIter < dirIterEnd; ++dirIter)
     {
-        const char* directoryName = dirIter->c_str();
-        logInfo(__METHOD_NAME__,"Searching for HookPlugins in", directoryName);
+        const char *directoryName = dirIter->c_str();
+        logInfo(__METHOD_NAME__, "Searching for HookPlugins in", directoryName);
         DIR *directory = opendir(directoryName);
 
         if (!directory)
         {
-            logError(__METHOD_NAME__,"Error opening directory: ", directoryName);
+            logError(__METHOD_NAME__, "Error opening directory: ", directoryName);
             continue;
         }
 
@@ -120,10 +121,10 @@ void CAmRoutingSender::loadPlugins(const std::vector<std::string>& listOfPluginD
         while ((itemInDirectory = readdir(directory)))
         {
             unsigned char entryType = itemInDirectory->d_type;
-            std::string entryName = itemInDirectory->d_name;
-            std::string fullName = *dirIter + "/" + entryName;
+            std::string   entryName = itemInDirectory->d_name;
+            std::string   fullName  = *dirIter + "/" + entryName;
 
-            bool regularFile = (entryType == DT_REG || entryType == DT_LNK);
+            bool regularFile        = (entryType == DT_REG || entryType == DT_LNK);
             bool sharedLibExtension = ("so" == entryName.substr(entryName.find_last_of(".") + 1));
 
             // Handle cases where readdir() could not determine the file type
@@ -133,7 +134,7 @@ void CAmRoutingSender::loadPlugins(const std::vector<std::string>& listOfPluginD
 
                 if (stat(fullName.c_str(), &buf))
                 {
-                    logInfo(__METHOD_NAME__,"Failed to stat file: ", entryName, errno);
+                    logInfo(__METHOD_NAME__, "Failed to stat file: ", entryName, errno);
                     continue;
                 }
 
@@ -142,7 +143,7 @@ void CAmRoutingSender::loadPlugins(const std::vector<std::string>& listOfPluginD
 
             if (regularFile && sharedLibExtension)
             {
-                logInfo(__METHOD_NAME__,"adding file: ", entryName);
+                logInfo(__METHOD_NAME__, "adding file: ", entryName);
                 std::string name(directoryName);
                 sharedLibraryNameList.push_back(name + "/" + entryName);
             }
@@ -156,28 +157,28 @@ void CAmRoutingSender::loadPlugins(const std::vector<std::string>& listOfPluginD
     }
 
     // iterate all communicator plugins and start them
-    std::vector<std::string>::iterator iter = sharedLibraryNameList.begin();
+    std::vector<std::string>::iterator iter    = sharedLibraryNameList.begin();
     std::vector<std::string>::iterator iterEnd = sharedLibraryNameList.end();
 
     for (; iter != iterEnd; ++iter)
     {
-        logInfo(__METHOD_NAME__,"try loading: ", *iter);
+        logInfo(__METHOD_NAME__, "try loading: ", *iter);
 
-        IAmRoutingSend* (*createFunc)();
-        void* tempLibHandle = NULL;
-        createFunc = getCreateFunction<IAmRoutingSend*()>(*iter, tempLibHandle);
+        IAmRoutingSend *(*createFunc)();
+        void           *tempLibHandle = NULL;
+        createFunc = getCreateFunction<IAmRoutingSend *()>(*iter, tempLibHandle);
 
         if (!createFunc)
         {
-            logError(__METHOD_NAME__,"Entry point of RoutingPlugin not found");
+            logError(__METHOD_NAME__, "Entry point of RoutingPlugin not found");
             continue;
         }
 
-        IAmRoutingSend* router = createFunc();
+        IAmRoutingSend *router = createFunc();
 
         if (!router)
         {
-            logError(__METHOD_NAME__,"initialization of plugin ",*iter,"failed. Entry Function not callable");
+            logError(__METHOD_NAME__, "initialization of plugin ", *iter, "failed. Entry Function not callable");
             dlclose(tempLibHandle);
             continue;
         }
@@ -185,7 +186,7 @@ void CAmRoutingSender::loadPlugins(const std::vector<std::string>& listOfPluginD
         InterfaceNamePairs routerInterface;
         routerInterface.routingInterface = router;
 
-        //check libversion
+        // check libversion
         std::string version, cVersion(RoutingVersion);
         router->getInterfaceVersion(version);
         uint16_t minorVersion, majorVersion, cMinorVersion, cMajorVersion;
@@ -196,12 +197,12 @@ void CAmRoutingSender::loadPlugins(const std::vector<std::string>& listOfPluginD
 
         if (majorVersion < cMajorVersion || ((majorVersion == cMajorVersion) && (minorVersion > cMinorVersion)))
         {
-            logError(__METHOD_NAME__,"Routing initialization failed. Version of Interface to old");
+            logError(__METHOD_NAME__, "Routing initialization failed. Version of Interface to old");
             dlclose(tempLibHandle);
             continue;
         }
 
-        //here, the busname is saved together with the interface. Later The domains will register with the name and sinks, sources etc with the domain....
+        // here, the busname is saved together with the interface. Later The domains will register with the name and sinks, sources etc with the domain....
         router->returnBusName(routerInterface.busName);
         assert(!routerInterface.busName.empty());
         mListInterfaces.push_back(routerInterface);
@@ -211,13 +212,13 @@ void CAmRoutingSender::loadPlugins(const std::vector<std::string>& listOfPluginD
 
 CAmRoutingSender::~CAmRoutingSender()
 {
-    //unloadLibraries();
+    // unloadLibraries();
     HandlesMap::iterator it = mlistActiveHandles.begin();
 
-    //every open handle is assumed to be an error...
+    // every open handle is assumed to be an error...
     for (; it != mlistActiveHandles.end(); ++it)
     {
-        logError(__METHOD_NAME__,"The action for the handle",it->first,"is still open");
+        logError(__METHOD_NAME__, "The action for the handle", it->first, "is still open");
     }
 }
 
@@ -226,7 +227,7 @@ am_Error_e CAmRoutingSender::startupInterfaces(CAmRoutingReceiver *iRoutingRecei
     mpRoutingReceiver = iRoutingReceiver;
     am_Error_e returnError = E_OK;
 
-    std::vector<InterfaceNamePairs>::iterator iter = mListInterfaces.begin();
+    std::vector<InterfaceNamePairs>::iterator iter    = mListInterfaces.begin();
     std::vector<InterfaceNamePairs>::iterator iterEnd = mListInterfaces.end();
     for (; iter < iterEnd; ++iter)
     {
@@ -236,410 +237,428 @@ am_Error_e CAmRoutingSender::startupInterfaces(CAmRoutingReceiver *iRoutingRecei
             returnError = error;
         }
     }
+
     return (returnError);
 }
 
-am_Error_e CAmRoutingSender::asyncAbort(const am_Handle_s& handle)
+am_Error_e CAmRoutingSender::asyncAbort(const am_Handle_s &handle)
 {
-    auto iter (mlistActiveHandles.find(handle));
+    auto iter(mlistActiveHandles.find(handle));
     if (iter == mlistActiveHandles.end())
     {
-		logError(__METHOD_NAME__,"Could not find handle",handle);
-		return (E_NON_EXISTENT);
+        logError(__METHOD_NAME__, "Could not find handle", handle);
+        return (E_NON_EXISTENT);
     }
-    logInfo(__METHOD_NAME__," handle", handle);
-	return (iter->second->returnInterface()->asyncAbort(handle));
+
+    logInfo(__METHOD_NAME__, " handle", handle);
+    return (iter->second->returnInterface()->asyncAbort(handle));
 }
 
-am_Error_e CAmRoutingSender::asyncConnect(am_Handle_s& handle, am_connectionID_t& connectionID, const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_CustomConnectionFormat_t connectionFormat)
+am_Error_e CAmRoutingSender::asyncConnect(am_Handle_s &handle, am_connectionID_t &connectionID, const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_CustomConnectionFormat_t connectionFormat)
 {
-	auto iter (mMapSinkInterface.find(sinkID));
-	if (iter == mMapSinkInterface.end())
-	{
-		logError(__METHOD_NAME__,"Could not find sink",sinkID);
-		return (E_NON_EXISTENT);
-	}
-	
-	if(handleExists(handle))
-	{
-		if (handle.handleType==am_Handle_e::H_CONNECT)
-		{
-			logInfo(__METHOD_NAME__,"Resending for handle",handle);
-		}
-		else
-		{
-			logError(__METHOD_NAME__,"Handle exists but wrong type",handle);
-			return(E_UNKNOWN);	
-		}
-	}
-	else
-	{
-		
-		am_Connection_s tempConnection;
-		tempConnection.sinkID = sinkID;
-		tempConnection.sourceID = sourceID;
-		tempConnection.connectionFormat = connectionFormat;
-		tempConnection.connectionID = 0;
-		tempConnection.delay=-1;
+    auto iter(mMapSinkInterface.find(sinkID));
+    if (iter == mMapSinkInterface.end())
+    {
+        logError(__METHOD_NAME__, "Could not find sink", sinkID);
+        return (E_NON_EXISTENT);
+    }
 
-		am_Error_e connError(mpDatabaseHandler->enterConnectionDB(tempConnection, connectionID));
-		if (connError)
-		{
-			return(connError);
-		}
-		mMapConnectionInterface.insert(std::make_pair(connectionID, iter->second));
-		auto handleData = std::make_shared<handleConnect>(iter->second,connectionID,mpDatabaseHandler);
-		handle = createHandle(handleData, am_Handle_e::H_CONNECT);
-	}
-
-    logInfo(__METHOD_NAME__,"connectionID=",connectionID,"connectionFormat=", connectionFormat, "sourceID=", sourceID, "sinkID=", sinkID,"handle=",handle);
-	am_Error_e syncError(iter->second->asyncConnect(handle, connectionID, sourceID, sinkID, connectionFormat));
-	if (syncError)
-	{
-		removeHandle(handle);
-		logError(__METHOD_NAME__,"Error while calling connect connectionID:",connectionID,"sourceID:",sourceID,"sinkID:",sinkID,"connectionFormat:",connectionFormat,"handle",handle);
-		mpDatabaseHandler->removeConnection(connectionID);
-	}
-	return(syncError); 
-}
-
-am_Error_e CAmRoutingSender::asyncDisconnect(am_Handle_s& handle, const am_connectionID_t connectionID)
-{
-	auto iter(mMapConnectionInterface.find(connectionID));
-	if (iter == mMapConnectionInterface.end())
-	{
-		logError(__METHOD_NAME__,"Could not find connection",connectionID);
-		return (E_NON_EXISTENT);	
-	}
-	
-	if(handleExists(handle))
-	{
-		if (handle.handleType==am_Handle_e::H_DISCONNECT)
-		{
-			logInfo(__METHOD_NAME__,"Resending for handle",handle);
-		}
-		else
-		{
-			logError(__METHOD_NAME__,"Handle exists but wrong type",handle);
-			return(E_UNKNOWN);	
-		}
+    if (handleExists(handle))
+    {
+        if (handle.handleType == am_Handle_e::H_CONNECT)
+        {
+            logInfo(__METHOD_NAME__, "Resending for handle", handle);
+        }
+        else
+        {
+            logError(__METHOD_NAME__, "Handle exists but wrong type", handle);
+            return(E_UNKNOWN);
+        }
     }
     else
     {
-		auto handleData = std::make_shared<handleDisconnect>(iter->second,connectionID,mpDatabaseHandler,this);
-		handle = createHandle(handleData, am_Handle_e::H_DISCONNECT);
-	}
 
-    logInfo(__METHOD_NAME__,"connectionID=", connectionID, "handle=",handle);
-	am_Error_e syncError(iter->second->asyncDisconnect(handle, connectionID));
-	if (syncError)
-	{
-		removeHandle(handle);
-		logError(__METHOD_NAME__,"Error while calling disconnect connectionID:",connectionID,"handle",handle);
-	}
-	return(syncError);
+        am_Connection_s tempConnection;
+        tempConnection.sinkID           = sinkID;
+        tempConnection.sourceID         = sourceID;
+        tempConnection.connectionFormat = connectionFormat;
+        tempConnection.connectionID     = 0;
+        tempConnection.delay            = -1;
+
+        am_Error_e connError(mpDatabaseHandler->enterConnectionDB(tempConnection, connectionID));
+        if (connError)
+        {
+            return(connError);
+        }
+
+        mMapConnectionInterface.insert(std::make_pair(connectionID, iter->second));
+        auto handleData = std::make_shared<handleConnect>(iter->second, connectionID, mpDatabaseHandler);
+        handle = createHandle(handleData, am_Handle_e::H_CONNECT);
+    }
+
+    logInfo(__METHOD_NAME__, "connectionID=", connectionID, "connectionFormat=", connectionFormat, "sourceID=", sourceID, "sinkID=", sinkID, "handle=", handle);
+    am_Error_e syncError(iter->second->asyncConnect(handle, connectionID, sourceID, sinkID, connectionFormat));
+    if (syncError)
+    {
+        removeHandle(handle);
+        logError(__METHOD_NAME__, "Error while calling connect connectionID:", connectionID, "sourceID:", sourceID, "sinkID:", sinkID, "connectionFormat:", connectionFormat, "handle", handle);
+        mpDatabaseHandler->removeConnection(connectionID);
+    }
+
+    return(syncError);
 }
 
-am_Error_e CAmRoutingSender::asyncSetSinkVolume(am_Handle_s& handle, const am_sinkID_t sinkID, const am_volume_t volume, const am_CustomRampType_t ramp, const am_time_t time)
+am_Error_e CAmRoutingSender::asyncDisconnect(am_Handle_s &handle, const am_connectionID_t connectionID)
 {
-	auto iter (mMapSinkInterface.find(sinkID));
-	if (iter == mMapSinkInterface.end())
-	{
-		logError(__METHOD_NAME__,"Could not find sink",sinkID);
-		return (E_NON_EXISTENT);
-	}
-	
-	if(handleExists(handle))
-	{
-		if (handle.handleType==am_Handle_e::H_SETSINKVOLUME)
-		{
-			logInfo(__METHOD_NAME__,"Resending for handle",handle);
-		}
-		else
-		{
-			logError(__METHOD_NAME__,"Handle exists but wrong type",handle);
-			return(E_UNKNOWN);	
-		}
+    auto iter(mMapConnectionInterface.find(connectionID));
+    if (iter == mMapConnectionInterface.end())
+    {
+        logError(__METHOD_NAME__, "Could not find connection", connectionID);
+        return (E_NON_EXISTENT);
     }
-	else
-	{
-        auto handleData = std::make_shared<handleSinkVolume>(iter->second,sinkID,mpDatabaseHandler,volume);
+
+    if (handleExists(handle))
+    {
+        if (handle.handleType == am_Handle_e::H_DISCONNECT)
+        {
+            logInfo(__METHOD_NAME__, "Resending for handle", handle);
+        }
+        else
+        {
+            logError(__METHOD_NAME__, "Handle exists but wrong type", handle);
+            return(E_UNKNOWN);
+        }
+    }
+    else
+    {
+        auto handleData = std::make_shared<handleDisconnect>(iter->second, connectionID, mpDatabaseHandler, this);
+        handle = createHandle(handleData, am_Handle_e::H_DISCONNECT);
+    }
+
+    logInfo(__METHOD_NAME__, "connectionID=", connectionID, "handle=", handle);
+    am_Error_e syncError(iter->second->asyncDisconnect(handle, connectionID));
+    if (syncError)
+    {
+        removeHandle(handle);
+        logError(__METHOD_NAME__, "Error while calling disconnect connectionID:", connectionID, "handle", handle);
+    }
+
+    return(syncError);
+}
+
+am_Error_e CAmRoutingSender::asyncSetSinkVolume(am_Handle_s &handle, const am_sinkID_t sinkID, const am_volume_t volume, const am_CustomRampType_t ramp, const am_time_t time)
+{
+    auto iter(mMapSinkInterface.find(sinkID));
+    if (iter == mMapSinkInterface.end())
+    {
+        logError(__METHOD_NAME__, "Could not find sink", sinkID);
+        return (E_NON_EXISTENT);
+    }
+
+    if (handleExists(handle))
+    {
+        if (handle.handleType == am_Handle_e::H_SETSINKVOLUME)
+        {
+            logInfo(__METHOD_NAME__, "Resending for handle", handle);
+        }
+        else
+        {
+            logError(__METHOD_NAME__, "Handle exists but wrong type", handle);
+            return(E_UNKNOWN);
+        }
+    }
+    else
+    {
+        auto handleData = std::make_shared<handleSinkVolume>(iter->second, sinkID, mpDatabaseHandler, volume);
         handle = createHandle(handleData, H_SETSINKVOLUME);
     }
-    
-    logInfo(__METHOD_NAME__,"sinkID=", sinkID, "volume=", volume, "ramp=", ramp, "time=", time,"handle=",handle);
-	am_Error_e syncError(iter->second->asyncSetSinkVolume(handle, sinkID, volume, ramp, time));
-	if (syncError)
-	{
-		removeHandle(handle);
-		logError(__METHOD_NAME__,"Error while calling asyncSetSinkVolume sinkID:",sinkID,"handle:",handle,"volume:",volume,"ramp:",ramp,"time:",time);
-	}
-	return(syncError);
+
+    logInfo(__METHOD_NAME__, "sinkID=", sinkID, "volume=", volume, "ramp=", ramp, "time=", time, "handle=", handle);
+    am_Error_e syncError(iter->second->asyncSetSinkVolume(handle, sinkID, volume, ramp, time));
+    if (syncError)
+    {
+        removeHandle(handle);
+        logError(__METHOD_NAME__, "Error while calling asyncSetSinkVolume sinkID:", sinkID, "handle:", handle, "volume:", volume, "ramp:", ramp, "time:", time);
+    }
+
+    return(syncError);
 }
 
-am_Error_e CAmRoutingSender::asyncSetSourceVolume(am_Handle_s& handle, const am_sourceID_t sourceID, const am_volume_t volume, const am_CustomRampType_t ramp, const am_time_t time)
+am_Error_e CAmRoutingSender::asyncSetSourceVolume(am_Handle_s &handle, const am_sourceID_t sourceID, const am_volume_t volume, const am_CustomRampType_t ramp, const am_time_t time)
 {
-	auto iter (mMapSourceInterface.find(sourceID));
-	if (iter == mMapSourceInterface.end())
-	{
-		logError(__METHOD_NAME__,"Could not find sourceID",sourceID);
-		return (E_NON_EXISTENT);
-	}
-	
-	if(handleExists(handle))
-	{
-		if (handle.handleType==am_Handle_e::H_SETSOURCEVOLUME)
-		{
-			logInfo(__METHOD_NAME__,"Resending for handle",handle);
-		}
-		else
-		{
-			logError(__METHOD_NAME__,"Handle exists but wrong type",handle);
-			return(E_UNKNOWN);	
-		}
+    auto iter(mMapSourceInterface.find(sourceID));
+    if (iter == mMapSourceInterface.end())
+    {
+        logError(__METHOD_NAME__, "Could not find sourceID", sourceID);
+        return (E_NON_EXISTENT);
     }
-	else
-	{
-		auto handleData = std::make_shared<handleSourceVolume>(iter->second,sourceID,mpDatabaseHandler,volume);
+
+    if (handleExists(handle))
+    {
+        if (handle.handleType == am_Handle_e::H_SETSOURCEVOLUME)
+        {
+            logInfo(__METHOD_NAME__, "Resending for handle", handle);
+        }
+        else
+        {
+            logError(__METHOD_NAME__, "Handle exists but wrong type", handle);
+            return(E_UNKNOWN);
+        }
+    }
+    else
+    {
+        auto handleData = std::make_shared<handleSourceVolume>(iter->second, sourceID, mpDatabaseHandler, volume);
         handle = createHandle(handleData, H_SETSOURCEVOLUME);
     }
-     
-    logInfo(__METHOD_NAME__,"sourceID=", sourceID,"volume=", volume, "ramp=", ramp, "time=", time,"handle=",handle);
-	am_Error_e syncError(iter->second->asyncSetSourceVolume(handle, sourceID, volume, ramp, time));
-	if (syncError)
-	{
-		removeHandle(handle);
-		logError(__METHOD_NAME__,"Error while calling asyncSetSourceVolume sourceID:",sourceID,"handle:",handle,"volume:",volume,"ramp:",ramp,"time:",time);
-	}
-	return(syncError);
+
+    logInfo(__METHOD_NAME__, "sourceID=", sourceID, "volume=", volume, "ramp=", ramp, "time=", time, "handle=", handle);
+    am_Error_e syncError(iter->second->asyncSetSourceVolume(handle, sourceID, volume, ramp, time));
+    if (syncError)
+    {
+        removeHandle(handle);
+        logError(__METHOD_NAME__, "Error while calling asyncSetSourceVolume sourceID:", sourceID, "handle:", handle, "volume:", volume, "ramp:", ramp, "time:", time);
+    }
+
+    return(syncError);
 }
 
-am_Error_e CAmRoutingSender::asyncSetSourceState(am_Handle_s& handle, const am_sourceID_t sourceID, const am_SourceState_e state)
+am_Error_e CAmRoutingSender::asyncSetSourceState(am_Handle_s &handle, const am_sourceID_t sourceID, const am_SourceState_e state)
 {
-	auto iter (mMapSourceInterface.find(sourceID));
-	if (iter == mMapSourceInterface.end())
-	{
-		logError(__METHOD_NAME__,"Could not find sourceID",sourceID);
-		return (E_NON_EXISTENT);
-	}
-	
-	if(handleExists(handle))
-	{
-		if (handle.handleType==am_Handle_e::H_SETSOURCESTATE)
-		{
-			logInfo(__METHOD_NAME__,"Resending for handle",handle);
-		}
-		else
-		{
-			logError(__METHOD_NAME__,"Handle exists but wrong type",handle);
-			return(E_UNKNOWN);	
-		}
+    auto iter(mMapSourceInterface.find(sourceID));
+    if (iter == mMapSourceInterface.end())
+    {
+        logError(__METHOD_NAME__, "Could not find sourceID", sourceID);
+        return (E_NON_EXISTENT);
     }
-	else
-	{	
-		auto handleData = std::make_shared<handleSourceState>(iter->second,sourceID,state,mpDatabaseHandler);
-		handle = createHandle(handleData, H_SETSOURCESTATE);
-	}
-    logInfo(__METHOD_NAME__,"sourceID=", sourceID, "state=", state,"handle=",handle);
-	am_Error_e syncError(iter->second->asyncSetSourceState(handle, sourceID, state));
-	if (syncError)
-	{
-		removeHandle(handle);
-		logError(__METHOD_NAME__,"Error while calling asyncSetSourceState sourceID:",sourceID,"handle:",handle,"state:",state);
-	}
-	return(syncError);
+
+    if (handleExists(handle))
+    {
+        if (handle.handleType == am_Handle_e::H_SETSOURCESTATE)
+        {
+            logInfo(__METHOD_NAME__, "Resending for handle", handle);
+        }
+        else
+        {
+            logError(__METHOD_NAME__, "Handle exists but wrong type", handle);
+            return(E_UNKNOWN);
+        }
+    }
+    else
+    {
+        auto handleData = std::make_shared<handleSourceState>(iter->second, sourceID, state, mpDatabaseHandler);
+        handle = createHandle(handleData, H_SETSOURCESTATE);
+    }
+
+    logInfo(__METHOD_NAME__, "sourceID=", sourceID, "state=", state, "handle=", handle);
+    am_Error_e syncError(iter->second->asyncSetSourceState(handle, sourceID, state));
+    if (syncError)
+    {
+        removeHandle(handle);
+        logError(__METHOD_NAME__, "Error while calling asyncSetSourceState sourceID:", sourceID, "handle:", handle, "state:", state);
+    }
+
+    return(syncError);
 }
 
-am_Error_e CAmRoutingSender::asyncSetSinkSoundProperty(am_Handle_s& handle, const am_sinkID_t sinkID, const am_SoundProperty_s & soundProperty)
+am_Error_e CAmRoutingSender::asyncSetSinkSoundProperty(am_Handle_s &handle, const am_sinkID_t sinkID, const am_SoundProperty_s &soundProperty)
 {
-	auto iter (mMapSinkInterface.find(sinkID));
-	if (iter == mMapSinkInterface.end())
-	{
-		logError(__METHOD_NAME__,"Could not find sink",sinkID);
-		return (E_NON_EXISTENT);
-	}
-	
-	if(handleExists(handle))
-	{
-		if (handle.handleType==am_Handle_e::H_SETSINKSOUNDPROPERTY)
-		{
-			logInfo(__METHOD_NAME__,"Resending for handle",handle);
-		}
-		else
-		{
-			logError(__METHOD_NAME__,"Handle exists but wrong type",handle);
-			return(E_UNKNOWN);	
-		}
+    auto iter(mMapSinkInterface.find(sinkID));
+    if (iter == mMapSinkInterface.end())
+    {
+        logError(__METHOD_NAME__, "Could not find sink", sinkID);
+        return (E_NON_EXISTENT);
     }
-	else
-	{
-		auto handleData = std::make_shared<handleSinkSoundProperty>(iter->second,sinkID,soundProperty,mpDatabaseHandler);
+
+    if (handleExists(handle))
+    {
+        if (handle.handleType == am_Handle_e::H_SETSINKSOUNDPROPERTY)
+        {
+            logInfo(__METHOD_NAME__, "Resending for handle", handle);
+        }
+        else
+        {
+            logError(__METHOD_NAME__, "Handle exists but wrong type", handle);
+            return(E_UNKNOWN);
+        }
+    }
+    else
+    {
+        auto handleData = std::make_shared<handleSinkSoundProperty>(iter->second, sinkID, soundProperty, mpDatabaseHandler);
         handle = createHandle(handleData, H_SETSINKSOUNDPROPERTY);
-     }
-     
-    logInfo(__METHOD_NAME__,"sinkID=", sinkID, "soundProperty.Type=", soundProperty.type, "soundProperty.value=", soundProperty.value,"handle=",handle);
-	am_Error_e syncError(iter->second->asyncSetSinkSoundProperty(handle, sinkID, soundProperty));
-	if (syncError)
-	{
-		removeHandle(handle);
-		logError(__METHOD_NAME__,"Error while calling asyncSetSinkSoundProperty sinkID:",sinkID,"handle:",handle,"soundProperty:",soundProperty.type,soundProperty.value);
-	}
-	return(syncError);
+    }
+
+    logInfo(__METHOD_NAME__, "sinkID=", sinkID, "soundProperty.Type=", soundProperty.type, "soundProperty.value=", soundProperty.value, "handle=", handle);
+    am_Error_e syncError(iter->second->asyncSetSinkSoundProperty(handle, sinkID, soundProperty));
+    if (syncError)
+    {
+        removeHandle(handle);
+        logError(__METHOD_NAME__, "Error while calling asyncSetSinkSoundProperty sinkID:", sinkID, "handle:", handle, "soundProperty:", soundProperty.type, soundProperty.value);
+    }
+
+    return(syncError);
 }
 
-am_Error_e CAmRoutingSender::asyncSetSourceSoundProperty(am_Handle_s& handle, const am_sourceID_t sourceID, const am_SoundProperty_s & soundProperty)
+am_Error_e CAmRoutingSender::asyncSetSourceSoundProperty(am_Handle_s &handle, const am_sourceID_t sourceID, const am_SoundProperty_s &soundProperty)
 {
-	auto iter (mMapSourceInterface.find(sourceID));
-	if (iter == mMapSourceInterface.end())
-	{
-		logError(__METHOD_NAME__,"Could not find sourceID",sourceID);
-		return (E_NON_EXISTENT);
-	}
-	
-	if(handleExists(handle))
-	{
-		if (handle.handleType==am_Handle_e::H_SETSOURCESOUNDPROPERTY)
-		{
-			logInfo(__METHOD_NAME__,"Resending for handle",handle);
-		}
-		else
-		{
-			logError(__METHOD_NAME__,"Handle exists but wrong type",handle);
-			return(E_UNKNOWN);	
-		}
+    auto iter(mMapSourceInterface.find(sourceID));
+    if (iter == mMapSourceInterface.end())
+    {
+        logError(__METHOD_NAME__, "Could not find sourceID", sourceID);
+        return (E_NON_EXISTENT);
     }
-	else
-	{		
-		auto handleData = std::make_shared<handleSourceSoundProperty>(iter->second,sourceID,soundProperty,mpDatabaseHandler);
+
+    if (handleExists(handle))
+    {
+        if (handle.handleType == am_Handle_e::H_SETSOURCESOUNDPROPERTY)
+        {
+            logInfo(__METHOD_NAME__, "Resending for handle", handle);
+        }
+        else
+        {
+            logError(__METHOD_NAME__, "Handle exists but wrong type", handle);
+            return(E_UNKNOWN);
+        }
+    }
+    else
+    {
+        auto handleData = std::make_shared<handleSourceSoundProperty>(iter->second, sourceID, soundProperty, mpDatabaseHandler);
         handle = createHandle(handleData, H_SETSOURCESOUNDPROPERTY);
     }
-    logInfo(__METHOD_NAME__,"sourceID=", sourceID, "soundProperty.Type=", soundProperty.type, "soundProperty.value=", soundProperty.value,"handle=",handle);
-	am_Error_e syncError(iter->second->asyncSetSourceSoundProperty(handle, sourceID, soundProperty));
-	if (syncError)
-	{
-		removeHandle(handle);
-		logError(__METHOD_NAME__,"Error while calling asyncSetSourceSoundProperty sourceID:",sourceID,"handle:",handle,"soundProperty:",soundProperty.type,soundProperty.value);
-	}
-	return(syncError);
+
+    logInfo(__METHOD_NAME__, "sourceID=", sourceID, "soundProperty.Type=", soundProperty.type, "soundProperty.value=", soundProperty.value, "handle=", handle);
+    am_Error_e syncError(iter->second->asyncSetSourceSoundProperty(handle, sourceID, soundProperty));
+    if (syncError)
+    {
+        removeHandle(handle);
+        logError(__METHOD_NAME__, "Error while calling asyncSetSourceSoundProperty sourceID:", sourceID, "handle:", handle, "soundProperty:", soundProperty.type, soundProperty.value);
+    }
+
+    return(syncError);
 }
 
-am_Error_e CAmRoutingSender::asyncSetSourceSoundProperties(am_Handle_s& handle, const std::vector<am_SoundProperty_s> & listSoundProperties, const am_sourceID_t sourceID)
+am_Error_e CAmRoutingSender::asyncSetSourceSoundProperties(am_Handle_s &handle, const std::vector<am_SoundProperty_s> &listSoundProperties, const am_sourceID_t sourceID)
 {
-	auto iter (mMapSourceInterface.find(sourceID));
-	if (iter == mMapSourceInterface.end())
-	{
-		logError(__METHOD_NAME__,"Could not find sourceID",sourceID);
-		return (E_NON_EXISTENT);
-	}
-	
-	if(handleExists(handle))
-	{
-		if (handle.handleType==am_Handle_e::H_SETSOURCESOUNDPROPERTIES)
-		{
-			logInfo(__METHOD_NAME__,"Resending for handle",handle);
-		}
-		else
-		{
-			logError(__METHOD_NAME__,"Handle exists but wrong type",handle);
-			return(E_UNKNOWN);	
-		}
+    auto iter(mMapSourceInterface.find(sourceID));
+    if (iter == mMapSourceInterface.end())
+    {
+        logError(__METHOD_NAME__, "Could not find sourceID", sourceID);
+        return (E_NON_EXISTENT);
     }
-	else
-	{		
-		auto handleData = std::make_shared<handleSourceSoundProperties>(iter->second,sourceID,listSoundProperties,mpDatabaseHandler);
+
+    if (handleExists(handle))
+    {
+        if (handle.handleType == am_Handle_e::H_SETSOURCESOUNDPROPERTIES)
+        {
+            logInfo(__METHOD_NAME__, "Resending for handle", handle);
+        }
+        else
+        {
+            logError(__METHOD_NAME__, "Handle exists but wrong type", handle);
+            return(E_UNKNOWN);
+        }
+    }
+    else
+    {
+        auto handleData = std::make_shared<handleSourceSoundProperties>(iter->second, sourceID, listSoundProperties, mpDatabaseHandler);
         handle = createHandle(handleData, H_SETSOURCESOUNDPROPERTIES);
     }
-     
-    logInfo(__METHOD_NAME__,"sourceID=", sourceID);
-	am_Error_e syncError(iter->second->asyncSetSourceSoundProperties(handle, sourceID, listSoundProperties));
-	if (syncError)
-	{
-		removeHandle(handle);
-		logError(__METHOD_NAME__,"Error while calling asyncSetSourceSoundProperties sourceID:",sourceID,"handle:",handle);
-	}
-	return(syncError);
+
+    logInfo(__METHOD_NAME__, "sourceID=", sourceID);
+    am_Error_e syncError(iter->second->asyncSetSourceSoundProperties(handle, sourceID, listSoundProperties));
+    if (syncError)
+    {
+        removeHandle(handle);
+        logError(__METHOD_NAME__, "Error while calling asyncSetSourceSoundProperties sourceID:", sourceID, "handle:", handle);
+    }
+
+    return(syncError);
 }
 
-am_Error_e CAmRoutingSender::asyncSetSinkSoundProperties(am_Handle_s& handle, const std::vector<am_SoundProperty_s> & listSoundProperties, const am_sinkID_t sinkID)
+am_Error_e CAmRoutingSender::asyncSetSinkSoundProperties(am_Handle_s &handle, const std::vector<am_SoundProperty_s> &listSoundProperties, const am_sinkID_t sinkID)
 {
-	auto iter (mMapSinkInterface.find(sinkID));
-	if (iter == mMapSinkInterface.end())
-	{
-		logError(__METHOD_NAME__,"Could not find sink",sinkID);
-		return (E_NON_EXISTENT);
-	}
-	
-	if(handleExists(handle))
-	{
-		if (handle.handleType==am_Handle_e::H_SETSINKSOUNDPROPERTIES)
-		{
-			logInfo(__METHOD_NAME__,"Resending for handle",handle);
-		}
-		else
-		{
-			logError(__METHOD_NAME__,"Handle exists but wrong type",handle);
-			return(E_UNKNOWN);	
-		}
+    auto iter(mMapSinkInterface.find(sinkID));
+    if (iter == mMapSinkInterface.end())
+    {
+        logError(__METHOD_NAME__, "Could not find sink", sinkID);
+        return (E_NON_EXISTENT);
     }
-	else
-	{	
-		auto handleData = std::make_shared<handleSinkSoundProperties>(iter->second,sinkID,listSoundProperties,mpDatabaseHandler);
+
+    if (handleExists(handle))
+    {
+        if (handle.handleType == am_Handle_e::H_SETSINKSOUNDPROPERTIES)
+        {
+            logInfo(__METHOD_NAME__, "Resending for handle", handle);
+        }
+        else
+        {
+            logError(__METHOD_NAME__, "Handle exists but wrong type", handle);
+            return(E_UNKNOWN);
+        }
+    }
+    else
+    {
+        auto handleData = std::make_shared<handleSinkSoundProperties>(iter->second, sinkID, listSoundProperties, mpDatabaseHandler);
         handle = createHandle(handleData, H_SETSINKSOUNDPROPERTIES);
     }
-    
-    logInfo(__METHOD_NAME__,"sinkID=", sinkID,"handle=",handle);
-	am_Error_e syncError(iter->second->asyncSetSinkSoundProperties(handle, sinkID, listSoundProperties));
-	if (syncError)
-	{
-		removeHandle(handle);
-		logError(__METHOD_NAME__,"Error while calling asyncSetSinkSoundProperties sinkID:",sinkID,"handle:",handle);
-	}
-	return(syncError);
+
+    logInfo(__METHOD_NAME__, "sinkID=", sinkID, "handle=", handle);
+    am_Error_e syncError(iter->second->asyncSetSinkSoundProperties(handle, sinkID, listSoundProperties));
+    if (syncError)
+    {
+        removeHandle(handle);
+        logError(__METHOD_NAME__, "Error while calling asyncSetSinkSoundProperties sinkID:", sinkID, "handle:", handle);
+    }
+
+    return(syncError);
 }
 
-am_Error_e CAmRoutingSender::asyncCrossFade(am_Handle_s& handle, const am_crossfaderID_t crossfaderID, const am_HotSink_e hotSink, const am_CustomRampType_t rampType, const am_time_t time)
+am_Error_e CAmRoutingSender::asyncCrossFade(am_Handle_s &handle, const am_crossfaderID_t crossfaderID, const am_HotSink_e hotSink, const am_CustomRampType_t rampType, const am_time_t time)
 {
-	auto iter (mMapCrossfaderInterface.find(crossfaderID));
-	if (iter == mMapCrossfaderInterface.end())
-	{
-		logError(__METHOD_NAME__,"Could not find crossfaderID",crossfaderID);
-		return (E_NON_EXISTENT);
-	}
-	
-	if(handleExists(handle))
-	{
-		if (handle.handleType==am_Handle_e::H_CROSSFADE)
-		{
-			logInfo(__METHOD_NAME__,"Resending for handle",handle);
-		}
-		else
-		{
-			logError(__METHOD_NAME__,"Handle exists but wrong type",handle);
-			return(E_UNKNOWN);	
-		}
+    auto iter(mMapCrossfaderInterface.find(crossfaderID));
+    if (iter == mMapCrossfaderInterface.end())
+    {
+        logError(__METHOD_NAME__, "Could not find crossfaderID", crossfaderID);
+        return (E_NON_EXISTENT);
     }
-	else
-	{	
-		auto handleData = std::make_shared<handleCrossFader>(iter->second,crossfaderID,hotSink,mpDatabaseHandler);
+
+    if (handleExists(handle))
+    {
+        if (handle.handleType == am_Handle_e::H_CROSSFADE)
+        {
+            logInfo(__METHOD_NAME__, "Resending for handle", handle);
+        }
+        else
+        {
+            logError(__METHOD_NAME__, "Handle exists but wrong type", handle);
+            return(E_UNKNOWN);
+        }
+    }
+    else
+    {
+        auto handleData = std::make_shared<handleCrossFader>(iter->second, crossfaderID, hotSink, mpDatabaseHandler);
         handle = createHandle(handleData, H_CROSSFADE);
-	}
-	
-	logInfo(__METHOD_NAME__,"hotSource=", hotSink, "crossfaderID=", crossfaderID, "rampType=", rampType, "rampTime=", time,"handle=",handle);
-	am_Error_e syncError(iter->second->asyncCrossFade(handle, crossfaderID, hotSink, rampType, time));
-	if (syncError)
-	{
-		removeHandle(handle);
-	}
-	return(syncError);
+    }
+
+    logInfo(__METHOD_NAME__, "hotSource=", hotSink, "crossfaderID=", crossfaderID, "rampType=", rampType, "rampTime=", time, "handle=", handle);
+    am_Error_e syncError(iter->second->asyncCrossFade(handle, crossfaderID, hotSink, rampType, time));
+    if (syncError)
+    {
+        removeHandle(handle);
+    }
+
+    return(syncError);
 }
 
 am_Error_e CAmRoutingSender::setDomainState(const am_domainID_t domainID, const am_DomainState_e domainState)
 {
-	logInfo(__METHOD_NAME__,"domainID=", domainID, "domainState=", domainState);
+    logInfo(__METHOD_NAME__, "domainID=", domainID, "domainState=", domainState);
     DomainInterfaceMap::iterator iter = mMapDomainInterface.begin();
     iter = mMapDomainInterface.find(domainID);
     if (iter != mMapDomainInterface.end())
+    {
         return (iter->second->setDomainState(domainID, domainState));
+    }
+
     return (E_NON_EXISTENT);
 }
 
@@ -648,9 +667,9 @@ am_Error_e CAmRoutingSender::setDomainState(const am_domainID_t domainID, const 
  * this adds the domain to the lookup table of the Router. The data is used to have a quick lookup of the correct pluginInterface.
  * This must be done whenever a domain is registered.
  */
-am_Error_e CAmRoutingSender::addDomainLookup(const am_Domain_s& domainData)
+am_Error_e CAmRoutingSender::addDomainLookup(const am_Domain_s &domainData)
 {
-    std::vector<InterfaceNamePairs>::iterator iter = mListInterfaces.begin();
+    std::vector<InterfaceNamePairs>::iterator iter    = mListInterfaces.begin();
     std::vector<InterfaceNamePairs>::iterator iterEnd = mListInterfaces.end();
     for (; iter < iterEnd; ++iter)
     {
@@ -660,7 +679,8 @@ am_Error_e CAmRoutingSender::addDomainLookup(const am_Domain_s& domainData)
             return (E_OK);
         }
     }
-    logError(__PRETTY_FUNCTION__," Could not find busname for bus",domainData.busname);
+
+    logError(__PRETTY_FUNCTION__, " Could not find busname for bus", domainData.busname);
     return (E_UNKNOWN);
 }
 
@@ -669,7 +689,7 @@ am_Error_e CAmRoutingSender::addDomainLookup(const am_Domain_s& domainData)
  * this adds the Source to the lookup table of the Router. The data is used to have a quick lookup of the correct pluginInterface.
  * This must be done whenever a Source is registered.
  */
-am_Error_e CAmRoutingSender::addSourceLookup(const am_Source_s& sourceData)
+am_Error_e CAmRoutingSender::addSourceLookup(const am_Source_s &sourceData)
 {
     DomainInterfaceMap::iterator iter = mMapDomainInterface.begin();
     iter = mMapDomainInterface.find(sourceData.domainID);
@@ -678,7 +698,8 @@ am_Error_e CAmRoutingSender::addSourceLookup(const am_Source_s& sourceData)
         mMapSourceInterface.insert(std::make_pair(sourceData.sourceID, iter->second));
         return (E_OK);
     }
-    logError(__PRETTY_FUNCTION__," Could not find domainInterface for domainID",sourceData.domainID);
+
+    logError(__PRETTY_FUNCTION__, " Could not find domainInterface for domainID", sourceData.domainID);
     return (E_UNKNOWN);
 }
 
@@ -687,7 +708,7 @@ am_Error_e CAmRoutingSender::addSourceLookup(const am_Source_s& sourceData)
  * this adds the Sink to the lookup table of the Router. The data is used to have a quick lookup of the correct pluginInterface.
  * This must be done whenever a Sink is registered.
  */
-am_Error_e CAmRoutingSender::addSinkLookup(const am_Sink_s& sinkData)
+am_Error_e CAmRoutingSender::addSinkLookup(const am_Sink_s &sinkData)
 {
     DomainInterfaceMap::iterator iter = mMapDomainInterface.begin();
     iter = mMapDomainInterface.find(sinkData.domainID);
@@ -696,7 +717,8 @@ am_Error_e CAmRoutingSender::addSinkLookup(const am_Sink_s& sinkData)
         mMapSinkInterface.insert(std::make_pair(sinkData.sinkID, iter->second));
         return (E_OK);
     }
-    logError(__PRETTY_FUNCTION__,"Could not find domainInterface for domainID",sinkData.domainID);
+
+    logError(__PRETTY_FUNCTION__, "Could not find domainInterface for domainID", sinkData.domainID);
     return (E_UNKNOWN);
 }
 
@@ -705,7 +727,7 @@ am_Error_e CAmRoutingSender::addSinkLookup(const am_Sink_s& sinkData)
  * this adds the Crossfader to the lookup table of the Router. The data is used to have a quick lookup of the correct pluginInterface.
  * This must be done whenever a Crossfader is registered.
  */
-am_Error_e CAmRoutingSender::addCrossfaderLookup(const am_Crossfader_s& crossfaderData)
+am_Error_e CAmRoutingSender::addCrossfaderLookup(const am_Crossfader_s &crossfaderData)
 {
     DomainInterfaceMap::iterator iter = mMapSourceInterface.begin();
     iter = mMapSourceInterface.find(crossfaderData.sourceID);
@@ -714,7 +736,8 @@ am_Error_e CAmRoutingSender::addCrossfaderLookup(const am_Crossfader_s& crossfad
         mMapSourceInterface.insert(std::make_pair(crossfaderData.crossfaderID, iter->second));
         return (E_OK);
     }
-    logError(__PRETTY_FUNCTION__," Could not find sourceInterface for source",crossfaderData.sourceID);
+
+    logError(__PRETTY_FUNCTION__, " Could not find sourceInterface for source", crossfaderData.sourceID);
     return (E_UNKNOWN);
 }
 
@@ -791,17 +814,18 @@ am_Error_e CAmRoutingSender::removeCrossfaderLookup(const am_crossfaderID_t cros
  * @param handle to be removed
  * @return E_OK in case of success
  */
-am_Error_e CAmRoutingSender::removeHandle(const am_Handle_s& handle)
+am_Error_e CAmRoutingSender::removeHandle(const am_Handle_s &handle)
 {
     if (mlistActiveHandles.erase(handle))
     {
         return (E_OK);
     }
-    logError(__METHOD_NAME__,"Could not remove handle",handle.handle);
+
+    logError(__METHOD_NAME__, "Could not remove handle", handle.handle);
     return (E_NON_EXISTENT);
 }
 
-am_Error_e CAmRoutingSender::getListHandles(std::vector<am_Handle_s> & listHandles) const
+am_Error_e CAmRoutingSender::getListHandles(std::vector<am_Handle_s> &listHandles) const
 {
     listHandles.clear();
     HandlesMap::const_iterator it = mlistActiveHandles.begin();
@@ -809,6 +833,7 @@ am_Error_e CAmRoutingSender::getListHandles(std::vector<am_Handle_s> & listHandl
     {
         listHandles.push_back(it->first);
     }
+
     return (E_OK);
 }
 
@@ -822,30 +847,32 @@ am_Handle_s CAmRoutingSender::createHandle(std::shared_ptr<handleDataBase> handl
 {
     am_Handle_s handle;
     handle.handleType = type;
-	
-	for (int checkOverflow=0;checkOverflow<1024;checkOverflow++)
-	{
-		if (++mHandleCount>=1024) //defined by 10 bit (out if structure!)
-		{
-			mHandleCount=1;
-		}
-		handle.handle = mHandleCount;
-		
-		if ( mlistActiveHandles.find(handle) == mlistActiveHandles.end() ) 
-		{
-			mlistActiveHandles.insert(std::make_pair(handle, handleData));
-			if (mlistActiveHandles.size()>100)
-			{
-				logWarning(__METHOD_NAME__,"too many open handles, number of handles: ", mlistActiveHandles.size());
-			}
-			logInfo(__METHOD_NAME__,handle.handle, handle.handleType);
-			return (handle);
-		}
+
+    for (int checkOverflow = 0; checkOverflow < 1024; checkOverflow++)
+    {
+        if (++mHandleCount >= 1024) // defined by 10 bit (out if structure!)
+        {
+            mHandleCount = 1;
+        }
+
+        handle.handle = mHandleCount;
+
+        if ( mlistActiveHandles.find(handle) == mlistActiveHandles.end())
+        {
+            mlistActiveHandles.insert(std::make_pair(handle, handleData));
+            if (mlistActiveHandles.size() > 100)
+            {
+                logWarning(__METHOD_NAME__, "too many open handles, number of handles: ", mlistActiveHandles.size());
+            }
+
+            logInfo(__METHOD_NAME__, handle.handle, handle.handleType);
+            return (handle);
+        }
     }
-    
-    logError(__METHOD_NAME__,"could not create new handle, all handles in use!");
-    handle.handle=0;
-    
+
+    logError(__METHOD_NAME__, "could not create new handle, all handles in use!");
+    handle.handle = 0;
+
     return(handle);
 }
 
@@ -853,19 +880,19 @@ void CAmRoutingSender::setRoutingReady()
 {
     mpRoutingReceiver->waitOnStartup(false);
 
-    //create a list of handles
+    // create a list of handles
     std::vector<uint16_t> listStartupHandles;
     for (size_t i = 0; i < mListInterfaces.size(); i++)
     {
         listStartupHandles.push_back(mpRoutingReceiver->getStartupHandle());
     }
 
-    //set the receiver ready to wait for replies
+    // set the receiver ready to wait for replies
     mpRoutingReceiver->waitOnStartup(true);
 
-    std::vector<InterfaceNamePairs>::iterator iter = mListInterfaces.begin();
+    std::vector<InterfaceNamePairs>::iterator iter    = mListInterfaces.begin();
     std::vector<InterfaceNamePairs>::iterator iterEnd = mListInterfaces.end();
-    std::vector<uint16_t>::const_iterator handleIter(listStartupHandles.begin());
+    std::vector<uint16_t>::const_iterator     handleIter(listStartupHandles.begin());
     for (; iter < iterEnd; ++iter)
     {
         (*iter).routingInterface->setRoutingReady(*(handleIter++));
@@ -875,301 +902,328 @@ void CAmRoutingSender::setRoutingReady()
 void CAmRoutingSender::setRoutingRundown()
 {
     mpRoutingReceiver->waitOnRundown(false);
-    //create a list of handles
+    // create a list of handles
     std::vector<uint16_t> listStartupHandles;
     for (size_t i = 0; i < mListInterfaces.size(); i++)
     {
         listStartupHandles.push_back(mpRoutingReceiver->getRundownHandle());
     }
 
-    //set the receiver ready to wait for replies
+    // set the receiver ready to wait for replies
     mpRoutingReceiver->waitOnRundown(true);
 
-    std::vector<InterfaceNamePairs>::iterator iter = mListInterfaces.begin();
+    std::vector<InterfaceNamePairs>::iterator iter    = mListInterfaces.begin();
     std::vector<InterfaceNamePairs>::iterator iterEnd = mListInterfaces.end();
-    std::vector<uint16_t>::const_iterator handleIter(listStartupHandles.begin());
+    std::vector<uint16_t>::const_iterator     handleIter(listStartupHandles.begin());
     for (; iter < iterEnd; ++iter)
     {
         (*iter).routingInterface->setRoutingRundown(*(handleIter++));
     }
 }
 
-am_Error_e CAmRoutingSender::asyncSetVolumes(am_Handle_s& handle, const std::vector<am_Volumes_s>& listVolumes)
+am_Error_e CAmRoutingSender::asyncSetVolumes(am_Handle_s &handle, const std::vector<am_Volumes_s> &listVolumes)
 {
-    IAmRoutingSend* pRoutingInterface(NULL);
+    IAmRoutingSend *pRoutingInterface(NULL);
     if (listVolumes.empty())
-        return (E_NOT_POSSIBLE);
-
-    //we need an interface so lets get either the sink or source ID from the first entry in the listVolumes
-    if (listVolumes[0].volumeType==VT_SINK)
     {
-        am_sinkID_t sinkID=listVolumes[0].volumeID.sink;
-        SinkInterfaceMap::iterator iter = mMapSinkInterface.begin();
-        iter = mMapSinkInterface.find(sinkID);
-        if(iter!=mMapSinkInterface.end())
-            pRoutingInterface=iter->second;
-        else
-            return(E_NON_EXISTENT);
+        return (E_NOT_POSSIBLE);
     }
 
-    else if (listVolumes[0].volumeType==VT_SOURCE)
+    // we need an interface so lets get either the sink or source ID from the first entry in the listVolumes
+    if (listVolumes[0].volumeType == VT_SINK)
     {
-        am_sourceID_t sourceID=listVolumes[0].volumeID.source;
-        SourceInterfaceMap::iterator iter = mMapSourceInterface.begin();
-        iter = mMapSourceInterface.find(sourceID);
-        if (iter!=mMapSourceInterface.end())
-            pRoutingInterface=iter->second;
+        am_sinkID_t                sinkID = listVolumes[0].volumeID.sink;
+        SinkInterfaceMap::iterator iter   = mMapSinkInterface.begin();
+        iter = mMapSinkInterface.find(sinkID);
+        if (iter != mMapSinkInterface.end())
+        {
+            pRoutingInterface = iter->second;
+        }
         else
+        {
             return(E_NON_EXISTENT);
+        }
+    }
+    else if (listVolumes[0].volumeType == VT_SOURCE)
+    {
+        am_sourceID_t                sourceID = listVolumes[0].volumeID.source;
+        SourceInterfaceMap::iterator iter     = mMapSourceInterface.begin();
+        iter = mMapSourceInterface.find(sourceID);
+        if (iter != mMapSourceInterface.end())
+        {
+            pRoutingInterface = iter->second;
+        }
+        else
+        {
+            return(E_NON_EXISTENT);
+        }
     }
     else
+    {
         return (E_NON_EXISTENT);
+    }
 
-	auto handleData = std::make_shared<handleSetVolumes>(pRoutingInterface,listVolumes,mpDatabaseHandler);
+    auto handleData = std::make_shared<handleSetVolumes>(pRoutingInterface, listVolumes, mpDatabaseHandler);
     handle = createHandle(handleData, H_SETVOLUMES);
 
     logInfo(__METHOD_NAME__, "handle=", handle);
     am_Error_e syncError(pRoutingInterface->asyncSetVolumes(handle, listVolumes));
     if (syncError)
-	{
-		removeHandle(handle);
-	}
-	return(syncError);
+    {
+        removeHandle(handle);
+    }
+
+    return(syncError);
 
 }
 
-am_Error_e CAmRoutingSender::asyncSetSinkNotificationConfiguration(am_Handle_s& handle, const am_sinkID_t sinkID, const am_NotificationConfiguration_s& notificationConfiguration)
+am_Error_e CAmRoutingSender::asyncSetSinkNotificationConfiguration(am_Handle_s &handle, const am_sinkID_t sinkID, const am_NotificationConfiguration_s &notificationConfiguration)
 {
-	auto iter (mMapSinkInterface.find(sinkID));
-	if (iter == mMapSinkInterface.end())
-	{
-		logError(__METHOD_NAME__,"Could not find sink",sinkID);
-		return (E_NON_EXISTENT);
-	}
-	
-	if(handleExists(handle))
-	{
-		if (handle.handleType==am_Handle_e::H_SETSINKNOTIFICATION)
-		{
-			logInfo(__METHOD_NAME__,"Resending for handle",handle);
-		}
-		else
-		{
-			logError(__METHOD_NAME__,"Handle exists but wrong type",handle);
-			return(E_UNKNOWN);	
-		}
+    auto iter(mMapSinkInterface.find(sinkID));
+    if (iter == mMapSinkInterface.end())
+    {
+        logError(__METHOD_NAME__, "Could not find sink", sinkID);
+        return (E_NON_EXISTENT);
     }
-	else
-	{	
-		auto handleData = std::make_shared<handleSetSinkNotificationConfiguration>(iter->second,sinkID,notificationConfiguration,mpDatabaseHandler);
+
+    if (handleExists(handle))
+    {
+        if (handle.handleType == am_Handle_e::H_SETSINKNOTIFICATION)
+        {
+            logInfo(__METHOD_NAME__, "Resending for handle", handle);
+        }
+        else
+        {
+            logError(__METHOD_NAME__, "Handle exists but wrong type", handle);
+            return(E_UNKNOWN);
+        }
+    }
+    else
+    {
+        auto handleData = std::make_shared<handleSetSinkNotificationConfiguration>(iter->second, sinkID, notificationConfiguration, mpDatabaseHandler);
         handle = createHandle(handleData, H_SETSINKNOTIFICATION);
     }
 
-    logInfo(__METHOD_NAME__,"sinkID=",sinkID,"notificationConfiguration.type=",notificationConfiguration.type,"notificationConfiguration.status",notificationConfiguration.status,"notificationConfiguration.parameter",notificationConfiguration.parameter);
-	am_Error_e syncError(iter->second->asyncSetSinkNotificationConfiguration(handle, sinkID, notificationConfiguration));
-	if (syncError)
-	{
-		removeHandle(handle);
-		logError(__METHOD_NAME__,"Error while calling asyncSetSinkNotificationConfiguration sinkID:",sinkID,"handle:",handle);
-	}
-	return(syncError);
+    logInfo(__METHOD_NAME__, "sinkID=", sinkID, "notificationConfiguration.type=", notificationConfiguration.type, "notificationConfiguration.status", notificationConfiguration.status, "notificationConfiguration.parameter", notificationConfiguration.parameter);
+    am_Error_e syncError(iter->second->asyncSetSinkNotificationConfiguration(handle, sinkID, notificationConfiguration));
+    if (syncError)
+    {
+        removeHandle(handle);
+        logError(__METHOD_NAME__, "Error while calling asyncSetSinkNotificationConfiguration sinkID:", sinkID, "handle:", handle);
+    }
+
+    return(syncError);
 }
 
-am_Error_e CAmRoutingSender::asyncSetSourceNotificationConfiguration(am_Handle_s& handle, const am_sourceID_t sourceID, const am_NotificationConfiguration_s& notificationConfiguration)
+am_Error_e CAmRoutingSender::asyncSetSourceNotificationConfiguration(am_Handle_s &handle, const am_sourceID_t sourceID, const am_NotificationConfiguration_s &notificationConfiguration)
 {
-	auto iter (mMapSourceInterface.find(sourceID));
-	if (iter == mMapSourceInterface.end())
-	{
-		logError(__METHOD_NAME__,"Could not find sourceID",sourceID);
-		return (E_NON_EXISTENT);
-	}
-	
-	if(handleExists(handle))
-	{
-		if (handle.handleType==am_Handle_e::H_SETSOURCENOTIFICATION)
-		{
-			logInfo(__METHOD_NAME__,"Resending for handle",handle);
-		}
-		else
-		{
-			logError(__METHOD_NAME__,"Handle exists but wrong type",handle);
-			return(E_UNKNOWN);	
-		}
+    auto iter(mMapSourceInterface.find(sourceID));
+    if (iter == mMapSourceInterface.end())
+    {
+        logError(__METHOD_NAME__, "Could not find sourceID", sourceID);
+        return (E_NON_EXISTENT);
     }
-	else
-	{	
-		auto handleData = std::make_shared<handleSetSourceNotificationConfiguration>(iter->second,sourceID,notificationConfiguration,mpDatabaseHandler);
+
+    if (handleExists(handle))
+    {
+        if (handle.handleType == am_Handle_e::H_SETSOURCENOTIFICATION)
+        {
+            logInfo(__METHOD_NAME__, "Resending for handle", handle);
+        }
+        else
+        {
+            logError(__METHOD_NAME__, "Handle exists but wrong type", handle);
+            return(E_UNKNOWN);
+        }
+    }
+    else
+    {
+        auto handleData = std::make_shared<handleSetSourceNotificationConfiguration>(iter->second, sourceID, notificationConfiguration, mpDatabaseHandler);
         handle = createHandle(handleData, H_SETSOURCENOTIFICATION);
     }
 
-    logInfo(__METHOD_NAME__,"sourceID=",sourceID,"notificationConfiguration.type=",notificationConfiguration.type,"notificationConfiguration.status",notificationConfiguration.status,"notificationConfiguration.parameter",notificationConfiguration.parameter);
-	am_Error_e syncError(iter->second->asyncSetSourceNotificationConfiguration(handle, sourceID, notificationConfiguration));
-	if (syncError)
-	{
-		removeHandle(handle);
-		logError(__METHOD_NAME__,"Error while calling asyncSetSourceNotificationConfiguration sourceID:",sourceID,"handle:",handle);
-	}
-	return(syncError);
+    logInfo(__METHOD_NAME__, "sourceID=", sourceID, "notificationConfiguration.type=", notificationConfiguration.type, "notificationConfiguration.status", notificationConfiguration.status, "notificationConfiguration.parameter", notificationConfiguration.parameter);
+    am_Error_e syncError(iter->second->asyncSetSourceNotificationConfiguration(handle, sourceID, notificationConfiguration));
+    if (syncError)
+    {
+        removeHandle(handle);
+        logError(__METHOD_NAME__, "Error while calling asyncSetSourceNotificationConfiguration sourceID:", sourceID, "handle:", handle);
+    }
+
+    return(syncError);
 }
 
 void CAmRoutingSender::unloadLibraries(void)
 {
-    std::vector<void*>::iterator iterator = mListLibraryHandles.begin();
+    std::vector<void *>::iterator iterator = mListLibraryHandles.begin();
     for (; iterator < mListLibraryHandles.end(); ++iterator)
     {
         dlclose(*iterator);
     }
+
     mListLibraryHandles.clear();
 }
 
-am_Error_e CAmRoutingSender::getListPlugins(std::vector<std::string>& interfaces) const
+am_Error_e CAmRoutingSender::getListPlugins(std::vector<std::string> &interfaces) const
 {
     std::vector<InterfaceNamePairs>::const_iterator it = mListInterfaces.begin();
     for (; it != mListInterfaces.end(); ++it)
     {
         interfaces.push_back(it->busName);
     }
+
     return (E_OK);
 }
 
-void CAmRoutingSender::getInterfaceVersion(std::string & version) const
+void CAmRoutingSender::getInterfaceVersion(std::string &version) const
 {
     version = RoutingVersion;
 }
-am_Error_e CAmRoutingSender::resyncConnectionState(const am_domainID_t domainID,std::vector<am_Connection_s>& listOfExistingConnections)
+
+am_Error_e CAmRoutingSender::resyncConnectionState(const am_domainID_t domainID, std::vector<am_Connection_s> &listOfExistingConnections)
 {
     DomainInterfaceMap::iterator iter = mMapDomainInterface.begin();
     iter = mMapDomainInterface.find(domainID);
     if (iter != mMapDomainInterface.end())
+    {
         return (iter->second->resyncConnectionState(domainID, listOfExistingConnections));
+    }
+
     return (E_NON_EXISTENT);
 }
 
 am_Error_e CAmRoutingSender::writeToDatabaseAndRemove(const am_Handle_s handle)
 {
     auto it(mlistActiveHandles.find(handle));
-    if (it!=mlistActiveHandles.end())
+    if (it != mlistActiveHandles.end())
     {
-    	am_Error_e error(it->second->writeDataToDatabase());
-    	mlistActiveHandles.erase(handle);
+        am_Error_e error(it->second->writeDataToDatabase());
+        mlistActiveHandles.erase(handle);
         return (error);
     }
-    logError(__METHOD_NAME__,"could not find handle data for handle",handle);
-    return (am_Error_e::E_NON_EXISTENT);	
+
+    logError(__METHOD_NAME__, "could not find handle data for handle", handle);
+    return (am_Error_e::E_NON_EXISTENT);
 }
 
 void CAmRoutingSender::checkVolume(const am_Handle_s handle, const am_volume_t volume)
 {
     auto it(mlistActiveHandles.find(handle));
-    if (it!=mlistActiveHandles.end())
+    if (it != mlistActiveHandles.end())
     {
-		handleVolumeBase* basePtr = static_cast<handleVolumeBase*>(it->second.get());
-    	if (basePtr->returnVolume()!=volume)
-    	{	
-			logError(__METHOD_NAME__,"volume returned for handle does not match: ",volume,"expected:",basePtr->returnVolume());
-		}	
-    	return;
+        handleVolumeBase *basePtr = static_cast<handleVolumeBase *>(it->second.get());
+        if (basePtr->returnVolume() != volume)
+        {
+            logError(__METHOD_NAME__, "volume returned for handle does not match: ", volume, "expected:", basePtr->returnVolume());
+        }
+
+        return;
     }
-    logError(__METHOD_NAME__,"could not find handle data for handle",handle);
+
+    logError(__METHOD_NAME__, "could not find handle data for handle", handle);
 }
 
 bool CAmRoutingSender::handleExists(const am_Handle_s handle)
 {
     auto iter(mlistActiveHandles.find(handle));
-    if (iter!=mlistActiveHandles.end())
+    if (iter != mlistActiveHandles.end())
     {
-		return (true);
-	}
-	return (false);
+        return (true);
+    }
+
+    return (false);
 }
 
 am_Error_e CAmRoutingSender::handleSinkSoundProperty::writeDataToDatabase()
 {
-	return (mpDatabaseHandler->changeSinkSoundPropertyDB(mSoundProperty,mSinkID));
+    return (mpDatabaseHandler->changeSinkSoundPropertyDB(mSoundProperty, mSinkID));
 }
 
 am_Error_e CAmRoutingSender::handleSinkSoundProperties::writeDataToDatabase()
 {
-	std::vector<am_SoundProperty_s>::const_iterator it = mlistSoundProperties.begin();
-	for (; it != mlistSoundProperties.end(); ++it)
-	{
-		mpDatabaseHandler->changeSinkSoundPropertyDB(*it, mSinkID);
-	}
-	return (am_Error_e::E_OK);
+    std::vector<am_SoundProperty_s>::const_iterator it = mlistSoundProperties.begin();
+    for (; it != mlistSoundProperties.end(); ++it)
+    {
+        mpDatabaseHandler->changeSinkSoundPropertyDB(*it, mSinkID);
+    }
+
+    return (am_Error_e::E_OK);
 }
 
 am_Error_e CAmRoutingSender::handleSourceSoundProperty::writeDataToDatabase()
 {
-	return (mpDatabaseHandler->changeSourceSoundPropertyDB(mSoundProperty,mSourceID));
+    return (mpDatabaseHandler->changeSourceSoundPropertyDB(mSoundProperty, mSourceID));
 }
 
 am_Error_e CAmRoutingSender::handleSourceSoundProperties::writeDataToDatabase()
 {
-	std::vector<am_SoundProperty_s>::const_iterator it = mlistSoundProperties.begin();
-	for (; it != mlistSoundProperties.end(); ++it)
-	{
-		mpDatabaseHandler->changeSourceSoundPropertyDB(*it, mSourceID);
-	}
-	return (am_Error_e::E_OK);
+    std::vector<am_SoundProperty_s>::const_iterator it = mlistSoundProperties.begin();
+    for (; it != mlistSoundProperties.end(); ++it)
+    {
+        mpDatabaseHandler->changeSourceSoundPropertyDB(*it, mSourceID);
+    }
+
+    return (am_Error_e::E_OK);
 }
 
 am_Error_e CAmRoutingSender::handleSourceState::writeDataToDatabase()
 {
-	return (mpDatabaseHandler->changeSourceState(mSourceID,mSourceState));
+    return (mpDatabaseHandler->changeSourceState(mSourceID, mSourceState));
 }
 
 am_Error_e CAmRoutingSender::handleSourceVolume::writeDataToDatabase()
 {
-	return (mpDatabaseHandler->changeSourceVolume(mSourceID,returnVolume()));
+    return (mpDatabaseHandler->changeSourceVolume(mSourceID, returnVolume()));
 }
 
 am_Error_e CAmRoutingSender::handleSinkVolume::writeDataToDatabase()
 {
-	return (mpDatabaseHandler->changeSinkVolume(mSinkID,returnVolume()));
+    return (mpDatabaseHandler->changeSinkVolume(mSinkID, returnVolume()));
 }
 
 am_Error_e CAmRoutingSender::handleCrossFader::writeDataToDatabase()
 {
-	return (mpDatabaseHandler->changeCrossFaderHotSink(mCrossfaderID, mHotSink));
+    return (mpDatabaseHandler->changeCrossFaderHotSink(mCrossfaderID, mHotSink));
 }
 
 am_Error_e CAmRoutingSender::handleConnect::writeDataToDatabase()
 {
-	mConnectionPending = false;
-	return (mpDatabaseHandler->changeConnectionFinal(mConnectionID));
+    mConnectionPending = false;
+    return (mpDatabaseHandler->changeConnectionFinal(mConnectionID));
 }
 
 am_Error_e CAmRoutingSender::handleDisconnect::writeDataToDatabase()
 {
-	return E_OK;
+    return E_OK;
 }
 
 am_Error_e CAmRoutingSender::handleSetVolumes::writeDataToDatabase()
 {
-	std::vector<am_Volumes_s>::const_iterator iterator (mlistVolumes.begin());
+    std::vector<am_Volumes_s>::const_iterator iterator(mlistVolumes.begin());
 
-	for (;iterator!=mlistVolumes.end();++iterator)
-	{
-		if (iterator->volumeType==VT_SINK)
-		{
-			return (mpDatabaseHandler->changeSinkVolume(iterator->volumeID.sink,iterator->volume));
-		}
-		else if (iterator->volumeType==VT_SOURCE)
-		{
-			return (mpDatabaseHandler->changeSourceVolume(iterator->volumeID.source,iterator->volume));
-		}
-	}
-	return (am_Error_e::E_WRONG_FORMAT);
+    for (; iterator != mlistVolumes.end(); ++iterator)
+    {
+        if (iterator->volumeType == VT_SINK)
+        {
+            return (mpDatabaseHandler->changeSinkVolume(iterator->volumeID.sink, iterator->volume));
+        }
+        else if (iterator->volumeType == VT_SOURCE)
+        {
+            return (mpDatabaseHandler->changeSourceVolume(iterator->volumeID.source, iterator->volume));
+        }
+    }
+
+    return (am_Error_e::E_WRONG_FORMAT);
 }
 
 am_Error_e CAmRoutingSender::handleSetSinkNotificationConfiguration::writeDataToDatabase()
 {
-	return (mpDatabaseHandler->changeSinkNotificationConfigurationDB(mSinkID,mNotificationConfiguration));
+    return (mpDatabaseHandler->changeSinkNotificationConfigurationDB(mSinkID, mNotificationConfiguration));
 }
 
 am_Error_e CAmRoutingSender::handleSetSourceNotificationConfiguration::writeDataToDatabase()
 {
-	return (mpDatabaseHandler->changeSourceNotificationConfigurationDB(mSourceID,mNotificationConfiguration));
+    return (mpDatabaseHandler->changeSourceNotificationConfigurationDB(mSourceID, mNotificationConfiguration));
 }
 
 am_Error_e CAmRoutingSender::removeConnectionLookup(const am_connectionID_t connectionID)
@@ -1181,21 +1235,21 @@ am_Error_e CAmRoutingSender::removeConnectionLookup(const am_connectionID_t conn
         mMapConnectionInterface.erase(iter);
         return (E_OK);
     }
+
     return (E_UNKNOWN);
 }
 
 CAmRoutingSender::handleConnect::~handleConnect()
 {
-	if (mConnectionPending)
-	{
-		mpDatabaseHandler->removeConnection(mConnectionID);
-	}
+    if (mConnectionPending)
+    {
+        mpDatabaseHandler->removeConnection(mConnectionID);
+    }
 }
 
 CAmRoutingSender::handleDisconnect::~handleDisconnect()
 {
-	mpDatabaseHandler->removeConnection(mConnectionID);
+    mpDatabaseHandler->removeConnection(mConnectionID);
 }
 
 }
-
