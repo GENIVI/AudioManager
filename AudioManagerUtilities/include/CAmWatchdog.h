@@ -35,15 +35,16 @@ namespace am
 class CAmWatchdog
 {
 public:
-    CAmWatchdog(CAmSocketHandler* CAmSocketHandler);
+    CAmWatchdog(CAmSocketHandler *CAmSocketHandler);
     virtual ~CAmWatchdog();
-    void startWatchdog(); //!< starts the watchdog by sending ready to systemD
-    void timerCallback(sh_timerHandle_t handle, void * userData); //!< the watchdog timer callback
+    void startWatchdog();                                        //!< starts the watchdog by sending ready to systemD
+    void timerCallback(sh_timerHandle_t handle, void *userData); //!< the watchdog timer callback
+
     TAmShTimerCallBack<CAmWatchdog> TimerCallback;
 
 private:
-    CAmSocketHandler* mpCAmSocketHandler; //!< pointer to the sockethandler
-    sh_timerHandle_t mHandle; //!< handle of the timer
+    CAmSocketHandler *mpCAmSocketHandler; //!< pointer to the sockethandler
+    sh_timerHandle_t  mHandle;            //!< handle of the timer
 };
 
 } /* namespace am */

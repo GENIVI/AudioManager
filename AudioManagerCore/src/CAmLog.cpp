@@ -23,79 +23,84 @@
 
 #include "CAmLog.h"
 
-
 void CAmLog::CAmFileLogger::generateLogFilename(std::string &result)
 {
-	static uint32_t logFileID = 1;
-	time_t rawtime;
-	time (&rawtime);
+    static uint32_t logFileID = 1;
+    time_t          rawtime;
+    time(&rawtime);
 
-	std::ostringstream stream;
-	stream << DEFAULT_LOG_FOLDER << DEFAULT_LOGFILE_PREFIX << logFileID << "_" << rawtime << DEFAULT_LOGFILE_EXT;
-	logFileID++;
-	result =  stream.str();
+    std::ostringstream stream;
+    stream << DEFAULT_LOG_FOLDER << DEFAULT_LOGFILE_PREFIX << logFileID << "_" << rawtime << DEFAULT_LOGFILE_EXT;
+    logFileID++;
+    result = stream.str();
 }
 
 CAmLog::CAmFileLogger::~CAmFileLogger()
 {
-	if (mOutputStream)
-	{
-		std::ofstream* of = static_cast<std::ofstream*>(mOutputStream);
-		of->close();
-		DEL(mOutputStream);
-	}
+    if (mOutputStream)
+    {
+        std::ofstream *of = static_cast<std::ofstream *>(mOutputStream);
+        of->close();
+        DEL(mOutputStream);
+    }
 }
 
-CAmLog::CAmLog(const eCAmLogType type ):mLogType(type)
+CAmLog::CAmLog(const eCAmLogType type)
+    : mLogType(type)
 {
-	instantiateLogger(type);
+    instantiateLogger(type);
 }
 
-CAmLog::CAmLog():mLogType(eCAmLogStdout)
+CAmLog::CAmLog()
+    : mLogType(eCAmLogStdout)
 {
-	instantiateLogger((const eCAmLogType)eCAmLogStdout);
+    instantiateLogger((const eCAmLogType)eCAmLogStdout);
 }
 
 CAmLog::~CAmLog()
 {
-	releaseLogger();
+    releaseLogger();
 }
 
 void CAmLog::releaseLogger()
 {
-	if(mLogger)
-		DEL(mLogger);
+    if (mLogger)
+    {
+        DEL(mLogger);
+    }
 }
 
-void CAmLog::instantiateLogger( const eCAmLogType type)
+void CAmLog::instantiateLogger(const eCAmLogType type)
 {
-	if( eCAmLogStdout == type )
-		mLogger = new CAmStdOutLogger();
-	else if( eCAmLogFile == type )
-	{
-		std::string filename("");
-		CAmLog::CAmFileLogger::generateLogFilename(filename);
-		mLogger = new CAmFileLogger(filename);
-	}
+    if ( eCAmLogStdout == type )
+    {
+        mLogger = new CAmStdOutLogger();
+    }
+    else if ( eCAmLogFile == type )
+    {
+        std::string filename("");
+        CAmLog::CAmFileLogger::generateLogFilename(filename);
+        mLogger = new CAmFileLogger(filename);
+    }
 }
 
 CAmLog *CAmLog::getDefaultLog()
 {
-	static CAmLog theInstance;
-	return &theInstance;
+    static CAmLog theInstance;
+    return &theInstance;
 }
 
-void CAmLog::setLogType( const eCAmLogType type)
+void CAmLog::setLogType(const eCAmLogType type)
 {
-	if(mLogType!=type)
-	{
-		mLogType = type;
-		releaseLogger();
-		instantiateLogger(type);
-	}
+    if (mLogType != type)
+    {
+        mLogType = type;
+        releaseLogger();
+        instantiateLogger(type);
+    }
 }
 
 eCAmLogType CAmLog::getLogType() const
 {
-	return mLogType;
+    return mLogType;
 }

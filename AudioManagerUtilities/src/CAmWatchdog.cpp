@@ -32,40 +32,40 @@
 namespace am
 {
 
-CAmWatchdog::CAmWatchdog(CAmSocketHandler* CAmSocketHandler) :
-        TimerCallback(this, &CAmWatchdog::timerCallback),
-        mpCAmSocketHandler(CAmSocketHandler),
-        mHandle(0)
+CAmWatchdog::CAmWatchdog(CAmSocketHandler *CAmSocketHandler)
+    : TimerCallback(this, &CAmWatchdog::timerCallback)
+    , mpCAmSocketHandler(CAmSocketHandler)
+    , mHandle(0)
 {
     assert(mpCAmSocketHandler);
 
-
-    //first retrieve the timeout interval
+    // first retrieve the timeout interval
 
     int watchdogTimeout = 0;
 
-    char* wusec=getenv("WATCHDOG_USEC");
+    char *wusec = getenv("WATCHDOG_USEC");
     if (wusec)
-        watchdogTimeout=atoi(wusec);
+    {
+        watchdogTimeout = atoi(wusec);
+    }
 
     if (watchdogTimeout > 0)
     {
         timespec timeout;
 
-        //calculate the half cycle as the right interval to trigger the watchdog.
-        timeout.tv_sec =   (watchdogTimeout / 2) / 1000000;
+        // calculate the half cycle as the right interval to trigger the watchdog.
+        timeout.tv_sec  = (watchdogTimeout / 2) / 1000000;
         timeout.tv_nsec = ((watchdogTimeout / 2) % 1000000) * 1000;
         logInfo("CAmWatchdog::CAmWatchdog setting watchdog timeout:", watchdogTimeout, "us. Notification set to:",
-                (int)timeout.tv_sec, "sec and", (int)timeout.tv_nsec, "ns");
+            (int)timeout.tv_sec, "sec and", (int)timeout.tv_nsec, "ns");
 
-        //add the timer here
+        // add the timer here
         if (mpCAmSocketHandler->addTimer(timeout, &TimerCallback, mHandle, NULL))
         {
             logError("CAmWatchdog::CAmWatchdog failed to add timer");
             throw std::runtime_error("CAmWatchdog::CAmWatchdog failed to add timer");
         }
     }
-
     else
     {
         logInfo("CAmWatchdog::CAmWatchdog watchdog timeout was ", watchdogTimeout, " museconds, no watchdog active");
@@ -74,14 +74,16 @@ CAmWatchdog::CAmWatchdog(CAmSocketHandler* CAmSocketHandler) :
 
 CAmWatchdog::~CAmWatchdog()
 {
-    //remove the timer again.
-	if (mHandle!=0)
-		mpCAmSocketHandler->removeTimer(mHandle);
+    // remove the timer again.
+    if (mHandle != 0)
+    {
+        mpCAmSocketHandler->removeTimer(mHandle);
+    }
 }
 
-void CAmWatchdog::timerCallback(sh_timerHandle_t handle, void* userData)
+void CAmWatchdog::timerCallback(sh_timerHandle_t handle, void *userData)
 {
-    (void) userData;
+    (void)userData;
     int error(sd_notify(0, "WATCHDOG=1"));
     if (error < 0)
     {
@@ -100,6 +102,7 @@ void CAmWatchdog::startWatchdog()
         logError("CAmWatchdog::startWatchdog could not start watchdog, error ", error);
         throw std::runtime_error("CAmWatchdog::startWatchdog could not start watchdog");
     }
+
     logInfo("READY=1 was sent to systemd");
 }
 

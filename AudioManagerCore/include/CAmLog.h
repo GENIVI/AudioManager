@@ -14,7 +14,7 @@
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *
-* \author Aleksandar Donchev, aleksander.donchev@partner.bmw.de BMW 2013
+ * \author Aleksandar Donchev, aleksander.donchev@partner.bmw.de BMW 2013
  *
  * \file CAmLog.h
  * For further information see http://www.genivi.org/.
@@ -40,11 +40,11 @@
  * Example: CAmLogger << "Text"; //to print out through the singleton object directly to the console
  */
 
-#define DEFAULT_LOG_FOLDER 		"/tmp/"
+#define DEFAULT_LOG_FOLDER     "/tmp/"
 #define DEFAULT_LOGFILE_PREFIX "am_dump_"
-#define DEFAULT_LOGFILE_EXT 	".log"
+#define DEFAULT_LOGFILE_EXT    ".log"
 
-#define DEL( aPointer ) delete aPointer, aPointer = NULL
+#define DEL(aPointer) delete aPointer, aPointer = NULL
 
 /* */
 typedef enum { eCAmLogNone = 0, eCAmLogStdout = 1, eCAmLogFile = 2 } eCAmLogType;
@@ -52,78 +52,86 @@ typedef enum { eCAmLogNone = 0, eCAmLogStdout = 1, eCAmLogFile = 2 } eCAmLogType
 class CAmLog
 {
 private:
-	/**
-	 * Private classes which usually own (wrap) a stream object. They are responsible for creating and deleting it.
-	 */
-	class CAmLogger
-	{
-	protected:
-		std::ostream* mOutputStream;
-	public:
-		CAmLogger ():mOutputStream(NULL) {};
-		virtual ~CAmLogger () { };
-		virtual void log(const std::string& _s)
-	    {
-	        (*mOutputStream) << _s;
-	        mOutputStream->flush();
-	    }
-	    template <class T>
-	    CAmLogger & operator << (const T & t)
-	    {
-	    	(*mOutputStream) << t;
-	    	return (*this);
-	    }
-	};
+    /**
+     * Private classes which usually own (wrap) a stream object. They are responsible for creating and deleting it.
+     */
+    class CAmLogger
+    {
+    protected:
+        std::ostream *mOutputStream;
+    public:
+        CAmLogger ()
+            : mOutputStream(NULL) {}
+        virtual ~CAmLogger () { }
+        virtual void log(const std::string &_s)
+        {
+            (*mOutputStream) << _s;
+            mOutputStream->flush();
+        }
 
-	class CAmFileLogger : public CAmLogger
-	{
-		std::string mFilename;
-	public:
-		static void generateLogFilename(std::string &result);
-		explicit CAmFileLogger(const std::string& _s) : CAmLogger()
-		{
-			mFilename = _s;
-			mOutputStream = new std::ofstream(mFilename.c_str());
-		}
-		~CAmFileLogger();
-	};
+        template <class T>
+        CAmLogger &operator <<(const T &t)
+        {
+            (*mOutputStream) << t;
+            return (*this);
+        }
 
-	class CAmStdOutLogger : public CAmLogger
-	{
-	public:
-		CAmStdOutLogger()
-		{
-			mOutputStream = &std::cout;
-		}
-	};
+    };
+
+    class CAmFileLogger : public CAmLogger
+    {
+        std::string mFilename;
+    public:
+        static void generateLogFilename(std::string &result);
+
+        explicit CAmFileLogger(const std::string &_s)
+            : CAmLogger()
+        {
+            mFilename     = _s;
+            mOutputStream = new std::ofstream(mFilename.c_str());
+        }
+
+        ~CAmFileLogger();
+    };
+
+    class CAmStdOutLogger : public CAmLogger
+    {
+    public:
+        CAmStdOutLogger()
+        {
+            mOutputStream = &std::cout;
+        }
+
+    };
 
 private:
-	eCAmLogType mLogType;
-    CAmLogger* mLogger;
+    eCAmLogType mLogType;
+    CAmLogger  *mLogger;
 
 protected:
     void releaseLogger();
-    void instantiateLogger( const eCAmLogType type);
+    void instantiateLogger(const eCAmLogType type);
+
 public:
-    CAmLog(const eCAmLogType type );
+    CAmLog(const eCAmLogType type);
     CAmLog();
     ~CAmLog();
 
     static CAmLog *getDefaultLog();
 
-    void setLogType( const eCAmLogType type);
+    void setLogType(const eCAmLogType type);
     eCAmLogType getLogType() const;
 
     template <class T>
-    CAmLog & operator << (const T & t)
+    CAmLog &operator <<(const T &t)
     {
-    	assert(mLogger!=NULL);
-    	(*mLogger) << t;
-    	return (*this);
+        assert(mLogger != NULL);
+        (*mLogger) << t;
+        return (*this);
     }
- };
+
+};
 
 #define CAmLogger (*CAmLog::getDefaultLog())
-
 
 #endif /* CAMLOG_H_ */

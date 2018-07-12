@@ -37,24 +37,25 @@ namespace am
  * @param libraryHandle the handle to the library that gets returned
  * @return returns the pointer to the class to be loaded
  */
-template<class T> T* getCreateFunction(const std::string& libname, void*& libraryHandle)
+template<class T>
+T *getCreateFunction(const std::string &libname, void * &libraryHandle)
 {
 
-    logInfo("getCreateFunction : Trying to load library with name: ",libname);
+    logInfo("getCreateFunction : Trying to load library with name: ", libname);
 
     // cut off directories
-    char* fileWithPath = const_cast<char*>(libname.c_str());
-    std::string libFileName = basename(fileWithPath);
+    char       *fileWithPath = const_cast<char *>(libname.c_str());
+    std::string libFileName  = basename(fileWithPath);
 
     // cut off "lib" in front and cut off .so end"
     std::string createFunctionName = libFileName.substr(3, libFileName.length() - 6) + "Factory";
     // open library
     dlerror(); // Clear any existing error
-    libraryHandle = dlopen(libname.c_str(), RTLD_LAZY );
-    const char* dlopen_error = dlerror();
+    libraryHandle = dlopen(libname.c_str(), RTLD_LAZY);
+    const char *dlopen_error = dlerror();
     if (!libraryHandle || dlopen_error)
     {
-        logError("getCreateFunction : dlopen failed",dlopen_error);
+        logError("getCreateFunction : dlopen failed", dlopen_error);
         return (0);
     }
 
@@ -63,8 +64,8 @@ template<class T> T* getCreateFunction(const std::string& libname, void*& librar
 
     union
     {
-        void* voidPointer;
-        T* typedPointer;
+        void *voidPointer;
+        T *typedPointer;
     } functionPointer;
 
     // Note: direct cast is not allowed by ISO C++. e.g.
@@ -72,17 +73,18 @@ template<class T> T* getCreateFunction(const std::string& libname, void*& librar
     // compiler warning: "forbids casting between pointer-to-function and pointer-to-object"
 
     functionPointer.voidPointer = dlsym(libraryHandle, createFunctionName.c_str());
-    T* createFunction = functionPointer.typedPointer;
+    T *createFunction = functionPointer.typedPointer;
 
-    const char* dlsym_error = dlerror();
+    const char *dlsym_error = dlerror();
     if (!createFunction || dlsym_error)
     {
-        logError("getCreateFunction: Failed to load shared lib entry point",dlsym_error);
+        logError("getCreateFunction: Failed to load shared lib entry point", dlsym_error);
     }
     else
     {
         logInfo("getCreateFunction : loaded successfully plugin", createFunctionName);
     }
+
     return (createFunction);
 }
 
@@ -91,13 +93,14 @@ template<class T> T* getCreateFunction(const std::string& libname, void*& librar
  * @param libname the full path to the library to be loaded
  *
  */
-template<class T> T* getDestroyFunction(const std::string& libname,void* libraryHandle)
+template<class T>
+T *getDestroyFunction(const std::string &libname, void *libraryHandle)
 {
-    logInfo("destroy : Trying to destroy : ",libname);
+    logInfo("destroy : Trying to destroy : ", libname);
 
     // cut off directories
-    char* fileWithPath = const_cast<char*>(libname.c_str());
-    std::string libFileName = basename(fileWithPath);
+    char       *fileWithPath = const_cast<char *>(libname.c_str());
+    std::string libFileName  = basename(fileWithPath);
 
     // cut off "lib" in front and cut off .so end"
     std::string destroyFunctionName = "destroy" + libFileName.substr(3, libFileName.length() - 6);
@@ -106,23 +109,24 @@ template<class T> T* getDestroyFunction(const std::string& libname,void* library
     dlerror(); // Clear any existing error
     union
     {
-        void* voidPointer;
-        T* typedPointer;
+        void *voidPointer;
+        T *typedPointer;
     } functionPointer;
 
     functionPointer.voidPointer = dlsym(libraryHandle, destroyFunctionName.c_str());
-    T* destroyFunction = functionPointer.typedPointer;
+    T *destroyFunction = functionPointer.typedPointer;
 
-    const char* dlsym_error = dlerror();
+    const char *dlsym_error = dlerror();
     if (!destroyFunction || dlsym_error)
     {
         logError("getDestroyFunction: Failed to load shared lib entry point function name=",
-                                            destroyFunctionName, "error=",dlsym_error);
+            destroyFunctionName, "error=", dlsym_error);
     }
     else
     {
         logInfo("getDestroyFunction: loaded successfully plugin", destroyFunctionName);
     }
+
     return (destroyFunction);
 }
 
