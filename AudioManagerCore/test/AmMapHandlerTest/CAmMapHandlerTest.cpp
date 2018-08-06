@@ -1203,7 +1203,7 @@ TEST_F(CAmMapHandlerTest, changeSourceMainSoundProperty)
     ASSERT_EQ(E_OK, pDatabaseHandler.getMainSourceSoundPropertyValue(sourceID, property.type, value));
     ASSERT_EQ(value, 34);
     ASSERT_EQ(E_NON_EXISTENT, pDatabaseHandler.getMainSourceSoundPropertyValue(sourceID, 1000, value));
-    ASSERT_EQ(E_OK, pDatabaseHandler.changeMainSourceSoundPropertyDB({property.type, 34},sourceID));
+    ASSERT_EQ(E_NO_CHANGE, pDatabaseHandler.changeMainSourceSoundPropertyDB({property.type, 34},sourceID));
 }
 
 TEST_F(CAmMapHandlerTest, changeSinkMainSoundProperty)
@@ -1237,7 +1237,7 @@ TEST_F(CAmMapHandlerTest, changeSinkMainSoundProperty)
     ASSERT_EQ(E_OK, pDatabaseHandler.getMainSinkSoundPropertyValue(sinkID, property.type, value));
     ASSERT_EQ(value, 34);
     ASSERT_EQ(E_NON_EXISTENT, pDatabaseHandler.getMainSinkSoundPropertyValue(sinkID, 1000, value));
-    ASSERT_EQ(E_OK, pDatabaseHandler.changeMainSinkSoundPropertyDB({property.type, 34},sinkID));
+    ASSERT_EQ(E_NO_CHANGE, pDatabaseHandler.changeMainSinkSoundPropertyDB({property.type, 34},sinkID));
 }
 
 TEST_F(CAmMapHandlerTest, changeSourceSoundProperty)
@@ -3403,7 +3403,7 @@ TEST_F(CAmMapHandlerTest, dbo_changeSystemProperty)
     ASSERT_EQ(listReturn[0].value, systemProperty.value);
     systemProperty.value = 555;
     ASSERT_EQ(E_OK, pDatabaseHandler.changeSystemPropertyDB(systemProperty));
-    ASSERT_EQ(E_OK, pDatabaseHandler.changeSystemPropertyDB(systemProperty));
+    ASSERT_EQ(E_NO_CHANGE, pDatabaseHandler.changeSystemPropertyDB(systemProperty));
 
 #ifdef WITH_DATABASE_CHANGE_CHECK
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), systemPropertyChanged(_)).Times(1);

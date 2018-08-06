@@ -33,7 +33,8 @@
 #include "CAmRouter.h"
 #include "CAmDltWrapper.h"
 
-#define __METHOD_NAME__ std::string(std::string("CAmDatabaseHandlerMap::") + __func__)
+static std::string __am_className__("CAmDatabaseHandlerMap::");
+#define __METHOD_NAME__ std::string(__am_className__ + __func__)
 
 #ifdef WITH_DATABASE_CHANGE_CHECK
 # define DB_COND_UPDATE_RIE(x, y) \
@@ -475,14 +476,22 @@ bool CAmDatabaseHandlerMap::AmMappedData::increaseConnectionID(int16_t &resultID
 CAmDatabaseHandlerMap::CAmDatabaseHandlerMap()
     : IAmDatabaseHandler()
     , mFirstStaticSink(true)
-    , mFirstStaticSource(true)
-    , mFirstStaticGateway(true)
-    , mFirstStaticConverter(true)
-    , mFirstStaticSinkClass(true)
-    , mFirstStaticSourceClass(true)
-    , mFirstStaticCrossfader(true)
-    , mListConnectionFormat()
-    , mMappedData()
+    ,                           //
+    mFirstStaticSource(true)
+    ,                             //
+    mFirstStaticGateway(true)
+    ,                              //
+    mFirstStaticConverter(true)
+    ,                                //
+    mFirstStaticSinkClass(true)
+    ,                                //
+    mFirstStaticSourceClass(true)
+    ,                                  //
+    mFirstStaticCrossfader(true)
+    ,                                 //
+    mListConnectionFormat()
+    ,                            //
+    mMappedData()
     , mDatabaseObservers()
 {
     logVerbose(__METHOD_NAME__, "Init ");
@@ -1492,35 +1501,39 @@ am_Error_e CAmDatabaseHandlerMap::changeMainSinkSoundPropertyDB(const am_MainSou
         logError(__METHOD_NAME__, "sinkID must exist");
         return (E_NON_EXISTENT);
     }
-    bool modified = false;
+
+    bool                                          modified        = false;
     am_Sink_Database_s                           &sink            = mMappedData.mSinkMap[sinkID];
     std::vector<am_MainSoundProperty_s>::iterator elementIterator = sink.listMainSoundProperties.begin();
     for (; elementIterator != sink.listMainSoundProperties.end(); ++elementIterator)
     {
         if (elementIterator->type == soundProperty.type)
         {
-            if(elementIterator->value != soundProperty.value)
+            if (elementIterator->value != soundProperty.value)
             {
-                modified = true;
+                modified               = true;
                 elementIterator->value = soundProperty.value;
-                if(sink.cacheMainSoundProperties.size())
+                if (sink.cacheMainSoundProperties.size())
                 {
                     sink.cacheMainSoundProperties[soundProperty.type] = soundProperty.value;
                 }
             }
+
             break;
         }
     }
-    if(modified)
+
+    if (modified)
     {
         logVerbose("DatabaseHandler::changeMainSinkSoundPropertyDB changed MainSinkSoundProperty of sink:", sinkID, "type:", soundProperty.type, "to:", soundProperty.value);
         NOTIFY_OBSERVERS2(dboMainSinkSoundPropertyChanged, sinkID, soundProperty)
+        return (E_OK);
     }
     else
     {
         logVerbose("DatabaseHandler::changeMainSinkSoundPropertyDB called MainSinkSoundProperty of sink:", sinkID, "type:", soundProperty.type, "to:", soundProperty.value);
+        return (E_NO_CHANGE);
     }
-    return (E_OK);
 }
 
 am_Error_e CAmDatabaseHandlerMap::changeMainSourceSoundPropertyDB(const am_MainSoundProperty_s &soundProperty, const am_sourceID_t sourceID)
@@ -1531,35 +1544,39 @@ am_Error_e CAmDatabaseHandlerMap::changeMainSourceSoundPropertyDB(const am_MainS
         logError(__METHOD_NAME__, "sourceID must exist");
         return (E_NON_EXISTENT);
     }
-    bool modified = false;
-    am_Source_Database_s & source = mMappedData.mSourceMap.at(sourceID);
+
+    bool                                          modified        = false;
+    am_Source_Database_s                         &source          = mMappedData.mSourceMap.at(sourceID);
     std::vector<am_MainSoundProperty_s>::iterator elementIterator = source.listMainSoundProperties.begin();
-    for (;elementIterator != source.listMainSoundProperties.end(); ++elementIterator)
+    for (; elementIterator != source.listMainSoundProperties.end(); ++elementIterator)
     {
         if (elementIterator->type == soundProperty.type)
         {
-            if(elementIterator->value != soundProperty.value)
+            if (elementIterator->value != soundProperty.value)
             {
-                modified = true;
+                modified               = true;
                 elementIterator->value = soundProperty.value;
-                if(source.cacheMainSoundProperties.size())
+                if (source.cacheMainSoundProperties.size())
                 {
                     source.cacheMainSoundProperties[soundProperty.type] = soundProperty.value;
                 }
             }
+
             break;
         }
     }
-    if(modified)
+
+    if (modified)
     {
         logVerbose("DatabaseHandler::changeMainSourceSoundPropertyDB changed MainSinkSoundProperty of source:", sourceID, "type:", soundProperty.type, "to:", soundProperty.value);
         NOTIFY_OBSERVERS2(dboMainSourceSoundPropertyChanged, sourceID, soundProperty)
+        return (E_OK);
     }
     else
     {
         logVerbose("DatabaseHandler::changeMainSourceSoundPropertyDB called MainSinkSoundProperty of source:", sourceID, "type:", soundProperty.type, "to:", soundProperty.value);
+        return (E_NO_CHANGE);
     }
-    return (E_OK);
 }
 
 am_Error_e CAmDatabaseHandlerMap::changeSourceAvailabilityDB(const am_Availability_s &availability, const am_sourceID_t sourceID)
@@ -1590,28 +1607,30 @@ am_Error_e CAmDatabaseHandlerMap::changeSourceAvailabilityDB(const am_Availabili
 
 am_Error_e CAmDatabaseHandlerMap::changeSystemPropertyDB(const am_SystemProperty_s &property)
 {
-    bool modified = false;
+    bool                                       modified        = false;
     std::vector<am_SystemProperty_s>::iterator elementIterator = mMappedData.mSystemProperties.begin();
-    for (;elementIterator != mMappedData.mSystemProperties.end(); ++elementIterator)
+    for (; elementIterator != mMappedData.mSystemProperties.end(); ++elementIterator)
     {
         if (elementIterator->type == property.type &&
             elementIterator->value != property.value)
         {
             elementIterator->value = property.value;
-            modified = true;
+            modified               = true;
         }
     }
 
-    if(modified)
+    if (modified)
     {
         logVerbose("DatabaseHandler::changeSystemPropertyDB changed system property ", property.type, " to ", property.value);
         NOTIFY_OBSERVERS1(dboSystemPropertyChanged, property)
+        return (E_OK);
     }
     else
     {
         logVerbose("DatabaseHandler::changeSystemPropertyDB called for system property ", property.type);
+        return (E_NO_CHANGE);
+
     }
-    return (E_OK);
 }
 
 am_Error_e CAmDatabaseHandlerMap::removeMainConnectionDB(const am_mainConnectionID_t mainConnectionID)

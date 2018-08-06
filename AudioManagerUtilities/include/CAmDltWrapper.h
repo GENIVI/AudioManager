@@ -163,17 +163,14 @@ public:
     {
 #ifdef WITH_DLT
 # ifdef DLT_IS_LOG_LEVEL_ENABLED
-        if (mlogDestination == logDestination::DAEMON)
-        {
-            return (dlt_user_is_logLevel_enabled(&mDltContext, logLevel) == DLT_RETURN_TRUE);
-        }
+        return (dlt_user_is_logLevel_enabled(&mDltContext, logLevel) == DLT_RETURN_TRUE);
 # else
         (void)logLevel;
-# endif     // ifdef DLT_IS_LOG_LEVEL_ENABLED
         return true;
-#else       // ifdef WITH_DLT
+# endif
+#else // ifdef WITH_DLT
         return (logLevel <= mDltContext.log_level_user);
-#endif      // ifdef WITH_DLT
+#endif // ifdef WITH_DLT
     }
 
     void deinit();
@@ -209,7 +206,7 @@ public:
         {
             mNoDltContextData.buffer << std::string(value);
         }
-#else       // ifdef WITH_DLT
+#else // ifdef WITH_DLT
         mNoDltContextData.buffer << std::string(value);
 #endif         // WITH_DLT
 
@@ -232,7 +229,7 @@ public:
     template<typename T = const am_Error_e>
     void append(const am_Error_e value)
     {
-        if ((size_t)value >= mStr_error.size())
+        if (static_cast<std::size_t>(value) >= mStr_error.size())
         {
             std::ostringstream ss;
             ss << "value for am_Error_e out of bounds! " << std::dec << (size_t)value;
@@ -247,7 +244,7 @@ public:
     template<typename T = const am_SourceState_e>
     void append(const am_SourceState_e value)
     {
-        if ((size_t)value >=  mStr_sourceState.size())
+        if (static_cast<std::size_t>(value) >= mStr_sourceState.size())
         {
             std::ostringstream ss;
             ss << "value for am_SourceState_e out of bounds! " << std::dec << (size_t)value;
@@ -261,24 +258,26 @@ public:
     template<typename T = const am_MuteState_e>
     void append(const am_MuteState_e value)
     {
-        if ((size_t)value >=mStr_MuteState.size())
+        if (static_cast<std::size_t>(value) >= mStr_MuteState.size())
         {
             std::ostringstream ss;
             ss << "value for am_MuteState_e out of bounds! " << std::dec << (size_t)value;
             append(ss.str().c_str());
             return;
         }
+
         append(mStr_MuteState[value]);
     }
 
     template<typename T = const am_DomainState_e>
     void append(const am_DomainState_e value)
     {
-        if ((size_t)value >=mStr_DomainState.size())
+        if (static_cast<std::size_t>(value) >= mStr_DomainState.size())
         {
             std::ostringstream ss;
             ss << "value for am_DomainState_e out of bounds! " << std::dec << (size_t)value;
             append(ss.str().c_str());
+
             return;
         }
 
@@ -288,33 +287,35 @@ public:
     template<typename T = const am_ConnectionState_e>
     void append(const am_ConnectionState_e value)
     {
-        if ((size_t)value >=mStr_ConnectionState.size())
+        if (static_cast<std::size_t>(value) >= mStr_ConnectionState.size())
         {
             std::ostringstream ss;
             ss << "value for am_ConnectionState_e out of bounds! " << std::dec << (size_t)value;
             append(ss.str().c_str());
             return;
         }
+
         append(mStr_ConnectionState[value]);
     }
 
     template<typename T = const am_Availability_e>
     void append(const am_Availability_e value)
     {
-        if ((size_t)value >=mStr_Availability.size())
+        if (static_cast<std::size_t>(value) >= mStr_Availability.size())
         {
             std::ostringstream ss;
             ss << "value for am_Availability_e out of bounds! " << std::dec << (size_t)value;
             append(ss.str().c_str());
             return;
         }
+
         append(mStr_Availability[value]);
     }
 
     template<typename T = const am_InterruptState_e>
     void append(const am_InterruptState_e value)
     {
-        if ((size_t)value >=mStr_Interrupt.size())
+        if (static_cast<std::size_t>(value) >= mStr_Interrupt.size())
         {
             std::ostringstream ss;
             ss << "value for am_InterruptState_e out of bounds! " << std::dec << (size_t)value;
@@ -328,7 +329,7 @@ public:
     template<typename T = const am_Handle_e>
     void append(const am_Handle_e value)
     {
-        if ((size_t)value >=mStr_Handle.size())
+        if (static_cast<std::size_t>(value) >= mStr_Handle.size())
         {
             std::ostringstream ss;
             ss << "value for am_Handle_e out of bounds! " << std::dec << (size_t)value;
@@ -349,13 +350,14 @@ public:
     template<typename T = const am_NotificationStatus_e>
     void append(const am_NotificationStatus_e value)
     {
-        if ((size_t)value >=mStr_NotificationStatus.size())
+        if (static_cast<std::size_t>(value) >= mStr_NotificationStatus.size())
         {
             std::ostringstream ss;
             ss << "value for am_NotificationStatus_e out of bounds! " << std::dec << (size_t)value;
             append(ss.str().c_str());
             return;
         }
+
         append(mStr_NotificationStatus[value]);
     }
 
@@ -373,7 +375,7 @@ public:
     void append(T value)
     {
         std::ostringstream ss;
-        ss << std::dec << value;
+        ss << std::dec << static_cast<int>(value);
         append(ss.str().c_str());
     }
 
