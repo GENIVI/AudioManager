@@ -47,7 +47,7 @@ TCLAP::SwitchArg enableDebug ("V","logDlt","print DLT logs to stdout or dlt-daem
 
 
 CAmMapBasicTest::CAmMapBasicTest() :
-                pSocketHandler(),//   
+                pSocketHandler(),//
                 pDatabaseHandler(), //
                 plistRoutingPluginDirs(), //
                 plistCommandPluginDirs(), //
@@ -58,7 +58,7 @@ CAmMapBasicTest::CAmMapBasicTest() :
                 pControlSender(), //
                 pRouter(&pDatabaseHandler, &pControlSender), //
                 pControlReceiver(&pDatabaseHandler, &pRoutingSender, &pCommandSender,  &pSocketHandler, &pRouter), //
-		pCF()
+        pCF()
 {
 }
 
@@ -117,7 +117,9 @@ void CAmMapBasicTest::createMainConnectionSetup(am_mainConnectionID_t & mainConn
     //enter mainconnection in database
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newMainConnection(_)).Times(1);
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), mainConnectionStateChanged(_, _)).Times(1);
+#ifndef WITH_DATABASE_CHANGE_CHECK
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), timingInformationChanged(_, _)).Times(1);
+#endif
     ASSERT_EQ(E_OK, pDatabaseHandler.enterMainConnectionDB(mainConnection,mainConnectionID));
     ASSERT_NE(0, mainConnectionID);
 
@@ -184,17 +186,17 @@ CAmMapHandlerTest::~CAmMapHandlerTest()
 
 TEST_F(CAmMapHandlerTest,getMainConnectionInfo)
 {
-	am_mainConnectionID_t mainConnectionID;
-	am_MainConnection_s mainConnection, mainConnectionT;
-	createMainConnectionSetup(mainConnectionID, mainConnection);
+    am_mainConnectionID_t mainConnectionID;
+    am_MainConnection_s mainConnection, mainConnectionT;
+    createMainConnectionSetup(mainConnectionID, mainConnection);
 
-	ASSERT_EQ(E_OK, pDatabaseHandler.getMainConnectionInfoDB(mainConnectionID,mainConnectionT));
-	ASSERT_TRUE(mainConnection.connectionState == mainConnectionT.connectionState);
-	ASSERT_TRUE(mainConnection.delay == mainConnectionT.delay);
-	ASSERT_TRUE(std::equal(mainConnection.listConnectionID.begin(),mainConnection.listConnectionID.end(),mainConnectionT.listConnectionID.begin()));
-	ASSERT_TRUE(mainConnection.sinkID == mainConnectionT.sinkID);
-	ASSERT_TRUE(mainConnection.sourceID == mainConnectionT.sourceID);
-	ASSERT_TRUE(mainConnectionID == mainConnectionT.mainConnectionID);
+    ASSERT_EQ(E_OK, pDatabaseHandler.getMainConnectionInfoDB(mainConnectionID,mainConnectionT));
+    ASSERT_TRUE(mainConnection.connectionState == mainConnectionT.connectionState);
+    ASSERT_TRUE(mainConnection.delay == mainConnectionT.delay);
+    ASSERT_TRUE(std::equal(mainConnection.listConnectionID.begin(),mainConnection.listConnectionID.end(),mainConnectionT.listConnectionID.begin()));
+    ASSERT_TRUE(mainConnection.sinkID == mainConnectionT.sinkID);
+    ASSERT_TRUE(mainConnection.sourceID == mainConnectionT.sourceID);
+    ASSERT_TRUE(mainConnectionID == mainConnectionT.mainConnectionID);
 }
 
 TEST_F(CAmMapHandlerTest,getSinkInfo)
@@ -207,7 +209,7 @@ TEST_F(CAmMapHandlerTest,getSinkInfo)
    pCF.createSink(staticSink);
     staticSink.sinkID = 4;
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSink(_)).Times(3);
-    
+
     ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(staticSink,staticSinkID))
         << "ERROR: database error";
     ASSERT_EQ(staticSink.sinkID,staticSinkID)
@@ -278,7 +280,7 @@ TEST_F(CAmMapHandlerTest,getSourceInfo)
     staticSource.name = "Static";
 
      EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSource(_)).Times(3);
-     
+
     ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceDB(staticSource,staticSourceID))
         << "ERROR: database error";
     ASSERT_EQ(staticSource.sourceID,staticSourceID)
@@ -442,12 +444,12 @@ TEST_F(CAmMapHandlerTest,crossfadersGetFromDomain)
     pCF.createDomain(domain);
     sinkB.name = "sinkB";
     pCF.createSource(source);
-    
+
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newDomain(_)).Times(1);
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSource(_)).Times(1);
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSink(_)).Times(2);
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newCrossfader(_)).Times(1);
-    
+
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
     source.domainID = domainID;
     sinkA.domainID = domainID;
@@ -631,7 +633,7 @@ TEST_F(CAmMapHandlerTest, peekSourceDouble)
 
 TEST_F(CAmMapHandlerTest, peekSink)
 {
-	std::vector<am_SinkType_s> listSinkTypes;
+    std::vector<am_SinkType_s> listSinkTypes;
     std::vector<am_Sink_s> listSinks;
     am_sinkID_t sinkID, sink2ID, sink3ID;
     am_Sink_s sink;
@@ -671,7 +673,7 @@ TEST_F(CAmMapHandlerTest, peekSink)
 
 TEST_F(CAmMapHandlerTest, peekSinkDouble)
 {
-	std::vector<am_SinkType_s> listSinkTypes;
+    std::vector<am_SinkType_s> listSinkTypes;
     std::vector<am_Sink_s> listSinks;
     am_sinkID_t sinkID;
     am_sinkID_t sink2ID;
@@ -745,10 +747,10 @@ TEST_F(CAmMapHandlerTest,changeConnectionTimingInformation)
     pCF.createConnection(connection);
     pCF.createSink(sink);
     pCF.createSource(source);
-    
+
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSink(_)).Times(1);
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSource(_)).Times(1);
-    
+
     ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(sink,sinkid));
     ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceDB(source,sourceid));
 
@@ -827,7 +829,7 @@ TEST_F(CAmMapHandlerTest,getSourceClassOfSource)
     source.sourceClassID=8;
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), numberOfSourceClassesChanged()).Times(1);
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSource(_)).Times(1);
-    
+
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceClassDB(sourceClassID,sourceClass));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
 
@@ -1182,8 +1184,11 @@ TEST_F(CAmMapHandlerTest, changeSourceMainSoundProperty)
     property.type = MSP_UNKNOWN;
     property.value = 33;
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSource(_)).Times(1);
+#ifndef WITH_DATABASE_CHANGE_CHECK
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), mainSourceSoundPropertyChanged(_, _)).Times(3);
+#else
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), mainSourceSoundPropertyChanged(_, _)).Times(2);
-
+#endif
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
 
     ASSERT_EQ(E_OK, pDatabaseHandler.changeMainSourceSoundPropertyDB(property,sourceID));
@@ -1203,6 +1208,11 @@ TEST_F(CAmMapHandlerTest, changeSourceMainSoundProperty)
     ASSERT_EQ(E_OK, pDatabaseHandler.getMainSourceSoundPropertyValue(sourceID, property.type, value));
     ASSERT_EQ(value, 34);
     ASSERT_EQ(E_NON_EXISTENT, pDatabaseHandler.getMainSourceSoundPropertyValue(sourceID, 1000, value));
+#ifndef WITH_DATABASE_CHANGE_CHECK
+    ASSERT_EQ(E_OK, pDatabaseHandler.changeMainSourceSoundPropertyDB({property.type, 34},sourceID));
+#else
+    ASSERT_EQ(E_NO_CHANGE, pDatabaseHandler.changeMainSourceSoundPropertyDB({property.type, 34},sourceID));
+#endif
 }
 
 TEST_F(CAmMapHandlerTest, changeSinkMainSoundProperty)
@@ -1216,7 +1226,11 @@ TEST_F(CAmMapHandlerTest, changeSinkMainSoundProperty)
     property.value = 33;
 
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSink(_)).Times(1);
+#ifndef WITH_DATABASE_CHANGE_CHECK
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), mainSinkSoundPropertyChanged(_, _)).Times(3);
+#else
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), mainSinkSoundPropertyChanged(_, _)).Times(2);
+#endif
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
 
     ASSERT_EQ(E_OK, pDatabaseHandler.changeMainSinkSoundPropertyDB(property,sinkID));
@@ -1236,6 +1250,11 @@ TEST_F(CAmMapHandlerTest, changeSinkMainSoundProperty)
     ASSERT_EQ(E_OK, pDatabaseHandler.getMainSinkSoundPropertyValue(sinkID, property.type, value));
     ASSERT_EQ(value, 34);
     ASSERT_EQ(E_NON_EXISTENT, pDatabaseHandler.getMainSinkSoundPropertyValue(sinkID, 1000, value));
+#ifndef WITH_DATABASE_CHANGE_CHECK
+    ASSERT_EQ(E_OK, pDatabaseHandler.changeMainSinkSoundPropertyDB({property.type, 34},sinkID));
+#else
+    ASSERT_EQ(E_NO_CHANGE, pDatabaseHandler.changeMainSinkSoundPropertyDB({property.type, 34},sinkID));
+#endif
 }
 
 TEST_F(CAmMapHandlerTest, changeSourceSoundProperty)
@@ -1406,7 +1425,7 @@ TEST_F(CAmMapHandlerTest,changeMainConnectionRoute)
     std::vector<am_MainConnection_s> originalList;
     std::vector<am_MainConnection_s> newList;
     createMainConnectionSetup(mainConnectionID, mainConnection);
-    
+
     //fill the connection database
     am_Connection_s connection;
     am_Source_s source;
@@ -1437,13 +1456,17 @@ TEST_F(CAmMapHandlerTest,changeMainConnectionRoute)
 
         EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSink( _)).Times(1);
         EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSource( _)).Times(1);
-        
+
         ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,forgetSink));
         ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,forgetSource));
         ASSERT_EQ(E_OK, pDatabaseHandler.enterConnectionDB(connection,connectionID));
         listConnectionID.push_back(connectionID);
     }
+#ifdef WITH_DATABASE_CHANGE_CHECK
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), timingInformationChanged(_, _)).Times(0);
+#else
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), timingInformationChanged(_, _)).Times(1);
+#endif
     ASSERT_EQ(E_OK, pDatabaseHandler.getListMainConnections(originalList));
     ASSERT_EQ(E_OK, pDatabaseHandler.changeMainConnectionRouteDB(mainConnectionID,listConnectionID));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListMainConnections(newList));
@@ -1523,7 +1546,7 @@ TEST_F(CAmMapHandlerTest,getMainSources)
 
 TEST_F(CAmMapHandlerTest,getMainSinks)
 {
-	am_Sink_s sink, sink1, sink2;
+    am_Sink_s sink, sink1, sink2;
     am_sinkID_t sinkID;
     pCF.createSink(sink);
     pCF.createSink(sink1);
@@ -1555,7 +1578,7 @@ TEST_F(CAmMapHandlerTest,getVisibleMainConnections)
     am_mainConnectionID_t mainConnectionID;
     am_MainConnection_s mainConnection;
     createMainConnectionSetup(mainConnectionID, mainConnection);
-    
+
     std::vector<am_MainConnectionType_s> listVisibleMainConnections;
     std::vector<am_MainConnection_s> listMainConnections;
     ASSERT_EQ(E_OK, pDatabaseHandler.getListVisibleMainConnections(listVisibleMainConnections));
@@ -1719,12 +1742,12 @@ TEST_F(CAmMapHandlerTest,getListConvertersOfDomain)
     pCF.createDomain(domain);
     domain.domainID=6;
     domain.name="sdfsd";
-    
+
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newDomain( _)).Times(1);
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSink( _)).Times(2);
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSource( _)).Times(2);
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newConverter( _)).Times(2);
-    
+
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domainID));
 
     am_sinkID_t sinkID1;
@@ -1789,10 +1812,10 @@ TEST_F(CAmMapHandlerTest,removeDomain)
     am_domainID_t domainID;
     std::vector<am_Domain_s> listDomains;
     pCF.createDomain(domain);
-    
+
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newDomain( _)).Times(1);
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), removeDomain( _)).Times(1);
-    
+
     ASSERT_EQ(E_OK,pDatabaseHandler.enterDomainDB(domain,domainID))
         << "ERROR: database error";
     ASSERT_EQ(E_OK,pDatabaseHandler.removeDomainDB(domainID))
@@ -1816,7 +1839,7 @@ TEST_F(CAmMapHandlerTest,removeGateway)
     pCF.createSource(source);
     sink.sinkID = 1;
     source.sourceID = 2;
-    
+
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSink( _)).Times(1);
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSource( _)).Times(1);
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newGateway( _)).Times(1);
@@ -1847,12 +1870,12 @@ TEST_F(CAmMapHandlerTest,removeConverter)
     pCF.createSource(source);
     sink.sinkID = 1;
     source.sourceID = 2;
-    
+
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSink( _)).Times(1);
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSource( _)).Times(1);
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newConverter( _)).Times(1);
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), removeConverter( _)).Times(1);
-    
+
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     ASSERT_EQ(E_OK,pDatabaseHandler.enterConverterDB(converter,converterID))
@@ -1873,7 +1896,7 @@ TEST_F(CAmMapHandlerTest,removeSink)
 
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSink( _)).Times(1);
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), removedSink(_, _)).Times(1);
-    
+
     ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(sink,sinkID))
         << "ERROR: database error";
     ASSERT_EQ(E_OK,pDatabaseHandler.removeSinkDB(sinkID))
@@ -1890,10 +1913,10 @@ TEST_F(CAmMapHandlerTest,removeSource)
     am_sourceID_t sourceID;
     std::vector<am_Source_s> listSources;
     pCF.createSource(source);
-    
+
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSource( _)).Times(1);
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), removedSource(_, _)).Times(1);
-    
+
     ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceDB(source,sourceID))
         << "ERROR: database error";
     ASSERT_EQ(E_OK,pDatabaseHandler.removeSourceDB(sourceID))
@@ -1963,11 +1986,11 @@ TEST_F(CAmMapHandlerTest,registerGatewayCorrect)
     pCF.createSource(source);
     sink.sinkID = 1;
     source.sourceID = 2;
-    
+
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSink( _)).Times(1);
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSource( _)).Times(1);
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newGateway( _)).Times(3);
-    
+
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     ASSERT_EQ(E_OK,pDatabaseHandler.enterGatewayDB(gateway,gatewayID))
@@ -2027,11 +2050,11 @@ TEST_F(CAmMapHandlerTest,registerConverterCorrect)
     pCF.createSource(source);
     sink.sinkID = 1;
     source.sourceID = 2;
-    
+
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSink( _)).Times(1);
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSource( _)).Times(1);
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newConverter( _)).Times(3);
-    
+
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     ASSERT_EQ(E_OK,pDatabaseHandler.enterConverterDB(gateway,gatewayID))
@@ -2093,11 +2116,11 @@ TEST_F(CAmMapHandlerTest,getGatewayInfo)
     pCF.createSource(source);
     sink.sinkID = 1;
     source.sourceID = 2;
-    
+
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSink( _)).Times(1);
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSource( _)).Times(1);
-    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newGateway( _)).Times(3);    
-    
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newGateway( _)).Times(3);
+
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,sourceID));
     ASSERT_EQ(E_OK,pDatabaseHandler.enterGatewayDB(gateway,gatewayID))
@@ -2162,7 +2185,7 @@ TEST_F(CAmMapHandlerTest,getConverterInfo)
     pCF.createSource(source);
     sink.sinkID = 1;
     source.sourceID = 2;
-        EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSink( _)).Times(1);
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSink( _)).Times(1);
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSource( _)).Times(1);
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newConverter( _)).Times(3);
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink,sinkID));
@@ -2219,7 +2242,7 @@ TEST_F(CAmMapHandlerTest,enterSinkThatAlreadyExistFail)
     pCF.createSink(staticSink);
     staticSink.sinkID = 43;
     staticSink.name = "Static";
-    
+
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSink( _)).Times(1);
     ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(staticSink,staticSinkID))
         << "ERROR: database error";
@@ -2263,7 +2286,7 @@ TEST_F(CAmMapHandlerTest,registerDomainCorrect)
     am_Domain_s domain;
     am_domainID_t domainID = 0;
     pCF.createDomain(domain);
-    
+
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newDomain( _)).Times(1);
 
     ASSERT_EQ(E_OK,pDatabaseHandler.enterDomainDB(domain,domainID))
@@ -2330,11 +2353,11 @@ TEST_F(CAmMapHandlerTest,registerConnectionCorrect)
     sink.sinkID=connection.sinkID;
     pCF.createSource(source);
     source.sourceID=connection.sourceID;
-    
-    
+
+
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSink( _)).Times(1);
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSource( _)).Times(1);
-    
+
     ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(sink,sinkID));
     ASSERT_EQ(E_OK,pDatabaseHandler.enterSourceDB(source,sourceID));
 
@@ -2503,7 +2526,7 @@ TEST_F(CAmMapHandlerTest,removeNotificationsSink)
     testSinkData.listMainNotificationConfigurations.push_back(notify);
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSink( _)).Times(1);
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), removedSink(_, _)).Times(1);
- 
+
         //enter the sink in the database
     ASSERT_EQ(E_OK,pDatabaseHandler.enterSinkDB(testSinkData,sinkID))
         << "ERROR: database error";
@@ -2643,9 +2666,9 @@ TEST_F(CAmMapHandlerTest,changeMainNotificationsSources)
         << "ERROR: database error";
 
     ASSERT_EQ(true, std::equal(testSourceData.listMainNotificationConfigurations.begin(),
-    				 testSourceData.listMainNotificationConfigurations.end(),
-    				 returnList.begin(),
-    				 equalNotificationConfiguration));
+                     testSourceData.listMainNotificationConfigurations.end(),
+                     returnList.begin(),
+                     equalNotificationConfiguration));
 
     //change notification which is not available
     am_NotificationConfiguration_s notify;
@@ -2730,217 +2753,229 @@ TEST_F(CAmMapHandlerTest, peekDomain_2)
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domain2ID));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListDomains(listDomains));
     ASSERT_EQ(domainID, domain2ID);               // FAILS, ID is 2 instead of 1
-	bool containsDomainID = std::find_if(listDomains.begin(), listDomains.end(), [&](const am_Domain_s & ref) {
-		return ref.domainID==domainID;
-	})!=listDomains.end();
+    bool containsDomainID = std::find_if(listDomains.begin(), listDomains.end(), [&](const am_Domain_s & ref) {
+        return ref.domainID==domainID;
+    })!=listDomains.end();
     ASSERT_TRUE(containsDomainID);
 }
 
 TEST_F(CAmMapHandlerTest, connectionIDBoundary)
 {
-	am_Sink_s sink;
-	am_Source_s source;
-	am_Connection_s connection;
-	connection.delay = -1;
-	connection.connectionFormat = CF_GENIVI_ANALOG;
-	connection.connectionID = 0;
-	am_sinkID_t forgetSink;
-	am_sourceID_t forgetSource;
-	am_connectionID_t connectionID;
-	for (uint16_t i = 1; i < TEST_MAX_SINK_ID; i++)
-	{
-		pCF.createSink(sink);
-		sink.sinkID = 0;
-		sink.name = "sink" + int2string(i);
-		sink.domainID = 4;
-		pCF.createSource(source);
-		source.sourceID = 0;
-		source.name = "source" + int2string(i);
-		source.domainID = 4;
-                EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSink( _)).Times(1);
-                EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSource( _)).Times(1);
-		ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink, forgetSink));
-		ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source, forgetSource));
-		connection.sinkID = forgetSink;
-		connection.sourceID = forgetSource;
-		if( i < TEST_MAX_CONNECTION_ID )
-		{
-			ASSERT_EQ(E_OK, pDatabaseHandler.enterConnectionDB(connection,connectionID));
-			ASSERT_EQ(E_OK, pDatabaseHandler.changeConnectionFinal(connectionID));
-			ASSERT_EQ(i, connectionID);
-		}
-	}
-	std::vector<am_Connection_s> connectionList;
-	ASSERT_EQ(E_OK, pDatabaseHandler.getListConnections(connectionList));
-	ASSERT_EQ(TEST_MAX_CONNECTION_ID-1, static_cast<int>(connectionList.size()));
-	ASSERT_EQ(E_UNKNOWN, pDatabaseHandler.enterConnectionDB(connection,connectionID));
-	logInfo("here");
-	ASSERT_EQ(0, connectionID);
-
-	ASSERT_EQ(E_OK, pDatabaseHandler.removeConnection(10));
-	ASSERT_EQ(E_OK, pDatabaseHandler.removeConnection(12));
-
-	ASSERT_EQ(E_OK, pDatabaseHandler.enterConnectionDB(connection,connectionID));
-	ASSERT_EQ(10, connectionID);
-	connection.sinkID = 77;
-	connection.sourceID = 77;
-	sink.sinkID=77;
-	sink.name="77";
-	source.sourceID=77;
-	source.name="77";
+    am_Sink_s sink;
+    am_Source_s source;
+    am_Connection_s connection;
+    connection.delay = -1;
+    connection.connectionFormat = CF_GENIVI_ANALOG;
+    connection.connectionID = 0;
+    am_sinkID_t forgetSink;
+    am_sourceID_t forgetSource;
+    am_connectionID_t connectionID;
+    for (uint16_t i = 1; i < TEST_MAX_SINK_ID; i++)
+    {
+        pCF.createSink(sink);
+        sink.sinkID = 0;
+        sink.name = "sink" + int2string(i);
+        sink.domainID = 4;
+        pCF.createSource(source);
+        source.sourceID = 0;
+        source.name = "source" + int2string(i);
+        source.domainID = 4;
         EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSink( _)).Times(1);
         EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSource( _)).Times(1);
-	ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink, forgetSink));
-	ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source, forgetSource));
-	ASSERT_EQ(E_OK, pDatabaseHandler.enterConnectionDB(connection,connectionID));
-	ASSERT_EQ(12, connectionID);
-	ASSERT_EQ(E_UNKNOWN, pDatabaseHandler.enterConnectionDB(connection,connectionID));
-	ASSERT_EQ(0, connectionID);
+        ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink, forgetSink));
+        ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source, forgetSource));
+        connection.sinkID = forgetSink;
+        connection.sourceID = forgetSource;
+        if( i < TEST_MAX_CONNECTION_ID )
+        {
+            ASSERT_EQ(E_OK, pDatabaseHandler.enterConnectionDB(connection,connectionID));
+            ASSERT_EQ(E_OK, pDatabaseHandler.changeConnectionFinal(connectionID));
+            ASSERT_EQ(i, connectionID);
+        }
+    }
+    std::vector<am_Connection_s> connectionList;
+    ASSERT_EQ(E_OK, pDatabaseHandler.getListConnections(connectionList));
+    ASSERT_EQ(TEST_MAX_CONNECTION_ID-1, static_cast<int>(connectionList.size()));
+    ASSERT_EQ(E_UNKNOWN, pDatabaseHandler.enterConnectionDB(connection,connectionID));
+    logInfo("here");
+    ASSERT_EQ(0, connectionID);
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.removeConnection(10));
+    ASSERT_EQ(E_OK, pDatabaseHandler.removeConnection(12));
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterConnectionDB(connection,connectionID));
+    ASSERT_EQ(10, connectionID);
+    connection.sinkID = 77;
+    connection.sourceID = 77;
+    sink.sinkID=77;
+    sink.name="77";
+    source.sourceID=77;
+    source.name="77";
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSink( _)).Times(1);
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSource( _)).Times(1);
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink, forgetSink));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source, forgetSource));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterConnectionDB(connection,connectionID));
+    ASSERT_EQ(12, connectionID);
+    ASSERT_EQ(E_UNKNOWN, pDatabaseHandler.enterConnectionDB(connection,connectionID));
+    ASSERT_EQ(0, connectionID);
 }
 
 TEST_F(CAmMapHandlerTest, mainConnectionIDBoundary)
 {
-	am_Sink_s sink;
-	am_Source_s source;
-	am_Connection_s connection;
-	connection.delay = -1;
-	connection.connectionFormat = CF_GENIVI_ANALOG;
-	connection.connectionID = 0;
-	am_sinkID_t forgetSink;
-	am_sourceID_t forgetSource;
-	am_connectionID_t connectionID;
-	std::vector<am_connectionID_t> connectionIDList;
-	for (uint16_t i = 1; i < TEST_MAX_SINK_ID; i++)
-	{
-		pCF.createSink(sink);
-		sink.sinkID = 0;
-		sink.name = "sink" + int2string(i);
-		sink.domainID = 4;
-		pCF.createSource(source);
-		source.sourceID = 0;
-		source.name = "source" + int2string(i);
-		source.domainID = 4;
-                EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSink( _)).Times(1);
-                EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSource( _)).Times(1);
-		ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink, forgetSink));
-		ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source, forgetSource));
-		connection.sinkID = forgetSink;
-		connection.sourceID = forgetSource;
-		if( i < TEST_MAX_CONNECTION_ID )
-		{
-                    ASSERT_EQ(E_OK, pDatabaseHandler.enterConnectionDB(connection,connectionID));
-                    ASSERT_EQ(E_OK, pDatabaseHandler.changeConnectionFinal(connectionID));
-                    ASSERT_EQ(i, connectionID);
-                    connectionIDList.push_back(i);
-		}
-	}
-	std::vector<am_Connection_s> connectionList;
-	ASSERT_EQ(E_OK, pDatabaseHandler.getListConnections(connectionList));
-	ASSERT_EQ(TEST_MAX_CONNECTION_ID-1, static_cast<int>(connectionList.size()));
-
-	//create a mainConnection
-
-	am_MainConnection_s mainConnection;
-	am_mainConnectionID_t mainConnectionID;
-	mainConnection.listConnectionID = connectionIDList;
-	mainConnection.mainConnectionID = 0;
-	mainConnection.connectionState = CS_CONNECTED;
-	mainConnection.delay = -1;
-	mainConnection.sinkID=2;
-	mainConnection.sourceID=1;
-
-	for (uint16_t i = 1; i < TEST_MAX_MAINCONNECTION_ID; i++)
-	{
-		mainConnection.sinkID = DYNAMIC_ID_BOUNDARY + i;
-		mainConnection.sourceID = DYNAMIC_ID_BOUNDARY + i;
-                EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newMainConnection( _)).Times(1);
-                EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), mainConnectionStateChanged(_, _)).Times(1);
-                EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), timingInformationChanged(_, _)).Times(1);
-		ASSERT_EQ(E_OK, pDatabaseHandler.enterMainConnectionDB(mainConnection,mainConnectionID));
-		ASSERT_EQ(i, mainConnectionID);
-	}
-	EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newMainConnection( _)).Times(1);
-        EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), timingInformationChanged(_, _)).Times(1);
-        EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), removedMainConnection(_)).Times(2);
-        EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), mainConnectionStateChanged(_, _)).Times(3);
-	ASSERT_EQ(E_OK, pDatabaseHandler.removeMainConnectionDB(10));
-	ASSERT_EQ(E_OK, pDatabaseHandler.removeMainConnectionDB(12));
-	ASSERT_EQ(E_OK, pDatabaseHandler.enterMainConnectionDB(mainConnection,mainConnectionID));
-	ASSERT_EQ(10, mainConnectionID);
-	mainConnection.sinkID = 77;
-	mainConnection.sourceID = 77;
-	sink.sinkID=77;
-	sink.name="77";
-	source.sourceID=77;
-	source.name="77";
+    am_Sink_s sink;
+    am_Source_s source;
+    am_Connection_s connection;
+    connection.delay = -1;
+    connection.connectionFormat = CF_GENIVI_ANALOG;
+    connection.connectionID = 0;
+    am_sinkID_t forgetSink;
+    am_sourceID_t forgetSource;
+    am_connectionID_t connectionID;
+    std::vector<am_connectionID_t> connectionIDList;
+    for (uint16_t i = 1; i < TEST_MAX_SINK_ID; i++)
+    {
+        pCF.createSink(sink);
+        sink.sinkID = 0;
+        sink.name = "sink" + int2string(i);
+        sink.domainID = 4;
+        pCF.createSource(source);
+        source.sourceID = 0;
+        source.name = "source" + int2string(i);
+        source.domainID = 4;
         EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSink( _)).Times(1);
         EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSource( _)).Times(1);
+        ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink, forgetSink));
+        ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source, forgetSource));
+        connection.sinkID = forgetSink;
+        connection.sourceID = forgetSource;
+        if( i < TEST_MAX_CONNECTION_ID )
+        {
+            ASSERT_EQ(E_OK, pDatabaseHandler.enterConnectionDB(connection,connectionID));
+            ASSERT_EQ(E_OK, pDatabaseHandler.changeConnectionFinal(connectionID));
+            ASSERT_EQ(i, connectionID);
+            connectionIDList.push_back(i);
+        }
+    }
+    std::vector<am_Connection_s> connectionList;
+    ASSERT_EQ(E_OK, pDatabaseHandler.getListConnections(connectionList));
+    ASSERT_EQ(TEST_MAX_CONNECTION_ID-1, static_cast<int>(connectionList.size()));
+
+    //create a mainConnection
+
+    am_MainConnection_s mainConnection;
+    am_mainConnectionID_t mainConnectionID;
+    mainConnection.listConnectionID = connectionIDList;
+    mainConnection.mainConnectionID = 0;
+    mainConnection.connectionState = CS_CONNECTED;
+    mainConnection.delay = -1;
+    mainConnection.sinkID=2;
+    mainConnection.sourceID=1;
+
+    for (uint16_t i = 1; i < TEST_MAX_MAINCONNECTION_ID; i++)
+    {
+        mainConnection.sinkID = DYNAMIC_ID_BOUNDARY + i;
+        mainConnection.sourceID = DYNAMIC_ID_BOUNDARY + i;
         EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newMainConnection( _)).Times(1);
-        EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), timingInformationChanged(_, _)).Times(1);
         EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), mainConnectionStateChanged(_, _)).Times(1);
-	ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink, forgetSink));
-	ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source, forgetSource));
-	ASSERT_EQ(E_OK, pDatabaseHandler.enterMainConnectionDB(mainConnection,mainConnectionID));
-	ASSERT_EQ(12, mainConnectionID);
-	ASSERT_EQ(E_UNKNOWN, pDatabaseHandler.enterMainConnectionDB(mainConnection,mainConnectionID));
-	ASSERT_EQ(0, mainConnectionID);
+#ifdef WITH_DATABASE_CHANGE_CHECK
+        EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), timingInformationChanged(_, _)).Times(0);
+#else
+        EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), timingInformationChanged(_, _)).Times(1);
+#endif
+        ASSERT_EQ(E_OK, pDatabaseHandler.enterMainConnectionDB(mainConnection,mainConnectionID));
+        ASSERT_EQ(i, mainConnectionID);
+    }
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newMainConnection( _)).Times(1);
+#ifdef WITH_DATABASE_CHANGE_CHECK
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), timingInformationChanged(_, _)).Times(0);
+#else
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), timingInformationChanged(_, _)).Times(1);
+#endif
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), removedMainConnection(_)).Times(2);
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), mainConnectionStateChanged(_, _)).Times(3);
+    ASSERT_EQ(E_OK, pDatabaseHandler.removeMainConnectionDB(10));
+    ASSERT_EQ(E_OK, pDatabaseHandler.removeMainConnectionDB(12));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterMainConnectionDB(mainConnection,mainConnectionID));
+    ASSERT_EQ(10, mainConnectionID);
+    mainConnection.sinkID = 77;
+    mainConnection.sourceID = 77;
+    sink.sinkID=77;
+    sink.name="77";
+    source.sourceID=77;
+    source.name="77";
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSink( _)).Times(1);
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSource( _)).Times(1);
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newMainConnection( _)).Times(1);
+#ifdef WITH_DATABASE_CHANGE_CHECK
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), timingInformationChanged(_, _)).Times(0);
+#else
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), timingInformationChanged(_, _)).Times(1);
+#endif
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), mainConnectionStateChanged(_, _)).Times(1);
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink, forgetSink));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source, forgetSource));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterMainConnectionDB(mainConnection,mainConnectionID));
+    ASSERT_EQ(12, mainConnectionID);
+    ASSERT_EQ(E_UNKNOWN, pDatabaseHandler.enterMainConnectionDB(mainConnection,mainConnectionID));
+    ASSERT_EQ(0, mainConnectionID);
 }
 
 TEST_F(CAmMapHandlerTest, increaseID)
 {
-	am_Sink_s sink;
-	am_sinkID_t sinkID;
-	for (uint16_t i = 0; i < TEST_MAX_SINK_ID; i++)
-	{
-		pCF.createSink(sink);
-		sink.sinkID = 0;
-		sink.name = "sink" + int2string(i);
-		sink.domainID = 4;
+    am_Sink_s sink;
+    am_sinkID_t sinkID;
+    for (uint16_t i = 0; i < TEST_MAX_SINK_ID; i++)
+    {
+        pCF.createSink(sink);
+        sink.sinkID = 0;
+        sink.name = "sink" + int2string(i);
+        sink.domainID = 4;
                 EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), newSink( _)).Times(1);
-		ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink, sinkID));
-		ASSERT_EQ(DYNAMIC_ID_BOUNDARY+i, sinkID);
-	}
-	ASSERT_EQ(E_UNKNOWN, pDatabaseHandler.enterSinkDB(sink, sinkID));
-        EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), removedSink(_,_)).Times(2);
-	ASSERT_EQ(E_OK, pDatabaseHandler.removeSinkDB(DYNAMIC_ID_BOUNDARY+10));
-	ASSERT_EQ(E_OK, pDatabaseHandler.removeSinkDB(DYNAMIC_ID_BOUNDARY+12));
+        ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink, sinkID));
+        ASSERT_EQ(DYNAMIC_ID_BOUNDARY+i, sinkID);
+    }
+    ASSERT_EQ(E_UNKNOWN, pDatabaseHandler.enterSinkDB(sink, sinkID));
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), removedSink(_,_)).Times(2);
+    ASSERT_EQ(E_OK, pDatabaseHandler.removeSinkDB(DYNAMIC_ID_BOUNDARY+10));
+    ASSERT_EQ(E_OK, pDatabaseHandler.removeSinkDB(DYNAMIC_ID_BOUNDARY+12));
 
-	ASSERT_EQ(E_UNKNOWN, pDatabaseHandler.enterSinkDB(sink, sinkID));
-	ASSERT_EQ(E_UNKNOWN, pDatabaseHandler.enterSinkDB(sink, sinkID));
-	ASSERT_EQ(E_UNKNOWN, pDatabaseHandler.enterSinkDB(sink, sinkID));
+    ASSERT_EQ(E_UNKNOWN, pDatabaseHandler.enterSinkDB(sink, sinkID));
+    ASSERT_EQ(E_UNKNOWN, pDatabaseHandler.enterSinkDB(sink, sinkID));
+    ASSERT_EQ(E_UNKNOWN, pDatabaseHandler.enterSinkDB(sink, sinkID));
 }
 
 MATCHER_P(IsDomainDataEqualTo, value, "") {
-	auto lh = arg;
-	return lh.domainID == value.domainID &&
-			lh.name == value.name &&
-			lh.nodename == value.nodename &&
-			lh.early == value.early &&
-			lh.complete == value.complete &&
-			lh.state == value.state;
+    auto lh = arg;
+    return lh.domainID == value.domainID &&
+            lh.name == value.name &&
+            lh.nodename == value.nodename &&
+            lh.early == value.early &&
+            lh.complete == value.complete &&
+            lh.state == value.state;
 }
 
 TEST_F(CAmMapHandlerTest, dbo_addAndRemoveObservers)
 {
-	CAmDatabaseHandlerMap::AmDatabaseObserverCallbacks observer1;
-	CAmDatabaseHandlerMap::AmDatabaseObserverCallbacks observer2;
-	ASSERT_EQ(pDatabaseHandler.registerObserver(&observer1), true);
-	ASSERT_EQ(pDatabaseHandler.countObservers(), 2);
-	ASSERT_EQ(pDatabaseHandler.registerObserver(&observer2), true);
-	ASSERT_EQ(pDatabaseHandler.countObservers(), 3);
+    CAmDatabaseHandlerMap::AmDatabaseObserverCallbacks observer1;
+    CAmDatabaseHandlerMap::AmDatabaseObserverCallbacks observer2;
+    ASSERT_EQ(pDatabaseHandler.registerObserver(&observer1), true);
+    ASSERT_EQ(pDatabaseHandler.countObservers(), 2);
+    ASSERT_EQ(pDatabaseHandler.registerObserver(&observer2), true);
+    ASSERT_EQ(pDatabaseHandler.countObservers(), 3);
 
-	pDatabaseHandler.unregisterObserver(&observer1);
-	ASSERT_EQ(pDatabaseHandler.countObservers(), 2);
-	pDatabaseHandler.unregisterObserver(&observer2);
-	ASSERT_EQ(pDatabaseHandler.countObservers(), 1);
-	pDatabaseHandler.unregisterObserver(&observer2);
-	ASSERT_EQ(pDatabaseHandler.countObservers(), 1);
+    pDatabaseHandler.unregisterObserver(&observer1);
+    ASSERT_EQ(pDatabaseHandler.countObservers(), 2);
+    pDatabaseHandler.unregisterObserver(&observer2);
+    ASSERT_EQ(pDatabaseHandler.countObservers(), 1);
+    pDatabaseHandler.unregisterObserver(&observer2);
+    ASSERT_EQ(pDatabaseHandler.countObservers(), 1);
 
-	ASSERT_EQ(pDatabaseHandler.registerObserver(&observer2), true);
-	ASSERT_EQ(pDatabaseHandler.registerObserver(&observer2), false);
-	ASSERT_EQ(pDatabaseHandler.countObservers(), 2);
-	pDatabaseHandler.unregisterObserver(&observer2);
-	ASSERT_EQ(pDatabaseHandler.countObservers(), 1);
+    ASSERT_EQ(pDatabaseHandler.registerObserver(&observer2), true);
+    ASSERT_EQ(pDatabaseHandler.registerObserver(&observer2), false);
+    ASSERT_EQ(pDatabaseHandler.countObservers(), 2);
+    pDatabaseHandler.unregisterObserver(&observer2);
+    ASSERT_EQ(pDatabaseHandler.countObservers(), 1);
 }
 
 TEST_F(CAmMapHandlerTest, dbo_peek_enter_removeDomain)
@@ -2969,9 +3004,9 @@ TEST_F(CAmMapHandlerTest, dbo_peek_enter_removeDomain)
     ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain,domain2ID));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListDomains(listDomains));
     ASSERT_EQ(domainID, domain2ID);               // FAILS, ID is 2 instead of 1
-	bool containsDomainID = std::find_if(listDomains.begin(), listDomains.end(), [&](const am_Domain_s & ref) {
-		return ref.domainID==domainID;
-	})!=listDomains.end();
+    bool containsDomainID = std::find_if(listDomains.begin(), listDomains.end(), [&](const am_Domain_s & ref) {
+        return ref.domainID==domainID;
+    })!=listDomains.end();
     ASSERT_TRUE(containsDomainID);
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), removeDomain(domainID)).Times(1);
     ASSERT_EQ(E_OK,pDatabaseHandler.removeDomainDB(domainID))<< "ERROR: database error";
@@ -3011,8 +3046,8 @@ TEST_F(CAmMapHandlerTest, dbo_peek_enter_update_removeSource)
     ASSERT_EQ(E_OK, pDatabaseHandler.getListSources(listSources));
     ASSERT_EQ(sourceID, source3ID);
     bool containsSourceID = std::find_if(listSources.begin(), listSources.end(), [&](const am_Source_s & ref) {
-    		return ref.sourceID==sourceID;
-    	})!=listSources.end();
+            return ref.sourceID==sourceID;
+        })!=listSources.end();
     ASSERT_TRUE(containsSourceID);
 
     std::vector<am_SoundProperty_s> listSoundProperties;
@@ -3076,9 +3111,9 @@ TEST_F(CAmMapHandlerTest, dbo_peek_enter_update_removeSink)
     ASSERT_EQ(E_OK, pDatabaseHandler.getListSinks(listSinks));
     ASSERT_EQ(sinkID, sink3ID);
     bool containsSourceID = std::find_if(listSinks.begin(), listSinks.end(), [&](const am_Sink_s & ref) {
-			return ref.sinkID==sinkID;
-	})!=listSinks.end();
-	ASSERT_TRUE(containsSourceID);
+            return ref.sinkID==sinkID;
+    })!=listSinks.end();
+    ASSERT_TRUE(containsSourceID);
 
     std::vector<am_SoundProperty_s> listSoundProperties;
     std::vector<am_CustomAvailabilityReason_t> listConnectionFormats;
@@ -3394,11 +3429,13 @@ TEST_F(CAmMapHandlerTest, dbo_changeSystemProperty)
     listSystemProperties.push_back(systemProperty);
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSystemProperties(listSystemProperties));
     systemProperty.value = 444;
-    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), systemPropertyChanged(_)).Times(1);
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), systemPropertyChanged(_)).Times(2);
     ASSERT_EQ(E_OK, pDatabaseHandler.changeSystemPropertyDB(systemProperty));
     ASSERT_EQ(E_OK, pDatabaseHandler.getListSystemProperties(listReturn));
     ASSERT_EQ(listReturn[0].type, systemProperty.type);
     ASSERT_EQ(listReturn[0].value, systemProperty.value);
+    systemProperty.value = 555;
+    ASSERT_EQ(E_OK, pDatabaseHandler.changeSystemPropertyDB(systemProperty));
 
 #ifdef WITH_DATABASE_CHANGE_CHECK
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), systemPropertyChanged(_)).Times(1);
@@ -3505,15 +3542,15 @@ TEST_F(CAmMapHandlerTest, dbo_changeMainNotificationsSources)
 
 int main(int argc, char **argv)
 {
-	try
-	{
-		TCLAP::CmdLine* cmd(CAmCommandLineSingleton::instanciateOnce("The team of the AudioManager wishes you a nice day!",' ',DAEMONVERSION,true));
-		cmd->add(enableDebug);
-	}
-	catch (TCLAP::ArgException &e)  // catch any exceptions
-	{ std::cerr << "error: " << e.error() << " for arg " << e.argId() << std::endl; }
-	CAmCommandLineSingleton::instance()->preparse(argc,argv);
-		CAmDltWrapper::instanctiateOnce("DTEST","Database Test",enableDebug.getValue(),CAmDltWrapper::logDestination::DAEMON);
+    try
+    {
+        TCLAP::CmdLine* cmd(CAmCommandLineSingleton::instanciateOnce("The team of the AudioManager wishes you a nice day!",' ',DAEMONVERSION,true));
+        cmd->add(enableDebug);
+    }
+    catch (TCLAP::ArgException &e)  // catch any exceptions
+    { std::cerr << "error: " << e.error() << " for arg " << e.argId() << std::endl; }
+    CAmCommandLineSingleton::instance()->preparse(argc,argv);
+        CAmDltWrapper::instanctiateOnce("DTEST","Database Test",enableDebug.getValue(),CAmDltWrapper::logDestination::DAEMON);
     logInfo("Database Test started ");
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
