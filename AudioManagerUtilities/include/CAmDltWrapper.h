@@ -163,14 +163,11 @@ public:
     {
 #ifdef WITH_DLT
 # ifdef DLT_IS_LOG_LEVEL_ENABLED
-        if (mlogDestination == logDestination::DAEMON)
-        {
-            return (dlt_user_is_logLevel_enabled(&mDltContext, logLevel) == DLT_RETURN_TRUE);
-        }
+        return (dlt_user_is_logLevel_enabled(&mDltContext, logLevel) == DLT_RETURN_TRUE);
 # else
         (void)logLevel;
-# endif     // ifdef DLT_IS_LOG_LEVEL_ENABLED
         return true;
+# endif
 #else       // ifdef WITH_DLT
         return (logLevel <= mDltContext.log_level_user);
 #endif      // ifdef WITH_DLT
@@ -234,8 +231,9 @@ public:
     {
         if (static_cast<std::size_t>(value) >= mStr_error.size())
         {
-            append("value for am_Error_e out of bounds!");
-            append(static_cast<uint16_t>(value));
+            std::ostringstream ss;
+            ss << "value for am_Error_e out of bounds! " << std::dec << (size_t)value;
+            append(ss.str().c_str());
             return;
         }
 
@@ -248,8 +246,9 @@ public:
     {
         if (static_cast<std::size_t>(value) >= mStr_sourceState.size())
         {
-            append("value for am_SourceState_e out of bounds!");
-            append(static_cast<uint16_t>(value));
+            std::ostringstream ss;
+            ss << "value for am_SourceState_e out of bounds! " << std::dec << (size_t)value;
+            append(ss.str().c_str());
             return;
         }
 
@@ -261,8 +260,9 @@ public:
     {
         if (static_cast<std::size_t>(value) >= mStr_MuteState.size())
         {
-            append("value for am_MuteState_e out of bounds!");
-            append(static_cast<uint16_t>(value));
+            std::ostringstream ss;
+            ss << "value for am_MuteState_e out of bounds! " << std::dec << (size_t)value;
+            append(ss.str().c_str());
             return;
         }
 
@@ -274,8 +274,10 @@ public:
     {
         if (static_cast<std::size_t>(value) >= mStr_DomainState.size())
         {
-            append("value for am_DomainState_e out of bounds!");
-            append(static_cast<uint16_t>(value));
+            std::ostringstream ss;
+            ss << "value for am_DomainState_e out of bounds! " << std::dec << (size_t)value;
+            append(ss.str().c_str());
+
             return;
         }
 
@@ -287,8 +289,9 @@ public:
     {
         if (static_cast<std::size_t>(value) >= mStr_ConnectionState.size())
         {
-            append("value for am_ConnectionState_e out of bounds!");
-            append(static_cast<uint16_t>(value));
+            std::ostringstream ss;
+            ss << "value for am_ConnectionState_e out of bounds! " << std::dec << (size_t)value;
+            append(ss.str().c_str());
             return;
         }
 
@@ -300,8 +303,9 @@ public:
     {
         if (static_cast<std::size_t>(value) >= mStr_Availability.size())
         {
-            append("value for am_Availability_e out of bounds!");
-            append(static_cast<uint16_t>(value));
+            std::ostringstream ss;
+            ss << "value for am_Availability_e out of bounds! " << std::dec << (size_t)value;
+            append(ss.str().c_str());
             return;
         }
 
@@ -313,8 +317,9 @@ public:
     {
         if (static_cast<std::size_t>(value) >= mStr_Interrupt.size())
         {
-            append("value for am_InterruptState_e out of bounds!");
-            append(static_cast<uint16_t>(value));
+            std::ostringstream ss;
+            ss << "value for am_InterruptState_e out of bounds! " << std::dec << (size_t)value;
+            append(ss.str().c_str());
             return;
         }
 
@@ -326,8 +331,9 @@ public:
     {
         if (static_cast<std::size_t>(value) >= mStr_Handle.size())
         {
-            append("value for am_Handle_e out of bounds!");
-            append(static_cast<uint16_t>(value));
+            std::ostringstream ss;
+            ss << "value for am_Handle_e out of bounds! " << std::dec << (size_t)value;
+            append(ss.str().c_str());
             return;
         }
 
@@ -346,8 +352,9 @@ public:
     {
         if (static_cast<std::size_t>(value) >= mStr_NotificationStatus.size())
         {
-            append("value for am_NotificationStatus_e out of bounds!");
-            append(static_cast<uint16_t>(value));
+            std::ostringstream ss;
+            ss << "value for am_NotificationStatus_e out of bounds! " << std::dec << (size_t)value;
+            append(ss.str().c_str());
             return;
         }
 
@@ -368,7 +375,7 @@ public:
     void append(T value)
     {
         std::ostringstream ss;
-        ss << std::dec << value;
+        ss << std::dec << static_cast<int>(value);
         append(ss.str().c_str());
     }
 

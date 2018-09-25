@@ -97,8 +97,7 @@ private:
     {
     public:
 
-        typedef enum
-            : bool
+        typedef enum : bool
         {
             SyncCallType = false, AsyncCallType = true
         } CallType;
@@ -883,8 +882,7 @@ class CAmSerializer
     class CAmDelegate
     {
     public:
-        typedef enum
-            : bool
+        typedef enum : bool
         {
             SyncCallType = false, AsyncCallType = true
         } CallType;
