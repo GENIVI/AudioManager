@@ -35,7 +35,7 @@
 #include "CAmDltWrapper.h"
 #include "audiomanagerconfig.h"
 
-#define __METHOD_NAME__ std::string (std::string("CAmCommandSender::") + __func__)
+#define __METHOD_NAME__ std::string(std::string("CAmCommandSender::") + __func__)
 
 namespace am
 {
@@ -43,138 +43,146 @@ namespace am
 /**
  *  macro to call all interfaces
  */
-#define CALL_ALL_INTERFACES(...) 														 \
-		std::vector<IAmCommandSend*>::iterator iter = mListInterfaces.begin();	         \
-		std::vector<IAmCommandSend*>::iterator iterEnd = mListInterfaces.end();	         \
-		for (; iter<iterEnd;++iter)													 	 \
-		{																				 \
-			(*iter)->__VA_ARGS__;													 	 \
-		}
+#define CALL_ALL_INTERFACES(...)                                             \
+    std::vector<IAmCommandSend *>::iterator iter = mListInterfaces.begin();  \
+    std::vector<IAmCommandSend *>::iterator iterEnd = mListInterfaces.end(); \
+    for (; iter < iterEnd; ++iter)                                           \
+    {                                                                        \
+        (*iter)->__VA_ARGS__;                                                \
+    }
 
-CAmCommandSender::CAmCommandSender(const std::vector<std::string>& listOfPluginDirectories, CAmSocketHandler *iSocketHandler) :
-		CAmDatabaseHandlerMap::AmDatabaseObserverCallbacks(),
-        mListInterfaces(),
-        mListLibraryHandles(),
-        mListLibraryNames(),
-        mCommandReceiver(),
-		mSerializer(iSocketHandler)
+CAmCommandSender::CAmCommandSender(const std::vector<std::string> &listOfPluginDirectories, CAmSocketHandler *iSocketHandler)
+    : CAmDatabaseHandlerMap::AmDatabaseObserverCallbacks()
+    , mListInterfaces()
+    , mListLibraryHandles()
+    , mListLibraryNames()
+    , mCommandReceiver()
+    , mSerializer(iSocketHandler)
 {
     loadPlugins(listOfPluginDirectories);
 
-    dboNewMainConnection = [&](const am_MainConnectionType_s& mainConnection) {
-        mSerializer.asyncCall(this, &CAmCommandSender::cbNewMainConnection, mainConnection);
-    };
+    dboNewMainConnection = [&](const am_MainConnectionType_s &mainConnection) {
+            mSerializer.asyncCall(this, &CAmCommandSender::cbNewMainConnection, mainConnection);
+        };
     dboRemovedMainConnection = [&](const am_mainConnectionID_t mainConnection) {
-        mSerializer.asyncCall(this, &CAmCommandSender::cbRemovedMainConnection, mainConnection);
-    };
-    dboNewSink = [&](const am_Sink_s& sink) {
-        if (sink.visible)
-        {
-            am_SinkType_s s;
-            s.availability = sink.available;
-            s.muteState = sink.muteState;
-            s.name = sink.name;
-            s.sinkClassID = sink.sinkClassID;
-            s.sinkID = sink.sinkID;
-            s.volume = sink.mainVolume;
-            typedef void(CAmCommandSender::*TMeth)(am::am_SinkType_s);
-            mSerializer.asyncCall<CAmCommandSender, TMeth, am::am_SinkType_s>(this, &CAmCommandSender::cbNewSink, s);
-        }
-    };
-    dboNewSource = [&](const am_Source_s& source) {
-        if (source.visible)
-        {
-            am_SourceType_s s;
-            s.availability = source.available;
-            s.name = source.name;
-            s.sourceClassID = source.sourceClassID;
-            s.sourceID = source.sourceID;
-            typedef void(CAmCommandSender::*TMeth)(am::am_SourceType_s);
-            mSerializer.asyncCall<CAmCommandSender, TMeth, am::am_SourceType_s>(this, &CAmCommandSender::cbNewSource, s);
-        }
-    };
+            mSerializer.asyncCall(this, &CAmCommandSender::cbRemovedMainConnection, mainConnection);
+        };
+    dboNewSink = [&](const am_Sink_s &sink) {
+            if (sink.visible)
+            {
+                am_SinkType_s s;
+                s.availability = sink.available;
+                s.muteState    = sink.muteState;
+                s.name         = sink.name;
+                s.sinkClassID  = sink.sinkClassID;
+                s.sinkID       = sink.sinkID;
+                s.volume       = sink.mainVolume;
+                typedef void (CAmCommandSender::*TMeth)(am::am_SinkType_s);
+                mSerializer.asyncCall<CAmCommandSender, TMeth, am::am_SinkType_s>(this, &CAmCommandSender::cbNewSink, s);
+            }
+        };
+    dboNewSource = [&](const am_Source_s &source) {
+            if (source.visible)
+            {
+                am_SourceType_s s;
+                s.availability  = source.available;
+                s.name          = source.name;
+                s.sourceClassID = source.sourceClassID;
+                s.sourceID      = source.sourceID;
+                typedef void (CAmCommandSender::*TMeth)(am::am_SourceType_s);
+                mSerializer.asyncCall<CAmCommandSender, TMeth, am::am_SourceType_s>(this, &CAmCommandSender::cbNewSource, s);
+            }
+        };
 
     dboRemovedSink = [&](const am_sinkID_t sinkID, const bool visible) {
-        if (visible)
-        mSerializer.asyncCall(this, &CAmCommandSender::cbRemovedSink, sinkID);
-    };
+            if (visible)
+            {
+                mSerializer.asyncCall(this, &CAmCommandSender::cbRemovedSink, sinkID);
+            }
+        };
     dboRemovedSource = [&](const am_sourceID_t sourceID, const bool visible) {
-        if (visible)
-        mSerializer.asyncCall(this, &CAmCommandSender::cbRemovedSource, sourceID);
-    };
+            if (visible)
+            {
+                mSerializer.asyncCall(this, &CAmCommandSender::cbRemovedSource, sourceID);
+            }
+        };
     dboNumberOfSinkClassesChanged = [&]() {
-        mSerializer.asyncCall(this, &CAmCommandSender::cbNumberOfSinkClassesChanged);
-    };
+            mSerializer.asyncCall(this, &CAmCommandSender::cbNumberOfSinkClassesChanged);
+        };
     dboNumberOfSourceClassesChanged = [&]() {
-        mSerializer.asyncCall(this, &CAmCommandSender::cbNumberOfSourceClassesChanged);
-    };
+            mSerializer.asyncCall(this, &CAmCommandSender::cbNumberOfSourceClassesChanged);
+        };
     dboMainConnectionStateChanged = [&](const am_mainConnectionID_t connectionID, const am_ConnectionState_e connectionState) {
-        mSerializer.asyncCall(this, &CAmCommandSender::cbMainConnectionStateChanged, connectionID, connectionState);
-    };
-    dboMainSinkSoundPropertyChanged = [&](const am_sinkID_t sinkID, const am_MainSoundProperty_s& SoundProperty) {
-        mSerializer.asyncCall(this, &CAmCommandSender::cbMainSinkSoundPropertyChanged, sinkID, SoundProperty);
-    };
-    dboMainSourceSoundPropertyChanged = [&](const am_sourceID_t sourceID, const am_MainSoundProperty_s& SoundProperty) {
-        mSerializer.asyncCall(this, &CAmCommandSender::cbMainSourceSoundPropertyChanged, sourceID, SoundProperty);
-    };
-    dboSinkAvailabilityChanged = [&](const am_sinkID_t sinkID, const am_Availability_s & availability) {
-        mSerializer.asyncCall(this, &CAmCommandSender::cbSinkAvailabilityChanged, sinkID, availability);
-    };
-    dboSourceAvailabilityChanged = [&](const am_sourceID_t sourceID, const am_Availability_s & availability) {
-        mSerializer.asyncCall(this, &CAmCommandSender::cbSourceAvailabilityChanged, sourceID, availability);
-    };
+            mSerializer.asyncCall(this, &CAmCommandSender::cbMainConnectionStateChanged, connectionID, connectionState);
+        };
+    dboMainSinkSoundPropertyChanged = [&](const am_sinkID_t sinkID, const am_MainSoundProperty_s &SoundProperty) {
+            mSerializer.asyncCall(this, &CAmCommandSender::cbMainSinkSoundPropertyChanged, sinkID, SoundProperty);
+        };
+    dboMainSourceSoundPropertyChanged = [&](const am_sourceID_t sourceID, const am_MainSoundProperty_s &SoundProperty) {
+            mSerializer.asyncCall(this, &CAmCommandSender::cbMainSourceSoundPropertyChanged, sourceID, SoundProperty);
+        };
+    dboSinkAvailabilityChanged = [&](const am_sinkID_t sinkID, const am_Availability_s &availability) {
+            mSerializer.asyncCall(this, &CAmCommandSender::cbSinkAvailabilityChanged, sinkID, availability);
+        };
+    dboSourceAvailabilityChanged = [&](const am_sourceID_t sourceID, const am_Availability_s &availability) {
+            mSerializer.asyncCall(this, &CAmCommandSender::cbSourceAvailabilityChanged, sourceID, availability);
+        };
     dboVolumeChanged = [&](const am_sinkID_t sinkID, const am_mainVolume_t volume) {
-        mSerializer.asyncCall(this, &CAmCommandSender::cbVolumeChanged, sinkID, volume);
-    };
+            mSerializer.asyncCall(this, &CAmCommandSender::cbVolumeChanged, sinkID, volume);
+        };
     dboSinkMuteStateChanged = [&](const am_sinkID_t sinkID, const am_MuteState_e muteState) {
-        mSerializer.asyncCall(this, &CAmCommandSender::cbSinkMuteStateChanged, sinkID, muteState);
-    };
-    dboSourceMuteStateChanged = [&](const am_sourceID_t sourceID, const am_MuteState_e muteState) {
+            mSerializer.asyncCall(this, &CAmCommandSender::cbSinkMuteStateChanged, sinkID, muteState);
+        };
+	dboSourceMuteStateChanged = [&](const am_sourceID_t sourceID, const am_MuteState_e muteState) {
         mSerializer.asyncCall(this, &CAmCommandSender::cbSourceMuteStateChanged, sourceID, muteState);
     };
-    dboSystemPropertyChanged = [&](const am_SystemProperty_s& SystemProperty) {
-        mSerializer.asyncCall(this, &CAmCommandSender::cbSystemPropertyChanged, SystemProperty);
-    };
+    dboSystemPropertyChanged = [&](const am_SystemProperty_s &SystemProperty) {
+            mSerializer.asyncCall(this, &CAmCommandSender::cbSystemPropertyChanged, SystemProperty);
+        };
     dboTimingInformationChanged = [&](const am_mainConnectionID_t mainConnection, const am_timeSync_t time) {
-        mSerializer.asyncCall(this, &CAmCommandSender::cbTimingInformationChanged, mainConnection, time);
-    };
-    dboSinkUpdated = [&](const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties, const bool visible) {
-        if (visible)
-        mSerializer.asyncCall(this, &CAmCommandSender::cbSinkUpdated, sinkID, sinkClassID, listMainSoundProperties);
-    };
-    dboSourceUpdated = [&](const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties, const bool visible) {
-        if (visible)
-        mSerializer.asyncCall(this, &CAmCommandSender::cbSinkUpdated, sourceID, sourceClassID, listMainSoundProperties);
-    };
+            mSerializer.asyncCall(this, &CAmCommandSender::cbTimingInformationChanged, mainConnection, time);
+        };
+    dboSinkUpdated = [&](const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_MainSoundProperty_s> &listMainSoundProperties, const bool visible) {
+            if (visible)
+            {
+                mSerializer.asyncCall(this, &CAmCommandSender::cbSinkUpdated, sinkID, sinkClassID, listMainSoundProperties);
+            }
+        };
+    dboSourceUpdated = [&](const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_MainSoundProperty_s> &listMainSoundProperties, const bool visible) {
+            if (visible)
+            {
+                mSerializer.asyncCall(this, &CAmCommandSender::cbSinkUpdated, sourceID, sourceClassID, listMainSoundProperties);
+            }
+        };
     dboSinkMainNotificationConfigurationChanged = [&](const am_sinkID_t sinkID, const am_NotificationConfiguration_s mainNotificationConfiguration) {
-        mSerializer.asyncCall(this, &CAmCommandSender::cbSinkMainNotificationConfigurationChanged, sinkID, mainNotificationConfiguration);
-    };
+            mSerializer.asyncCall(this, &CAmCommandSender::cbSinkMainNotificationConfigurationChanged, sinkID, mainNotificationConfiguration);
+        };
     dboSourceMainNotificationConfigurationChanged = [&](const am_sourceID_t sourceID, const am_NotificationConfiguration_s mainNotificationConfiguration) {
-        mSerializer.asyncCall(this, &CAmCommandSender::cbSourceMainNotificationConfigurationChanged, sourceID, mainNotificationConfiguration);
-    };
+            mSerializer.asyncCall(this, &CAmCommandSender::cbSourceMainNotificationConfigurationChanged, sourceID, mainNotificationConfiguration);
+        };
 }
 
-void CAmCommandSender::loadPlugins(const std::vector<std::string>& listOfPluginDirectories)
+void CAmCommandSender::loadPlugins(const std::vector<std::string> &listOfPluginDirectories)
 {
     if (listOfPluginDirectories.empty())
     {
-        logError(__METHOD_NAME__,"List of commandplugins is empty");
+        logError(__METHOD_NAME__, "List of commandplugins is empty");
     }
 
-    std::vector<std::string> sharedLibraryNameList;
-    std::vector<std::string>::const_iterator dirIter = listOfPluginDirectories.begin();
+    std::vector<std::string>                 sharedLibraryNameList;
+    std::vector<std::string>::const_iterator dirIter    = listOfPluginDirectories.begin();
     std::vector<std::string>::const_iterator dirIterEnd = listOfPluginDirectories.end();
 
     // search communicator plugins in configured directories
     for (; dirIter < dirIterEnd; ++dirIter)
     {
-        const char* directoryName = dirIter->c_str();
-        logInfo(__METHOD_NAME__,"Searching for CommandPlugins in", *dirIter);
+        const char *directoryName = dirIter->c_str();
+        logInfo(__METHOD_NAME__, "Searching for CommandPlugins in", *dirIter);
         DIR *directory = opendir(directoryName);
 
         if (!directory)
         {
-            logError(__METHOD_NAME__,"Error opening directory ", *dirIter);
+            logError(__METHOD_NAME__, "Error opening directory ", *dirIter);
             continue;
         }
 
@@ -183,10 +191,10 @@ void CAmCommandSender::loadPlugins(const std::vector<std::string>& listOfPluginD
         while ((itemInDirectory = readdir(directory)))
         {
             unsigned char entryType = itemInDirectory->d_type;
-            std::string entryName = itemInDirectory->d_name;
-            std::string fullName = *dirIter + "/" + entryName;
+            std::string   entryName = itemInDirectory->d_name;
+            std::string   fullName  = *dirIter + "/" + entryName;
 
-            bool regularFile = (entryType == DT_REG || entryType == DT_LNK);
+            bool regularFile        = (entryType == DT_REG || entryType == DT_LNK);
             bool sharedLibExtension = ("so" == entryName.substr(entryName.find_last_of(".") + 1));
 
             // Handle cases where readdir() could not determine the file type
@@ -196,7 +204,7 @@ void CAmCommandSender::loadPlugins(const std::vector<std::string>& listOfPluginD
 
                 if (stat(fullName.c_str(), &buf))
                 {
-                    logInfo(__METHOD_NAME__,"Failed to stat file: ", entryName, errno);
+                    logInfo(__METHOD_NAME__, "Failed to stat file: ", entryName, errno);
                     continue;
                 }
 
@@ -209,36 +217,37 @@ void CAmCommandSender::loadPlugins(const std::vector<std::string>& listOfPluginD
                 sharedLibraryNameList.push_back(name + "/" + entryName);
             }
         }
+
         closedir(directory);
     }
 
     // iterate all communicator plugins and start them
-    std::vector<std::string>::iterator iter = sharedLibraryNameList.begin();
+    std::vector<std::string>::iterator iter    = sharedLibraryNameList.begin();
     std::vector<std::string>::iterator iterEnd = sharedLibraryNameList.end();
 
     for (; iter < iterEnd; ++iter)
     {
-        logInfo(__METHOD_NAME__,"Loading CommandSender plugin", *iter);
-        IAmCommandSend* (*createFunc)();
-        void* tempLibHandle = NULL;
-        createFunc = getCreateFunction<IAmCommandSend*()>(*iter, tempLibHandle);
+        logInfo(__METHOD_NAME__, "Loading CommandSender plugin", *iter);
+        IAmCommandSend *(*createFunc)();
+        void           *tempLibHandle = NULL;
+        createFunc = getCreateFunction<IAmCommandSend *()>(*iter, tempLibHandle);
 
         if (!createFunc)
         {
-            logInfo(__METHOD_NAME__,"Entry point of CommandPlugin not found", *iter);
+            logInfo(__METHOD_NAME__, "Entry point of CommandPlugin not found", *iter);
             continue;
         }
 
-        IAmCommandSend* commander = createFunc();
+        IAmCommandSend *commander = createFunc();
 
         if (!commander)
         {
-            logInfo(__METHOD_NAME__,"CommandPlugin initialization failed. Entry Function not callable");
+            logInfo(__METHOD_NAME__, "CommandPlugin initialization failed. Entry Function not callable");
             dlclose(tempLibHandle);
             continue;
         }
 
-        //check libversion
+        // check libversion
         std::string version, cVersion(CommandVersion);
         commander->getInterfaceVersion(version);
         uint16_t minorVersion, majorVersion, cMinorVersion, cMajorVersion;
@@ -249,7 +258,7 @@ void CAmCommandSender::loadPlugins(const std::vector<std::string>& listOfPluginD
 
         if (majorVersion < cMajorVersion || ((majorVersion == cMajorVersion) && (minorVersion > cMinorVersion)))
         {
-            logError(__METHOD_NAME__,"CommandInterface initialization failed. Version of Interface to old");
+            logError(__METHOD_NAME__, "CommandInterface initialization failed. Version of Interface to old");
             dlclose(tempLibHandle);
             continue;
         }
@@ -262,7 +271,7 @@ void CAmCommandSender::loadPlugins(const std::vector<std::string>& listOfPluginD
 
 CAmCommandSender::~CAmCommandSender()
 {
-    //unloadLibraries();
+    // unloadLibraries();
 }
 
 am_Error_e CAmCommandSender::startupInterfaces(CAmCommandReceiver *iCommandReceiver)
@@ -270,8 +279,8 @@ am_Error_e CAmCommandSender::startupInterfaces(CAmCommandReceiver *iCommandRecei
     mCommandReceiver = iCommandReceiver;
     am_Error_e returnError = E_OK;
 
-    std::vector<IAmCommandSend*>::iterator iter = mListInterfaces.begin();
-    std::vector<IAmCommandSend*>::iterator iterEnd = mListInterfaces.end();
+    std::vector<IAmCommandSend *>::iterator iter    = mListInterfaces.begin();
+    std::vector<IAmCommandSend *>::iterator iterEnd = mListInterfaces.end();
     for (; iter < iterEnd; ++iter)
     {
         am_Error_e error = (*iter)->startupInterface(iCommandReceiver);
@@ -280,6 +289,7 @@ am_Error_e CAmCommandSender::startupInterfaces(CAmCommandReceiver *iCommandRecei
             returnError = error;
         }
     }
+
     return (returnError);
 }
 
@@ -295,37 +305,37 @@ void CAmCommandSender::cbNumberOfSourceClassesChanged()
 
 void CAmCommandSender::cbMainConnectionStateChanged(const am_mainConnectionID_t connectionID, const am_ConnectionState_e connectionState)
 {
-    CALL_ALL_INTERFACES(cbMainConnectionStateChanged(connectionID,connectionState))
+    CALL_ALL_INTERFACES(cbMainConnectionStateChanged(connectionID, connectionState))
 }
 
-void CAmCommandSender::cbMainSinkSoundPropertyChanged(const am_sinkID_t sinkID, const am_MainSoundProperty_s& SoundProperty)
+void CAmCommandSender::cbMainSinkSoundPropertyChanged(const am_sinkID_t sinkID, const am_MainSoundProperty_s &SoundProperty)
 {
-    CALL_ALL_INTERFACES(cbMainSinkSoundPropertyChanged(sinkID,SoundProperty))
+    CALL_ALL_INTERFACES(cbMainSinkSoundPropertyChanged(sinkID, SoundProperty))
 }
 
-void CAmCommandSender::cbMainSourceSoundPropertyChanged(const am_sourceID_t sourceID, const am_MainSoundProperty_s& SoundProperty)
+void CAmCommandSender::cbMainSourceSoundPropertyChanged(const am_sourceID_t sourceID, const am_MainSoundProperty_s &SoundProperty)
 {
-    CALL_ALL_INTERFACES(cbMainSourceSoundPropertyChanged(sourceID,SoundProperty))
+    CALL_ALL_INTERFACES(cbMainSourceSoundPropertyChanged(sourceID, SoundProperty))
 }
 
-void CAmCommandSender::cbSinkAvailabilityChanged(const am_sinkID_t sinkID, const am_Availability_s & availability)
+void CAmCommandSender::cbSinkAvailabilityChanged(const am_sinkID_t sinkID, const am_Availability_s &availability)
 {
-    CALL_ALL_INTERFACES(cbSinkAvailabilityChanged(sinkID,availability))
+    CALL_ALL_INTERFACES(cbSinkAvailabilityChanged(sinkID, availability))
 }
 
-void CAmCommandSender::cbSourceAvailabilityChanged(const am_sourceID_t sourceID, const am_Availability_s & availability)
+void CAmCommandSender::cbSourceAvailabilityChanged(const am_sourceID_t sourceID, const am_Availability_s &availability)
 {
-    CALL_ALL_INTERFACES(cbSourceAvailabilityChanged(sourceID,availability))
+    CALL_ALL_INTERFACES(cbSourceAvailabilityChanged(sourceID, availability))
 }
 
 void CAmCommandSender::cbVolumeChanged(const am_sinkID_t sinkID, const am_mainVolume_t volume)
 {
-    CALL_ALL_INTERFACES(cbVolumeChanged(sinkID,volume))
+    CALL_ALL_INTERFACES(cbVolumeChanged(sinkID, volume))
 }
 
 void CAmCommandSender::cbSinkMuteStateChanged(const am_sinkID_t sinkID, const am_MuteState_e muteState)
 {
-    CALL_ALL_INTERFACES(cbSinkMuteStateChanged(sinkID,muteState))
+    CALL_ALL_INTERFACES(cbSinkMuteStateChanged(sinkID, muteState))
 }
 
 void CAmCommandSender::cbSourceMuteStateChanged(const am_sourceID_t sourceID, const am_MuteState_e muteState)
@@ -333,15 +343,14 @@ void CAmCommandSender::cbSourceMuteStateChanged(const am_sourceID_t sourceID, co
     CALL_ALL_INTERFACES(cbSourceMuteStateChanged(sourceID,muteState))
 }
 
-
-void CAmCommandSender::cbSystemPropertyChanged(const am_SystemProperty_s & SystemProperty)
+void CAmCommandSender::cbSystemPropertyChanged(const am_SystemProperty_s &SystemProperty)
 {
     CALL_ALL_INTERFACES(cbSystemPropertyChanged(SystemProperty))
 }
 
 void CAmCommandSender::cbTimingInformationChanged(const am_mainConnectionID_t mainConnection, const am_timeSync_t time)
 {
-    CALL_ALL_INTERFACES(cbTimingInformationChanged(mainConnection,time))
+    CALL_ALL_INTERFACES(cbTimingInformationChanged(mainConnection, time))
 }
 
 void CAmCommandSender::cbNewMainConnection(const am_MainConnectionType_s mainConnection)
@@ -378,20 +387,20 @@ void CAmCommandSender::setCommandReady()
 {
     mCommandReceiver->waitOnStartup(false);
 
-    //create a list of handles
+    // create a list of handles
     std::vector<uint16_t> listStartupHandles;
     for (size_t i = 0; i < mListInterfaces.size(); i++)
     {
         listStartupHandles.push_back(mCommandReceiver->getStartupHandle());
     }
 
-    //set the receiver ready to wait for replies
+    // set the receiver ready to wait for replies
     mCommandReceiver->waitOnStartup(true);
 
-    //now do the calls
-    std::vector<IAmCommandSend*>::iterator iter = mListInterfaces.begin();
-    std::vector<IAmCommandSend*>::iterator iterEnd = mListInterfaces.end();
-    std::vector<uint16_t>::const_iterator handleIter(listStartupHandles.begin());
+    // now do the calls
+    std::vector<IAmCommandSend *>::iterator iter    = mListInterfaces.begin();
+    std::vector<IAmCommandSend *>::iterator iterEnd = mListInterfaces.end();
+    std::vector<uint16_t>::const_iterator   handleIter(listStartupHandles.begin());
     for (; iter < iterEnd; ++iter)
     {
         (*iter)->setCommandReady(*(handleIter++));
@@ -401,74 +410,75 @@ void CAmCommandSender::setCommandReady()
 void CAmCommandSender::setCommandRundown()
 {
     mCommandReceiver->waitOnRundown(false);
-    //create a list of handles
+    // create a list of handles
     std::vector<uint16_t> listStartupHandles;
     for (size_t i = 0; i < mListInterfaces.size(); i++)
     {
         listStartupHandles.push_back(mCommandReceiver->getRundownHandle());
     }
 
-    //set the receiver ready to wait for replies
+    // set the receiver ready to wait for replies
     mCommandReceiver->waitOnRundown(true);
 
-    //now do the calls
-    std::vector<IAmCommandSend*>::iterator iter = mListInterfaces.begin();
-    std::vector<IAmCommandSend*>::iterator iterEnd = mListInterfaces.end();
-    std::vector<uint16_t>::const_iterator handleIter(listStartupHandles.begin());
+    // now do the calls
+    std::vector<IAmCommandSend *>::iterator iter    = mListInterfaces.begin();
+    std::vector<IAmCommandSend *>::iterator iterEnd = mListInterfaces.end();
+    std::vector<uint16_t>::const_iterator   handleIter(listStartupHandles.begin());
     for (; iter < iterEnd; ++iter)
     {
         (*iter)->setCommandRundown(*(handleIter++));
     }
 }
 
-void CAmCommandSender::getInterfaceVersion(std::string & version) const
+void CAmCommandSender::getInterfaceVersion(std::string &version) const
 {
     version = CommandVersion;
 }
 
-am_Error_e am::CAmCommandSender::getListPlugins(std::vector<std::string> & interfaces) const
+am_Error_e am::CAmCommandSender::getListPlugins(std::vector<std::string> &interfaces) const
 {
     interfaces = mListLibraryNames;
     return (E_OK);
 }
 
-void CAmCommandSender::cbSinkUpdated(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)
+void CAmCommandSender::cbSinkUpdated(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_MainSoundProperty_s> &listMainSoundProperties)
 {
-    CALL_ALL_INTERFACES(cbSinkUpdated(sinkID,sinkClassID,listMainSoundProperties));
+    CALL_ALL_INTERFACES(cbSinkUpdated(sinkID, sinkClassID, listMainSoundProperties));
 }
 
-void CAmCommandSender::cbSourceUpdated(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)
+void CAmCommandSender::cbSourceUpdated(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_MainSoundProperty_s> &listMainSoundProperties)
 {
-    CALL_ALL_INTERFACES(cbSourceUpdated(sourceID,sourceClassID,listMainSoundProperties));
+    CALL_ALL_INTERFACES(cbSourceUpdated(sourceID, sourceClassID, listMainSoundProperties));
 }
 
-void CAmCommandSender::cbSinkNotification(const am_sinkID_t sinkID, const am_NotificationPayload_s& notification)
+void CAmCommandSender::cbSinkNotification(const am_sinkID_t sinkID, const am_NotificationPayload_s &notification)
 {
-    CALL_ALL_INTERFACES(cbSinkNotification(sinkID,notification));
+    CALL_ALL_INTERFACES(cbSinkNotification(sinkID, notification));
 }
 
-void CAmCommandSender::cbSourceNotification(const am_sourceID_t sourceID, const am_NotificationPayload_s& notification)
+void CAmCommandSender::cbSourceNotification(const am_sourceID_t sourceID, const am_NotificationPayload_s &notification)
 {
-    CALL_ALL_INTERFACES(cbSourceNotification(sourceID,notification));
+    CALL_ALL_INTERFACES(cbSourceNotification(sourceID, notification));
 }
 
-void CAmCommandSender::cbSinkMainNotificationConfigurationChanged(const am_sinkID_t sinkID, const am_NotificationConfiguration_s& mainNotificationConfiguration)
+void CAmCommandSender::cbSinkMainNotificationConfigurationChanged(const am_sinkID_t sinkID, const am_NotificationConfiguration_s &mainNotificationConfiguration)
 {
-    CALL_ALL_INTERFACES(cbMainSinkNotificationConfigurationChanged(sinkID,mainNotificationConfiguration));
+    CALL_ALL_INTERFACES(cbMainSinkNotificationConfigurationChanged(sinkID, mainNotificationConfiguration));
 }
 
-void CAmCommandSender::cbSourceMainNotificationConfigurationChanged(const am_sourceID_t sourceID, const am_NotificationConfiguration_s& mainNotificationConfiguration)
+void CAmCommandSender::cbSourceMainNotificationConfigurationChanged(const am_sourceID_t sourceID, const am_NotificationConfiguration_s &mainNotificationConfiguration)
 {
-    CALL_ALL_INTERFACES(cbMainSourceNotificationConfigurationChanged(sourceID,mainNotificationConfiguration));
+    CALL_ALL_INTERFACES(cbMainSourceNotificationConfigurationChanged(sourceID, mainNotificationConfiguration));
 }
 
 void CAmCommandSender::unloadLibraries(void)
 {
-    std::vector<void*>::iterator iterator = mListLibraryHandles.begin();
+    std::vector<void *>::iterator iterator = mListLibraryHandles.begin();
     for (; iterator < mListLibraryHandles.end(); ++iterator)
     {
         dlclose(*iterator);
     }
+
     mListLibraryHandles.clear();
 }
 

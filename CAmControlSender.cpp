@@ -37,25 +37,25 @@
 namespace am
 {
 
-#define REQUIRED_INTERFACE_VERSION_MAJOR 1  //!< major interface version. All versions smaller than this will be rejected
+#define REQUIRED_INTERFACE_VERSION_MAJOR 1 //!< major interface version. All versions smaller than this will be rejected
 #define REQUIRED_INTERFACE_VERSION_MINOR 0 //!< minor interface version. All versions smaller than this will be rejected
 
-CAmControlSender* CAmControlSender::mInstance=NULL;
+CAmControlSender *CAmControlSender::mInstance = NULL;
 
-CAmControlSender::CAmControlSender(std::string controlPluginFile,CAmSocketHandler* sockethandler) :
-        receiverCallbackT(this, &CAmControlSender::receiverCallback),
-        checkerCallbackT(this, &CAmControlSender::checkerCallback),
-        dispatcherCallbackT(this, &CAmControlSender::dispatcherCallback),
-        mPipe(),
-        mlibHandle(NULL),
-        mController(NULL),
-        mSignal(0)
+CAmControlSender::CAmControlSender(std::string controlPluginFile, CAmSocketHandler *sockethandler)
+    : receiverCallbackT(this, &CAmControlSender::receiverCallback)
+    , checkerCallbackT(this, &CAmControlSender::checkerCallback)
+    , dispatcherCallbackT(this, &CAmControlSender::dispatcherCallback)
+    , mPipe()
+    , mlibHandle(NULL)
+    , mController(NULL)
+    , mSignal(0)
 {
     assert(sockethandler);
 
-    //Check if a folder is given, then select the first plugin
+    // Check if a folder is given, then select the first plugin
     struct stat buf;
-    const char* conFile(controlPluginFile.c_str());
+    const char *conFile(controlPluginFile.c_str());
     stat(conFile, &buf);
     if (S_ISDIR(buf.st_mode))
     {
@@ -74,35 +74,38 @@ CAmControlSender::CAmControlSender(std::string controlPluginFile,CAmSocketHandle
         while ((itemInDirectory = readdir(directory)))
         {
             unsigned char entryType = itemInDirectory->d_type;
-            std::string entryName = itemInDirectory->d_name;
-            std::string fullName = directoryName + "/" + entryName;
+            std::string   entryName = itemInDirectory->d_name;
+            std::string   fullName  = directoryName + "/" + entryName;
 
-            bool regularFile = (entryType == DT_REG || entryType == DT_LNK);
+            bool regularFile        = (entryType == DT_REG || entryType == DT_LNK);
             bool sharedLibExtension = ("so" == entryName.substr(entryName.find_last_of(".") + 1));
 
             // Handle cases where readdir() could not determine the file type
-	        if (entryType == DT_UNKNOWN) {
-	            struct stat buf;
+            if (entryType == DT_UNKNOWN)
+            {
+                struct stat buf;
 
-	            if (stat(fullName.c_str(), &buf)) {
-	                logInfo(__PRETTY_FUNCTION__,"Failed to stat file: ", entryName, errno);
-	                continue;
-	            }
+                if (stat(fullName.c_str(), &buf))
+                {
+                    logInfo(__PRETTY_FUNCTION__, "Failed to stat file: ", entryName, errno);
+                    continue;
+                }
 
-	            regularFile = S_ISREG(buf.st_mode);
-	        }
+                regularFile = S_ISREG(buf.st_mode);
+            }
 
             if (regularFile && sharedLibExtension)
             {
-                controlPluginFile=directoryName + "/" + entryName;
-				logInfo("Found ControlPlugin:", controlPluginFile);
-				break;
+                controlPluginFile = directoryName + "/" + entryName;
+                logInfo("Found ControlPlugin:", controlPluginFile);
+                break;
             }
         }
+
         closedir(directory);
-	
+
     }
-    
+
     std::ifstream isfile(controlPluginFile.c_str());
     if (!isfile)
     {
@@ -111,13 +114,13 @@ CAmControlSender::CAmControlSender(std::string controlPluginFile,CAmSocketHandle
     }
     else if (!controlPluginFile.empty())
     {
-        mInstance=this;
-        IAmControlSend* (*createFunc)();
-        createFunc = getCreateFunction<IAmControlSend*()>(controlPluginFile, mlibHandle);
-        assert(createFunc!=NULL);
-        mController = createFunc();
+        mInstance = this;
+        IAmControlSend *(*createFunc)();
+        createFunc = getCreateFunction<IAmControlSend *()>(controlPluginFile, mlibHandle);
+        assert(createFunc != NULL);
+        mController        = createFunc();
         mControlPluginFile = controlPluginFile;
-        //check libversion
+        // check libversion
         std::string version, cVersion(ControlVersion);
         mController->getInterfaceVersion(version);
         uint16_t minorVersion, majorVersion, cMinorVersion, cMajorVersion;
@@ -125,12 +128,10 @@ CAmControlSender::CAmControlSender(std::string controlPluginFile,CAmSocketHandle
         std::istringstream(version.substr(2, 1)) >> minorVersion;
         std::istringstream(cVersion.substr(0, 1)) >> cMajorVersion;
         std::istringstream(cVersion.substr(2, 1)) >> cMinorVersion;
-        
-        
 
         if (majorVersion < cMajorVersion || ((majorVersion == cMajorVersion) && (minorVersion < cMinorVersion)))
         {
-            logError("ControlSender::ControlSender: Interface Version of Controller too old, required version:",ControlVersion," Controller Version:",version,"exiting now");
+            logError("ControlSender::ControlSender: Interface Version of Controller too old, required version:", ControlVersion, " Controller Version:", version, "exiting now");
             throw std::runtime_error("Interface Version of Controller too old");
         }
     }
@@ -139,14 +140,14 @@ CAmControlSender::CAmControlSender(std::string controlPluginFile,CAmSocketHandle
         logError("ControlSender::ControlSender: No controller loaded !");
     }
 
-    //here we need a pipe to be able to call the rundown function out of the mainloop
+    // here we need a pipe to be able to call the rundown function out of the mainloop
     if (pipe(mPipe) == -1)
     {
         logError("CAmControlSender could not create pipe!");
     }
 
-    //add the pipe to the poll - nothing needs to be proccessed here we just need the pipe to trigger the ppoll
-    short event = 0;
+    // add the pipe to the poll - nothing needs to be proccessed here we just need the pipe to trigger the ppoll
+    short           event = 0;
     sh_pollHandle_t handle;
     event |= POLLIN;
     sockethandler->addFDPoll(mPipe[0], event, NULL, &receiverCallbackT, &checkerCallbackT, &dispatcherCallbackT, NULL, handle);
@@ -159,8 +160,8 @@ CAmControlSender::~CAmControlSender()
 
     if (mlibHandle)
     {
-        void (*destroyFunc)(IAmControlSend*);
-        destroyFunc = getDestroyFunction<void(IAmControlSend*)>(mControlPluginFile, mlibHandle);
+        void (*destroyFunc)(IAmControlSend *);
+        destroyFunc = getDestroyFunction<void(IAmControlSend *)>(mControlPluginFile, mlibHandle);
         if (destroyFunc)
         {
             destroyFunc(mController);
@@ -169,11 +170,12 @@ CAmControlSender::~CAmControlSender()
         {
             logError("CAmControlSender Dtor: destroyFunc is invalid or not found");
         }
+
         dlclose(mlibHandle);
     }
 }
 
-am_Error_e CAmControlSender::hookUserConnectionRequest(const am_sourceID_t sourceID, const am_sinkID_t sinkID, am_mainConnectionID_t & mainConnectionID)
+am_Error_e CAmControlSender::hookUserConnectionRequest(const am_sourceID_t sourceID, const am_sinkID_t sinkID, am_mainConnectionID_t &mainConnectionID)
 {
     assert(mController);
     return (mController->hookUserConnectionRequest(sourceID, sinkID, mainConnectionID));
@@ -185,19 +187,19 @@ am_Error_e CAmControlSender::hookUserDisconnectionRequest(const am_mainConnectio
     return (mController->hookUserDisconnectionRequest(connectionID));
 }
 
-am_Error_e CAmControlSender::hookUserSetMainSinkSoundProperty(const am_sinkID_t sinkID, const am_MainSoundProperty_s & soundProperty)
+am_Error_e CAmControlSender::hookUserSetMainSinkSoundProperty(const am_sinkID_t sinkID, const am_MainSoundProperty_s &soundProperty)
 {
     assert(mController);
     return (mController->hookUserSetMainSinkSoundProperty(sinkID, soundProperty));
 }
 
-am_Error_e CAmControlSender::hookUserSetMainSourceSoundProperty(const am_sourceID_t sourceID, const am_MainSoundProperty_s & soundProperty)
+am_Error_e CAmControlSender::hookUserSetMainSourceSoundProperty(const am_sourceID_t sourceID, const am_MainSoundProperty_s &soundProperty)
 {
     assert(mController);
     return (mController->hookUserSetMainSourceSoundProperty(sourceID, soundProperty));
 }
 
-am_Error_e CAmControlSender::hookUserSetSystemProperty(const am_SystemProperty_s & property)
+am_Error_e CAmControlSender::hookUserSetSystemProperty(const am_SystemProperty_s &property)
 {
     assert(mController);
     return (mController->hookUserSetSystemProperty(property));
@@ -227,7 +229,7 @@ am_Error_e CAmControlSender::hookUsersetSourceMuteState(const am_sourceID_t sour
     return (mController->hookUsersetSourceMuteState(sourceID, muteState));
 }
 
-am_Error_e CAmControlSender::hookSystemRegisterDomain(const am_Domain_s & domainData, am_domainID_t & domainID)
+am_Error_e CAmControlSender::hookSystemRegisterDomain(const am_Domain_s &domainData, am_domainID_t &domainID)
 {
     assert(mController);
     return (mController->hookSystemRegisterDomain(domainData, domainID));
@@ -245,7 +247,7 @@ void CAmControlSender::hookSystemDomainRegistrationComplete(const am_domainID_t 
     return (mController->hookSystemDomainRegistrationComplete(domainID));
 }
 
-am_Error_e CAmControlSender::hookSystemRegisterSink(const am_Sink_s & sinkData, am_sinkID_t & sinkID)
+am_Error_e CAmControlSender::hookSystemRegisterSink(const am_Sink_s &sinkData, am_sinkID_t &sinkID)
 {
     assert(mController);
     return (mController->hookSystemRegisterSink(sinkData, sinkID));
@@ -257,7 +259,7 @@ am_Error_e CAmControlSender::hookSystemDeregisterSink(const am_sinkID_t sinkID)
     return (mController->hookSystemDeregisterSink(sinkID));
 }
 
-am_Error_e CAmControlSender::hookSystemRegisterSource(const am_Source_s & sourceData, am_sourceID_t & sourceID)
+am_Error_e CAmControlSender::hookSystemRegisterSource(const am_Source_s &sourceData, am_sourceID_t &sourceID)
 {
     assert(mController);
     return (mController->hookSystemRegisterSource(sourceData, sourceID));
@@ -269,13 +271,13 @@ am_Error_e CAmControlSender::hookSystemDeregisterSource(const am_sourceID_t sour
     return (mController->hookSystemDeregisterSource(sourceID));
 }
 
-am_Error_e CAmControlSender::hookSystemRegisterGateway(const am_Gateway_s & gatewayData, am_gatewayID_t & gatewayID)
+am_Error_e CAmControlSender::hookSystemRegisterGateway(const am_Gateway_s &gatewayData, am_gatewayID_t &gatewayID)
 {
     assert(mController);
     return (mController->hookSystemRegisterGateway(gatewayData, gatewayID));
 }
 
-am_Error_e CAmControlSender::hookSystemRegisterConverter(const am_Converter_s& converterData, am_converterID_t& converterID)
+am_Error_e CAmControlSender::hookSystemRegisterConverter(const am_Converter_s &converterData, am_converterID_t &converterID)
 {
     assert(mController);
     return (mController->hookSystemRegisterConverter(converterData, converterID));
@@ -293,7 +295,7 @@ am_Error_e CAmControlSender::hookSystemDeregisterConverter(const am_converterID_
     return (mController->hookSystemDeregisterConverter(converterID));
 }
 
-am_Error_e CAmControlSender::hookSystemRegisterCrossfader(const am_Crossfader_s & crossfaderData, am_crossfaderID_t & crossfaderID)
+am_Error_e CAmControlSender::hookSystemRegisterCrossfader(const am_Crossfader_s &crossfaderData, am_crossfaderID_t &crossfaderID)
 {
     assert(mController);
     return (mController->hookSystemRegisterCrossfader(crossfaderData, crossfaderID));
@@ -323,13 +325,13 @@ void CAmControlSender::hookSystemInterruptStateChange(const am_sourceID_t source
     mController->hookSystemInterruptStateChange(sourceID, interruptState);
 }
 
-void CAmControlSender::hookSystemSinkAvailablityStateChange(const am_sinkID_t sinkID, const am_Availability_s & availability)
+void CAmControlSender::hookSystemSinkAvailablityStateChange(const am_sinkID_t sinkID, const am_Availability_s &availability)
 {
     assert(mController);
     mController->hookSystemSinkAvailablityStateChange(sinkID, availability);
 }
 
-void CAmControlSender::hookSystemSourceAvailablityStateChange(const am_sourceID_t sourceID, const am_Availability_s & availability)
+void CAmControlSender::hookSystemSourceAvailablityStateChange(const am_sourceID_t sourceID, const am_Availability_s &availability)
 {
     assert(mController);
     mController->hookSystemSourceAvailablityStateChange(sourceID, availability);
@@ -341,7 +343,7 @@ void CAmControlSender::hookSystemDomainStateChange(const am_domainID_t domainID,
     mController->hookSystemDomainStateChange(domainID, state);
 }
 
-void CAmControlSender::hookSystemReceiveEarlyData(const std::vector<am_EarlyData_s> & data)
+void CAmControlSender::hookSystemReceiveEarlyData(const std::vector<am_EarlyData_s> &data)
 {
     assert(mController);
     mController->hookSystemReceiveEarlyData(data);
@@ -409,6 +411,7 @@ am_Error_e CAmControlSender::startupController(IAmControlReceive *controlreceive
         throw std::runtime_error("ControlSender::startupController: no Controller to startup! Exiting now ...");
         return (E_NON_EXISTENT);
     }
+
     return (mController->startupController(controlreceiveinterface));
 }
 
@@ -439,17 +442,17 @@ void CAmControlSender::setControllerReady()
 void CAmControlSender::setControllerRundown(const int16_t signal)
 {
     assert(mController);
-    logInfo("CAmControlSender::setControllerRundown received, signal=",signal);
+    logInfo("CAmControlSender::setControllerRundown received, signal=", signal);
     mController->setControllerRundown(signal);
 }
 
-am_Error_e am::CAmControlSender::getConnectionFormatChoice(const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_Route_s listRoute, const std::vector<am_CustomConnectionFormat_t> listPossibleConnectionFormats, std::vector<am_CustomConnectionFormat_t> & listPrioConnectionFormats)
+am_Error_e am::CAmControlSender::getConnectionFormatChoice(const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_Route_s listRoute, const std::vector<am_CustomConnectionFormat_t> listPossibleConnectionFormats, std::vector<am_CustomConnectionFormat_t> &listPrioConnectionFormats)
 {
     assert(mController);
     return (mController->getConnectionFormatChoice(sourceID, sinkID, listRoute, listPossibleConnectionFormats, listPrioConnectionFormats));
 }
 
-void CAmControlSender::getInterfaceVersion(std::string & version) const
+void CAmControlSender::getInterfaceVersion(std::string &version) const
 {
     version = ControlVersion;
 }
@@ -478,116 +481,114 @@ void CAmControlSender::confirmRoutingRundown(const am_Error_e error)
     mController->confirmRoutingRundown(error);
 }
 
-am_Error_e CAmControlSender::hookSystemUpdateSink(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_CustomConnectionFormat_t>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)
+am_Error_e CAmControlSender::hookSystemUpdateSink(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_SoundProperty_s> &listSoundProperties, const std::vector<am_CustomConnectionFormat_t> &listConnectionFormats, const std::vector<am_MainSoundProperty_s> &listMainSoundProperties)
 {
     assert(mController);
-    return (mController->hookSystemUpdateSink(sinkID,sinkClassID,listSoundProperties,listConnectionFormats,listMainSoundProperties));
+    return (mController->hookSystemUpdateSink(sinkID, sinkClassID, listSoundProperties, listConnectionFormats, listMainSoundProperties));
 }
 
-am_Error_e CAmControlSender::hookSystemUpdateSource(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_SoundProperty_s>& listSoundProperties, const std::vector<am_CustomConnectionFormat_t>& listConnectionFormats, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties)
+am_Error_e CAmControlSender::hookSystemUpdateSource(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_SoundProperty_s> &listSoundProperties, const std::vector<am_CustomConnectionFormat_t> &listConnectionFormats, const std::vector<am_MainSoundProperty_s> &listMainSoundProperties)
 {
     assert(mController);
-    return (mController->hookSystemUpdateSource(sourceID,sourceClassID,listSoundProperties,listConnectionFormats,listMainSoundProperties));
+    return (mController->hookSystemUpdateSource(sourceID, sourceClassID, listSoundProperties, listConnectionFormats, listMainSoundProperties));
 }
 
-am_Error_e CAmControlSender::hookSystemUpdateGateway(const am_gatewayID_t gatewayID, const std::vector<am_CustomConnectionFormat_t>& listSourceConnectionFormats, const std::vector<am_CustomConnectionFormat_t>& listSinkConnectionFromats, const std::vector<bool>& convertionMatrix)
+am_Error_e CAmControlSender::hookSystemUpdateGateway(const am_gatewayID_t gatewayID, const std::vector<am_CustomConnectionFormat_t> &listSourceConnectionFormats, const std::vector<am_CustomConnectionFormat_t> &listSinkConnectionFromats, const std::vector<bool> &convertionMatrix)
 {
     assert(mController);
-    return (mController->hookSystemUpdateGateway(gatewayID,listSourceConnectionFormats,listSinkConnectionFromats,convertionMatrix));
+    return (mController->hookSystemUpdateGateway(gatewayID, listSourceConnectionFormats, listSinkConnectionFromats, convertionMatrix));
 }
 
-am_Error_e CAmControlSender::hookSystemUpdateConverter(const am_converterID_t converterID, const std::vector<am_CustomConnectionFormat_t>& listSourceConnectionFormats, const std::vector<am_CustomConnectionFormat_t>& listSinkConnectionFromats, const std::vector<bool>& convertionMatrix)
+am_Error_e CAmControlSender::hookSystemUpdateConverter(const am_converterID_t converterID, const std::vector<am_CustomConnectionFormat_t> &listSourceConnectionFormats, const std::vector<am_CustomConnectionFormat_t> &listSinkConnectionFromats, const std::vector<bool> &convertionMatrix)
 {
     assert(mController);
-    return (mController->hookSystemUpdateConverter(converterID,listSourceConnectionFormats,listSinkConnectionFromats,convertionMatrix));
+    return (mController->hookSystemUpdateConverter(converterID, listSourceConnectionFormats, listSinkConnectionFromats, convertionMatrix));
 }
 
-void CAmControlSender::cbAckSetVolume(const am_Handle_s handle, const std::vector<am_Volumes_s>& listVolumes, const am_Error_e error)
+void CAmControlSender::cbAckSetVolume(const am_Handle_s handle, const std::vector<am_Volumes_s> &listVolumes, const am_Error_e error)
 {
     assert(mController);
-    mController->cbAckSetVolumes(handle,listVolumes,error);
+    mController->cbAckSetVolumes(handle, listVolumes, error);
 }
 
 void CAmControlSender::cbAckSetSinkNotificationConfiguration(const am_Handle_s handle, const am_Error_e error)
 {
     assert(mController);
-    mController->cbAckSetSinkNotificationConfiguration(handle,error);
+    mController->cbAckSetSinkNotificationConfiguration(handle, error);
 }
 
 void CAmControlSender::cbAckSetSourceNotificationConfiguration(const am_Handle_s handle, const am_Error_e error)
 {
     assert(mController);
-    mController->cbAckSetSourceNotificationConfiguration(handle,error);
+    mController->cbAckSetSourceNotificationConfiguration(handle, error);
 }
 
-void CAmControlSender::hookSinkNotificationDataChanged(const am_sinkID_t sinkID, const am_NotificationPayload_s& payload)
+void CAmControlSender::hookSinkNotificationDataChanged(const am_sinkID_t sinkID, const am_NotificationPayload_s &payload)
 {
     assert(mController);
-    mController->hookSinkNotificationDataChanged(sinkID,payload);
+    mController->hookSinkNotificationDataChanged(sinkID, payload);
 }
 
-void CAmControlSender::hookSourceNotificationDataChanged(const am_sourceID_t sourceID, const am_NotificationPayload_s& payload)
+void CAmControlSender::hookSourceNotificationDataChanged(const am_sourceID_t sourceID, const am_NotificationPayload_s &payload)
 {
     assert(mController);
-    mController->hookSourceNotificationDataChanged(sourceID,payload);
+    mController->hookSourceNotificationDataChanged(sourceID, payload);
 }
 
-am_Error_e CAmControlSender::hookUserSetMainSinkNotificationConfiguration(const am_sinkID_t sinkID, const am_NotificationConfiguration_s& notificationConfiguration)
+am_Error_e CAmControlSender::hookUserSetMainSinkNotificationConfiguration(const am_sinkID_t sinkID, const am_NotificationConfiguration_s &notificationConfiguration)
 {
     assert(mController);
-    return (mController->hookUserSetMainSinkNotificationConfiguration(sinkID,notificationConfiguration));
+    return (mController->hookUserSetMainSinkNotificationConfiguration(sinkID, notificationConfiguration));
 }
 
-am_Error_e CAmControlSender::hookUserSetMainSourceNotificationConfiguration(const am_sourceID_t sourceID, const am_NotificationConfiguration_s& notificationConfiguration)
+am_Error_e CAmControlSender::hookUserSetMainSourceNotificationConfiguration(const am_sourceID_t sourceID, const am_NotificationConfiguration_s &notificationConfiguration)
 {
     assert(mController);
-    return (mController->hookUserSetMainSourceNotificationConfiguration(sourceID,notificationConfiguration));
+    return (mController->hookUserSetMainSourceNotificationConfiguration(sourceID, notificationConfiguration));
 }
 
-void CAmControlSender::receiverCallback(const pollfd pollfd, const sh_pollHandle_t handle, void* userData)
+void CAmControlSender::receiverCallback(const pollfd pollfd, const sh_pollHandle_t handle, void *userData)
 {
-   (void) handle;
-   (void) userData;
-   //get the signal number from the socket
-   ssize_t result = read(pollfd.fd, &mSignal, sizeof(mSignal));
+    (void)handle;
+    (void)userData;
+    // get the signal number from the socket
+    ssize_t result = read(pollfd.fd, &mSignal, sizeof(mSignal));
 }
 
-bool CAmControlSender::checkerCallback(const sh_pollHandle_t handle, void* userData)
+bool CAmControlSender::checkerCallback(const sh_pollHandle_t handle, void *userData)
 {
-   (void) handle;
-   (void) userData;
-   return (true);
+    (void)handle;
+    (void)userData;
+    return (true);
 }
 
 void CAmControlSender::hookSystemSingleTimingInformationChanged(const am_connectionID_t connectionID, const am_timeSync_t time)
 {
     assert(mController);
-    mController->hookSystemSingleTimingInformationChanged(connectionID,time);
+    mController->hookSystemSingleTimingInformationChanged(connectionID, time);
 }
 
 /**for testing only contructor - do not use !
  *
  */
-CAmControlSender::CAmControlSender() :
-    receiverCallbackT(this, &CAmControlSender::receiverCallback),
-    checkerCallbackT(this, &CAmControlSender::checkerCallback),
-    dispatcherCallbackT(this, &CAmControlSender::dispatcherCallback),
-    mlibHandle(NULL),
-    mController(NULL),
-    mSignal(0)
+CAmControlSender::CAmControlSender()
+    : receiverCallbackT(this, &CAmControlSender::receiverCallback)
+    , checkerCallbackT(this, &CAmControlSender::checkerCallback)
+    , dispatcherCallbackT(this, &CAmControlSender::dispatcherCallback)
+    , mlibHandle(NULL)
+    , mController(NULL)
+    , mSignal(0)
 {
     logInfo("CAmControlSender was loaded in test mode!");
     std::memset(mPipe, -1, sizeof(mPipe));
 }
 
-bool CAmControlSender::dispatcherCallback(const sh_pollHandle_t handle, void* userData)
+bool CAmControlSender::dispatcherCallback(const sh_pollHandle_t handle, void *userData)
 {
-   (void)handle;
-   (void)userData;
-   setControllerRundown(mSignal);
-   return (false);
+    (void)handle;
+    (void)userData;
+    setControllerRundown(mSignal);
+    return (false);
 }
 
 }
-
-

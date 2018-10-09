@@ -665,10 +665,10 @@ public:
 	 * the conversion information from the first sourceFormat to the first sinkFormat
 	 * for example and the seventh value the information about the 3rd sinkFormat to
 	 * the 1st sourceFormat in case we would have 3 sourceFormats.
-	 *
+	 * 
 	 * This matrix
 	 * 110 011 000 111 001
-	 *
+	 * 
 	 * reads as this:
 	 *          Source
 	 * 	**  1  2  3
@@ -954,7 +954,7 @@ public:
 	 */
 	am_sinkID_t sinkID;
 	/**
-	 * The name of the sink. Must be unique in the whole system.
+	 * The name of the sink. Must be unique in the whole system. 
 	 */
 	std::string name;
 	/**
@@ -962,7 +962,7 @@ public:
 	 * why a sink could be not available for the moment: for example the shutdown of a
 	 * sink because of overtemperature or over- & undervoltage. The availability
 	 * consists of two pieces of information:
-	 *
+	 * 
 	 *    Availablility: the status itself, can be A_AVAILABLE, A_UNAVAILABLE or
 	 * A_UNKNOWN
 	 *    AvailabilityReason: this informs about the last reason for a change in
@@ -986,7 +986,7 @@ public:
 
 /**
  * a handle is used for asynchronous operations and is uniquely assigned for each
- * of this operations
+ * of this operations 
  */
 struct am_Handle_s
 {
@@ -1010,7 +1010,7 @@ struct am_MainSoundProperty_s
 
 public:
 	/**
-	 * the type of the property
+	 * the type of the property 
 	 */
 	am_CustomMainSoundPropertyType_t type;
 	/**
@@ -1078,7 +1078,7 @@ public:
 	 */
 	am_timeSync_t delay;
 	/**
-	 * the list of sub connection IDs the mainconnection consists of
+	 * the list of sub connection IDs the mainconnection consists of 
 	 */
 	std::vector<am_connectionID_t> listConnectionID;
 
@@ -1475,4 +1475,3 @@ public:
 };
 }
 #endif // !defined(EA_E0F066FD_E6D8_4ca9_84C3_D0C02AF09BF8__INCLUDED_)
-
