@@ -29,80 +29,79 @@
 #include "CAmDltWrapper.h"
 #include "CAmSocketHandler.h"
 
-#define __METHOD_NAME__ std::string (std::string("CAmCommandReceiver::") + __func__)
+#define __METHOD_NAME__ std::string(std::string("CAmCommandReceiver::") + __func__)
 
 namespace am
 {
 
-CAmCommandReceiver::CAmCommandReceiver(IAmDatabaseHandler *iDatabaseHandler, CAmControlSender *iControlSender, CAmSocketHandler *iSocketHandler) :
-        mDatabaseHandler(iDatabaseHandler),
-        mControlSender(iControlSender),
-        mDBusWrapper(NULL),
-        mSocketHandler(iSocketHandler),
-        handleCount(0),
-        mListStartupHandles(),
-        mListRundownHandles(),
-        mWaitStartup(false),
-        mWaitRundown(false),
-        mLastErrorStartup(E_OK),
-        mLastErrorRundown(E_OK)
-
+CAmCommandReceiver::CAmCommandReceiver(IAmDatabaseHandler *iDatabaseHandler, CAmControlSender *iControlSender, CAmSocketHandler *iSocketHandler)
+    : mDatabaseHandler(iDatabaseHandler)
+    , mControlSender(iControlSender)
+    , mDBusWrapper(NULL)
+    , mSocketHandler(iSocketHandler)
+    , handleCount(0)
+    , mListStartupHandles()
+    , mListRundownHandles()
+    , mWaitStartup(false)
+    , mWaitRundown(false)
+    , mLastErrorStartup(E_OK)
+    , mLastErrorRundown(E_OK)
 {
-    assert(mDatabaseHandler!=NULL);
-    assert(mSocketHandler!=NULL);
-    assert(mControlSender!=NULL);
+    assert(mDatabaseHandler != NULL);
+    assert(mSocketHandler != NULL);
+    assert(mControlSender != NULL);
 }
 
-CAmCommandReceiver::CAmCommandReceiver(IAmDatabaseHandler *iDatabaseHandler, CAmControlSender *iControlSender, CAmSocketHandler *iSocketHandler, CAmDbusWrapper *iDBusWrapper) :
-        mDatabaseHandler(iDatabaseHandler),
-        mControlSender(iControlSender),
-        mDBusWrapper(iDBusWrapper),
-        mSocketHandler(iSocketHandler),
-        handleCount(0),
-        mListStartupHandles(),
-        mListRundownHandles(),
-        mWaitStartup(false),
-        mWaitRundown(false),
-        mLastErrorStartup(E_UNKNOWN),
-        mLastErrorRundown(E_UNKNOWN)
+CAmCommandReceiver::CAmCommandReceiver(IAmDatabaseHandler *iDatabaseHandler, CAmControlSender *iControlSender, CAmSocketHandler *iSocketHandler, CAmDbusWrapper *iDBusWrapper)
+    : mDatabaseHandler(iDatabaseHandler)
+    , mControlSender(iControlSender)
+    , mDBusWrapper(iDBusWrapper)
+    , mSocketHandler(iSocketHandler)
+    , handleCount(0)
+    , mListStartupHandles()
+    , mListRundownHandles()
+    , mWaitStartup(false)
+    , mWaitRundown(false)
+    , mLastErrorStartup(E_UNKNOWN)
+    , mLastErrorRundown(E_UNKNOWN)
 {
-    assert(mDatabaseHandler!=NULL);
-    assert(mSocketHandler!=NULL);
-    assert(mControlSender!=NULL);
-    assert(mDBusWrapper!=NULL);
+    assert(mDatabaseHandler != NULL);
+    assert(mSocketHandler != NULL);
+    assert(mControlSender != NULL);
+    assert(mDBusWrapper != NULL);
 }
 
 CAmCommandReceiver::~CAmCommandReceiver()
 {
 }
 
-am_Error_e CAmCommandReceiver::connect(const am_sourceID_t sourceID, const am_sinkID_t sinkID, am_mainConnectionID_t & mainConnectionID)
+am_Error_e CAmCommandReceiver::connect(const am_sourceID_t sourceID, const am_sinkID_t sinkID, am_mainConnectionID_t &mainConnectionID)
 {
-    logInfo(__METHOD_NAME__,"sourceID=", sourceID, "sinkID=", sinkID);
+    logInfo(__METHOD_NAME__, "sourceID=", sourceID, "sinkID=", sinkID);
     return (mControlSender->hookUserConnectionRequest(sourceID, sinkID, mainConnectionID));
 }
 
 am_Error_e CAmCommandReceiver::disconnect(const am_mainConnectionID_t mainConnectionID)
 {
-    logInfo(__METHOD_NAME__,"mainConnectionID=", mainConnectionID);
+    logInfo(__METHOD_NAME__, "mainConnectionID=", mainConnectionID);
     return (mControlSender->hookUserDisconnectionRequest(mainConnectionID));
 }
 
 am_Error_e CAmCommandReceiver::setVolume(const am_sinkID_t sinkID, const am_mainVolume_t volume)
 {
-    logInfo(__METHOD_NAME__,"sinkID=", sinkID, "volume=", volume);
+    logInfo(__METHOD_NAME__, "sinkID=", sinkID, "volume=", volume);
     return (mControlSender->hookUserVolumeChange(sinkID, volume));
 }
 
 am_Error_e CAmCommandReceiver::volumeStep(const am_sinkID_t sinkID, const int16_t volumeStep)
 {
-    logInfo(__METHOD_NAME__,"sinkID=", sinkID, "volumeStep=", volumeStep);
+    logInfo(__METHOD_NAME__, "sinkID=", sinkID, "volumeStep=", volumeStep);
     return (mControlSender->hookUserVolumeStep(sinkID, volumeStep));
 }
 
 am_Error_e CAmCommandReceiver::setSinkMuteState(const am_sinkID_t sinkID, const am_MuteState_e muteState)
 {
-    logInfo(__METHOD_NAME__,"sinkID=", sinkID, "muteState=", muteState);
+    logInfo(__METHOD_NAME__, "sinkID=", sinkID, "muteState=", muteState);
     return (mControlSender->hookUserSetSinkMuteState(sinkID, muteState));
 }
 
@@ -112,75 +111,75 @@ am_Error_e CAmCommandReceiver::setSourceMuteState(const am_sourceID_t sourceID, 
     return (mControlSender->hookUsersetSourceMuteState(sourceID, muteState));
 }
 
-am_Error_e CAmCommandReceiver::setMainSinkSoundProperty(const am_MainSoundProperty_s & soundProperty, const am_sinkID_t sinkID)
+am_Error_e CAmCommandReceiver::setMainSinkSoundProperty(const am_MainSoundProperty_s &soundProperty, const am_sinkID_t sinkID)
 {
-    logInfo(__METHOD_NAME__,"sinkID=", sinkID, "soundPropertyType=", soundProperty.type, "soundPropertyValue=", soundProperty.value);
+    logInfo(__METHOD_NAME__, "sinkID=", sinkID, "soundPropertyType=", soundProperty.type, "soundPropertyValue=", soundProperty.value);
     return (mControlSender->hookUserSetMainSinkSoundProperty(sinkID, soundProperty));
 }
 
-am_Error_e CAmCommandReceiver::setMainSourceSoundProperty(const am_MainSoundProperty_s & soundProperty, const am_sourceID_t sourceID)
+am_Error_e CAmCommandReceiver::setMainSourceSoundProperty(const am_MainSoundProperty_s &soundProperty, const am_sourceID_t sourceID)
 {
-    logInfo(__METHOD_NAME__,"sourceID=", sourceID, "soundPropertyType=", soundProperty.type, "soundPropertyValue=", soundProperty.value);
+    logInfo(__METHOD_NAME__, "sourceID=", sourceID, "soundPropertyType=", soundProperty.type, "soundPropertyValue=", soundProperty.value);
     return (mControlSender->hookUserSetMainSourceSoundProperty(sourceID, soundProperty));
 }
 
-am_Error_e CAmCommandReceiver::setSystemProperty(const am_SystemProperty_s & property)
+am_Error_e CAmCommandReceiver::setSystemProperty(const am_SystemProperty_s &property)
 {
-    logInfo(__METHOD_NAME__,"type=", property.type, "systemPropertyValue=", property.value);
+    logInfo(__METHOD_NAME__, "type=", property.type, "systemPropertyValue=", property.value);
     return (mControlSender->hookUserSetSystemProperty(property));
 }
 
-am_Error_e CAmCommandReceiver::getVolume(const am_sinkID_t sinkID, am_mainVolume_t& mainVolume) const
+am_Error_e CAmCommandReceiver::getVolume(const am_sinkID_t sinkID, am_mainVolume_t &mainVolume) const
 {
     return (mDatabaseHandler->getSinkMainVolume(sinkID, mainVolume));
 }
 
-am_Error_e CAmCommandReceiver::getListMainConnections(std::vector<am_MainConnectionType_s> & listConnections) const
+am_Error_e CAmCommandReceiver::getListMainConnections(std::vector<am_MainConnectionType_s> &listConnections) const
 {
     return (mDatabaseHandler->getListVisibleMainConnections(listConnections));
 }
 
-am_Error_e CAmCommandReceiver::getListMainSinks(std::vector<am_SinkType_s>& listMainSinks) const
+am_Error_e CAmCommandReceiver::getListMainSinks(std::vector<am_SinkType_s> &listMainSinks) const
 {
     return (mDatabaseHandler->getListMainSinks(listMainSinks));
 }
 
-am_Error_e CAmCommandReceiver::getListMainSources(std::vector<am_SourceType_s>& listMainSources) const
+am_Error_e CAmCommandReceiver::getListMainSources(std::vector<am_SourceType_s> &listMainSources) const
 {
     return (mDatabaseHandler->getListMainSources(listMainSources));
 }
 
-am_Error_e CAmCommandReceiver::getListMainSinkSoundProperties(const am_sinkID_t sinkID, std::vector<am_MainSoundProperty_s> & listSoundProperties) const
+am_Error_e CAmCommandReceiver::getListMainSinkSoundProperties(const am_sinkID_t sinkID, std::vector<am_MainSoundProperty_s> &listSoundProperties) const
 {
     return (mDatabaseHandler->getListMainSinkSoundProperties(sinkID, listSoundProperties));
 }
 
-am_Error_e CAmCommandReceiver::getListMainSourceSoundProperties(const am_sourceID_t sourceID, std::vector<am_MainSoundProperty_s> & listSourceProperties) const
+am_Error_e CAmCommandReceiver::getListMainSourceSoundProperties(const am_sourceID_t sourceID, std::vector<am_MainSoundProperty_s> &listSourceProperties) const
 {
     return (mDatabaseHandler->getListMainSourceSoundProperties(sourceID, listSourceProperties));
 }
 
-am_Error_e CAmCommandReceiver::getListSourceClasses(std::vector<am_SourceClass_s> & listSourceClasses) const
+am_Error_e CAmCommandReceiver::getListSourceClasses(std::vector<am_SourceClass_s> &listSourceClasses) const
 {
     return (mDatabaseHandler->getListSourceClasses(listSourceClasses));
 }
 
-am_Error_e CAmCommandReceiver::getListSinkClasses(std::vector<am_SinkClass_s> & listSinkClasses) const
+am_Error_e CAmCommandReceiver::getListSinkClasses(std::vector<am_SinkClass_s> &listSinkClasses) const
 {
     return (mDatabaseHandler->getListSinkClasses(listSinkClasses));
 }
 
-am_Error_e CAmCommandReceiver::getListSystemProperties(std::vector<am_SystemProperty_s> & listSystemProperties) const
+am_Error_e CAmCommandReceiver::getListSystemProperties(std::vector<am_SystemProperty_s> &listSystemProperties) const
 {
     return (mDatabaseHandler->getListSystemProperties(listSystemProperties));
 }
 
-am_Error_e CAmCommandReceiver::getTimingInformation(const am_mainConnectionID_t mainConnectionID, am_timeSync_t & delay) const
+am_Error_e CAmCommandReceiver::getTimingInformation(const am_mainConnectionID_t mainConnectionID, am_timeSync_t &delay) const
 {
     return (mDatabaseHandler->getTimingInformation(mainConnectionID, delay));
 }
 
-am_Error_e CAmCommandReceiver::getDBusConnectionWrapper(CAmDbusWrapper*& dbusConnectionWrapper) const
+am_Error_e CAmCommandReceiver::getDBusConnectionWrapper(CAmDbusWrapper * &dbusConnectionWrapper) const
 {
 #ifdef WITH_DBUS_WRAPPER
     dbusConnectionWrapper = mDBusWrapper;
@@ -191,81 +190,91 @@ am_Error_e CAmCommandReceiver::getDBusConnectionWrapper(CAmDbusWrapper*& dbusCon
 #endif /*WITH_DBUS_WRAPPER*/
 }
 
-am_Error_e CAmCommandReceiver::getSocketHandler(CAmSocketHandler *& socketHandler) const
+am_Error_e CAmCommandReceiver::getSocketHandler(CAmSocketHandler * &socketHandler) const
 {
     socketHandler = mSocketHandler;
     return (E_OK);
 }
 
-void CAmCommandReceiver::getInterfaceVersion(std::string & version) const
+void CAmCommandReceiver::getInterfaceVersion(std::string &version) const
 {
     version = CommandVersion;
 }
 
 void CAmCommandReceiver::confirmCommandReady(const uint16_t handle, const am_Error_e error)
 {
-	if (error !=E_OK)
-		mLastErrorStartup=error;
+    if (error != E_OK)
+    {
+        mLastErrorStartup = error;
+    }
+
     mListStartupHandles.erase(std::remove(mListStartupHandles.begin(), mListStartupHandles.end(), handle), mListStartupHandles.end());
     if (mWaitStartup && mListStartupHandles.empty())
+    {
         mControlSender->confirmCommandReady(mLastErrorStartup);
+    }
 }
 
 void CAmCommandReceiver::confirmCommandRundown(const uint16_t handle, const am_Error_e error)
 {
-	if (error !=E_OK)
-		mLastErrorRundown=error;
+    if (error != E_OK)
+    {
+        mLastErrorRundown = error;
+    }
+
     mListRundownHandles.erase(std::remove(mListRundownHandles.begin(), mListRundownHandles.end(), handle), mListRundownHandles.end());
     if (mWaitRundown && mListRundownHandles.empty())
+    {
         mControlSender->confirmCommandRundown(mLastErrorRundown);
+    }
 }
 
 uint16_t CAmCommandReceiver::getStartupHandle()
 {
-    uint16_t handle = ++handleCount; //todo: handle overflow
+    uint16_t handle = ++handleCount; // todo: handle overflow
     mListStartupHandles.push_back(handle);
     return (handle);
 }
 
 uint16_t CAmCommandReceiver::getRundownHandle()
 {
-    uint16_t handle = ++handleCount; //todo: handle overflow
+    uint16_t handle = ++handleCount; // todo: handle overflow
     mListRundownHandles.push_back(handle);
     return (handle);
 }
 
 void CAmCommandReceiver::waitOnStartup(bool startup)
 {
-    mWaitStartup = startup;
-    mLastErrorStartup=E_OK;
+    mWaitStartup      = startup;
+    mLastErrorStartup = E_OK;
 }
 
-am_Error_e CAmCommandReceiver::getListMainSinkNotificationConfigurations(const am_sinkID_t sinkID, std::vector<am_NotificationConfiguration_s>& listMainNotificationConfigurations) const
+am_Error_e CAmCommandReceiver::getListMainSinkNotificationConfigurations(const am_sinkID_t sinkID, std::vector<am_NotificationConfiguration_s> &listMainNotificationConfigurations) const
 {
-    return (mDatabaseHandler->getListMainSinkNotificationConfigurations(sinkID,listMainNotificationConfigurations));
+    return (mDatabaseHandler->getListMainSinkNotificationConfigurations(sinkID, listMainNotificationConfigurations));
 }
 
-am_Error_e CAmCommandReceiver::getListMainSourceNotificationConfigurations(const am_sourceID_t sourceID, std::vector<am_NotificationConfiguration_s>& listMainNotificationConfigurations) const
+am_Error_e CAmCommandReceiver::getListMainSourceNotificationConfigurations(const am_sourceID_t sourceID, std::vector<am_NotificationConfiguration_s> &listMainNotificationConfigurations) const
 {
-    return (mDatabaseHandler->getListMainSourceNotificationConfigurations(sourceID,listMainNotificationConfigurations));
+    return (mDatabaseHandler->getListMainSourceNotificationConfigurations(sourceID, listMainNotificationConfigurations));
 }
 
-am_Error_e CAmCommandReceiver::setMainSinkNotificationConfiguration(const am_sinkID_t sinkID, const am_NotificationConfiguration_s& mainNotificationConfiguration)
+am_Error_e CAmCommandReceiver::setMainSinkNotificationConfiguration(const am_sinkID_t sinkID, const am_NotificationConfiguration_s &mainNotificationConfiguration)
 {
-    logInfo(__METHOD_NAME__,"sinkID=", sinkID, " type=",mainNotificationConfiguration.type, " parameter=", mainNotificationConfiguration.parameter, "status=",mainNotificationConfiguration.status);
-    return (mControlSender->hookUserSetMainSinkNotificationConfiguration(sinkID,mainNotificationConfiguration));
+    logInfo(__METHOD_NAME__, "sinkID=", sinkID, " type=", mainNotificationConfiguration.type, " parameter=", mainNotificationConfiguration.parameter, "status=", mainNotificationConfiguration.status);
+    return (mControlSender->hookUserSetMainSinkNotificationConfiguration(sinkID, mainNotificationConfiguration));
 }
 
-am_Error_e CAmCommandReceiver::setMainSourceNotificationConfiguration(const am_sourceID_t sourceID, const am_NotificationConfiguration_s& mainNotificationConfiguration)
+am_Error_e CAmCommandReceiver::setMainSourceNotificationConfiguration(const am_sourceID_t sourceID, const am_NotificationConfiguration_s &mainNotificationConfiguration)
 {
-    logInfo(__METHOD_NAME__,"sourceID=", sourceID, " type=",mainNotificationConfiguration.type, " parameter=", mainNotificationConfiguration.parameter, "status=",mainNotificationConfiguration.status);
-    return (mControlSender->hookUserSetMainSourceNotificationConfiguration(sourceID,mainNotificationConfiguration));
+    logInfo(__METHOD_NAME__, "sourceID=", sourceID, " type=", mainNotificationConfiguration.type, " parameter=", mainNotificationConfiguration.parameter, "status=", mainNotificationConfiguration.status);
+    return (mControlSender->hookUserSetMainSourceNotificationConfiguration(sourceID, mainNotificationConfiguration));
 }
 
 void CAmCommandReceiver::waitOnRundown(bool rundown)
 {
-    mWaitRundown = rundown;
-    mLastErrorStartup=E_OK;
+    mWaitRundown      = rundown;
+    mLastErrorStartup = E_OK;
 }
 
 }
