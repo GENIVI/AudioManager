@@ -37,6 +37,9 @@
 #endif
 
 
+/**
+ *  Container to host all types and classes related to the GenIVI Audio-Manager
+ */
 namespace am {
 
 /**
