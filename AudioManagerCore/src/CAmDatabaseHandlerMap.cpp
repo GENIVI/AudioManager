@@ -1628,13 +1628,13 @@ am_Error_e CAmDatabaseHandlerMap::removeMainConnectionDB(const am_mainConnection
     }
 
     DB_COND_UPDATE_INIT;
-    DB_COND_UPDATE(mMappedData.mMainConnectionMap[mainConnectionID].mainConnectionID, static_cast<uint16_t>(CS_DISCONNECTED));
+    DB_COND_UPDATE(mMappedData.mMainConnectionMap[mainConnectionID].connectionState, CS_DISCONNECTED);
     if (DB_COND_ISMODIFIED)
     {
         NOTIFY_OBSERVERS2(dboMainConnectionStateChanged, mainConnectionID, CS_DISCONNECTED)
-
-        mMappedData.mMainConnectionMap.erase(mainConnectionID);
     }
+
+    mMappedData.mMainConnectionMap.erase(mainConnectionID);
 
     logVerbose("DatabaseHandler::removeMainConnectionDB removed:", mainConnectionID);
     NOTIFY_OBSERVERS1(dboRemovedMainConnection, mainConnectionID)
