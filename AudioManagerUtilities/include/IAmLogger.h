@@ -65,6 +65,9 @@ enum am_LogStatus_e
 
 class IAmLogContext
 {
+    // enable cooperation with legacy class CAmDltWrapper
+    friend class CAmDltWrapper;
+
 public:
     virtual ~IAmLogContext() {}
 
