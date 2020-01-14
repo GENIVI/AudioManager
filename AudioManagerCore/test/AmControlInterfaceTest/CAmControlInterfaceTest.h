@@ -40,7 +40,6 @@
 #include "../MockIAmControlSend.h"
 #include "CAmSocketHandler.h"
 
-DLT_DECLARE_CONTEXT(textContext)          
 
 namespace am
 {

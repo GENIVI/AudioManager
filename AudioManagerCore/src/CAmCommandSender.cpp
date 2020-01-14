@@ -32,7 +32,7 @@
 #include <stdexcept>
 #include "CAmCommandReceiver.h"
 #include "TAmPluginTemplate.h"
-#include "CAmDltWrapper.h"
+#include "CAmLogWrapper.h"
 #include "audiomanagerconfig.h"
 
 #define __METHOD_NAME__ std::string(std::string("CAmCommandSender::") + __func__)

@@ -55,7 +55,7 @@
 #include "CAmRoutingReceiver.h"
 #include "CAmCommandReceiver.h"
 #include "CAmControlReceiver.h"
-#include "CAmDltWrapper.h"
+#include "CAmLogWrapper.h"
 #include "CAmSocketHandler.h"
 #include "CAmCommandLineSingleton.h"
 #include "CAmDatabaseHandlerMap.h"
@@ -244,7 +244,9 @@ void mainProgram(int argc, char *argv[])
         daemonize();
     }
 
-    CAmDltWrapper::instanctiateOnce(AUDIOMANGER_APP_ID, AUDIOMANGER_APP_DESCRIPTION, dltEnable.getValue(), static_cast<am::CAmDltWrapper::logDestination>(dltOutput.getValue()), dltLogFilename.getValue());
+    CAmLogWrapper::instantiateOnce(AUDIOMANGER_APP_ID, AUDIOMANGER_APP_DESCRIPTION
+            , dltEnable.getValue() ? LS_ON : LS_OFF, static_cast<am::am_LogService_e>(dltOutput.getValue())
+            , dltLogFilename.getValue());
 
     // Instantiate all classes. Keep in same order !
     CAmSocketHandler iSocketHandler;

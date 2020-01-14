@@ -34,7 +34,7 @@
 #include <stdexcept>
 #include "CAmRoutingReceiver.h"
 #include "TAmPluginTemplate.h"
-#include "CAmDltWrapper.h"
+#include "CAmLogWrapper.h"
 #include "IAmDatabaseHandler.h"
 
 namespace am

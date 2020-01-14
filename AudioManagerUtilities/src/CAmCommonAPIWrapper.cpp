@@ -27,7 +27,7 @@
 #include <vector>
 #include "audiomanagertypes.h"
 #include "CAmSocketHandler.h"
-#include "CAmDltWrapper.h"
+#include "CAmLogWrapper.h"
 #include "CAmCommonAPIWrapper.h"
 
 namespace am

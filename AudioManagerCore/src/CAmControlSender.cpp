@@ -32,7 +32,7 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include "TAmPluginTemplate.h"
-#include "CAmDltWrapper.h"
+#include "CAmLogWrapper.h"
 
 namespace am
 {

@@ -26,7 +26,7 @@
 
 #include <dlfcn.h>
 #include <libgen.h>
-#include "CAmDltWrapper.h"
+#include "CAmLogWrapper.h"
 
 namespace am
 {

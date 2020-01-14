@@ -27,7 +27,7 @@
 #include "IAmDatabaseHandler.h"
 #include "CAmRoutingSender.h"
 #include "CAmControlSender.h"
-#include "CAmDltWrapper.h"
+#include "CAmLogWrapper.h"
 #include "CAmSocketHandler.h"
 
 #define __METHOD_NAME__ std::string(std::string("CAmRoutingReceiver::") + __func__)

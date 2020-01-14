@@ -26,7 +26,7 @@
 #include <algorithm>
 #include "IAmDatabaseHandler.h"
 #include "CAmControlSender.h"
-#include "CAmDltWrapper.h"
+#include "CAmLogWrapper.h"
 #include "CAmSocketHandler.h"
 
 #define __METHOD_NAME__ std::string(std::string("CAmCommandReceiver::") + __func__)
