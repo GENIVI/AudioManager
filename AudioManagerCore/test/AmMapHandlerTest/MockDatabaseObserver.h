@@ -61,7 +61,9 @@ public:
     virtual void removeCrossfader(const am_crossfaderID_t crossfaderID) = 0;
     virtual void mainConnectionStateChanged(const am_mainConnectionID_t connectionID, const am_ConnectionState_e connectionState) = 0;
     virtual void mainSinkSoundPropertyChanged(const am_sinkID_t sinkID, const am_MainSoundProperty_s& SoundProperty) = 0;
+    virtual void mainSinkSoundPropertiesChanged(const am_sinkID_t sinkID, const std::vector<am_MainSoundProperty_s>& listSoundProperties) = 0;
     virtual void mainSourceSoundPropertyChanged(const am_sourceID_t sourceID, const am_MainSoundProperty_s& SoundProperty) = 0;
+    virtual void mainSourceSoundPropertiesChanged(const am_sourceID_t sourceID, const std::vector<am_MainSoundProperty_s>& listSoundProperties) = 0;
     virtual void sinkAvailabilityChanged(const am_sinkID_t sinkID, const am_Availability_s& availability) = 0;
     virtual void sourceAvailabilityChanged(const am_sourceID_t sourceID, const am_Availability_s& availability) = 0;
     virtual void volumeChanged(const am_sinkID_t sinkID, const am_mainVolume_t volume) = 0;
@@ -95,7 +97,9 @@ class MockDatabaseObserver : public IAmDatabaseObserver{
 	MOCK_METHOD1(removeCrossfader, void(const am_crossfaderID_t crossfaderID));
 	MOCK_METHOD2(mainConnectionStateChanged, void(const am_mainConnectionID_t connectionID, const am_ConnectionState_e connectionState));
 	MOCK_METHOD2(mainSinkSoundPropertyChanged, void(const am_sinkID_t sinkID, const am_MainSoundProperty_s& SoundProperty));
+	MOCK_METHOD2(mainSinkSoundPropertiesChanged, void(const am_sinkID_t sinkID, const std::vector<am_MainSoundProperty_s>& listSoundProperties));
 	MOCK_METHOD2(mainSourceSoundPropertyChanged, void(const am_sourceID_t sourceID, const am_MainSoundProperty_s& SoundProperty));
+	MOCK_METHOD2(mainSourceSoundPropertiesChanged, void(const am_sourceID_t sourceID, const std::vector<am_MainSoundProperty_s>& listSoundProperties));
 	MOCK_METHOD2(sinkAvailabilityChanged, void(const am_sinkID_t sinkID, const am_Availability_s& availability));
 	MOCK_METHOD2(sourceAvailabilityChanged, void(const am_sourceID_t sourceID, const am_Availability_s& availability));
 	MOCK_METHOD2(volumeChanged, void(const am_sinkID_t sinkID, const am_mainVolume_t volume));

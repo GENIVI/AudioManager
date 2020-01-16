@@ -49,7 +49,9 @@ public:
     am_Error_e volumeStep(const am_sinkID_t sinkID, const int16_t volumeStep);
     am_Error_e setSinkMuteState(const am_sinkID_t sinkID, const am_MuteState_e muteState);
     am_Error_e setMainSinkSoundProperty(const am_MainSoundProperty_s &soundProperty, const am_sinkID_t sinkID);
+    am_Error_e setMainSinkSoundProperties(const std::vector<am_MainSoundProperty_s> &listSoundProperties, const am_sinkID_t sinkID);
     am_Error_e setMainSourceSoundProperty(const am_MainSoundProperty_s &soundProperty, const am_sourceID_t sourceID);
+    am_Error_e setMainSourceSoundProperties(const std::vector<am_MainSoundProperty_s> &listSoundProperties, const am_sourceID_t sourceID);
     am_Error_e setSystemProperty(const am_SystemProperty_s &property);
     am_Error_e getVolume(const am_sinkID_t sinkID, am_mainVolume_t &mainVolume) const;
     am_Error_e getListMainConnections(std::vector<am_MainConnectionType_s> &listConnections) const;

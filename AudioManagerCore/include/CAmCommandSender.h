@@ -60,7 +60,9 @@ public:
     void cbNumberOfSourceClassesChanged();
     void cbMainConnectionStateChanged(const am_mainConnectionID_t connectionID, const am_ConnectionState_e connectionState);
     void cbMainSinkSoundPropertyChanged(const am_sinkID_t sinkID, const am_MainSoundProperty_s &soundProperty);
+    void cbMainSinkSoundPropertiesChanged(const am_sinkID_t sinkID, const std::vector<am_MainSoundProperty_s> &listSoundProperties);
     void cbMainSourceSoundPropertyChanged(const am_sourceID_t sourceID, const am_MainSoundProperty_s &soundProperty);
+    void cbMainSourceSoundPropertiesChanged(const am_sourceID_t sourceID, const std::vector<am_MainSoundProperty_s> &listSoundProperties);
     void cbSinkAvailabilityChanged(const am_sinkID_t sinkID, const am_Availability_s &availability);
     void cbSourceAvailabilityChanged(const am_sourceID_t sourceID, const am_Availability_s &availability);
     void cbVolumeChanged(const am_sinkID_t sinkID, const am_mainVolume_t volume);

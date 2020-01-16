@@ -64,8 +64,12 @@ CAmDatabaseObserver::CAmDatabaseObserver()
 		{ MockDatabaseObserver::getMockObserverObject()->mainConnectionStateChanged(connectionID, connectionState); };
 		dboMainSinkSoundPropertyChanged = [&](const am_sinkID_t sinkID, const am_MainSoundProperty_s& SoundProperty)
 		{ MockDatabaseObserver::getMockObserverObject()->mainSinkSoundPropertyChanged(sinkID, SoundProperty); };
+		dboMainSinkSoundPropertiesChanged = [&](const am_sinkID_t sinkID, const std::vector<am_MainSoundProperty_s>& listSoundProperties)
+		{ MockDatabaseObserver::getMockObserverObject()->mainSinkSoundPropertiesChanged(sinkID, listSoundProperties); };
 		dboMainSourceSoundPropertyChanged = [&](const am_sourceID_t sourceID, const am_MainSoundProperty_s& SoundProperty)
 		{ MockDatabaseObserver::getMockObserverObject()->mainSourceSoundPropertyChanged(sourceID, SoundProperty); };
+		dboMainSourceSoundPropertiesChanged = [&](const am_sourceID_t sourceID, const std::vector<am_MainSoundProperty_s>& listSoundProperties)
+		{ MockDatabaseObserver::getMockObserverObject()->mainSourceSoundPropertiesChanged(sourceID, listSoundProperties); };
 		dboSinkAvailabilityChanged = [&](const am_sinkID_t sinkID, const am_Availability_s& availability)
 		{ MockDatabaseObserver::getMockObserverObject()->sinkAvailabilityChanged(sinkID, availability); };
 		dboSourceAvailabilityChanged = [&](const am_sourceID_t sourceID, const am_Availability_s& availability)

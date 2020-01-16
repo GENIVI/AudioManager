@@ -59,8 +59,12 @@ class MockIAmCommandSend : public IAmCommandSend {
         void(const am_mainConnectionID_t connectionID, const am_ConnectionState_e connectionState));
     MOCK_METHOD2(cbMainSinkSoundPropertyChanged,
         void(const am_sinkID_t sinkID, const am_MainSoundProperty_s& soundProperty));
+    MOCK_METHOD2(cbMainSinkSoundPropertiesChanged,
+        void(const am_sinkID_t sinkID, const std::vector<am_MainSoundProperty_s>& listSoundProperties));
     MOCK_METHOD2(cbMainSourceSoundPropertyChanged,
         void(const am_sourceID_t sourceID, const am_MainSoundProperty_s& soundProperty));
+    MOCK_METHOD2(cbMainSourceSoundPropertiesChanged,
+        void(const am_sourceID_t sourcekID, const std::vector<am_MainSoundProperty_s>& listSoundProperties));
     MOCK_METHOD2(cbSinkAvailabilityChanged,
         void(const am_sinkID_t sinkID, const am_Availability_s& availability));
     MOCK_METHOD2(cbSourceAvailabilityChanged,

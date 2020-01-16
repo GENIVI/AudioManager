@@ -32,7 +32,7 @@ class CAmSocketHandler;
 
 #include "audiomanagertypes.h"
 
-#define ControlVersion "5.1"
+#define ControlVersion "5.2"
 namespace am {
 
 /**
@@ -302,11 +302,23 @@ public:
 	 */
 	virtual am_Error_e changeMainSinkSoundPropertyDB(const am_MainSoundProperty_s& soundProperty, const am_sinkID_t sinkID) =0;
 	/**
+	 * changes the mainsinksoundproperties of a sink
+	 * @return E_OK on success, E_DATABASE_ERROR on error, E_NON_EXISTENT if sink was
+	 * not found
+	 */
+	virtual am_Error_e changeMainSinkSoundPropertiesDB(const std::vector<am_MainSoundProperty_s>& /*listSoundProperties*/, const am_sinkID_t /*sinkID*/) { return E_OK; };
+	/**
 	 * changes the mainsourcesoundproperty of a sink
 	 * @return E_OK on success, E_DATABASE_ERROR on error, E_NON_EXISTENT if source
 	 * was not found
 	 */
 	virtual am_Error_e changeMainSourceSoundPropertyDB(const am_MainSoundProperty_s& soundProperty, const am_sourceID_t sourceID) =0;
+	/**
+	 * changes the mainsourcesoundproperties of a source
+	 * @return E_OK on success, E_DATABASE_ERROR on error, E_NON_EXISTENT if source
+	 * was not found
+	 */
+	virtual am_Error_e changeMainSourceSoundPropertiesDB(const std::vector<am_MainSoundProperty_s>& /*listSoundProperties*/, const am_sourceID_t /*sourceID*/) { return E_OK; };
 	/**
 	 * changes the availablility of a source
 	 * @return E_OK on success, E_DATABASE_ERROR  on error, E_NON_EXISTENT if source
@@ -726,10 +738,20 @@ public:
 	 */
 	virtual am_Error_e hookUserSetMainSinkSoundProperty(const am_sinkID_t sinkID, const am_MainSoundProperty_s& soundProperty) =0;
 	/**
+	 * sets a user MainSinkSoundProperty list
+	 * @return E_OK on success, E_OUT_OF_RANGE if out of range, E_UNKNOWN on error
+	 */
+	virtual am_Error_e hookUserSetMainSinkSoundProperties(const am_sinkID_t /*sinkID*/, const std::vector<am_MainSoundProperty_s > &/*listSoundProperties*/) { return E_OK;};
+	/**
 	 * sets a user MainSourceSoundProperty
 	 * @return E_OK on success, E_OUT_OF_RANGE if out of range, E_UNKNOWN on error
 	 */
 	virtual am_Error_e hookUserSetMainSourceSoundProperty(const am_sourceID_t sourceID, const am_MainSoundProperty_s& soundProperty) =0;
+	/**
+	 * sets a user MainSourceSoundProperty list
+	 * @return E_OK on success, E_OUT_OF_RANGE if out of range, E_UNKNOWN on error
+	 */
+	virtual am_Error_e hookUserSetMainSourceSoundProperties(const am_sourceID_t /*sourceID*/, const std::vector<am_MainSoundProperty_s > &/*listSoundProperties*/) { return E_OK; };
 	/**
 	 * sets a user SystemProperty
 	 * @return E_OK on success, E_OUT_OF_RANGE if out of range, E_UNKNOWN on error

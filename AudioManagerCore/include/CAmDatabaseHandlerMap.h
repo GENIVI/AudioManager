@@ -97,7 +97,9 @@ public:
         std::function<void(const am_crossfaderID_t)> dboRemoveCrossfader;
         std::function<void(const am_mainConnectionID_t, const am_ConnectionState_e)> dboMainConnectionStateChanged;
         std::function<void(const am_sinkID_t, const am_MainSoundProperty_s &)> dboMainSinkSoundPropertyChanged;
+        std::function<void(const am_sinkID_t, const std::vector<am_MainSoundProperty_s> &)> dboMainSinkSoundPropertiesChanged;
         std::function<void(const am_sourceID_t, const am_MainSoundProperty_s &)> dboMainSourceSoundPropertyChanged;
+        std::function<void(const am_sourceID_t, const std::vector<am_MainSoundProperty_s> &)> dboMainSourceSoundPropertiesChanged;
         std::function<void(const am_sinkID_t, const am_Availability_s &)> dboSinkAvailabilityChanged;
         std::function<void(const am_sourceID_t, const am_Availability_s &)> dboSourceAvailabilityChanged;
         std::function<void(const am_sinkID_t, const am_mainVolume_t)> dboVolumeChanged;
@@ -137,7 +139,9 @@ public:
     am_Error_e changeDomainStateDB(const am_DomainState_e domainState, const am_domainID_t domainID);
     am_Error_e changeSinkMuteStateDB(const am_MuteState_e muteState, const am_sinkID_t sinkID);
     am_Error_e changeMainSinkSoundPropertyDB(const am_MainSoundProperty_s &soundProperty, const am_sinkID_t sinkID);
+    am_Error_e changeMainSinkSoundPropertiesDB(const std::vector<am_MainSoundProperty_s> &listSoundProperties, const am_sinkID_t sinkID);
     am_Error_e changeMainSourceSoundPropertyDB(const am_MainSoundProperty_s &soundProperty, const am_sourceID_t sourceID);
+    am_Error_e changeMainSourceSoundPropertiesDB(const std::vector<am_MainSoundProperty_s> &listSoundProperties, const am_sourceID_t sourceID);
     am_Error_e changeSourceSoundPropertyDB(const am_SoundProperty_s &soundProperty, const am_sourceID_t sourceID);
     am_Error_e changeSinkSoundPropertyDB(const am_SoundProperty_s &soundProperty, const am_sinkID_t sinkID);
     am_Error_e changeSourceAvailabilityDB(const am_Availability_s &availability, const am_sourceID_t sourceID);

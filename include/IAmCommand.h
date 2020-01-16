@@ -34,7 +34,7 @@ class CAmSocketHandler;
 
 #include "audiomanagertypes.h"
 
-#define CommandVersion "4.0" 
+#define CommandVersion "4.1" 
 namespace am {
 
 /**
@@ -108,6 +108,12 @@ public:
 	 */
 	virtual am_Error_e setMainSinkSoundProperty(const am_MainSoundProperty_s& soundProperty, const am_sinkID_t sinkID) =0;
 	/**
+	 * This method is used to set the list of sound properties
+	 * @return E_OK on success, E_OUT_OF_RANGE if value exceeds range, E_UNKNOWN in
+	 * case of an error
+	 */
+	virtual am_Error_e setMainSinkSoundProperties(const std::vector<am_MainSoundProperty_s> &/*listSoundProperties*/, const am_sinkID_t /*sinkID*/) { return E_OK; };
+	/**
 	 * This method is used to set sound properties, e.g. Equalizer Values. Since the
 	 * capabilities of the system can differ, the exact key value pairs can be
 	 * extended in each product
@@ -115,6 +121,12 @@ public:
 	 * case of an error
 	 */
 	virtual am_Error_e setMainSourceSoundProperty(const am_MainSoundProperty_s& soundProperty, const am_sourceID_t sourceID) =0;
+	/**
+	 * This method is used to set the list of sound properties
+	 * @return E_OK on success, E_OUT_OF_RANGE if value exceeds range, E_UNKNOWN in
+	 * case of an error
+	 */
+	virtual am_Error_e setMainSourceSoundProperties(const std::vector<am_MainSoundProperty_s> &/*listSoundProperties*/, const am_sourceID_t /*sourceID*/) { return E_OK; };
 	/**
 	 * is used to set a specific system property.
 	 * @return E_OK on success, E_OUT_OF_RANGE if value exceeds range, E_UNKNOWN in
@@ -322,9 +334,17 @@ public:
 	 */
 	virtual void cbMainSinkSoundPropertyChanged(const am_sinkID_t sinkID, const am_MainSoundProperty_s& soundProperty) =0;
 	/**
+	 * this callback indicates that sourceSoundProperties have changed.
+	 */
+	virtual void cbMainSinkSoundPropertiesChanged(const am_sinkID_t /*sinkID*/, const std::vector<am_MainSoundProperty_s> &/*listSoundProperties*/) { return; };
+	/**
 	 * this callback indicates that a sourceSoundProperty has changed.
 	 */
 	virtual void cbMainSourceSoundPropertyChanged(const am_sourceID_t sourceID, const am_MainSoundProperty_s& soundProperty) =0;
+	/**
+	 * this callback indicates that sourceSoundProperties have changed.
+	 */
+	virtual void cbMainSourceSoundPropertiesChanged(const am_sourceID_t /*sourceID*/, const std::vector<am_MainSoundProperty_s> &/*listSoundProperties*/) { return; };
 	/**
 	 * this callback is called when the availability of a sink has changed
 	 */

@@ -206,9 +206,19 @@ am_Error_e CAmControlReceiver::changeMainSinkSoundPropertyDB(const am_MainSoundP
     return (mDatabaseHandler->changeMainSinkSoundPropertyDB(soundProperty, sinkID));
 }
 
+am_Error_e CAmControlReceiver::changeMainSinkSoundPropertiesDB(const std::vector<am_MainSoundProperty_s> &listSoundProperties, const am_sinkID_t sinkID)
+{
+    return (mDatabaseHandler->changeMainSinkSoundPropertiesDB(listSoundProperties, sinkID));
+}
+
 am_Error_e CAmControlReceiver::changeMainSourceSoundPropertyDB(const am_MainSoundProperty_s &soundProperty, const am_sourceID_t sourceID)
 {
     return (mDatabaseHandler->changeMainSourceSoundPropertyDB(soundProperty, sourceID));
+}
+
+am_Error_e CAmControlReceiver::changeMainSourceSoundPropertiesDB(const std::vector<am_MainSoundProperty_s> &listSoundProperties, const am_sourceID_t sourceID)
+{
+    return (mDatabaseHandler->changeMainSourceSoundPropertiesDB(listSoundProperties, sourceID));
 }
 
 am_Error_e CAmControlReceiver::changeSourceAvailabilityDB(const am_Availability_s &availability, const am_sourceID_t sourceID)

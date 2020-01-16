@@ -118,8 +118,14 @@ CAmCommandSender::CAmCommandSender(const std::vector<std::string> &listOfPluginD
     dboMainSinkSoundPropertyChanged = [&](const am_sinkID_t sinkID, const am_MainSoundProperty_s &SoundProperty) {
             mSerializer.asyncCall(this, &CAmCommandSender::cbMainSinkSoundPropertyChanged, sinkID, SoundProperty);
         };
+    dboMainSinkSoundPropertiesChanged = [&](const am_sinkID_t sinkID, const std::vector<am_MainSoundProperty_s> &listSoundProperties) {
+            mSerializer.asyncCall(this, &CAmCommandSender::cbMainSinkSoundPropertiesChanged, sinkID, listSoundProperties);
+        };
     dboMainSourceSoundPropertyChanged = [&](const am_sourceID_t sourceID, const am_MainSoundProperty_s &SoundProperty) {
             mSerializer.asyncCall(this, &CAmCommandSender::cbMainSourceSoundPropertyChanged, sourceID, SoundProperty);
+        };
+    dboMainSourceSoundPropertiesChanged = [&](const am_sourceID_t sourceID, const std::vector<am_MainSoundProperty_s> &listSoundProperties) {
+            mSerializer.asyncCall(this, &CAmCommandSender::cbMainSourceSoundPropertiesChanged, sourceID, listSoundProperties);
         };
     dboSinkAvailabilityChanged = [&](const am_sinkID_t sinkID, const am_Availability_s &availability) {
             mSerializer.asyncCall(this, &CAmCommandSender::cbSinkAvailabilityChanged, sinkID, availability);
@@ -310,9 +316,19 @@ void CAmCommandSender::cbMainSinkSoundPropertyChanged(const am_sinkID_t sinkID, 
     CALL_ALL_INTERFACES(cbMainSinkSoundPropertyChanged(sinkID, SoundProperty))
 }
 
+void CAmCommandSender::cbMainSinkSoundPropertiesChanged(const am_sinkID_t sinkID, const std::vector<am_MainSoundProperty_s> &listSoundProperties)
+{
+    CALL_ALL_INTERFACES(cbMainSinkSoundPropertiesChanged(sinkID, listSoundProperties))
+}
+
 void CAmCommandSender::cbMainSourceSoundPropertyChanged(const am_sourceID_t sourceID, const am_MainSoundProperty_s &SoundProperty)
 {
     CALL_ALL_INTERFACES(cbMainSourceSoundPropertyChanged(sourceID, SoundProperty))
+}
+
+void CAmCommandSender::cbMainSourceSoundPropertiesChanged(const am_sourceID_t sourceID, const std::vector<am_MainSoundProperty_s> &listSoundProperties)
+{
+    CALL_ALL_INTERFACES(cbMainSourceSoundPropertiesChanged(sourceID, listSoundProperties))
 }
 
 void CAmCommandSender::cbSinkAvailabilityChanged(const am_sinkID_t sinkID, const am_Availability_s &availability)
