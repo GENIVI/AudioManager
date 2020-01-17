@@ -86,6 +86,7 @@ public:
     virtual am_Error_e changeSinkSoundPropertyDB(const am_SoundProperty_s &soundProperty, const am_sinkID_t sinkID) = 0;
     virtual am_Error_e changeSourceAvailabilityDB(const am_Availability_s &availability, const am_sourceID_t sourceID) = 0;
     virtual am_Error_e changeSystemPropertyDB(const am_SystemProperty_s &property) = 0;
+    virtual am_Error_e changeSystemPropertiesDB(const std::vector<am_SystemProperty_s> &listSystemProperties) = 0;
     virtual am_Error_e changeDelayMainConnection(const am_timeSync_t &delay, const am_mainConnectionID_t &connectionID) = 0;
     virtual am_Error_e changeSinkClassInfoDB(const am_SinkClass_s &sinkClass) = 0;
     virtual am_Error_e changeSourceClassInfoDB(const am_SourceClass_s &sourceClass) = 0;

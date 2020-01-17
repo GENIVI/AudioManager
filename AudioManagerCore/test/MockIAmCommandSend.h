@@ -75,6 +75,8 @@ class MockIAmCommandSend : public IAmCommandSend {
         void(const am_sinkID_t sinkID, const am_MuteState_e muteState));
     MOCK_METHOD1(cbSystemPropertyChanged,
         void(const am_SystemProperty_s& systemProperty));
+    MOCK_METHOD1(cbSystemPropertiesChanged,
+        void(const std::vector<am_SystemProperty_s>& listSystemProperties));
     MOCK_METHOD2(cbTimingInformationChanged,
         void(const am_mainConnectionID_t mainConnectionID, const am_timeSync_t time));
     MOCK_METHOD3(cbSinkUpdated,

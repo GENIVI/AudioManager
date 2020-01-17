@@ -1689,6 +1689,32 @@ am_Error_e CAmDatabaseHandlerMap::changeSystemPropertyDB(const am_SystemProperty
     }
 }
 
+am_Error_e CAmDatabaseHandlerMap::changeSystemPropertiesDB(const std::vector<am_SystemProperty_s> &listSystemProperties)
+{
+    std::vector<am_SystemProperty_s>::iterator elementIterator;
+
+    for (auto &itlistSystemProperties : listSystemProperties)
+    {
+        for (elementIterator = mMappedData.mSystemProperties.begin(); elementIterator != mMappedData.mSystemProperties.end();
+                ++elementIterator)
+        {
+            if (elementIterator->type == itlistSystemProperties.type)
+            {
+                DB_COND_UPDATE_RIE(elementIterator->value, itlistSystemProperties.value);
+            }
+            else
+                logVerbose("DatabaseHandler::changeSystemPropertiesDB system property does not match the internal list");
+        }
+
+    }
+
+    logVerbose("DatabaseHandler::changeSystemPropertiesDB changed system property");
+
+    NOTIFY_OBSERVERS1(dboSystemPropertiesChanged, listSystemProperties)
+
+    return (E_OK);
+}
+
 am_Error_e CAmDatabaseHandlerMap::removeMainConnectionDB(const am_mainConnectionID_t mainConnectionID)
 {
 

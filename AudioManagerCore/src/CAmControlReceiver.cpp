@@ -231,6 +231,11 @@ am_Error_e CAmControlReceiver::changeSystemPropertyDB(const am_SystemProperty_s 
     return (mDatabaseHandler->changeSystemPropertyDB(property));
 }
 
+am_Error_e CAmControlReceiver::changeSystemPropertiesDB(const std::vector<am_SystemProperty_s> &listSystemProperties)
+{
+    return (mDatabaseHandler->changeSystemPropertiesDB(listSystemProperties));
+}
+
 am_Error_e CAmControlReceiver::removeMainConnectionDB(const am_mainConnectionID_t mainConnectionID)
 {
     return (mDatabaseHandler->removeMainConnectionDB(mainConnectionID));

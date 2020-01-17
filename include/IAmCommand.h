@@ -25,7 +25,6 @@
 
 #include <vector>
 #include <string>
-#include "audiomanagertypes.h"
 namespace am {
 class CAmDbusWrapper;
 class CAmSocketHandler;
@@ -133,6 +132,12 @@ public:
 	 * case of an error
 	 */
 	virtual am_Error_e setSystemProperty(const am_SystemProperty_s& property) =0;
+	/**
+	 * is used to set a specific system properties.
+	 * @return E_OK on success, E_OUT_OF_RANGE if value exceeds range, E_UNKNOWN in
+	 * case of an error
+	 */
+	virtual am_Error_e setSystemProperties(const std::vector<am_SystemProperty_s>&/*listSystemProperties*/ ) { return E_OK; };
 	/**
 	 * returns the actual list of MainConnections
 	 * @return E_OK on success, E_DATABASE_ERROR on error 
@@ -365,6 +370,10 @@ public:
 	 * is fired if a systemProperty changed
 	 */
 	virtual void cbSystemPropertyChanged(const am_SystemProperty_s& systemProperty) =0;
+	/**
+	 * is fired if a systemProperties changed
+	 */
+	virtual void cbSystemPropertiesChanged(const std::vector<am_SystemProperty_s>&/*listSystemProperties*/) { return; };
 	/**
 	 * This callback is fired if the timinginformation for a mainConnectionID changed
 	 */

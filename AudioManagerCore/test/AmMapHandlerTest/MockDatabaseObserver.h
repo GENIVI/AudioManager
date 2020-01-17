@@ -69,6 +69,7 @@ public:
     virtual void volumeChanged(const am_sinkID_t sinkID, const am_mainVolume_t volume) = 0;
     virtual void sinkMuteStateChanged(const am_sinkID_t sinkID, const am_MuteState_e muteState) = 0;
     virtual void systemPropertyChanged(const am_SystemProperty_s& SystemProperty) = 0;
+    virtual void systemPropertiesChanged(const std::vector<am_SystemProperty_s>& listSystemProperties) = 0;
     virtual void timingInformationChanged(const am_mainConnectionID_t mainConnection, const am_timeSync_t time) = 0;
     virtual void sinkUpdated(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties, const bool visible) = 0;
     virtual void sourceUpdated(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties, const bool visible) = 0;
@@ -105,6 +106,7 @@ class MockDatabaseObserver : public IAmDatabaseObserver{
 	MOCK_METHOD2(volumeChanged, void(const am_sinkID_t sinkID, const am_mainVolume_t volume));
 	MOCK_METHOD2(sinkMuteStateChanged, void(const am_sinkID_t sinkID, const am_MuteState_e muteState));
 	MOCK_METHOD1(systemPropertyChanged, void(const am_SystemProperty_s& SystemProperty));
+	MOCK_METHOD1(systemPropertiesChanged, void(const std::vector<am_SystemProperty_s>& listSystemProperties));
 	MOCK_METHOD2(timingInformationChanged, void(const am_mainConnectionID_t mainConnection, const am_timeSync_t time));
 	MOCK_METHOD4(sinkUpdated, void(const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties, const bool visible));
 	MOCK_METHOD4(sourceUpdated, void(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties, const bool visible));

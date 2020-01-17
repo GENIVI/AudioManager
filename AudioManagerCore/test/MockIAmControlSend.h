@@ -53,6 +53,8 @@ class MockIAmControlSend : public IAmControlSend {
       am_Error_e(const am_sourceID_t sourceID, const std::vector<am_MainSoundProperty_s > &listSoundProperty));
   MOCK_METHOD1(hookUserSetSystemProperty,
       am_Error_e(const am_SystemProperty_s& property));
+  MOCK_METHOD1(hookUserSetSystemProperties,
+      am_Error_e(const std::vector<am_SystemProperty_s>& listSystemProperties));
   MOCK_METHOD2(hookUserVolumeChange,
       am_Error_e(const am_sinkID_t SinkID, const am_mainVolume_t newVolume));
   MOCK_METHOD2(hookUserVolumeStep,

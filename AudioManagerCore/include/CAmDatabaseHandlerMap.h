@@ -105,6 +105,7 @@ public:
         std::function<void(const am_sinkID_t, const am_mainVolume_t)> dboVolumeChanged;
         std::function<void(const am_sinkID_t, const am_MuteState_e)> dboSinkMuteStateChanged;
         std::function<void(const am_SystemProperty_s &)>dboSystemPropertyChanged;
+        std::function<void(const std::vector<am_SystemProperty_s> &)>dboSystemPropertiesChanged;
         std::function<void(const am_mainConnectionID_t, const am_timeSync_t)>dboTimingInformationChanged;
         std::function<void(const am_sinkID_t, const am_sinkClass_t, const std::vector<am_MainSoundProperty_s> &, const bool)>dboSinkUpdated;
         std::function<void(const am_sourceID_t, const am_sourceClass_t, const std::vector<am_MainSoundProperty_s> &, const bool)>dboSourceUpdated;
@@ -146,6 +147,7 @@ public:
     am_Error_e changeSinkSoundPropertyDB(const am_SoundProperty_s &soundProperty, const am_sinkID_t sinkID);
     am_Error_e changeSourceAvailabilityDB(const am_Availability_s &availability, const am_sourceID_t sourceID);
     am_Error_e changeSystemPropertyDB(const am_SystemProperty_s &property);
+    am_Error_e changeSystemPropertiesDB(const std::vector<am_SystemProperty_s> &listSystemProperties);
     am_Error_e changeDelayMainConnection(const am_timeSync_t &delay, const am_mainConnectionID_t &connectionID);
     am_Error_e changeSinkClassInfoDB(const am_SinkClass_s &sinkClass);
     am_Error_e changeSourceClassInfoDB(const am_SourceClass_s &sourceClass);

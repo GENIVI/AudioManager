@@ -217,6 +217,12 @@ am_Error_e CAmControlSender::hookUserSetSystemProperty(const am_SystemProperty_s
     return (mController->hookUserSetSystemProperty(property));
 }
 
+am_Error_e CAmControlSender::hookUserSetSystemProperties(const std::vector<am_SystemProperty_s> &listSystemProperties)
+{
+    assert(mController);
+    return (mController->hookUserSetSystemProperties(listSystemProperties));
+}
+
 am_Error_e CAmControlSender::hookUserVolumeChange(const am_sinkID_t sinkID, const am_mainVolume_t newVolume)
 {
     assert(mController);

@@ -68,6 +68,7 @@ public:
     void cbVolumeChanged(const am_sinkID_t sinkID, const am_mainVolume_t volume);
     void cbSinkMuteStateChanged(const am_sinkID_t sinkID, const am_MuteState_e muteState);
     void cbSystemPropertyChanged(const am_SystemProperty_s &systemProperty);
+    void cbSystemPropertiesChanged(const std::vector<am_SystemProperty_s> &listSystemProperties);
     void cbTimingInformationChanged(const am_mainConnectionID_t mainConnectionID, const am_timeSync_t time);
     void getInterfaceVersion(std::string &version) const;
     am_Error_e getListPlugins(std::vector<std::string> &interfaces) const;

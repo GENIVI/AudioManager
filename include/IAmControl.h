@@ -332,6 +332,12 @@ public:
 	 */
 	virtual am_Error_e changeSystemPropertyDB(const am_SystemProperty_s& property) =0;
 	/**
+	 * changes systemProperties
+	 * @return E_OK on success, E_DATABASE_ERROR on error, E_NON_EXISTENT if property
+	 * was not found
+	 */
+	virtual am_Error_e changeSystemPropertiesDB(const std::vector<am_SystemProperty_s>&/*listSystemProperties*/){ return E_OK; };
+	/**
 	 * removes a mainconnection from the DB
 	 * @return E_OK on success, E_NON_EXISTENT if main connection was not found,
 	 * E_DATABASE_ERROR if the database had an error
@@ -757,6 +763,11 @@ public:
 	 * @return E_OK on success, E_OUT_OF_RANGE if out of range, E_UNKNOWN on error
 	 */
 	virtual am_Error_e hookUserSetSystemProperty(const am_SystemProperty_s& property) =0;
+	/**
+	 * sets a user SystemProperties list
+	 * @return E_OK on success, E_OUT_OF_RANGE if out of range, E_UNKNOWN on error
+	 */
+	virtual am_Error_e hookUserSetSystemProperties(const std::vector<am_SystemProperty_s>& /*listproperties*/){ return E_OK; }
 	/**
 	 * sets a user volume
 	 * @return E_OK on success, E_OUT_OF_RANGE if out of range, E_UNKNOWN on error

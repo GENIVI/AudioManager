@@ -135,6 +135,11 @@ am_Error_e CAmCommandReceiver::setSystemProperty(const am_SystemProperty_s &prop
     return (mControlSender->hookUserSetSystemProperty(property));
 }
 
+am_Error_e CAmCommandReceiver::setSystemProperties(const std::vector<am_SystemProperty_s> &listSystemProperties)
+{
+    return (mControlSender->hookUserSetSystemProperties(listSystemProperties));
+}
+
 am_Error_e CAmCommandReceiver::getVolume(const am_sinkID_t sinkID, am_mainVolume_t &mainVolume) const
 {
     return (mDatabaseHandler->getSinkMainVolume(sinkID, mainVolume));

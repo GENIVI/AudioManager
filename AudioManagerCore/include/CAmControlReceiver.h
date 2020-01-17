@@ -81,6 +81,7 @@ public:
     am_Error_e changeMainSourceSoundPropertiesDB(const std::vector<am_MainSoundProperty_s> &listSoundProperties, const am_sourceID_t sourceID);
     am_Error_e changeSourceAvailabilityDB(const am_Availability_s &availability, const am_sourceID_t sourceID);
     am_Error_e changeSystemPropertyDB(const am_SystemProperty_s &property);
+    am_Error_e changeSystemPropertiesDB(const std::vector<am_SystemProperty_s> &listSystemProperties);
     am_Error_e removeMainConnectionDB(const am_mainConnectionID_t mainConnectionID);
     am_Error_e removeSinkDB(const am_sinkID_t sinkID);
     am_Error_e removeSourceDB(const am_sourceID_t sourceID);
