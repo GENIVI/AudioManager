@@ -50,8 +50,11 @@ public:
     am_Error_e hookUserConnectionRequest(const am_sourceID_t sourceID, const am_sinkID_t sinkID, am_mainConnectionID_t &mainConnectionID);
     am_Error_e hookUserDisconnectionRequest(const am_mainConnectionID_t connectionID);
     am_Error_e hookUserSetMainSinkSoundProperty(const am_sinkID_t sinkID, const am_MainSoundProperty_s &soundProperty);
+    am_Error_e hookUserSetMainSinkSoundProperties(const am_sinkID_t sinkID, const std::vector<am_MainSoundProperty_s > &listSoundProperties);
     am_Error_e hookUserSetMainSourceSoundProperty(const am_sourceID_t sourceID, const am_MainSoundProperty_s &soundProperty);
+    am_Error_e hookUserSetMainSourceSoundProperties(const am_sourceID_t sourceID, const std::vector<am_MainSoundProperty_s > &listSoundProperties);
     am_Error_e hookUserSetSystemProperty(const am_SystemProperty_s &property);
+    am_Error_e hookUserSetSystemProperties(const std::vector<am_SystemProperty_s> &listSystemProperties);
     am_Error_e hookUserVolumeChange(const am_sinkID_t SinkID, const am_mainVolume_t newVolume);
     am_Error_e hookUserVolumeStep(const am_sinkID_t SinkID, const int16_t increment);
     am_Error_e hookUserSetSinkMuteState(const am_sinkID_t sinkID, const am_MuteState_e muteState);

@@ -64,8 +64,12 @@ CAmDatabaseObserver::CAmDatabaseObserver()
 		{ MockDatabaseObserver::getMockObserverObject()->mainConnectionStateChanged(connectionID, connectionState); };
 		dboMainSinkSoundPropertyChanged = [&](const am_sinkID_t sinkID, const am_MainSoundProperty_s& SoundProperty)
 		{ MockDatabaseObserver::getMockObserverObject()->mainSinkSoundPropertyChanged(sinkID, SoundProperty); };
+		dboMainSinkSoundPropertiesChanged = [&](const am_sinkID_t sinkID, const std::vector<am_MainSoundProperty_s>& listSoundProperties)
+		{ MockDatabaseObserver::getMockObserverObject()->mainSinkSoundPropertiesChanged(sinkID, listSoundProperties); };
 		dboMainSourceSoundPropertyChanged = [&](const am_sourceID_t sourceID, const am_MainSoundProperty_s& SoundProperty)
 		{ MockDatabaseObserver::getMockObserverObject()->mainSourceSoundPropertyChanged(sourceID, SoundProperty); };
+		dboMainSourceSoundPropertiesChanged = [&](const am_sourceID_t sourceID, const std::vector<am_MainSoundProperty_s>& listSoundProperties)
+		{ MockDatabaseObserver::getMockObserverObject()->mainSourceSoundPropertiesChanged(sourceID, listSoundProperties); };
 		dboSinkAvailabilityChanged = [&](const am_sinkID_t sinkID, const am_Availability_s& availability)
 		{ MockDatabaseObserver::getMockObserverObject()->sinkAvailabilityChanged(sinkID, availability); };
 		dboSourceAvailabilityChanged = [&](const am_sourceID_t sourceID, const am_Availability_s& availability)
@@ -76,6 +80,8 @@ CAmDatabaseObserver::CAmDatabaseObserver()
 		{ MockDatabaseObserver::getMockObserverObject()->sinkMuteStateChanged(sinkID, muteState); };
 		dboSystemPropertyChanged = [&](const am_SystemProperty_s& SystemProperty)
 		{ MockDatabaseObserver::getMockObserverObject()->systemPropertyChanged(SystemProperty); };
+		dboSystemPropertiesChanged = [&](const std::vector<am_SystemProperty_s>& listSystemProperties)
+		{ MockDatabaseObserver::getMockObserverObject()->systemPropertiesChanged(listSystemProperties); };
 		dboTimingInformationChanged = [&](const am_mainConnectionID_t mainConnection, const am_timeSync_t time)
 		{ MockDatabaseObserver::getMockObserverObject()->timingInformationChanged(mainConnection,time); };
 		dboSinkUpdated = [&](const am_sinkID_t sinkID, const am_sinkClass_t sinkClassID, const std::vector<am_MainSoundProperty_s>& listMainSoundProperties, const bool visible)

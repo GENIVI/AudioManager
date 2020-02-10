@@ -193,16 +193,34 @@ am_Error_e CAmControlSender::hookUserSetMainSinkSoundProperty(const am_sinkID_t 
     return (mController->hookUserSetMainSinkSoundProperty(sinkID, soundProperty));
 }
 
+am_Error_e CAmControlSender::hookUserSetMainSinkSoundProperties(const am_sinkID_t sinkID, const std::vector<am_MainSoundProperty_s > &listSoundProperties)
+{
+    assert(mController);
+    return (mController->hookUserSetMainSinkSoundProperties(sinkID, listSoundProperties));
+}
+
 am_Error_e CAmControlSender::hookUserSetMainSourceSoundProperty(const am_sourceID_t sourceID, const am_MainSoundProperty_s &soundProperty)
 {
     assert(mController);
     return (mController->hookUserSetMainSourceSoundProperty(sourceID, soundProperty));
 }
 
+am_Error_e CAmControlSender::hookUserSetMainSourceSoundProperties(const am_sourceID_t sourceID, const std::vector<am_MainSoundProperty_s > &listSoundProperties)
+{
+    assert(mController);
+    return (mController->hookUserSetMainSourceSoundProperties(sourceID, listSoundProperties));
+}
+
 am_Error_e CAmControlSender::hookUserSetSystemProperty(const am_SystemProperty_s &property)
 {
     assert(mController);
     return (mController->hookUserSetSystemProperty(property));
+}
+
+am_Error_e CAmControlSender::hookUserSetSystemProperties(const std::vector<am_SystemProperty_s> &listSystemProperties)
+{
+    assert(mController);
+    return (mController->hookUserSetSystemProperties(listSystemProperties));
 }
 
 am_Error_e CAmControlSender::hookUserVolumeChange(const am_sinkID_t sinkID, const am_mainVolume_t newVolume)

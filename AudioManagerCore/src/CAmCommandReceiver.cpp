@@ -111,16 +111,33 @@ am_Error_e CAmCommandReceiver::setMainSinkSoundProperty(const am_MainSoundProper
     return (mControlSender->hookUserSetMainSinkSoundProperty(sinkID, soundProperty));
 }
 
+am_Error_e CAmCommandReceiver::setMainSinkSoundProperties(const std::vector<am_MainSoundProperty_s> &listSoundProperties, const am_sinkID_t sinkID)
+{
+    logInfo(__METHOD_NAME__, "sinkID=", sinkID);
+    return (mControlSender->hookUserSetMainSinkSoundProperties(sinkID, listSoundProperties));
+}
+
 am_Error_e CAmCommandReceiver::setMainSourceSoundProperty(const am_MainSoundProperty_s &soundProperty, const am_sourceID_t sourceID)
 {
     logInfo(__METHOD_NAME__, "sourceID=", sourceID, "soundPropertyType=", soundProperty.type, "soundPropertyValue=", soundProperty.value);
     return (mControlSender->hookUserSetMainSourceSoundProperty(sourceID, soundProperty));
 }
 
+am_Error_e CAmCommandReceiver::setMainSourceSoundProperties(const std::vector<am_MainSoundProperty_s> &listSoundProperties, const am_sourceID_t sourceID)
+{
+    logInfo(__METHOD_NAME__, "sourceID=", sourceID);
+    return (mControlSender->hookUserSetMainSourceSoundProperties(sourceID, listSoundProperties));
+}
+
 am_Error_e CAmCommandReceiver::setSystemProperty(const am_SystemProperty_s &property)
 {
     logInfo(__METHOD_NAME__, "type=", property.type, "systemPropertyValue=", property.value);
     return (mControlSender->hookUserSetSystemProperty(property));
+}
+
+am_Error_e CAmCommandReceiver::setSystemProperties(const std::vector<am_SystemProperty_s> &listSystemProperties)
+{
+    return (mControlSender->hookUserSetSystemProperties(listSystemProperties));
 }
 
 am_Error_e CAmCommandReceiver::getVolume(const am_sinkID_t sinkID, am_mainVolume_t &mainVolume) const

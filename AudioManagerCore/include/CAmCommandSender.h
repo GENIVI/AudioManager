@@ -60,12 +60,15 @@ public:
     void cbNumberOfSourceClassesChanged();
     void cbMainConnectionStateChanged(const am_mainConnectionID_t connectionID, const am_ConnectionState_e connectionState);
     void cbMainSinkSoundPropertyChanged(const am_sinkID_t sinkID, const am_MainSoundProperty_s &soundProperty);
+    void cbMainSinkSoundPropertiesChanged(const am_sinkID_t sinkID, const std::vector<am_MainSoundProperty_s> &listSoundProperties);
     void cbMainSourceSoundPropertyChanged(const am_sourceID_t sourceID, const am_MainSoundProperty_s &soundProperty);
+    void cbMainSourceSoundPropertiesChanged(const am_sourceID_t sourceID, const std::vector<am_MainSoundProperty_s> &listSoundProperties);
     void cbSinkAvailabilityChanged(const am_sinkID_t sinkID, const am_Availability_s &availability);
     void cbSourceAvailabilityChanged(const am_sourceID_t sourceID, const am_Availability_s &availability);
     void cbVolumeChanged(const am_sinkID_t sinkID, const am_mainVolume_t volume);
     void cbSinkMuteStateChanged(const am_sinkID_t sinkID, const am_MuteState_e muteState);
     void cbSystemPropertyChanged(const am_SystemProperty_s &systemProperty);
+    void cbSystemPropertiesChanged(const std::vector<am_SystemProperty_s> &listSystemProperties);
     void cbTimingInformationChanged(const am_mainConnectionID_t mainConnectionID, const am_timeSync_t time);
     void getInterfaceVersion(std::string &version) const;
     am_Error_e getListPlugins(std::vector<std::string> &interfaces) const;
