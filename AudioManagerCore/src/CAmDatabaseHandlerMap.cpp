@@ -31,7 +31,7 @@
 #include <limits>
 #include "CAmDatabaseHandlerMap.h"
 #include "CAmRouter.h"
-#include "CAmDltWrapper.h"
+#include "CAmLogWrapper.h"
 
 static std::string __am_className__("CAmDatabaseHandlerMap::");
 #define __METHOD_NAME__ std::string(__am_className__ + __func__)

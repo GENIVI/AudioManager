@@ -29,7 +29,7 @@
 #include "CAmRouter.h"
 #include "IAmDatabaseHandler.h"
 #include "CAmControlSender.h"
-#include "CAmDltWrapper.h"
+#include "CAmLogWrapper.h"
 
 namespace am
 {

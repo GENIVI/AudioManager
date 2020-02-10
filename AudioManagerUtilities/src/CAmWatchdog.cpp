@@ -26,7 +26,7 @@
 #include <cstdlib>
 #include <stdexcept>
 #include "audiomanagerconfig.h"
-#include "CAmDltWrapper.h"
+#include "CAmLogWrapper.h"
 #include <systemd/sd-daemon.h>
 
 namespace am

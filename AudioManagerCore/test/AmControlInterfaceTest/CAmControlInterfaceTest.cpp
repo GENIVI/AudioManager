@@ -25,13 +25,12 @@
 #include <string>
 #include <vector>
 #include <set>
-#include "CAmDltWrapper.h"
+#include "CAmLogWrapper.h"
 #include "CAmCommandLineSingleton.h"
 
 using namespace am;
 using namespace testing;
 
-DLT_DECLARE_CONTEXT(AudioManager)
 TCLAP::SwitchArg enableDebug ("V","logDlt","print DLT logs to stdout or dlt-daemon default on",true);
 
 ACTION(returnResyncConnection)
@@ -71,7 +70,6 @@ CAmControlInterfaceTest::CAmControlInterfaceTest() :
 
 CAmControlInterfaceTest::~CAmControlInterfaceTest()
 {
-	CAmDltWrapper::instance()->unregisterContext(AudioManager);
 }
 
 void CAmControlInterfaceTest::SetUp()
@@ -663,7 +661,8 @@ int main(int argc, char **argv)
 	catch (TCLAP::ArgException &e)  // catch any exceptions
 	{ std::cerr << "error: " << e.error() << " for arg " << e.argId() << std::endl; }
 	CAmCommandLineSingleton::instance()->preparse(argc,argv);
-	CAmDltWrapper::instanctiateOnce("ATEST","AudioManagerControlInterface Test",enableDebug.getValue(),CAmDltWrapper::logDestination::DAEMON);
+	CAmLogWrapper::instantiateOnce("ATEST","AudioManagerControlInterface Test"
+	        ,enableDebug.getValue() ? LS_ON : LS_OFF, LOG_SERVICE_DLT);
 	logInfo("RoutingSendInterface Test started");
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

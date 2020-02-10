@@ -23,7 +23,7 @@
 #include <memory>
 #include <stdexcept>
 #include <unistd.h>
-#include "CAmDltWrapper.h"
+#include "CAmLogWrapper.h"
 #include "CAmSocketHandler.h"
 
 /*!

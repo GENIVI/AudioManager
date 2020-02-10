@@ -32,7 +32,7 @@
 #include <sys/un.h>
 #include <sys/poll.h>
 #include <sys/eventfd.h>
-#include "CAmDltWrapper.h"
+#include "CAmLogWrapper.h"
 #include "CAmSocketHandler.h"
 
 
@@ -771,6 +771,7 @@ TEST(CAmSocketHandlerTest,playWithSockets)
 int main(int argc, char **argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
+    CAmLogWrapper::instantiateOnce("GTST", "GTEST for Socket Handler", LS_ON, LOG_SERVICE_DLT);
     return RUN_ALL_TESTS();
 }
 

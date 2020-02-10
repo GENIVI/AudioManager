@@ -24,7 +24,7 @@
 #include <chrono>
 #include "CAmRouterMapTest.h"
 #include <string.h>
-#include "CAmDltWrapper.h"
+#include "CAmLogWrapper.h"
 #include "CAmCommandLineSingleton.h"
 
 TCLAP::SwitchArg enableDebug("V", "logDlt", "print DLT logs to stdout or dlt-daemon default off", false);
@@ -3774,7 +3774,8 @@ int main(int argc, char **argv)
         std::cerr << "error: " << e.error() << " for arg " << e.argId() << std::endl;
     }
     CAmCommandLineSingleton::instance()->preparse(argc, argv);
-    CAmDltWrapper::instanctiateOnce("rTEST", "RouterMap Test", enableDebug.getValue(), CAmDltWrapper::logDestination::DAEMON);
+    CAmLogWrapper::instantiateOnce("rTEST", "RouterMap Test"
+            , enableDebug.getValue() ? LS_ON : LS_OFF, LOG_SERVICE_DLT);
     logInfo("Routing Test started ");
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

@@ -33,7 +33,7 @@
 #include <csignal>
 #include <cstring>
 
-#include "CAmDltWrapper.h"
+#include "CAmLogWrapper.h"
 #include "CAmSocketHandler.h"
 
 #ifdef WITH_TIMERFD

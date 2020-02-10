@@ -40,6 +40,9 @@ ENDIF (WITH_SHARED_UTILITIES)
 SET(AUDIO_MANAGER_UTILITIES_SRCS_CXX
 	src/CAmCommandLineSingleton.cpp
 	src/CAmDltWrapper.cpp
+	src/CAmLogWrapper.cpp
+	src/CAmLoggerFile.cpp
+	src/CAmLoggerStdOut.cpp
 	src/CAmSocketHandler.cpp)
 
 if(WITH_SYSTEMD_WATCHDOG)
@@ -108,6 +111,10 @@ ENDIF (WITH_CAPI_WRAPPER)
 
 IF (WITH_DLT)
 	pkg_check_modules(DLT REQUIRED "automotive-dlt >= 2.2.0")
+
+    SET(AUDIO_MANAGER_UTILITIES_SRCS_CXX
+        ${AUDIO_MANAGER_UTILITIES_SRCS_CXX}
+        src/CAmLoggerDlt.cpp)
 
 	add_definitions(${DLT_CFLAGS_OTHER})
 

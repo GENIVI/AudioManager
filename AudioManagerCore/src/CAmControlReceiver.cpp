@@ -30,7 +30,7 @@
 #include "CAmRoutingSender.h"
 #include "CAmCommandSender.h"
 #include "CAmRouter.h"
-#include "CAmDltWrapper.h"
+#include "CAmLogWrapper.h"
 #include "CAmSocketHandler.h"
 
 namespace am {

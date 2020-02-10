@@ -29,7 +29,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <stdexcept>
-#include "CAmDltWrapper.h"
+#include "CAmLogWrapper.h"
 #include "CAmSocketHandler.h"
 
 namespace am
