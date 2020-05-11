@@ -191,7 +191,7 @@ am_Error_e CAmControlReceiver::changeSinkAvailabilityDB(const am_Availability_s 
     return (mDatabaseHandler->changeSinkAvailabilityDB(availability, sinkID));
 }
 
-am_Error_e CAmControlReceiver::changDomainStateDB(const am_DomainState_e domainState, const am_domainID_t domainID)
+am_Error_e CAmControlReceiver::changeDomainStateDB(const am_DomainState_e domainState, const am_domainID_t domainID)
 {
     return (mDatabaseHandler->changeDomainStateDB(domainState, domainID));
 }
