@@ -288,7 +288,7 @@ public:
 	 * @return E_OK on success, E_DATABASE_ERROR on error, E_NON_EXISTENT if domain
 	 * was not found
 	 */
-	virtual am_Error_e changDomainStateDB(const am_DomainState_e domainState, const am_domainID_t domainID) =0;
+	virtual am_Error_e changeDomainStateDB(const am_DomainState_e domainState, const am_domainID_t domainID) =0;
 	/**
 	 * changes the mute state of a sink
 	 * @return E_OK on success, E_DATABASE_ERROR on error, E_NON_EXISTENT if sink was
