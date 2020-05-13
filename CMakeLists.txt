@@ -49,6 +49,9 @@ option( WITH_DOCUMENTATION
 option ( WITH_SYSTEMD_WATCHDOG
     "Build with systemD support & watchdog" ON)
 
+option ( WITH_DATABASE_CHANGE_CHECK
+    "Allow reduced communication traffic by returning E_NO_CHANGE instead of E_OK to some controller-side functions" OFF)
+
 option ( GLIB_DBUS_TYPES_TOLERANT
     "Build dbus with tolerance towards glib 16bit/32bit handling" ON)
 
@@ -97,6 +100,12 @@ set(AM_MAX_CONNECTIONS 0x1000
 set(AM_MAX_MAIN_CONNECTIONS 0x1000
     CACHE INTEGER "Number of max Mainconnections before rollover")
     
+set(MAX_ROUTING_PATHS  5
+    CACHE INTEGER "Max paths count returned to the controller (default: 5)")
+
+set(MAX_ALLOWED_DOMAIN_CYCLES  1
+    CACHE INTEGER "How many times the routing algorithm should look back into domains (0 = disallowed, 1 = single = default, ..., UINT_MAX = unlimited).")
+
 set(AUDIOMANGER_APP_ID "AUDI"
     CACHE PROPERTY "The application ID that is used by the audiomanager")   
     
@@ -217,10 +226,10 @@ message(STATUS "${PROJECT_NAME} Configuration:")
 message(STATUS "CMAKE_BUILD_TYPE              = ${CMAKE_BUILD_TYPE}")
 message(STATUS "CMAKE_INSTALL_PREFIX          = ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "BUILD_DOCUMENTATION           = ${WITH_DOCUMENTATION}")
-message(STATUS "WITH_TESTS                    = ${WITH_TESTS}")
 message(STATUS "WITH_DLT                      = ${WITH_DLT}")
 message(STATUS "WITH_TESTS                    = ${WITH_TESTS}")
 message(STATUS "WITH_SYSTEMD_WATCHDOG         = ${WITH_SYSTEMD_WATCHDOG}")
+message(STATUS "WITH_DATABASE_CHANGE_CHECK    = ${WITH_DATABASE_CHANGE_CHECK}")
 message(STATUS "WITH_CAPI_WRAPPER             = ${WITH_CAPI_WRAPPER}")
 message(STATUS "WITH_DBUS_WRAPPER             = ${WITH_DBUS_WRAPPER}")
 message(STATUS "WITH_SHARED_UTILITIES         = ${WITH_SHARED_UTILITIES}")
@@ -237,6 +246,8 @@ message(STATUS "AM_SHARE_FOLDER               = ${AM_SHARE_FOLDER}")
 message(STATUS "AM_MAP_CAPACITY               = ${AM_MAP_CAPACITY}")
 message(STATUS "AM_MAX_CONNECTIONS            = ${AM_MAX_CONNECTIONS}")
 message(STATUS "AM_MAX_MAIN_CONNECTIONS       = ${AM_MAX_MAIN_CONNECTIONS}")
+message(STATUS "MAX_ROUTING_PATHS             = ${MAX_ROUTING_PATHS}")
+message(STATUS "MAX_ALLOWED_DOMAIN_CYCLES     = ${MAX_ALLOWED_DOMAIN_CYCLES}")
 message(STATUS "BUILD_TESTING                 = ${BUILD_TESTING}")
 message(STATUS "CMAKE_INSTALL_DOCDIR          = ${CMAKE_INSTALL_DOCDIR}")
 message(STATUS "AUDIOMANGER_APP_ID            = ${AUDIOMANGER_APP_ID}")
