@@ -289,6 +289,11 @@ public:
 	 * was not found
 	 */
 	virtual am_Error_e changeDomainStateDB(const am_DomainState_e domainState, const am_domainID_t domainID) =0;
+    inline am_Error_e changDomainStateDB(const am_DomainState_e domainState, const am_domainID_t domainID)
+    {
+        // legacy redirection due to former typo in function name
+        return changeDomainStateDB(domainState, domainID);
+    }
 	/**
 	 * changes the mute state of a sink
 	 * @return E_OK on success, E_DATABASE_ERROR on error, E_NON_EXISTENT if sink was
