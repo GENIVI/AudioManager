@@ -74,7 +74,7 @@ public:
     am_Error_e changeSinkMainVolumeDB(const am_mainVolume_t mainVolume, const am_sinkID_t sinkID);
     am_Error_e changeSinkAvailabilityDB(const am_Availability_s &availability, const am_sinkID_t sinkID);
     am_Error_e changeDomainStateDB(const am_DomainState_e domainState, const am_domainID_t domainID);
-	inline am_Error_e changDomainStateDB(const am_DomainState_e domainState, const am_domainID_t domainID)
+    inline am_Error_e changDomainStateDB(const am_DomainState_e domainState, const am_domainID_t domainID)
     {
         // legacy redirection due to former typo in function name
         return changeDomainStateDB(domainState, domainID);
