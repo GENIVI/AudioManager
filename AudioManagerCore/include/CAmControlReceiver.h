@@ -73,7 +73,12 @@ public:
     am_Error_e changeMainConnectionStateDB(const am_mainConnectionID_t mainconnectionID, const am_ConnectionState_e connectionState);
     am_Error_e changeSinkMainVolumeDB(const am_mainVolume_t mainVolume, const am_sinkID_t sinkID);
     am_Error_e changeSinkAvailabilityDB(const am_Availability_s &availability, const am_sinkID_t sinkID);
-    am_Error_e changDomainStateDB(const am_DomainState_e domainState, const am_domainID_t domainID);
+    am_Error_e changeDomainStateDB(const am_DomainState_e domainState, const am_domainID_t domainID);
+    inline am_Error_e changDomainStateDB(const am_DomainState_e domainState, const am_domainID_t domainID)
+    {
+        // legacy redirection due to former typo in function name
+        return changeDomainStateDB(domainState, domainID);
+    }
     am_Error_e changeSinkMuteStateDB(const am_MuteState_e muteState, const am_sinkID_t sinkID);
     am_Error_e changeMainSinkSoundPropertyDB(const am_MainSoundProperty_s &soundProperty, const am_sinkID_t sinkID);
     am_Error_e changeMainSinkSoundPropertiesDB(const std::vector<am_MainSoundProperty_s> &listSoundProperties, const am_sinkID_t sinkID);

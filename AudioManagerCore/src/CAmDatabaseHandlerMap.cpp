@@ -1457,7 +1457,7 @@ am_Error_e CAmDatabaseHandlerMap::changeDomainStateDB(const am_DomainState_e dom
 
     DB_COND_UPDATE_RIE(mMappedData.mDomainMap[domainID].state, domainState);
 
-    logVerbose("DatabaseHandler::changDomainStateDB changed domainState of domain:", domainID, "to:", domainState);
+    logVerbose("DatabaseHandler::changeDomainStateDB changed domainState of domain:", domainID, "to:", domainState);
     return (E_OK);
 }
 
