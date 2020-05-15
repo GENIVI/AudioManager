@@ -321,6 +321,10 @@ public:
     {
         return mListDelegatePointers.size();
     }
+    inline int getListDelegatePoiters()
+    {
+        return getListDelegatePointersSize();
+    }
 
     /**
      * calls a function with variadic arguments threadsafe
@@ -833,7 +837,7 @@ public:
         , mReturnPipe()
         , mHandle()
         , mpSocketHandler(iSocketHandler)
-        , mListDelegatePointersSize()
+        , mListDelegatePointers()
         , receiverCallbackT(this, &CAmSerializer::receiverCallback)
         , dispatcherCallbackT(this, &CAmSerializer::dispatcherCallback)
         , checkerCallbackT(this, &CAmSerializer::checkerCallback)
@@ -1013,7 +1017,7 @@ public:
     {
         return mListDelegatePointers.size();
     }
-    inline size_t getListDelegagePoiters()
+    inline size_t getListDelegatePointers()
     {
         return getListDelegatePointersSize();
     }
