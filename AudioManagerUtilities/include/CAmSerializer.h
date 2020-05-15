@@ -252,7 +252,7 @@ private:
 
     };
 
-    typedef CAmDelegate *CAmDelegagePtr;         //!< pointer to a delegate
+    typedef CAmDelegate *CAmDelegatePtr;         //!< pointer to a delegate
 
 public:
     /**
@@ -298,7 +298,7 @@ private:
      * rings the line of the pipe and adds the delegate pointer to the queue
      * @param p delegate pointer
      */
-    inline void send(CAmDelegagePtr p)
+    inline void send(CAmDelegatePtr p)
     {
         if (write(mPipe[1], &p, sizeof(p)) == -1)
         {
@@ -310,16 +310,16 @@ private:
     int                        mReturnPipe[2]; //!< pipe handling returns
     sh_pollHandle_t            mHandle;
     CAmSocketHandler          *mpSocketHandler;
-    std::deque<CAmDelegagePtr> mListDelegatePoiters;         //!< intermediate queue to store the pipe results
+    std::deque<CAmDelegatePtr> mListDelegatePointers;         //!< intermediate queue to store the pipe results
 
 public:
 
     /**
      * get the size of delegate pointers
      */
-    int getListDelegatePoiters()
+    int getListDelegatePointersSize()
     {
-        return mListDelegatePoiters.size();
+        return mListDelegatePointers.size();
     }
 
     /**
@@ -773,14 +773,14 @@ public:
         (void)handle;
         (void)userData;
         int            numReads;
-        CAmDelegagePtr listPointers[3];
+        CAmDelegatePtr listPointers[3];
         if ((numReads = read(pollfd.fd, &listPointers, sizeof(listPointers))) == -1)
         {
             logError("CAmSerializer::receiverCallback could not read pipe!");
             throw std::runtime_error("CAmSerializer Could not read pipe!");
         }
 
-        mListDelegatePoiters.assign(listPointers, listPointers + (numReads / sizeof(CAmDelegagePtr)));
+        mListDelegatePointers.assign(listPointers, listPointers + (numReads / sizeof(CAmDelegatePtr)));
     }
 
     /**
@@ -790,7 +790,7 @@ public:
     {
         (void)handle;
         (void)userData;
-        if (mListDelegatePoiters.empty())
+        if (mListDelegatePointers.empty())
         {
             return (false);
         }
@@ -805,14 +805,14 @@ public:
     {
         (void)handle;
         (void)userData;
-        CAmDelegagePtr delegatePoiter = mListDelegatePoiters.front();
-        mListDelegatePoiters.pop_front();
-        if (delegatePoiter->call(mReturnPipe))
+        CAmDelegatePtr delegatePointer = mListDelegatePointers.front();
+        mListDelegatePointers.pop_front();
+        if (delegatePointer->call(mReturnPipe))
         {
-            delete delegatePoiter;
+            delete delegatePointer;
         }
 
-        if (mListDelegatePoiters.empty())
+        if (mListDelegatePointers.empty())
         {
             return (false);
         }
@@ -833,7 +833,7 @@ public:
         , mReturnPipe()
         , mHandle()
         , mpSocketHandler(iSocketHandler)
-        , mListDelegatePoiters()
+        , mListDelegatePointersSize()
         , receiverCallbackT(this, &CAmSerializer::receiverCallback)
         , dispatcherCallbackT(this, &CAmSerializer::dispatcherCallback)
         , checkerCallbackT(this, &CAmSerializer::checkerCallback)
@@ -972,13 +972,13 @@ class CAmSerializer
 
     };
 
-    typedef CAmDelegate *CAmDelegagePtr;         //!< pointer to a delegate
+    typedef CAmDelegate *CAmDelegatePtr;         //!< pointer to a delegate
 
-    void sendSync(CAmDelegagePtr pDelegate)
+    void sendSync(CAmDelegatePtr pDelegate)
     {
         send(pDelegate);
         int             numReads;
-        CAmDelegagePtr *p = NULL;
+        CAmDelegatePtr *p = NULL;
         if ((numReads = read(mReturnPipe[0], &p, sizeof(p))) == -1)
         {
             logError("CAmSerializer::doSyncCall could not read pipe!");
@@ -990,7 +990,7 @@ class CAmSerializer
      * rings the line of the pipe and adds the delegate pointer to the queue
      * @param p delegate pointer
      */
-    inline void send(CAmDelegagePtr p)
+    inline void send(CAmDelegatePtr p)
     {
         if (write(mPipe[1], &p, sizeof(p)) == -1)
         {
@@ -1002,16 +1002,20 @@ class CAmSerializer
     int                        mReturnPipe[2]; //!< pipe handling returns
     sh_pollHandle_t            mHandle;
     CAmSocketHandler          *mpSocketHandler;
-    std::deque<CAmDelegagePtr> mListDelegatePointers;         //!< intermediate queue to store the pipe results
+    std::deque<CAmDelegatePtr> mListDelegatePointers;         //!< intermediate queue to store the pipe results
 
 public:
 
     /**
      * get the size of delegate pointers
      */
-    size_t getListDelegatePointers()
+    size_t getListDelegatePointersSize()
     {
         return mListDelegatePointers.size();
+    }
+    inline size_t getListDelegagePoiters()
+    {
+        return getListDelegatePointersSize();
     }
 
     /**
@@ -1155,14 +1159,14 @@ public:
         (void)handle;
         (void)userData;
         int            numReads;
-        CAmDelegagePtr listPointers[3];
+        CAmDelegatePtr listPointers[3];
         if ((numReads = read(pollfd.fd, &listPointers, sizeof(listPointers))) == -1)
         {
             logError("CAmSerializer::receiverCallback could not read pipe!");
             throw std::runtime_error("CAmSerializer Could not read pipe!");
         }
 
-        mListDelegatePointers.assign(listPointers, listPointers + (numReads / sizeof(CAmDelegagePtr)));
+        mListDelegatePointers.assign(listPointers, listPointers + (numReads / sizeof(CAmDelegatePtr)));
     }
 
     /**
@@ -1187,11 +1191,11 @@ public:
     {
         (void)handle;
         (void)userData;
-        CAmDelegagePtr delegatePoiter = mListDelegatePointers.front();
+        CAmDelegatePtr delegatePointer = mListDelegatePointers.front();
         mListDelegatePointers.pop_front();
-        if (delegatePoiter->call(mReturnPipe))
+        if (delegatePointer->call(mReturnPipe))
         {
-            delete delegatePoiter;
+            delete delegatePointer;
         }
 
         if (mListDelegatePointers.empty())
