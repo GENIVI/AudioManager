@@ -32,7 +32,7 @@ class CAmSocketHandler;
 
 #include "audiomanagertypes.h"
 
-#define ControlVersion "5.2"
+#define ControlVersion "5.3"
 namespace am {
 
 /**
