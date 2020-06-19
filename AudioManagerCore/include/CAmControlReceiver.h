@@ -127,6 +127,8 @@ public:
     void setRoutingRundown();
     void confirmControllerReady(const am_Error_e error);
     void confirmControllerRundown(const am_Error_e error);
+    am_Error_e transferConnection(const am_Handle_s handle, am_mainConnectionID_t mainConnectionID
+            , am_domainID_t domainID) override;
     am_Error_e getSocketHandler(CAmSocketHandler * &socketHandler);
     void getInterfaceVersion(std::string &version) const;
     am_Error_e changeSourceDB(const am_sourceID_t sourceID, const am_sourceClass_t sourceClassID, const std::vector<am_SoundProperty_s> &listSoundProperties, const std::vector<am_CustomConnectionFormat_t> &listConnectionFormats, const std::vector<am_MainSoundProperty_s> &listMainSoundProperties);

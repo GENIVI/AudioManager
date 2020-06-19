@@ -62,6 +62,8 @@ public:
     am_Error_e startupInterfaces(CAmRoutingReceiver *iRoutingReceiver);
     void setRoutingReady();
     void setRoutingRundown();
+    am_Error_e asyncTransferConnection(const am_Handle_s handle, am_domainID_t domainID
+        , const std::vector<std::pair<std::string, std::string>>  &route, am_ConnectionState_e state);
     am_Error_e asyncAbort(const am_Handle_s &handle);
     am_Error_e asyncConnect(am_Handle_s &handle, am_connectionID_t &connectionID, const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_CustomConnectionFormat_t connectionFormat);
     am_Error_e asyncDisconnect(am_Handle_s &handle, const am_connectionID_t connectionID);

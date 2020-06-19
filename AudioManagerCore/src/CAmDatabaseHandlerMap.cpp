@@ -611,6 +611,20 @@ am_Error_e CAmDatabaseHandlerMap::enterMainConnectionDB(const am_MainConnection_
         return (E_NOT_POSSIBLE);
     }
 
+    // check if we already have this connection
+    for (auto &mapped : mMappedData.mMainConnectionMap)
+    {
+        if ((mapped.second.sourceID != mainConnectionData.sourceID) || (mapped.second.sinkID != mainConnectionData.sinkID))
+        {
+            continue;
+        }
+
+        connectionID = mapped.second.mainConnectionID;
+        logWarning(__METHOD_NAME__, "main connection from source", mainConnectionData.sourceID
+                , "to sink", mainConnectionData.sinkID, "already exists with ID", connectionID);
+        return E_ALREADY_EXISTS;
+    }
+
     int16_t delay  = 0;
     int16_t nextID = 0;
     if (mMappedData.increaseMainConnectionID(nextID))
@@ -1167,6 +1181,20 @@ am_Error_e CAmDatabaseHandlerMap::enterConnectionDB(const am_Connection_s &conne
     {
         logError(__METHOD_NAME__, "sourceID must exist!");
         return (E_NOT_POSSIBLE);
+    }
+
+    // check if we already have this connection
+    for (auto &mapped : mMappedData.mConnectionMap)
+    {
+        if ((mapped.second.sourceID != connection.sourceID) || (mapped.second.sinkID != connection.sinkID))
+        {
+            continue;
+        }
+
+        connectionID = mapped.second.connectionID;
+        logWarning(__METHOD_NAME__, "connection from source", connection.sourceID
+                , "to sink", connection.sinkID, "already exists with ID", connectionID);
+        return E_ALREADY_EXISTS;
     }
 
     // connection format is not checked, because it's project specific
@@ -1917,54 +1945,66 @@ am_Error_e CAmDatabaseHandlerMap::getSourceClassInfoDB(const am_sourceID_t sourc
 
 am_Error_e CAmDatabaseHandlerMap::getSinkInfoDB(const am_sinkID_t sinkID, am_Sink_s &sinkData) const
 {
-
-    if (!existSink(sinkID))
+    auto iter = mMappedData.mSinkMap.find(sinkID);
+    if (iter == mMappedData.mSinkMap.end())
     {
         logWarning(__METHOD_NAME__, "sinkID", sinkID, "does not exist");
         return (E_NON_EXISTENT);
     }
 
-    am_Sink_Database_s mappedSink = mMappedData.mSinkMap.at(sinkID);
-    if ( true == mappedSink.reserved )
+    sinkData = iter->second; // copy to output parameter even if only ID and name are valid
+    if ( iter->second.reserved )
     {
-        return (E_NON_EXISTENT);
+        logWarning(__METHOD_NAME__, "sinkID", sinkID, "reserved for", sinkData.name, "but details are E_UNKNOWN");
+        return E_UNKNOWN;
     }
-
-    sinkData = mappedSink;
 
     return (E_OK);
 }
 
 am_Error_e CAmDatabaseHandlerMap::getSourceInfoDB(const am_sourceID_t sourceID, am_Source_s &sourceData) const
 {
-
-    if (!existSource(sourceID))
+    auto iter = mMappedData.mSourceMap.find(sourceID);
+    if (iter == mMappedData.mSourceMap.end())
     {
         logWarning(__METHOD_NAME__, "sourceID", sourceID, "does not exist");
         return (E_NON_EXISTENT);
     }
 
-    am_Source_Database_s mappedSource = mMappedData.mSourceMap.at(sourceID);
-    if ( true == mappedSource.reserved )
+    sourceData = iter->second; // copy to output parameter even if only ID and name are valid
+    if ( true == iter->second.reserved )
     {
-        return (E_NON_EXISTENT);
+        logWarning(__METHOD_NAME__, "sourceID", sourceID, "reserved for", sourceData.name, "but details are E_UNKNOWN");
+        return E_UNKNOWN;
     }
-
-    sourceData = mappedSource;
 
     return (E_OK);
 }
 
-am_Error_e am::CAmDatabaseHandlerMap::getMainConnectionInfoDB(const am_mainConnectionID_t mainConnectionID, am_MainConnection_s &mainConnectionData) const
+am_Error_e am::CAmDatabaseHandlerMap::getConnectionInfoDB(const am_connectionID_t connectionID, am_Connection_s &connectionData) const
 {
-    if (!existMainConnection(mainConnectionID))
+    auto iter = mMappedData.mConnectionMap.find(connectionID);
+    if (iter == mMappedData.mConnectionMap.end())
     {
-        logError(__METHOD_NAME__, "mainConnectionID must exist");
+        logError(__METHOD_NAME__, "connectionID", connectionID, "does not exist");
         return (E_NON_EXISTENT);
     }
 
-    am_MainConnection_s temp = mMappedData.mMainConnectionMap.at(mainConnectionID);
-    mainConnectionData = temp;
+    connectionData = iter->second;
+
+    return E_OK;
+}
+
+am_Error_e am::CAmDatabaseHandlerMap::getMainConnectionInfoDB(const am_mainConnectionID_t mainConnectionID, am_MainConnection_s &mainConnectionData) const
+{
+    auto iter = mMappedData.mMainConnectionMap.find(mainConnectionID);
+    if (iter == mMappedData.mMainConnectionMap.end())
+    {
+        logError(__METHOD_NAME__, "mainConnectionID", mainConnectionID, "does not exist");
+        return (E_NON_EXISTENT);
+    }
+
+    mainConnectionData = iter->second;
 
     return (E_OK);
 }
