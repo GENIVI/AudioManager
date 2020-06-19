@@ -124,6 +124,19 @@ void CAmRoutingReceiver::ackDisconnect(const am_Handle_s handle, const am_connec
     mpControlSender->cbAckDisconnect(handle, error);
 }
 
+/**
+ * Support hand-over acknowledgment of connections surviving shutdown of the AM
+ *
+ * @param handle: composite identifier used in the request
+ * @param errorID:success indicator (E_OK if application takes over,
+ *                E_NOT_POSSIBLE if the routing adapter is not prepared to take over
+ *                full responsibility for all involved sources and sinks)
+ */
+void CAmRoutingReceiver::ackTransferConnection(const am_Handle_s handle, const am_Error_e errorID)
+{
+
+}
+
 void CAmRoutingReceiver::ackSetSinkVolumeChange(const am_Handle_s handle, const am_volume_t volume, const am_Error_e error)
 {
     logInfo(__METHOD_NAME__, "handle=", handle, "volume=", volume, "error=", error);
@@ -231,6 +244,40 @@ am_Error_e CAmRoutingReceiver::registerDomain(const am_Domain_s &domainData, am_
 am_Error_e CAmRoutingReceiver::deregisterDomain(const am_domainID_t domainID)
 {
     return (mpControlSender->hookSystemDeregisterDomain(domainID));
+}
+
+am_Error_e CAmRoutingReceiver::registerEarlyConnection(am_domainID_t domainID
+        , const std::vector< am_Connection_s > &route, am_ConnectionState_e state)
+{
+    if (route.size() < 1)
+    {
+        logWarning(__METHOD_NAME__, "route empty");
+        return E_NOT_POSSIBLE;
+    }
+
+    am_MainConnection_s mainConnectionData;
+    mainConnectionData.sourceID = route.front().sourceID;
+    mainConnectionData.sinkID   = route.back().sinkID;
+    mainConnectionData.connectionState = state;
+    mainConnectionData.listConnectionID.reserve(route.size());
+    for (auto & conn : route)
+    {
+        am_connectionID_t connectionID;
+        am_Error_e success = mpDatabaseHandler->enterConnectionDB(conn, connectionID);
+        switch (success)
+        {
+            case E_OK:
+            case E_ALREADY_EXISTS:
+            case E_NO_CHANGE:
+                mainConnectionData.listConnectionID.push_back(connectionID);
+                break;
+
+            default:
+                return success;
+        }
+    }
+
+    return mpControlSender->hookSystemRegisterEarlyConnection(domainID, mainConnectionData);
 }
 
 am_Error_e CAmRoutingReceiver::registerGateway(const am_Gateway_s &gatewayData, am_gatewayID_t &gatewayID)

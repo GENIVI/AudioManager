@@ -175,6 +175,7 @@ public:
     am_Error_e getSinkInfoDB(const am_sinkID_t sinkID, am_Sink_s &sinkData) const;
     am_Error_e getSourceInfoDB(const am_sourceID_t sourceID, am_Source_s &sourceData) const;
     am_Error_e getCrossfaderInfoDB(const am_crossfaderID_t crossfaderID, am_Crossfader_s &crossfaderData) const;
+    am_Error_e getConnectionInfoDB(const am_connectionID_t connectionID, am_Connection_s &connectionData) const;
     am_Error_e getMainConnectionInfoDB(const am_mainConnectionID_t mainConnectionID, am_MainConnection_s &mainConnectionData) const;
     am_Error_e getSinkMainVolume(const am_sinkID_t sinkID, am_mainVolume_t &mainVolume) const;
     am_Error_e getSinkVolume(const am_sinkID_t sinkID, am_volume_t &volume) const;

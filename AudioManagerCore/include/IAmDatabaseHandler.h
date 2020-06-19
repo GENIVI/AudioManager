@@ -114,6 +114,7 @@ public:
     virtual am_Error_e getSinkInfoDB(const am_sinkID_t sinkID, am_Sink_s &sinkData) const = 0;
     virtual am_Error_e getSourceInfoDB(const am_sourceID_t sourceID, am_Source_s &sourceData) const = 0;
     virtual am_Error_e getCrossfaderInfoDB(const am_crossfaderID_t crossfaderID, am_Crossfader_s &crossfaderData) const = 0;
+    virtual am_Error_e getConnectionInfoDB(const am_connectionID_t connectionID, am_Connection_s &connectionData) const = 0;
     virtual am_Error_e getMainConnectionInfoDB(const am_mainConnectionID_t mainConnectionID, am_MainConnection_s &mainConnectionData) const = 0;
     virtual am_Error_e getSinkMainVolume(const am_sinkID_t sinkID, am_mainVolume_t &mainVolume) const = 0;
     virtual am_Error_e getSinkVolume(const am_sinkID_t sinkID, am_volume_t &volume) const = 0;

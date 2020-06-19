@@ -451,6 +451,40 @@ void CAmControlReceiver::confirmControllerRundown(const am_Error_e error)
     mSocketHandler->exit_mainloop();
 }
 
+am_Error_e CAmControlReceiver::transferConnection(const am_Handle_s handle
+        , am_mainConnectionID_t mainConnectionID, am_domainID_t domainID)
+{
+    am_MainConnection_s mainConnectionData;
+    if (mDatabaseHandler->getMainConnectionInfoDB(mainConnectionID, mainConnectionData) != E_OK)
+    {
+        return E_DATABASE_ERROR;
+    }
+
+    std::vector<std::pair<std::string, std::string>> route;
+    route.reserve(mainConnectionData.listConnectionID.size());
+    for (auto iter : mainConnectionData.listConnectionID)
+    {
+        am_Connection_s connectionData;
+        if (mDatabaseHandler->getConnectionInfoDB(iter, connectionData) != E_OK)
+        {
+            return E_DATABASE_ERROR;
+        }
+
+        // determine source and sink name, even if they are only peeked, but not fully registered
+        am_Source_s sourceData;
+        am_Sink_s sinkData;
+        if (    (mDatabaseHandler->getSourceInfoDB(connectionData.sourceID, sourceData) == E_NON_EXISTENT)
+             || (mDatabaseHandler->getSinkInfoDB(connectionData.sinkID, sinkData) == E_NON_EXISTENT))
+        {
+            return E_DATABASE_ERROR;
+        }
+
+        route.push_back({sourceData.name, sinkData.name});
+    }
+
+    return mRoutingSender->asyncTransferConnection(handle, domainID, route, mainConnectionData.connectionState);
+}
+
 am_Error_e CAmControlReceiver::getSocketHandler(CAmSocketHandler * &socketHandler)
 {
     socketHandler = mSocketHandler;

@@ -319,6 +319,13 @@ am_Error_e CAmControlSender::hookSystemDeregisterCrossfader(const am_crossfaderI
     return (mController->hookSystemDeregisterCrossfader(crossfaderID));
 }
 
+am_Error_e CAmControlSender::hookSystemRegisterEarlyConnection(am_domainID_t domainID
+        , const am_MainConnection_s &mainConnectionData)
+{
+    assert(mController);
+    return mController->hookSystemRegisterEarlyMainConnection(domainID, mainConnectionData);
+}
+
 void CAmControlSender::hookSystemSinkVolumeTick(const am_Handle_s handle, const am_sinkID_t sinkID, const am_volume_t volume)
 {
     assert(mController);

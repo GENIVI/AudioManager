@@ -921,6 +921,19 @@ void CAmRoutingSender::setRoutingRundown()
     }
 }
 
+am_Error_e CAmRoutingSender::asyncTransferConnection(const am_Handle_s handle, am_domainID_t domainID
+    , const std::vector<std::pair<std::string, std::string>>  &route, am_ConnectionState_e state)
+{
+    auto iter = mMapDomainInterface.find(domainID);
+    if (iter != mMapDomainInterface.end() && iter->second)
+    {
+        return iter->second->asyncTransferConnection(handle, route, state);
+    }
+
+    // given domain not found in map
+    return E_NON_EXISTENT;
+}
+
 am_Error_e CAmRoutingSender::asyncSetVolumes(am_Handle_s &handle, const std::vector<am_Volumes_s> &listVolumes)
 {
     IAmRoutingSend *pRoutingInterface(NULL);

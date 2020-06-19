@@ -554,6 +554,20 @@ public:
 	 * confirmRoutingRundown.
 	 */
 	virtual void setRoutingRundown() =0;
+
+	/**
+	 * Hand-over to routing-side application any connection meant to survive AM shutdown
+	 *
+	 * @param handle:           composite identifier used to map the response
+	 * @param domainID:         target domain which shall take over
+	 * @param mainConnectionID: subject of this request
+	 *
+	 * @return                  E_OK if command was forwarded to routing adapter successfully,
+	 *                          E_COMMUNICATION or other meaningful value otherwise
+	 */
+	virtual am_Error_e transferConnection(const am_Handle_s handle
+	        , am_mainConnectionID_t mainConnectionID, am_domainID_t domainID) = 0;
+
 	/**
 	 * acknowledges the setControllerReady call.
 	 */
@@ -858,6 +872,24 @@ public:
 	 * @return E_OK on success, E_UNKNOWN on error, E_NON_EXISTENT if not found
 	 */
 	virtual am_Error_e hookSystemDeregisterCrossfader(const am_crossfaderID_t crossfaderID) =0;
+
+	/**
+	 * Support announcement of audio connections already active at AM startup
+	 *
+	 * @param domainID:           home domain announcing this early connection
+	 * @param mainConnectionData: details of main connection
+	 *
+	 * @return          success indicator. Controller should use E_OK on success,
+	 *                  E_ALREADY_EXISTS or E_NO_CHANGE if given connection is already registered,
+	 *                  E_DATABASE_ERROR if any of the listed sources or sinks does not exist in the data base,
+	 *                  E_NOT_POSSIBLE if feature is not supported by the controller
+	 */
+	virtual am_Error_e hookSystemRegisterEarlyMainConnection(am_domainID_t domainID
+	        , const am_MainConnection_s &mainConnectionData)
+	{
+	    return E_NOT_POSSIBLE;  // empty default implementation
+	}
+
 	/**
 	 * volumeticks. therse are used to indicate volumechanges during a ramp
 	 */
@@ -905,6 +937,19 @@ public:
 	 * ack for disconnect
 	 */
 	virtual void cbAckDisconnect(const am_Handle_s handle, const am_Error_e errorID) =0;
+
+	/**
+	 * Hand-over acknowledgment of connections surviving shutdown of the AM,
+	 * forwarded from routing side (see @ref IAmRoutingReceive::ackTransferConnection)
+	 *
+	 * @param handle:  composite identifier mirrored from request
+	 * @param errorID: success indicator as obtained from routing side application
+	 */
+	virtual void cbAckTransferConnection(const am_Handle_s /* handle */, const am_Error_e /* errorID */)
+	{
+	    // empty default implementation
+	}
+
 	/**
 	 * ack for crossfading
 	 */
