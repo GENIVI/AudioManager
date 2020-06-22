@@ -557,6 +557,7 @@ public:
 
 	/**
 	 * Hand-over to routing-side application any connection meant to survive AM shutdown
+	 * (see page @ref early)
 	 *
 	 * @param handle:           composite identifier used to map the response
 	 * @param domainID:         target domain which shall take over
@@ -564,6 +565,9 @@ public:
 	 *
 	 * @return                  E_OK if command was forwarded to routing adapter successfully,
 	 *                          E_COMMUNICATION or other meaningful value otherwise
+	 *
+	 * @note  Success of the responsibility transfer itself is acknowledged through corresponding
+	 *        function @ref am::IAmControlSend::cbAckTransferConnection "cbAckTransferConnection()".
 	 */
 	virtual am_Error_e transferConnection(const am_Handle_s handle
 	        , am_mainConnectionID_t mainConnectionID, am_domainID_t domainID) = 0;
