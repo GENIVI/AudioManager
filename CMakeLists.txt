@@ -68,49 +68,49 @@ option ( WITH_TIMERFD
     "Build with timer fd support" ON )
 
 set(DBUS_SERVICE_PREFIX "org.genivi.audiomanager"
-    CACHE PROPERTY "The dbus service prefix for the AM - only changable for legacy dbus")
+    CACHE STRING "The dbus service prefix for the AM - only changable for legacy dbus")
 
 set(DBUS_SERVICE_OBJECT_PATH "/org/genivi/audiomanager"
-    CACHE PROPERTY "The service object path of the AM - only changable for legacy dbus")
+    CACHE STRING "The service object path of the AM - only changable for legacy dbus")
 
 set(DYNAMIC_ID_BOUNDARY 101
-    CACHE INTEGER "The ID boundary defines the starting point of the dynamic ID range")
+    CACHE STRING "The ID boundary defines the starting point of the dynamic ID range")
 
 set(LIB_INSTALL_SUFFIX "audiomanager"
-    CACHE STRINGS "The suffix used for installation of the plugins")
+    CACHE STRING "The suffix used for installation of the plugins")
 
 set(TEST_EXECUTABLE_INSTALL_PATH ${CMAKE_INSTALL_BINDIR}
-    CACHE STRINGS "The test binaries will be installed here")
+    CACHE PATH "The test binaries will be installed here")
 
 set(DOC_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/doc/AudioManager
-    CACHE STRINGS "The doxygen documentation will be placed here")
+    CACHE PATH "The doxygen documentation will be placed here")
 if (DEFINED GEN_DOC_DIR)   # legacy alias
    set(DOC_OUTPUT_PATH ${GEN_DOC_DIR})
 endif(DEFINED GEN_DOC_DIR)
 
 set(AM_SHARE_FOLDER ${CMAKE_INSTALL_DATAROOTDIR}/audiomanager
-    CACHE STRINGS "The share folder for the AM. Some DBus xmls will be placed here and so on")
+    CACHE PATH "The share folder for the AM. Some DBus xmls will be placed here and so on")
 
 set(AM_MAP_CAPACITY 10
-    CACHE INTEGER "Number of preallocations for datastorage")
+    CACHE STRING "Number of preallocations for datastorage")
 
 set(AM_MAX_CONNECTIONS 0x1000
-    CACHE INTEGER "Number of max connections before rollover")
+    CACHE STRING "Number of max connections before rollover")
 
 set(AM_MAX_MAIN_CONNECTIONS 0x1000
-    CACHE INTEGER "Number of max Mainconnections before rollover")
+    CACHE STRING "Number of max Mainconnections before rollover")
     
 set(MAX_ROUTING_PATHS  5
-    CACHE INTEGER "Max paths count returned to the controller (default: 5)")
+    CACHE STRING "Max paths count returned to the controller (default: 5)")
 
 set(MAX_ALLOWED_DOMAIN_CYCLES  1
-    CACHE INTEGER "How many times the routing algorithm should look back into domains (0 = disallowed, 1 = single = default, ..., UINT_MAX = unlimited).")
+    CACHE STRING "How many times the routing algorithm should look back into domains (0 = disallowed, 1 = single = default, ..., UINT_MAX = unlimited).")
 
 set(AUDIOMANGER_APP_ID "AUDI"
-    CACHE PROPERTY "The application ID that is used by the audiomanager")   
+    CACHE STRING "The application ID that is used by the audiomanager")   
     
 set(AUDIOMANGER_APP_DESCRIPTION "Audiomanager"
-    CACHE PROPERTY "The description of the Audiomanager application")     
+    CACHE STRING "The description of the Audiomanager application")     
 
 set(AUDIOMANAGER_INCLUDE_FOLDER  ${CMAKE_BINARY_DIR}/include)
 set(AUDIO_INCLUDE_FOLDER ${CMAKE_SOURCE_DIR}/include)
@@ -257,6 +257,5 @@ message(STATUS "AUDIOMANGER_APP_DESCRIPTION   = ${AUDIOMANGER_APP_DESCRIPTION}")
 message(STATUS "CommandInterface version: ${LIB_COMMAND_INTERFACE_VERSION}")
 message(STATUS "ControlInterface version: ${LIB_CONTROL_INTERFACE_VERSION}")
 message(STATUS "RoutingInterface version: ${LIB_ROUTING_INTERFACE_VERSION}")
-message(STATUS)
 message(STATUS)
 message(STATUS)
