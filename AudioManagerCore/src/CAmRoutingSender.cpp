@@ -927,7 +927,7 @@ am_Error_e CAmRoutingSender::asyncTransferConnection(const am_Handle_s handle, a
     auto iter = mMapDomainInterface.find(domainID);
     if (iter != mMapDomainInterface.end() && iter->second)
     {
-        return iter->second->asyncTransferConnection(handle, route, state);
+        return iter->second->asyncTransferConnection(handle, domainID, route, state);
     }
 
     // given domain not found in map
