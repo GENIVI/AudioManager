@@ -418,14 +418,15 @@ public:
 	 * Forward hand-over of a connection meant to survive AM shutdown
 	 * in routing-side application
 	 *
-	 * @param handle: composite identifier used to map the response
-	 * @param route:  names of involved sources and sinks including intermediate gateways
-	 * @param state:  either stable CS_CONNECTED, CS_DISCONNECTED, CS_SUSPENDED
- 	 *                or transient CS_CONNECTING, CS_DISCONNECTING
+	 * @param handle:   composite identifier used to map the response
+	 * @param domainID: target domain for this offering
+	 * @param route:    names of involved sources and sinks including intermediate gateways
+	 * @param state:    either stable CS_CONNECTED, CS_DISCONNECTED, CS_SUSPENDED
+ 	 *                  or transient CS_CONNECTING, CS_DISCONNECTING
  	 *
  	 * @return        success indicator as obtained from the plugins, e.g E_OK or E_COMMUNICATION
 	 */
-	virtual am_Error_e asyncTransferConnection(const am_Handle_s handle
+	virtual am_Error_e asyncTransferConnection(const am_Handle_s handle, am_domainID_t domainID
 	    , const std::vector<std::pair<std::string, std::string>>  &route
 	    , am_ConnectionState_e state)
 	{
