@@ -144,7 +144,7 @@ public:
 	 * Support announcement of audio connections already active at AM startup
 	 *
 	 * @param domainID: home domain announcing this early connection
-	 * @param route:    list of sub-connections (populated with unspecified connectionID=0 field)
+	 * @param route:    list of connection segments
 	 * @param state:    either stable CS_CONNECTED, CS_DISCONNECTED, CS_SUSPENDED
 	 *                  or transient CS_CONNECTING, CS_DISCONNECTING
 	 *
@@ -154,7 +154,7 @@ public:
 	 *                  CS_CONNECTING or CS_DISCONNECTING, a secondary registerEarlyConnection()
 	 *                  call is expected once a stable state is reached
 	 */
-	virtual am_Error_e registerEarlyConnection(am_domainID_t domainID, const std::vector< am_Connection_s > &route
+	virtual am_Error_e registerEarlyConnection(am_domainID_t domainID, const am_Route_s &route
 	        , am_ConnectionState_e state) = 0;
 
 	/**
