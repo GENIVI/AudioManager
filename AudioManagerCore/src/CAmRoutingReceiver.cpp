@@ -247,37 +247,58 @@ am_Error_e CAmRoutingReceiver::deregisterDomain(const am_domainID_t domainID)
 }
 
 am_Error_e CAmRoutingReceiver::registerEarlyConnection(am_domainID_t domainID
-        , const std::vector< am_Connection_s > &route, am_ConnectionState_e state)
+        , const am_Route_s &route, am_ConnectionState_e state)
 {
-    if (route.size() < 1)
+    const auto &segmentList = route.route;
+    if (segmentList.size() < 1)
     {
-        logWarning(__METHOD_NAME__, "route empty");
+        logError(__METHOD_NAME__, "empty route from domain", domainID);
         return E_NOT_POSSIBLE;
     }
 
     am_MainConnection_s mainConnectionData;
-    mainConnectionData.sourceID = route.front().sourceID;
-    mainConnectionData.sinkID   = route.back().sinkID;
+    mainConnectionData.sourceID = segmentList.front().sourceID;
+    mainConnectionData.sinkID   = segmentList.back().sinkID;
     mainConnectionData.connectionState = state;
-    mainConnectionData.listConnectionID.reserve(route.size());
-    for (auto & conn : route)
+    mainConnectionData.listConnectionID.reserve(segmentList.size());
+    for (const auto &segment : segmentList)
     {
-        am_connectionID_t connectionID;
-        am_Error_e success = mpDatabaseHandler->enterConnectionDB(conn, connectionID);
+        am_Connection_s conn;
+        conn.sourceID = segment.sourceID;
+        conn.sinkID = segment.sinkID;
+        conn.connectionFormat = segment.connectionFormat;
+        conn.connectionID = 0;
+        am_Error_e success = mpDatabaseHandler->enterConnectionDB(conn, conn.connectionID);
         switch (success)
         {
             case E_OK:
             case E_ALREADY_EXISTS:
             case E_NO_CHANGE:
-                mainConnectionData.listConnectionID.push_back(connectionID);
+                mainConnectionData.listConnectionID.push_back(conn.connectionID);
                 break;
 
             default:
+                logError(__METHOD_NAME__, "failed to enter connection segment", conn.sourceID
+                        , "to", conn.sinkID, "from domain", domainID, "error=", success);
                 return success;
         }
     }
 
-    return mpControlSender->hookSystemRegisterEarlyConnection(domainID, mainConnectionData);
+    am_Error_e success = mpDatabaseHandler->enterMainConnectionDB(mainConnectionData, mainConnectionData.mainConnectionID);
+    switch (success)
+    {
+        case E_OK:
+        case E_ALREADY_EXISTS:
+        case E_NO_CHANGE:
+            break;
+
+        default:
+            logError(__METHOD_NAME__, "failed to enter main connection", mainConnectionData.sourceID
+                    , "to", mainConnectionData.sinkID, "from domain", domainID, "error=", success);
+            return success;
+    }
+
+    return mpControlSender->hookSystemRegisterEarlyConnection(domainID, mainConnectionData, route);
 }
 
 am_Error_e CAmRoutingReceiver::registerGateway(const am_Gateway_s &gatewayData, am_gatewayID_t &gatewayID)

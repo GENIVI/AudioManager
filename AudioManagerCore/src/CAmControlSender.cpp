@@ -320,10 +320,10 @@ am_Error_e CAmControlSender::hookSystemDeregisterCrossfader(const am_crossfaderI
 }
 
 am_Error_e CAmControlSender::hookSystemRegisterEarlyConnection(am_domainID_t domainID
-        , const am_MainConnection_s &mainConnectionData)
+        , const am_MainConnection_s &mainConnectionData, const am_Route_s &route)
 {
     assert(mController);
-    return mController->hookSystemRegisterEarlyMainConnection(domainID, mainConnectionData);
+    return mController->hookSystemRegisterEarlyMainConnection(domainID, mainConnectionData, route);
 }
 
 void CAmControlSender::hookSystemSinkVolumeTick(const am_Handle_s handle, const am_sinkID_t sinkID, const am_volume_t volume)

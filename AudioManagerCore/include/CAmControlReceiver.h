@@ -103,6 +103,7 @@ public:
     am_Error_e getGatewayInfoDB(const am_gatewayID_t gatewayID, am_Gateway_s &gatewayData) const;
     am_Error_e getConverterInfoDB(const am_converterID_t converterID, am_Converter_s &converterData) const;
     am_Error_e getCrossfaderInfoDB(const am_crossfaderID_t crossfaderID, am_Crossfader_s &crossfaderData) const;
+    am_Error_e getConnectionInfoDB(const am_connectionID_t connectionID, am_Connection_s &connectionData) const;
     am_Error_e getMainConnectionInfoDB(const am_mainConnectionID_t mainConnectionID, am_MainConnection_s &mainConnectionData) const;
     am_Error_e getListSinksOfDomain(const am_domainID_t domainID, std::vector<am_sinkID_t> &listSinkID) const;
     am_Error_e getListSourcesOfDomain(const am_domainID_t domainID, std::vector<am_sourceID_t> &listSourceID) const;

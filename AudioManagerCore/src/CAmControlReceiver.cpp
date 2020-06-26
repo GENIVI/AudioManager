@@ -291,6 +291,11 @@ am_Error_e CAmControlReceiver::getSourceInfoDB(const am_sourceID_t sourceID, am_
     return (mDatabaseHandler->getSourceInfoDB(sourceID, sourceData));
 }
 
+am_Error_e CAmControlReceiver::getConnectionInfoDB(const am_connectionID_t connectionID, am_Connection_s &connectionData) const
+{
+    return (mDatabaseHandler->getConnectionInfoDB(connectionID, connectionData));
+}
+
 am_Error_e CAmControlReceiver::getMainConnectionInfoDB(const am_mainConnectionID_t mainConnectionID, am_MainConnection_s &mainConnectionData) const
 {
     return (mDatabaseHandler->getMainConnectionInfoDB(mainConnectionID, mainConnectionData));

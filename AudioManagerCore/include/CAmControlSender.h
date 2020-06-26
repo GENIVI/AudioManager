@@ -72,7 +72,7 @@ public:
     am_Error_e hookSystemRegisterCrossfader(const am_Crossfader_s &crossfaderData, am_crossfaderID_t &crossfaderID);
     am_Error_e hookSystemDeregisterCrossfader(const am_crossfaderID_t crossfaderID);
     am_Error_e hookSystemRegisterEarlyConnection(am_domainID_t domainID
-            , const am_MainConnection_s &mainConnectionData);
+            , const am_MainConnection_s &mainConnectionData, const am_Route_s &route);
     void hookSystemSinkVolumeTick(const am_Handle_s handle, const am_sinkID_t sinkID, const am_volume_t volume);
     void hookSystemSourceVolumeTick(const am_Handle_s handle, const am_sourceID_t sourceID, const am_volume_t volume);
     void hookSystemInterruptStateChange(const am_sourceID_t sourceID, const am_InterruptState_e interruptState);

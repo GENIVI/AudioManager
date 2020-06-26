@@ -439,6 +439,12 @@ public:
 	 */
 	virtual am_Error_e getCrossfaderInfoDB(const am_crossfaderID_t crossfaderID, am_Crossfader_s& crossfaderData) const =0;
 	/**
+	 * returns details of a connection, including involved sources and sinks
+	 * @return E_OK on success, E_DATABASE_ERROR on error, E_NON_EXISTENT if
+	 * crossfader was not found
+	 */
+	virtual am_Error_e getConnectionInfoDB(const am_connectionID_t connectionID, am_Connection_s& connectionData) const =0;
+	/**
 	 * returns sources and the sink of a crossfader
 	 * @return E_OK on success, E_DATABASE_ERROR on error, E_NON_EXISTENT if
 	 * crossfader was not found
@@ -882,6 +888,7 @@ public:
 	 *
 	 * @param domainID:           home domain announcing this early connection
 	 * @param mainConnectionData: details of main connection
+	 * @param route:              route details as requested from routing side
 	 *
 	 * @return          success indicator. Controller should use E_OK on success,
 	 *                  E_ALREADY_EXISTS or E_NO_CHANGE if given connection is already registered,
@@ -889,7 +896,7 @@ public:
 	 *                  E_NOT_POSSIBLE if feature is not supported by the controller
 	 */
 	virtual am_Error_e hookSystemRegisterEarlyMainConnection(am_domainID_t domainID
-	        , const am_MainConnection_s &mainConnectionData)
+	        , const am_MainConnection_s &mainConnectionData, const am_Route_s &route)
 	{
 	    return E_NOT_POSSIBLE;  // empty default implementation
 	}
