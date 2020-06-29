@@ -62,7 +62,7 @@ public:
     am_Error_e startupInterfaces(CAmRoutingReceiver *iRoutingReceiver);
     void setRoutingReady();
     void setRoutingRundown();
-    am_Error_e asyncTransferConnection(const am_Handle_s handle, am_domainID_t domainID
+    am_Error_e asyncTransferConnection(am_Handle_s &handle, am_domainID_t domainID
         , const std::vector<std::pair<std::string, std::string>>  &route, am_ConnectionState_e state);
     am_Error_e asyncAbort(const am_Handle_s &handle);
     am_Error_e asyncConnect(am_Handle_s &handle, am_connectionID_t &connectionID, const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_CustomConnectionFormat_t connectionFormat);
@@ -262,6 +262,24 @@ public:
     private:
         am_connectionID_t mConnectionID;
         CAmRoutingSender *mRoutingSender;
+    };
+
+    class handleTransfer : public handleDataBase
+    {
+    public:
+        handleTransfer(IAmRoutingSend *interface, const std::vector<std::pair<std::string, std::string>> &route
+                , am_ConnectionState_e state, IAmDatabaseHandler *databaseHandler)
+            : handleDataBase(interface, databaseHandler)
+            , mRoute(route)
+            , mState(state)
+            , mTransferPending(true) {}
+        ~handleTransfer()  { };
+        am_Error_e writeDataToDatabase() { return E_OK; };
+
+    private:
+        const std::vector<std::pair<std::string, std::string>> mRoute;
+        am_ConnectionState_e mState;
+        bool                 mTransferPending;
     };
 
     class handleSetVolumes : public handleDataBase

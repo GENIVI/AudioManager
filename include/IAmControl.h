@@ -575,7 +575,7 @@ public:
 	 * @note  Success of the responsibility transfer itself is acknowledged through corresponding
 	 *        function @ref am::IAmControlSend::cbAckTransferConnection "cbAckTransferConnection()".
 	 */
-	virtual am_Error_e transferConnection(const am_Handle_s handle
+	virtual am_Error_e transferConnection(am_Handle_s &handle
 	        , am_mainConnectionID_t mainConnectionID, am_domainID_t domainID) = 0;
 
 	/**

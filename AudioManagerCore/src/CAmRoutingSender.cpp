@@ -921,12 +921,17 @@ void CAmRoutingSender::setRoutingRundown()
     }
 }
 
-am_Error_e CAmRoutingSender::asyncTransferConnection(const am_Handle_s handle, am_domainID_t domainID
+am_Error_e CAmRoutingSender::asyncTransferConnection(am_Handle_s &handle, am_domainID_t domainID
     , const std::vector<std::pair<std::string, std::string>>  &route, am_ConnectionState_e state)
 {
     auto iter = mMapDomainInterface.find(domainID);
     if (iter != mMapDomainInterface.end() && iter->second)
     {
+        auto handleData = std::make_shared<handleTransfer>(iter->second, route, state, mpDatabaseHandler);
+        handle = createHandle(handleData, H_TRANSFERCONNECTION);
+
+        logInfo(__METHOD_NAME__, "handle=", handle);
+
         return iter->second->asyncTransferConnection(handle, domainID, route, state);
     }
 

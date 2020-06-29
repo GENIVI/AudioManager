@@ -456,7 +456,7 @@ void CAmControlReceiver::confirmControllerRundown(const am_Error_e error)
     mSocketHandler->exit_mainloop();
 }
 
-am_Error_e CAmControlReceiver::transferConnection(const am_Handle_s handle
+am_Error_e CAmControlReceiver::transferConnection(am_Handle_s &handle
         , am_mainConnectionID_t mainConnectionID, am_domainID_t domainID)
 {
     am_MainConnection_s mainConnectionData;
