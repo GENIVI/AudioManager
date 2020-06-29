@@ -43,9 +43,6 @@ option( WITH_DOCUMENTATION
 option( WITH_DLT
     "Enable automotive-DLT Support" ON )
 
-option( WITH_DOCUMENTATION
-	"Build together with Doxygen Documentation" OFF )
-
 option ( WITH_SYSTEMD_WATCHDOG
     "Build with systemD support & watchdog" ON)
 
@@ -71,46 +68,49 @@ option ( WITH_TIMERFD
     "Build with timer fd support" ON )
 
 set(DBUS_SERVICE_PREFIX "org.genivi.audiomanager"
-    CACHE PROPERTY "The dbus service prefix for the AM - only changable for legacy dbus")
+    CACHE STRING "The dbus service prefix for the AM - only changable for legacy dbus")
 
 set(DBUS_SERVICE_OBJECT_PATH "/org/genivi/audiomanager"
-    CACHE PROPERTY "The service object path of the AM - only changable for legacy dbus")
+    CACHE STRING "The service object path of the AM - only changable for legacy dbus")
 
 set(DYNAMIC_ID_BOUNDARY 101
-    CACHE INTEGER "The ID boundary defines the starting point of the dynamic ID range")
+    CACHE STRING "The ID boundary defines the starting point of the dynamic ID range")
 
 set(LIB_INSTALL_SUFFIX "audiomanager"
-    CACHE STRINGS "The suffix used for installation of the plugins")
+    CACHE STRING "The suffix used for installation of the plugins")
 
 set(TEST_EXECUTABLE_INSTALL_PATH ${CMAKE_INSTALL_BINDIR}
-    CACHE STRINGS "The test binaries will be installed here")
+    CACHE PATH "The test binaries will be installed here")
 
 set(DOC_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/doc/AudioManager
-    CACHE STRINGS "The doxygen documentation will be placed here")
+    CACHE PATH "The doxygen documentation will be placed here")
+if (DEFINED GEN_DOC_DIR)   # legacy alias
+   set(DOC_OUTPUT_PATH ${GEN_DOC_DIR})
+endif(DEFINED GEN_DOC_DIR)
 
 set(AM_SHARE_FOLDER ${CMAKE_INSTALL_DATAROOTDIR}/audiomanager
-    CACHE STRINGS "The share folder for the AM. Some DBus xmls will be placed here and so on")
+    CACHE PATH "The share folder for the AM. Some DBus xmls will be placed here and so on")
 
 set(AM_MAP_CAPACITY 10
-    CACHE INTEGER "Number of preallocations for datastorage")
+    CACHE STRING "Number of preallocations for datastorage")
 
 set(AM_MAX_CONNECTIONS 0x1000
-    CACHE INTEGER "Number of max connections before rollover")
+    CACHE STRING "Number of max connections before rollover")
 
 set(AM_MAX_MAIN_CONNECTIONS 0x1000
-    CACHE INTEGER "Number of max Mainconnections before rollover")
+    CACHE STRING "Number of max Mainconnections before rollover")
     
 set(MAX_ROUTING_PATHS  5
-    CACHE INTEGER "Max paths count returned to the controller (default: 5)")
+    CACHE STRING "Max paths count returned to the controller (default: 5)")
 
 set(MAX_ALLOWED_DOMAIN_CYCLES  1
-    CACHE INTEGER "How many times the routing algorithm should look back into domains (0 = disallowed, 1 = single = default, ..., UINT_MAX = unlimited).")
+    CACHE STRING "How many times the routing algorithm should look back into domains (0 = disallowed, 1 = single = default, ..., UINT_MAX = unlimited).")
 
 set(AUDIOMANGER_APP_ID "AUDI"
-    CACHE PROPERTY "The application ID that is used by the audiomanager")   
+    CACHE STRING "The application ID that is used by the audiomanager")   
     
 set(AUDIOMANGER_APP_DESCRIPTION "Audiomanager"
-    CACHE PROPERTY "The description of the Audiomanager application")     
+    CACHE STRING "The description of the Audiomanager application")     
 
 set(AUDIOMANAGER_INCLUDE_FOLDER  ${CMAKE_BINARY_DIR}/include)
 set(AUDIO_INCLUDE_FOLDER ${CMAKE_SOURCE_DIR}/include)
@@ -118,7 +118,6 @@ set(AUDIOMANAGER_UTILITIES ${CMAKE_SOURCE_DIR}/AudioManagerUtilities)
 set(AUDIOMANAGER_CORE ${CMAKE_SOURCE_DIR}/AudioManagerCore)
 set(AUDIOMANAGER_CORE_INCLUDE ${AUDIOMANAGER_CORE}/include)
 set(DOXY_PROTOTYPE ${CMAKE_SOURCE_DIR}/cmake/DoxyFile.in)
-set(DOXY_FILE ${CMAKE_CURRENT_BINARY_DIR}/DoxyFile)
 set(AUDIOMANAGER_DAEMON_FOLDER ${CMAKE_SOURCE_DIR}/AudioManagerDaemon)
 set(GOOGLE_MOCK_PROJECT_FOLDER ${CMAKE_SOURCE_DIR}/googleMock)
 set(TCLAP_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/tclap-1.2.1/include)
@@ -177,7 +176,6 @@ write_basic_package_version_file(
     VERSION ${DAEMONVERSION}
     COMPATIBILITY SameMajorVersion )
 
-configure_file( ${CMAKE_SOURCE_DIR}/docx/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/DoxyFile )
 configure_file( ${CMAKE_SOURCE_DIR}/cmake/audiomanagerconfig.h.in ${CMAKE_BINARY_DIR}/include/audiomanagerconfig.h )
 configure_file( ${CMAKE_SOURCE_DIR}/cmake/audiomanager.pc.in ${CMAKE_BINARY_DIR}/audiomanager.pc @ONLY )
 
@@ -203,11 +201,12 @@ install(DIRECTORY ${CMAKE_SOURCE_DIR}/tclap-1.2.1/include/tclap
 
 if(WITH_DOCUMENTATION)
 	find_package(Doxygen)
-	configure_file(${DOXY_FILE}  ${DOC_OUTPUT_PATH}/Doxyfile  @ONLY IMMEDIATE)
+	set(DOXY_FILE ${CMAKE_CURRENT_BINARY_DIR}/DoxyFile)
+	configure_file( ${CMAKE_SOURCE_DIR}/docx/Doxyfile.in ${DOXY_FILE}  @ONLY IMMEDIATE)
 	configure_file("README.html" ${DOC_OUTPUT_PATH}/html/README.html)
   	add_custom_target (AudioManangerDoku ALL
-  		COMMAND ${DOXYGEN_EXECUTABLE} ${DOC_OUTPUT_PATH}/Doxyfile WORKING_DIRECTORY ${DOC_OUTPUT_PATH}
-  		SOURCES ${CMAKE_SOURCE_DIR} ${DOC_OUTPUT_PATH}/Doxyfile
+  		COMMAND ${DOXYGEN_EXECUTABLE} ${DOXY_FILE} WORKING_DIRECTORY ${DOC_OUTPUT_PATH}
+  		SOURCES ${CMAKE_SOURCE_DIR} ${DOXY_FILE}
 	)
 	find_program(ASCIIDOC asciidoc asciidoc.py)
 
@@ -225,7 +224,10 @@ message(STATUS)
 message(STATUS "${PROJECT_NAME} Configuration:")
 message(STATUS "CMAKE_BUILD_TYPE              = ${CMAKE_BUILD_TYPE}")
 message(STATUS "CMAKE_INSTALL_PREFIX          = ${CMAKE_INSTALL_PREFIX}")
-message(STATUS "BUILD_DOCUMENTATION           = ${WITH_DOCUMENTATION}")
+message(STATUS "WITH_DOCUMENTATION            = ${WITH_DOCUMENTATION}")
+if(WITH_DOCUMENTATION)
+  message(STATUS "DOC_OUTPUT_PATH               = ${DOC_OUTPUT_PATH}")
+endif()
 message(STATUS "WITH_DLT                      = ${WITH_DLT}")
 message(STATUS "WITH_TESTS                    = ${WITH_TESTS}")
 message(STATUS "WITH_SYSTEMD_WATCHDOG         = ${WITH_SYSTEMD_WATCHDOG}")
@@ -255,6 +257,5 @@ message(STATUS "AUDIOMANGER_APP_DESCRIPTION   = ${AUDIOMANGER_APP_DESCRIPTION}")
 message(STATUS "CommandInterface version: ${LIB_COMMAND_INTERFACE_VERSION}")
 message(STATUS "ControlInterface version: ${LIB_CONTROL_INTERFACE_VERSION}")
 message(STATUS "RoutingInterface version: ${LIB_ROUTING_INTERFACE_VERSION}")
-message(STATUS)
 message(STATUS)
 message(STATUS)
