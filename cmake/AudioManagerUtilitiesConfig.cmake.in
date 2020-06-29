@@ -1,7 +1,14 @@
 @PACKAGE_INIT@
 
-set_and_check(AudioManagerUtilities_INCLUDE_DIRS ${PACKAGE_PREFIX_DIR}/include/@LIB_INSTALL_SUFFIX@/AudioManagerUtilities)
-find_library(AudioManagerUtilities_LIBRARY NAMES AudioManagerUtilities HINTS ${PACKAGE_PREFIX_DIR}/lib}) 
+if(AudioManager-uninstalled)
+  set_and_check(AudioManagerUtilities_INCLUDE_DIRS @CMAKE_SOURCE_DIR@/AudioManagerUtilities/include)
+  find_library(AudioManagerUtilities_LIBRARY NAMES AudioManagerUtilities
+     PATHS $ENV(AudioManagerUtilities_LIBRARY) @CMAKE_BINARY_DIR@/AudioManagerUtilities
+     NO_DEFAULT_PATH) 
+else(AudioManager-uninstalled)
+  set_and_check(AudioManagerUtilities_INCLUDE_DIRS ${PACKAGE_PREFIX_DIR}/include/@LIB_INSTALL_SUFFIX@/AudioManagerUtilities)
+  find_library(AudioManagerUtilities_LIBRARY NAMES AudioManagerUtilities HINTS ${PACKAGE_PREFIX_DIR}/lib}) 
+endif(AudioManager-uninstalled)
 
 set(WITH_CAPI_WRAPPER "@WITH_CAPI_WRAPPER@")
 set(WITH_DBUS_WRAPPER "@WITH_DBUS_WRAPPER@")

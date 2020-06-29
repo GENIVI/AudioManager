@@ -1,7 +1,14 @@
 @PACKAGE_INIT@
 
-set_and_check(AudioManagerCore_INCLUDE_DIRS ${PACKAGE_PREFIX_DIR}/include/@LIB_INSTALL_SUFFIX@/AudioManagerCore)
-find_library(AudioManagerCore_LIBRARIES NAMES AudioManagerCore HINTS ${PACKAGE_PREFIX_DIR}/lib) 
+if(AudioManager-uninstalled)
+  set_and_check(AudioManagerCore_INCLUDE_DIRS @CMAKE_SOURCE_DIR@/AudioManagerCore/include)
+  find_library(AudioManagerCore_LIBRARY NAMES AudioManagerCore
+     PATHS $ENV(AudioManagerCore_LIBRARY) @CMAKE_BINARY_DIR@/AudioManagerCore
+     NO_DEFAULT_PATH) 
+else(AudioManager-uninstalled)
+  set_and_check(AudioManagerCore_INCLUDE_DIRS ${PACKAGE_PREFIX_DIR}/include/@LIB_INSTALL_SUFFIX@/AudioManagerCore)
+  find_library(AudioManagerCore_LIBRARIES NAMES AudioManagerCore HINTS ${PACKAGE_PREFIX_DIR}/lib) 
+endif(AudioManager-uninstalled)
 
 set(DAEMONVERSION "@DAEMONVERSION@")
 set(WITH_SHARED_CORE "@WITH_SHARED_CORE@")

@@ -1,6 +1,20 @@
 @PACKAGE_INIT@
 
-set_and_check(AudioManager_INCLUDE_DIRS ${PACKAGE_PREFIX_DIR}/include/audiomanager)
+if(AudioManager-uninstalled)
+  # add public AM interface headers
+  set_and_check(AudioManager_INCLUDE_DIRS @CMAKE_SOURCE_DIR@/include)
+
+  # add project-specific AM configuration header
+  find_path(AudioManagerConfig_INCLUDE_DIR 
+                 NAMES audiomanagerconfig.h
+                 PATHS @CMAKE_BINARY_DIR@/include
+                 REQUIRED
+                 )
+  list(APPEND AudioManager_INCLUDE_DIRS ${AudioManagerConfig_INCLUDE_DIR})
+else(AudioManager-uninstalled)
+  # add installed AM interface and configuration headers
+  set_and_check(AudioManager_INCLUDE_DIRS ${PACKAGE_PREFIX_DIR}/include/audiomanager)
+endif(AudioManager-uninstalled)
 
 set(DAEMONVERSION "@DAEMONVERSION@")
 set(TEST_EXECUTABLE_INSTALL_PATH "@TEST_EXECUTABLE_INSTALL_PATH@")
@@ -27,8 +41,4 @@ endif (WITH_SHARED_UTILITIES)
 if (WITH_SHARED_CORE)    
 	check_required_components(AudioManagerCore)
 endif(WITH_SHARED_CORE)
-
-
-
-
 
