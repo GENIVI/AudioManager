@@ -84,6 +84,7 @@ public:
     void hookSystemTimingInformationChanged(const am_mainConnectionID_t mainConnectionID, const am_timeSync_t time);
     void cbAckConnect(const am_Handle_s handle, const am_Error_e errorID);
     void cbAckDisconnect(const am_Handle_s handle, const am_Error_e errorID);
+    void cbAckTransferConnection(const am_Handle_s handle, const am_Error_e errorID);
     void cbAckCrossFade(const am_Handle_s handle, const am_HotSink_e hostsink, const am_Error_e error);
     void cbAckSetSinkVolumeChange(const am_Handle_s handle, const am_volume_t volume, const am_Error_e error);
     void cbAckSetSourceVolumeChange(const am_Handle_s handle, const am_volume_t voulme, const am_Error_e error);

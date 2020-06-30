@@ -392,6 +392,12 @@ void CAmControlSender::cbAckDisconnect(const am_Handle_s handle, const am_Error_
     mController->cbAckDisconnect(handle, errorID);
 }
 
+void CAmControlSender::cbAckTransferConnection(const am_Handle_s handle, const am_Error_e errorID)
+{
+    assert(mController);
+    mController->cbAckTransferConnection(handle, errorID);
+}
+
 void CAmControlSender::cbAckCrossFade(const am_Handle_s handle, const am_HotSink_e hostsink, const am_Error_e error)
 {
     assert(mController);
