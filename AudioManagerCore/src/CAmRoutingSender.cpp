@@ -932,7 +932,12 @@ am_Error_e CAmRoutingSender::asyncTransferConnection(am_Handle_s &handle, am_dom
 
         logInfo(__METHOD_NAME__, "handle=", handle);
 
-        return iter->second->asyncTransferConnection(handle, domainID, route, state);
+        am_Error_e success = iter->second->asyncTransferConnection(handle, domainID, route, state);
+        if (success != E_OK)
+        {
+            removeHandle(handle);
+        }
+        return success;
     }
 
     // given domain not found in map
