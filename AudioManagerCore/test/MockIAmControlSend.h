@@ -105,9 +105,13 @@ class MockIAmControlSend : public IAmControlSend {
       void(const am_speed_t speed));
   MOCK_METHOD2(hookSystemTimingInformationChanged,
       void(const am_mainConnectionID_t mainConnectionID, const am_timeSync_t time));
+  MOCK_METHOD3(hookSystemRegisterEarlyMainConnection,
+      am_Error_e(am_domainID_t domainID, const am_MainConnection_s &mainConnectionData, const am_Route_s &route));
   MOCK_METHOD2(cbAckConnect,
       void(const am_Handle_s handle, const am_Error_e errorID));
   MOCK_METHOD2(cbAckDisconnect,
+      void(const am_Handle_s handle, const am_Error_e errorID));
+  MOCK_METHOD2(cbAckTransferConnection,
       void(const am_Handle_s handle, const am_Error_e errorID));
   MOCK_METHOD3(cbAckCrossFade,
       void(const am_Handle_s handle, const am_HotSink_e hostsink, const am_Error_e error));

@@ -643,6 +643,124 @@ TEST_F(CAmRoutingInterfaceTest,handleOverflowAbsolute)
 	ASSERT_EQ(handleOverflowCheck1.handle,0);	
 }
 
+/**
+ *   Validate handling of early connection announcement and transfer
+ */
+TEST_F(CAmRoutingInterfaceTest, registerEarlyConnection)
+{
+    // prepare additional domain
+    am_Domain_s domain;
+    pCF.createDomain(domain);
+    domain.name = "mock";
+    domain.busname = "mock";
+
+    am_SourceClass_s sourceclass;
+    sourceclass.name="sClass";
+    sourceclass.sourceClassID=5;
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceClassDB(sourceclass.sourceClassID,sourceclass));
+    am_Source_s source;
+    pCF.createSource(source);
+    source.sourceID=1;
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain, domain.domainID));
+    ASSERT_EQ(E_OK,pRoutingSender.addDomainLookup(domain));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source, source.sourceID));
+
+    am_sinkID_t sinkID;
+    ASSERT_EQ(E_OK, pRoutingReceiver.peekSink("AnySink", sinkID));
+
+    am_Route_s route;
+    route.sourceID = source.sourceID;
+    route.sinkID = sinkID;
+    route.route.push_back({source.sourceID, sinkID, domain.domainID, CF_GENIVI_STEREO});
+    EXPECT_CALL(pMockControlInterface, hookSystemRegisterEarlyMainConnection(_, _, _))
+            .WillOnce(Return(E_OK));
+    ASSERT_EQ(E_OK, pRoutingReceiver.registerEarlyConnection(domain.domainID, route, CS_CONNECTED));
+
+    std::vector<am::am_MainConnection_s> listMainConnections;
+    ASSERT_EQ(E_OK, pControlReceiver.getListMainConnections(listMainConnections));
+
+    ASSERT_EQ(1, listMainConnections.size());
+    EXPECT_EQ(CS_CONNECTED, listMainConnections[0].connectionState);
+}
+
+TEST_F(CAmRoutingInterfaceTest, transferConnection)
+{
+    // prepare additional domain
+    am_Domain_s domain;
+    pCF.createDomain(domain);
+    domain.name = "mock";
+    domain.busname = "mock";
+
+    am_SinkClass_s sinkclass;
+    sinkclass.sinkClassID=5;
+    sinkclass.name="sname";
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkClassDB(sinkclass,sinkclass.sinkClassID));
+
+    am_Sink_s sink;
+    pCF.createSink(sink);
+    sink.sinkID = 2;
+    sink.domainID = DYNAMIC_ID_BOUNDARY;
+
+    am_SourceClass_s sourceclass;
+    sourceclass.name="sClass";
+    sourceclass.sourceClassID=5;
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceClassDB(sourceclass.sourceClassID,sourceclass));
+    am_Source_s source;
+    pCF.createSource(source);
+    source.sourceID=1;
+
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterDomainDB(domain, domain.domainID));
+    ASSERT_EQ(E_OK,pRoutingSender.addDomainLookup(domain));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSinkDB(sink, sink.sinkID));
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source,source.sourceID));
+
+    am_Connection_s con;
+    con.connectionID = 0;
+    con.sourceID = source.sourceID;
+    con.sinkID = sink.sinkID;
+    con.delay = 0;
+    con.connectionFormat = CF_GENIVI_STEREO;
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterConnectionDB(con, con.connectionID));
+
+    am_MainConnection_s mainConnection;
+    mainConnection.mainConnectionID = 0;
+    mainConnection.connectionState = CS_CONNECTED;
+    mainConnection.sinkID = sink.sinkID;
+    mainConnection.sourceID = source.sourceID;
+    mainConnection.delay = 0;
+    mainConnection.listConnectionID.push_back(con.connectionID);
+    ASSERT_EQ(E_OK, pDatabaseHandler.enterMainConnectionDB(mainConnection, mainConnection.mainConnectionID));
+
+    // execute
+    EXPECT_CALL(pMockInterface, asyncTransferConnection(_, _, _, CS_CONNECTED))
+        .WillOnce(Invoke(&pMockInterface, &MockIAmRoutingSend::defaultAsyncTransferConnection));
+    am_Handle_s handle;
+    EXPECT_EQ(E_NOT_POSSIBLE, pControlReceiver.transferConnection(handle, mainConnection.mainConnectionID, domain.domainID));
+
+    // validate that all handles have vanished
+    std::vector<am_Handle_s> listHandles;
+    ASSERT_EQ(E_OK, pControlReceiver.getListHandles(listHandles));
+    EXPECT_TRUE(listHandles.empty());
+
+    // prepare routing side to accept the transfer and try again
+    EXPECT_CALL(pMockInterface, asyncTransferConnection(_, _, _, CS_CONNECTED))
+        .WillOnce(Return(E_OK));
+    EXPECT_EQ(E_OK, pControlReceiver.transferConnection(handle, mainConnection.mainConnectionID, domain.domainID));
+
+    // validate that a proper handle is memorized
+    EXPECT_EQ(E_OK, pControlReceiver.getListHandles(listHandles));
+    EXPECT_EQ(1, listHandles.size());
+    EXPECT_EQ(H_TRANSFERCONNECTION, listHandles[0].handleType);
+
+     // inject acknowledgment
+    EXPECT_CALL(pMockControlInterface, cbAckTransferConnection(_, E_OK));
+    pRoutingReceiver.ackTransferConnection(listHandles[0], E_OK);
+
+    // validate that all handles have vanished
+    ASSERT_EQ(E_OK, pControlReceiver.getListHandles(listHandles));
+    ASSERT_TRUE(listHandles.empty());
+}
 
 
 int main(int argc, char **argv)
