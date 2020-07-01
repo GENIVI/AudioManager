@@ -128,7 +128,7 @@ am_Error_e CAmControlReceiver::enterDomainDB(const am_Domain_s &domainData, am_d
 
 am_Error_e CAmControlReceiver::enterMainConnectionDB(const am_MainConnection_s &mainConnectionData, am_mainConnectionID_t &connectionID)
 {
-    return (mDatabaseHandler->enterMainConnectionDB(mainConnectionData, connectionID));
+    return (mDatabaseHandler->enterMainConnectionDB(mainConnectionData, connectionID, false));
 }
 
 am_Error_e CAmControlReceiver::enterSinkDB(const am_Sink_s &sinkData, am_sinkID_t &sinkID)

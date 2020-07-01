@@ -285,7 +285,7 @@ am_Error_e CAmRoutingSender::asyncConnect(am_Handle_s &handle, am_connectionID_t
         tempConnection.connectionID     = 0;
         tempConnection.delay            = -1;
 
-        am_Error_e connError(mpDatabaseHandler->enterConnectionDB(tempConnection, connectionID));
+        am_Error_e connError(mpDatabaseHandler->enterConnectionDB(tempConnection, connectionID, false));
         if (connError)
         {
             return(connError);

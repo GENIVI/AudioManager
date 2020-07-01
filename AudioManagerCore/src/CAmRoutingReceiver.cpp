@@ -132,9 +132,18 @@ void CAmRoutingReceiver::ackDisconnect(const am_Handle_s handle, const am_connec
  *                E_NOT_POSSIBLE if the routing adapter is not prepared to take over
  *                full responsibility for all involved sources and sinks)
  */
-void CAmRoutingReceiver::ackTransferConnection(const am_Handle_s handle, const am_Error_e errorID)
+void CAmRoutingReceiver::ackTransferConnection(const am_Handle_s handle, const am_Error_e error)
 {
+    if (error == E_OK)
+    {
+        mpRoutingSender->writeToDatabaseAndRemove(handle);
+    }
+    else
+    {
+        mpRoutingSender->removeHandle(handle);
+    }
 
+    mpControlSender->cbAckTransferConnection(handle, error);
 }
 
 void CAmRoutingReceiver::ackSetSinkVolumeChange(const am_Handle_s handle, const am_volume_t volume, const am_Error_e error)
@@ -257,6 +266,7 @@ am_Error_e CAmRoutingReceiver::registerEarlyConnection(am_domainID_t domainID
     }
 
     am_MainConnection_s mainConnectionData;
+    mainConnectionData.mainConnectionID = 0;
     mainConnectionData.sourceID = segmentList.front().sourceID;
     mainConnectionData.sinkID   = segmentList.back().sinkID;
     mainConnectionData.connectionState = state;
@@ -268,7 +278,7 @@ am_Error_e CAmRoutingReceiver::registerEarlyConnection(am_domainID_t domainID
         conn.sinkID = segment.sinkID;
         conn.connectionFormat = segment.connectionFormat;
         conn.connectionID = 0;
-        am_Error_e success = mpDatabaseHandler->enterConnectionDB(conn, conn.connectionID);
+        am_Error_e success = mpDatabaseHandler->enterConnectionDB(conn, conn.connectionID, true);
         switch (success)
         {
             case E_OK:
@@ -284,7 +294,7 @@ am_Error_e CAmRoutingReceiver::registerEarlyConnection(am_domainID_t domainID
         }
     }
 
-    am_Error_e success = mpDatabaseHandler->enterMainConnectionDB(mainConnectionData, mainConnectionData.mainConnectionID);
+    am_Error_e success = mpDatabaseHandler->enterMainConnectionDB(mainConnectionData, mainConnectionData.mainConnectionID, true);
     switch (success)
     {
         case E_OK:

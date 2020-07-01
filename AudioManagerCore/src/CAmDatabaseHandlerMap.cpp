@@ -585,7 +585,7 @@ int16_t CAmDatabaseHandlerMap::calculateDelayForRoute(const std::vector<am_conne
     return delay;
 }
 
-am_Error_e CAmDatabaseHandlerMap::enterMainConnectionDB(const am_MainConnection_s &mainConnectionData, am_mainConnectionID_t &connectionID)
+am_Error_e CAmDatabaseHandlerMap::enterMainConnectionDB(const am_MainConnection_s &mainConnectionData, am_mainConnectionID_t &connectionID, bool allowReserved)
 {
     if (mainConnectionData.mainConnectionID != 0)
     {
@@ -599,13 +599,15 @@ am_Error_e CAmDatabaseHandlerMap::enterMainConnectionDB(const am_MainConnection_
         return (E_NOT_POSSIBLE);
     }
 
-    if (!existSink(mainConnectionData.sinkID))
+    auto itMappedSink = mMappedData.mSinkMap.find(mainConnectionData.sinkID);
+    if ((itMappedSink == mMappedData.mSinkMap.end()) || (itMappedSink->second.reserved && !allowReserved))
     {
         logError(__METHOD_NAME__, "sinkID must be valid!");
         return (E_NOT_POSSIBLE);
     }
 
-    if (!existSource(mainConnectionData.sourceID))
+    auto itMappedSource = mMappedData.mSourceMap.find(mainConnectionData.sourceID);
+    if ((itMappedSource == mMappedData.mSourceMap.end()) || (itMappedSource->second.reserved && !allowReserved))
     {
         logError(__METHOD_NAME__, "sourceID must be valid!");
         return (E_NOT_POSSIBLE);
@@ -1163,7 +1165,7 @@ am_Error_e CAmDatabaseHandlerMap::enterSourceDB(const am_Source_s &sourceData, a
     return (E_OK);
 }
 
-am_Error_e CAmDatabaseHandlerMap::enterConnectionDB(const am_Connection_s &connection, am_connectionID_t &connectionID)
+am_Error_e CAmDatabaseHandlerMap::enterConnectionDB(const am_Connection_s &connection, am_connectionID_t &connectionID, bool allowReserved)
 {
     if (connection.connectionID != 0)
     {
@@ -1171,13 +1173,15 @@ am_Error_e CAmDatabaseHandlerMap::enterConnectionDB(const am_Connection_s &conne
         return (E_NOT_POSSIBLE);
     }
 
-    if (!existSink(connection.sinkID))
+    const AmMapSink::const_iterator &itMappedSink = mMappedData.mSinkMap.find(connection.sinkID);
+    if ((itMappedSink == mMappedData.mSinkMap.end()) || (itMappedSink->second.reserved && !allowReserved))
     {
         logError(__METHOD_NAME__, "sinkID must exist!");
         return (E_NOT_POSSIBLE);
     }
 
-    if (!existSource(connection.sourceID))
+    const AmMapSource::const_iterator &itMappedSource = mMappedData.mSourceMap.find(connection.sourceID);
+    if ((itMappedSource == mMappedData.mSourceMap.end()) || (itMappedSource->second.reserved && !allowReserved))
     {
         logError(__METHOD_NAME__, "sourceID must exist!");
         return (E_NOT_POSSIBLE);

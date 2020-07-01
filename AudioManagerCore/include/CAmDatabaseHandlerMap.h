@@ -123,13 +123,13 @@ public:
     };
 
     am_Error_e enterDomainDB(const am_Domain_s &domainData, am_domainID_t &domainID);
-    am_Error_e enterMainConnectionDB(const am_MainConnection_s &mainConnectionData, am_mainConnectionID_t &connectionID);
+    am_Error_e enterMainConnectionDB(const am_MainConnection_s &mainConnectionData, am_mainConnectionID_t &connectionID, bool allowReserved = false) override;
     am_Error_e enterSinkDB(const am_Sink_s &sinkData, am_sinkID_t &sinkID);
     am_Error_e enterCrossfaderDB(const am_Crossfader_s &crossfaderData, am_crossfaderID_t &crossfaderID);
     am_Error_e enterGatewayDB(const am_Gateway_s &gatewayData, am_gatewayID_t &gatewayID);
     am_Error_e enterConverterDB(const am_Converter_s &converterData, am_converterID_t &converterID);
     am_Error_e enterSourceDB(const am_Source_s &sourceData, am_sourceID_t &sourceID);
-    am_Error_e enterConnectionDB(const am_Connection_s &connection, am_connectionID_t &connectionID);
+    am_Error_e enterConnectionDB(const am_Connection_s &connection, am_connectionID_t &connectionID, bool allowReserved = false) override;
     am_Error_e enterSinkClassDB(const am_SinkClass_s &sinkClass, am_sinkClass_t &sinkClassID);
     am_Error_e enterSourceClassDB(am_sourceClass_t &sourceClassID, const am_SourceClass_s &sourceClass);
     am_Error_e enterSystemProperties(const std::vector<am_SystemProperty_s> &listSystemProperties);
