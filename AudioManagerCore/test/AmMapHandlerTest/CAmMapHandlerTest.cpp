@@ -2817,8 +2817,8 @@ TEST_F(CAmMapHandlerTest, connectionIDBoundary)
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source, forgetSource));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterConnectionDB(connection,connectionID));
     ASSERT_EQ(12, connectionID);
-    ASSERT_EQ(E_UNKNOWN, pDatabaseHandler.enterConnectionDB(connection,connectionID));
-    ASSERT_EQ(0, connectionID);
+    ASSERT_EQ(E_ALREADY_EXISTS, pDatabaseHandler.enterConnectionDB(connection,connectionID));
+    ASSERT_EQ(12, connectionID);
 }
 
 TEST_F(CAmMapHandlerTest, mainConnectionIDBoundary)
@@ -2892,10 +2892,12 @@ TEST_F(CAmMapHandlerTest, mainConnectionIDBoundary)
 #else
     EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), timingInformationChanged(_, _)).Times(1);
 #endif
-    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), removedMainConnection(_)).Times(2);
-    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), mainConnectionStateChanged(_, _)).Times(3);
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), removedMainConnection(_)).Times(3);
+    EXPECT_CALL(*MockDatabaseObserver::getMockObserverObject(), mainConnectionStateChanged(_, _)).Times(4);
     ASSERT_EQ(E_OK, pDatabaseHandler.removeMainConnectionDB(10));
     ASSERT_EQ(E_OK, pDatabaseHandler.removeMainConnectionDB(12));
+    // drop also last dynamic connection before entering again
+    ASSERT_EQ(E_OK, pDatabaseHandler.removeMainConnectionDB(mainConnectionID));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterMainConnectionDB(mainConnection,mainConnectionID));
     ASSERT_EQ(10, mainConnectionID);
     mainConnection.sinkID = 77;
@@ -2917,8 +2919,8 @@ TEST_F(CAmMapHandlerTest, mainConnectionIDBoundary)
     ASSERT_EQ(E_OK, pDatabaseHandler.enterSourceDB(source, forgetSource));
     ASSERT_EQ(E_OK, pDatabaseHandler.enterMainConnectionDB(mainConnection,mainConnectionID));
     ASSERT_EQ(12, mainConnectionID);
-    ASSERT_EQ(E_UNKNOWN, pDatabaseHandler.enterMainConnectionDB(mainConnection,mainConnectionID));
-    ASSERT_EQ(0, mainConnectionID);
+    ASSERT_EQ(E_ALREADY_EXISTS, pDatabaseHandler.enterMainConnectionDB(mainConnection,mainConnectionID));
+    ASSERT_EQ(12, mainConnectionID);
 }
 
 TEST_F(CAmMapHandlerTest, increaseID)
