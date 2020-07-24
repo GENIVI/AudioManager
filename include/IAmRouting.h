@@ -35,7 +35,7 @@ class CAmSocketHandler;
 
 #include "audiomanagertypes.h"
 
-#define RoutingVersion "5.0"
+#define RoutingVersion "6.0"
 namespace am {
 
 /**
