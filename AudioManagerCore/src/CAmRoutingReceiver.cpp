@@ -124,6 +124,28 @@ void CAmRoutingReceiver::ackDisconnect(const am_Handle_s handle, const am_connec
     mpControlSender->cbAckDisconnect(handle, error);
 }
 
+/**
+ * Support hand-over acknowledgment of connections surviving shutdown of the AM
+ *
+ * @param handle: composite identifier used in the request
+ * @param errorID:success indicator (E_OK if application takes over,
+ *                E_NOT_POSSIBLE if the routing adapter is not prepared to take over
+ *                full responsibility for all involved sources and sinks)
+ */
+void CAmRoutingReceiver::ackTransferConnection(const am_Handle_s handle, const am_Error_e error)
+{
+    if (error == E_OK)
+    {
+        mpRoutingSender->writeToDatabaseAndRemove(handle);
+    }
+    else
+    {
+        mpRoutingSender->removeHandle(handle);
+    }
+
+    mpControlSender->cbAckTransferConnection(handle, error);
+}
+
 void CAmRoutingReceiver::ackSetSinkVolumeChange(const am_Handle_s handle, const am_volume_t volume, const am_Error_e error)
 {
     logInfo(__METHOD_NAME__, "handle=", handle, "volume=", volume, "error=", error);
@@ -231,6 +253,62 @@ am_Error_e CAmRoutingReceiver::registerDomain(const am_Domain_s &domainData, am_
 am_Error_e CAmRoutingReceiver::deregisterDomain(const am_domainID_t domainID)
 {
     return (mpControlSender->hookSystemDeregisterDomain(domainID));
+}
+
+am_Error_e CAmRoutingReceiver::registerEarlyConnection(am_domainID_t domainID
+        , const am_Route_s &route, am_ConnectionState_e state)
+{
+    const auto &segmentList = route.route;
+    if (segmentList.size() < 1)
+    {
+        logError(__METHOD_NAME__, "empty route from domain", domainID);
+        return E_NOT_POSSIBLE;
+    }
+
+    am_MainConnection_s mainConnectionData;
+    mainConnectionData.mainConnectionID = 0;
+    mainConnectionData.sourceID = segmentList.front().sourceID;
+    mainConnectionData.sinkID   = segmentList.back().sinkID;
+    mainConnectionData.connectionState = state;
+    mainConnectionData.listConnectionID.reserve(segmentList.size());
+    for (const auto &segment : segmentList)
+    {
+        am_Connection_s conn;
+        conn.sourceID = segment.sourceID;
+        conn.sinkID = segment.sinkID;
+        conn.connectionFormat = segment.connectionFormat;
+        conn.connectionID = 0;
+        am_Error_e success = mpDatabaseHandler->enterConnectionDB(conn, conn.connectionID, true);
+        switch (success)
+        {
+            case E_OK:
+            case E_ALREADY_EXISTS:
+            case E_NO_CHANGE:
+                mainConnectionData.listConnectionID.push_back(conn.connectionID);
+                break;
+
+            default:
+                logError(__METHOD_NAME__, "failed to enter connection segment", conn.sourceID
+                        , "to", conn.sinkID, "from domain", domainID, "error=", success);
+                return success;
+        }
+    }
+
+    am_Error_e success = mpDatabaseHandler->enterMainConnectionDB(mainConnectionData, mainConnectionData.mainConnectionID, true);
+    switch (success)
+    {
+        case E_OK:
+        case E_ALREADY_EXISTS:
+        case E_NO_CHANGE:
+            break;
+
+        default:
+            logError(__METHOD_NAME__, "failed to enter main connection", mainConnectionData.sourceID
+                    , "to", mainConnectionData.sinkID, "from domain", domainID, "error=", success);
+            return success;
+    }
+
+    return mpControlSender->hookSystemRegisterEarlyConnection(domainID, mainConnectionData, route);
 }
 
 am_Error_e CAmRoutingReceiver::registerGateway(const am_Gateway_s &gatewayData, am_gatewayID_t &gatewayID)

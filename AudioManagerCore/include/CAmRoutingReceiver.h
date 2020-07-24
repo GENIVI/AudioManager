@@ -44,6 +44,7 @@ public:
     CAmRoutingReceiver(IAmDatabaseHandler *iDatabaseHandler, CAmRoutingSender *iRoutingSender, CAmControlSender *iControlSender, CAmSocketHandler *iSocketHandler);
     CAmRoutingReceiver(IAmDatabaseHandler *iDatabaseHandler, CAmRoutingSender *iRoutingSender, CAmControlSender *iControlSender, CAmSocketHandler *iSocketHandler, CAmDbusWrapper *iDBusWrapper);
     ~CAmRoutingReceiver();
+    void ackTransferConnection(const am_Handle_s handle, const am_Error_e errorID);
     void ackConnect(const am_Handle_s handle, const am_connectionID_t connectionID, const am_Error_e error);
     void ackDisconnect(const am_Handle_s handle, const am_connectionID_t connectionID, const am_Error_e error);
     void ackSetSinkVolumeChange(const am_Handle_s handle, const am_volume_t volume, const am_Error_e error);
@@ -59,6 +60,8 @@ public:
     am_Error_e peekDomain(const std::string &name, am_domainID_t &domainID);
     am_Error_e registerDomain(const am_Domain_s &domainData, am_domainID_t &domainID);
     am_Error_e deregisterDomain(const am_domainID_t domainID);
+    am_Error_e registerEarlyConnection(am_domainID_t domainID, const am_Route_s &route
+            , am_ConnectionState_e state);
     am_Error_e registerGateway(const am_Gateway_s &gatewayData, am_gatewayID_t &gatewayID);
     am_Error_e registerConverter(const am_Converter_s &converterData, am_converterID_t &converterID);
     am_Error_e deregisterGateway(const am_gatewayID_t gatewayID);

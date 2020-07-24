@@ -285,7 +285,7 @@ am_Error_e CAmRoutingSender::asyncConnect(am_Handle_s &handle, am_connectionID_t
         tempConnection.connectionID     = 0;
         tempConnection.delay            = -1;
 
-        am_Error_e connError(mpDatabaseHandler->enterConnectionDB(tempConnection, connectionID));
+        am_Error_e connError(mpDatabaseHandler->enterConnectionDB(tempConnection, connectionID, false));
         if (connError)
         {
             return(connError);
@@ -919,6 +919,29 @@ void CAmRoutingSender::setRoutingRundown()
     {
         (*iter).routingInterface->setRoutingRundown(*(handleIter++));
     }
+}
+
+am_Error_e CAmRoutingSender::asyncTransferConnection(am_Handle_s &handle, am_domainID_t domainID
+    , const std::vector<std::pair<std::string, std::string>>  &route, am_ConnectionState_e state)
+{
+    auto iter = mMapDomainInterface.find(domainID);
+    if (iter != mMapDomainInterface.end() && iter->second)
+    {
+        auto handleData = std::make_shared<handleTransfer>(iter->second, route, state, mpDatabaseHandler);
+        handle = createHandle(handleData, H_TRANSFERCONNECTION);
+
+        logInfo(__METHOD_NAME__, "handle=", handle);
+
+        am_Error_e success = iter->second->asyncTransferConnection(handle, domainID, route, state);
+        if (success != E_OK)
+        {
+            removeHandle(handle);
+        }
+        return success;
+    }
+
+    // given domain not found in map
+    return E_NON_EXISTENT;
 }
 
 am_Error_e CAmRoutingSender::asyncSetVolumes(am_Handle_s &handle, const std::vector<am_Volumes_s> &listVolumes)

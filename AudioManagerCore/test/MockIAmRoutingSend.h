@@ -45,6 +45,12 @@ class MockIAmRoutingSend : public IAmRoutingSend {
         am_Error_e(const am_Handle_s handle, const am_connectionID_t connectionID, const am_sourceID_t sourceID, const am_sinkID_t sinkID, const am_CustomAvailabilityReason_t connectionFormat));
     MOCK_METHOD2(asyncDisconnect,
         am_Error_e(const am_Handle_s handle, const am_connectionID_t connectionID));
+    MOCK_METHOD4(asyncTransferConnection,
+        am_Error_e(const am_Handle_s handle, am_domainID_t domainID, const std::vector<std::pair<std::string, std::string>> &route, am_ConnectionState_e state));
+    am_Error_e defaultAsyncTransferConnection(const am_Handle_s handle, am_domainID_t domainID
+            , const std::vector<std::pair<std::string, std::string>>  &route
+            , am_ConnectionState_e state)   // allow usage of default implementation from IAmRoutingSend
+        { return IAmRoutingSend::asyncTransferConnection(handle, domainID, route, state); }
     MOCK_METHOD5(asyncSetSinkVolume,
         am_Error_e(const am_Handle_s handle, const am_sinkID_t sinkID, const am_volume_t volume, const am_CustomRampType_t ramp, const am_time_t time));
     MOCK_METHOD5(asyncSetSourceVolume,

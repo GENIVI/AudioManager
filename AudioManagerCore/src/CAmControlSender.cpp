@@ -319,6 +319,13 @@ am_Error_e CAmControlSender::hookSystemDeregisterCrossfader(const am_crossfaderI
     return (mController->hookSystemDeregisterCrossfader(crossfaderID));
 }
 
+am_Error_e CAmControlSender::hookSystemRegisterEarlyConnection(am_domainID_t domainID
+        , const am_MainConnection_s &mainConnectionData, const am_Route_s &route)
+{
+    assert(mController);
+    return mController->hookSystemRegisterEarlyMainConnection(domainID, mainConnectionData, route);
+}
+
 void CAmControlSender::hookSystemSinkVolumeTick(const am_Handle_s handle, const am_sinkID_t sinkID, const am_volume_t volume)
 {
     assert(mController);
@@ -383,6 +390,12 @@ void CAmControlSender::cbAckDisconnect(const am_Handle_s handle, const am_Error_
 {
     assert(mController);
     mController->cbAckDisconnect(handle, errorID);
+}
+
+void CAmControlSender::cbAckTransferConnection(const am_Handle_s handle, const am_Error_e errorID)
+{
+    assert(mController);
+    mController->cbAckTransferConnection(handle, errorID);
 }
 
 void CAmControlSender::cbAckCrossFade(const am_Handle_s handle, const am_HotSink_e hostsink, const am_Error_e error)

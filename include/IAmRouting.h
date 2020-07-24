@@ -139,6 +139,34 @@ public:
 	 * @return E_OK on succes, E_NON_EXISTENT if not found E_UNKOWN on error
 	 */
 	virtual am_Error_e deregisterDomain(const am_domainID_t domainID) =0;
+
+	/**
+	 * Support announcement of audio connections already active at AM startup
+	 *
+	 * @param domainID: home domain announcing this early connection
+	 * @param route:    list of connection segments
+	 * @param state:    either stable CS_CONNECTED, CS_DISCONNECTED, CS_SUSPENDED
+	 *                  or transient CS_CONNECTING, CS_DISCONNECTING
+	 *
+	 * @return          success indicator as obtained from the controller
+	 *
+	 * @note            If the connection is announced with one of the transient states
+	 *                  CS_CONNECTING or CS_DISCONNECTING, a secondary registerEarlyConnection()
+	 *                  call is expected once a stable state is reached
+	 */
+	virtual am_Error_e registerEarlyConnection(am_domainID_t domainID, const am_Route_s &route
+	        , am_ConnectionState_e state) = 0;
+
+	/**
+	 * Notify hand-over acknowledgment of connections surviving shutdown of the AM
+	 *
+	 * @param handle:  composite identifier used in the request
+	 * @param errorID: success indicator as obtained from the routing-side application,
+	 *                 e.g. E_OK if the application assumes full responsibility,
+	 *                 any meaningful error condition otherwise
+	 */
+	virtual void ackTransferConnection(const am_Handle_s handle, const am_Error_e errorID) = 0;
+
 	/**
 	 * registers a converter. @return E_OK on succes, E_ALREADY_EXISTENT if already
 	 * registered E_UNKOWN on error
@@ -385,6 +413,26 @@ public:
 	 * or be ready again.
 	 */
 	virtual void setRoutingRundown(const uint16_t handle) =0;
+
+	/**
+	 * Forward hand-over of a connection meant to survive AM shutdown
+	 * in routing-side application
+	 *
+	 * @param handle:   composite identifier used to map the response
+	 * @param domainID: target domain for this offering
+	 * @param route:    names of involved sources and sinks including intermediate gateways
+	 * @param state:    either stable CS_CONNECTED, CS_DISCONNECTED, CS_SUSPENDED
+ 	 *                  or transient CS_CONNECTING, CS_DISCONNECTING
+ 	 *
+ 	 * @return        success indicator as obtained from the plugins, e.g E_OK or E_COMMUNICATION
+	 */
+	virtual am_Error_e asyncTransferConnection(const am_Handle_s handle, am_domainID_t domainID
+	    , const std::vector<std::pair<std::string, std::string>>  &route
+	    , am_ConnectionState_e state)
+	{
+	    return E_NOT_POSSIBLE; // default response if not supported by the plugin
+	}
+
 	/**
 	 * aborts an asynchronous action.
 	 * @return E_OK on success, E_UNKNOWN on error, E_NON_EXISTENT if handle was not

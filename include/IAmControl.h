@@ -439,6 +439,12 @@ public:
 	 */
 	virtual am_Error_e getCrossfaderInfoDB(const am_crossfaderID_t crossfaderID, am_Crossfader_s& crossfaderData) const =0;
 	/**
+	 * returns details of a connection, including involved sources and sinks
+	 * @return E_OK on success, E_DATABASE_ERROR on error, E_NON_EXISTENT if
+	 * crossfader was not found
+	 */
+	virtual am_Error_e getConnectionInfoDB(const am_connectionID_t connectionID, am_Connection_s& connectionData) const =0;
+	/**
 	 * returns sources and the sink of a crossfader
 	 * @return E_OK on success, E_DATABASE_ERROR on error, E_NON_EXISTENT if
 	 * crossfader was not found
@@ -554,6 +560,24 @@ public:
 	 * confirmRoutingRundown.
 	 */
 	virtual void setRoutingRundown() =0;
+
+	/**
+	 * Hand-over to routing-side application any connection meant to survive AM shutdown
+	 * (see page @ref early)
+	 *
+	 * @param handle:           composite identifier used to map the response
+	 * @param domainID:         target domain which shall take over
+	 * @param mainConnectionID: subject of this request
+	 *
+	 * @return                  E_OK if command was forwarded to routing adapter successfully,
+	 *                          E_COMMUNICATION or other meaningful value otherwise
+	 *
+	 * @note  Success of the responsibility transfer itself is acknowledged through corresponding
+	 *        function @ref am::IAmControlSend::cbAckTransferConnection "cbAckTransferConnection()".
+	 */
+	virtual am_Error_e transferConnection(am_Handle_s &handle
+	        , am_mainConnectionID_t mainConnectionID, am_domainID_t domainID) = 0;
+
 	/**
 	 * acknowledges the setControllerReady call.
 	 */
@@ -858,6 +882,25 @@ public:
 	 * @return E_OK on success, E_UNKNOWN on error, E_NON_EXISTENT if not found
 	 */
 	virtual am_Error_e hookSystemDeregisterCrossfader(const am_crossfaderID_t crossfaderID) =0;
+
+	/**
+	 * Support announcement of audio connections already active at AM startup
+	 *
+	 * @param domainID:           home domain announcing this early connection
+	 * @param mainConnectionData: details of main connection
+	 * @param route:              route details as requested from routing side
+	 *
+	 * @return          success indicator. Controller should use E_OK on success,
+	 *                  E_ALREADY_EXISTS or E_NO_CHANGE if given connection is already registered,
+	 *                  E_DATABASE_ERROR if any of the listed sources or sinks does not exist in the data base,
+	 *                  E_NOT_POSSIBLE if feature is not supported by the controller
+	 */
+	virtual am_Error_e hookSystemRegisterEarlyMainConnection(am_domainID_t domainID
+	        , const am_MainConnection_s &mainConnectionData, const am_Route_s &route)
+	{
+	    return E_NOT_POSSIBLE;  // empty default implementation
+	}
+
 	/**
 	 * volumeticks. therse are used to indicate volumechanges during a ramp
 	 */
@@ -905,6 +948,19 @@ public:
 	 * ack for disconnect
 	 */
 	virtual void cbAckDisconnect(const am_Handle_s handle, const am_Error_e errorID) =0;
+
+	/**
+	 * Hand-over acknowledgment of connections surviving shutdown of the AM,
+	 * forwarded from routing side (see @ref IAmRoutingReceive::ackTransferConnection)
+	 *
+	 * @param handle:  composite identifier mirrored from request
+	 * @param errorID: success indicator as obtained from routing side application
+	 */
+	virtual void cbAckTransferConnection(const am_Handle_s /* handle */, const am_Error_e /* errorID */)
+	{
+	    // empty default implementation
+	}
+
 	/**
 	 * ack for crossfading
 	 */

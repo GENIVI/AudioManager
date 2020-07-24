@@ -62,13 +62,13 @@ public:
      * The following interface methods must be implemented by the subclass.
      */
     virtual am_Error_e enterDomainDB(const am_Domain_s &domainData, am_domainID_t &domainID) = 0;
-    virtual am_Error_e enterMainConnectionDB(const am_MainConnection_s &mainConnectionData, am_mainConnectionID_t &connectionID) = 0;
+    virtual am_Error_e enterMainConnectionDB(const am_MainConnection_s &mainConnectionData, am_mainConnectionID_t &connectionID, bool allowReserved) = 0;
     virtual am_Error_e enterSinkDB(const am_Sink_s &sinkData, am_sinkID_t &sinkID) = 0;
     virtual am_Error_e enterCrossfaderDB(const am_Crossfader_s &crossfaderData, am_crossfaderID_t &crossfaderID) = 0;
     virtual am_Error_e enterGatewayDB(const am_Gateway_s &gatewayData, am_gatewayID_t &gatewayID) = 0;
     virtual am_Error_e enterConverterDB(const am_Converter_s &converteData, am_converterID_t &converterID) = 0;
     virtual am_Error_e enterSourceDB(const am_Source_s &sourceData, am_sourceID_t &sourceID) = 0;
-    virtual am_Error_e enterConnectionDB(const am_Connection_s &connection, am_connectionID_t &connectionID) = 0;
+    virtual am_Error_e enterConnectionDB(const am_Connection_s &connection, am_connectionID_t &connectionID, bool allowReserved) = 0;
     virtual am_Error_e enterSinkClassDB(const am_SinkClass_s &sinkClass, am_sinkClass_t &sinkClassID) = 0;
     virtual am_Error_e enterSourceClassDB(am_sourceClass_t &sourceClassID, const am_SourceClass_s &sourceClass) = 0;
     virtual am_Error_e enterSystemProperties(const std::vector<am_SystemProperty_s> &listSystemProperties) = 0;
@@ -114,6 +114,7 @@ public:
     virtual am_Error_e getSinkInfoDB(const am_sinkID_t sinkID, am_Sink_s &sinkData) const = 0;
     virtual am_Error_e getSourceInfoDB(const am_sourceID_t sourceID, am_Source_s &sourceData) const = 0;
     virtual am_Error_e getCrossfaderInfoDB(const am_crossfaderID_t crossfaderID, am_Crossfader_s &crossfaderData) const = 0;
+    virtual am_Error_e getConnectionInfoDB(const am_connectionID_t connectionID, am_Connection_s &connectionData) const = 0;
     virtual am_Error_e getMainConnectionInfoDB(const am_mainConnectionID_t mainConnectionID, am_MainConnection_s &mainConnectionData) const = 0;
     virtual am_Error_e getSinkMainVolume(const am_sinkID_t sinkID, am_mainVolume_t &mainVolume) const = 0;
     virtual am_Error_e getSinkVolume(const am_sinkID_t sinkID, am_volume_t &volume) const = 0;

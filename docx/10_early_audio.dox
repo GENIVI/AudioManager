@@ -1,4 +1,4 @@
- /*
+/*
  * Copyright (C) 2012, BMW AG
  *
  * This file is part of GENIVI Project AudioManager.
@@ -6,26 +6,116 @@
  * Contributions are licensed to the GENIVI Alliance under one or more
  * Contribution License Agreements.
  *
- * \copyright
+ * @copyright
  * This Source Code Form is subject to the terms of the
  * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
- * \\author Christian Linke (christian.linke@bmw.de)
+ * @authors Christian Linke, 2012  <christian.linke@bmw.de>,\n
+ *          Martin Koch, 2020      <mkoch@martin.koch@ese.de>
  *
  */
- /*!
-\page early Early Audio
-\section req The Requirement
-The requirement reviews showed that one very important aspect of managing audio within GENIVI is the early/late phase where the Linux part of the system is
-not available. This feature is addressed via special domains: EarlyDomains. These domains are acting "unmanaged" - meaning without the interaction with the
-AudioManager - providing a simpler set of features until the AudioManager is up and running. When the Linux system is then fully operable a handover is done
-from the EarlyDomains towards the AudioManager. In order to be able to operate without the Linux up and running, the EarlyDomains must be implemented on a
-second fast-boot or always-on controller, e.g. the so called vehicle processor.\n
-\section earlys Early Startup
+
+ /**************************************************************************//**
+@page early Early Audio
+
+@section req The Requirement
+The requirement reviews showed that one very important aspect of managing audio within GENIVI is the 
+early/late phase where the AudioManager daemon (possibly along with the entire Linux part of the system)
+is not available. This feature is addressed via special domains: EarlyDomains.
+In normal operation these domains are slave to the routing side of the audio-manager
+daemon and optionally also interact with its command side. Here they are acting "unmanaged",
+that is without the control through the AudioManager, and usually provide only a limited set
+of features until the AudioManager is up and running. At minimum, they need to be capable of
+establishing the audio or video connection autonomously and start streaming their information.
+Scenarios requiring such capabilities comprise:
+    - System alerts 
+        + Door open
+        + Seat belt missing
+        + Engine faults
+    - Parking assistant warnings
+        + Rear view camera screen
+        + Beeps if distance goes below limit
+
+In order to handle above situations, such applications at least need to be prioritized during startup.
+Furthermore, if they need to be operational before the entire Linux is available, the EarlyDomains can
+be implemented on a second fast-boot or always-on controller, e.g. the so called vehicle processor.
+
+Later, once the Linux system is fully operable and the audio-manager process is also started,
+a hand-over is done from the EarlyDomains towards the AudioManager so the latter can synchronize
+its internal state.
+
+Similarly, on system shutdown, the audiomanager process may already be stopped and unloaded
+while above information is still required to be presented to the user.
+
+@section earlys Early Startup
 This picture shows the principle of the early startup:
-\image html early.png
-\section late Late Rundown
+@image html early.png
+
+Once a routing adapter is connected to the audio-manager and has received the setRoutingReady()
+signal, it registers (announces) the topology elements (sources, sinks and gateways) accessible
+through it to the daemon, which assigns numerical IDs to each of them. Details are given along
+with the registration, such as
+    - element name
+    - domain membership
+    - class (grouping category) membership
+    - supported connection formats
+    - availability
+    - streaming state (ON/OFF, sources only)
+    - audible volume
+    - additional element-specific properties
+
+For announcing a pre-established audio connection above information is not sufficient, 
+as no connection information can be extracted from it. Here the function @ref am::IAmRoutingReceive::registerEarlyConnection
+"registerEarlyConnection()" is used from the routing side. The daemon shall then transparently
+forward this notification to the controller, which in turn registers the new connection to
+the daemons database.
+
+> A special case is given if the connection spans multiple domains. Although controlling the entire
+> route during startup and knowing that all involved elements do exist and are up and running,
+> the routing adapter cannot reliably assume that their registration to the audio-manager is
+> already completed. This can be overcome by using the existing functions @ref am::IAmRoutingReceive::peekSource "peekSource()"
+> and @ref am::IAmRoutingReceive::peekSink "peekSink()", which will return a valid numeric
+> identifier for the requested element specified with its unique name only. These functions
+> determine the IDs from either
+>   - assigned IDs for actually registered elements
+>   - or statically configured data
+>   - or they reserve an ID which will be assigned to the element during later registration
+> 
+> So also in this case the proper hand-over of early connections should be possible.
+
+Below sequence chart illustrates the details:
+@image html early_announcement.png
+
+Once the connection is announced, the controller takes over full responsibility, including 
+    - notifying the command side on its existence through function 
+      @ref am::IAmCommandSend::cbNewMainConnection "cbNewMainConnection()"
+    - suspending or disconnecting it on command-side request according to business logic
+
+Thus a matching function __unregisterEarlyConnection()__ triggered by the routing adapter shall
+__not__ be necessary.
+
+@section late Late Rundown
+
+Connections which are still active (in state CS_CONNECTED or CS_SUSPENDED) and shall be kept
+alive beyond termination of the audio-manager process need to be handed over to the routing
+adapter before the daemon process terminates.
+ 
 This picture shows the principle of the late rundown:
-\image html late.png
+@image html late.png
+
+Selectable for handover are all domains marked with status flag DS_INDEPENDENT_RUNDOWN indicating
+their capability of taking care of late connections autonomously. They shall be considered for the
+hand-over offering through asynchronous, non-blocking function @ref am::IAmControlReceive::transferConnection
+"transferConnection()". Below sequence chart shows the usage of this function and its forwarding
+and acknowledging siblings:
+
+@image html early_transfer.png
+
+After positive acknowledgment through the routing adapter the AM is no longer responsible
+for the connection and its elements, so the subsequent deregisterSource/Sink/Domain()
+requests do not harm.
+
+@note In case the audio-manager is restarted and said connection still exists under responsibility
+      of a routing adapter, above function registerEarlyConnection() can be invoked again.
 */

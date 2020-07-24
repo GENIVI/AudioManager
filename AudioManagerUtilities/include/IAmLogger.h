@@ -279,7 +279,8 @@ private:
                 "H_CROSSFADE",
                 "H_SETVOLUMES",
                 "H_SETSINKNOTIFICATION",
-                "H_SETSOURCENOTIFICATION"
+                "H_SETSOURCENOTIFICATION",
+                "H_TRANSFERCONNECTION"
             }
             );
     }
